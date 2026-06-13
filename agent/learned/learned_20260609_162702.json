@@ -1,0 +1,287 @@
+[
+  {
+    "id": "ngay-hoi-thanh-tra",
+    "type": "event",
+    "name": "Ngày hội Thanh trà",
+    "placeId": "p-binh-minh",
+    "summary": "Sự kiện quảng bá đặc sản thanh trà được tổ chức trước thềm Tuần lễ Văn hóa, thể thao và du lịch tỉnh Vĩnh Long. Bài viết nêu đây là hoạt động diễn ra tại TX Bình Minh, Vĩnh Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/tin-moi/202504/tim-huong-sac-rienggiua-mien-song-nuoc-ef43078/"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "khoai-lang-tim-binh-tan",
+    "type": "product",
+    "name": "Khoai lang tím Bình Tân",
+    "placeId": "p-long-chau",
+    "summary": "Đặc sản nông nghiệp của huyện Bình Tân, tỉnh Vĩnh Long. Bài viết liệt kê đây là một trong những sản phẩm nổi bật của vùng.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/tin-moi/202504/tim-huong-sac-rienggiua-mien-song-nuoc-ef43078/"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "cu-lao-an-binh",
+    "type": "nature",
+    "name": "Cù lao An Bình",
+    "placeId": "p-long-chau",
+    "summary": "Khu vực du lịch sinh thái miệt vườn ven sông rạch của tỉnh Vĩnh Long, nổi bật với các điểm đến và homestay. Đây là một không gian sông nước đặc trưng của Vĩnh Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/tin-moi/202504/tim-huong-sac-rienggiua-mien-song-nuoc-ef43078/"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "lang-gach-gom-do-mang-thit",
+    "type": "craft_village",
+    "name": "Làng gạch gốm đỏ Mang Thít",
+    "placeId": "xa-nhon-phu",
+    "summary": "Khu làng nghề gạch gốm nổi tiếng của tỉnh Vĩnh Long với hàng trăm miệng lò cũ kỹ, rêu phong. Đây là điểm trải nghiệm di sản đặc trưng của Mang Thít.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/tin-moi/202504/tim-huong-sac-rienggiua-mien-song-nuoc-ef43078/"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "le-hoi-lang-ong-thong-che-dieu-bat-nguyen-van-ton",
+    "type": "event",
+    "name": "Lễ hội Lăng Ông Thống chế Điều bát Nguyễn Văn Tồn",
+    "placeId": "p-long-chau",
+    "summary": "Di sản văn hóa phi vật thể quốc gia gắn với Lăng Ông Thống chế Điều bát Nguyễn Văn Tồn ở tỉnh Vĩnh Long. Bài viết xếp lễ hội này vào nhóm di sản tiêu biểu của địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/tin-moi/202504/tim-huong-sac-rienggiua-mien-song-nuoc-ef43078/"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "lang-nghe-lam-tau-hu-ky",
+    "type": "craft_village",
+    "name": "Làng nghề làm tàu hủ ky",
+    "placeId": "p-binh-minh",
+    "summary": "Làng nghề truyền thống được ghi danh di sản văn hóa phi vật thể quốc gia tại xã Mỹ Hòa, TX Bình Minh, tỉnh Vĩnh Long. Đây là một nghề thủ công gắn với ẩm thực địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/tin-moi/202504/tim-huong-sac-rienggiua-mien-song-nuoc-ef43078/"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "le-hoi-van-thanh-mieu",
+    "type": "event",
+    "name": "Lễ hội Văn Thánh Miếu",
+    "placeId": "p-long-chau",
+    "summary": "Một di sản văn hóa phi vật thể được nhắc đến trong bài viết như nét văn hóa đặc trưng của tỉnh Vĩnh Long. Lễ hội này thuộc nhóm di sản văn hóa của địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/tin-moi/202504/tim-huong-sac-rienggiua-mien-song-nuoc-ef43078/"
+    },
+    "confidence": 0.89,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "nghe-thuat-hat-boi-tinh-vinh-long",
+    "type": "experience",
+    "name": "Nghệ thuật hát bội tỉnh Vĩnh Long",
+    "placeId": "p-long-chau",
+    "summary": "Loại hình nghệ thuật truyền thống của tỉnh Vĩnh Long được ghi nhận là di sản văn hóa phi vật thể quốc gia. Đây là một giá trị văn hóa đặc trưng của địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/tin-moi/202504/tim-huong-sac-rienggiua-mien-song-nuoc-ef43078/"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "cu-lao-may",
+    "type": "nature",
+    "name": "Cù lao Mây",
+    "placeId": "p-long-chau",
+    "summary": "Khu vực cù lao thuộc huyện Trà Ôn, Vĩnh Long, được bài viết gọi là “đảo ngọc” và là một lợi thế lớn để phát triển du lịch sinh thái miệt vườn. Đây là điểm tự nhiên gắn với hệ sinh thái sông nước và vườn cây trái của địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "nongthon.vietnamtourism.gov.vn",
+      "url": "https://nongthon.vietnamtourism.gov.vn/vinh-long-tra-on-diem-sang-phat-trien-du-lich-sinh-thai-miet-vuon/"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "lang-ong-tien-quan-thong-che-dieu-bat-tuong-quan-nguyen-van-",
+    "type": "history",
+    "name": "Lăng Ông Tiền quân Thống Chế Điều Bát tướng quân Nguyễn Văn Tồn",
+    "placeId": "p-long-chau",
+    "summary": "Di tích lịch sử quốc gia nằm tại xã Thiện Mỹ, huyện Trà Ôn, Vĩnh Long. Đây là điểm tham quan gắn với giá trị lịch sử địa phương và có thể kết hợp trong tuyến du lịch của huyện.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "nongthon.vietnamtourism.gov.vn",
+      "url": "https://nongthon.vietnamtourism.gov.vn/vinh-long-tra-on-diem-sang-phat-trien-du-lich-sinh-thai-miet-vuon/"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "diem-du-lich-sinh-thai-tu-do",
+    "type": "attraction",
+    "name": "Điểm du lịch sinh thái Tư Dô",
+    "placeId": "p-long-chau",
+    "summary": "Điểm du lịch sinh thái miệt vườn tại cồn Công, Vĩnh Long, nổi bật với vườn chôm chôm chất lượng cao và trải nghiệm tham quan, thưởng thức trái cây. Đây là một trong các mô hình du lịch sinh thái được nêu cụ thể trong bài.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "nongthon.vietnamtourism.gov.vn",
+      "url": "https://nongthon.vietnamtourism.gov.vn/vinh-long-tra-on-diem-sang-phat-trien-du-lich-sinh-thai-miet-vuon/"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "diem-du-lich-sinh-thai-tam-trong",
+    "type": "attraction",
+    "name": "Điểm du lịch sinh thái Tám Trong",
+    "placeId": "p-long-chau",
+    "summary": "Điểm du lịch sinh thái miệt vườn ở đầu cồn Công, Vĩnh Long, thu hút du khách nhờ cây trái quanh năm, ao nuôi cá và khu ẩm thực dân dã. Bài viết cho biết mô hình này đã hoạt động từ năm 2016.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "nongthon.vietnamtourism.gov.vn",
+      "url": "https://nongthon.vietnamtourism.gov.vn/vinh-long-tra-on-diem-sang-phat-trien-du-lich-sinh-thai-miet-vuon/"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "nam-khanh",
+    "type": "attraction",
+    "name": "Năm Khanh",
+    "placeId": "p-long-chau",
+    "summary": "Một điểm du lịch sinh thái miệt vườn được liệt kê cùng Tư Dô và Tám Trong tại cồn Công, Vĩnh Long. Bài viết không mô tả chi tiết nhưng cho thấy đây là một cơ sở du lịch địa phương cụ thể.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "nongthon.vietnamtourism.gov.vn",
+      "url": "https://nongthon.vietnamtourism.gov.vn/vinh-long-tra-on-diem-sang-phat-trien-du-lich-sinh-thai-miet-vuon/"
+    },
+    "confidence": 0.84,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-miet-vuon-vinh-sang",
+    "type": "attraction",
+    "name": "Khu du lịch sinh thái miệt vườn Vinh Sang",
+    "placeId": "p-long-chau",
+    "summary": "Điểm du lịch sinh thái miệt vườn nằm ở ấp An Thuận, xã An Bình, huyện Long Hồ, tỉnh Vĩnh Long. Bài viết mô tả nơi này là một khu vườn rộng lớn ven sông Cổ Chiên, có các hoạt động sông nước và tham quan miệt vườn.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "dulich360.com.vn",
+      "url": "https://dulich360.com.vn/khu-du-lich-sinh-thai-miet-vuon-vinh-sang-vinh-long.html"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
+    "type": "attraction",
+    "name": "Cánh đồng điện gió ngoài khơi Ba Động",
+    "placeId": "p-long-chau",
+    "summary": "Khu điện gió ngoài khơi gắn với biển Ba Động ở khu vực Trà Vinh cũ (nay thuộc Vĩnh Long). Bài viết mô tả đây là cảnh quan đặc trưng và là điểm check-in nổi bật của khu vực này.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.traveloka.com",
+      "url": "https://www.traveloka.com/vi-vn/explore/destination/bien-ba-dong/301507"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "nha-mat",
+    "type": "history",
+    "name": "Nhà Mát",
+    "placeId": null,
+    "summary": "Đây là địa danh ven biển được bài viết nhắc là khu nghỉ mát do người Pháp xây dựng trước đây. Theo nội dung, địa danh này gắn với vùng biển Ba Động thuộc Trà Vinh cũ, nay là Vĩnh Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.traveloka.com",
+      "url": "https://www.traveloka.com/vi-vn/explore/destination/bien-ba-dong/301507"
+    },
+    "confidence": 0.74,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "con-cu",
+    "type": "attraction",
+    "name": "Cồn Cù",
+    "placeId": null,
+    "summary": "Địa danh này được nêu như nơi từng được phát triển thành sân golf trong giai đoạn khai thác du lịch ven biển. Bài viết đặt nó trong bối cảnh khu vực biển Ba Động thuộc Trà Vinh cũ, nay thuộc Vĩnh Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.traveloka.com",
+      "url": "https://www.traveloka.com/vi-vn/explore/destination/bien-ba-dong/301507"
+    },
+    "confidence": 0.72,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "cau-lang-chim",
+    "type": "attraction",
+    "name": "Cầu Láng Chim",
+    "placeId": "p-long-chau",
+    "summary": "Cây cầu được nhắc như một mốc di chuyển để đi đến biển Ba Động từ thành phố Trà Vinh. Đây là địa danh cụ thể thuộc khu vực Trường Long Hòa, Trà Vinh cũ (nay là Vĩnh Long).",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.traveloka.com",
+      "url": "https://www.traveloka.com/vi-vn/explore/destination/bien-ba-dong/301507"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "cau-truong-long-hoa",
+    "type": "attraction",
+    "name": "Cầu Trường Long Hòa",
+    "placeId": "p-long-chau",
+    "summary": "Cây cầu này xuất hiện trong chỉ dẫn đường đi tới biển Ba Động. Theo nội dung, nó nằm trên tuyến vào xã Trường Long Hòa, khu vực thuộc Trà Vinh cũ (nay là Vĩnh Long).",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.traveloka.com",
+      "url": "https://www.traveloka.com/vi-vn/explore/destination/bien-ba-dong/301507"
+    },
+    "confidence": 0.88,
+    "updatedAt": "2026-06-09"
+  }
+]

@@ -1,0 +1,17 @@
+{
+  "id": "khu-du-lich-vinh-sang",
+  "type": "attraction",
+  "name": "Khu du lịch Vinh Sang",
+  "placeId": null,
+  "summary": "Trang được cung cấp đang trả về lỗi 404 nên không có thông tin chi tiết về điểm du lịch này trong nội dung trích xuất. Chỉ có thể xác định đây là một địa điểm du lịch từ URL.",
+  "season": null,
+  "attributes": {},
+  "source": {
+    "title": "vinhlongtourist.vn",
+    "url": "https://vinhlongtourist.vn/vi/khu-du-lich-vinh-sang"
+  },
+  "confidence": 0.85,
+  "updatedAt": "2026-06-10",
+  "_crawled_from": "/vi/khu-du-lich-vinh-sang",
+  "_address_raw": ""
+}

@@ -1,0 +1,242 @@
+[
+  {
+    "id": "lang-van-hoa-du-lich-khmer-tra-vinh",
+    "type": "attraction",
+    "name": "Làng Văn hóa - Du lịch Khmer Trà Vinh",
+    "placeId": "p-tra-vinh",
+    "summary": "Khu làng văn hóa - du lịch gắn với cộng đồng Khmer ở Trà Vinh, giới thiệu đời sống, kiến trúc và bản sắc văn hóa Khmer tại tỉnh Trà Vinh. Đây là điểm tham quan thuộc địa bàn tỉnh Trà Vinh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.youtube.com",
+      "url": "https://www.youtube.com/watch?v=V8dvui8Klcw"
+    },
+    "confidence": 0.88,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "don-ca-tai-tu-vinh-long",
+    "type": "event",
+    "name": "Đờn ca tài tử Vĩnh Long",
+    "placeId": "p-long-chau",
+    "summary": "Bài viết giới thiệu hoạt động đờn ca tài tử tại tỉnh Vĩnh Long, nêu vai trò của loại hình này trong đời sống văn hóa địa phương. Đây là nội dung gắn trực tiếp với Vĩnh Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/detailevents/?t=doi-net-ve-don-ca-tai-tu-vinh-long&id=event_10380"
+    },
+    "confidence": 0.84,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "cau-lac-bo-don-ca-tai-tu-huyen-vung-liem",
+    "type": "experience",
+    "name": "Câu lạc bộ đờn ca tài tử huyện Vũng Liêm",
+    "placeId": "xa-trung-thanh",
+    "summary": "Một câu lạc bộ đờn ca tài tử tiêu biểu tại huyện Vũng Liêm, tỉnh Vĩnh Long, được nêu là nơi sinh hoạt thường xuyên của nhiều nghệ nhân và tài tử.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/detailevents/?t=doi-net-ve-don-ca-tai-tu-vinh-long&id=event_10380"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "cau-lac-bo-don-ca-tai-tu-huyen-long-ho",
+    "type": "experience",
+    "name": "Câu lạc bộ đờn ca tài tử huyện Long Hồ",
+    "placeId": "p-long-chau",
+    "summary": "Câu lạc bộ đờn ca tài tử ở huyện Long Hồ, tỉnh Vĩnh Long, được liệt kê là một trong các điểm sinh hoạt đờn ca tài tử của địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/detailevents/?t=doi-net-ve-don-ca-tai-tu-vinh-long&id=event_10380"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "cau-lac-bo-don-ca-tai-tu-huyen-tam-binh",
+    "type": "experience",
+    "name": "Câu lạc bộ đờn ca tài tử huyện Tam Bình",
+    "placeId": "p-long-chau",
+    "summary": "Câu lạc bộ đờn ca tài tử tại huyện Tam Bình, tỉnh Vĩnh Long, được nhắc đến trong thống kê các câu lạc bộ của tỉnh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/detailevents/?t=doi-net-ve-don-ca-tai-tu-vinh-long&id=event_10380"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "cau-lac-bo-don-ca-tai-tu-huyen-tra-on",
+    "type": "experience",
+    "name": "Câu lạc bộ đờn ca tài tử huyện Trà Ôn",
+    "placeId": "p-long-chau",
+    "summary": "Câu lạc bộ đờn ca tài tử ở huyện Trà Ôn, tỉnh Vĩnh Long, là một trong các đơn vị sinh hoạt nghệ thuật được bài viết đề cập.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/detailevents/?t=doi-net-ve-don-ca-tai-tu-vinh-long&id=event_10380"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "cau-lac-bo-don-ca-tai-tu-huyen-mang-thit",
+    "type": "experience",
+    "name": "Câu lạc bộ đờn ca tài tử huyện Mang Thít",
+    "placeId": "xa-nhon-phu",
+    "summary": "Câu lạc bộ đờn ca tài tử tại huyện Mang Thít, tỉnh Vĩnh Long, được nêu như một điểm sinh hoạt nghệ thuật tiêu biểu.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/detailevents/?t=doi-net-ve-don-ca-tai-tu-vinh-long&id=event_10380"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "cau-lac-bo-don-ca-tai-tu-huyen-binh-tan",
+    "type": "experience",
+    "name": "Câu lạc bộ đờn ca tài tử huyện Bình Tân",
+    "placeId": "p-long-chau",
+    "summary": "Câu lạc bộ đờn ca tài tử ở huyện Bình Tân, tỉnh Vĩnh Long, thuộc mạng lưới câu lạc bộ đờn ca tài tử của địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/detailevents/?t=doi-net-ve-don-ca-tai-tu-vinh-long&id=event_10380"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "cau-lac-bo-don-ca-tai-tu-thi-xa-binh-minh",
+    "type": "experience",
+    "name": "Câu lạc bộ đờn ca tài tử thị xã Bình Minh",
+    "placeId": "p-binh-minh",
+    "summary": "Câu lạc bộ đờn ca tài tử tại thị xã Bình Minh, tỉnh Vĩnh Long, được liệt kê trong danh sách các câu lạc bộ của tỉnh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/detailevents/?t=doi-net-ve-don-ca-tai-tu-vinh-long&id=event_10380"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "cau-lac-bo-don-ca-tai-tu-truong-xay-dung-mien-tay",
+    "type": "experience",
+    "name": "Câu lạc bộ đờn ca tài tử Trường Xây dựng miền Tây",
+    "placeId": "p-long-chau",
+    "summary": "Một câu lạc bộ đờn ca tài tử hoạt động tại Trường Xây dựng miền Tây, thuộc phạm vi Vĩnh Long theo nội dung bài viết.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/detailevents/?t=doi-net-ve-don-ca-tai-tu-vinh-long&id=event_10380"
+    },
+    "confidence": 0.77,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "cau-lac-bo-don-ca-tai-tu-tinh-vinh-long",
+    "type": "experience",
+    "name": "Câu lạc bộ đờn ca tài tử tỉnh Vĩnh Long",
+    "placeId": "p-long-chau",
+    "summary": "Câu lạc bộ cấp tỉnh được thành lập ở Vĩnh Long, quy tụ các thành viên yêu thích đờn ca tài tử trên địa bàn tỉnh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/detailevents/?t=doi-net-ve-don-ca-tai-tu-vinh-long&id=event_10380"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "lien-hoan-don-ca-tai-tu-tinh-vinh-long-nam-2017",
+    "type": "event",
+    "name": "Liên hoan Đờn ca tài tử tỉnh Vĩnh Long năm 2017",
+    "placeId": "p-long-chau",
+    "summary": "Đây là một sự kiện văn hóa về đờn ca tài tử diễn ra tại tỉnh Vĩnh Long, gắn với hoạt động giao lưu và trao truyền di sản âm nhạc truyền thống của địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "thvl.vn",
+      "url": "https://thvl.vn/van-hoa-van-nghe-nhung-cau-lac-bo-don-ca-tai-tu-giu-hon-di-san-tram-nam.html"
+    },
+    "confidence": 0.78,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "tuan-le-van-hoa-du-lich-gan-voi-le-hoi-ok-om-bok",
+    "type": "event",
+    "name": "Tuần lễ Văn hóa, du lịch gắn với lễ hội Ok Om Bok",
+    "placeId": "p-tra-vinh",
+    "summary": "Chuỗi hoạt động văn hóa, nghệ thuật và thể thao được tổ chức tại Trà Vinh từ ngày 9/11 đến 15/11/2024. Sự kiện gắn trực tiếp với lễ hội Ok Om Bok của địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "nhandan.vn",
+      "url": "https://nhandan.vn/dac-sac-dem-hoi-ok-om-bok-cua-dong-bao-khmer-tai-tra-vinh-post845154.html"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "mua-chan",
+    "type": "experience",
+    "name": "Múa chằn",
+    "placeId": "p-tra-vinh",
+    "summary": "Tiết mục trình diễn nghệ thuật dân gian của đồng bào Khmer được người dân thưởng thức tại Khu Văn hóa, du lịch ao Bà Om ở Trà Vinh. Đây là một hoạt động văn hóa gắn với lễ hội Ok Om Bok.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "nhandan.vn",
+      "url": "https://nhandan.vn/dac-sac-dem-hoi-ok-om-bok-cua-dong-bao-khmer-tai-tra-vinh-post845154.html"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "le-cung-trang-ok-om-bok",
+    "type": "event",
+    "name": "Lễ cúng Trăng Ok Om Bok",
+    "placeId": null,
+    "summary": "Nghi lễ chính trong lễ hội Ok Om Bok của đồng bào Khmer tại Trà Vinh, nhằm tạ ơn thần Mặt Trăng và cầu mong mùa màng bội thu. Thực thể này gắn trực tiếp với không gian văn hóa Trà Vinh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "mia.vn",
+      "url": "https://mia.vn/cam-nang-du-lich/le-hoi-ok-om-bok-tra-vinh-16219"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "con-phung",
+    "type": "attraction",
+    "name": "Cồn Phụng",
+    "placeId": "xa-chau-thanh",
+    "summary": "Cồn Phụng là điểm du lịch sinh thái nổi tiếng thuộc tỉnh Bến Tre, thường được nhắc đến trong các tour miền Tây. Đây là một trong những điểm đến đặc trưng của Bến Tre trên sông Tiền.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.vietfuntravel.com.vn",
+      "url": "https://www.vietfuntravel.com.vn/blog/nhung-tro-choi-dan-gian-o-mien-tay-nam-bo.html"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  }
+]

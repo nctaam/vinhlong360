@@ -1,0 +1,1127 @@
+[
+  {
+    "id": "chua-vam-ray-wat-samrong",
+    "type": "attraction",
+    "name": "Chùa Vàm Ray (Wat Samrong)",
+    "placeId": "xa-tra-on",
+    "summary": "Ngôi chùa Khmer lớn nhất Việt Nam tọa lạc tại huyện Trà Cú, nổi bật với tượng Phật ngoài trời cao 54m — lớn nhất cả nước. Kiến trúc rực rỡ màu vàng đặc trưng Khmer với họa tiết điêu khắc đại diện các vị thần ở mái vòm, tường và cột; khuôn viên rộng lớn thu hút hàng vạn phật tử.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Trà Vinh)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Ấp Vàm Rây, xã Hàm Thuận, huyện Trà Cú, Trà Vinh",
+      "province_old": "Trà Vinh"
+    }
+  },
+  {
+    "id": "chua-co-nodol-dc",
+    "type": "nature",
+    "name": "Chùa Cò Nodol",
+    "placeId": "xa-tra-on",
+    "summary": "Ngôi chùa Khmer xây dựng năm 1677 với khuôn viên 6ha là nơi trú ngụ của hàng nghìn con cò trắng, diệc xám và cò đen mỏ vàng quanh năm. Tên Chùa Cò xuất phát từ hàng nghìn con chim trú ngụ trên cây trong khuôn viên chùa, tạo nên cảnh quan sinh thái độc đáo gắn liền với kiến trúc Khmer cổ kính.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Trà Vinh)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Ấp Giồng Lớn, xã Đại An, huyện Trà Cú, Trà Vinh",
+      "province_old": "Trà Vinh"
+    }
+  },
+  {
+    "id": "rung-duoc-long-khanh-duyen-hai",
+    "type": "nature",
+    "name": "Rừng Đước Long Khánh Duyên Hải",
+    "placeId": "xa-tra-on",
+    "summary": "Khu sinh thái rừng ngập mặn rộng gần 700ha tại xã Long Khánh, huyện Duyên Hải — một trong những khu rừng đước nguyên sinh đặc trưng của Nam Bộ. Du khách chèo thuyền len lỏi qua tán đước cổ thụ, quan sát đa dạng chim và thủy sinh; lý tưởng cho du lịch sinh thái và nhiếp ảnh.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Trà Vinh)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Long Khánh, huyện Duyên Hải, Trà Vinh",
+      "province_old": "Trà Vinh"
+    }
+  },
+  {
+    "id": "cu-lao-tan-quy-cau-ke",
+    "type": "nature",
+    "name": "Cù Lao Tân Quy Cầu Kè",
+    "placeId": "xa-tra-on",
+    "summary": "Cù lao xanh diện tích 929ha nằm giữa sông Hậu thuộc xã An Phú Tân, huyện Cầu Kè, cách TP Trà Vinh 45km. Nổi tiếng là vương quốc trái cây miền Tây với vườn trái cây trĩu cành; du khách đạp xe, tắm sông, chèo thuyền, hái trái cây và thưởng thức đặc sản miệt vườn.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Trà Vinh)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã An Phú Tân, huyện Cầu Kè, Trà Vinh",
+      "province_old": "Trà Vinh"
+    },
+    "coords": [
+      9.5815192,
+      106.5306792
+    ]
+  },
+  {
+    "id": "canh-dong-dien-gio-duyen-hai",
+    "type": "attraction",
+    "name": "Cánh đồng Điện Gió Duyên Hải",
+    "placeId": "xa-tra-on",
+    "summary": "Cụm điện gió lớn tại huyện Duyên Hải với hàng chục trụ turbine khổng lồ dọc bờ biển và ngoài khơi. Cây cầu dẫn ra khu vận hành là điểm check-in nổi tiếng mạng xã hội với nền trời xanh và màu trắng của turbine; kết hợp tham quan cùng Bãi biển Ba Động liền kề.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Trà Vinh)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Ấp Định An, xã Đông Hải, huyện Duyên Hải, Trà Vinh",
+      "province_old": "Trà Vinh"
+    }
+  },
+  {
+    "id": "nha-tho-mac-bac-tieu-can",
+    "type": "attraction",
+    "name": "Nhà thờ Mặc Bắc Tiểu Cần",
+    "placeId": "xa-tra-on",
+    "summary": "Nhà thờ Công giáo kiến trúc La Mã – Pháp độc đáo, khuôn viên rộng hơn 1ha tại thị trấn Cầu Quan, huyện Tiểu Cần. Là một trong những nhà thờ lớn và có kiến trúc đặc sắc nhất Đồng bằng sông Cửu Long, pha trộn Đông – Tây.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Trà Vinh)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Thị trấn Cầu Quan, huyện Tiểu Cần, Trà Vinh",
+      "province_old": "Trà Vinh"
+    }
+  },
+  {
+    "id": "phuoc-minh-cung-chua-ong-tra-vinh",
+    "type": "attraction",
+    "name": "Phước Minh Cung (Chùa Ông Trà Vinh)",
+    "placeId": "xa-tra-on",
+    "summary": "Ngôi cung thờ tín ngưỡng của cộng đồng người Hoa tại TP Trà Vinh, kiến trúc đặc trưng Hoa Nam với nhiều mảng điêu khắc, tranh tường và hiện vật cổ quý giá; phản ánh sự giao thoa văn hóa Việt – Hoa – Khmer đặc sắc.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Trà Vinh)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "44 Điện Biên Phủ, phường 3, thành phố Trà Vinh",
+      "province_old": "Trà Vinh"
+    }
+  },
+  {
+    "id": "bao-tang-van-hoa-dan-toc-khmer-tra-vinh",
+    "type": "history",
+    "name": "Bảo tàng Văn hóa Dân tộc Khmer Trà Vinh",
+    "placeId": "xa-tra-on",
+    "summary": "Bảo tàng khánh thành năm 1997, diện tích 1.700m² trong khuôn viên 1ha ngay trong quần thể Ao Bà Om. Trưng bày hơn 800 hiện vật, hình ảnh về đời sống văn hóa vật chất và tinh thần của người Khmer vùng sông Cửu Long; vào cửa miễn phí, mở cửa 7:00–11:00 và 13:00–17:00.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Trà Vinh)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Khóm 4, phường 8, thành phố Trà Vinh — trong khu di tích Ao Bà Om",
+      "province_old": "Trà Vinh"
+    }
+  },
+  {
+    "id": "den-tho-bac-ho-tra-vinh",
+    "type": "history",
+    "name": "Đền thờ Bác Hồ Trà Vinh",
+    "placeId": "xa-tra-on",
+    "summary": "Di tích lịch sử cấp quốc gia, khởi công 10/3/1970 và khánh thành 26/1/1971 ngay trong thời chiến tranh — biểu tượng lòng trung kiên của nhân dân Trà Vinh. Khuôn viên rộng 5,4ha gồm đền thờ chính, nhà trưng bày cuộc đời Bác Hồ, mô hình nhà sàn, ao cá và không gian xanh yên tĩnh.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Trà Vinh)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Ấp Vĩnh Hội, xã Long Đức, thành phố Trà Vinh (cách trung tâm 4km phía Bắc)",
+      "province_old": "Trà Vinh"
+    }
+  },
+  {
+    "id": "dinh-long-duc-tra-vinh",
+    "type": "history",
+    "name": "Đình Long Đức Trà Vinh",
+    "placeId": "xa-tra-on",
+    "summary": "Đình thần xây dựng cuối thế kỷ XIX, thờ Thành Hoàng Bổn Cảnh và phối thờ Trần Trung Tiên; được Bộ VHTTDL công nhận Di tích Kiến trúc Nghệ thuật Quốc gia năm 2021. Kiến trúc đình Nam Bộ truyền thống với nhiều mảng chạm khắc tinh tế.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Trà Vinh)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Long Đức, thành phố Trà Vinh",
+      "province_old": "Trà Vinh"
+    }
+  },
+  {
+    "id": "chua-ong-met-botum-vong-sa-som-rong",
+    "type": "history",
+    "name": "Chùa Ông Mẹt Botum Vong Sa Som Rong",
+    "placeId": "xa-tra-on",
+    "summary": "Ngôi chùa Khmer di tích cấp quốc gia tọa lạc ngay trung tâm TP Trà Vinh, nổi tiếng với hệ thống 32 trụ cột gỗ quý chạm khắc tinh xảo. Là một trong những ngôi chùa Phật giáo Nam tông cổ nhất và có giá trị kiến trúc nghệ thuật cao nhất tại Trà Vinh.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Trà Vinh)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "1 Lê Lợi, phường 1, thành phố Trà Vinh",
+      "province_old": "Trà Vinh"
+    }
+  },
+  {
+    "id": "mam-bo-hoc-tra-vinh",
+    "type": "product",
+    "name": "Mắm Bò Hóc Trà Vinh",
+    "placeId": "xa-an-binh",
+    "summary": "Loại mắm truyền thống của người Khmer Trà Vinh, làm từ cá lóc ủ với muối và cơm nguội trong 3 tháng. Vị mặn mà, thơm nồng đặc trưng; ăn kèm rau sống và là nguyên liệu bắt buộc trong nước dùng bún nước lèo Trà Vinh.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Trà Vinh)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Trà Vinh (phổ biến ở các huyện đông đồng bào Khmer: Trà Cú, Châu Thành, Cầu Kè)",
+      "province_old": "Trà Vinh"
+    }
+  },
+  {
+    "id": "trai-quach-tra-vinh",
+    "type": "product",
+    "name": "Trái Quách Trà Vinh",
+    "placeId": "xa-an-binh",
+    "summary": "Loại trái cây đặc hữu của Trà Vinh, hình cầu cứng, ruột vàng có vị chua thanh ngọt mát và mùi thơm đặc trưng. Thường được múc ruột pha với đường và đá làm nước giải khát mùa hè; ít được trồng nơi khác, trở thành sản vật đặc hữu mang về làm quà.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Trà Vinh)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Trà Vinh (phổ biến ở huyện Châu Thành và Càng Long)",
+      "province_old": "Trà Vinh"
+    }
+  },
+  {
+    "id": "banh-canh-ben-co-tra-vinh",
+    "type": "dish",
+    "name": "Bánh Canh Bến Có Trà Vinh",
+    "placeId": "xa-an-binh",
+    "summary": "Đặc sản ẩm thực nổi tiếng hơn 20 năm tại Bến Có, Quốc lộ 53; sợi bánh làm từ gạo đầu mùa to tròn, dai giòn không bị nở. Nước dùng ninh xương heo và mực nướng nhiều giờ, tô đầy đủ thịt nạc, giò heo, lòng heo và rau ghém.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Trà Vinh)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Quốc lộ 53, ấp Bến Có, xã Nguyệt Hóa, huyện Châu Thành, Trà Vinh",
+      "province_old": "Trà Vinh"
+    }
+  },
+  {
+    "id": "bun-suong-tra-vinh",
+    "type": "dish",
+    "name": "Bún Suông Trà Vinh",
+    "placeId": "xa-tra-on",
+    "summary": "Món bún đặc trưng với sợi suông — chả tôm màu cam làm từ tôm tươi giã nhuyễn, dai thơm — ăn cùng thịt ba chỉ trong nước dùng ngọt thanh. Khác biệt hoàn toàn với bún suông Huế; phổ biến vào chiều tối tại các con đường trung tâm TP Trà Vinh.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Trà Vinh)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Đường Điện Biên Phủ và Hùng Vương, thành phố Trà Vinh",
+      "province_old": "Trà Vinh"
+    }
+  },
+  {
+    "id": "chao-am-tra-vinh",
+    "type": "dish",
+    "name": "Cháo Ám Trà Vinh",
+    "placeId": "xa-tra-on",
+    "summary": "Món cháo đặc sắc của Trà Vinh, nấu từ cá lóc tươi gỡ thành miếng xào với hành thơm, kết hợp trứng cá, mực khô nướng và tôm khô. Hương vị phức hợp ngọt thanh từ cá, bùi từ mực tôm; ăn kèm rau đắng và giá sống theo phong cách dân dã miền Tây.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Trà Vinh)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Thành phố Trà Vinh và các huyện thị",
+      "province_old": "Trà Vinh"
+    }
+  },
+  {
+    "id": "loi-choi-sa-ot-tra-vinh",
+    "type": "dish",
+    "name": "Loi Choi Sả Ớt Trà Vinh",
+    "placeId": "xa-an-binh",
+    "summary": "Món đặc sản độc đáo từ con loi choi — loài dài 20–40cm sống ở bãi bùn ven sông — chiên giòn trong dầu nóng với sả và ớt tươi. Vị béo, thơm sả và cay cay; là món ăn đặc hữu chỉ có ở vùng sông nước Trà Vinh.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Trà Vinh)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Thành phố Trà Vinh và ven sông các huyện Châu Thành, Cầu Ngang",
+      "province_old": "Trà Vinh"
+    }
+  },
+  {
+    "id": "lang-det-chieu-ca-hom-ham-tan",
+    "type": "craft_village",
+    "name": "Làng Dệt Chiếu Cà Hom Hàm Tân",
+    "placeId": "xa-tra-on",
+    "summary": "Làng nghề dệt chiếu cổ truyền gần 100 năm của người Khmer tại xã Hàm Tân, huyện Trà Cú; Bộ VHTTDL công nhận Di sản Văn hóa Phi vật thể Quốc gia năm 2024. Chiếu Cà Hom đặc sắc với 5 màu chủ đạo; hơn 200 hộ gia đình sản xuất gần 5.000 chiếu/năm.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Trà Vinh)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Ấp Chợ, Cà Hom, Bến Bạ, xã Hàm Tân, huyện Trà Cú, Trà Vinh",
+      "province_old": "Trà Vinh"
+    }
+  },
+  {
+    "id": "lang-hoa-kieng-long-duc-tra-vinh",
+    "type": "craft_village",
+    "name": "Làng Hoa Kiểng Long Đức Trà Vinh",
+    "placeId": "xa-tra-on",
+    "summary": "Làng nghề trồng hoa kiểng hình thành từ những năm 1960, UBND tỉnh công nhận năm 2011; là làng hoa lớn nhất tỉnh với hơn 130 hộ trên 20ha chuyên canh. Sản xuất khoảng 450.000 chậu hoa/năm gồm cúc, vạn thọ, hoa giấy, bon sai, thược dược; nhộn nhịp nhất dịp Tết.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Trà Vinh)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Long Đức, thành phố Trà Vinh",
+      "province_old": "Trà Vinh"
+    }
+  },
+  {
+    "id": "lang-dan-lat-duc-my-cang-long",
+    "type": "craft_village",
+    "name": "Làng Đan Lát Đức Mỹ Càng Long",
+    "placeId": "xa-tra-on",
+    "summary": "Làng nghề tiểu thủ công nghiệp tại xã Đức Mỹ, huyện Càng Long, chuyên đan lát thủ công truyền thống từ tre, lát và các vật liệu tự nhiên. Sản phẩm đa dạng gồm giỏ, thúng, sọt và đồ gia dụng; là nguồn thu nhập chính và điểm tham quan làng nghề trong tour địa phương.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Trà Vinh)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Đức Mỹ, huyện Càng Long, Trà Vinh",
+      "province_old": "Trà Vinh"
+    }
+  },
+  {
+    "id": "bien-con-bung-thanh-phu",
+    "type": "nature",
+    "name": "Biển Cồn Bửng Thạnh Phú",
+    "placeId": "xa-an-binh",
+    "summary": "Bãi biển hoang sơ nằm tại xã Thạnh Hải, huyện Thạnh Phú, dài hơn 25km bờ biển. Khi thủy triều xuống xuất hiện 3 hồ nước tự nhiên do dòng xoáy hải lưu tạo thành, rất phù hợp tắm biển. Hàng năm tổ chức Lễ hội Nghinh Ông Nam Hải vào ngày 15–16 tháng Giêng âm lịch.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Bến Tre)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-chin-song-thanh-phu",
+    "type": "attraction",
+    "name": "Khu Du Lịch Sinh Thái Chín Sông Thạnh Phú",
+    "placeId": "xa-an-binh",
+    "summary": "Khu du lịch sinh thái tại xã Bình Thạnh, huyện Thạnh Phú, mở cửa 7h–22h. Cung cấp các hoạt động trải nghiệm miệt vườn: tát mương bắt cá, ngồi thuyền vỏ lãi, câu tôm, đu dây giăng, đi cầu khỉ và chạy mô tô nước. Được đánh giá 4.3/5 sao.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Bến Tre)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Bình Thạnh, huyện Thạnh Phú, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "nha-co-huynh-phu-thanh-phu",
+    "type": "history",
+    "name": "Nhà Cổ Huỳnh Phủ Thạnh Phú",
+    "placeId": "xa-an-binh",
+    "summary": "Công trình kiến trúc nghệ thuật hơn 100 năm tuổi, xây dựng từ năm 1890 bởi ông Huỳnh Ngọc Khiêm trong 14 năm. Diện tích trên 500m² với 48 cột tròn bằng gỗ căm xe, gỗ lim, mặt trước điêu khắc tinh vi hình hoa cỏ, tôm cá, rồng phụng. Di tích Kiến trúc Nghệ thuật Quốc gia (2011). Mở cửa 9h–17h.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Bến Tre)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Đại Điền, huyện Thạnh Phú, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "di-tich-duong-ho-chi-minh-tren-bien-thanh-phu",
+    "type": "history",
+    "name": "Di Tích Đường Hồ Chí Minh Trên Biển Thạnh Phú",
+    "placeId": "xa-an-binh",
+    "summary": "Di tích lịch sử tại xã Thạnh Hải, đánh dấu bến xuất phát tàu vận tải vũ khí từ miền Bắc vào Nam theo tuyến đường biển bí mật kháng chiến (1961). Bến Thạnh Phong vừa là cảng tiếp nhận vũ khí vừa là trạm phân phối cho quân khu 8. Là địa chỉ đỏ giáo dục truyền thống cách mạng.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Bến Tre)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "canh-dong-dien-gio-thanh-phu",
+    "type": "nature",
+    "name": "Cánh Đồng Điện Gió Thạnh Phú",
+    "placeId": "xa-an-binh",
+    "summary": "Cánh đồng điện gió ven biển Thạnh Hải với những cánh quạt khổng lồ tạo cảnh quan độc đáo, nằm cách bãi biển Cồn Bửng vài km. Điểm check-in nổi tiếng với giới trẻ, đặc biệt vào lúc hoàng hôn. Miễn phí tham quan.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Bến Tre)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "khu-bao-ton-thien-nhien-thanh-phu",
+    "type": "nature",
+    "name": "Khu Bảo Tồn Thiên Nhiên Thạnh Phú",
+    "placeId": "xa-an-binh",
+    "summary": "Khu bảo tồn thiên nhiên đất ngập nước diện tích 2.584ha thuộc các xã An Điền, Thạnh Phong, Thạnh Hải. Hệ sinh thái rừng ngập mặn đa dạng với 60 loài chim, 27 loài bò sát, 16 loài thú. Trải nghiệm chèo xuồng ba lá len lỏi qua rừng ngập mặn hoặc du thuyền ngắm rừng bần nguyên sinh.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Bến Tre)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Các xã An Điền, Thạnh Phong, Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "chua-tuyen-linh-mo-cay-nam",
+    "type": "history",
+    "name": "Chùa Tuyên Linh Mỏ Cày Nam",
+    "placeId": "xa-an-binh",
+    "summary": "Trung tâm Phật giáo lớn của tỉnh Bến Tre với khuôn viên 9.000m², tọa lạc bên dòng suối Tân Hương thơ mộng, xã Minh Đức. Nổi tiếng với lịch sử gắn liền phong trào chấn hưng Phật giáo và kháng chiến. Là điểm tâm linh quan trọng thu hút đông đảo phật tử.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Bến Tre)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Ấp Tân Thới Đông B, xã Minh Đức, huyện Mỏ Cày Nam, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "cho-noi-dua-song-thom-mo-cay",
+    "type": "attraction",
+    "name": "Chợ Nổi Dừa Sông Thom Mỏ Cày",
+    "placeId": "xa-an-binh",
+    "summary": "Chợ nổi độc nhất miền Tây chuyên mua bán dừa và sản phẩm từ dừa, hoạt động trên đoạn sông Thom dài 5km với hàng trăm ghe xuồng ngày đêm. Hai bên bờ là làng nghề khai thác dừa trải dài 3km; cách trung tâm thị trấn Mỏ Cày khoảng 7km.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Bến Tre)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã An Thạnh, huyện Mỏ Cày Nam, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "con-thanh-long-mo-cay-nam",
+    "type": "attraction",
+    "name": "Cồn Thành Long Mỏ Cày Nam",
+    "placeId": "xa-an-binh",
+    "summary": "Khu sinh thái miệt vườn rộng 111ha trên dòng sông Cổ Chiên, gồm nhiều cồn nhỏ hợp thành (Cồn Nẩy, Cồn Chen, Cồn Cát). Vườn dừa xanh mát, trái cây phong phú, mạng lưới kênh rạch dày đặc thích hợp chèo kayak và thưởng thức ẩm thực sông nước.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Bến Tre)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Ấp Thành Long, xã Thành Thới A, huyện Mỏ Cày Nam, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "san-chim-vam-ho-ba-tri",
+    "type": "nature",
+    "name": "Sân Chim Vàm Hồ Ba Tri",
+    "placeId": "xa-an-binh",
+    "summary": "Nông trại du lịch sinh thái kiêm sân chim lớn nhất miền Tây, diện tích hơn 67ha bên hữu ngạn sông Ba Lai. Nơi cư trú của hơn 120 loài chim quý (cò, vạc, cồng cộc, diệc xám, le le...) và nhiều loài thú hoang. Thời điểm tham quan tốt nhất từ tháng 10 đến tháng 4.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Bến Tre)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Các xã Mỹ Hòa, Tân Mỹ, Tân Xuân, huyện Ba Tri, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "lang-hoa-kieng-cai-mon-cho-lach",
+    "type": "craft_village",
+    "name": "Làng Hoa Kiểng Cái Mơn Chợ Lách",
+    "placeId": "xa-an-binh",
+    "summary": "Một trong hai làng hoa kiểng lớn nhất miền Tây (cùng Sa Đéc – Đồng Tháp), hơn 100 năm tuổi. Khoảng 6.000 hộ sản xuất cây giống và hoa kiểng trên diện tích 40ha. Hàng năm tổ chức Lễ hội Hoa – Kiểng Chợ Lách dịp Tết.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Bến Tre)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "lang-nghe-dong-ghe-xuong-an-dinh",
+    "type": "craft_village",
+    "name": "Làng Nghề Đóng Ghe Xuồng An Định",
+    "placeId": "xa-an-binh",
+    "summary": "Làng nghề truyền thống đóng tàu ghe xuồng lâu đời bên dòng sông Cái Quao, với hơn 10 cơ sở sản xuất và nhiều thợ lành nghề. Du khách quan sát trực tiếp quá trình đóng ghe thủ công truyền thống — nghề gắn liền với văn hóa sông nước miền Tây.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Bến Tre)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã An Định, huyện Mỏ Cày Nam, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "lang-keo-dua-phuong-7-ben-tre",
+    "type": "craft_village",
+    "name": "Làng Kẹo Dừa Phường 7 Bến Tre",
+    "placeId": "xa-an-binh",
+    "summary": "Làng nghề làm kẹo dừa thủ công truyền thống nổi tiếng nhất TP Bến Tre, tập trung ở phường 7. Du khách tham quan quy trình nấu kẹo truyền thống và tự tay làm kẹo, được thử miễn phí kẹo dừa mới ra lò. Toàn tỉnh có hơn 180 cơ sở sản xuất.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Bến Tre)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Phường 7, TP Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "keo-dua-thu-cong-ben-tre",
+    "type": "product",
+    "name": "Kẹo Dừa Thủ Công Bến Tre",
+    "placeId": "xa-an-binh",
+    "summary": "Đặc sản nổi tiếng nhất xứ dừa, làm hoàn toàn thủ công từ nước cốt dừa tươi, đường và mạch nha. Sản phẩm OCOP đạt 4 sao, du khách được tham quan xưởng và tự tay làm kẹo tại nhiều cơ sở ở phường 7 TP Bến Tre.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Bến Tre)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Phường 7, TP Bến Tre và huyện Châu Thành, Mỏ Cày Nam",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "mam-cong-ben-tre",
+    "type": "product",
+    "name": "Mắm Còng Bến Tre",
+    "placeId": "xa-an-binh",
+    "summary": "Đặc sản truyền thống làm từ còng — loài cua nhỏ sống trong bùn vùng sông nước — ướp muối và gia vị theo phương pháp truyền thống. Mắm còng có vị mặn mà đặc trưng, ăn kèm cơm hoặc chấm rau sống; là phần không thể thiếu trong bữa cơm dân dã miền Tây Bến Tre.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Bến Tre)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Bến Tre (phổ biến ở các huyện ven biển Thạnh Phú, Ba Tri)",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "mat-ong-hoa-dua-ben-tre",
+    "type": "product",
+    "name": "Mật Ong Hoa Dừa Bến Tre",
+    "placeId": "xa-an-binh",
+    "summary": "Sản phẩm mật ong đặc trưng của Bến Tre, thu từ hoa dừa và các vườn cây ăn trái phong phú vùng sông nước. Đạt OCOP 4 sao (Công ty Mật ong Tín Phát), màu vàng nhạt đến vàng nâu, mùi thơm đặc trưng.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Bến Tre)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Bến Tre (sản xuất nhiều ở huyện Mỏ Cày Bắc, Mỏ Cày Nam, Thạnh Phú)",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "buoi-da-xanh-ben-tre",
+    "type": "product",
+    "name": "Bưởi Da Xanh Bến Tre",
+    "placeId": "xa-an-binh",
+    "summary": "Đặc sản trái cây được bảo hộ chỉ dẫn địa lý, nguồn gốc từ xã Tân Thanh, huyện Mỏ Cày Bắc. Toàn tỉnh có hơn 5.904ha trồng bưởi da xanh, sản lượng hơn 47.000 tấn/năm. Quả to, múi dày, vị ngọt thanh đặc trưng, xuất khẩu nhiều thị trường quốc tế.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Bến Tre)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Huyện Mỏ Cày Bắc và các huyện trong tỉnh Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "hu-tieu-pate-ben-tre",
+    "type": "dish",
+    "name": "Hủ Tiếu Pate Bến Tre",
+    "placeId": "xa-an-binh",
+    "summary": "Đặc sản ẩm thực độc nhất vô nhị của xứ dừa — sợi hủ tiếu nước lèo ngọt thanh kết hợp pate thủ công dai giòn beo béo. Hương vị lạ miệng không nơi nào có; phổ biến ở nhiều quán TP Bến Tre, giá 25.000–35.000đ/tô.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Bến Tre)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "TP Bến Tre (nhiều quán tại đường Nguyễn Thị Định, đường 30/4, phường Phú Khương)",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "banh-canh-bot-xat-ben-tre",
+    "type": "dish",
+    "name": "Bánh Canh Bột Xắt Bến Tre",
+    "placeId": "xa-an-binh",
+    "summary": "Đặc sản ẩm thực với sợi bột gạo xắt thủ công từng sợi, nấu cùng thịt vịt xiêm, huyết vịt và nước lèo nước cốt dừa đặc sánh thơm ngậy. Nổi tiếng nhất tại khu vực chợ Lạc Hồng và cầu Cá Lóc, thường bán từ 16h–20h.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Bến Tre)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Chợ Lạc Hồng, TP Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "banh-xeo-oc-gao-phu-da",
+    "type": "dish",
+    "name": "Bánh Xèo Ốc Gạo Phú Đa",
+    "placeId": "xa-an-binh",
+    "summary": "Món bánh xèo đặc sản độc đáo dùng ốc gạo tự nhiên của cồn Phú Đa làm nhân thay vì tôm thịt. Ốc gạo thịt trắng đục béo thơm, băm nhuyễn xào cùng ớt sả làm nhân bánh xèo giòn rụm. Chỉ có tại vùng cồn Phú Đa, Mỏ Cày Nam.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Bến Tre)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Ấp Thời Đức, xã Thành Thới A, huyện Mỏ Cày Nam, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "lau-mam-ben-tre",
+    "type": "dish",
+    "name": "Lẩu Mắm Bến Tre",
+    "placeId": "xa-an-binh",
+    "summary": "Nồi lẩu mắm miền Tây đậm đà với cá kèo, cá ba sa, tôm, mực, lươn, ba chỉ heo cùng rau đồng xanh mướt. Giá bình dân khoảng 100.000đ/nồi. Quán Trúc Giang tại đường Nguyễn Thị Định là địa chỉ quen thuộc của người dân và khách du lịch.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Bến Tre)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "293D Nguyễn Thị Định, ấp Phú Chiến, xã Phú Hưng, TP Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "chao-cua-dong-ben-tre",
+    "type": "dish",
+    "name": "Cháo Cua Đồng Bến Tre",
+    "placeId": "xa-an-binh",
+    "summary": "Món cháo truyền thống nấu trong nồi đất với cua đồng tươi, có vị ngọt tự nhiên đặc trưng của miền sông nước. Thường được ăn sáng; quán Hồng Thủy là một trong những quán nổi tiếng nhất TP Bến Tre. Giá bình dân.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Bến Tre)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "TP Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "cu-lao-may-tra-on",
+    "type": "nature",
+    "name": "Cù Lao Mây Trà Ôn",
+    "placeId": "xa-tra-on",
+    "summary": "Cù lao rộng khoảng 4.000ha nằm trên sông Hậu thuộc huyện Trà Ôn, nổi tiếng với vườn cam sành, bưởi, chôm chôm trải dài. Du khách đạp xe khám phá đường làng, hái trái cây, chèo xuồng trên kênh rạch, tát mương bắt cá. Mùa thu hoạch trái cây từ tháng 5 đến tháng 10.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Vĩnh Long)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Lục Sĩ Thành và Phú Thành, huyện Trà Ôn, Vĩnh Long",
+      "province_old": "Vĩnh Long"
+    }
+  },
+  {
+    "id": "cho-noi-tra-on-dc",
+    "type": "attraction",
+    "name": "Chợ Nổi Trà Ôn",
+    "placeId": "xa-tra-on",
+    "summary": "Một trong những chợ nổi đặc sắc còn hoạt động ở miền Tây, họp từ 4 giờ sáng đến 7 giờ tối. Thuyền bè tấp nập mua bán trái cây, lương thực, thủy hải sản. Du khách ngồi thuyền dạo quanh, ăn sáng trên sông để cảm nhận không khí sông nước đặc trưng đồng bằng.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Vĩnh Long)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Thị trấn Trà Ôn, huyện Trà Ôn, Vĩnh Long",
+      "province_old": "Vĩnh Long"
+    }
+  },
+  {
+    "id": "lang-banh-trang-tra-on",
+    "type": "craft_village",
+    "name": "Làng Bánh Tráng Trà Ôn",
+    "placeId": "xa-tra-on",
+    "summary": "Làng nghề truyền thống hơn 100 năm tuổi sản xuất nhiều loại bánh tráng: bánh tráng nem, bánh tráng ngọt, bánh tráng dừa, bánh tráng lá dứa, bánh tráng củ dền. Khách tham quan quy trình tráng bánh thủ công và mua về làm quà.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Vĩnh Long)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Huyện Trà Ôn, Vĩnh Long",
+      "province_old": "Vĩnh Long"
+    }
+  },
+  {
+    "id": "chua-phuoc-hau-ngai-tu",
+    "type": "attraction",
+    "name": "Chùa Phước Hậu Ngãi Tứ",
+    "placeId": "p-phuoc-hau",
+    "summary": "Ngôi chùa Phật giáo Nam tông nổi tiếng với kiến trúc độc đáo, vườn kinh Phật điêu khắc trên 213 tấm đá xanh với 423 bài kinh, tháp 7 tầng ở giữa. Là điểm đến tâm linh và kiến trúc đặc sắc của huyện Tam Bình.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Vĩnh Long)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Ấp Đông Hậu, xã Ngãi Tứ, huyện Tam Bình, Vĩnh Long",
+      "province_old": "Vĩnh Long"
+    }
+  },
+  {
+    "id": "chua-ky-son-khmer-loan-my",
+    "type": "history",
+    "name": "Chùa Kỳ Sơn Khmer Loan Mỹ",
+    "placeId": "p-phuoc-hau",
+    "summary": "Di tích kiến trúc Khmer Nam Bộ xây dựng cách đây khoảng 200 năm, công nhận di tích cấp tỉnh năm 2007. Là minh chứng cho sự hiện diện và văn hóa Khmer tại vùng đất Tam Bình, Vĩnh Long.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Vĩnh Long)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Ấp Sóc Rừng, xã Loan Mỹ, huyện Tam Bình, Vĩnh Long",
+      "province_old": "Vĩnh Long"
+    }
+  },
+  {
+    "id": "lang-banh-trang-giay-tuong-loc",
+    "type": "craft_village",
+    "name": "Làng Bánh Tráng Giấy Tường Lộc",
+    "placeId": "p-phuoc-hau",
+    "summary": "Làng nghề truyền thống sản xuất bánh tráng giấy mỏng, giòn tan, thơm ngon đặc trưng của xã Tường Lộc, huyện Tam Bình. Du khách tham quan quy trình tráng thủ công trên bếp lửa và mua về làm quà đặc sản.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Vĩnh Long)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Tường Lộc, huyện Tam Bình, Vĩnh Long",
+      "province_old": "Vĩnh Long"
+    }
+  },
+  {
+    "id": "lang-dan-luc-binh-ngai-tu",
+    "type": "craft_village",
+    "name": "Làng Đan Lục Bình Ngãi Tứ",
+    "placeId": "p-phuoc-hau",
+    "summary": "Làng nghề thủ công mỹ nghệ đan từ cây lục bình (bèo tây) tạo ra giỏ, túi, đệm với hoa văn tinh xảo. Tập trung tại hai xã Ngãi Tứ và Bình Ninh, là sinh kế truyền thống của phụ nữ địa phương và là sản phẩm OCOP xuất khẩu.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Vĩnh Long)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Ngãi Tứ và Bình Ninh, huyện Tam Bình, Vĩnh Long",
+      "province_old": "Vĩnh Long"
+    }
+  },
+  {
+    "id": "cam-sanh-tam-binh-binh-minh",
+    "type": "product",
+    "name": "Cam Sành Tam Bình – Bình Minh",
+    "placeId": "p-phuoc-hau",
+    "summary": "Cam sành trồng tại vùng đất phù sa Tam Bình và Bình Minh nổi tiếng hơn nơi khác nhờ vỏ mỏng hơn, múi căng mọng, ngọt thanh đặc trưng. Là sản phẩm OCOP của tỉnh Vĩnh Long. Mùa thu hoạch chính từ tháng 11 đến tháng 3 năm sau.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Vĩnh Long)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Huyện Tam Bình và thị xã Bình Minh, Vĩnh Long",
+      "province_old": "Vĩnh Long"
+    }
+  },
+  {
+    "id": "nhan-an-binh-tam-binh",
+    "type": "product",
+    "name": "Nhãn An Bình Tam Bình",
+    "placeId": "p-phuoc-hau",
+    "summary": "Nhãn trồng trên cù lao An Bình thuộc huyện Tam Bình nổi tiếng thơm ngọt với nhiều giống: nhãn long, nhãn Ido, nhãn tiêu da bò. Mùa thu hoạch từ tháng 6 đến tháng 8, du khách có thể vào vườn hái tận tay.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Vĩnh Long)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Cù lao An Bình, huyện Tam Bình, Vĩnh Long",
+      "province_old": "Vĩnh Long"
+    }
+  },
+  {
+    "id": "khu-luu-niem-thu-tuong-vo-van-kiet",
+    "type": "history",
+    "name": "Khu Lưu Niệm Thủ tướng Võ Văn Kiệt",
+    "placeId": "p-phuoc-hau",
+    "summary": "Di tích lịch sử – văn hóa quốc gia được công nhận năm 2022, tọa lạc tại quê hương của cố Thủ tướng tại huyện Vũng Liêm. Khuôn viên rộng với nhiều kỷ vật, tư liệu về cuộc đời và sự nghiệp của vị thủ tướng có nhiều đóng góp cho công cuộc Đổi Mới.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Vĩnh Long)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Huyện Vũng Liêm, Vĩnh Long",
+      "province_old": "Vĩnh Long"
+    }
+  },
+  {
+    "id": "chua-shanghamangala-khmer-vung-liem",
+    "type": "attraction",
+    "name": "Chùa Shanghamangala Khmer Vũng Liêm",
+    "placeId": "p-phuoc-hau",
+    "summary": "Ngôi chùa Khmer cổ nhất tỉnh Vĩnh Long, xây dựng từ năm 632, với kiến trúc Khmer độc đáo đầy màu sắc. Là nơi tổ chức các lễ hội lớn của dân tộc Khmer: Tết Chôl Chnăm Thmây, lễ Sen Đôn Ta, lễ Ok-Om-Bôk. Không gian cổ kính và linh thiêng.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Vĩnh Long)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Huyện Vũng Liêm, Vĩnh Long",
+      "province_old": "Vĩnh Long"
+    }
+  },
+  {
+    "id": "cu-lao-dai-vung-liem",
+    "type": "nature",
+    "name": "Cù Lao Dài Vũng Liêm",
+    "placeId": "p-phuoc-hau",
+    "summary": "Dải đất phù sa dài khoảng 20km trên sông Cổ Chiên thuộc hai xã Thanh Bình và Quới Thiện, huyện Vũng Liêm. Nổi bật với làng nghề dệt chiếu từ cây lác, vườn trái cây (xoài cát núm, sầu riêng, bưởi da xanh), khu mộ danh thần Thoại Ngọc Hầu và sinh hoạt đờn ca tài tử.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Vĩnh Long)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Thanh Bình và Quới Thiện, huyện Vũng Liêm, Vĩnh Long",
+      "province_old": "Vĩnh Long"
+    }
+  },
+  {
+    "id": "lang-det-chieu-cu-lao-dai",
+    "type": "craft_village",
+    "name": "Làng Dệt Chiếu Cù Lao Dài",
+    "placeId": "p-phuoc-hau",
+    "summary": "Làng nghề truyền thống dệt chiếu từ cây lác tại ấp Bình Thủy trên Cù Lao Dài. Du khách tham gia cùng người dân qua các công đoạn: cắt lác, chẻ và phơi lác, dệt chiếu. Là trải nghiệm thủ công truyền thống đặc sắc ít nơi còn gìn giữ.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Vĩnh Long)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Ấp Bình Thủy, xã Quới Thiện, huyện Vũng Liêm, Vĩnh Long",
+      "province_old": "Vĩnh Long"
+    }
+  },
+  {
+    "id": "banh-xeo-hen-cu-lao-dai",
+    "type": "dish",
+    "name": "Bánh Xèo Hến Cù Lao Dài",
+    "placeId": "p-phuoc-hau",
+    "summary": "Đặc sản ẩm thực độc đáo của Cù Lao Dài với hến sông Cổ Chiên mập mạp, béo ngậy làm nhân bánh xèo. Ăn kèm với rau tươi đa dạng và nước chấm chua ngọt, tạo nên hương vị đặc trưng không đâu có.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Vĩnh Long)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Cù Lao Dài, huyện Vũng Liêm, Vĩnh Long",
+      "province_old": "Vĩnh Long"
+    }
+  },
+  {
+    "id": "khu-sinh-thai-nha-xua-long-ho",
+    "type": "experience",
+    "name": "Khu Sinh Thái Nhà Xưa Long Hồ",
+    "placeId": "p-long-chau",
+    "summary": "Khu du lịch sinh thái kiến trúc nhà ba gian truyền thống miền Tây Nam Bộ, tọa lạc bên kênh Ông Mê, xã Phước Hậu, huyện Long Hồ. Bao quanh bởi vườn cây ăn trái, hoa và cây xanh quanh năm; nội thất gỗ chạm khắc tinh xảo mang hơi thở xưa.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Vĩnh Long)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Ấp Phước Ngươn A, xã Phước Hậu, huyện Long Hồ, Vĩnh Long",
+      "province_old": "Vĩnh Long"
+    }
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-hoang-hao",
+    "type": "experience",
+    "name": "Khu Du Lịch Sinh Thái Hoàng Hảo",
+    "placeId": "p-long-chau",
+    "summary": "Khu sinh thái rộng hơn 70ha trên quốc lộ 57, cách phà Đình Khao 2km, với cảnh quan ruộng lúa, ao sen, nhiều tiểu cảnh độc đáo. Khách trải nghiệm các hoạt động dân dã: tát mương bắt cá, đuổi vịt, câu cá, chèo thuyền và các trò chơi vượt cầu khỉ, đạp xe.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Vĩnh Long)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Quốc lộ 57, huyện Long Hồ, Vĩnh Long",
+      "province_old": "Vĩnh Long"
+    }
+  },
+  {
+    "id": "khu-du-lich-truong-huy-long-ho",
+    "type": "experience",
+    "name": "Khu Du Lịch Trường Huy Long Hồ",
+    "placeId": "p-long-chau",
+    "summary": "Khu sinh thái diện tích 35ha tại xã Thanh Đức, huyện Long Hồ, cách cầu Mỹ Thuận hơn 5km. Không gian xanh tự nhiên với các hoạt động dân gian (tát mương bắt cá, cầu khỉ, đạp xe) và thể thao nước (chèo thuyền kayak, thuyền pedal). Phù hợp cho gia đình và nhóm bạn.",
+    "source": {
+      "title": "mytour.vn / mia.vn (Vĩnh Long)",
+      "url": "https://mytour.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Thanh Đức, huyện Long Hồ, Vĩnh Long",
+      "province_old": "Vĩnh Long"
+    }
+  }
+]

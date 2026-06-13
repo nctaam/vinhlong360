@@ -1,0 +1,422 @@
+[
+  {
+    "id": "test",
+    "type": "accommodation",
+    "name": "TEST",
+    "placeId": "p-long-chau",
+    "summary": "Đây là một chỗ lưu trú được liệt kê tại Ấp Mỹ Thới (5), thuộc tỉnh Vĩnh Long. Thông tin trên trang cho thấy đây là một căn hộ/nơi ở cho khách du lịch ở Vĩnh Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.bluepillow.co.uk",
+      "url": "https://www.bluepillow.co.uk/vietnam/vinh-long"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "nha-co-cai-cuong",
+    "type": "attraction",
+    "name": "Nhà cổ Cai Cường",
+    "placeId": null,
+    "summary": "Di tích nhà cổ được giới thiệu là một điểm du lịch nổi tiếng ở cù lao An Bình, thuộc tỉnh Vĩnh Long. Nơi này thường được nhắc đến trong hành trình khám phá văn hóa địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "nucuoimekong.com",
+      "url": "https://nucuoimekong.com/cu-lao-an-binh"
+    },
+    "confidence": 0.85,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "nha-san-ong-muoi-day",
+    "type": "attraction",
+    "name": "Nhà sàn ông Mười Đầy",
+    "placeId": null,
+    "summary": "Một điểm tham quan gắn với trải nghiệm miệt vườn ở cù lao An Bình, thuộc tỉnh Vĩnh Long. Thực thể này nằm trong danh sách các điểm du lịch nổi tiếng của khu vực.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "nucuoimekong.com",
+      "url": "https://nucuoimekong.com/cu-lao-an-binh"
+    },
+    "confidence": 0.82,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "vuon-trai-cay-6-tan",
+    "type": "attraction",
+    "name": "Vườn trái cây 6 Tấn",
+    "placeId": null,
+    "summary": "Vườn trái cây phục vụ tham quan, hái và thưởng thức trái cây miệt vườn ở cù lao An Bình, tỉnh Vĩnh Long. Đây là một điểm đến cụ thể được nêu trong bài.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "nucuoimekong.com",
+      "url": "https://nucuoimekong.com/cu-lao-an-binh"
+    },
+    "confidence": 0.83,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "vuon-trai-cay-be-sau",
+    "type": "attraction",
+    "name": "Vườn trái cây Bé Sáu",
+    "placeId": null,
+    "summary": "Vườn trái cây ở cù lao An Bình, thuộc tỉnh Vĩnh Long, được nhắc đến như một điểm tham quan miệt vườn. Nơi đây phù hợp cho trải nghiệm ăn trái cây tại vườn.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "nucuoimekong.com",
+      "url": "https://nucuoimekong.com/cu-lao-an-binh"
+    },
+    "confidence": 0.83,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "vuon-chom-chom-ong-chin-hoan",
+    "type": "attraction",
+    "name": "Vườn chôm chôm ông Chín Hoán",
+    "placeId": null,
+    "summary": "Vườn chôm chôm cụ thể tại cù lao An Bình, tỉnh Vĩnh Long. Đây là điểm trải nghiệm trái cây miệt vườn được liệt kê trong bài.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "nucuoimekong.com",
+      "url": "https://nucuoimekong.com/cu-lao-an-binh"
+    },
+    "confidence": 0.84,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "vuon-trai-cay-tam-loc",
+    "type": "attraction",
+    "name": "Vườn trái cây Tám Lộc",
+    "placeId": null,
+    "summary": "Một vườn trái cây ở cù lao An Bình, thuộc tỉnh Vĩnh Long. Điểm đến này được nhắc đến trong nhóm các vườn trái cây nổi tiếng của khu vực.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "nucuoimekong.com",
+      "url": "https://nucuoimekong.com/cu-lao-an-binh"
+    },
+    "confidence": 0.83,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "vuon-trai-cay-bi-bo",
+    "type": "attraction",
+    "name": "Vườn trái cây Bi Bo",
+    "placeId": null,
+    "summary": "Vườn trái cây tại cù lao An Bình, tỉnh Vĩnh Long, được giới thiệu trong nội dung bài viết. Đây là một điểm tham quan miệt vườn cụ thể.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "nucuoimekong.com",
+      "url": "https://nucuoimekong.com/cu-lao-an-binh"
+    },
+    "confidence": 0.82,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "cu-lao-an-binh",
+    "type": "nature",
+    "name": "Cù lao An Bình",
+    "placeId": "p-long-chau",
+    "summary": "Cù lao du lịch nổi tiếng nằm giữa sông Tiền và sông Cổ Chiên, thuộc tỉnh Vĩnh Long. Đây là điểm đến miệt vườn đặc trưng của Vĩnh Long với vườn cây, kênh rạch và đời sống sông nước.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "2park.co",
+      "url": "https://2park.co/cu-lao-an-binh-vinh-long/"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "nha-vuon-tu-hien",
+    "type": "experience",
+    "name": "Nhà vườn Tư Hiền",
+    "placeId": "p-long-chau",
+    "summary": "Nhà vườn trồng chôm chôm trên cù lao An Bình, nơi du khách có thể tham quan, hái trái cây và thưởng thức tại vườn. Đây là một trải nghiệm miệt vườn cụ thể ở Vĩnh Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/detailnews/?id=news_12094&t=kham-pha-cu-lao-an-binh-diem-du-lich-song-nuoc-dam-chat-tay-nam-bo-tai-vinh-long"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "cong-ty-tnhh-du-lich-sinh-thai-bao-duyen",
+    "type": "economy",
+    "name": "Công ty TNHH Du lịch Sinh thái Bảo Duyên",
+    "placeId": "p-long-chau",
+    "summary": "Doanh nghiệp du lịch được nêu ở chân trang của web, có địa chỉ tại tỉnh Vĩnh Long. Đây là đơn vị vận hành/giới thiệu dịch vụ du lịch liên quan đến tour và homestay Bến Tre.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baoduyentourist.com",
+      "url": "https://baoduyentourist.com/en/homestay-tours/Nhon-Thanh-Homestay.html"
+    },
+    "confidence": 0.74,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "con-phung",
+    "type": "nature",
+    "name": "Cồn Phụng",
+    "placeId": "p-ben-tre",
+    "summary": "Cồn Phụng là điểm du lịch sinh thái nằm ở tỉnh Bến Tre, thuộc khu vực sông Tiền. Đây là một trong các điểm đến tiêu biểu của miền Tây được nhắc trong nội dung.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.vietfuntravel.com.vn",
+      "url": "https://www.vietfuntravel.com.vn/blog/dia-diem-du-lich-tra-vinh.html"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "cu-lao-tan-quy",
+    "type": "nature",
+    "name": "Cù lao Tân Quy",
+    "placeId": "p-tra-vinh",
+    "summary": "Cù lao thuộc Trà Vinh, được giới thiệu như một điểm du lịch ở địa phương. Nơi đây phù hợp cho tham quan sinh thái và trải nghiệm miệt vườn.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "blog.vexere.com",
+      "url": "https://blog.vexere.com/dia-diem-du-lich-tra-vinh/"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-huynh-kha",
+    "type": "nature",
+    "name": "Khu du lịch sinh thái Huỳnh Kha",
+    "placeId": null,
+    "summary": "Khu du lịch sinh thái ở Trà Vinh, được nhắc đến như một địa điểm vui chơi của tỉnh. Đây là điểm đến gắn với trải nghiệm thư giãn và cảnh quan tự nhiên.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "blog.vexere.com",
+      "url": "https://blog.vexere.com/dia-diem-du-lich-tra-vinh/"
+    },
+    "confidence": 0.86,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "chua-co",
+    "type": "attraction",
+    "name": "Chùa Cò",
+    "placeId": null,
+    "summary": "Một ngôi chùa ở Trà Vinh được giới thiệu như địa điểm du lịch tâm linh. Đây là điểm đến gắn với kiến trúc tôn giáo và văn hóa địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "blog.vexere.com",
+      "url": "https://blog.vexere.com/dia-diem-du-lich-tra-vinh/"
+    },
+    "confidence": 0.85,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "cho-tra-vinh",
+    "type": "experience",
+    "name": "Chợ Trà Vinh",
+    "placeId": "p-tra-vinh",
+    "summary": "Khu chợ ẩm thực và mua sắm ở Trà Vinh, được nhắc đến như điểm tham quan, trải nghiệm địa phương. Đây là nơi khám phá ẩm thực và nhịp sống của thành phố Trà Vinh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "blog.vexere.com",
+      "url": "https://blog.vexere.com/dia-diem-du-lich-tra-vinh/"
+    },
+    "confidence": 0.82,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "chua-hang",
+    "type": "attraction",
+    "name": "Chùa Hang",
+    "placeId": null,
+    "summary": "Điểm du lịch tâm linh ở Trà Vinh, thuộc nhóm các chùa Khmer nổi bật trong tỉnh. Nơi đây thu hút khách tham quan nhờ kiến trúc và giá trị tôn giáo.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "blog.vexere.com",
+      "url": "https://blog.vexere.com/dia-diem-du-lich-tra-vinh/"
+    },
+    "confidence": 0.83,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "thanh-duong-giao-xu-mac-bac",
+    "type": "attraction",
+    "name": "Thánh đường giáo xứ Mặc Bắc",
+    "placeId": null,
+    "summary": "Công trình tôn giáo ở Trà Vinh, được nêu như một điểm du lịch tôn giáo. Đây là địa điểm cụ thể nằm trong tỉnh Trà Vinh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "blog.vexere.com",
+      "url": "https://blog.vexere.com/dia-diem-du-lich-tra-vinh/"
+    },
+    "confidence": 0.88,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "cu-lao-long-tri",
+    "type": "nature",
+    "name": "Cù lao Long Trị",
+    "placeId": null,
+    "summary": "Một cù lao thuộc Trà Vinh, được liệt kê như điểm tham quan trong bài viết. Đây là điểm đến mang tính sinh thái và cảnh quan sông nước của địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "blog.vexere.com",
+      "url": "https://blog.vexere.com/dia-diem-du-lich-tra-vinh/"
+    },
+    "confidence": 0.8,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "thien-vien-truc-lam-tra-vinh",
+    "type": "attraction",
+    "name": "Thiền viện Trúc Lâm Trà Vinh",
+    "placeId": "p-tra-vinh",
+    "summary": "Thiền viện ở Trà Vinh, là điểm du lịch tâm linh và tham quan nổi bật của tỉnh. Công trình này gắn với Phật giáo và không gian kiến trúc tôn giáo.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "blog.vexere.com",
+      "url": "https://blog.vexere.com/dia-diem-du-lich-tra-vinh/"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "den-tho-bac-ho",
+    "type": "history",
+    "name": "Đền thờ Bác Hồ",
+    "placeId": null,
+    "summary": "Di tích lịch sử - văn hóa ở Trà Vinh, được giới thiệu như một điểm tham quan tiêu biểu. Đây là địa điểm tưởng niệm và mang giá trị lịch sử tại tỉnh Trà Vinh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "blog.vexere.com",
+      "url": "https://blog.vexere.com/dia-diem-du-lich-tra-vinh/"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-rung-duoc",
+    "type": "nature",
+    "name": "Khu du lịch sinh thái Rừng Đước",
+    "placeId": null,
+    "summary": "Khu sinh thái ở Trà Vinh, gắn với hệ sinh thái rừng ngập mặn và cảnh quan tự nhiên. Đây là điểm du lịch sinh thái đặc trưng của tỉnh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "blog.vexere.com",
+      "url": "https://blog.vexere.com/dia-diem-du-lich-tra-vinh/"
+    },
+    "confidence": 0.89,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "chua-ba-thien-hau-tra-vinh",
+    "type": "attraction",
+    "name": "Chùa Bà Thiên Hậu Trà Vinh",
+    "placeId": "p-tra-vinh",
+    "summary": "Ngôi chùa tôn giáo tại Trà Vinh, được nhắc đến như một điểm tham quan tâm linh. Đây là địa điểm cụ thể thuộc tỉnh Trà Vinh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "blog.vexere.com",
+      "url": "https://blog.vexere.com/dia-diem-du-lich-tra-vinh/"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "canh-dong-dieu-tra-vinh",
+    "type": "nature",
+    "name": "Cánh đồng diều Trà Vinh",
+    "placeId": "p-tra-vinh",
+    "summary": "Điểm vui chơi ngoài trời ở Trà Vinh, nổi bật với hoạt động thả diều và không gian rộng thoáng. Đây là một điểm trải nghiệm đặc trưng của địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "blog.vexere.com",
+      "url": "https://blog.vexere.com/dia-diem-du-lich-tra-vinh/"
+    },
+    "confidence": 0.86,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "chua-ong-met",
+    "type": "attraction",
+    "name": "Chùa Ông Mẹt",
+    "placeId": null,
+    "summary": "Ngôi chùa tại Trà Vinh được nêu là một địa điểm du lịch nổi tiếng. Đây là điểm tham quan tâm linh thuộc tỉnh Trà Vinh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "blog.vexere.com",
+      "url": "https://blog.vexere.com/dia-diem-du-lich-tra-vinh/"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "con-chim",
+    "type": "nature",
+    "name": "Cồn Chim",
+    "placeId": null,
+    "summary": "Cồn du lịch sinh thái ở Trà Vinh, được nhắc đến như một điểm tham quan của tỉnh. Nơi đây phù hợp cho trải nghiệm sông nước và khám phá cảnh quan tự nhiên.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "blog.vexere.com",
+      "url": "https://blog.vexere.com/dia-diem-du-lich-tra-vinh/"
+    },
+    "confidence": 0.88,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "nha-co-cau-ke",
+    "type": "history",
+    "name": "Nhà cổ Cầu Kè",
+    "placeId": "p-tra-vinh",
+    "summary": "Ngôi nhà cổ ở huyện Cầu Kè, tỉnh Trà Vinh, được giới thiệu như một điểm tham quan lịch sử - văn hóa. Đây là địa điểm cụ thể gắn với di sản kiến trúc địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "blog.vexere.com",
+      "url": "https://blog.vexere.com/dia-diem-du-lich-tra-vinh/"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "cho-noi-tra-on",
+    "type": "attraction",
+    "name": "Chợ nổi Trà Ôn",
+    "placeId": "p-long-chau",
+    "summary": "Chợ nổi Trà Ôn là điểm du lịch sông nước nổi tiếng của tỉnh Vĩnh Long, nơi du khách có thể trải nghiệm mua bán trên ghe thuyền và tìm hiểu đời sống miền Tây.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "dulichthuydien.com",
+      "url": "https://dulichthuydien.com/dau-la-nhung-dia-diem-du-lich-vinh-long-noi-tieng-khong-the-bo-qua.html"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  }
+]

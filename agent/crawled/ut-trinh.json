@@ -1,0 +1,17 @@
+{
+  "id": "ut-trinh",
+  "type": "attraction",
+  "name": "Ut Trinh",
+  "placeId": null,
+  "summary": "Trang này hiện trả về lỗi 404 nên không có đủ thông tin du lịch về địa điểm/dịch vụ này để trích xuất. Chỉ xác nhận được đây là một trang không còn tồn tại hoặc URL đã nhập có thể bị nhầm.",
+  "season": null,
+  "attributes": {},
+  "source": {
+    "title": "vinhlongtourist.vn",
+    "url": "https://vinhlongtourist.vn/vi/ut-trinh"
+  },
+  "confidence": 0.85,
+  "updatedAt": "2026-06-10",
+  "_crawled_from": "/vi/ut-trinh",
+  "_address_raw": ""
+}

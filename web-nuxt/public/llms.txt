@@ -1,0 +1,76 @@
+# vinhlong360.vn
+
+> Cổng du lịch & sản phẩm địa phương Vĩnh Long, Bến Tre, Trà Vinh — miền Tây Nam Bộ, Việt Nam.
+
+## Giới thiệu
+
+vinhlong360.vn là nền tảng cộng đồng cung cấp thông tin du lịch, đặc sản theo mùa, sản phẩm OCOP, làng nghề truyền thống và lịch trình gợi ý cho vùng Vĩnh Long, Bến Tre và Trà Vinh. Nền tảng phục vụ du khách nội địa muốn khám phá miệt vườn sông nước theo cách của người bản địa.
+
+## Ba khu vực
+
+- **Vĩnh Long**: Miệt vườn cam sành, khoai lang, bưởi Năm Roi, làng gốm Mang Thít, cù lao An Bình.
+- **Bến Tre**: Xứ dừa — kẹo dừa, mật hoa dừa, bưởi da xanh, những rẫy dừa bạt ngàn.
+- **Trà Vinh**: Văn hóa Khmer — ao Bà Om, chùa Khmer cổ, dừa sáp Cầu Kè, bún nước lèo.
+
+## Loại nội dung
+
+- **Trải nghiệm**: Chèo xuồng, hái trái cây, làm bánh dân gian, tham quan vườn, homestay miệt vườn.
+- **Đặc sản & OCOP**: Trái cây theo mùa (chôm chôm, sầu riêng, măng cụt, nhãn), sản phẩm đạt chuẩn OCOP 3-5 sao.
+- **Ẩm thực**: Bún nước lèo, bánh xèo, cháo cá lóc, hủ tiếu, bánh tráng.
+- **Làng nghề**: Gốm Mang Thít, chiếu lác, bánh tráng, kẹo dừa.
+- **Tham quan**: Chùa cổ, di tích lịch sử, cù lao, chợ nổi.
+- **Lưu trú**: Homestay, nhà vườn, khách sạn.
+
+## Tính năng chính
+
+- **Theo mùa**: Mỗi sản phẩm và trải nghiệm có thông tin tháng mùa vụ cụ thể (tháng nào có, tháng nào rộ nhất).
+- **Bản đồ tương tác**: Xem tất cả điểm đến trên bản đồ, lọc theo loại hình.
+- **Lịch trình gợi ý**: Lịch trình 1-3 ngày do AI và cộng đồng đề xuất.
+- **Cộng đồng**: Bài viết, đánh giá, chia sẻ kinh nghiệm từ người dùng thực.
+- **OCOP**: Lọc sản phẩm theo hạng sao OCOP (3-5 sao), khu vực, mùa vụ.
+
+## Đặc sản theo mùa (tổng quan)
+
+- **Tháng 1-3**: Bưởi Năm Roi, cam sành, quýt, mật ong.
+- **Tháng 4-6**: Chôm chôm, sầu riêng, măng cụt, xoài cát Hòa Lộc.
+- **Tháng 5-7**: Nhãn, vú sữa, mận.
+- **Tháng 8-11**: Mùa nước nổi — bông điên điển, cá linh, bông súng.
+- **Quanh năm**: Dừa sáp Cầu Kè, kẹo dừa Bến Tre, khoai lang Bình Tân.
+
+## Thông tin hữu ích
+
+- **Di chuyển**: Từ TP.HCM đi Vĩnh Long ~2.5 giờ xe, Bến Tre ~2 giờ, Trà Vinh ~3 giờ.
+- **Thời tiết**: Mùa khô (tháng 12-4) thích hợp tham quan. Mùa mưa (tháng 5-11) có trải nghiệm mùa nước nổi độc đáo.
+- **Ngôn ngữ**: Nội dung chủ yếu tiếng Việt, phục vụ du khách nội địa.
+
+## Tuyến đường gợi ý
+
+- **Vòng trái cây Vĩnh Long**: Cù lao An Bình → vườn chôm chôm → vườn nhãn → homestay → vườn bưởi Năm Roi (~40 km, 1 ngày).
+- **Vòng dừa Bến Tre**: Cồn Phụng → cơ sở kẹo dừa → xưởng mật hoa dừa → vườn bưởi da xanh (~35 km, 1 ngày).
+- **Vòng chùa Khmer Trà Vinh**: Ao Bà Om → Chùa Âng → Chùa Hang → làng Khmer → bún nước lèo → dừa sáp Cầu Kè (~60 km, 1–2 ngày).
+- **Vòng làng nghề Mang Thít**: Làng gốm → xưởng truyền thống → lò gạch cổ → chợ gốm (~20 km, nửa ngày).
+- **Vòng ẩm thực miền Tây**: Cháo cá lóc → bánh xèo → chợ Vĩnh Long → kẹo dừa Bến Tre → bún nước lèo Trà Vinh (~50 km, 1–2 ngày).
+- **Vòng mùa nước nổi** (T8–T11): Cánh đồng nước nổi → bắt cá linh → lẩu cá linh bông điên điển → đồng sen (~30 km, 1 ngày).
+
+## Khám phá theo sở thích
+
+- **Ẩm thực**: Bún nước lèo, bánh xèo, cháo cá lóc, hủ tiếu, bánh tráng, trái cây theo mùa.
+- **Thiên nhiên**: Miệt vườn, cù lao, sông nước, vườn trái cây, mùa nước nổi.
+- **Văn hóa**: Chùa Khmer, di tích lịch sử, lễ hội, đời sống bản địa.
+- **Làng nghề**: Gốm Mang Thít, kẹo dừa, chiếu lác, bánh tráng.
+- **Mua sắm & OCOP**: Sản phẩm OCOP 3–5 sao, trái cây tươi, đặc sản làm quà.
+
+## Liên kết
+
+- Trang chủ: https://vinhlong360.vn
+- Du lịch: https://vinhlong360.vn/du-lich
+- Sản phẩm: https://vinhlong360.vn/san-pham
+- OCOP: https://vinhlong360.vn/ocop
+- Bản đồ: https://vinhlong360.vn/ban-do
+- Lịch trình: https://vinhlong360.vn/lich-trinh
+- Tuyến đường: https://vinhlong360.vn/tuyen-duong
+- Ẩm thực: https://vinhlong360.vn/kham-pha/am-thuc
+- Thiên nhiên: https://vinhlong360.vn/kham-pha/thien-nhien
+- Văn hóa: https://vinhlong360.vn/kham-pha/van-hoa
+- Làng nghề: https://vinhlong360.vn/kham-pha/lang-nghe
+- Cộng đồng: https://vinhlong360.vn/cong-dong

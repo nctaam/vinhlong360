@@ -1,0 +1,149 @@
+[
+  {
+    "name": "Cù Lao Mây Trà Ôn",
+    "type": "nature",
+    "desc": "Cù lao rộng khoảng 4.000ha nằm trên sông Hậu thuộc huyện Trà Ôn, nổi tiếng với vườn cam sành, bưởi, chôm chôm trải dài. Du khách đạp xe khám phá đường làng, hái trái cây, chèo xuồng trên kênh rạch, tát mương bắt cá. Mùa thu hoạch trái cây từ tháng 5 đến tháng 10.",
+    "addr": "Xã Lục Sĩ Thành và Phú Thành, huyện Trà Ôn, Vĩnh Long",
+    "province_old": "Vĩnh Long"
+  },
+  {
+    "name": "Chợ Nổi Trà Ôn",
+    "type": "attraction",
+    "desc": "Một trong những chợ nổi đặc sắc còn hoạt động ở miền Tây, họp từ 4 giờ sáng đến 7 giờ tối. Thuyền bè tấp nập mua bán trái cây, lương thực, thủy hải sản. Du khách ngồi thuyền dạo quanh, ăn sáng trên sông để cảm nhận không khí sông nước đặc trưng đồng bằng.",
+    "addr": "Thị trấn Trà Ôn, huyện Trà Ôn, Vĩnh Long",
+    "province_old": "Vĩnh Long"
+  },
+  {
+    "name": "Làng Bánh Tráng Trà Ôn",
+    "type": "craft_village",
+    "desc": "Làng nghề truyền thống hơn 100 năm tuổi sản xuất nhiều loại bánh tráng: bánh tráng nem, bánh tráng ngọt, bánh tráng dừa, bánh tráng lá dứa, bánh tráng củ dền. Khách tham quan quy trình tráng bánh thủ công và mua về làm quà.",
+    "addr": "Huyện Trà Ôn, Vĩnh Long",
+    "province_old": "Vĩnh Long"
+  },
+  {
+    "name": "Chùa Phước Hậu Ngãi Tứ",
+    "type": "attraction",
+    "desc": "Ngôi chùa Phật giáo Nam tông nổi tiếng với kiến trúc độc đáo, vườn kinh Phật điêu khắc trên 213 tấm đá xanh với 423 bài kinh, tháp 7 tầng ở giữa. Là điểm đến tâm linh và kiến trúc đặc sắc của huyện Tam Bình.",
+    "addr": "Ấp Đông Hậu, xã Ngãi Tứ, huyện Tam Bình, Vĩnh Long",
+    "province_old": "Vĩnh Long"
+  },
+  {
+    "name": "Chùa Kỳ Sơn Khmer Loan Mỹ",
+    "type": "history",
+    "desc": "Di tích kiến trúc Khmer Nam Bộ xây dựng cách đây khoảng 200 năm, công nhận di tích cấp tỉnh năm 2007. Là minh chứng cho sự hiện diện và văn hóa Khmer tại vùng đất Tam Bình, Vĩnh Long.",
+    "addr": "Ấp Sóc Rừng, xã Loan Mỹ, huyện Tam Bình, Vĩnh Long",
+    "province_old": "Vĩnh Long"
+  },
+  {
+    "name": "Khu Lưu Niệm Giáo sư Viện sĩ Trần Đại Nghĩa",
+    "type": "history",
+    "desc": "Nơi lưu giữ kỷ vật và tư liệu về cuộc đời nhà khoa học — cha đẻ ngành vũ khí Việt Nam — tại quê hương xã Tường Lộc. Là điểm du lịch về nguồn ý nghĩa cho học sinh, sinh viên và du khách yêu lịch sử.",
+    "addr": "Ấp Mỹ Phú 1, xã Tường Lộc, huyện Tam Bình, Vĩnh Long",
+    "province_old": "Vĩnh Long"
+  },
+  {
+    "name": "Làng Bánh Tráng Giấy Tường Lộc",
+    "type": "craft_village",
+    "desc": "Làng nghề truyền thống sản xuất bánh tráng giấy mỏng, giòn tan, thơm ngon đặc trưng của xã Tường Lộc, huyện Tam Bình. Du khách tham quan quy trình tráng thủ công trên bếp lửa và mua về làm quà đặc sản.",
+    "addr": "Xã Tường Lộc, huyện Tam Bình, Vĩnh Long",
+    "province_old": "Vĩnh Long"
+  },
+  {
+    "name": "Làng Đan Lục Bình Ngãi Tứ",
+    "type": "craft_village",
+    "desc": "Làng nghề thủ công mỹ nghệ đan từ cây lục bình (bèo tây) tạo ra giỏ, túi, đệm với hoa văn tinh xảo. Tập trung tại hai xã Ngãi Tứ và Bình Ninh, là sinh kế truyền thống của phụ nữ địa phương và là sản phẩm OCOP xuất khẩu.",
+    "addr": "Xã Ngãi Tứ và Bình Ninh, huyện Tam Bình, Vĩnh Long",
+    "province_old": "Vĩnh Long"
+  },
+  {
+    "name": "Cam Sành Tam Bình – Bình Minh",
+    "type": "product",
+    "desc": "Cam sành trồng tại vùng đất phù sa Tam Bình và Bình Minh nổi tiếng hơn nơi khác nhờ vỏ mỏng hơn, múi căng mọng, ngọt thanh đặc trưng. Là sản phẩm OCOP của tỉnh Vĩnh Long. Mùa thu hoạch chính từ tháng 11 đến tháng 3 năm sau.",
+    "addr": "Huyện Tam Bình và thị xã Bình Minh, Vĩnh Long",
+    "province_old": "Vĩnh Long"
+  },
+  {
+    "name": "Nhãn An Bình Tam Bình",
+    "type": "product",
+    "desc": "Nhãn trồng trên cù lao An Bình thuộc huyện Tam Bình nổi tiếng thơm ngọt với nhiều giống: nhãn long, nhãn Ido, nhãn tiêu da bò. Mùa thu hoạch từ tháng 6 đến tháng 8, du khách có thể vào vườn hái tận tay.",
+    "addr": "Cù lao An Bình, huyện Tam Bình, Vĩnh Long",
+    "province_old": "Vĩnh Long"
+  },
+  {
+    "name": "Khu Lưu Niệm Thủ tướng Võ Văn Kiệt",
+    "type": "history",
+    "desc": "Di tích lịch sử – văn hóa quốc gia được công nhận năm 2022, tọa lạc tại quê hương của cố Thủ tướng tại huyện Vũng Liêm. Khuôn viên rộng với nhiều kỷ vật, tư liệu về cuộc đời và sự nghiệp của vị thủ tướng có nhiều đóng góp cho công cuộc Đổi Mới.",
+    "addr": "Huyện Vũng Liêm, Vĩnh Long",
+    "province_old": "Vĩnh Long"
+  },
+  {
+    "name": "Chùa Shanghamangala Khmer Vũng Liêm",
+    "type": "attraction",
+    "desc": "Ngôi chùa Khmer cổ nhất tỉnh Vĩnh Long, xây dựng từ năm 632, với kiến trúc Khmer độc đáo đầy màu sắc. Là nơi tổ chức các lễ hội lớn của dân tộc Khmer: Tết Chôl Chnăm Thmây, lễ Sen Đôn Ta, lễ Ok-Om-Bôk. Không gian cổ kính và linh thiêng.",
+    "addr": "Huyện Vũng Liêm, Vĩnh Long",
+    "province_old": "Vĩnh Long"
+  },
+  {
+    "name": "Cù Lao Dài Vũng Liêm",
+    "type": "nature",
+    "desc": "Dải đất phù sa dài khoảng 20km trên sông Cổ Chiên thuộc hai xã Thanh Bình và Quới Thiện, huyện Vũng Liêm. Nổi bật với làng nghề dệt chiếu từ cây lác, vườn trái cây (xoài cát núm, sầu riêng, bưởi da xanh), khu mộ danh thần Thoại Ngọc Hầu và sinh hoạt đờn ca tài tử.",
+    "addr": "Xã Thanh Bình và Quới Thiện, huyện Vũng Liêm, Vĩnh Long",
+    "province_old": "Vĩnh Long"
+  },
+  {
+    "name": "Làng Dệt Chiếu Cù Lao Dài",
+    "type": "craft_village",
+    "desc": "Làng nghề truyền thống dệt chiếu từ cây lác tại ấp Bình Thủy trên Cù Lao Dài. Du khách tham gia cùng người dân qua các công đoạn: cắt lác, chẻ và phơi lác, dệt chiếu. Là trải nghiệm thủ công truyền thống đặc sắc ít nơi còn gìn giữ.",
+    "addr": "Ấp Bình Thủy, xã Quới Thiện, huyện Vũng Liêm, Vĩnh Long",
+    "province_old": "Vĩnh Long"
+  },
+  {
+    "name": "Bánh Xèo Hến Cù Lao Dài",
+    "type": "dish",
+    "desc": "Đặc sản ẩm thực độc đáo của Cù Lao Dài với hến sông Cổ Chiên mập mạp, béo ngậy làm nhân bánh xèo. Ăn kèm với rau tươi đa dạng và nước chấm chua ngọt, tạo nên hương vị đặc trưng không đâu có.",
+    "addr": "Cù Lao Dài, huyện Vũng Liêm, Vĩnh Long",
+    "province_old": "Vĩnh Long"
+  },
+  {
+    "name": "Làng Tàu Hủ Ky Mỹ Hòa Bình Minh",
+    "type": "craft_village",
+    "desc": "Làng nghề truyền thống hơn 100 năm do người Hoa gốc Quảng Đông khai lập từ năm 1912, chuyên sản xuất tàu hủ ky (váng đậu nành) nổi tiếng cả nước. Di sản văn hóa phi vật thể quốc gia (2022). Khách tham quan quy trình tráng và phơi tàu hủ ky bên bờ sông Cái Vồn.",
+    "addr": "Xã Mỹ Hòa, thị xã Bình Minh, Vĩnh Long",
+    "province_old": "Vĩnh Long"
+  },
+  {
+    "name": "Bưởi Năm Roi Bình Minh",
+    "type": "product",
+    "desc": "Đặc sản trái cây nổi tiếng nhất thị xã Bình Minh, vỏ mỏng, múi màu vàng nhạt căng mọng, vị ngọt thanh pha chua nhẹ, gần như không hạt. Sản phẩm OCOP của tỉnh, được xuất khẩu nhiều thị trường. Mùa ngon từ tháng 4 đến tháng 10 âm lịch.",
+    "addr": "Thị xã Bình Minh, Vĩnh Long",
+    "province_old": "Vĩnh Long"
+  },
+  {
+    "name": "Thanh Trà Bình Minh",
+    "type": "product",
+    "desc": "Giống trái cây đặc sản của thị xã Bình Minh với vị chua ngọt đặc trưng, vỏ màu xanh khi chín chuyển vàng cam. Nổi tiếng đến mức xác lập kỷ lục Việt Nam với 135 món ăn chế biến từ thanh trà. Khách có thể vào vườn tự tay hái với giá vào cửa khoảng 50.000đ/người.",
+    "addr": "Thị xã Bình Minh, Vĩnh Long",
+    "province_old": "Vĩnh Long"
+  },
+  {
+    "name": "Khu Sinh Thái Nhà Xưa Long Hồ",
+    "type": "experience",
+    "desc": "Khu du lịch sinh thái kiến trúc nhà ba gian truyền thống miền Tây Nam Bộ, tọa lạc bên kênh Ông Mê, xã Phước Hậu, huyện Long Hồ. Bao quanh bởi vườn cây ăn trái, hoa và cây xanh quanh năm; nội thất gỗ chạm khắc tinh xảo mang hơi thở xưa.",
+    "addr": "Ấp Phước Ngươn A, xã Phước Hậu, huyện Long Hồ, Vĩnh Long",
+    "province_old": "Vĩnh Long"
+  },
+  {
+    "name": "Khu Du Lịch Sinh Thái Hoàng Hảo",
+    "type": "experience",
+    "desc": "Khu sinh thái rộng hơn 70ha trên quốc lộ 57, cách phà Đình Khao 2km, với cảnh quan ruộng lúa, ao sen, nhiều tiểu cảnh độc đáo. Khách trải nghiệm các hoạt động dân dã: tát mương bắt cá, đuổi vịt, câu cá, chèo thuyền và các trò chơi vượt cầu khỉ, đạp xe.",
+    "addr": "Quốc lộ 57, huyện Long Hồ, Vĩnh Long",
+    "province_old": "Vĩnh Long"
+  },
+  {
+    "name": "Khu Du Lịch Trường Huy Long Hồ",
+    "type": "experience",
+    "desc": "Khu sinh thái diện tích 35ha tại xã Thanh Đức, huyện Long Hồ, cách cầu Mỹ Thuận hơn 5km. Không gian xanh tự nhiên với các hoạt động dân gian (tát mương bắt cá, cầu khỉ, đạp xe) và thể thao nước (chèo thuyền kayak, thuyền pedal). Phù hợp cho gia đình và nhóm bạn.",
+    "addr": "Xã Thanh Đức, huyện Long Hồ, Vĩnh Long",
+    "province_old": "Vĩnh Long"
+  }
+]

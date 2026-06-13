@@ -1,0 +1,17 @@
+{
+  "id": "nha-gom-tu-buoi",
+  "type": "craft_village",
+  "name": "Nhà gốm Tư Bưởi",
+  "placeId": null,
+  "summary": "Trang nguồn hiện trả về lỗi 404 nên không trích xuất được thông tin du lịch chi tiết về địa điểm này từ nội dung cung cấp.",
+  "season": null,
+  "attributes": {},
+  "source": {
+    "title": "vinhlongtourist.vn",
+    "url": "https://vinhlongtourist.vn/vi/nha-gom-tu-buoi"
+  },
+  "confidence": 0.85,
+  "updatedAt": "2026-06-10",
+  "_crawled_from": "/vi/nha-gom-tu-buoi",
+  "_address_raw": ""
+}

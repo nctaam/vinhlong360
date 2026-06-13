@@ -1,0 +1,2622 @@
+[
+  {
+    "id": "cay-da-cua-huu",
+    "type": "history",
+    "name": "Cây đa cửa Hữu",
+    "placeId": null,
+    "summary": "Cây da cổ thụ còn sót lại duy nhất từ thành Vĩnh Long xưa, công nhận di tích năm 2000.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "chua-bo-de",
+    "type": "history",
+    "name": "Chùa Bồ Đề",
+    "placeId": "p-binh-minh",
+    "summary": "Chùa Phật giáo từ giữa thế kỷ XIX, cơ sở cách mạng trong hai cuộc kháng chiến.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "coords": [
+      10.0381847,
+      105.8148035
+    ]
+  },
+  {
+    "id": "di-chi-khao-co-hoc-thanh-moi",
+    "type": "history",
+    "name": "Di chỉ khảo cổ học Thành Mới",
+    "placeId": "xa-trung-hiep",
+    "summary": "Di chỉ khảo cổ học có niên đại từ thế kỷ I đến VI sau Công nguyên.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "nha-co-huynh-ky",
+    "type": "history",
+    "name": "Nhà cổ Huỳnh Kỳ",
+    "placeId": "xa-tra-on",
+    "summary": "Ngôi nhà cổ xây năm 1924 theo thiết kế kiến trúc sư Pháp, di tích kiến trúc nghệ thuật.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "chua-ky-son",
+    "type": "history",
+    "name": "Chùa Kỳ Son",
+    "placeId": "xa-tam-binh",
+    "summary": "Di tích kiến trúc nghệ thuật Khmer Nam Bộ, xây cách đây 200 năm, công nhận di tích cấp tỉnh 2007.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "chua-long-khanh",
+    "type": "history",
+    "name": "Chùa Long Khánh",
+    "placeId": null,
+    "summary": "Chùa từ giữa thế kỷ XIX, cơ sở cách mạng, di tích lịch sử cách mạng cấp tỉnh.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "chua-toa-sen",
+    "type": "history",
+    "name": "Chùa Toà Sen",
+    "placeId": "p-binh-minh",
+    "summary": "Chùa Khmer xây dựng từ năm 1800, cơ sở cách mạng quan trọng, di tích cấp tỉnh.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "khu-tuong-niem-co-chu-tich-hdbt-pham-hung",
+    "type": "history",
+    "name": "Khu tưởng niệm Cố Chủ tịch HĐBT Phạm Hùng",
+    "placeId": "xa-long-ho",
+    "summary": "Khu tưởng niệm khánh thành năm 2004, diện tích 3,2 ha.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "khu-di-tich-cach-mang-cai-ngang",
+    "type": "history",
+    "name": "Khu di tích Cách mạng Cái Ngang",
+    "placeId": "xa-tam-binh",
+    "summary": "Căn cứ kháng chiến của Tỉnh ủy Vĩnh Long, khánh thành năm 2003, diện tích 5 ha.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "dinh-binh-phung",
+    "type": "history",
+    "name": "Đình Bình Phụng",
+    "placeId": "xa-trung-hiep",
+    "summary": "Đình được tạo lập năm 1920, liên quan đến khởi nghĩa Nam Kỳ, di tích cấp tỉnh.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "dinh-binh-phuoc",
+    "type": "history",
+    "name": "Đình Bình Phước",
+    "placeId": "xa-binh-phuoc",
+    "summary": "Đình được tạo lập năm 1808, sắc phong năm 1853, di tích lịch sử cách mạng.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "dinh-hau-thanh",
+    "type": "history",
+    "name": "Đình Hậu Thạnh",
+    "placeId": "xa-tra-on",
+    "summary": "Đình xây dựng năm 1924, cơ sở cách mạng từ 1930-1945, di tích lịch sử.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "dinh-hoa-ninh",
+    "type": "history",
+    "name": "Đình Hoà Ninh",
+    "placeId": "xa-long-ho",
+    "summary": "Đình thần xây dựng năm 1849, di tích có giá trị lịch sử và văn hóa.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "dinh-ky-ha",
+    "type": "history",
+    "name": "Đình Kỳ Hà",
+    "placeId": "xa-long-ho",
+    "summary": "Đình xây dựng đầu thế kỷ XIX, sắc phong năm 1852, cơ sở cách mạng năm 1927.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "dinh-long-ho",
+    "type": "history",
+    "name": "Đình Long Hồ",
+    "placeId": null,
+    "summary": "Đình thần xây dựng nửa đầu thế kỷ XIX, sắc phong năm 1852, di tích cổ xưa.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "dinh-long-thanh-gov",
+    "type": "history",
+    "name": "Đình Long Thanh",
+    "placeId": "xa-long-ho",
+    "summary": "Đình thôn khoảng năm 1754, xây dựng từ tre lá, di tích lịch sử văn hóa.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "dinh-tan-hoa-dinh-cai-doi",
+    "type": "history",
+    "name": "Đình Tân Hoa (Đình Cái Đôi)",
+    "placeId": null,
+    "summary": "Đình nằm bên bờ sông Tiền, đối diện cầu Mỹ Thuận.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "dinh-lang-thien-my",
+    "type": "history",
+    "name": "Đình làng Thiện Mỹ",
+    "placeId": "xa-long-ho",
+    "summary": "Đình được sắc phong năm 1852, di tích lịch sử và văn hóa truyền thống.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "mieu-cong-than",
+    "type": "history",
+    "name": "Miếu Công thần",
+    "placeId": null,
+    "summary": "Miếu thờ 85 vị Trung Hưng Công thần, di tích lịch sử cổ xưa.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "mieu-quan-tien-hien-phan-cong-an",
+    "type": "history",
+    "name": "Miếu quan tiền hiền Phan Công An",
+    "placeId": "xa-tam-binh",
+    "summary": "Miếu thờ nhân vật lịch sử, nằm cạnh bờ sông Mỹ Thạnh.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "minh-huong-hoi-quan",
+    "type": "history",
+    "name": "Minh Hương hội quán",
+    "placeId": null,
+    "summary": "Hội quán từ thế kỷ XVII, lịch sử tỵ nạn chính trị người Trung Hoa.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "mo-nha-tho-nhieu-tam",
+    "type": "history",
+    "name": "Mộ nhà thơ Nhiêu Tâm",
+    "placeId": "p-thanh-duc",
+    "summary": "Mộ của nhà thơ Đỗ Như Tâm (1840-1911), di tích lịch sử văn hóa.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "nghia-trung-mieu",
+    "type": "history",
+    "name": "Nghĩa Trủng miếu",
+    "placeId": "p-phuoc-hau",
+    "summary": "Miếu Âm Nhơn, thờ các nghĩa sĩ vì nước quên thân.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "thanh-tinh-ngoc-son-quang",
+    "type": "history",
+    "name": "Thánh tịnh Ngọc Sơn Quang",
+    "placeId": "xa-tan-long-hoi",
+    "summary": "Thánh tịnh Cao Đài xây dựng năm 1936, di tích tôn giáo cấp tỉnh.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "le-cung-mieu",
+    "type": "event",
+    "name": "Lễ cúng miễu",
+    "placeId": null,
+    "summary": "Lễ cúng miễu chia thành ba loại: lễ cúng miễu Ông, miễu Cô Hồn, miễu Bà. Các ngày vía khác nhau tùy theo đối tượng thờ phụng.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/le-hoi-truyen-thong"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "le-hoi-ky-yen",
+    "type": "event",
+    "name": "Lễ hội Kỳ Yên",
+    "placeId": null,
+    "summary": "Lễ kỳ yên kéo dài hai ngày một đêm, tế thần Thành hoàng cầu quốc thái dân an.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/le-hoi-truyen-thong"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "le-chol-chhnam-thmay",
+    "type": "event",
+    "name": "Lễ Chôl Chhnam Thmây",
+    "placeId": null,
+    "summary": "Ngày tết của người Khmer diễn ra ba ngày (13-15 tháng 4 dương lịch). Rước đại lịch mới, cúng rước tiên Têvađa, tắm Phật.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/le-hoi-truyen-thong"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "le-hoi-nguyen-tieu",
+    "type": "event",
+    "name": "Lễ hội Nguyên Tiêu",
+    "placeId": null,
+    "summary": "Lễ hội Cúng Ông Bảo của cộng đồng người Hoa diễn ra Rằm và 16 tháng Giêng âm lịch.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/le-hoi-truyen-thong"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "le-hoi-dom-long-neak-ta",
+    "type": "event",
+    "name": "Lễ hội Đom Lơng Néak Tà",
+    "placeId": "xa-trung-thanh",
+    "summary": "Lễ hội truyền thống người Khmer diễn ra giao mùa nắng-mưa để cầu mưa, mùa màng tươi tốt.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/le-hoi-truyen-thong"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "le-hoi-cung-bien-my-long",
+    "type": "event",
+    "name": "Lễ hội cúng biển Mỹ Long",
+    "placeId": "xa-tra-on",
+    "summary": "Lễ hội Nghinh Ông hay Tế Cửa Nam Hải diễn ra 11-12 tháng Năm âm lịch. Tế tiên hiền, nghinh ông, tống quái.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/le-hoi-truyen-thong"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "vu-lan-thang-hoi",
+    "type": "event",
+    "name": "Vu Lan thắng hội",
+    "placeId": "xa-tra-on",
+    "summary": "Lễ hội Cúng Ông Bổn diễn ra 25-28 tháng Bảy âm lịch. 20 lễ thức liên hoàn: thỉnh chư phật, cầu siêu, chiêu u cô hồn.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/le-hoi-truyen-thong"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "don-ca-tai-tu-nam-bo-tai-vinh-long",
+    "type": "attraction",
+    "name": "Đờn ca tài tử Nam bộ tại Vĩnh Long",
+    "placeId": null,
+    "summary": "Hình thức âm nhạc truyền thống nguồn gốc từ nhạc lễ, nhạc cung đình Huế và văn học dân gian, thường diễn ở gia đình, đám cưới, giỗ, sinh nhật, lễ hội. UNESCO công nhận di sản văn hóa phi vật thể.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91on-ca-tai-tu"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "nhom-don-ca-tai-tu-bong-hong-vang",
+    "type": "attraction",
+    "name": "Nhóm đờn ca tài tử Bông Hồng Vàng",
+    "placeId": null,
+    "summary": "Nhóm đờn ca tài tử nổi tiếng ở Vĩnh Long, tham gia các hội thi trong và ngoài tỉnh.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91on-ca-tai-tu"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "nhom-don-ca-tai-tu-truong-an",
+    "type": "attraction",
+    "name": "Nhóm đờn ca tài tử Trường An",
+    "placeId": null,
+    "summary": "Nhóm đờn ca tài tử hoạt động thường xuyên tập luyện và trình diễn cho cộng đồng.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91on-ca-tai-tu"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "clb-don-ca-tai-tu-du-lich-cuu-long",
+    "type": "attraction",
+    "name": "CLB đờn ca tài tử Du lịch Cửu Long",
+    "placeId": null,
+    "summary": "Câu lạc bộ đờn ca tài tử bán chuyên nghiệp, phục vụ văn nghệ du lịch.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91on-ca-tai-tu"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "clb-don-ca-tai-tu-tt-van-hoa-thong-tin-vinh-long",
+    "type": "attraction",
+    "name": "CLB đờn ca tài tử TT Văn hóa Thông tin Vĩnh Long",
+    "placeId": null,
+    "summary": "Câu lạc bộ hoạt động tại trung tâm văn hóa thông tin, tham gia các hoạt động văn hóa.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91on-ca-tai-tu"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "trang-trai-vinh-sang",
+    "type": "attraction",
+    "name": "Trang trại Vinh Sang",
+    "placeId": "xa-an-binh",
+    "summary": "Trang trại cưỡi đà điểu với hơn 30 con đà điểu và khu vui chơi.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91iem-du-lich"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "chua-kompongnigrodha",
+    "type": "attraction",
+    "name": "Chùa KompongNigrodha",
+    "placeId": "xa-tra-on",
+    "summary": "Chùa cổ xây năm 1637, bao quanh bởi cây di sản, di tích lịch sử cấp tỉnh.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91iem-du-lich"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "khach-san-ngu-long",
+    "type": "accommodation",
+    "name": "Khách sạn Ngũ Long",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn Ngũ Long (2 sao), Số 34 Trưng Nữ Vương, Phường Long Châu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "2 sao",
+      "phone": "02703827147",
+      "address": "Số 34 Trưng Nữ Vương, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-minh-khue",
+    "type": "accommodation",
+    "name": "Khách sạn Minh Khuê",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn Minh Khuê (2 sao), Số 38 Trưng Nữ Vương, Phường Long Châu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "2 sao",
+      "phone": "02703826688",
+      "address": "Số 38 Trưng Nữ Vương, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-ngoc-hung",
+    "type": "accommodation",
+    "name": "Khách sạn Ngọc Hưng",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn Ngọc Hưng (2 sao), Số 62/9 Võ Văn Kiệt, Phường Long Châu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "2 sao",
+      "phone": "02703837989",
+      "address": "Số 62/9 Võ Văn Kiệt, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-xuan-huong",
+    "type": "accommodation",
+    "name": "Khách sạn Xuân Hương",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn Xuân Hương (2 sao), Số 245A Phạm Hùng, Phường Long Châu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "2 sao",
+      "phone": "02703823350",
+      "address": "Số 245A Phạm Hùng, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-phuoc-thanh-iv",
+    "type": "accommodation",
+    "name": "Khách sạn Phước Thành IV",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn Phước Thành IV (2 sao), Số 16-20 Nguyễn Huệ, Phường Long Châu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "2 sao",
+      "phone": "02703868779",
+      "address": "Số 16-20 Nguyễn Huệ, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-ngoi-sao",
+    "type": "accommodation",
+    "name": "Khách sạn Ngôi Sao",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn Ngôi Sao (1 sao), Số 81A Trưng Nữ Vương, Phường Long Châu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703836151",
+      "address": "Số 81A Trưng Nữ Vương, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-phuong-hoang",
+    "type": "accommodation",
+    "name": "Khách sạn Phượng Hoàng",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn Phượng Hoàng (1 sao), Số 2R Hùng Vương, Phường Long Châu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703822156",
+      "address": "Số 2R Hùng Vương, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-phung-hoang",
+    "type": "accommodation",
+    "name": "Khách sạn Phụng Hoàng",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn Phụng Hoàng (1 sao), Số 2H Hùng Vương, Phường Long Châu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703825185",
+      "address": "Số 2H Hùng Vương, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-lac-long",
+    "type": "accommodation",
+    "name": "Khách sạn Lạc Long",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn Lạc Long (1 sao), Số 2G Hùng Vương, Phường Long Châu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703836846",
+      "address": "Số 2G Hùng Vương, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-ngoc-trang",
+    "type": "accommodation",
+    "name": "Khách sạn Ngọc Trang",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn Ngọc Trang (1 sao), Số 18 Hùng Vương, Phường Long Châu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703832581",
+      "address": "Số 18 Hùng Vương, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-hoa-ngoc",
+    "type": "accommodation",
+    "name": "Khách sạn Hoa Ngọc",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn Hoa Ngọc (1 sao), Số 01/6 Hoàng Thái Hiếu, Phường Long Châu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703837838",
+      "address": "Số 01/6 Hoàng Thái Hiếu, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-anh-hong",
+    "type": "accommodation",
+    "name": "Khách sạn Ánh Hồng",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn Ánh Hồng (1 sao), Số 01/2 Hoàng Thái Hiếu, Phường Long Châu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703912590",
+      "address": "Số 01/2 Hoàng Thái Hiếu, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-khanh-quynh",
+    "type": "accommodation",
+    "name": "Khách sạn Khánh Quỳnh",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn Khánh Quỳnh (1 sao), Số 2A Hưng Đạo Vương, Phường Long Châu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703837116",
+      "address": "Số 2A Hưng Đạo Vương, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-van-trang",
+    "type": "accommodation",
+    "name": "Khách sạn Vân Trang",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn Vân Trang (1 sao), Số 3C Hưng Đạo Vương, Phường Long Châu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703838181",
+      "address": "Số 3C Hưng Đạo Vương, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-tan-hung",
+    "type": "accommodation",
+    "name": "Khách sạn Tấn Hưng",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn Tấn Hưng (1 sao), Số 5A Hưng Đạo Vương, Phường Long Châu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703832021",
+      "address": "Số 5A Hưng Đạo Vương, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-dong-quan",
+    "type": "accommodation",
+    "name": "Khách sạn Đông Quân",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn Đông Quân (1 sao), Số 07 Hưng Đạo Vương, Phường Long Châu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "0907724438",
+      "address": "Số 07 Hưng Đạo Vương, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-thien-thanh",
+    "type": "accommodation",
+    "name": "Khách sạn Thiên Thanh",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn Thiên Thanh (1 sao), Số 2G-2H Hùng Vương, Phường Long Châu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703822099",
+      "address": "Số 2G-2H Hùng Vương, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-loc-phuc",
+    "type": "accommodation",
+    "name": "Khách sạn Lộc Phúc",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn Lộc Phúc (1 sao), Số 50 Nguyễn Thị Út, Phường Long Châu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703822546",
+      "address": "Số 50 Nguyễn Thị Út, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-ngoc-tram",
+    "type": "accommodation",
+    "name": "Khách sạn Ngọc Trâm",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn Ngọc Trâm (1 sao), Số 64T-64U khóm 5, Phường Long Châu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703836867",
+      "address": "Số 64T-64U khóm 5, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-tan-sang",
+    "type": "accommodation",
+    "name": "Khách sạn Tấn Sang",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn Tấn Sang (1 sao), Số 2/15D Phạm Hùng, Phường Long Châu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "0917147167",
+      "address": "Số 2/15D Phạm Hùng, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-phuong-thao",
+    "type": "accommodation",
+    "name": "Khách sạn Phương Thảo",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn Phương Thảo (1 sao), Số 105 Nguyễn Huệ, Phường Long Châu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703822848",
+      "address": "Số 105 Nguyễn Huệ, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-truong-an",
+    "type": "accommodation",
+    "name": "Khách sạn Trường An",
+    "placeId": "p-tan-ngai",
+    "summary": "Khách sạn Trường An (2 sao), Số 29 QL1A, Thuận An, phường Tân Ngãi, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "2 sao",
+      "phone": "02703815241",
+      "address": "Số 29 QL1A, Thuận An, phường Tân Ngãi, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-hoang-hao",
+    "type": "accommodation",
+    "name": "Khách sạn Hoàng Hảo",
+    "placeId": "p-tan-ngai",
+    "summary": "Khách sạn Hoàng Hảo (2 sao), Số 234 Tân Vĩnh Thuận, phường Tân Ngãi, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "2 sao",
+      "phone": "02703827414",
+      "address": "Số 234 Tân Vĩnh Thuận, phường Tân Ngãi, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-hong-phuong",
+    "type": "accommodation",
+    "name": "Khách sạn Hồng Phượng",
+    "placeId": "p-tan-ngai",
+    "summary": "Khách sạn Hồng Phượng (1 sao), Số 286 Tân Vĩnh Thuận, phường Tân Ngãi, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703910718",
+      "address": "Số 286 Tân Vĩnh Thuận, phường Tân Ngãi, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-nguyen-mai",
+    "type": "accommodation",
+    "name": "Khách sạn Nguyễn Mai",
+    "placeId": "p-tan-ngai",
+    "summary": "Khách sạn Nguyễn Mai (1 sao), Số 217B QL80, ấp Tân Thạnh, phường Tân Ngãi, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703815840",
+      "address": "Số 217B QL80, ấp Tân Thạnh, phường Tân Ngãi, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-kim-chi-hoang-gia",
+    "type": "accommodation",
+    "name": "Khách sạn Kim Chi Hoàng Gia",
+    "placeId": "p-phuoc-hau",
+    "summary": "Khách sạn Kim Chi Hoàng Gia (3 sao), Phạm Thái Bường, Phường Phước Hậu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "3 sao",
+      "phone": "0388799049",
+      "address": "Phạm Thái Bường, Phường Phước Hậu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-tai-nguyen",
+    "type": "accommodation",
+    "name": "Khách sạn Tài Nguyên",
+    "placeId": "p-phuoc-hau",
+    "summary": "Khách sạn Tài Nguyên (2 sao), Số 60/12 Mậu Thân, phường Phước Hậu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "2 sao",
+      "phone": "02703827235",
+      "address": "Số 60/12 Mậu Thân, phường Phước Hậu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-ban-me",
+    "type": "accommodation",
+    "name": "Khách sạn Ban Mê",
+    "placeId": "p-phuoc-hau",
+    "summary": "Khách sạn Ban Mê (1 sao), Số 73/16D Phó Cơ Điều, phường Phước Hậu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703843248",
+      "address": "Số 73/16D Phó Cơ Điều, phường Phước Hậu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-phuoc-hung",
+    "type": "accommodation",
+    "name": "Khách sạn Phước Hưng",
+    "placeId": "p-phuoc-hau",
+    "summary": "Khách sạn Phước Hưng (1 sao), Số 44/62B P3, phường Phước Hậu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "0979449549",
+      "address": "Số 44/62B P3, phường Phước Hậu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-tan-an-loc",
+    "type": "accommodation",
+    "name": "Khách sạn Tân An Lộc",
+    "placeId": "p-phuoc-hau",
+    "summary": "Khách sạn Tân An Lộc (1 sao), Số 64/22 Phó Cơ Điều, phường Phước Hậu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703852699",
+      "address": "Số 64/22 Phó Cơ Điều, phường Phước Hậu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-ba-duc",
+    "type": "accommodation",
+    "name": "Khách sạn Ba Đức",
+    "placeId": "p-phuoc-hau",
+    "summary": "Khách sạn Ba Đức (1 sao), Số 67/26B Phó Cơ Điều, Phường Phước Hậu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703828555",
+      "address": "Số 67/26B Phó Cơ Điều, Phường Phước Hậu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-phu-gia",
+    "type": "accommodation",
+    "name": "Khách sạn Phú Gia",
+    "placeId": "p-phuoc-hau",
+    "summary": "Khách sạn Phú Gia (1 sao), Số 55A17 Phạm Thái Bường, phường Phước Hậu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703886768",
+      "address": "Số 55A17 Phạm Thái Bường, phường Phước Hậu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-thanh-nguyen",
+    "type": "accommodation",
+    "name": "Khách sạn Thanh Nguyên",
+    "placeId": "p-phuoc-hau",
+    "summary": "Khách sạn Thanh Nguyên (1 sao), Số 68/1C Phạm Thái Bường, Phường Phước Hậu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "0971743967",
+      "address": "Số 68/1C Phạm Thái Bường, Phường Phước Hậu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-ngoc-yen",
+    "type": "accommodation",
+    "name": "Khách sạn Ngọc Yến",
+    "placeId": "p-phuoc-hau",
+    "summary": "Khách sạn Ngọc Yến (1 sao), Số A15 Trần Phú, phường Phước Hậu, TP Vĩnh Long",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703833979",
+      "address": "Số A15 Trần Phú, phường Phước Hậu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "khach-san-vinh-sang",
+    "type": "accommodation",
+    "name": "Khách sạn Vinh Sang",
+    "placeId": "xa-an-binh",
+    "summary": "Khách sạn Vinh Sang (1 sao), Ấp An Thuận, xã An Bình, huyện Long Hồ",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703858350",
+      "address": "Ấp An Thuận, xã An Bình, huyện Long Hồ"
+    }
+  },
+  {
+    "id": "khach-san-nhat-phuong",
+    "type": "accommodation",
+    "name": "Khách sạn Nhật Phương",
+    "placeId": "xa-long-ho",
+    "summary": "Khách sạn Nhật Phương (1 sao), Số 197/15, ấp Long Thuận, xã Long Hồ",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703963290",
+      "address": "Số 197/15, ấp Long Thuận, xã Long Hồ"
+    }
+  },
+  {
+    "id": "khach-san-tan-xuan",
+    "type": "accommodation",
+    "name": "Khách sạn Tân Xuân",
+    "placeId": "xa-long-ho",
+    "summary": "Khách sạn Tân Xuân (1 sao), Số 25B ấp Hưng Quới, xã Long Hồ",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703828241",
+      "address": "Số 25B ấp Hưng Quới, xã Long Hồ"
+    }
+  },
+  {
+    "id": "khach-san-thanh-xuan",
+    "type": "accommodation",
+    "name": "Khách sạn Thanh Xuân",
+    "placeId": "xa-long-ho",
+    "summary": "Khách sạn Thanh Xuân (1 sao), Số 140A ấp Thanh Hưng, xã Long Hồ",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703829228",
+      "address": "Số 140A ấp Thanh Hưng, xã Long Hồ"
+    }
+  },
+  {
+    "id": "khach-san-anh-duc",
+    "type": "accommodation",
+    "name": "Khách sạn Anh Đức",
+    "placeId": "p-tan-hanh",
+    "summary": "Khách sạn Anh Đức (1 sao), Số 7/5, xã Tân Hạnh, huyện Long Hồ",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703811664",
+      "address": "Số 7/5, xã Tân Hạnh, huyện Long Hồ"
+    }
+  },
+  {
+    "id": "riverside-park-eco-resort",
+    "type": "accommodation",
+    "name": "Riverside Park Eco Resort",
+    "placeId": "xa-long-ho",
+    "summary": "Riverside Park Eco Resort (resort), Số 283 Bình Hòa II, Bình Hòa Phước, huyện Long Hồ",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "resort",
+      "phone": "0979333949",
+      "address": "Số 283 Bình Hòa II, Bình Hòa Phước, huyện Long Hồ"
+    }
+  },
+  {
+    "id": "nam-thanh-homestay",
+    "type": "accommodation",
+    "name": "Năm Thành Homestay",
+    "placeId": "xa-an-binh",
+    "summary": "Năm Thành Homestay (homestay), Số 172/9 ấp Bình Lương, xã An Bình, huyện Long Hồ",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "homestay",
+      "phone": "02703858883",
+      "address": "Số 172/9 ấp Bình Lương, xã An Bình, huyện Long Hồ"
+    }
+  },
+  {
+    "id": "ut-thuy-homestay",
+    "type": "accommodation",
+    "name": "Út Thủy Homestay",
+    "placeId": "xa-long-ho",
+    "summary": "Út Thủy Homestay (homestay), Ấp An Thạnh, xã Long Hồ",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "homestay",
+      "phone": "0913711657",
+      "address": "Ấp An Thạnh, xã Long Hồ"
+    }
+  },
+  {
+    "id": "le-thi-thuy-an-homestay",
+    "type": "accommodation",
+    "name": "Lê Thị Thúy An Homestay",
+    "placeId": "xa-long-ho",
+    "summary": "Lê Thị Thúy An Homestay (homestay), Số 53/4 ấp Phú Mỹ 1, xã Long Hồ",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "homestay",
+      "phone": "0919220282",
+      "address": "Số 53/4 ấp Phú Mỹ 1, xã Long Hồ"
+    }
+  },
+  {
+    "id": "coco-home",
+    "type": "accommodation",
+    "name": "Coco Home",
+    "placeId": "xa-long-ho",
+    "summary": "Coco Home (homestay), Ấp Hòa Quí, xã Long Hồ",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "homestay",
+      "phone": "02703505356",
+      "address": "Ấp Hòa Quí, xã Long Hồ"
+    }
+  },
+  {
+    "id": "nha-nghi-dl-sinh-thai-hoang-hao",
+    "type": "accommodation",
+    "name": "Nhà nghỉ DL sinh thái Hoàng Hảo",
+    "placeId": "xa-long-ho",
+    "summary": "Nhà nghỉ DL sinh thái Hoàng Hảo (nhà nghỉ), Khu nhà ở Hoàng Hảo, QL57, xã Long Hồ",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "nhà nghỉ",
+      "phone": "02703899699",
+      "address": "Khu nhà ở Hoàng Hảo, QL57, xã Long Hồ"
+    }
+  },
+  {
+    "id": "khach-san-anh-hong-mang-thit",
+    "type": "accommodation",
+    "name": "Khách sạn Ánh Hồng (Mang Thít)",
+    "placeId": "xa-cai-nhum",
+    "summary": "Khách sạn Ánh Hồng (Mang Thít) (1 sao), Khóm 1, xã Cái Nhum, huyện Mang Thít",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703840238",
+      "address": "Khóm 1, xã Cái Nhum, huyện Mang Thít"
+    }
+  },
+  {
+    "id": "khach-san-nghia-hiep",
+    "type": "accommodation",
+    "name": "Khách sạn Nghĩa Hiệp",
+    "placeId": "xa-tam-binh",
+    "summary": "Khách sạn Nghĩa Hiệp (1 sao), Ấp Mỹ An, xã Bình Ninh, huyện Tam Bình",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "02703719777",
+      "address": "Ấp Mỹ An, xã Bình Ninh, huyện Tam Bình"
+    }
+  },
+  {
+    "id": "khach-san-khoi-hoa",
+    "type": "accommodation",
+    "name": "Khách sạn Khôi Hoa",
+    "placeId": "p-binh-minh",
+    "summary": "Khách sạn Khôi Hoa (2 sao), Số 5115 ấp Đông Hậu, phường Bình Minh, TX Bình Minh",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "2 sao",
+      "phone": "0916244442",
+      "address": "Số 5115 ấp Đông Hậu, phường Bình Minh, TX Bình Minh"
+    }
+  },
+  {
+    "id": "khach-san-duc-dao",
+    "type": "accommodation",
+    "name": "Khách sạn Đức Đào",
+    "placeId": "p-binh-minh",
+    "summary": "Khách sạn Đức Đào (1 sao), Số 5938/1, Phường Bình Minh, TX Bình Minh",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "0703741646",
+      "address": "Số 5938/1, Phường Bình Minh, TX Bình Minh"
+    }
+  },
+  {
+    "id": "khach-san-tan-thanh-2",
+    "type": "accommodation",
+    "name": "Khách sạn Tân Thành 2",
+    "placeId": "p-binh-minh",
+    "summary": "Khách sạn Tân Thành 2 (1 sao), Số 5319, Phường Bình Minh, TX Bình Minh",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "0983170690",
+      "address": "Số 5319, Phường Bình Minh, TX Bình Minh"
+    }
+  },
+  {
+    "id": "khach-san-chieu-hung",
+    "type": "accommodation",
+    "name": "Khách sạn Chiêu Hùng",
+    "placeId": "xa-tra-on",
+    "summary": "Khách sạn Chiêu Hùng (1 sao), Số 20A Gia Long, Khu I, xã Trà Ôn",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "0703770246",
+      "address": "Số 20A Gia Long, Khu I, xã Trà Ôn"
+    }
+  },
+  {
+    "id": "khach-san-trung-tinh",
+    "type": "accommodation",
+    "name": "Khách sạn Trung Tính",
+    "placeId": "xa-tra-on",
+    "summary": "Khách sạn Trung Tính (1 sao), Số 100A1 Thống chế điều bát, khu 3, xã Trà Ôn",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "0703770566",
+      "address": "Số 100A1 Thống chế điều bát, khu 3, xã Trà Ôn"
+    }
+  },
+  {
+    "id": "khach-san-tan-thanh-6",
+    "type": "accommodation",
+    "name": "Khách sạn Tân Thành 6",
+    "placeId": "xa-tra-on",
+    "summary": "Khách sạn Tân Thành 6 (1 sao), Số 162 Nam Kỳ Khởi Nghĩa, xã Trung Thành, huyện Trà Ôn",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "1 sao",
+      "phone": "0703979888",
+      "address": "Số 162 Nam Kỳ Khởi Nghĩa, xã Trung Thành, huyện Trà Ôn"
+    }
+  },
+  {
+    "id": "coco-riverside-lodge",
+    "type": "accommodation",
+    "name": "Coco Riverside Lodge",
+    "placeId": "xa-tra-on",
+    "summary": "Coco Riverside Lodge (lodge), Ấp Phú Ân, xã Trung Nghĩa, huyện Trà Ôn",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "lodge",
+      "phone": "0943113443",
+      "address": "Ấp Phú Ân, xã Trung Nghĩa, huyện Trà Ôn"
+    }
+  },
+  {
+    "id": "khach-san-bich-ngoan",
+    "type": "accommodation",
+    "name": "Khách sạn Bích Ngoan",
+    "placeId": "xa-tra-on",
+    "summary": "Khách sạn Bích Ngoan (nhà nghỉ), Số 17/22 đường 19/5, phường Trà Vinh, TP Trà Vinh",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "nhà nghỉ",
+      "phone": "0359275252",
+      "address": "Số 17/22 đường 19/5, phường Trà Vinh, TP Trà Vinh"
+    }
+  },
+  {
+    "id": "nha-khach-vinh-tra",
+    "type": "accommodation",
+    "name": "Nhà khách Vĩnh Trà",
+    "placeId": "xa-tra-on",
+    "summary": "Nhà khách Vĩnh Trà (nhà nghỉ), Số 4A Nguyễn Thị Minh Khai, phường Trà Vinh, TP Trà Vinh",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "nhà nghỉ",
+      "phone": "02943868088",
+      "address": "Số 4A Nguyễn Thị Minh Khai, phường Trà Vinh, TP Trà Vinh"
+    }
+  },
+  {
+    "id": "khach-san-sanh-phuc",
+    "type": "accommodation",
+    "name": "Khách sạn Sanh Phúc",
+    "placeId": "xa-tra-on",
+    "summary": "Khách sạn Sanh Phúc (nhà nghỉ), Số 419 Đồng Khởi, phường Trà Vinh, TP Trà Vinh",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "nhà nghỉ",
+      "phone": "02943737999",
+      "address": "Số 419 Đồng Khởi, phường Trà Vinh, TP Trà Vinh"
+    }
+  },
+  {
+    "id": "khach-san-gia-hoa-ii",
+    "type": "accommodation",
+    "name": "Khách sạn Gia Hòa II",
+    "placeId": "xa-tra-on",
+    "summary": "Khách sạn Gia Hòa II (nhà nghỉ), 50 Lê Lợi, phường 2, TP Trà Vinh",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "nhà nghỉ",
+      "phone": "02943858008",
+      "address": "50 Lê Lợi, phường 2, TP Trà Vinh"
+    }
+  },
+  {
+    "id": "hoan-my-homestay",
+    "type": "accommodation",
+    "name": "Hoàn Mỹ Homestay",
+    "placeId": "xa-tra-on",
+    "summary": "Hoàn Mỹ Homestay (homestay), Ấp Phú Hòa, Phường Long Đức, TP Trà Vinh",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "homestay",
+      "phone": "0377118839",
+      "address": "Ấp Phú Hòa, Phường Long Đức, TP Trà Vinh"
+    }
+  },
+  {
+    "id": "khach-san-hoan-my-2",
+    "type": "accommodation",
+    "name": "Khách sạn Hoàn Mỹ 2",
+    "placeId": "xa-tra-on",
+    "summary": "Khách sạn Hoàn Mỹ 2 (nhà nghỉ), 132B Nguyễn Đáng, phường Nguyệt Hóa, TP Trà Vinh",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "nhà nghỉ",
+      "phone": "02943863399",
+      "address": "132B Nguyễn Đáng, phường Nguyệt Hóa, TP Trà Vinh"
+    }
+  },
+  {
+    "id": "khach-san-an-khang",
+    "type": "accommodation",
+    "name": "Khách sạn An Khang",
+    "placeId": "xa-tra-on",
+    "summary": "Khách sạn An Khang (nhà nghỉ), Số 69 Võ Văn Kiệt, Phường Nguyệt Hóa, TP Trà Vinh",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "nhà nghỉ",
+      "phone": "0972676499",
+      "address": "Số 69 Võ Văn Kiệt, Phường Nguyệt Hóa, TP Trà Vinh"
+    }
+  },
+  {
+    "id": "khach-san-ngoc-quy",
+    "type": "accommodation",
+    "name": "Khách sạn Ngọc Quý",
+    "placeId": "xa-tra-on",
+    "summary": "Khách sạn Ngọc Quý (nhà nghỉ), 105 Võ Nguyên Giáp, phường Nguyệt Hóa, TP Trà Vinh",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "nhà nghỉ",
+      "phone": "02943848181",
+      "address": "105 Võ Nguyên Giáp, phường Nguyệt Hóa, TP Trà Vinh"
+    }
+  },
+  {
+    "id": "khach-san-thanh-binh-i",
+    "type": "accommodation",
+    "name": "Khách sạn Thanh Bình I",
+    "placeId": "xa-tra-on",
+    "summary": "Khách sạn Thanh Bình I (nhà nghỉ), Số 109 Võ Nguyên Giáp, phường Nguyệt Hóa, TP Trà Vinh",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "nhà nghỉ",
+      "phone": "02946266789",
+      "address": "Số 109 Võ Nguyên Giáp, phường Nguyệt Hóa, TP Trà Vinh"
+    }
+  },
+  {
+    "id": "khach-san-thanh-binh-ii",
+    "type": "accommodation",
+    "name": "Khách sạn Thanh Bình II",
+    "placeId": "xa-tra-on",
+    "summary": "Khách sạn Thanh Bình II (nhà nghỉ), Số 199 Võ Nguyên Giáp, phường Nguyệt Hóa, TP Trà Vinh",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "nhà nghỉ",
+      "phone": "02946260999",
+      "address": "Số 199 Võ Nguyên Giáp, phường Nguyệt Hóa, TP Trà Vinh"
+    }
+  },
+  {
+    "id": "khach-san-hai-duong-i",
+    "type": "accommodation",
+    "name": "Khách sạn Hải Dương I",
+    "placeId": "xa-tra-on",
+    "summary": "Khách sạn Hải Dương I (nhà nghỉ), Số 14 đường 2/9, phường Duyên Hải, TP Trà Vinh",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "nhà nghỉ",
+      "phone": "0972320378",
+      "address": "Số 14 đường 2/9, phường Duyên Hải, TP Trà Vinh"
+    }
+  },
+  {
+    "id": "khach-san-hai-duong-2",
+    "type": "accommodation",
+    "name": "Khách sạn Hải Dương 2",
+    "placeId": "xa-tra-on",
+    "summary": "Khách sạn Hải Dương 2 (nhà nghỉ), Số 140A QL53, Phường Duyên Hải, TP Trà Vinh",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "nhà nghỉ",
+      "phone": "0916093059",
+      "address": "Số 140A QL53, Phường Duyên Hải, TP Trà Vinh"
+    }
+  },
+  {
+    "id": "khach-san-tuong-vy",
+    "type": "accommodation",
+    "name": "Khách sạn Tường Vy",
+    "placeId": "xa-tra-on",
+    "summary": "Khách sạn Tường Vy (nhà nghỉ), Số 135 đường 3/2, phường Duyên Hải, TP Trà Vinh",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "nhà nghỉ",
+      "phone": "02943590999",
+      "address": "Số 135 đường 3/2, phường Duyên Hải, TP Trà Vinh"
+    }
+  },
+  {
+    "id": "farmstay-dat-cu-lao",
+    "type": "accommodation",
+    "name": "Farmstay Đất Cù Lao",
+    "placeId": "xa-tra-on",
+    "summary": "Farmstay Đất Cù Lao (farmstay), Cảng Cá Láng Chim, phường Trường Long Hòa, TP Trà Vinh",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "farmstay",
+      "phone": "0932991979",
+      "address": "Cảng Cá Láng Chim, phường Trường Long Hòa, TP Trà Vinh"
+    }
+  },
+  {
+    "id": "le-ngan-homestay",
+    "type": "accommodation",
+    "name": "Lê Ngân Homestay",
+    "placeId": "xa-tra-on",
+    "summary": "Lê Ngân Homestay (homestay), Ấp Lê Văn Quới, xã Tập Ngãi, huyện Tiểu Cần",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "homestay",
+      "phone": "09111177761",
+      "address": "Ấp Lê Văn Quới, xã Tập Ngãi, huyện Tiểu Cần"
+    }
+  },
+  {
+    "id": "ks-nha-co-cau-ke",
+    "type": "accommodation",
+    "name": "KS nhà cổ Cầu Kè",
+    "placeId": "xa-tra-on",
+    "summary": "KS nhà cổ Cầu Kè (nhà nghỉ), Khóm 2, xã Cầu Kè, huyện Cầu Kè",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "nhà nghỉ",
+      "phone": "0913006405",
+      "address": "Khóm 2, xã Cầu Kè, huyện Cầu Kè"
+    }
+  },
+  {
+    "id": "suonsia-homestay",
+    "type": "accommodation",
+    "name": "SuonSia Homestay",
+    "placeId": "xa-tra-on",
+    "summary": "SuonSia Homestay (homestay), 22/2 ấp Bà My, xã Cầu Kè, huyện Cầu Kè",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "homestay",
+      "phone": "0939299278",
+      "address": "22/2 ấp Bà My, xã Cầu Kè, huyện Cầu Kè"
+    }
+  },
+  {
+    "id": "nh-ks-sy-dien",
+    "type": "accommodation",
+    "name": "NH-KS Sỹ Điền",
+    "placeId": "xa-tra-on",
+    "summary": "NH-KS Sỹ Điền (nhà nghỉ), 19A Hương Lộ 32, ấp Bà My, xã Cầu Kè, huyện Cầu Kè",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "nhà nghỉ",
+      "phone": "02943714887",
+      "address": "19A Hương Lộ 32, ấp Bà My, xã Cầu Kè, huyện Cầu Kè"
+    }
+  },
+  {
+    "id": "mekong-garden-homestay",
+    "type": "accommodation",
+    "name": "Mekong Garden Homestay",
+    "placeId": "xa-tra-on",
+    "summary": "Mekong Garden Homestay (homestay), Ấp Đon, xã Nhị Long, huyện Cầu Kè",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "homestay",
+      "phone": "0975039568",
+      "address": "Ấp Đon, xã Nhị Long, huyện Cầu Kè"
+    }
+  },
+  {
+    "id": "khach-san-huynh-thao",
+    "type": "accommodation",
+    "name": "Khách sạn Huỳnh Thảo",
+    "placeId": "xa-an-binh",
+    "summary": "Khách sạn Huỳnh Thảo (nhà nghỉ), 69c Đồng Văn Cống, phường Bến Tre, TP Bến Tre",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "nhà nghỉ",
+      "phone": "02753617617",
+      "address": "69c Đồng Văn Cống, phường Bến Tre, TP Bến Tre"
+    }
+  },
+  {
+    "id": "khach-san-dai-an",
+    "type": "accommodation",
+    "name": "Khách sạn Đại An",
+    "placeId": "xa-an-binh",
+    "summary": "Khách sạn Đại An (nhà nghỉ), 234-D8 Hùng Vương, phường Bến Tre, TP Bến Tre",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "nhà nghỉ",
+      "phone": "02753512050",
+      "address": "234-D8 Hùng Vương, phường Bến Tre, TP Bến Tre"
+    },
+    "coords": [
+      10.2347683,
+      106.3751744
+    ]
+  },
+  {
+    "id": "khach-san-diamond-stars",
+    "type": "accommodation",
+    "name": "Khách sạn Diamond Stars",
+    "placeId": "xa-an-binh",
+    "summary": "Khách sạn Diamond Stars (nhà nghỉ), 140 Hùng Vương, Phường An Hội, TP Bến Tre",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.8,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "nhà nghỉ",
+      "phone": "02753748888",
+      "address": "140 Hùng Vương, Phường An Hội, TP Bến Tre"
+    },
+    "coords": [
+      10.2345808,
+      106.3755082
+    ]
+  },
+  {
+    "id": "ks-nh-hung-vuong",
+    "type": "accommodation",
+    "name": "KS-NH Hùng Vương",
+    "placeId": "xa-an-binh",
+    "summary": "KS-NH Hùng Vương (nhà nghỉ), 148 Hùng Vương, Phường An Hội, TP Bến Tre",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "nhà nghỉ",
+      "phone": "02753822408",
+      "address": "148 Hùng Vương, Phường An Hội, TP Bến Tre"
+    }
+  },
+  {
+    "id": "khach-san-binh-dai",
+    "type": "accommodation",
+    "name": "Khách sạn Bình Đại",
+    "placeId": "xa-an-binh",
+    "summary": "Khách sạn Bình Đại (2 sao), Nguyễn Thị Định, Ấp Bình Hòa, huyện Bình Đại (BT)",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "2 sao",
+      "phone": "02752239666",
+      "address": "Nguyễn Thị Định, Ấp Bình Hòa, huyện Bình Đại (BT)"
+    }
+  },
+  {
+    "id": "homestay-ut-trinh-con-tam-hiep",
+    "type": "accommodation",
+    "name": "Homestay Út Trinh (Cồn Tam Hiệp)",
+    "placeId": "xa-an-binh",
+    "summary": "Homestay Út Trinh (Cồn Tam Hiệp) (homestay), Tổ 9, ấp 1, xã Phú Thuận, huyện Bình Đại (BT)",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "homestay",
+      "phone": "09190020505",
+      "address": "Tổ 9, ấp 1, xã Phú Thuận, huyện Bình Đại (BT)"
+    }
+  },
+  {
+    "id": "cocohut-homestay",
+    "type": "accommodation",
+    "name": "Cocohut Homestay",
+    "placeId": "xa-an-binh",
+    "summary": "Cocohut Homestay (homestay), Ấp Hòa Trung, xã Sơn Hòa, huyện Châu Thành (BT)",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "homestay",
+      "phone": "0902566516",
+      "address": "Ấp Hòa Trung, xã Sơn Hòa, huyện Châu Thành (BT)"
+    }
+  },
+  {
+    "id": "homestay-lang-be",
+    "type": "accommodation",
+    "name": "Homestay Làng Bè",
+    "placeId": "xa-an-binh",
+    "summary": "Homestay Làng Bè (homestay), 81B/6B Ấp An Thới B, xã An Khánh, huyện Châu Thành (BT)",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "homestay",
+      "phone": "0985522288",
+      "address": "81B/6B Ấp An Thới B, xã An Khánh, huyện Châu Thành (BT)"
+    }
+  },
+  {
+    "id": "homestay-nguoi-giu-rung",
+    "type": "accommodation",
+    "name": "Homestay Người Giữ Rừng",
+    "placeId": "xa-an-binh",
+    "summary": "Homestay Người Giữ Rừng (homestay), Ấp Tân An, xã Thạnh Phước, huyện Thạnh Phú (BT)",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "homestay",
+      "phone": "0911322767",
+      "address": "Ấp Tân An, xã Thạnh Phước, huyện Thạnh Phú (BT)"
+    }
+  },
+  {
+    "id": "coconut-homestay",
+    "type": "accommodation",
+    "name": "Coconut Homestay",
+    "placeId": "xa-an-binh",
+    "summary": "Coconut Homestay (homestay), 66 ấp Tân Phước, huyện Mỏ Cày (BT)",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "hạng": "homestay",
+      "phone": "0903962257",
+      "address": "66 ấp Tân Phước, huyện Mỏ Cày (BT)"
+    }
+  },
+  {
+    "id": "sieu-thi-coop-mart-vinh-long",
+    "type": "attraction",
+    "name": "Siêu thị Co.op Mart Vĩnh Long",
+    "placeId": "p-long-chau",
+    "summary": "Siêu thị lớn tại trung tâm TP Vĩnh Long.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Số 26 đường 3/2, phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "trung-tam-thuong-mai-vincom-vinh-long",
+    "type": "attraction",
+    "name": "Trung tâm thương mại Vincom Vĩnh Long",
+    "placeId": "p-phuoc-hau",
+    "summary": "Trung tâm thương mại hiện đại.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Số 55 Phạm Thái Bường, phường Phước Hậu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "sieu-thi-dien-may-cho-lon-vinh-long",
+    "type": "attraction",
+    "name": "Siêu thị Điện máy Chợ Lớn Vĩnh Long",
+    "placeId": "p-phuoc-hau",
+    "summary": "Siêu thị điện máy.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Số 39 Trần Đại Nghĩa, phường Phước Hậu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "sieu-thi-thuy-tien",
+    "type": "attraction",
+    "name": "Siêu thị Thủy Tiên",
+    "placeId": "xa-long-ho",
+    "summary": "Siêu thị điện máy và nội thất.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Ấp Phước Long, xã Long Hồ, huyện Long Hồ"
+    }
+  },
+  {
+    "id": "cua-hang-ocop-tra-vinh",
+    "type": "attraction",
+    "name": "Cửa hàng OCOP Trà Vinh",
+    "placeId": "xa-tra-on",
+    "summary": "Cửa hàng trưng bày sản phẩm OCOP và nông sản.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Số 40, phường Trà Vinh, TP Trà Vinh"
+    }
+  },
+  {
+    "id": "tt-xuc-tien-du-lich-tra-vinh",
+    "type": "attraction",
+    "name": "TT Xúc tiến du lịch Trà Vinh",
+    "placeId": "xa-tra-on",
+    "summary": "Cửa hàng đặc sản, hàng lưu niệm và sản phẩm OCOP.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "6A Nguyễn Thị Minh Khai, phường Trà Vinh, TP Trà Vinh"
+    }
+  },
+  {
+    "id": "cua-hang-dac-san-que-hai-ung",
+    "type": "attraction",
+    "name": "Cửa hàng Đặc sản quê Hai Ửng",
+    "placeId": "xa-an-binh",
+    "summary": "Cửa hàng đặc sản và sản phẩm OCOP.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Ấp Cồn Chim, xã Hòa Minh, huyện Châu Thành (TV)"
+    }
+  },
+  {
+    "id": "sieu-thi-go-tra-vinh",
+    "type": "attraction",
+    "name": "Siêu thị GO Trà Vinh",
+    "placeId": "xa-tra-on",
+    "summary": "Siêu thị lớn tại Trà Vinh.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "414 Võ Nguyên Giáp, phường Nguyệt Hóa, TP Trà Vinh"
+    }
+  },
+  {
+    "id": "cua-hang-ocop-bien-ba-dong",
+    "type": "attraction",
+    "name": "Cửa hàng OCOP biển Ba Động",
+    "placeId": "xa-tra-on",
+    "summary": "Cửa hàng sản phẩm OCOP tại khu du lịch.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "KDL biển Ba Động, phường Trường Long Hòa, TP Trà Vinh"
+    }
+  },
+  {
+    "id": "cua-hang-ocop-ao-ba-om",
+    "type": "attraction",
+    "name": "Cửa hàng OCOP Ao Bà Om",
+    "placeId": "xa-tra-on",
+    "summary": "Cửa hàng sản phẩm OCOP và đặc sản.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Khu di tích Ao Bà Om, phường Nguyệt Hóa, TP Trà Vinh"
+    }
+  },
+  {
+    "id": "sieu-thi-go-ben-tre",
+    "type": "attraction",
+    "name": "Siêu thị Go Bến Tre",
+    "placeId": "xa-an-binh",
+    "summary": "Siêu thị lớn tại Bến Tre.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Phường Sơn Đông, TP Bến Tre"
+    }
+  },
+  {
+    "id": "tt-thuong-mai-sense-city-ben-tre",
+    "type": "attraction",
+    "name": "TT thương mại Sense City Bến Tre",
+    "placeId": "xa-an-binh",
+    "summary": "Trung tâm thương mại hiện đại.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "26A Trần Quốc Tuấn, phường An Hội, TP Bến Tre"
+    }
+  },
+  {
+    "id": "cho-dem-ben-tre",
+    "type": "attraction",
+    "name": "Chợ đêm Bến Tre",
+    "placeId": "xa-an-binh",
+    "summary": "Chợ đêm ẩm thực và mua sắm.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "136 Đại Lộ Đồng Khởi, phường An Hội, TP Bến Tre"
+    }
+  },
+  {
+    "id": "cho-ba-tri",
+    "type": "attraction",
+    "name": "Chợ Ba Tri",
+    "placeId": "xa-an-binh",
+    "summary": "Chợ huyện truyền thống.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Nguyễn Đình Chiểu, huyện Ba Tri (BT)"
+    }
+  },
+  {
+    "id": "cho-cho-lach",
+    "type": "attraction",
+    "name": "Chợ Chợ Lách",
+    "placeId": "xa-an-binh",
+    "summary": "Chợ huyện nổi tiếng vùng cây giống.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Huyện Chợ Lách (BT)"
+    }
+  },
+  {
+    "id": "cho-binh-dai",
+    "type": "attraction",
+    "name": "Chợ Bình Đại",
+    "placeId": "xa-an-binh",
+    "summary": "Chợ huyện ven biển.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "QL57B, huyện Bình Đại (BT)"
+    }
+  },
+  {
+    "id": "cho-giong-trom",
+    "type": "attraction",
+    "name": "Chợ Giồng Trôm",
+    "placeId": "xa-an-binh",
+    "summary": "Chợ huyện.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "ĐT885, huyện Giồng Trôm (BT)"
+    }
+  },
+  {
+    "id": "cho-thanh-phu",
+    "type": "attraction",
+    "name": "Chợ Thạnh Phú",
+    "placeId": "xa-an-binh",
+    "summary": "Chợ huyện ven biển.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Đường Thuỷ Sản, huyện Thạnh Phú (BT)"
+    }
+  },
+  {
+    "id": "cho-mo-cay",
+    "type": "attraction",
+    "name": "Chợ Mỏ Cày",
+    "placeId": "xa-an-binh",
+    "summary": "Chợ huyện.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "250 Bùi Quang Chiêu, huyện Mỏ Cày (BT)"
+    }
+  },
+  {
+    "id": "cho-ba-vat",
+    "type": "attraction",
+    "name": "Chợ Ba Vát",
+    "placeId": "xa-an-binh",
+    "summary": "Chợ truyền thống.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "882 Phước Mỹ Trung, huyện Mỏ Cày (BT)"
+    }
+  },
+  {
+    "id": "cho-dau-moi-nong-thuy-san-ben-tre",
+    "type": "attraction",
+    "name": "Chợ đầu mối nông thủy sản Bến Tre",
+    "placeId": "xa-an-binh",
+    "summary": "Chợ đầu mối.",
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Phường Phú Khương, TP Bến Tre"
+    }
+  }
+]

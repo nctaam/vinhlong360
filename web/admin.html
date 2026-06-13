@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>AdminCP — vinhlong360</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#9C3D22;--primary-light:#b84e30;--primary-dark:#7a3019;
+  --accent:#E8A33D;--accent-light:#f0b55a;
+  --green:#2E7D5B;--blue:#33646E;
+  --bg:#FAF4E8;--card:#fff;--border:#e4ddd0;
+  --text:#2B2622;--text-muted:#7a746c;--text-light:#a09889;
+  --danger:#dc2626;--warn:#f59e0b;--success:#16a34a;
+  --sidebar-w:230px;--header-h:52px;
+  --shadow:0 1px 3px rgba(0,0,0,.06);
+  --shadow-md:0 4px 8px rgba(0,0,0,.08);
+  --radius:8px;--radius-sm:5px;
+}
+html{font-size:14px}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+
+/* Sidebar */
+.sidebar{width:var(--sidebar-w);background:var(--primary-dark);color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
+.sidebar-brand{padding:14px 18px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.12)}
+.sidebar-brand .logo{font-size:1.15rem;font-weight:700}.sidebar-brand .dot{color:var(--accent)}
+.sidebar-brand small{color:rgba(255,255,255,.5);font-size:.72rem;margin-left:4px}
+.sidebar-nav{flex:1;padding:10px 0;overflow-y:auto}
+.sidebar-nav a{display:flex;align-items:center;gap:10px;padding:9px 18px;color:rgba(255,255,255,.68);text-decoration:none;font-size:.88rem;border-left:3px solid transparent;transition:all .15s}
+.sidebar-nav a:hover{background:rgba(255,255,255,.07);color:#fff}
+.sidebar-nav a.active{background:rgba(255,255,255,.1);color:#fff;border-left-color:var(--accent)}
+.sidebar-nav .divider{height:1px;background:rgba(255,255,255,.1);margin:8px 18px}
+.nav-icon{width:18px;text-align:center;flex-shrink:0;font-size:1rem}
+
+/* Main */
+.main{margin-left:var(--sidebar-w);flex:1;min-width:0;display:flex;flex-direction:column}
+.header{height:var(--header-h);background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:50}
+.header h2{font-size:1rem;font-weight:600}
+.header-right{display:flex;align-items:center;gap:12px;font-size:.82rem;color:var(--text-muted)}
+.content{padding:20px;flex:1}
+.page{display:none}.page.active{display:block}
+
+/* Cards */
+.stat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.stat-card .label{font-size:.78rem;color:var(--text-muted);margin-bottom:4px}
+.stat-card .value{font-size:1.5rem;font-weight:700;color:var(--primary)}
+.stat-card .sub{font-size:.72rem;color:var(--text-light);margin-top:2px}
+
+/* Table */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border)}
+.panel-head h3{font-size:.95rem;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:#f7f3eb;text-align:left;padding:8px 12px;font-weight:600;font-size:.78rem;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border)}
+td{padding:8px 12px;border-bottom:1px solid #f0ece4;vertical-align:middle}
+tr:hover td{background:#faf7f0}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.72rem;font-weight:600}
+.badge-experience{background:#e8f5e9;color:#2e7d32}
+.badge-product{background:#fff3e0;color:#e65100}
+.badge-dish{background:#fce4ec;color:#c62828}
+.badge-attraction{background:#e3f2fd;color:#1565c0}
+.badge-accommodation{background:#f3e5f5;color:#7b1fa2}
+.badge-craft_village{background:#efebe9;color:#4e342e}
+.badge-place{background:#e0f2f1;color:#00695c}
+
+/* Toolbar */
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.toolbar input[type="search"],.toolbar select{padding:7px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.85rem;background:var(--card)}
+.toolbar input[type="search"]{width:240px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:none;border-radius:var(--radius-sm);font-size:.85rem;font-weight:500;cursor:pointer;transition:all .15s}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-light)}
+.btn-accent{background:var(--accent);color:#fff}.btn-accent:hover{background:var(--accent-light)}
+.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#ef4444}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{background:#f5f0e6}
+.btn-sm{padding:4px 10px;font-size:.78rem}
+.btn-icon{padding:4px 8px;font-size:1rem;background:none;border:none;cursor:pointer;color:var(--text-muted)}.btn-icon:hover{color:var(--primary)}
+
+/* Form / Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:200}
+.modal-overlay.show{display:flex}
+.modal{background:var(--card);border-radius:var(--radius);width:90%;max-width:640px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-md)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.modal-head h3{font-size:1rem;font-weight:600}
+.modal-body{padding:18px}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:.82rem;font-weight:500;margin-bottom:4px;color:var(--text-muted)}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.88rem;font-family:inherit}
+.form-group textarea{min-height:80px;resize:vertical}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;padding:12px 18px;border-top:1px solid var(--border)}
+
+/* Pagination */
+.pagination{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;font-size:.85rem}
+.pagination button{padding:4px 10px;border:1px solid var(--border);background:var(--card);border-radius:var(--radius-sm);cursor:pointer}
+.pagination button.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.pagination button:disabled{opacity:.4;cursor:default}
+
+/* Toast */
+.toast-container{position:fixed;bottom:20px;right:20px;z-index:300;display:flex;flex-direction:column;gap:8px}
+.toast{padding:10px 16px;border-radius:var(--radius-sm);color:#fff;font-size:.85rem;box-shadow:var(--shadow-md);animation:slideIn .3s ease}
+.toast-success{background:var(--success)}.toast-error{background:var(--danger)}.toast-info{background:var(--blue)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+.empty-state{text-align:center;padding:40px;color:var(--text-muted);font-size:.9rem}
+.loading{text-align:center;padding:20px;color:var(--text-muted)}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <span class="logo">vinhlong<span class="dot">360</span></span>
+    <small>AdminCP</small>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="#dashboard" class="active" onclick="showPage('dashboard',this)"><span class="nav-icon">📊</span>Dashboard</a>
+    <a href="#entities" onclick="showPage('entities',this)"><span class="nav-icon">📍</span>Entities</a>
+    <a href="#itineraries" onclick="showPage('itineraries',this)"><span class="nav-icon">🗺️</span>Lich trinh</a>
+    <a href="#relationships" onclick="showPage('relationships',this)"><span class="nav-icon">🔗</span>Relationships</a>
+    <div class="divider"></div>
+    <a href="#moderation" onclick="showPage('moderation',this)"><span class="nav-icon">🛡️</span>Kiem duyet</a>
+    <a href="#reports" onclick="showPage('reports',this)"><span class="nav-icon">🚩</span>Bao cao</a>
+    <a href="#users" onclick="showPage('users',this)"><span class="nav-icon">👥</span>Users</a>
+    <div class="divider"></div>
+    <a href="/" target="_blank"><span class="nav-icon">🌐</span>Xem website</a>
+    <a href="/docs" target="_blank"><span class="nav-icon">📖</span>API Docs</a>
+  </nav>
+</aside>
+
+<!-- Main -->
+<div class="main">
+  <header class="header">
+    <h2 id="pageTitle">Dashboard</h2>
+    <div class="header-right">
+      <span id="dbInfo">--</span>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ═══ Dashboard ═══ -->
+    <div class="page active" id="page-dashboard">
+      <div class="stat-cards" id="dashCards"></div>
+      <div class="panel">
+        <div class="panel-head"><h3>Entity theo loai</h3></div>
+        <div id="dashTypeChart" style="padding:16px"></div>
+      </div>
+    </div>
+
+    <!-- ═══ Entities ═══ -->
+    <div class="page" id="page-entities">
+      <div class="toolbar">
+        <input type="search" id="entSearch" placeholder="Tim kiem entity..." onkeyup="if(event.key==='Enter')loadEntities()"/>
+        <select id="entTypeFilter" onchange="loadEntities()">
+          <option value="">Tat ca loai</option>
+          <option value="experience">Experience</option>
+          <option value="product">Product</option>
+          <option value="dish">Dish</option>
+          <option value="attraction">Attraction</option>
+          <option value="accommodation">Accommodation</option>
+          <option value="craft_village">Craft Village</option>
+          <option value="nature">Nature</option>
+          <option value="event">Event</option>
+          <option value="history">History</option>
+        </select>
+        <button class="btn btn-primary" onclick="openCreateEntity()">+ Them entity</button>
+        <button class="btn btn-outline" onclick="loadEntities()">Lam moi</button>
+      </div>
+      <div class="panel">
+        <table>
+          <thead>
+            <tr>
+              <th>Ten</th><th>Loai</th><th>Dia diem</th><th>Confidence</th><th>Cap nhat</th><th style="width:90px">Thao tac</th>
+            </tr>
+          </thead>
+          <tbody id="entTable"><tr><td colspan="6" class="loading">Dang tai...</td></tr></tbody>
+        </table>
+        <div class="pagination" id="entPagination"></div>
+      </div>
+    </div>
+
+    <!-- ═══ Itineraries ═══ -->
+    <div class="page" id="page-itineraries">
+      <div class="toolbar">
+        <button class="btn btn-primary" onclick="openCreateItinerary()">+ Them lich trinh</button>
+        <button class="btn btn-outline" onclick="loadItineraries()">Lam moi</button>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Tieu de</th><th>Vung</th><th>Thoi gian</th><th>So diem dung</th><th style="width:90px">Thao tac</th></tr></thead>
+          <tbody id="itinTable"><tr><td colspan="5" class="loading">Dang tai...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ Relationships ═══ -->
+    <div class="page" id="page-relationships">
+      <div class="toolbar">
+        <input type="search" id="relEntityId" placeholder="Entity ID..." style="width:200px"/>
+        <button class="btn btn-primary" onclick="loadRelationships()">Xem</button>
+        <button class="btn btn-accent" onclick="openAddRelationship()">+ Them relationship</button>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>From</th><th>Type</th><th>To</th><th>Name</th><th style="width:60px"></th></tr></thead>
+          <tbody id="relTable"><tr><td colspan="5" class="empty-state">Nhap Entity ID de xem relationships</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ Moderation ═══ -->
+    <div class="page" id="page-moderation">
+      <div class="toolbar">
+        <select id="modStatus" onchange="loadModeration()">
+          <option value="pending">Cho duyet</option>
+          <option value="flagged">Da flag</option>
+          <option value="approved">Da duyet</option>
+          <option value="rejected">Da tu choi</option>
+        </select>
+        <button class="btn btn-outline" onclick="loadModeration()">Lam moi</button>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Noi dung</th><th>Tac gia</th><th>Entity</th><th>Ngay</th><th style="width:120px">Thao tac</th></tr></thead>
+          <tbody id="modTable"><tr><td colspan="5" class="loading">Dang tai...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ Reports ═══ -->
+    <div class="page" id="page-reports">
+      <div class="panel">
+        <table>
+          <thead><tr><th>Nguoi bao cao</th><th>Loai</th><th>Ly do</th><th>Ngay</th><th style="width:120px">Thao tac</th></tr></thead>
+          <tbody id="rptTable"><tr><td colspan="5" class="loading">Dang tai...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ Users ═══ -->
+    <div class="page" id="page-users">
+      <div class="toolbar">
+        <input type="search" id="userSearch" placeholder="Tim user..." onkeyup="if(event.key==='Enter')loadUsers()"/>
+        <button class="btn btn-outline" onclick="loadUsers()">Lam moi</button>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Ten</th><th>SDT</th><th>Role</th><th>Trang thai</th><th>Ngay tao</th><th style="width:100px">Thao tac</th></tr></thead>
+          <tbody id="userTable"><tr><td colspan="6" class="loading">Dang tai...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Entity Modal -->
+<div class="modal-overlay" id="entityModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="entityModalTitle">Them entity</h3>
+      <button class="btn-icon" onclick="closeModal('entityModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="entEditId"/>
+      <div class="form-row">
+        <div class="form-group">
+          <label>ID (slug)</label>
+          <input id="entFormId" placeholder="vi-du-ten-entity" pattern="^[a-z0-9\-]+$"/>
+        </div>
+        <div class="form-group">
+          <label>Loai</label>
+          <select id="entFormType">
+            <option value="experience">Experience</option>
+            <option value="product">Product</option>
+            <option value="dish">Dish</option>
+            <option value="attraction">Attraction</option>
+            <option value="accommodation">Accommodation</option>
+            <option value="craft_village">Craft Village</option>
+            <option value="nature">Nature</option>
+            <option value="event">Event</option>
+            <option value="history">History</option>
+            <option value="economy">Economy</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Ten</label>
+        <input id="entFormName" placeholder="Ten entity"/>
+      </div>
+      <div class="form-group">
+        <label>Mo ta</label>
+        <textarea id="entFormSummary" placeholder="Mo ta ngan..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Place ID</label>
+          <select id="entFormPlaceId"><option value="">-- Chon dia diem --</option></select>
+        </div>
+        <div class="form-group">
+          <label>Confidence (0-1)</label>
+          <input type="number" id="entFormConf" min="0" max="1" step="0.1" value="0.7"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Mua vu (thang, cach dau phay: 1,2,3)</label>
+        <input id="entFormSeason" placeholder="1,2,3,10,11,12"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('entityModal')">Huy</button>
+      <button class="btn btn-primary" onclick="saveEntity()">Luu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Itinerary Modal -->
+<div class="modal-overlay" id="itinModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="itinModalTitle">Them lich trinh</h3>
+      <button class="btn-icon" onclick="closeModal('itinModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="itinEditId"/>
+      <div class="form-row">
+        <div class="form-group">
+          <label>ID</label>
+          <input id="itinFormId" placeholder="lt-vinh-long-2-ngay"/>
+        </div>
+        <div class="form-group">
+          <label>Vung</label>
+          <select id="itinFormArea">
+            <option value="">-- Chon --</option>
+            <option value="vinh-long">Vinh Long</option>
+            <option value="ben-tre">Ben Tre</option>
+            <option value="tra-vinh">Tra Vinh</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Tieu de</label>
+        <input id="itinFormTitle" placeholder="Lich trinh 2 ngay Vinh Long"/>
+      </div>
+      <div class="form-group">
+        <label>Thoi gian</label>
+        <input id="itinFormDuration" placeholder="2 ngay 1 dem"/>
+      </div>
+      <div class="form-group">
+        <label>Mo ta</label>
+        <textarea id="itinFormSummary"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Diem dung (JSON array)</label>
+        <textarea id="itinFormStops" placeholder='[{"id":"cam-sanh-tam-binh","time":"8:00"},{"id":"keo-dua-ben-tre","time":"10:00"}]' style="min-height:100px;font-family:monospace;font-size:.8rem"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('itinModal')">Huy</button>
+      <button class="btn btn-primary" onclick="saveItinerary()">Luu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Relationship Modal -->
+<div class="modal-overlay" id="relModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-head">
+      <h3>Them Relationship</h3>
+      <button class="btn-icon" onclick="closeModal('relModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label>From ID</label><input id="relFormFrom"/></div>
+      <div class="form-group"><label>To ID</label><input id="relFormTo"/></div>
+      <div class="form-group">
+        <label>Type</label>
+        <select id="relFormType">
+          <option value="located_in">located_in</option>
+          <option value="related_to">related_to</option>
+          <option value="part_of">part_of</option>
+          <option value="produced_in">produced_in</option>
+          <option value="served_at">served_at</option>
+          <option value="near">near</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('relModal')">Huy</button>
+      <button class="btn btn-primary" onclick="saveRelationship()">Luu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Login Overlay -->
+<div id="loginOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:999">
+  <div style="background:var(--card);padding:30px;border-radius:var(--radius);width:340px;text-align:center;box-shadow:var(--shadow-md)">
+    <h2 style="margin-bottom:16px;color:var(--primary)">AdminCP Login</h2>
+    <input id="apiKeyInput" type="password" placeholder="Admin API Key" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;margin-bottom:12px" onkeyup="if(event.key==='Enter')submitKey()"/>
+    <button class="btn btn-primary" style="width:100%" onclick="submitKey()">Dang nhap</button>
+  </div>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+
+<script>
+const API = window.location.origin;
+let KEY = localStorage.getItem('vl360_admin_key') || '';
+
+function ensureKey() {
+  if (!KEY) {
+    const overlay = document.getElementById('loginOverlay');
+    if (overlay) overlay.style.display = 'flex';
+    return false;
+  }
+  return true;
+}
+
+function submitKey() {
+  const input = document.getElementById('apiKeyInput');
+  KEY = (input ? input.value : '').trim();
+  if (KEY) {
+    localStorage.setItem('vl360_admin_key', KEY);
+    document.getElementById('loginOverlay').style.display = 'none';
+    loadDashboard();
+  }
+}
+
+function api(path, opts = {}) {
+  if (!ensureKey()) return Promise.reject(new Error('No API key'));
+  const headers = {'Content-Type':'application/json','X-Admin-Key': KEY};
+  return fetch(API + path, {headers, ...opts}).then(r => {
+    if (r.status === 401) { KEY=''; localStorage.removeItem('vl360_admin_key'); ensureKey(); throw new Error('Invalid key'); }
+    if (!r.ok) throw new Error(r.status + ' ' + r.statusText);
+    return r.json();
+  });
+}
+
+function toast(msg, type='success') {
+  const d = document.createElement('div');
+  d.className = 'toast toast-' + type;
+  d.textContent = msg;
+  document.getElementById('toasts').appendChild(d);
+  setTimeout(() => d.remove(), 3500);
+}
+
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const titles = {dashboard:'Dashboard',entities:'Quan ly Entities',itineraries:'Lich trinh',relationships:'Relationships',moderation:'Kiem duyet',reports:'Bao cao',users:'Users'};
+  document.getElementById('pageTitle').textContent = titles[name] || name;
+  if (name === 'dashboard') loadDashboard();
+  if (name === 'entities') loadEntities();
+  if (name === 'itineraries') loadItineraries();
+  if (name === 'moderation') loadModeration();
+  if (name === 'reports') loadReports();
+  if (name === 'users') loadUsers();
+}
+
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+// ── Dashboard ──
+async function loadDashboard() {
+  try {
+    const stats = await api('/admin/stats');
+    const cards = document.getElementById('dashCards');
+    cards.innerHTML = `
+      <div class="stat-card"><div class="label">Entities</div><div class="value">${stats.total_entities}</div></div>
+      <div class="stat-card"><div class="label">Places</div><div class="value">${stats.total_places}</div></div>
+      <div class="stat-card"><div class="label">Relationships</div><div class="value">${stats.total_relationships}</div></div>
+      <div class="stat-card"><div class="label">Lich trinh</div><div class="value">${stats.total_itineraries}</div></div>
+      <div class="stat-card"><div class="label">Can review</div><div class="value" style="color:var(--warn)">${stats.low_confidence}</div></div>
+    `;
+    const types = stats.by_type || {};
+    const chart = document.getElementById('dashTypeChart');
+    chart.innerHTML = Object.entries(types).sort((a,b) => b[1]-a[1]).map(([t,c]) =>
+      `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span class="badge badge-${t}">${t}</span>
+        <div style="flex:1;background:#f0ece4;border-radius:4px;height:20px;overflow:hidden">
+          <div style="width:${Math.round(c/Math.max(...Object.values(types))*100)}%;background:var(--primary);height:100%;border-radius:4px"></div>
+        </div>
+        <span style="font-size:.82rem;font-weight:600;min-width:30px;text-align:right">${c}</span>
+      </div>`
+    ).join('');
+    document.getElementById('dbInfo').textContent = `${stats.total_entities} entities | ${stats.total_relationships} rels`;
+  } catch(e) { toast('Loi tai dashboard: ' + e.message, 'error'); }
+}
+
+// ── Entities ──
+let entPage = 0;
+const entLimit = 50;
+
+async function loadEntities() {
+  const q = document.getElementById('entSearch').value;
+  const type = document.getElementById('entTypeFilter').value;
+  let url = `/admin/entities?limit=${entLimit}&offset=${entPage*entLimit}`;
+  if (q) url += `&q=${encodeURIComponent(q)}`;
+  if (type) url += `&type=${type}`;
+  try {
+    const data = await api(url);
+    const tb = document.getElementById('entTable');
+    if (!data.entities.length) { tb.innerHTML = '<tr><td colspan="6" class="empty-state">Khong co du lieu</td></tr>'; return; }
+    tb.innerHTML = data.entities.map(e => `<tr>
+      <td><strong>${esc(e.name)}</strong><br><small style="color:var(--text-light)">${e.id}</small></td>
+      <td><span class="badge badge-${e.type}">${e.type}</span></td>
+      <td>${esc(e.place_name||e.area||'')}</td>
+      <td>${(e.confidence||0).toFixed(1)}</td>
+      <td>${e.updatedAt||''}</td>
+      <td>
+        <button class="btn-icon" title="Sua" onclick="openEditEntity('${e.id}')">✏️</button>
+        <button class="btn-icon" title="Xoa" onclick="deleteEntity('${e.id}','${esc(e.name)}')">🗑️</button>
+      </td>
+    </tr>`).join('');
+    renderPagination('entPagination', data.total, entPage, entLimit, p => { entPage=p; loadEntities(); });
+  } catch(e) { toast('Loi: ' + e.message, 'error'); }
+}
+
+async function loadPlaces() {
+  try {
+    const places = await api('/admin/entities/places');
+    const sel = document.getElementById('entFormPlaceId');
+    sel.innerHTML = '<option value="">-- Chon dia diem --</option>' +
+      places.map(p => `<option value="${p.id}">${p.name} (${p.area||''})</option>`).join('');
+  } catch(e) {}
+}
+
+function openCreateEntity() {
+  document.getElementById('entityModalTitle').textContent = 'Them entity moi';
+  document.getElementById('entEditId').value = '';
+  document.getElementById('entFormId').value = '';
+  document.getElementById('entFormId').disabled = false;
+  document.getElementById('entFormType').value = 'experience';
+  document.getElementById('entFormName').value = '';
+  document.getElementById('entFormSummary').value = '';
+  document.getElementById('entFormPlaceId').value = '';
+  document.getElementById('entFormConf').value = '0.7';
+  document.getElementById('entFormSeason').value = '';
+  loadPlaces();
+  openModal('entityModal');
+}
+
+async function openEditEntity(id) {
+  try {
+    const e = await api('/admin/entities/' + id);
+    document.getElementById('entityModalTitle').textContent = 'Sua entity';
+    document.getElementById('entEditId').value = id;
+    document.getElementById('entFormId').value = id;
+    document.getElementById('entFormId').disabled = true;
+    document.getElementById('entFormType').value = e.type || 'experience';
+    document.getElementById('entFormName').value = e.name || '';
+    document.getElementById('entFormSummary').value = e.summary || '';
+    document.getElementById('entFormConf').value = e.confidence || 0.7;
+    const season = e.season || {};
+    document.getElementById('entFormSeason').value = (season.months || []).join(',');
+    await loadPlaces();
+    document.getElementById('entFormPlaceId').value = e.placeId || '';
+    openModal('entityModal');
+  } catch(e) { toast('Loi: ' + e.message, 'error'); }
+}
+
+async function saveEntity() {
+  const editId = document.getElementById('entEditId').value;
+  const id = document.getElementById('entFormId').value.trim();
+  const type = document.getElementById('entFormType').value;
+  const name = document.getElementById('entFormName').value.trim();
+  const summary = document.getElementById('entFormSummary').value.trim();
+  const placeId = document.getElementById('entFormPlaceId').value || null;
+  const confidence = parseFloat(document.getElementById('entFormConf').value) || 0.7;
+  const seasonStr = document.getElementById('entFormSeason').value.trim();
+  let season = null;
+  if (seasonStr) {
+    const months = seasonStr.split(',').map(Number).filter(n => n >= 1 && n <= 12);
+    if (months.length) season = {months, peak: []};
+  }
+  if (!name) { toast('Ten khong duoc trong', 'error'); return; }
+  try {
+    if (editId) {
+      await api('/admin/entities/' + editId, {method:'PUT', body:JSON.stringify({type,name,summary,placeId,confidence,season})});
+      toast('Da cap nhat entity');
+    } else {
+      if (!id) { toast('ID khong duoc trong', 'error'); return; }
+      await api('/admin/entities', {method:'POST', body:JSON.stringify({id,type,name,summary,placeId,confidence,season,attributes:{}})});
+      toast('Da tao entity moi');
+    }
+    closeModal('entityModal');
+    loadEntities();
+  } catch(e) { toast('Loi: ' + e.message, 'error'); }
+}
+
+async function deleteEntity(id, name) {
+  if (!confirm(`Xoa entity "${name}"?`)) return;
+  try {
+    await api('/admin/entities/' + id, {method:'DELETE'});
+    toast('Da xoa entity');
+    loadEntities();
+  } catch(e) { toast('Loi: ' + e.message, 'error'); }
+}
+
+// ── Itineraries ──
+async function loadItineraries() {
+  try {
+    const data = await api('/admin/itineraries');
+    const tb = document.getElementById('itinTable');
+    if (!data.length) { tb.innerHTML = '<tr><td colspan="5" class="empty-state">Chua co lich trinh</td></tr>'; return; }
+    tb.innerHTML = data.map(it => `<tr>
+      <td><strong>${esc(it.title)}</strong><br><small>${it.id}</small></td>
+      <td>${it.area||''}</td>
+      <td>${it.duration||''}</td>
+      <td>${(it.stops||[]).length}</td>
+      <td>
+        <button class="btn-icon" onclick="openEditItinerary('${it.id}')">✏️</button>
+        <button class="btn-icon" onclick="deleteItinerary('${it.id}')">🗑️</button>
+      </td>
+    </tr>`).join('');
+  } catch(e) { toast('Loi: ' + e.message, 'error'); }
+}
+
+function openCreateItinerary() {
+  document.getElementById('itinModalTitle').textContent = 'Them lich trinh';
+  document.getElementById('itinEditId').value = '';
+  ['itinFormId','itinFormTitle','itinFormDuration','itinFormSummary','itinFormStops'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('itinFormArea').value = '';
+  document.getElementById('itinFormId').disabled = false;
+  openModal('itinModal');
+}
+
+async function openEditItinerary(id) {
+  try {
+    const it = await api('/admin/itineraries/' + id);
+    document.getElementById('itinModalTitle').textContent = 'Sua lich trinh';
+    document.getElementById('itinEditId').value = id;
+    document.getElementById('itinFormId').value = id;
+    document.getElementById('itinFormId').disabled = true;
+    document.getElementById('itinFormTitle').value = it.title || '';
+    document.getElementById('itinFormArea').value = it.area || '';
+    document.getElementById('itinFormDuration').value = it.duration || '';
+    document.getElementById('itinFormSummary').value = it.summary || '';
+    document.getElementById('itinFormStops').value = JSON.stringify(it.stops || [], null, 2);
+    openModal('itinModal');
+  } catch(e) { toast('Loi: ' + e.message, 'error'); }
+}
+
+async function saveItinerary() {
+  const editId = document.getElementById('itinEditId').value;
+  const id = editId || document.getElementById('itinFormId').value.trim();
+  const title = document.getElementById('itinFormTitle').value.trim();
+  const area = document.getElementById('itinFormArea').value || null;
+  const duration = document.getElementById('itinFormDuration').value.trim();
+  const summary = document.getElementById('itinFormSummary').value.trim();
+  let stops = [];
+  try { stops = JSON.parse(document.getElementById('itinFormStops').value || '[]'); } catch(e) { toast('Stops JSON khong hop le', 'error'); return; }
+  if (!id || !title) { toast('ID va tieu de bat buoc', 'error'); return; }
+  try {
+    const method = editId ? 'PUT' : 'POST';
+    const url = editId ? '/admin/itineraries/' + editId : '/admin/itineraries';
+    await api(url, {method, body:JSON.stringify({id,title,area,duration,summary,stops})});
+    toast(editId ? 'Da cap nhat' : 'Da tao lich trinh');
+    closeModal('itinModal');
+    loadItineraries();
+  } catch(e) { toast('Loi: ' + e.message, 'error'); }
+}
+
+async function deleteItinerary(id) {
+  if (!confirm('Xoa lich trinh ' + id + '?')) return;
+  try {
+    await api('/admin/itineraries/' + id, {method:'DELETE'});
+    toast('Da xoa');
+    loadItineraries();
+  } catch(e) { toast('Loi: ' + e.message, 'error'); }
+}
+
+// ── Relationships ──
+async function loadRelationships() {
+  const eid = document.getElementById('relEntityId').value.trim();
+  if (!eid) return;
+  try {
+    const e = await api('/admin/entities/' + eid);
+    const rels = e.relationships || [];
+    const tb = document.getElementById('relTable');
+    if (!rels.length) { tb.innerHTML = '<tr><td colspan="5" class="empty-state">Khong co relationship</td></tr>'; return; }
+    tb.innerHTML = rels.map(r => `<tr>
+      <td>${r.from_id}</td><td>${r.type}</td><td>${r.to_id}</td><td>${esc(r.name||'')}</td>
+      <td><button class="btn-icon" onclick="deleteRelationship('${r.from_id}','${r.to_id}','${r.type}')">🗑️</button></td>
+    </tr>`).join('');
+  } catch(e) { toast('Loi: ' + e.message, 'error'); }
+}
+
+function openAddRelationship() {
+  document.getElementById('relFormFrom').value = document.getElementById('relEntityId').value || '';
+  document.getElementById('relFormTo').value = '';
+  document.getElementById('relFormType').value = 'related_to';
+  openModal('relModal');
+}
+
+async function saveRelationship() {
+  const from_id = document.getElementById('relFormFrom').value.trim();
+  const to_id = document.getElementById('relFormTo').value.trim();
+  const type = document.getElementById('relFormType').value;
+  if (!from_id || !to_id) { toast('Can nhap From va To', 'error'); return; }
+  try {
+    await api('/admin/relationships', {method:'POST', body:JSON.stringify({from_id, to_id, type})});
+    toast('Da them relationship');
+    closeModal('relModal');
+    loadRelationships();
+  } catch(e) { toast('Loi: ' + e.message, 'error'); }
+}
+
+async function deleteRelationship(from_id, to_id, type) {
+  if (!confirm('Xoa relationship?')) return;
+  try {
+    await api(`/admin/relationships?from_id=${from_id}&to_id=${to_id}&type=${type}`, {method:'DELETE'});
+    toast('Da xoa');
+    loadRelationships();
+  } catch(e) { toast('Loi: ' + e.message, 'error'); }
+}
+
+// ── Moderation ──
+async function loadModeration() {
+  const status = document.getElementById('modStatus').value;
+  try {
+    const data = await api('/admin/moderation/queue?status=' + status);
+    const tb = document.getElementById('modTable');
+    const posts = data.posts || [];
+    if (!posts.length) { tb.innerHTML = '<tr><td colspan="5" class="empty-state">Khong co bai viet</td></tr>'; return; }
+    tb.innerHTML = posts.map(p => `<tr>
+      <td>${esc(p.content)}</td>
+      <td>${esc(p.author)}</td>
+      <td>${esc(p.entity_name||'')}</td>
+      <td>${p.created_at?.split('T')[0]||''}</td>
+      <td>
+        ${status==='pending'||status==='flagged' ? `
+          <button class="btn btn-sm btn-primary" onclick="modAction('${p.id}','approve')">Duyet</button>
+          <button class="btn btn-sm btn-danger" onclick="modAction('${p.id}','reject')">Tu choi</button>
+        ` : ''}
+      </td>
+    </tr>`).join('');
+  } catch(e) { toast('Loi: ' + e.message, 'error'); }
+}
+
+async function modAction(postId, action) {
+  try {
+    await api(`/admin/moderation/${postId}/${action}`, {method:'POST'});
+    toast('Da ' + action);
+    loadModeration();
+  } catch(e) { toast('Loi: ' + e.message, 'error'); }
+}
+
+// ── Reports ──
+async function loadReports() {
+  try {
+    const data = await api('/admin/reports?status=pending');
+    const tb = document.getElementById('rptTable');
+    const rpts = data.reports || [];
+    if (!rpts.length) { tb.innerHTML = '<tr><td colspan="5" class="empty-state">Khong co bao cao</td></tr>'; return; }
+    tb.innerHTML = rpts.map(r => `<tr>
+      <td>${esc(r.reporter_name||'')}</td>
+      <td>${r.target_type}</td>
+      <td>${esc(r.reason)}</td>
+      <td>${r.created_at?.split('T')[0]||''}</td>
+      <td>
+        <button class="btn btn-sm btn-primary" onclick="resolveReport('${r.id}','resolve')">Xu ly</button>
+        <button class="btn btn-sm btn-outline" onclick="resolveReport('${r.id}','dismiss')">Bo qua</button>
+      </td>
+    </tr>`).join('');
+  } catch(e) { toast('Loi: ' + e.message, 'error'); }
+}
+
+async function resolveReport(id, action) {
+  try {
+    await api(`/admin/reports/${id}/${action}`, {method:'POST'});
+    toast('Da xu ly');
+    loadReports();
+  } catch(e) { toast('Loi: ' + e.message, 'error'); }
+}
+
+// ── Users ──
+async function loadUsers() {
+  const search = document.getElementById('userSearch').value;
+  try {
+    const data = await api('/admin/users?search=' + encodeURIComponent(search));
+    const tb = document.getElementById('userTable');
+    const users = data.users || [];
+    if (!users.length) { tb.innerHTML = '<tr><td colspan="6" class="empty-state">Khong co user</td></tr>'; return; }
+    tb.innerHTML = users.map(u => `<tr>
+      <td>${esc(u.display_name)}</td>
+      <td>${u.phone}</td>
+      <td><span class="badge" style="background:${u.role==='admin'?'var(--danger)':u.role==='moderator'?'var(--accent)':'var(--green)'};color:#fff">${u.role}</span></td>
+      <td>${u.is_active ? '<span style="color:var(--success)">Active</span>' : '<span style="color:var(--danger)">Banned</span>'}</td>
+      <td>${u.created_at?.split('T')[0]||''}</td>
+      <td>
+        ${u.is_active ? `<button class="btn btn-sm btn-danger" onclick="banUser('${u.id}')">Ban</button>` : `<button class="btn btn-sm btn-primary" onclick="unbanUser('${u.id}')">Unban</button>`}
+      </td>
+    </tr>`).join('');
+  } catch(e) { toast('Loi: ' + e.message, 'error'); }
+}
+
+async function banUser(id) {
+  if (!confirm('Ban user nay?')) return;
+  try { await api(`/admin/users/${id}/ban`, {method:'POST'}); toast('Da ban'); loadUsers(); } catch(e) { toast('Loi', 'error'); }
+}
+async function unbanUser(id) {
+  try { await api(`/admin/users/${id}/unban`, {method:'POST'}); toast('Da unban'); loadUsers(); } catch(e) { toast('Loi', 'error'); }
+}
+
+// ── Helpers ──
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function renderPagination(containerId, total, currentPage, limit, onPage) {
+  const pages = Math.ceil(total / limit);
+  if (pages <= 1) { document.getElementById(containerId).innerHTML = ''; return; }
+  let html = `<button ${currentPage===0?'disabled':''} onclick="void(0)">←</button>`;
+  for (let i = 0; i < pages && i < 10; i++) {
+    html += `<button class="${i===currentPage?'active':''}" onclick="void(0)">${i+1}</button>`;
+  }
+  html += `<button ${currentPage>=pages-1?'disabled':''} onclick="void(0)">→</button>`;
+  const el = document.getElementById(containerId);
+  el.innerHTML = html;
+  el.querySelectorAll('button').forEach((btn, idx) => {
+    btn.addEventListener('click', () => {
+      if (idx === 0) onPage(Math.max(0, currentPage-1));
+      else if (idx === el.children.length-1) onPage(Math.min(pages-1, currentPage+1));
+      else onPage(idx-1);
+    });
+  });
+}
+
+// Init
+if (KEY) { loadDashboard(); } else { ensureKey(); }
+
+// Handle hash navigation
+function handleHash() {
+  const hash = location.hash.replace('#','') || 'dashboard';
+  const link = document.querySelector(`.sidebar-nav a[href="#${hash}"]`);
+  if (link) showPage(hash, link);
+}
+window.addEventListener('hashchange', handleHash);
+if (location.hash) handleHash();
+</script>
+</body>
+</html>

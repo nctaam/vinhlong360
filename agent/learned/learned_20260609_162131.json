@@ -1,0 +1,362 @@
+[
+  {
+    "id": "bun-suong",
+    "type": "dish",
+    "name": "Bún suông",
+    "placeId": null,
+    "summary": "Món ăn đặc sản nổi bật của Trà Vinh, được bài viết giới thiệu là món làm say lòng du khách khi đến đây. Nội dung còn nhắc các quán bún suông bán vào buổi chiều tối trên đường Điện Biên Phủ và đường Hùng Vương ở Trà Vinh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.shopyte.com.vn",
+      "url": "http://www.shopyte.com.vn/2016/03/bun-suong-ac-san-tra-vinh-thom-ngon.html"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "thanh-tra",
+    "type": "product",
+    "name": "Thanh trà",
+    "placeId": null,
+    "summary": "Đặc sản trái cây của Vĩnh Long được nhắc trong phần bài viết liên quan. Nội dung mô tả thanh trà là loại đặc sản làm nao lòng du khách khi ghé Vĩnh Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.shopyte.com.vn",
+      "url": "http://www.shopyte.com.vn/2016/03/bun-suong-ac-san-tra-vinh-thom-ngon.html"
+    },
+    "confidence": 0.78,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "mam-song-khoai-lang",
+    "type": "dish",
+    "name": "Mắm sống khoai lang",
+    "placeId": null,
+    "summary": "Một đặc sản của Vĩnh Long được nhắc trong phần bài viết liên quan. Nội dung cho thấy đây là món ăn đậm đà, thuộc nhóm đặc sản địa phương của Vĩnh Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.shopyte.com.vn",
+      "url": "http://www.shopyte.com.vn/2016/03/bun-suong-ac-san-tra-vinh-thom-ngon.html"
+    },
+    "confidence": 0.8,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "lang-nghe-gom-do-mang-thit",
+    "type": "craft_village",
+    "name": "Làng nghề gốm đỏ Mang Thít",
+    "placeId": "xa-nhon-phu",
+    "summary": "Làng nghề gốm đỏ nổi tiếng ở huyện Mang Thít, tỉnh Vĩnh Long, nằm dọc bờ sông Cổ Chiên. Đây là khu vực sản xuất gạch ngói và gốm đỏ quy mô lớn, được xem là điểm tham quan đặc trưng của Vĩnh Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "dulichbinhminh.com",
+      "url": "https://dulichbinhminh.com/lang-nghe-gom-mang-thit-vinh-long"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "mam-tep-chua",
+    "type": "product",
+    "name": "Mắm tép chua",
+    "placeId": null,
+    "summary": "Đặc sản mắm tép chua được nhắc là thơm ngon của Bến Tre, thuộc tỉnh Bến Tre.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "bookmarkspring.com",
+      "url": "https://bookmarkspring.com/story4906691/5-simple-statements-about-mon-ngon-de-lam-explained"
+    },
+    "confidence": 0.82,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "quan-bun-nuoc-leo-dung-chuong",
+    "type": "dish",
+    "name": "Quán Bún nước lèo Dũng Chưởng",
+    "placeId": "p-tra-vinh",
+    "summary": "Quán bún nước lèo nổi tiếng được giới thiệu tại Trà Vinh, thường được nhắc đến như một địa chỉ ăn bún nước lèo gần trung tâm thành phố.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "mia.vn",
+      "url": "https://mia.vn/cam-nang-du-lich/mon-bun-nuoc-leo-tra-vinh-17783"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "bun-nuoc-leo-ao-ba-om",
+    "type": "dish",
+    "name": "Bún Nước Lèo Ao Bà Ôm",
+    "placeId": "p-tra-vinh",
+    "summary": "Một quán bún nước lèo được gợi ý ở Trà Vinh, thuộc nhóm địa chỉ nổi tiếng về món bún nước lèo địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "mia.vn",
+      "url": "https://mia.vn/cam-nang-du-lich/mon-bun-nuoc-leo-tra-vinh-17783"
+    },
+    "confidence": 0.74,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "quan-bun-nuoc-leo-cay-sung",
+    "type": "dish",
+    "name": "Quán bún nước lèo Cây Sung",
+    "placeId": "p-tra-vinh",
+    "summary": "Một quán bún nước lèo khác được giới thiệu tại Trà Vinh, phục vụ món ăn đặc trưng của địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "mia.vn",
+      "url": "https://mia.vn/cam-nang-du-lich/mon-bun-nuoc-leo-tra-vinh-17783"
+    },
+    "confidence": 0.72,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "quan-lau-ga-noi-nha-san",
+    "type": "attraction",
+    "name": "Quán Lẩu Gà Nòi Nhà Sàn",
+    "placeId": null,
+    "summary": "Quán ăn nổi tiếng ở Vĩnh Long với món lẩu gà nòi, được giới thiệu là có hương vị độc đáo giữa lòng sông nước miền Tây.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "viettopreview.vn",
+      "url": "https://viettopreview.vn/quan-an-ngon-vinh-long.html"
+    },
+    "confidence": 0.88,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "quan-lau-tai-co",
+    "type": "attraction",
+    "name": "Quán Lẩu Tài Có",
+    "placeId": null,
+    "summary": "Một quán ăn tại Vĩnh Long nổi bật với món lẩu cá chẽm gia truyền, được nhắc đến như địa chỉ quen thuộc của thực khách địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "viettopreview.vn",
+      "url": "https://viettopreview.vn/quan-an-ngon-vinh-long.html"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "quan-met-bun-dau-mam-tom",
+    "type": "attraction",
+    "name": "Quán Mẹt – Bún Đậu Mắm Tôm",
+    "placeId": null,
+    "summary": "Quán ăn ở Vĩnh Long chuyên món bún đậu mắm tôm, mang hương vị Hà Thành nhưng được phục vụ ngay tại địa phương này.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "viettopreview.vn",
+      "url": "https://viettopreview.vn/quan-an-ngon-vinh-long.html"
+    },
+    "confidence": 0.87,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "com-tam-co-tuyet",
+    "type": "attraction",
+    "name": "Cơm Tấm Cô Tuyết",
+    "placeId": null,
+    "summary": "Quán cơm tấm lâu năm tại Vĩnh Long, nổi tiếng nhờ truyền thống phục vụ hơn 20 năm và hương vị quen thuộc với thực khách.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "viettopreview.vn",
+      "url": "https://viettopreview.vn/quan-an-ngon-vinh-long.html"
+    },
+    "confidence": 0.89,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "bun-mam-co-ba",
+    "type": "attraction",
+    "name": "Bún Mắm Cô Ba",
+    "placeId": null,
+    "summary": "Địa chỉ ẩm thực ở Vĩnh Long chuyên món bún mắm, đại diện cho phong vị đặc trưng của miền Tây Nam Bộ.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "viettopreview.vn",
+      "url": "https://viettopreview.vn/quan-an-ngon-vinh-long.html"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "quan-tan-tan",
+    "type": "attraction",
+    "name": "Quán Tân Tân",
+    "placeId": null,
+    "summary": "Quán ăn tại Vĩnh Long phục vụ cơm gia đình theo phong cách miền Tây, phù hợp với nhu cầu ăn uống hằng ngày của khách địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "viettopreview.vn",
+      "url": "https://viettopreview.vn/quan-an-ngon-vinh-long.html"
+    },
+    "confidence": 0.86,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "buffet-nuong-kachu",
+    "type": "attraction",
+    "name": "Buffet Nướng Kachu",
+    "placeId": null,
+    "summary": "Địa điểm buffet nướng ở Vĩnh Long, được giới thiệu như một lựa chọn ăn uống giá rẻ với nhiều món thịt nướng.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "viettopreview.vn",
+      "url": "https://viettopreview.vn/quan-an-ngon-vinh-long.html"
+    },
+    "confidence": 0.88,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "quan-pho-91",
+    "type": "attraction",
+    "name": "Quán Phở 91",
+    "placeId": null,
+    "summary": "Quán phở bò truyền thống tại Vĩnh Long, nổi bật với vị nước dùng đậm đà và phong cách phục vụ quen thuộc.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "viettopreview.vn",
+      "url": "https://viettopreview.vn/quan-an-ngon-vinh-long.html"
+    },
+    "confidence": 0.87,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "quan-meo-u-kitchen",
+    "type": "attraction",
+    "name": "Quán Mèo Ú Kitchen",
+    "placeId": null,
+    "summary": "Một quán ăn hiện đại ở Vĩnh Long, được giới thiệu là thiên đường món Nhật dành cho thực khách thích ẩm thực mới lạ.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "viettopreview.vn",
+      "url": "https://viettopreview.vn/quan-an-ngon-vinh-long.html"
+    },
+    "confidence": 0.84,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "pho-an-vat-bo-ke",
+    "type": "attraction",
+    "name": "Phố Ăn Vặt Bờ Kè",
+    "placeId": null,
+    "summary": "Khu ăn vặt sôi động tại Vĩnh Long, tập trung nhiều món đường phố và là điểm đến quen thuộc của giới trẻ.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "viettopreview.vn",
+      "url": "https://viettopreview.vn/quan-an-ngon-vinh-long.html"
+    },
+    "confidence": 0.87,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "quan-buffet-lau-nuong-kachu",
+    "type": "experience",
+    "name": "Quán Buffet lẩu nướng Kachu",
+    "placeId": "p-long-chau",
+    "summary": "Quán buffet lẩu nướng được nhắc đến trong danh sách quán ngon Vĩnh Long, nổi bật với thực đơn đa dạng và giá bình dân. Địa chỉ ở phường 4, thành phố Vĩnh Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "mia.vn",
+      "url": "https://mia.vn/cam-nang-du-lich/top-10-quan-ngon-vinh-long-danh-cho-cac-tin-do-am-thuc-phan-2-9856"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "pho-91",
+    "type": "dish",
+    "name": "Phở 91",
+    "placeId": "p-long-chau",
+    "summary": "Quán phở lâu đời tại Vĩnh Long, được gợi ý là điểm ăn sáng chất lượng trong bài viết. Địa chỉ ở phường 1, thành phố Vĩnh Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "mia.vn",
+      "url": "https://mia.vn/cam-nang-du-lich/top-10-quan-ngon-vinh-long-danh-cho-cac-tin-do-am-thuc-phan-2-9856"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "meo-u-kitchen-vinh-long",
+    "type": "experience",
+    "name": "MÈO Ú kitchen Vĩnh Long",
+    "placeId": "p-long-chau",
+    "summary": "Một quán ăn được liệt kê trong danh sách quán ngon ở Vĩnh Long. Bài viết có nhắc đến tên quán nhưng không cung cấp địa chỉ cụ thể trong đoạn trích.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "mia.vn",
+      "url": "https://mia.vn/cam-nang-du-lich/top-10-quan-ngon-vinh-long-danh-cho-cac-tin-do-am-thuc-phan-2-9856"
+    },
+    "confidence": 0.75,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "com-nieu-nam-bo",
+    "type": "experience",
+    "name": "Cơm Niêu Nam Bộ",
+    "placeId": "p-long-chau",
+    "summary": "Quán ăn phục vụ các món cơm Việt, đặc biệt là cơm niêu và món ăn dân dã miền Tây tại khu vực Long Khánh. Đây là một địa điểm ăn uống thuộc tỉnh Vĩnh Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "pasgo.vn",
+      "url": "https://pasgo.vn/kham-pha/quan-an-ngon-vinh-long-1868"
+    },
+    "confidence": 0.88,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "keo-dua-ben-tre",
+    "type": "product",
+    "name": "Kẹo dừa Bến Tre",
+    "placeId": "p-ben-tre",
+    "summary": "Đặc sản kẹo dừa nổi tiếng của tỉnh Bến Tre, gắn với vùng trồng dừa trù phú của địa phương. Đây là món quà đặc trưng thường được mua về từ Bến Tre.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "mia.vn",
+      "url": "https://mia.vn/cam-nang-du-lich/top-dac-san-mien-tay-13979"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "dua-sap",
+    "type": "product",
+    "name": "Dừa sáp",
+    "placeId": "p-tra-vinh",
+    "summary": "Đặc sản dừa sáp gắn với Trà Vinh, nổi tiếng nhất ở khu vực Cầu Kè của tỉnh. Đây là loại dừa có phần cơm dày, dẻo và béo, rất đặc trưng của Trà Vinh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "mia.vn",
+      "url": "https://mia.vn/cam-nang-du-lich/top-dac-san-mien-tay-13979"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  }
+]

@@ -1,0 +1,21 @@
+fastapi>=0.115
+uvicorn>=0.34
+openai>=1.82
+python-dotenv>=1.1
+httpx>=0.28
+ddgs>=7.0
+cryptography>=42.0
+mcp>=1.0
+opentelemetry-api>=1.25
+opentelemetry-sdk>=1.25
+
+# Phase 0: Database + Auth + Storage
+psycopg2-binary>=2.9
+redis>=5.0
+Pillow>=10.0
+boto3>=1.35
+
+# Dev / Testing
+pytest>=8.0
+pytest-cov>=6.0
+ruff>=0.9

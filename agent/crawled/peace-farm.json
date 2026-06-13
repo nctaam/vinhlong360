@@ -1,0 +1,17 @@
+{
+  "id": "peace-farm",
+  "type": "attraction",
+  "name": "Peace Farm",
+  "placeId": null,
+  "summary": "Trang đích hiện trả về lỗi 404 nên không có thông tin mô tả, dịch vụ hay liên hệ đáng tin cậy cho địa điểm này trên trang đã cung cấp.",
+  "season": null,
+  "attributes": {},
+  "source": {
+    "title": "vinhlongtourist.vn",
+    "url": "https://vinhlongtourist.vn/vi/peace-farm"
+  },
+  "confidence": 0.85,
+  "updatedAt": "2026-06-10",
+  "_crawled_from": "/vi/peace-farm",
+  "_address_raw": ""
+}

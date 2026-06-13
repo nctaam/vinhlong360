@@ -1,0 +1,155 @@
+{
+  "source": "mytour.vn + mia.vn + baovinhlong.com.vn + baodongkhoi.vn",
+  "crawled_at": "2026-06-10",
+  "note": "Dữ liệu hoàn thiện Phường An Hội (nay là phường TP Vĩnh Long mới, trước là Phường 2 TP Bến Tre) và toàn tỉnh Bến Tre",
+  "an_hoi_ward": [
+    {
+      "name": "Hồ Trúc Giang",
+      "desc": "Hồ nước xanh 2ha giữa trung tâm TP Bến Tre, dân gọi là Bờ Hồ hoặc Hồ Chung Thủy. Xây năm 1930, phục dựng 2006. Bao quanh bởi hàng me tây và phượng vĩ cổ thụ. Có thủy đình giữa hồ. Cho thuê thuyền và xe đạp, khu ẩm thực bờ hồ. Điểm đi bộ sáng-chiều nổi tiếng nhất TP Bến Tre.",
+      "addr": "Phường An Hội (cũ Phường 2), TP Bến Tre — bao quanh bởi Hai Bà Trưng, Nguyễn Trung Trực, Lê Quý Đôn, Trần Quốc Tuấn",
+      "province_old": "Bến Tre",
+      "type": "nature",
+      "tags": ["hồ", "công viên", "thành phố"]
+    },
+    {
+      "name": "Công viên An Hội",
+      "desc": "Công viên đối diện Đình An Hội trên đường Nguyễn Đình Chiểu, điểm vui chơi giải trí trung tâm phường An Hội TP Bến Tre.",
+      "addr": "Đường Nguyễn Đình Chiểu, Phường An Hội, TP Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "attraction"
+    },
+    {
+      "name": "Khu phố ẩm thực Bờ Hồ",
+      "desc": "Khu ẩm thực sầm uất dọc bờ Hồ Trúc Giang, nhiều quán ăn đặc sản Bến Tre: bánh xèo xứ dừa, hải sản, ẩm thực miệt vườn. Hoạt động chiều tối đến khuya.",
+      "addr": "Dọc Hồ Trúc Giang, Phường An Hội, TP Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "dish"
+    }
+  ],
+  "ben_tre_new_attractions": [
+    {
+      "name": "Cồn Quy",
+      "desc": "Cù lao nhỏ trên sông Tiền tại Tân Thạch, Châu Thành. Du khách thưởng thức đờn ca tài tử đặc trưng và trái cây miệt vườn đặc sản. Phù hợp tour 1 ngày kết hợp Cồn Phụng.",
+      "addr": "Xã Tân Thạch, huyện Châu Thành, Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "attraction"
+    },
+    {
+      "name": "Cồn Phú Đa",
+      "desc": "Cù lao xanh tại xã Vĩnh Bình, Chợ Lách, nổi tiếng với ốc gạo đặc sản và không gian cây trái um tùm. Trải nghiệm câu ốc, chèo thuyền, ngủ nhà vườn.",
+      "addr": "Xã Vĩnh Bình, huyện Chợ Lách, Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "attraction"
+    },
+    {
+      "name": "Khu du lịch Lan Vương",
+      "desc": "Khu vui chơi cuối tuần nổi tiếng Bến Tre với cầu lắc, đu dây, farmstay. Phục vụ gia đình và nhóm bạn trẻ, gần trung tâm TP Bến Tre.",
+      "addr": "887 Phú Nhuận, TP Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "attraction"
+    },
+    {
+      "name": "Khu du lịch Làng Bè",
+      "desc": "Khu du lịch mạo hiểm sông nước với trò chơi như đu dây qua sông, bè nổi, kayak. Phù hợp nhóm trẻ thích khám phá.",
+      "addr": "6B ấp Mỹ An, xã An Khánh, huyện Châu Thành, Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "attraction"
+    },
+    {
+      "name": "Khu di tích Lăng mộ Nguyễn Đình Chiểu",
+      "desc": "Di tích quốc gia đặc biệt (2017) — nơi an nghỉ của nhà thơ yêu nước Nguyễn Đình Chiểu (1822-1888). Quần thể 1,5ha, trùng tu 2000, bao gồm lăng mộ cũ 1972. Hằng năm tổ chức lễ hội truyền thống vào 1/7 (sinh) và 3/7 (mất) âm lịch.",
+      "addr": "Xã An Đức, huyện Ba Tri, Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "history",
+      "heritage_level": "Quốc gia đặc biệt"
+    },
+    {
+      "name": "Chùa Vạn Phước Bình Đại",
+      "desc": "Chùa Phật giáo nổi bật với tượng Phật Di Lặc mạ vàng cao 12,45m đặt trong công viên rộng rãi trên tỉnh lộ 883, huyện Bình Đại. Điểm tâm linh và tham quan độc đáo vùng biển BT.",
+      "addr": "Tỉnh lộ 883, huyện Bình Đại, Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "attraction"
+    },
+    {
+      "name": "Làng nghề truyền thống Phú Lễ",
+      "desc": "Làng nghề nổi tiếng với rượu nếp Phú Lễ và nghề đan lán. Có Đình Phú Lễ xây dựng năm 1826 là di tích lịch sử. Nằm tại huyện Ba Tri, đặc sản rượu nếp Phú Lễ nổi tiếng cả miền Nam.",
+      "addr": "Xã Phú Lễ, huyện Ba Tri, Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "craft_village"
+    },
+    {
+      "name": "Làng nghề bánh tráng Mỹ Lồng",
+      "desc": "Làng nghề truyền thống sản xuất bánh tráng Mỹ Lồng — đặc sản Bến Tre hơn 100 năm. Bánh làm từ gạo sỏi và dừa già, nướng than, nhiều phiên bản: sữa, mặn, gừng. Du khách tham quan cơ sở sản xuất.",
+      "addr": "Xã Mỹ Thạnh, huyện Giồng Trôm, Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "craft_village"
+    },
+    {
+      "name": "Làng nghề bánh phồng Sơn Đốc",
+      "desc": "Làng nghề bánh phồng nếp hơn 100 năm tuổi, sản xuất theo phương pháp truyền thống hoàn toàn thủ công. Đặc sản Bến Tre nổi tiếng, du khách tham quan quy trình làm bánh.",
+      "addr": "Xã Hưng Nhượng, huyện Giồng Trôm, Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "craft_village"
+    },
+    {
+      "name": "Bưng Lạc Địa",
+      "desc": "Di tích lịch sử cách mạng tại xã Tân Xuân, huyện Ba Tri — vùng căn cứ kháng chiến quan trọng của Bến Tre. Đang hoàn thiện xây dựng (2025) để phục vụ giáo dục truyền thống và du lịch.",
+      "addr": "Xã Tân Xuân, huyện Ba Tri, Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "history"
+    }
+  ],
+  "ben_tre_products_new": [
+    {
+      "name": "Ốc gạo Cồn Phú Đa",
+      "desc": "Đặc sản ốc gạo cồn Phú Đa, huyện Chợ Lách — ốc nhỏ thịt ngọt, hương vị đặc trưng sông nước miệt vườn Bến Tre. Món ăn bình dân mà nức tiếng.",
+      "province_old": "Bến Tre",
+      "type": "product"
+    },
+    {
+      "name": "Rượu nếp Phú Lễ",
+      "desc": "Rượu nếp truyền thống làng Phú Lễ, huyện Ba Tri, Bến Tre — nổi tiếng cả miền Nam với hương thơm đặc trưng, độ cồn vừa phải, uống mượt.",
+      "province_old": "Bến Tre",
+      "type": "product"
+    },
+    {
+      "name": "Bánh phồng Sơn Đốc",
+      "desc": "Bánh phồng nếp đặc sản Bến Tre từ làng nghề Sơn Đốc, huyện Giồng Trôm — thủ công truyền thống, phồng to khi nướng, giòn thơm đặc trưng.",
+      "province_old": "Bến Tre",
+      "type": "product"
+    }
+  ],
+  "tra_vinh_events": [
+    {
+      "name": "Lễ hội Ok Om Bok",
+      "desc": "Lễ hội dân tộc Khmer lớn nhất Nam Bộ (di sản văn hóa phi vật thể quốc gia), tổ chức hàng năm vào ngày 15/10 âm lịch tại Ao Bà Om. Các hoạt động: đua ghe ngo, thả đèn trời, dâng cốm dẹp lên Mặt Trăng, biểu diễn văn nghệ Khmer. Năm 2025 tổ chức 30/10-5/11/2025.",
+      "addr": "Khu Di tích Ao Bà Om, phường 8, TP Trà Vinh",
+      "province_old": "Trà Vinh",
+      "type": "event"
+    }
+  ],
+  "update_existing": [
+    {
+      "id": "bao-tang-ben-tre",
+      "fields_to_update": {
+        "summary": "Bảo tàng tỉnh Bến Tre, thành lập 1981. Khuôn viên 20.000m², kiến trúc Pháp, mặt tiền hướng sông Bến Tre. Khu trưng bày: di tích quốc gia nơi ở Đại tá Phạm Ngọc Thảo, Nhà dừa (đờn ca tài tử tối 30 hàng tháng), trưng bày ngoài trời (máy bay, pháo, cầu dừa). Phí: 50k người lớn, 20k trẻ em, miễn phí dưới 1m2.",
+        "attributes": {
+          "address": "146 Hùng Vương, phường An Hội, TP Bến Tre",
+          "hours": "7:30-11:30 và 13:30-16:30, Thứ 2 - Thứ 6",
+          "fee": "50.000đ người lớn, 20.000đ trẻ em"
+        }
+      }
+    },
+    {
+      "id": "dinh-an-hoi",
+      "fields_to_update": {
+        "summary": "Đình An Hội, sắc phong năm 1846 (đời Thiệu Trị), do Huỳnh Văn Sắc sáng lập. Diện tích 1.150m², hình chữ Nhất, gỗ quý không dùng đinh, mái ngói âm dương, 17 bệ thờ. Có rồng sứ và tượng Bát Tiên trên mái từ thế kỷ XIX. Di tích cấp tỉnh (2014). Tổ chức lễ Hùng Vương và lễ hội truyền thống.",
+        "attributes": {
+          "address": "Đường Nguyễn Đình Chiểu, Phường An Hội (cũ Phường 2), TP Bến Tre",
+          "area": "1.150m²",
+          "heritage_level": "Cấp tỉnh (2014)"
+        }
+      }
+    }
+  ]
+}

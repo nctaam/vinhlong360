@@ -1,0 +1,139 @@
+# ──────────────────────────────────────────────────────────────
+# vinhlong360 — Continuous Integration
+#
+# Runs on every push to main and on pull requests.
+# Jobs: lint, test, docker build verification, secret scanning.
+# ──────────────────────────────────────────────────────────────
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel superseded runs on the same branch/PR
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── 1. Lint ────────────────────────────────────────────────
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ruff
+        run: pip install ruff
+
+      # Check for style violations (non-zero exit = failure)
+      - name: Run ruff check
+        run: ruff check agent/ tests/ --output-format=github
+
+      # Verify import sorting
+      - name: Run ruff format check
+        run: ruff format --check agent/ tests/
+
+  # ── 2. Test ────────────────────────────────────────────────
+  test:
+    name: Test (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Cache pip packages between runs to speed up installs
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            pip-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest-cov
+
+      - name: Run tests with coverage
+        env:
+          # Dummy values so modules that read env vars at import time
+          # don't crash.  No real API calls are made during tests.
+          LLM_API_KEY: "test-ci-key"
+          LLM_BASE_URL: "http://localhost:9999/v1"
+          LLM_MODEL: "test-model"
+          LLM_MODEL_MINI: "test-model-mini"
+          ADMIN_API_KEY: "test-admin-key"
+          CORS_ORIGINS: "http://localhost:8360"
+        run: |
+          pytest tests/ \
+            -v \
+            --tb=short \
+            --cov=agent \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage.xml
+
+      # Upload the coverage report as a build artifact
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+          retention-days: 14
+
+  # ── 3. Docker build ────────────────────────────────────────
+  docker:
+    name: Docker build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Buildx gives us layer caching and multi-platform support
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Build only -- do NOT push.  This verifies the Dockerfile
+      # produces a valid image without publishing anything.
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: vinhlong360-agent:ci-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ── 4. Security — secret scanning ─────────────────────────
+  security:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history needed for diff-based scanning
+
+      # TruffleHog scans the entire git history for leaked secrets
+      # (API keys, tokens, passwords).  Fails the build if any are found.
+      - name: Run TruffleHog
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified

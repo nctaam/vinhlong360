@@ -1,0 +1,191 @@
+[
+  {
+    "name": "Bãi biển Ba Động",
+    "type": "nature",
+    "desc": "Bãi biển hoang sơ dài hàng km tại xã Trường Long Hòa, cách trung tâm TP Trà Vinh 55km về hướng đông nam. Nổi tiếng với 3 động cát xuất hiện khi thủy triều rút, hàng phi lao xanh rì chạy dọc bờ biển và cánh đồng điện gió ngoài khơi. Vào cửa tự do.",
+    "addr": "Xã Trường Long Hòa, thị xã Duyên Hải, Trà Vinh",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Chùa Vàm Ray (Wat Samrong)",
+    "type": "attraction",
+    "desc": "Ngôi chùa Khmer lớn nhất Việt Nam tọa lạc tại huyện Trà Cú, nổi bật với tượng Phật ngoài trời cao 54m — lớn nhất cả nước. Kiến trúc rực rỡ màu vàng đặc trưng Khmer với họa tiết điêu khắc đại diện các vị thần ở mái vòm, tường và cột; khuôn viên rộng lớn thu hút hàng vạn phật tử.",
+    "addr": "Ấp Vàm Rây, xã Hàm Thuận, huyện Trà Cú, Trà Vinh",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Chùa Hang (Kompong Chrây)",
+    "type": "attraction",
+    "desc": "Ngôi chùa Phật giáo Nam tông Khmer thành lập năm 1637, cách TP Trà Vinh 5km về hướng nam. Đặc điểm nổi bật là cổng chùa xây dạng hang mái vòm độc đáo, không giống bất kỳ chùa Khmer nào trong tỉnh; bên trong có xưởng thủ công điêu khắc gỗ truyền thống hoạt động đến ngày nay.",
+    "addr": "Khóm 3, thị trấn Châu Thành, huyện Châu Thành, Trà Vinh",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Chùa Cò Nodol",
+    "type": "nature",
+    "desc": "Ngôi chùa Khmer xây dựng năm 1677 với khuôn viên 6ha là nơi trú ngụ của hàng nghìn con cò trắng, diệc xám và cò đen mỏ vàng quanh năm. Tên Chùa Cò xuất phát từ hàng nghìn con chim trú ngụ trên cây trong khuôn viên chùa, tạo nên cảnh quan sinh thái độc đáo gắn liền với kiến trúc Khmer cổ kính.",
+    "addr": "Ấp Giồng Lớn, xã Đại An, huyện Trà Cú, Trà Vinh",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Rừng Đước Long Khánh Duyên Hải",
+    "type": "nature",
+    "desc": "Khu sinh thái rừng ngập mặn rộng gần 700ha tại xã Long Khánh, huyện Duyên Hải — một trong những khu rừng đước nguyên sinh đặc trưng của Nam Bộ. Du khách chèo thuyền len lỏi qua tán đước cổ thụ, quan sát đa dạng chim và thủy sinh; lý tưởng cho du lịch sinh thái và nhiếp ảnh.",
+    "addr": "Xã Long Khánh, huyện Duyên Hải, Trà Vinh",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Cù Lao Tân Quy Cầu Kè",
+    "type": "nature",
+    "desc": "Cù lao xanh diện tích 929ha nằm giữa sông Hậu thuộc xã An Phú Tân, huyện Cầu Kè, cách TP Trà Vinh 45km. Nổi tiếng là vương quốc trái cây miền Tây với vườn trái cây trĩu cành; du khách đạp xe, tắm sông, chèo thuyền, hái trái cây và thưởng thức đặc sản miệt vườn.",
+    "addr": "Xã An Phú Tân, huyện Cầu Kè, Trà Vinh",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Cánh đồng Điện Gió Duyên Hải",
+    "type": "attraction",
+    "desc": "Cụm điện gió lớn tại huyện Duyên Hải với hàng chục trụ turbine khổng lồ dọc bờ biển và ngoài khơi. Cây cầu dẫn ra khu vận hành là điểm check-in nổi tiếng mạng xã hội với nền trời xanh và màu trắng của turbine; kết hợp tham quan cùng Bãi biển Ba Động liền kề.",
+    "addr": "Ấp Định An, xã Đông Hải, huyện Duyên Hải, Trà Vinh",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Nhà thờ Mặc Bắc Tiểu Cần",
+    "type": "attraction",
+    "desc": "Nhà thờ Công giáo kiến trúc La Mã – Pháp độc đáo, khuôn viên rộng hơn 1ha tại thị trấn Cầu Quan, huyện Tiểu Cần. Là một trong những nhà thờ lớn và có kiến trúc đặc sắc nhất Đồng bằng sông Cửu Long, pha trộn Đông – Tây.",
+    "addr": "Thị trấn Cầu Quan, huyện Tiểu Cần, Trà Vinh",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Phước Minh Cung (Chùa Ông Trà Vinh)",
+    "type": "attraction",
+    "desc": "Ngôi cung thờ tín ngưỡng của cộng đồng người Hoa tại TP Trà Vinh, kiến trúc đặc trưng Hoa Nam với nhiều mảng điêu khắc, tranh tường và hiện vật cổ quý giá; phản ánh sự giao thoa văn hóa Việt – Hoa – Khmer đặc sắc.",
+    "addr": "44 Điện Biên Phủ, phường 3, thành phố Trà Vinh",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Khu Du Lịch Sinh Thái Huỳnh Kha",
+    "type": "attraction",
+    "desc": "Khu vui chơi giải trí tích hợp lớn nhất tỉnh Trà Vinh ngay tại trung tâm thành phố, kết hợp sinh thái, nhà hàng ẩm thực và resort. Không gian xanh mát với nhiều trò chơi giải trí, hồ bơi và dịch vụ lưu trú; phù hợp cho gia đình.",
+    "addr": "Phường 4, thành phố Trà Vinh",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Bảo tàng Văn hóa Dân tộc Khmer Trà Vinh",
+    "type": "history",
+    "desc": "Bảo tàng khánh thành năm 1997, diện tích 1.700m² trong khuôn viên 1ha ngay trong quần thể Ao Bà Om. Trưng bày hơn 800 hiện vật, hình ảnh về đời sống văn hóa vật chất và tinh thần của người Khmer vùng sông Cửu Long; vào cửa miễn phí, mở cửa 7:00–11:00 và 13:00–17:00.",
+    "addr": "Khóm 4, phường 8, thành phố Trà Vinh — trong khu di tích Ao Bà Om",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Đền thờ Bác Hồ Trà Vinh",
+    "type": "history",
+    "desc": "Di tích lịch sử cấp quốc gia, khởi công 10/3/1970 và khánh thành 26/1/1971 ngay trong thời chiến tranh — biểu tượng lòng trung kiên của nhân dân Trà Vinh. Khuôn viên rộng 5,4ha gồm đền thờ chính, nhà trưng bày cuộc đời Bác Hồ, mô hình nhà sàn, ao cá và không gian xanh yên tĩnh.",
+    "addr": "Ấp Vĩnh Hội, xã Long Đức, thành phố Trà Vinh (cách trung tâm 4km phía Bắc)",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Đình Long Đức Trà Vinh",
+    "type": "history",
+    "desc": "Đình thần xây dựng cuối thế kỷ XIX, thờ Thành Hoàng Bổn Cảnh và phối thờ Trần Trung Tiên; được Bộ VHTTDL công nhận Di tích Kiến trúc Nghệ thuật Quốc gia năm 2021. Kiến trúc đình Nam Bộ truyền thống với nhiều mảng chạm khắc tinh tế.",
+    "addr": "Xã Long Đức, thành phố Trà Vinh",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Chùa Ông Mẹt Botum Vong Sa Som Rong",
+    "type": "history",
+    "desc": "Ngôi chùa Khmer di tích cấp quốc gia tọa lạc ngay trung tâm TP Trà Vinh, nổi tiếng với hệ thống 32 trụ cột gỗ quý chạm khắc tinh xảo. Là một trong những ngôi chùa Phật giáo Nam tông cổ nhất và có giá trị kiến trúc nghệ thuật cao nhất tại Trà Vinh.",
+    "addr": "1 Lê Lợi, phường 1, thành phố Trà Vinh",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Dừa Sáp Cầu Kè",
+    "type": "product",
+    "desc": "Đặc sản độc nhất vô nhị của Trà Vinh, chỉ ra trái sáp tại vùng đất Cầu Kè nhờ khí hậu và thổ nhưỡng đặc thù; lịch sử hơn 100 năm từ năm 1924. Phần cơm dày, mềm dẻo và đặc sệt như kem, vị béo thanh; sản phẩm chế biến đạt OCOP 5 sao cấp quốc gia.",
+    "addr": "Huyện Cầu Kè, Trà Vinh",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Bánh Tét Trà Cuôn",
+    "type": "product",
+    "desc": "Đặc sản bánh tét gia truyền 80 năm của ấp Trà Cuôn, xã Kim Hòa, cách TP Trà Vinh 12km. Nhân gồm đậu xanh, tôm khô, lạp xưởng và trứng muối; nổi tiếng đủ màu xanh – trắng – đen nhờ gạo nếp, lá dứa và tro. Đã xuất khẩu sang châu Âu và Bắc Mỹ.",
+    "addr": "Ấp Trà Cuôn, xã Kim Hòa, huyện Cầu Ngang, Trà Vinh",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Tôm khô Vinh Kim",
+    "type": "product",
+    "desc": "Đặc sản tôm khô làm từ tép bạc đất nuôi ở vùng nước lợ Vinh Kim, có vị ngọt đậm và màu đỏ cam tự nhiên không phụ gia. Chế biến theo phương pháp truyền thống phơi nắng tự nhiên; là nguyên liệu quan trọng trong các món đặc sản Trà Vinh.",
+    "addr": "Xã Vinh Kim, huyện Cầu Ngang, Trà Vinh",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Mắm Bò Hóc Trà Vinh",
+    "type": "product",
+    "desc": "Loại mắm truyền thống của người Khmer Trà Vinh, làm từ cá lóc ủ với muối và cơm nguội trong 3 tháng. Vị mặn mà, thơm nồng đặc trưng; ăn kèm rau sống và là nguyên liệu bắt buộc trong nước dùng bún nước lèo Trà Vinh.",
+    "addr": "Trà Vinh (phổ biến ở các huyện đông đồng bào Khmer: Trà Cú, Châu Thành, Cầu Kè)",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Trái Quách Trà Vinh",
+    "type": "product",
+    "desc": "Loại trái cây đặc hữu của Trà Vinh, hình cầu cứng, ruột vàng có vị chua thanh ngọt mát và mùi thơm đặc trưng. Thường được múc ruột pha với đường và đá làm nước giải khát mùa hè; ít được trồng nơi khác, trở thành sản vật đặc hữu mang về làm quà.",
+    "addr": "Trà Vinh (phổ biến ở huyện Châu Thành và Càng Long)",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Bún Nước Lèo Trà Vinh",
+    "type": "dish",
+    "desc": "Đặc sản ẩm thực số một của Trà Vinh, nước dùng nấu từ mắm bò hóc – loại mắm đặc trưng của người Khmer – kết hợp tôm, cá, thịt heo quay; ăn kèm bắp chuối, rau muống, bông súng. Phản ánh sự giao thoa văn hóa ẩm thực Việt – Hoa – Khmer đặc sắc.",
+    "addr": "Toàn tỉnh Trà Vinh; quán nổi tiếng: Dũng Chưởng (94a Đồng Khởi, P.6), Hai Tòng (Nguyễn Trãi, TP Trà Vinh)",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Bánh Canh Bến Có Trà Vinh",
+    "type": "dish",
+    "desc": "Đặc sản ẩm thực nổi tiếng hơn 20 năm tại Bến Có, Quốc lộ 53; sợi bánh làm từ gạo đầu mùa to tròn, dai giòn không bị nở. Nước dùng ninh xương heo và mực nướng nhiều giờ, tô đầy đủ thịt nạc, giò heo, lòng heo và rau ghém.",
+    "addr": "Quốc lộ 53, ấp Bến Có, xã Nguyệt Hóa, huyện Châu Thành, Trà Vinh",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Bún Suông Trà Vinh",
+    "type": "dish",
+    "desc": "Món bún đặc trưng với sợi suông — chả tôm màu cam làm từ tôm tươi giã nhuyễn, dai thơm — ăn cùng thịt ba chỉ trong nước dùng ngọt thanh. Khác biệt hoàn toàn với bún suông Huế; phổ biến vào chiều tối tại các con đường trung tâm TP Trà Vinh.",
+    "addr": "Đường Điện Biên Phủ và Hùng Vương, thành phố Trà Vinh",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Cháo Ám Trà Vinh",
+    "type": "dish",
+    "desc": "Món cháo đặc sắc của Trà Vinh, nấu từ cá lóc tươi gỡ thành miếng xào với hành thơm, kết hợp trứng cá, mực khô nướng và tôm khô. Hương vị phức hợp ngọt thanh từ cá, bùi từ mực tôm; ăn kèm rau đắng và giá sống theo phong cách dân dã miền Tây.",
+    "addr": "Thành phố Trà Vinh và các huyện thị",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Loi Choi Sả Ớt Trà Vinh",
+    "type": "dish",
+    "desc": "Món đặc sản độc đáo từ con loi choi — loài dài 20–40cm sống ở bãi bùn ven sông — chiên giòn trong dầu nóng với sả và ớt tươi. Vị béo, thơm sả và cay cay; là món ăn đặc hữu chỉ có ở vùng sông nước Trà Vinh.",
+    "addr": "Thành phố Trà Vinh và ven sông các huyện Châu Thành, Cầu Ngang",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Làng Dệt Chiếu Cà Hom Hàm Tân",
+    "type": "craft_village",
+    "desc": "Làng nghề dệt chiếu cổ truyền gần 100 năm của người Khmer tại xã Hàm Tân, huyện Trà Cú; Bộ VHTTDL công nhận Di sản Văn hóa Phi vật thể Quốc gia năm 2024. Chiếu Cà Hom đặc sắc với 5 màu chủ đạo; hơn 200 hộ gia đình sản xuất gần 5.000 chiếu/năm.",
+    "addr": "Ấp Chợ, Cà Hom, Bến Bạ, xã Hàm Tân, huyện Trà Cú, Trà Vinh",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Làng Hoa Kiểng Long Đức Trà Vinh",
+    "type": "craft_village",
+    "desc": "Làng nghề trồng hoa kiểng hình thành từ những năm 1960, UBND tỉnh công nhận năm 2011; là làng hoa lớn nhất tỉnh với hơn 130 hộ trên 20ha chuyên canh. Sản xuất khoảng 450.000 chậu hoa/năm gồm cúc, vạn thọ, hoa giấy, bon sai, thược dược; nhộn nhịp nhất dịp Tết.",
+    "addr": "Xã Long Đức, thành phố Trà Vinh",
+    "province_old": "Trà Vinh"
+  },
+  {
+    "name": "Làng Đan Lát Đức Mỹ Càng Long",
+    "type": "craft_village",
+    "desc": "Làng nghề tiểu thủ công nghiệp tại xã Đức Mỹ, huyện Càng Long, chuyên đan lát thủ công truyền thống từ tre, lát và các vật liệu tự nhiên. Sản phẩm đa dạng gồm giỏ, thúng, sọt và đồ gia dụng; là nguồn thu nhập chính và điểm tham quan làng nghề trong tour địa phương.",
+    "addr": "Xã Đức Mỹ, huyện Càng Long, Trà Vinh",
+    "province_old": "Trà Vinh"
+  }
+]

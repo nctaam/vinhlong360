@@ -1,0 +1,17 @@
+{
+  "id": "chua-phuoc-hau",
+  "type": "attraction",
+  "name": "Chùa Phước Hậu",
+  "placeId": null,
+  "summary": "Trang được cung cấp hiện trả về lỗi 404 nên không có đủ thông tin chi tiết về địa điểm. Chỉ xác định được đây là trang giới thiệu Chùa Phước Hậu trên cổng du lịch Vĩnh Long.",
+  "season": null,
+  "attributes": {},
+  "source": {
+    "title": "vinhlongtourist.vn",
+    "url": "https://vinhlongtourist.vn/vi/chua-phuoc-hau"
+  },
+  "confidence": 0.85,
+  "updatedAt": "2026-06-10",
+  "_crawled_from": "/vi/chua-phuoc-hau",
+  "_address_raw": null
+}

@@ -1,0 +1,17 @@
+{
+  "id": "nha-dua-cocohome",
+  "type": "accommodation",
+  "name": "Nhà dừa Cocohome",
+  "placeId": null,
+  "summary": "Trang được cung cấp đang trả về lỗi 404 nên không có thông tin chi tiết về địa điểm này trong nội dung đã cho. Chỉ có thể suy ra đây có thể là một cơ sở lưu trú tên Cocohome từ URL.",
+  "season": null,
+  "attributes": {},
+  "source": {
+    "title": "vinhlongtourist.vn",
+    "url": "https://vinhlongtourist.vn/vi/nha-dua-cocohome"
+  },
+  "confidence": 0.85,
+  "updatedAt": "2026-06-10",
+  "_crawled_from": "/vi/nha-dua-cocohome",
+  "_address_raw": ""
+}

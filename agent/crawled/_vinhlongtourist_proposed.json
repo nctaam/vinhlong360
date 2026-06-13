@@ -1,0 +1,558 @@
+[
+  {
+    "id": "co-so-san-xuat-peace-farm",
+    "type": "experience",
+    "name": "Cơ sở sản xuất Peace Farm",
+    "placeId": "p-long-chau",
+    "summary": "Cơ sở sản xuất và kinh doanh nông sản, trải nghiệm nông nghiệp, giờ 7:00-18:00.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "phone": "0908370824",
+      "email": "hienpeacefarm@gmail.com",
+      "address": "79 Tân Quới Đông, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "du-lich-vuon-chu-7-gat-vlt",
+    "type": "attraction",
+    "name": "Du lịch vườn chú 7 Gặt",
+    "placeId": "xa-an-binh",
+    "summary": "Tham quan vườn trái cây, ăn uống đồng quê: gà, cá lóc, lươn, ếch, cá tai tượng, óc bu. Giờ 7:00-18:00.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "phone": "0978304031",
+      "email": "leminhnhi01012987@gmail.com",
+      "address": "Ấp Phú Xuân, xã An Bình, huyện Long Hồ"
+    }
+  },
+  {
+    "id": "lo-com-cuu-long-vlt",
+    "type": "craft_village",
+    "name": "Lò cốm Cửu Long",
+    "placeId": "xa-an-binh",
+    "summary": "Cơ sở sản xuất cốm truyền thống trên cù lao An Bình, cạnh nhà dừa CocoHome, sản xuất cốm nếp đặc sản Nam Bộ. Giờ 7:00-18:00.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "phone": "0932871175",
+      "email": "cocohomevinhlong@gmail.com",
+      "address": "Ấp Hoà Quí, xã An Bình, huyện Long Hồ"
+    }
+  },
+  {
+    "id": "chua-gia-kiet",
+    "type": "attraction",
+    "name": "Chùa Gia Kiết",
+    "placeId": "xa-tra-on",
+    "summary": "Chùa Khmer tọa lạc tại xã Trà Côn, một trong nhóm chùa Khmer tiêu biểu của Vĩnh Long (Gia Kiết, Tòa Sen, Kỳ Son, Đại Thọ). Giờ 7:00-18:00.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "email": "chuagiakiet@gmail.com",
+      "address": "Xã Trà Côn, huyện Trà Ôn"
+    }
+  },
+  {
+    "id": "one-hotel",
+    "type": "accommodation",
+    "name": "ONE HOTEL",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn 2 sao tại trung tâm TP Vĩnh Long, có phòng Deluxe, VIP, bungalow gia đình.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "phone": "0973272777",
+      "email": "longthanhnguyen199@gmail.com",
+      "address": "34 Trưng Nữ Vương, Phường Long Châu, TP Vĩnh Long",
+      "stars": "2 sao"
+    }
+  },
+  {
+    "id": "the-grand-hotel-vinh-long",
+    "type": "accommodation",
+    "name": "The Grand Hotel Vĩnh Long",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn boutique vị trí đắc địa, phòng sạch hiện đại yên tĩnh, gần ẩm thực và giải trí. Có trên Agoda, Booking.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "phone": "0786796339",
+      "email": "info@thegrandmaisons.com",
+      "address": "67F Võ Văn Kiệt, Phường Long Châu, TP Vĩnh Long",
+      "stars": "boutique"
+    }
+  },
+  {
+    "id": "khach-san-paris-vinh-long",
+    "type": "accommodation",
+    "name": "Khách sạn Paris Vĩnh Long",
+    "placeId": "p-phuoc-hau",
+    "summary": "Khách sạn với WiFi miễn phí, mini bar, thang máy, điều hòa, vòi sen.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "phone": "0938126216",
+      "email": "parishotel.cafe@gmail.com",
+      "address": "Trần Phú, Phường Phước Hậu, TP Vĩnh Long",
+      "stars": "nhà nghỉ"
+    }
+  },
+  {
+    "id": "khach-san-vin-vinh-long",
+    "type": "accommodation",
+    "name": "Khách Sạn Vin Vĩnh Long",
+    "placeId": "p-phuoc-hau",
+    "summary": "Khách sạn 2 sao, tiếp tân 24h, WiFi miễn phí, ATM, bãi xe riêng.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "phone": "02703883666",
+      "email": "ksvinhotelvinhlong@gmail.com",
+      "address": "PG2-08A và PG2-18 Phạm Thái Bường, Phường Phước Hậu, TP Vĩnh Long",
+      "stars": "2 sao"
+    }
+  },
+  {
+    "id": "nha-hang-huong-sen",
+    "type": "dish",
+    "name": "Nhà hàng Hương Sen",
+    "placeId": "p-phuoc-hau",
+    "summary": "Nhà hàng ẩm thực không gian rộng, thoáng mát.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "51/14B Phạm Thái Bường, Phường Phước Hậu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "nha-hang-am-thuc-pho",
+    "type": "dish",
+    "name": "Nhà hàng Ẩm Thực Phố",
+    "placeId": "p-phuoc-hau",
+    "summary": "Quán ăn rộng rãi trên đường Phạm Thái Bường, phù hợp tiệc liên hoan.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "52/1 Phạm Thái Bường, Phường Phước Hậu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "nha-hang-ngan-vinh",
+    "type": "dish",
+    "name": "Nhà hàng Ngân Vinh",
+    "placeId": "p-phuoc-hau",
+    "summary": "Nhà hàng ẩm thực đa dạng món ăn.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "phone": "02703820731",
+      "address": "33/12 Phạm Thái Bường, Phường Phước Hậu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "nha-hang-phuong-thuy",
+    "type": "dish",
+    "name": "Nhà hàng Phương Thủy",
+    "placeId": "p-long-chau",
+    "summary": "Nhà hàng view sông Tiền thoáng mát, ẩm thực đa dạng.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Số 2 Phan Bội Châu, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "nha-hang-sau-tu",
+    "type": "dish",
+    "name": "Nhà hàng Sáu Tú",
+    "placeId": "p-long-chau",
+    "summary": "Quán ăn ấm cúng bình dân, đặc sản đồng quê Nam Bộ.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "284 Phạm Hùng, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "nha-hang-song-thao",
+    "type": "dish",
+    "name": "Nhà hàng Song Thảo",
+    "placeId": "p-long-chau",
+    "summary": "Ẩm thực gia đình dân dã đồng quê, không gian rộng rãi.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "252 Tân Quới Hưng, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "nha-hang-thien-tan",
+    "type": "dish",
+    "name": "Nhà hàng Thiên Tân",
+    "placeId": "p-phuoc-hau",
+    "summary": "Không gian lớn thoáng mát, phù hợp tổ chức tiệc và liên hoan.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "51/1 Phạm Thái Bường, Phường Phước Hậu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "tau-nha-hang-sai-gon-vinh-long",
+    "type": "dish",
+    "name": "Tàu nhà hàng Sài Gòn Vĩnh Long",
+    "placeId": "p-long-chau",
+    "summary": "Nhà hàng độc đáo trên tàu neo đậu bến công viên Sông Tiền, gần cầu Cái Cá. Trải nghiệm ẩm thực trên sông.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "04 Hưng Đạo Vương, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "banh-nhat-ngoc",
+    "type": "product",
+    "name": "Bánh Nhật Ngọc",
+    "placeId": "p-tan-hanh",
+    "summary": "Cơ sở sản xuất bánh đặc sản Vĩnh Long.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "19L/4 ấp Tân Hưng, xã Tân Hạnh, huyện Long Hồ"
+    }
+  },
+  {
+    "id": "cho-vinh-long",
+    "type": "attraction",
+    "name": "Chợ Vĩnh Long",
+    "placeId": "p-long-chau",
+    "summary": "Chợ truyền thống trung tâm thành phố Vĩnh Long, mua sắm đặc sản địa phương.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Đoàn Thị Điểm, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "cua-hang-dac-san-mekong",
+    "type": "attraction",
+    "name": "Cửa hàng đặc sản Mekong",
+    "placeId": "p-long-chau",
+    "summary": "Cửa hàng đặc sản địa phương, trái cây, bưởi sấy, quà tặng.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "92 Nguyễn Thị Minh Khai, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "cua-hang-thuc-pham-an-toan-hoa-sao",
+    "type": "attraction",
+    "name": "Cửa hàng thực phẩm an toàn Hoa Sao",
+    "placeId": "p-long-chau",
+    "summary": "Cửa hàng thực phẩm an toàn, sản phẩm nông nghiệp sạch Vĩnh Long.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "72A Nguyễn Huệ, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "diem-trung-bay-ocop-vinh-long",
+    "type": "attraction",
+    "name": "Điểm trưng bày OCOP Vĩnh Long",
+    "placeId": "p-long-chau",
+    "summary": "Điểm giới thiệu và bán sản phẩm OCOP, nông nghiệp tỉnh Vĩnh Long.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "12C Hoàng Thái Hiếu, Phường Long Châu, TP Vĩnh Long"
+    }
+  },
+  {
+    "id": "xoai-cat-num-vung-liem",
+    "type": "product",
+    "name": "Xoài Cát Núm Vũng Liêm",
+    "placeId": null,
+    "summary": "Đặc sản xoài cát hạt nhỏ của huyện Vũng Liêm, vị ngọt thanh, là quà quê đậm tình người Vĩnh Long.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "banh-la-dua-vinh-long",
+    "type": "product",
+    "name": "Bánh lá dứa Vĩnh Long",
+    "placeId": null,
+    "summary": "Bánh truyền thống gói lá dứa thơm đặc trưng của đồng bằng sông Cửu Long.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "nghe-det-luc-binh-vinh-long",
+    "type": "craft_village",
+    "name": "Nghề dệt lục bình Vĩnh Long",
+    "placeId": null,
+    "summary": "Nghề thủ công truyền thống đan các sản phẩm từ sợi lục bình (bèo lục bình), tạo ra giỏ, túi, chiếu thủ công.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10"
+  },
+  {
+    "id": "lang-nghe-che-tac-mat-na-khmer-nguyet-hoa",
+    "type": "craft_village",
+    "name": "Làng nghề chế tác mặt nạ Khmer Nguyệt Hóa",
+    "placeId": "xa-tra-on",
+    "summary": "Làng nghề truyền thống của đồng bào Khmer tại phường Nguyệt Hóa, chuyên chế tác mặt nạ, mão, tượng Phật. Di sản văn hóa phi vật thể.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Phường Nguyệt Hóa, TP Trà Vinh"
+    }
+  },
+  {
+    "id": "tour-nha-gom-tat-muong-bat-ca",
+    "type": "experience",
+    "name": "Tour Nhà Gốm - Tát Mương Bắt Cá",
+    "placeId": null,
+    "summary": "Tour 6 điểm: tham quan nhà gốm truyền thống và trải nghiệm tát mương bắt cá đặc trưng miền Tây.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "company": "Thiên Ý Thành",
+      "duration": "1 ngày"
+    }
+  },
+  {
+    "id": "tour-vuong-quoc-gach-ngoi-mang-thit",
+    "type": "experience",
+    "name": "Tour Vương quốc Gạch Ngói Mang Thít",
+    "placeId": null,
+    "summary": "Tour tàu 5 điểm: khám phá làng nghề gạch ngói Mang Thít - Vương quốc đỏ nổi tiếng Vĩnh Long.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "company": "Thiên Ý Thành",
+      "duration": "1 ngày"
+    }
+  },
+  {
+    "id": "tour-song-nuoc-cai-be-vinh-long",
+    "type": "experience",
+    "name": "Tour Sông Nước Cái Bè - Vĩnh Long",
+    "placeId": null,
+    "summary": "Tour ngày sông nước miệt vườn kết hợp Cái Bè (Tiền Giang) và Vĩnh Long, khám phá cù lao An Bình.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "company": "Mekong Travel",
+      "duration": "1 ngày"
+    }
+  },
+  {
+    "id": "tour-dem-miet-vuon-vinh-long",
+    "type": "experience",
+    "name": "Tour Đêm Miệt Vườn Vĩnh Long",
+    "placeId": null,
+    "summary": "Tour đêm trải nghiệm văn hóa miệt vườn Nam Bộ, thưởng thức đờn ca tài tử, ẩm thực đặc sản.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "company": "Mekong Travel",
+      "duration": "1 ngày"
+    }
+  },
+  {
+    "id": "tour-cai-thia-lang-xoai-cat-hoa-loc",
+    "type": "experience",
+    "name": "Tour Cái Thia - Làng Xoài Cát Hòa Lộc",
+    "placeId": null,
+    "summary": "Tour khám phá Cái Thia và làng xoài Cát Hòa Lộc nổi tiếng.",
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "company": "Mekong Travel",
+      "duration": "1 ngày"
+    }
+  }
+]

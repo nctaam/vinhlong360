@@ -1,0 +1,228 @@
+{
+  "source": "baovinhlong.com.vn",
+  "crawled_at": "2026-06-10",
+  "note": "Du lịch Bến Tre và Trà Vinh - nay thuộc Vĩnh Long mới sau sáp nhập 2025",
+  "ben_tre_attractions": [
+    {
+      "name": "Cồn Phụng (Cồn Ông Đạo Dừa)",
+      "desc": "Cù lao giữa sông Tiền nổi tiếng với sản xuất kẹo dừa, đồ lưu niệm từ dừa, vườn cây ăn trái. Du khách tham quan kẹo dừa, uống trà mật ong, nghe đờn ca tài tử và chèo xuồng ba lá.",
+      "addr": "Xã Tân Thạch, huyện Châu Thành, Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "attraction"
+    },
+    {
+      "name": "Sân chim Vàm Hồ",
+      "desc": "Khu sinh thái là nơi trú ngụ của gần 500.000 con cò và vạc cùng rừng chà là. Du khách dạo rừng, bơi xuồng len lỏi trong rừng, tham quan căn cứ kháng chiến, đi qua cầu tre.",
+      "addr": "Xã Mỹ Hòa và Tân Xuân, huyện Ba Tri, Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "nature"
+    },
+    {
+      "name": "Vườn cây ăn trái Cái Mơn",
+      "desc": "Vườn nổi tiếng với sầu riêng Cái Mơn, cung ứng hàng triệu cây giống các loại: sầu riêng, măng cụt, xoài cát, nhãn tiêu, bòn bon. Nhiều nghệ nhân chuyên về cây cảnh tạo hình.",
+      "addr": "Xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "attraction"
+    },
+    {
+      "name": "Làng du kích Đồng Khởi",
+      "desc": "Di tích lịch sử nơi bùng phát phong trào Đồng Khởi 1960, có khu triển lãm vũ khí thô sơ người dân Bến Tre dùng chống xâm lược.",
+      "addr": "Xã Định Thủy, huyện Mỏ Cày Nam, Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "history"
+    },
+    {
+      "name": "Nhà cổ Huỳnh Phủ",
+      "desc": "Di tích kiến trúc cấp quốc gia xây 1890-1904 (14 năm), phong cách Huế. 500m² với 48 cột gỗ lim và căm xe, chạm khắc cua cá tôm kỳ lân phụng. Bàn thờ sơn son thếp vàng, hai giường lim nguyên vẹn.",
+      "addr": "Xã Đại Điền, huyện Thạnh Phú, Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "history"
+    },
+    {
+      "name": "Bảo tàng tỉnh Bến Tre",
+      "desc": "Bảo tàng kiến trúc Pháp (1 trệt 1 lầu, 474m²) trong khuôn viên 13.000m². Trưng bày lịch sử văn hóa và các hiện vật kháng chiến của vùng đất xứ dừa.",
+      "addr": "TP Bến Tre, Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "attraction"
+    },
+    {
+      "name": "Cồn Bửng",
+      "desc": "Khu du lịch sinh thái ven biển trên cù lao Thạnh Hải, huyện Thạnh Phú, với bãi cát và rừng ngập mặn.",
+      "addr": "Xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "nature"
+    },
+    {
+      "name": "Cồn Nhàn",
+      "desc": "Khu du lịch sinh thái ven biển Ba Tri, khám phá cồn cát và rừng dương.",
+      "addr": "Huyện Ba Tri, Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "nature"
+    },
+    {
+      "name": "Biển Thừa Đức",
+      "desc": "Bãi biển du lịch tại xã Thới Thuận, huyện Bình Đại, vùng biển phía Đông Bến Tre.",
+      "addr": "Xã Thới Thuận, huyện Bình Đại, Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "nature"
+    },
+    {
+      "name": "Khu du lịch sinh thái Anh Ba Khía",
+      "desc": "Khu du lịch sinh thái được chọn là nơi ra mắt Chi hội Du lịch Bình Đại (5/2026). Trải nghiệm thiên nhiên và đặc sản cua, khía vùng biển Bình Đại.",
+      "addr": "Huyện Bình Đại, Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "attraction"
+    },
+    {
+      "name": "Đồng muối Bảo Thạnh",
+      "desc": "Làng nghề truyền thống sản xuất muối (công nhận 2008), 600ha với 761 hộ làm muối. Muối Ba Tri/Bảo Thạnh nổi tiếng với vị mặn dịu, không chát.",
+      "addr": "Xã Bảo Thạnh, huyện Ba Tri, Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "craft_village"
+    },
+    {
+      "name": "Đình An Hội",
+      "desc": "Di tích cấp tỉnh tại phường An Hội, TP Bến Tre. Gắn liền lịch sử văn hóa địa phương.",
+      "addr": "Phường An Hội, TP Bến Tre, Bến Tre",
+      "province_old": "Bến Tre",
+      "type": "history"
+    },
+    {
+      "name": "Cây Gội Nước Di Sản Bến Tre",
+      "desc": "Cây Gội nước hơn 200 năm tuổi, chu vi gốc 200cm, cao 15m, tán 30-35m. Được công nhận Cây Di sản Việt Nam ngày 24/4/2026. Nằm tại phường Mỹ Tân.",
+      "addr": "Phường Mỹ Tân, phường Bến Tre, TP Vĩnh Long",
+      "province_old": "Bến Tre",
+      "type": "nature"
+    },
+    {
+      "name": "Công viên Mỹ Hóa",
+      "desc": "Công viên đường Hùng Vương, phường Bến Tre, nơi tổ chức Tuần lễ Văn hóa-Ẩm thực Bến Tre 2026 (24/4-3/5/2026), thu hút 3.000-5.000 lượt khách/ngày.",
+      "addr": "Đường Hùng Vương, phường Bến Tre, TP Vĩnh Long",
+      "province_old": "Bến Tre",
+      "type": "attraction"
+    }
+  ],
+  "ben_tre_products": [
+    {
+      "name": "Kẹo dừa Bến Tre",
+      "desc": "Đặc sản nổi tiếng nhất xứ dừa, chế biến từ dừa tươi vị ngọt thanh, có nhiều hương vị: truyền thống, sầu riêng, đậu phộng, cacao. Biểu tượng ẩm thực Bến Tre.",
+      "province_old": "Bến Tre",
+      "type": "product"
+    },
+    {
+      "name": "Bánh tráng Mỹ Lồng",
+      "desc": "Bánh tráng đặc sản làng Mỹ Lồng chế biến từ gạo sỏi và dừa già, nướng bếp than, có nhiều phiên bản: sữa, mặn, gừng. Làng nghề bánh tráng nổi tiếng nhất BT.",
+      "province_old": "Bến Tre",
+      "type": "product"
+    },
+    {
+      "name": "Rượu dừa Bến Tre",
+      "desc": "Rượu lên men từ 100% nước dừa nguyên chất, đựng trong vỏ trái dừa tươi thay vì hũ thủy tinh - sản phẩm đặc trưng và độc đáo của xứ dừa.",
+      "province_old": "Bến Tre",
+      "type": "product"
+    },
+    {
+      "name": "Cua Bình Đại",
+      "desc": "Cua nuôi hoàn toàn thiên nhiên dưới tán rừng ngập mặn huyện Bình Đại, vị thịt ngọt chắc, đặc sản biển đặc trưng vùng Bình Đại.",
+      "province_old": "Bến Tre",
+      "type": "product"
+    },
+    {
+      "name": "Muối Ba Tri",
+      "desc": "Muối sản xuất tại làng nghề Bảo Thạnh, huyện Ba Tri (600ha). Vị mặn dịu không chát đặc trưng - sản phẩm OCOP nổi tiếng Bến Tre.",
+      "province_old": "Bến Tre",
+      "type": "product"
+    },
+    {
+      "name": "Sầu riêng Cái Mơn",
+      "desc": "Sầu riêng đặc sản trồng tại xã Vĩnh Thành, huyện Chợ Lách - vùng chuyên canh nổi tiếng khắp ĐBSCL, giống sầu riêng Cái Mơn là giống uy tín nhất Nam Bộ.",
+      "province_old": "Bến Tre",
+      "type": "product"
+    }
+  ],
+  "tra_vinh_attractions": [
+    {
+      "name": "Ao Bà Om",
+      "desc": "Hồ nước cổ nổi tiếng nhất Trà Vinh, 500m × 300m, bao quanh cây cổ thụ hàng trăm năm. Bên cạnh là Bảo tàng Văn hóa Khmer và Chùa Âng. Nơi tổ chức lễ hội Ok Om Bok.",
+      "addr": "Khóm 3, phường 8, TP Trà Vinh",
+      "province_old": "Trà Vinh",
+      "type": "attraction"
+    },
+    {
+      "name": "Chùa Âng (Angkorajaborey)",
+      "desc": "Chùa Khmer cổ kính tọa lạc đối diện Ao Bà Om, một trong những chùa Khmer đẹp và cổ nhất Trà Vinh, thường tổ chức lễ hội lớn.",
+      "addr": "Phường 8, TP Trà Vinh",
+      "province_old": "Trà Vinh",
+      "type": "attraction"
+    },
+    {
+      "name": "Rừng Đước Duyên Hải",
+      "desc": "Khu rừng ngập mặn gần 700ha tại xã Long Khánh, huyện Duyên Hải. Hệ sinh thái đa dạng với động thực vật quý hiếm. Du khách khám phá bằng xuồng hoặc đi bộ.",
+      "addr": "Xã Long Khánh, huyện Duyên Hải, Trà Vinh",
+      "province_old": "Trà Vinh",
+      "type": "nature"
+    },
+    {
+      "name": "Cù Lao Tân Quy",
+      "desc": "Cù lao khoảng 929ha tại huyện Cầu Kè, một trong những điểm du lịch đầu tiên của Trà Vinh. Nổi tiếng vườn trái cây đa dạng: chôm chôm, măng cụt, nhãn, sầu riêng. Trải nghiệm đạp xe, tắm sông, câu cá.",
+      "addr": "Xã An Phú Tân, huyện Cầu Kè, Trà Vinh",
+      "province_old": "Trà Vinh",
+      "type": "attraction"
+    },
+    {
+      "name": "Cồn Chim Trà Vinh",
+      "desc": "Cồn 60ha tại xã Hòa Minh, mô hình du lịch cộng đồng bền vững (tôm-lúa). Đặc trưng 'du lịch hẹn theo mùa', du khách đặt trước theo mùa vụ, trải nghiệm đồng quê.",
+      "addr": "Xã Hòa Minh, huyện Châu Thành, Trà Vinh",
+      "province_old": "Trà Vinh",
+      "type": "attraction"
+    },
+    {
+      "name": "Cồn Hô",
+      "desc": "Cồn 22ha nổi tiếng với mô hình 'du lịch không điện về đêm', 21 hộ dân tham gia. Khách trải nghiệm đêm miệt vườn với đèn dầu, giữ nguyên không gian làng quê thuần túy.",
+      "addr": "Xã Mỹ Đức, huyện Càng Long, Trà Vinh",
+      "province_old": "Trà Vinh",
+      "type": "attraction"
+    },
+    {
+      "name": "Sokfarm Tiểu Cần",
+      "desc": "Nông trại hữu cơ chuyên sản xuất mật hoa dừa tươi hữu cơ (Sokfarm), kết hợp du lịch trải nghiệm nông nghiệp. Sản phẩm đạt chứng nhận hữu cơ quốc tế.",
+      "addr": "Huyện Tiểu Cần, Trà Vinh",
+      "province_old": "Trà Vinh",
+      "type": "attraction"
+    },
+    {
+      "name": "Biển Ba Động",
+      "desc": "Bãi biển đẹp của Trà Vinh tại phường Trường Long Hòa, huyện Duyên Hải. Bãi cát dài, rừng dương ven biển, là điểm nghỉ mát phổ biến của ĐBSCL.",
+      "addr": "Phường Trường Long Hòa, huyện Duyên Hải, Trà Vinh",
+      "province_old": "Trà Vinh",
+      "type": "nature"
+    },
+    {
+      "name": "Làng nghề bánh tét Trà Cuôn",
+      "desc": "Làng nghề truyền thống chuyên làm bánh tét Trà Cuôn - đặc sản nổi tiếng Trà Vinh với vỏ lá chuối xanh, nhân thịt-đậu thơm đặc trưng.",
+      "addr": "Trà Vinh",
+      "province_old": "Trà Vinh",
+      "type": "craft_village"
+    }
+  ],
+  "tra_vinh_products": [
+    {
+      "name": "Dừa sáp Cầu Kè",
+      "desc": "Đặc sản hiếm có thế giới của huyện Cầu Kè, Trà Vinh. Thịt dày mềm như bơ, nước ít trong, hàm lượng dầu và dinh dưỡng rất cao. Sản phẩm OCOP 5 sao.",
+      "province_old": "Trà Vinh",
+      "type": "product"
+    },
+    {
+      "name": "Mật hoa dừa Sokfarm",
+      "desc": "Sản phẩm mật hoa dừa tươi hữu cơ (coconut blossom nectar) đạt chuẩn quốc tế từ nông trại Sokfarm, huyện Tiểu Cần. Chứng nhận hữu cơ, xuất khẩu nhiều nước.",
+      "province_old": "Trà Vinh",
+      "type": "product"
+    },
+    {
+      "name": "Bánh tét Trà Cuôn",
+      "desc": "Bánh tét đặc sản Trà Vinh của làng nghề Trà Cuôn, thơm vỏ chuối, nhân thịt đậu cân đối, nổi tiếng khắp ĐBSCL và là quà quê được nhiều người yêu thích.",
+      "province_old": "Trà Vinh",
+      "type": "product"
+    }
+  ]
+}

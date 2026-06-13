@@ -1,0 +1,142 @@
+# ──────────────────────────────────────────────────────────────
+# vinhlong360 — Release & Deploy
+#
+# Triggered when a version tag (v*) is pushed, e.g.:
+#   git tag v1.2.0 && git push origin v1.2.0
+#
+# Jobs:
+#   1. Build and push a Docker image to GitHub Container Registry
+#   2. Create a GitHub Release with auto-generated changelog
+# ──────────────────────────────────────────────────────────────
+
+name: Deploy
+
+on:
+  push:
+    tags:
+      - "v*"
+
+# Permissions required for GHCR push and release creation
+permissions:
+  contents: write        # create GitHub Releases
+  packages: write        # push to ghcr.io
+  id-token: write        # OIDC for signing (optional, future-proofing)
+
+jobs:
+  # ── 1. Build & push Docker image to GHCR ──────────────────
+  docker-publish:
+    name: Build & push Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Extract version from the git tag (e.g. v1.2.0 -> 1.2.0)
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Authenticate to GitHub Container Registry using the built-in
+      # GITHUB_TOKEN (no extra secrets required)
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Generate OCI-compliant image labels (version, commit, date, etc.)
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          # Embed build info as labels for traceability
+          build-args: |
+            BUILD_VERSION=${{ steps.version.outputs.VERSION }}
+            BUILD_SHA=${{ github.sha }}
+
+  # ── 2. Create GitHub Release ───────────────────────────────
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: docker-publish   # release only after a successful image push
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history for changelog generation
+
+      # Generate a changelog from conventional commits since the
+      # previous tag.  Falls back to a commit-list diff if there
+      # is no prior tag.
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Find the previous tag (if any)
+          PREV_TAG=$(git tag --sort=-v:refname | grep '^v' | sed -n '2p')
+
+          if [ -n "$PREV_TAG" ]; then
+            echo "Generating changelog from $PREV_TAG to $GITHUB_REF_NAME"
+            CHANGES=$(git log "$PREV_TAG".."$GITHUB_REF_NAME" \
+              --pretty=format:"- %s (%h)" \
+              --no-merges)
+          else
+            echo "No previous tag found — using full log"
+            CHANGES=$(git log --pretty=format:"- %s (%h)" --no-merges -30)
+          fi
+
+          # Write multi-line output safely
+          {
+            echo "CHANGELOG<<CHANGELOG_EOF"
+            echo "$CHANGES"
+            echo "CHANGELOG_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: |
+            ## What's Changed
+
+            ${{ steps.changelog.outputs.CHANGELOG }}
+
+            ## Docker Image
+
+            ```bash
+            docker pull ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+            ```
+
+            ## Quick Start
+
+            ```bash
+            # Copy and configure environment
+            cp .env.example .env
+            # Edit .env with your API keys
+
+            # Run with Docker Compose
+            docker compose up -d
+            ```
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

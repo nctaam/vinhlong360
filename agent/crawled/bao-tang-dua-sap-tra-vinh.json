@@ -1,0 +1,17 @@
+{
+  "id": "bao-tang-dua-sap-tra-vinh",
+  "type": "attraction",
+  "name": "Bảo tàng dừa sáp Trà Vinh",
+  "placeId": null,
+  "summary": "Trang đích hiện trả về lỗi 404 nên không trích xuất được thông tin chi tiết về địa điểm. Tên địa điểm được suy ra từ URL, nhưng các dữ liệu như địa chỉ, dịch vụ, giờ mở cửa và số điện thoại không có trong nội dung cung cấp.",
+  "season": null,
+  "attributes": {},
+  "source": {
+    "title": "vinhlongtourist.vn",
+    "url": "https://vinhlongtourist.vn/vi/bao-tang-dua-sap-tra-vinh"
+  },
+  "confidence": 0.85,
+  "updatedAt": "2026-06-10",
+  "_crawled_from": "/vi/bao-tang-dua-sap-tra-vinh",
+  "_address_raw": null
+}

@@ -1,0 +1,17 @@
+{
+  "id": "lo-com-cuu-long",
+  "type": "dish",
+  "name": "Lò cơm Cửu Long",
+  "placeId": null,
+  "summary": "Trang được cung cấp đang trả về lỗi 404 nên không có thông tin chi tiết về địa điểm/dịch vụ. Dựa trên URL, đây có vẻ là một mục ẩm thực mang tên Lò cơm Cửu Long.",
+  "season": null,
+  "attributes": {},
+  "source": {
+    "title": "vinhlongtourist.vn",
+    "url": "https://vinhlongtourist.vn/vi/lo-com-cuu-long"
+  },
+  "confidence": 0.85,
+  "updatedAt": "2026-06-10",
+  "_crawled_from": "/vi/lo-com-cuu-long",
+  "_address_raw": ""
+}

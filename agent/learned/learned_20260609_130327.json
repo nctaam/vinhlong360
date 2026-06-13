@@ -1,0 +1,572 @@
+[
+  {
+    "id": "bao-tang-van-hoa-dan-toc-khmer-tinh-tra-vinh",
+    "type": "attraction",
+    "name": "Bảo tàng Văn hóa dân tộc Khmer tỉnh Trà Vinh",
+    "placeId": "p-tra-vinh",
+    "summary": "Bảo tàng lưu giữ và trưng bày nhiều hiện vật, tư liệu về lịch sử, đời sống và văn hóa truyền thống của đồng bào Khmer ở Trà Vinh. Đây là điểm tham quan nổi bật trong quần thể văn hóa - du lịch của thành phố Trà Vinh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "mia.vn",
+      "url": "https://mia.vn/cam-nang-du-lich/bao-tang-van-hoa-dan-toc-khmer-tra-vinh-14463"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "bai-bien-ba-dong",
+    "type": "nature",
+    "name": "bãi biển Ba Động",
+    "placeId": null,
+    "summary": "Bãi biển nổi tiếng của tỉnh Trà Vinh, được nhắc đến như một trong những thắng cảnh tiêu biểu của địa phương. Đây là điểm đến ven biển đáng chú ý ở khu vực đồng bằng sông Cửu Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baotanglichsu.vn",
+      "url": "https://baotanglichsu.vn/vi/Articles/3096/16337/bao-tang-van-hoa-dan-toc-khmer-tinh-tra-vinh.html"
+    },
+    "confidence": 0.84,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "song-co-chien",
+    "type": "nature",
+    "name": "sông Cổ Chiên",
+    "placeId": null,
+    "summary": "Một nhánh của sông Tiền tạo ranh giới tự nhiên giữa Trà Vinh với Bến Tre. Con sông này được nhắc đến như một mốc địa lý quan trọng của tỉnh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baotanglichsu.vn",
+      "url": "https://baotanglichsu.vn/vi/Articles/3096/16337/bao-tang-van-hoa-dan-toc-khmer-tinh-tra-vinh.html"
+    },
+    "confidence": 0.86,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "song-hau",
+    "type": "nature",
+    "name": "sông Hậu",
+    "placeId": null,
+    "summary": "Con sông tạo ranh giới tự nhiên giữa Trà Vinh và Sóc Trăng. Đây là một thực thể địa lý quan trọng trong mô tả vị trí của tỉnh Trà Vinh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baotanglichsu.vn",
+      "url": "https://baotanglichsu.vn/vi/Articles/3096/16337/bao-tang-van-hoa-dan-toc-khmer-tinh-tra-vinh.html"
+    },
+    "confidence": 0.84,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "bao-tang-van-hoa-dan-toc-khmer",
+    "type": "attraction",
+    "name": "Bảo tàng văn hóa dân tộc Khmer",
+    "placeId": "p-tra-vinh",
+    "summary": "Không gian trưng bày, giới thiệu văn hóa Khmer tại Trà Vinh, nằm trong cụm danh thắng Ao Bà Om.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "dantoc.vietnamtourism.gov.vn",
+      "url": "https://dantoc.vietnamtourism.gov.vn/bao-ton-phat-huy-ban-sac-van-hoa-dan-toc-khmer-tra-vinh/"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "chua-kompong-ong-met",
+    "type": "attraction",
+    "name": "Chùa Kompong (Ông Mẹt)",
+    "placeId": "p-tra-vinh",
+    "summary": "Ngôi chùa cổ của cộng đồng Khmer ở Trà Vinh, được nhắc đến như một trung tâm sinh hoạt tín ngưỡng và văn hóa.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "dantoc.vietnamtourism.gov.vn",
+      "url": "https://dantoc.vietnamtourism.gov.vn/bao-ton-phat-huy-ban-sac-van-hoa-dan-toc-khmer-tra-vinh/"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "thach-boi",
+    "type": "person",
+    "name": "Thạch Bồi",
+    "placeId": "p-tra-vinh",
+    "summary": "Phó Giám đốc Sở Văn hóa, Thể thao và Du lịch tỉnh Trà Vinh, có phát biểu về công tác gìn giữ chùa Khmer và bản sắc văn hóa Khmer.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "dantoc.vietnamtourism.gov.vn",
+      "url": "https://dantoc.vietnamtourism.gov.vn/bao-ton-phat-huy-ban-sac-van-hoa-dan-toc-khmer-tra-vinh/"
+    },
+    "confidence": 0.89,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "thach-sok-xane",
+    "type": "person",
+    "name": "Thạch Sok Xane",
+    "placeId": "p-tra-vinh",
+    "summary": "Hòa thượng, lãnh đạo Phật giáo tại Trà Vinh, đồng thời là Sư Cả chùa Âng và nêu ý kiến về việc chăm lo đời sống đồng bào Khmer.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "dantoc.vietnamtourism.gov.vn",
+      "url": "https://dantoc.vietnamtourism.gov.vn/bao-ton-phat-huy-ban-sac-van-hoa-dan-toc-khmer-tra-vinh/"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "thach-oai",
+    "type": "person",
+    "name": "Thạch Oai",
+    "placeId": "p-tra-vinh",
+    "summary": "Hòa thượng, Sư Cả chùa Kompong (Ông Mẹt), cho biết đây là ngôi chùa cổ của cộng đồng Khmer ở Trà Vinh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "dantoc.vietnamtourism.gov.vn",
+      "url": "https://dantoc.vietnamtourism.gov.vn/bao-ton-phat-huy-ban-sac-van-hoa-dan-toc-khmer-tra-vinh/"
+    },
+    "confidence": 0.89,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "chi-thi-19-ct-tw",
+    "type": "history",
+    "name": "Chỉ thị 19-CT/TW",
+    "placeId": null,
+    "summary": "Văn bản của Ban Bí thư Trung ương Đảng được nhắc tới trong bối cảnh tăng cường công tác ở vùng đồng bào Khmer.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "dantoc.vietnamtourism.gov.vn",
+      "url": "https://dantoc.vietnamtourism.gov.vn/bao-ton-phat-huy-ban-sac-van-hoa-dan-toc-khmer-tra-vinh/"
+    },
+    "confidence": 0.84,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "don-ca-tai-tu-nam-bo",
+    "type": "experience",
+    "name": "Đờn ca tài tử Nam bộ",
+    "placeId": null,
+    "summary": "Loại hình nghệ thuật âm nhạc truyền thống của Nam Bộ, được trình diễn trong gia đình, đám cưới, đám giỗ, lễ hội và các buổi sinh hoạt văn hóa. Nội dung trang mô tả đây là một đặc sản tinh thần gắn với đời sống người dân Vĩnh Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/đon-ca-tai-tu"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "nhom-bong-hong-vang",
+    "type": "experience",
+    "name": "Nhóm Bông Hồng Vàng",
+    "placeId": "p-long-chau",
+    "summary": "Một nhóm đờn ca tài tử đang hoạt động tại Vĩnh Long, được nhắc đến như một trong những nhóm tiêu biểu. Nhóm phục vụ biểu diễn và tham gia sinh hoạt văn nghệ cho khách du lịch và người dân địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/đon-ca-tai-tu"
+    },
+    "confidence": 0.86,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "nhom-truong-an",
+    "type": "experience",
+    "name": "Nhóm Trường An",
+    "placeId": "p-long-chau",
+    "summary": "Một nhóm đờn ca tài tử tại Vĩnh Long được liệt kê trong số các nhóm hoạt động thường xuyên. Đây là một trong những lực lượng góp phần duy trì sinh hoạt đờn ca tài tử ở địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/đon-ca-tai-tu"
+    },
+    "confidence": 0.84,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "cau-lac-bo-du-lich-cuu-long",
+    "type": "experience",
+    "name": "Câu lạc bộ Du lịch Cửu Long",
+    "placeId": "p-long-chau",
+    "summary": "Câu lạc bộ đờn ca tài tử ở Vĩnh Long, hình thành theo hướng bán chuyên nghiệp để phục vụ nhu cầu du lịch. Đơn vị này được nêu như một điểm đáng chú ý trong hệ thống câu lạc bộ của tỉnh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/đon-ca-tai-tu"
+    },
+    "confidence": 0.85,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "cau-lac-bo-trung-tam-van-hoa-thong-tin-vinh-long",
+    "type": "experience",
+    "name": "Câu lạc bộ Trung tâm Văn hóa Thông tin Vĩnh Long",
+    "placeId": "p-long-chau",
+    "summary": "Câu lạc bộ đờn ca tài tử gắn với Trung tâm Văn hóa Thông tin Vĩnh Long. Đây là một trong các tổ chức được nhắc đến khi nói về phong trào đờn ca tài tử của tỉnh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/du-khach/đon-ca-tai-tu"
+    },
+    "confidence": 0.85,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "vinh-long",
+    "type": "nature",
+    "name": "Vĩnh Long",
+    "placeId": "p-long-chau",
+    "summary": "Tỉnh được bài viết nhắc đến như vùng đất có phong trào đờn ca tài tử phát triển sớm và còn lưu truyền mạnh mẽ trong đời sống văn hóa địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202312/doi-dieu-suy-nghi-ve-nghe-thuat-don-ca-tai-tu-o-vinh-long-3178360/"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "long-ho",
+    "type": "nature",
+    "name": "Long Hồ",
+    "placeId": "xa-long-ho",
+    "summary": "Huyện được nhắc trong bối cảnh tổ chức hội thi Đờn ca tài tử - cải lương, góp phần duy trì phong trào nghệ thuật địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202312/doi-dieu-suy-nghi-ve-nghe-thuat-don-ca-tai-tu-o-vinh-long-3178360/"
+    },
+    "confidence": 0.86,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "hoi-thi-don-ca-tai-tu-cai-luong-huyen-long-ho",
+    "type": "event",
+    "name": "Hội thi Đờn ca tài tử - cải lương huyện Long Hồ",
+    "placeId": "xa-long-ho",
+    "summary": "Một hoạt động văn hóa nghệ thuật được nhắc đến trong bài, gắn với phong trào đờn ca tài tử ở địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202312/doi-dieu-suy-nghi-ve-nghe-thuat-don-ca-tai-tu-o-vinh-long-3178360/"
+    },
+    "confidence": 0.82,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "tong-huu-dinh",
+    "type": "person",
+    "name": "Tống Hữu Định",
+    "placeId": null,
+    "summary": "Nghệ nhân được nêu là người có công sáng kiến \"Ca ra bộ\", mở đầu cho sân khấu cải lương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202312/doi-dieu-suy-nghi-ve-nghe-thuat-don-ca-tai-tu-o-vinh-long-3178360/"
+    },
+    "confidence": 0.88,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "tran-quang-quon",
+    "type": "person",
+    "name": "Trần Quang Quờn",
+    "placeId": null,
+    "summary": "Nghệ nhân tài tử được nhắc đến với sở trường đặt bài ca tài tử, san định nhạc lý và sáng tác bài \"Bá Lý Hề\".",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202312/doi-dieu-suy-nghi-ve-nghe-thuat-don-ca-tai-tu-o-vinh-long-3178360/"
+    },
+    "confidence": 0.88,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "truong-duy-toan",
+    "type": "person",
+    "name": "Trương Duy Toản",
+    "placeId": null,
+    "summary": "Nhân vật có công đặt nhiều bài ca ái quốc và soạn nhiều tuồng tích cho các đoàn cải lương mới thành lập.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202312/doi-dieu-suy-nghi-ve-nghe-thuat-don-ca-tai-tu-o-vinh-long-3178360/"
+    },
+    "confidence": 0.88,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "ba-du",
+    "type": "person",
+    "name": "Ba Du",
+    "placeId": null,
+    "summary": "Nghệ sĩ nhân dân được bài viết nhắc đến như một người có nhiều đóng góp cho nghệ thuật đờn ca tài tử và sân khấu cải lương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202312/doi-dieu-suy-nghi-ve-nghe-thuat-don-ca-tai-tu-o-vinh-long-3178360/"
+    },
+    "confidence": 0.8,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "ut-tra-on",
+    "type": "person",
+    "name": "Út Trà Ôn",
+    "placeId": "xa-tra-on",
+    "summary": "Nghệ sĩ nhân dân được nêu trong nhóm nghệ sĩ có nhiều đóng góp cho đờn ca tài tử và cải lương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202312/doi-dieu-suy-nghi-ve-nghe-thuat-don-ca-tai-tu-o-vinh-long-3178360/"
+    },
+    "confidence": 0.8,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "thanh-ton",
+    "type": "person",
+    "name": "Thành Tôn",
+    "placeId": null,
+    "summary": "Nghệ sĩ nhân dân được bài viết nhắc đến trong danh sách các nghệ sĩ có đóng góp cho nghệ thuật tài tử và cải lương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202312/doi-dieu-suy-nghi-ve-nghe-thuat-don-ca-tai-tu-o-vinh-long-3178360/"
+    },
+    "confidence": 0.8,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "le-thuy",
+    "type": "person",
+    "name": "Lệ Thủy",
+    "placeId": null,
+    "summary": "Nghệ sĩ nhân dân được nhắc đến với đóng góp cho nghệ thuật đờn ca tài tử và sân khấu cải lương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202312/doi-dieu-suy-nghi-ve-nghe-thuat-don-ca-tai-tu-o-vinh-long-3178360/"
+    },
+    "confidence": 0.8,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "thanh-loan",
+    "type": "person",
+    "name": "Thanh Loan",
+    "placeId": null,
+    "summary": "Nghệ sĩ ưu tú được nêu trong nhóm nghệ sĩ có nhiều đóng góp cho nghệ thuật đờn ca tài tử và cải lương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202312/doi-dieu-suy-nghi-ve-nghe-thuat-don-ca-tai-tu-o-vinh-long-3178360/"
+    },
+    "confidence": 0.78,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "thanh-huong",
+    "type": "person",
+    "name": "Thanh Hương",
+    "placeId": null,
+    "summary": "Nghệ sĩ ưu tú được bài viết nhắc đến như một người có đóng góp cho nghệ thuật đờn ca tài tử và cải lương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202312/doi-dieu-suy-nghi-ve-nghe-thuat-don-ca-tai-tu-o-vinh-long-3178360/"
+    },
+    "confidence": 0.78,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "truong-xuan",
+    "type": "person",
+    "name": "Trường Xuân",
+    "placeId": null,
+    "summary": "Nghệ sĩ ưu tú được liệt kê trong danh sách những người đóng góp cho nghệ thuật đờn ca tài tử và cải lương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202312/doi-dieu-suy-nghi-ve-nghe-thuat-don-ca-tai-tu-o-vinh-long-3178360/"
+    },
+    "confidence": 0.78,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "thanh-loc",
+    "type": "person",
+    "name": "Thành Lộc",
+    "placeId": null,
+    "summary": "Nghệ sĩ ưu tú được nhắc đến trong bối cảnh đóng góp cho nghệ thuật đờn ca tài tử và sân khấu cải lương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202312/doi-dieu-suy-nghi-ve-nghe-thuat-don-ca-tai-tu-o-vinh-long-3178360/"
+    },
+    "confidence": 0.78,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "don-ca-tai-tu-o-vinh-long",
+    "type": "experience",
+    "name": "Đờn ca tài tử ở Vĩnh Long",
+    "placeId": "p-long-chau",
+    "summary": "Loại hình nghệ thuật dân gian gắn với đời sống tinh thần của người dân Vĩnh Long. Bài viết nhấn mạnh đây là một nét văn hóa đặc trưng và rất được ưa chuộng tại địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "bazantravel.com",
+      "url": "https://bazantravel.com/don-ca-tai-tu-o-vinh-long/"
+    },
+    "confidence": 0.84,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "hoi-thi-giong-ca-cai-luong-ut-tra-on",
+    "type": "event",
+    "name": "Hội thi giọng ca cải lương Út Trà Ôn",
+    "placeId": "xa-tra-on",
+    "summary": "Cuộc thi do tỉnh Vĩnh Long tổ chức định kỳ 2 năm một lần để tìm kiếm và tôn vinh các giọng ca tài năng. Sự kiện gắn với tên nghệ sĩ Út Trà Ôn.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "bazantravel.com",
+      "url": "https://bazantravel.com/don-ca-tai-tu-o-vinh-long/"
+    },
+    "confidence": 0.83,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "le-hoi-ok-om-bok",
+    "type": "event",
+    "name": "Lễ hội Ok Om Bok",
+    "placeId": "p-tra-vinh",
+    "summary": "Lễ hội Cúng trăng của đồng bào Khmer, diễn ra vào rằm tháng 10 âm lịch hằng năm để bày tỏ lòng biết ơn mặt trăng. Bài viết cho biết lễ hội này của Trà Vinh đã được công nhận là di sản phi vật thể quốc gia.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "nhandan.vn",
+      "url": "https://nhandan.vn/dac-sac-dem-hoi-ok-om-bok-cua-dong-bao-khmer-tai-tra-vinh-post845154.html"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "khu-van-hoa-du-lich-ao-ba-om",
+    "type": "attraction",
+    "name": "Khu Văn hóa, du lịch ao Bà Om",
+    "placeId": "p-tra-vinh",
+    "summary": "Địa điểm tổ chức đêm hội Ok Om Bok năm 2024 và là nơi diễn ra nhiều hoạt động văn hóa, nghệ thuật của người Khmer ở Trà Vinh. Đây là điểm đến nổi bật gắn với lễ hội của địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "nhandan.vn",
+      "url": "https://nhandan.vn/dac-sac-dem-hoi-ok-om-bok-cua-dong-bao-khmer-tai-tra-vinh-post845154.html"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "dua-ghe-ngo",
+    "type": "experience",
+    "name": "đua ghe Ngo",
+    "placeId": "p-tra-vinh",
+    "summary": "Hoạt động thi đấu, trình diễn đặc trưng trong Tuần lễ Văn hóa, du lịch gắn với lễ hội Ok Om Bok tại Trà Vinh. Đây là một trong các hoạt động thu hút đông đảo người dân và du khách.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "nhandan.vn",
+      "url": "https://nhandan.vn/dac-sac-dem-hoi-ok-om-bok-cua-dong-bao-khmer-tai-tra-vinh-post845154.html"
+    },
+    "confidence": 0.83,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "sen-dolta",
+    "type": "event",
+    "name": "Sen Dolta",
+    "placeId": "p-tra-vinh",
+    "summary": "Một trong ba lễ hội dân gian lớn trong năm của đồng bào Khmer Nam Bộ, được nhắc đến trong bài cùng với Ok Om Bok và Chôl Chnăm Thmây.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "nhandan.vn",
+      "url": "https://nhandan.vn/dac-sac-dem-hoi-ok-om-bok-cua-dong-bao-khmer-tai-tra-vinh-post845154.html"
+    },
+    "confidence": 0.8,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "chol-chnam-thmay",
+    "type": "event",
+    "name": "Chôl Chnăm Thmây",
+    "placeId": "p-tra-vinh",
+    "summary": "Lễ hội năm mới truyền thống của đồng bào Khmer Nam Bộ, được bài viết nêu như một trong ba lễ hội dân gian lớn của cộng đồng Khmer.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "nhandan.vn",
+      "url": "https://nhandan.vn/dac-sac-dem-hoi-ok-om-bok-cua-dong-bao-khmer-tai-tra-vinh-post845154.html"
+    },
+    "confidence": 0.8,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "hoi-cho-lua-gao-va-xuc-tien-thuong-mai-du-lich",
+    "type": "event",
+    "name": "Hội chợ Lúa gạo và xúc tiến Thương mại - Du lịch",
+    "placeId": "p-tra-vinh",
+    "summary": "Sự kiện được tổ chức gắn với lễ hội Ok-om-bok ở Trà Vinh, quy tụ nhiều doanh nghiệp và gian hàng trưng bày sản phẩm. Hoạt động này nhằm quảng bá thương mại và du lịch của tỉnh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "blog.mytour.vn",
+      "url": "https://blog.mytour.vn/bai-viet/tra-vinh-dien-ra-le-hoi-ok-om-bok.html"
+    },
+    "confidence": 0.78,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "song-long-binh",
+    "type": "nature",
+    "name": "Sông Long Bình",
+    "placeId": "p-tra-vinh",
+    "summary": "Con sông tại thành phố Trà Vinh được nhắc đến là nơi diễn ra cuộc đua ghe ngo trong khuôn khổ lễ hội. Đây là địa điểm gắn với hoạt động văn hóa - thể thao truyền thống của người Khmer.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "blog.mytour.vn",
+      "url": "https://blog.mytour.vn/bai-viet/tra-vinh-dien-ra-le-hoi-ok-om-bok.html"
+    },
+    "confidence": 0.8,
+    "updatedAt": "2026-06-09"
+  }
+]

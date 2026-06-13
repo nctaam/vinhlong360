@@ -1,0 +1,77 @@
+---
+import '../styles/global.css';
+import '../styles/components.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  ogImage?: string;
+  canonical?: string;
+  jsonLd?: object;
+}
+
+const { title, description = 'Cổng du lịch & sản phẩm địa phương Vĩnh Long — Trà Vinh — Bến Tre', ogImage, canonical, jsonLd } = Astro.props;
+const siteUrl = 'https://vinhlong360.vn';
+const pageUrl = canonical ?? `${siteUrl}${Astro.url.pathname}`;
+---
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title} | vinhlong360</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={pageUrl} />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={pageUrl} />
+  <meta property="og:site_name" content="vinhlong360" />
+  {ogImage && <meta property="og:image" content={ogImage} />}
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#9C3D22" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+  {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+</head>
+<body>
+  <header class="topbar">
+    <a href="/" class="logo">vinhlong<span class="accent">360</span><small>.vn</small></a>
+    <nav class="main-nav">
+      <a href="/">Trang chủ</a>
+      <a href="/du-lich">Du lịch</a>
+      <a href="/san-pham">Sản phẩm địa phương</a>
+      <a href="/lich-trinh">Lịch trình</a>
+      <a href="/cong-dong">Cộng đồng</a>
+    </nav>
+    <div class="auth-area">
+      <button class="auth-btn" id="authBtn">Đăng nhập</button>
+    </div>
+  </header>
+
+  <main id="app">
+    <slot />
+  </main>
+
+  <footer class="footer">
+    <p><strong>vinhlong360</strong> — cổng du lịch & sản phẩm địa phương Vĩnh Long mới (Vĩnh Long + Bến Tre + Trà Vinh).</p>
+    <p>Dữ liệu mô hình hóa dạng <code>entities</code> + <code>relationships</code> (đồ thị tri thức).</p>
+  </footer>
+
+  <script is:inline>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>

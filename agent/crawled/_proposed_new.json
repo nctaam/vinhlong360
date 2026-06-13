@@ -1,0 +1,227 @@
+[
+  {
+    "id": "peace-farm",
+    "type": "experience",
+    "name": "Peace Farm",
+    "placeId": "xa-an-binh",
+    "summary": "Trang này hiện trả về lỗi 404 nên không có thông tin chi tiết về địa điểm. Không thể xác minh địa chỉ, dịch vụ hay thông tin liên hệ từ nội dung đã cung cấp.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/co-so-san-xuat-va-kinh-doanh-peace-farm"
+    },
+    "confidence": 0.85,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "nha-dua-cocohome",
+    "type": "accommodation",
+    "name": "Nhà dừa CocoHome",
+    "placeId": "xa-an-binh",
+    "summary": "Trang đích hiện trả về lỗi 404 nên không có thông tin chi tiết về địa điểm/dịch vụ này trong nội dung cung cấp. Không thể xác minh địa chỉ, giá, giờ mở cửa hay liên hệ từ trang này.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/nha-dua-cocohome"
+    },
+    "confidence": 0.85,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "du-lich-sinh-thai-sala",
+    "type": "attraction",
+    "name": "Du lịch sinh thái Sala",
+    "placeId": "xa-an-binh",
+    "summary": "Trang được yêu cầu hiện trả về lỗi 404 nên không có đủ thông tin chi tiết về điểm đến này trong nội dung cung cấp.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/dn-du-lich-sinh-thai-sala"
+    },
+    "confidence": 0.85,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "du-lich-vuon-chu-7-gat",
+    "type": "experience",
+    "name": "Du lịch vườn chú 7 Gắt",
+    "placeId": "xa-an-binh",
+    "summary": "Trang nguồn hiện trả về lỗi 404 nên không có đủ thông tin chi tiết về điểm đến này. Chỉ có thể xác định đây là một sản phẩm du lịch/vườn tham quan từ URL.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/du-lich-vuon-chu-7-gat"
+    },
+    "confidence": 0.85,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "khu-du-lich-cho-noi-tra-on",
+    "type": "attraction",
+    "name": "Khu du lịch Chợ nổi Trà Ôn",
+    "placeId": "xa-luc-si-thanh",
+    "summary": "Trang nguồn hiện trả về lỗi 404 nên không có đủ thông tin chi tiết về điểm đến. Dựa trên URL, đây có vẻ là khu du lịch/chợ nổi thuộc Trà Ôn, Vĩnh Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/khu-du-lich-cho-noi-tra-on"
+    },
+    "confidence": 0.85,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "khu-du-lich-s-mo-farm-cuu-long",
+    "type": "attraction",
+    "name": "Khu du lịch S'Mo Farm Cửu Long",
+    "placeId": "xa-an-binh",
+    "summary": "Trang web hiện trả về lỗi 404 nên không có đủ thông tin chi tiết về điểm đến này. Dựa trên URL, đây là khu du lịch S'Mo Farm Cửu Long tại Vĩnh Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/khu-du-lich-somo-farm-cuu-long"
+    },
+    "confidence": 0.85,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "bao-tang-dua-sap-tra-vinh",
+    "type": "attraction",
+    "name": "Bảo tàng dừa sáp Trà Vinh",
+    "placeId": "xa-cau-ke",
+    "summary": "Trang đích tại URL này hiện trả về lỗi 404 nên không có đủ thông tin xác thực về địa điểm. Chỉ có thể suy ra tên địa điểm từ đường dẫn trang là Bảo tàng dừa sáp Trà Vinh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/bao-tang-dua-sap-tra-vinh"
+    },
+    "confidence": 0.85,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "khu-mo-than-nhan-danh-than-thoai-ngoc-hau",
+    "type": "attraction",
+    "name": "Khu mộ thân nhân danh thần Thoại Ngọc Hầu",
+    "placeId": "p-long-chau",
+    "summary": "Đây là điểm tham quan gắn với danh thần Thoại Ngọc Hầu và khu mộ thân nhân của ông. Nội dung trang hiện không còn truy cập được nên thông tin chi tiết bị hạn chế.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/khu-mo-than-nhan-danh-than-thoai-ngoc-hau"
+    },
+    "confidence": 0.85,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "lo-com-cuu-long",
+    "type": "dish",
+    "name": "Lò cơm Cửu Long",
+    "placeId": "p-long-chau",
+    "summary": "Trang này hiện báo lỗi 404 nên không có nội dung chi tiết để trích xuất thông tin du lịch. Không tìm thấy mô tả, dịch vụ, giá, giờ mở cửa hay liên hệ cụ thể trong nội dung cung cấp.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/lo-com-cuu-long"
+    },
+    "confidence": 0.85,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "nha-gom-tu-buoi",
+    "type": "craft_village",
+    "name": "Nhà gốm Tư Bưởi",
+    "placeId": "xa-nhon-phu",
+    "summary": "Trang nguồn hiện trả về lỗi 404 nên không có thông tin chi tiết về địa điểm này trên nội dung cung cấp. Chỉ có thể suy ra tên địa điểm từ URL.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/nha-gom-tu-buoi"
+    },
+    "confidence": 0.85,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "chua-khmer-vinh-long",
+    "type": "attraction",
+    "name": "Chùa Khmer Vĩnh Long",
+    "placeId": "xa-tra-on",
+    "summary": "Trang nguồn hiện trả về lỗi 404 nên không có đủ thông tin chi tiết về điểm tham quan này. Chỉ xác định được đây là trang liên quan đến Chùa Khmer Vĩnh Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/chua-khmer-vinh-long"
+    },
+    "confidence": 0.85,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "chua-phuoc-hau",
+    "type": "attraction",
+    "name": "Chùa Phước Hậu",
+    "placeId": "p-phuoc-hau",
+    "summary": "Trang đích hiện trả về lỗi 404 nên không trích xuất được thông tin chi tiết về điểm tham quan này từ nội dung đã cung cấp.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/chua-phuoc-hau"
+    },
+    "confidence": 0.85,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "chua-tien-chau",
+    "type": "attraction",
+    "name": "Chùa Tiên Châu",
+    "placeId": "p-long-chau",
+    "summary": "Trang đích hiện trả về lỗi 404 nên không có thông tin chi tiết về địa điểm. Không thể xác minh địa chỉ, dịch vụ hay giờ mở cửa từ nội dung trang được cung cấp.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/chua-tien-chau"
+    },
+    "confidence": 0.85,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "dinh-long-thanh",
+    "type": "attraction",
+    "name": "Đình Long Thành",
+    "placeId": "p-thanh-duc",
+    "summary": "Trang nguồn hiện trả về lỗi 404 nên không có đủ thông tin mô tả chi tiết về điểm tham quan này. Chỉ xác định được tên địa điểm từ URL.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/dinh-long-thanh"
+    },
+    "confidence": 0.85,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "dinh-tan-hoa",
+    "type": "attraction",
+    "name": "Đình Tân Hòa",
+    "placeId": "p-tan-hanh",
+    "summary": "Trang đích hiện trả về lỗi 404 nên không có thông tin chi tiết về địa điểm này.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlongtourist.vn",
+      "url": "https://vinhlongtourist.vn/vi/dinh-tan-hoa"
+    },
+    "confidence": 0.85,
+    "updatedAt": "2026-06-09"
+  }
+]

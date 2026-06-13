@@ -1,0 +1,177 @@
+[
+  {
+    "name": "Biển Cồn Bửng Thạnh Phú",
+    "type": "nature",
+    "desc": "Bãi biển hoang sơ nằm tại xã Thạnh Hải, huyện Thạnh Phú, dài hơn 25km bờ biển. Khi thủy triều xuống xuất hiện 3 hồ nước tự nhiên do dòng xoáy hải lưu tạo thành, rất phù hợp tắm biển. Hàng năm tổ chức Lễ hội Nghinh Ông Nam Hải vào ngày 15–16 tháng Giêng âm lịch.",
+    "addr": "Xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Khu Du Lịch Sinh Thái Chín Sông Thạnh Phú",
+    "type": "attraction",
+    "desc": "Khu du lịch sinh thái tại xã Bình Thạnh, huyện Thạnh Phú, mở cửa 7h–22h. Cung cấp các hoạt động trải nghiệm miệt vườn: tát mương bắt cá, ngồi thuyền vỏ lãi, câu tôm, đu dây giăng, đi cầu khỉ và chạy mô tô nước. Được đánh giá 4.3/5 sao.",
+    "addr": "Xã Bình Thạnh, huyện Thạnh Phú, Bến Tre",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Nhà Cổ Huỳnh Phủ Thạnh Phú",
+    "type": "history",
+    "desc": "Công trình kiến trúc nghệ thuật hơn 100 năm tuổi, xây dựng từ năm 1890 bởi ông Huỳnh Ngọc Khiêm trong 14 năm. Diện tích trên 500m² với 48 cột tròn bằng gỗ căm xe, gỗ lim, mặt trước điêu khắc tinh vi hình hoa cỏ, tôm cá, rồng phụng. Di tích Kiến trúc Nghệ thuật Quốc gia (2011). Mở cửa 9h–17h.",
+    "addr": "Xã Đại Điền, huyện Thạnh Phú, Bến Tre",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Di Tích Đường Hồ Chí Minh Trên Biển Thạnh Phú",
+    "type": "history",
+    "desc": "Di tích lịch sử tại xã Thạnh Hải, đánh dấu bến xuất phát tàu vận tải vũ khí từ miền Bắc vào Nam theo tuyến đường biển bí mật kháng chiến (1961). Bến Thạnh Phong vừa là cảng tiếp nhận vũ khí vừa là trạm phân phối cho quân khu 8. Là địa chỉ đỏ giáo dục truyền thống cách mạng.",
+    "addr": "Xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Cánh Đồng Điện Gió Thạnh Phú",
+    "type": "nature",
+    "desc": "Cánh đồng điện gió ven biển Thạnh Hải với những cánh quạt khổng lồ tạo cảnh quan độc đáo, nằm cách bãi biển Cồn Bửng vài km. Điểm check-in nổi tiếng với giới trẻ, đặc biệt vào lúc hoàng hôn. Miễn phí tham quan.",
+    "addr": "Xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Khu Bảo Tồn Thiên Nhiên Thạnh Phú",
+    "type": "nature",
+    "desc": "Khu bảo tồn thiên nhiên đất ngập nước diện tích 2.584ha thuộc các xã An Điền, Thạnh Phong, Thạnh Hải. Hệ sinh thái rừng ngập mặn đa dạng với 60 loài chim, 27 loài bò sát, 16 loài thú. Trải nghiệm chèo xuồng ba lá len lỏi qua rừng ngập mặn hoặc du thuyền ngắm rừng bần nguyên sinh.",
+    "addr": "Các xã An Điền, Thạnh Phong, Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Khu Di Tích Đồng Khởi Định Thủy",
+    "type": "history",
+    "desc": "Nơi ghi dấu những phát súng đầu tiên của phong trào Đồng Khởi lịch sử tháng 1/1960, cách trung tâm TP Bến Tre khoảng 24km. Di tích quốc gia đặc biệt, lưu giữ hình ảnh, tư liệu lịch sử về chiến tích quân dân xứ dừa.",
+    "addr": "Xã Định Thủy, huyện Mỏ Cày Nam, Bến Tre",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Chùa Tuyên Linh Mỏ Cày Nam",
+    "type": "history",
+    "desc": "Trung tâm Phật giáo lớn của tỉnh Bến Tre với khuôn viên 9.000m², tọa lạc bên dòng suối Tân Hương thơ mộng, xã Minh Đức. Nổi tiếng với lịch sử gắn liền phong trào chấn hưng Phật giáo và kháng chiến. Là điểm tâm linh quan trọng thu hút đông đảo phật tử.",
+    "addr": "Ấp Tân Thới Đông B, xã Minh Đức, huyện Mỏ Cày Nam, Bến Tre",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Chợ Nổi Dừa Sông Thom Mỏ Cày",
+    "type": "attraction",
+    "desc": "Chợ nổi độc nhất miền Tây chuyên mua bán dừa và sản phẩm từ dừa, hoạt động trên đoạn sông Thom dài 5km với hàng trăm ghe xuồng ngày đêm. Hai bên bờ là làng nghề khai thác dừa trải dài 3km; cách trung tâm thị trấn Mỏ Cày khoảng 7km.",
+    "addr": "Xã An Thạnh, huyện Mỏ Cày Nam, Bến Tre",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Cồn Thành Long Mỏ Cày Nam",
+    "type": "attraction",
+    "desc": "Khu sinh thái miệt vườn rộng 111ha trên dòng sông Cổ Chiên, gồm nhiều cồn nhỏ hợp thành (Cồn Nẩy, Cồn Chen, Cồn Cát). Vườn dừa xanh mát, trái cây phong phú, mạng lưới kênh rạch dày đặc thích hợp chèo kayak và thưởng thức ẩm thực sông nước.",
+    "addr": "Ấp Thành Long, xã Thành Thới A, huyện Mỏ Cày Nam, Bến Tre",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Sân Chim Vàm Hồ Ba Tri",
+    "type": "nature",
+    "desc": "Nông trại du lịch sinh thái kiêm sân chim lớn nhất miền Tây, diện tích hơn 67ha bên hữu ngạn sông Ba Lai. Nơi cư trú của hơn 120 loài chim quý (cò, vạc, cồng cộc, diệc xám, le le...) và nhiều loài thú hoang. Thời điểm tham quan tốt nhất từ tháng 10 đến tháng 4.",
+    "addr": "Các xã Mỹ Hòa, Tân Mỹ, Tân Xuân, huyện Ba Tri, Bến Tre",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Làng Hoa Kiểng Cái Mơn Chợ Lách",
+    "type": "craft_village",
+    "desc": "Một trong hai làng hoa kiểng lớn nhất miền Tây (cùng Sa Đéc – Đồng Tháp), hơn 100 năm tuổi. Khoảng 6.000 hộ sản xuất cây giống và hoa kiểng trên diện tích 40ha. Hàng năm tổ chức Lễ hội Hoa – Kiểng Chợ Lách dịp Tết.",
+    "addr": "Xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Làng Nghề Đóng Ghe Xuồng An Định",
+    "type": "craft_village",
+    "desc": "Làng nghề truyền thống đóng tàu ghe xuồng lâu đời bên dòng sông Cái Quao, với hơn 10 cơ sở sản xuất và nhiều thợ lành nghề. Du khách quan sát trực tiếp quá trình đóng ghe thủ công truyền thống — nghề gắn liền với văn hóa sông nước miền Tây.",
+    "addr": "Xã An Định, huyện Mỏ Cày Nam, Bến Tre",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Làng Nghề Chỉ Xơ Dừa An Thạnh",
+    "type": "craft_village",
+    "desc": "Làng nghề chỉ xơ dừa với hơn 90 cơ sở sản xuất, sản lượng trung bình 10–25 tấn chỉ khô mỗi ngày; sản phẩm xuất khẩu nhiều nước, tạo việc làm cho hàng nghìn lao động địa phương.",
+    "addr": "Xã An Thạnh, huyện Mỏ Cày Nam, Bến Tre",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Làng Kẹo Dừa Phường 7 Bến Tre",
+    "type": "craft_village",
+    "desc": "Làng nghề làm kẹo dừa thủ công truyền thống nổi tiếng nhất TP Bến Tre, tập trung ở phường 7. Du khách tham quan quy trình nấu kẹo truyền thống và tự tay làm kẹo, được thử miễn phí kẹo dừa mới ra lò. Toàn tỉnh có hơn 180 cơ sở sản xuất.",
+    "addr": "Phường 7, TP Bến Tre",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Kẹo Dừa Thủ Công Bến Tre",
+    "type": "product",
+    "desc": "Đặc sản nổi tiếng nhất xứ dừa, làm hoàn toàn thủ công từ nước cốt dừa tươi, đường và mạch nha. Sản phẩm OCOP đạt 4 sao, du khách được tham quan xưởng và tự tay làm kẹo tại nhiều cơ sở ở phường 7 TP Bến Tre.",
+    "addr": "Phường 7, TP Bến Tre và huyện Châu Thành, Mỏ Cày Nam",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Mắm Còng Bến Tre",
+    "type": "product",
+    "desc": "Đặc sản truyền thống làm từ còng — loài cua nhỏ sống trong bùn vùng sông nước — ướp muối và gia vị theo phương pháp truyền thống. Mắm còng có vị mặn mà đặc trưng, ăn kèm cơm hoặc chấm rau sống; là phần không thể thiếu trong bữa cơm dân dã miền Tây Bến Tre.",
+    "addr": "Bến Tre (phổ biến ở các huyện ven biển Thạnh Phú, Ba Tri)",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Mật Ong Hoa Dừa Bến Tre",
+    "type": "product",
+    "desc": "Sản phẩm mật ong đặc trưng của Bến Tre, thu từ hoa dừa và các vườn cây ăn trái phong phú vùng sông nước. Đạt OCOP 4 sao (Công ty Mật ong Tín Phát), màu vàng nhạt đến vàng nâu, mùi thơm đặc trưng.",
+    "addr": "Bến Tre (sản xuất nhiều ở huyện Mỏ Cày Bắc, Mỏ Cày Nam, Thạnh Phú)",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Bưởi Da Xanh Bến Tre",
+    "type": "product",
+    "desc": "Đặc sản trái cây được bảo hộ chỉ dẫn địa lý, nguồn gốc từ xã Tân Thanh, huyện Mỏ Cày Bắc. Toàn tỉnh có hơn 5.904ha trồng bưởi da xanh, sản lượng hơn 47.000 tấn/năm. Quả to, múi dày, vị ngọt thanh đặc trưng, xuất khẩu nhiều thị trường quốc tế.",
+    "addr": "Huyện Mỏ Cày Bắc và các huyện trong tỉnh Bến Tre",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Tôm Càng Xanh Bến Tre",
+    "type": "product",
+    "desc": "Đặc sản thủy sản được bảo hộ chỉ dẫn địa lý, nuôi theo mô hình con tôm ôm cây lúa hoặc trong mương vườn dừa. Tôm có trọng lượng từ 40g, vỏ cứng chắc bóng, hàm lượng Omega-3 cao; tập trung nuôi nhiều ở huyện Thạnh Phú, Ba Tri, Bình Đại.",
+    "addr": "Huyện Thạnh Phú, Ba Tri, Bình Đại, Bến Tre",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Hủ Tiếu Pate Bến Tre",
+    "type": "dish",
+    "desc": "Đặc sản ẩm thực độc nhất vô nhị của xứ dừa — sợi hủ tiếu nước lèo ngọt thanh kết hợp pate thủ công dai giòn beo béo. Hương vị lạ miệng không nơi nào có; phổ biến ở nhiều quán TP Bến Tre, giá 25.000–35.000đ/tô.",
+    "addr": "TP Bến Tre (nhiều quán tại đường Nguyễn Thị Định, đường 30/4, phường Phú Khương)",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Bánh Canh Bột Xắt Bến Tre",
+    "type": "dish",
+    "desc": "Đặc sản ẩm thực với sợi bột gạo xắt thủ công từng sợi, nấu cùng thịt vịt xiêm, huyết vịt và nước lèo nước cốt dừa đặc sánh thơm ngậy. Nổi tiếng nhất tại khu vực chợ Lạc Hồng và cầu Cá Lóc, thường bán từ 16h–20h.",
+    "addr": "Chợ Lạc Hồng, TP Bến Tre",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Bánh Xèo Ốc Gạo Phú Đa",
+    "type": "dish",
+    "desc": "Món bánh xèo đặc sản độc đáo dùng ốc gạo tự nhiên của cồn Phú Đa làm nhân thay vì tôm thịt. Ốc gạo thịt trắng đục béo thơm, băm nhuyễn xào cùng ớt sả làm nhân bánh xèo giòn rụm. Chỉ có tại vùng cồn Phú Đa, Mỏ Cày Nam.",
+    "addr": "Ấp Thời Đức, xã Thành Thới A, huyện Mỏ Cày Nam, Bến Tre",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Lẩu Mắm Bến Tre",
+    "type": "dish",
+    "desc": "Nồi lẩu mắm miền Tây đậm đà với cá kèo, cá ba sa, tôm, mực, lươn, ba chỉ heo cùng rau đồng xanh mướt. Giá bình dân khoảng 100.000đ/nồi. Quán Trúc Giang tại đường Nguyễn Thị Định là địa chỉ quen thuộc của người dân và khách du lịch.",
+    "addr": "293D Nguyễn Thị Định, ấp Phú Chiến, xã Phú Hưng, TP Bến Tre",
+    "province_old": "Bến Tre"
+  },
+  {
+    "name": "Cháo Cua Đồng Bến Tre",
+    "type": "dish",
+    "desc": "Món cháo truyền thống nấu trong nồi đất với cua đồng tươi, có vị ngọt tự nhiên đặc trưng của miền sông nước. Thường được ăn sáng; quán Hồng Thủy là một trong những quán nổi tiếng nhất TP Bến Tre. Giá bình dân.",
+    "addr": "TP Bến Tre",
+    "province_old": "Bến Tre"
+  }
+]

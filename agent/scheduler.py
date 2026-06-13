@@ -1,0 +1,542 @@
+"""
+vinhlong360 — Task Scheduler.
+
+Chạy các tác vụ nền định kỳ:
+  - Auto-learn từ knowledge gaps (mỗi 6h)
+  - Relationship discovery (mỗi 24h)
+  - Data sync (data.json → data.js) sau mỗi thay đổi
+  - Analytics cleanup (mỗi 24h)
+  - Cache cleanup (mỗi 1h)
+
+Chạy: python agent/scheduler.py
+Hoặc import và gọi start_scheduler() từ server.
+"""
+
+import json
+import logging
+import os
+import re
+import subprocess
+import sys
+import time
+import threading
+import traceback
+from datetime import datetime
+from pathlib import Path
+
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+if sys.stdout.encoding != "utf-8":
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+
+AGENT_DIR = Path(__file__).resolve().parent
+PROJECT_DIR = AGENT_DIR.parent
+
+# ── Logging ──
+_sched_logger = logging.getLogger("scheduler")
+if not _sched_logger.handlers:
+    _h = logging.StreamHandler()
+    _h.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
+    _sched_logger.addHandler(_h)
+    _sched_logger.setLevel(getattr(logging, os.environ.get("LOG_LEVEL", "INFO")))
+
+
+# ── Learning cadence (seconds) — override via .env, floor 5 phút ──
+
+def _env_int(name: str, default: int) -> int:
+    try:
+        v = int(os.environ.get(name, ""))
+        return v if v >= 300 else default
+    except (ValueError, TypeError):
+        return default
+
+
+def _env_bool(name: str, default: bool) -> bool:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+SCHEDULER_ENABLED = _env_bool("SCHEDULER_ENABLED", True)
+SCHEDULER_RUN_STARTUP_TASKS = _env_bool("SCHEDULER_RUN_STARTUP_TASKS", False)
+AUTONOMOUS_TASKS_ENABLED = _env_bool("SCHEDULER_ENABLE_AUTONOMOUS_TASKS", True)
+
+DISCOVERY_INTERVAL    = _env_int("LEARN_INTERVAL_DISCOVERY", 3600)        # 1h (adaptive 30m–6h)
+LEARNING_LOOP_INTERVAL = _env_int("LEARN_INTERVAL_LOOP", 3600)            # 1h
+AUTO_LEARN_INTERVAL   = _env_int("LEARN_INTERVAL_AUTOLEARN", 3 * 3600)    # 3h
+PROMOTION_INTERVAL    = _env_int("LEARN_INTERVAL_PROMOTION", 6 * 3600)    # 6h
+
+# Adaptive bounds for continuous-discovery
+DISCOVERY_MIN_INTERVAL = 1800       # 30 phút khi đang "trúng mỏ"
+DISCOVERY_MAX_INTERVAL = 6 * 3600   # 6h khi bão hoà
+
+
+def _get_task(name: str):
+    for t in TASKS:
+        if t.name == name:
+            return t
+    return None
+
+
+# ══════════════════════════════════════════════════
+#  DATA SYNC: data.json → data.js
+# ══════════════════════════════════════════════════
+
+def sync_data_json_to_js():
+    """Đồng bộ data.json → data.js khi data.json thay đổi."""
+    json_path = PROJECT_DIR / "web" / "data.json"
+    js_path = PROJECT_DIR / "web" / "data.js"
+
+    if not json_path.exists():
+        _sched_logger.warning("data.json not found, skip sync")
+        return False
+
+    try:
+        data = json.loads(json_path.read_text(encoding="utf-8"))
+
+        # Build a plain script because web/index.html loads data.js without type="module".
+        places = [e for e in data["entities"] if e["type"] == "place"]
+        entities = [e for e in data["entities"] if e["type"] != "place"]
+        relationships = data.get("relationships", [])
+        itineraries = data.get("itineraries", [])
+
+        js_content = (
+            "/* vinhlong360 data - auto-synced from data.json */\n"
+            "(function () {\n"
+            f"var places = {json.dumps(places, ensure_ascii=False, indent=2)};\n"
+            f"var items = {json.dumps(entities, ensure_ascii=False, indent=2)};\n"
+            f"var relationships = {json.dumps(relationships, ensure_ascii=False, indent=2)};\n"
+            f"var itineraries = {json.dumps(itineraries, ensure_ascii=False, indent=2)};\n"
+            "window.VL_DATA = {\n"
+            "  entities: places.concat(items),\n"
+            "  relationships: relationships,\n"
+            "  itineraries: itineraries,\n"
+            "  ALL_MONTHS: [1,2,3,4,5,6,7,8,9,10,11,12]\n"
+            "};\n"
+            "})();\n"
+        )
+        js_path.write_text(js_content, encoding="utf-8")
+
+        _sched_logger.info(f"Synced data.json → data.js ({len(places)} places, {len(entities)} entities, {len(relationships)} rels, {len(itineraries)} itineraries)")
+        return True
+    except Exception as e:
+        _sched_logger.error(f"Data sync error: {e}")
+        return False
+
+
+# ══════════════════════════════════════════════════
+#  SCHEDULED TASKS
+# ══════════════════════════════════════════════════
+
+class ScheduledTask:
+    def __init__(self, name: str, func, interval_seconds: int, enabled: bool = True,
+                 run_immediately: bool = True):
+        self.name = name
+        self.func = func
+        self.interval = interval_seconds
+        self.enabled = enabled
+        self.last_run = 0
+        self.run_count = 0
+        self.last_error = None
+        self.next_run_after = 0 if run_immediately else time.time() + interval_seconds
+
+    def should_run(self) -> bool:
+        if not self.enabled:
+            return False
+        if time.time() < self.next_run_after:
+            return False
+        return time.time() - self.last_run >= self.interval
+
+    def run(self):
+        try:
+            _sched_logger.info(f"Running task: {self.name}")
+            start = time.time()
+            self.func()
+            elapsed = round(time.time() - start, 1)
+            self.last_run = time.time()
+            self.run_count += 1
+            self.last_error = None
+            _sched_logger.info(f"Task done: {self.name} ({elapsed}s)")
+        except Exception as e:
+            self.last_error = str(e)
+            _sched_logger.error(f"Task failed: {self.name} — {e}\n{traceback.format_exc()}")
+
+
+def task_auto_learn():
+    """Chạy LLM auto-learn SAU cổng fitness, chỉ khi có knowledge gaps.
+
+    Trước đây hỏng kép: đọc sai key 'knowledge_gaps' (thực tế gaps nằm ở
+    'unanswered') và truyền tham số '--query' mà auto_learn.py không hỗ trợ.
+    Nay: kiểm tra gaps qua 'unanswered', chạy '--apply --topics 3' hợp lệ,
+    bọc trong guarded_evolve để rollback nếu KB xấu đi.
+    """
+    try:
+        analytics_path = AGENT_DIR / "data" / "analytics.json"
+        if not analytics_path.exists():
+            return
+        data = json.loads(analytics_path.read_text(encoding="utf-8"))
+        gaps = data.get("unanswered", []) or []
+        if not gaps:
+            _sched_logger.info("No knowledge gaps for auto-learn")
+            return
+
+        _sched_logger.info(f"Auto-learn triggered ({len(gaps)} unanswered queries)")
+
+        def _apply():
+            result = subprocess.run(
+                [sys.executable, str(AGENT_DIR / "auto_learn.py"), "--apply", "--topics", "3"],
+                capture_output=True, text=True, timeout=300,
+                cwd=str(PROJECT_DIR),
+            )
+            return {
+                "returncode": result.returncode,
+                "stderr": result.stderr[:200] if result.returncode else "",
+            }
+
+        from self_evolve import guarded_evolve
+        summary = guarded_evolve("auto-learn", _apply)
+        _sched_logger.info(f"Auto-learn: decision={summary['decision']} reason={summary['reason']}")
+
+    except subprocess.TimeoutExpired:
+        _sched_logger.error("Auto-learn timeout (300s)")
+    except Exception as e:
+        _sched_logger.error(f"Auto-learn error: {e}\n{traceback.format_exc()}")
+
+
+def task_relationship_discovery():
+    """Chạy relationship discovery SAU cổng fitness (auto-rollback nếu hại KB)."""
+    try:
+        def _apply():
+            result = subprocess.run(
+                [sys.executable, str(AGENT_DIR / "relationship_discovery.py"), "--apply"],
+                capture_output=True, text=True, timeout=300,
+                cwd=str(PROJECT_DIR),
+            )
+            return {"returncode": result.returncode,
+                    "stderr": result.stderr[:200] if result.returncode else ""}
+
+        from self_evolve import guarded_evolve
+        summary = guarded_evolve("relationships", _apply)
+        _sched_logger.info(f"Relationship discovery: decision={summary['decision']} reason={summary['reason']}")
+    except subprocess.TimeoutExpired:
+        _sched_logger.error("Relationship discovery timeout (300s)")
+    except Exception as e:
+        _sched_logger.error(f"Relationship discovery error: {e}\n{traceback.format_exc()}")
+
+
+def task_sync_data():
+    """Đồng bộ data."""
+    sync_data_json_to_js()
+
+
+def task_cleanup_analytics():
+    """Dọn dẹp analytics data cũ."""
+    try:
+        analytics_path = AGENT_DIR / "data" / "analytics.json"
+        if not analytics_path.exists():
+            return
+
+        data = json.loads(analytics_path.read_text(encoding="utf-8"))
+
+        # Keep only last 30 days of daily stats
+        daily = data.get("daily_stats", {})
+        if len(daily) > 30:
+            sorted_days = sorted(daily.keys())
+            for day in sorted_days[:-30]:
+                del daily[day]
+            data["daily_stats"] = daily
+            analytics_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+            _sched_logger.info(f"Trimmed daily stats to last 30 days")
+
+    except Exception as e:
+        _sched_logger.error(f"Analytics cleanup error: {e}")
+
+
+# ══════════════════════════════════════════════════
+#  SCHEDULER ENGINE
+# ══════════════════════════════════════════════════
+
+# ── Level 6-7 scheduled tasks ──
+
+def task_graph_snapshot():
+    """Record temporal graph snapshot for evolution tracking."""
+    try:
+        from advanced_graph import temporal_evolution
+        temporal_evolution.record_snapshot()
+        _sched_logger.info("Graph snapshot recorded")
+    except Exception as e:
+        _sched_logger.error(f"Graph snapshot error: {e}")
+
+
+def task_knowledge_evolution():
+    """Run knowledge evolution analysis — detect gaps, infer relations."""
+    try:
+        from knowledge_evolution import schema_analyzer, relation_inferrer, gap_detector
+        gaps = gap_detector.detect_gaps()
+        gap_count = len(gaps) if gaps else 0
+        _sched_logger.info(f"Knowledge evolution: {gap_count} gaps detected")
+    except Exception as e:
+        _sched_logger.error(f"Knowledge evolution error: {e}")
+
+
+def task_cache_warmup():
+    """Warm semantic cache with popular and seasonal queries."""
+    try:
+        from semantic_cache import cache_warmer, multi_tier_cache
+        month = datetime.now().month
+        seasonal = cache_warmer.get_seasonal_queries(month)
+        _sched_logger.info(f"Cache warmup: {len(seasonal)} seasonal queries for month {month}")
+    except Exception as e:
+        _sched_logger.error(f"Cache warmup error: {e}")
+
+
+def task_agent_evolution():
+    """Evaluate dynamic agents — deactivate underperformers."""
+    try:
+        from dynamic_agents import agent_evolution, agent_factory
+        results = agent_evolution.evaluate_agents()
+        active = len(agent_factory.get_active_agents())
+        _sched_logger.info(f"Agent evolution: {active} active agents, {len(results)} evaluated")
+    except Exception as e:
+        _sched_logger.error(f"Agent evolution error: {e}")
+
+
+def task_optimizer_check():
+    """Auto-optimize prompts: propose AND ACTIVATE a variant (champion/challenger).
+
+    Trước đây chỉ propose mà không bao giờ activate → variant chết. Nay: nếu
+    variant mới giải quyết deficiency đo được (có rules_applied), kích hoạt nó
+    làm challenger. Variant chỉ là prompt addon bổ trợ (vd: "dùng compare_areas
+    khi so sánh") nên an toàn; có rollback() nếu chất lượng tụt.
+    """
+    try:
+        from self_optimizer import prompt_optimizer, performance_collector, should_optimize
+        if not should_optimize():
+            _sched_logger.debug("Optimizer: not enough data yet")
+            return
+        stats = performance_collector.get_stats()
+
+        # Champion/challenger rollback guard: if the currently-active variant has
+        # underperformed its creation baseline, revert before proposing a new one.
+        try:
+            active = prompt_optimizer.get_current_variant()
+            if active.get("id") != "default":
+                baseline = active.get("score_at_creation", 0)
+                current = stats.get("avg_score", 0)
+                if baseline and current and current < baseline - 0.5:
+                    prompt_optimizer.rollback()
+                    _sched_logger.info(
+                        f"Optimizer rolled back variant {active['id']} "
+                        f"(avg_score {current:.2f} < baseline {baseline:.2f})"
+                    )
+        except Exception:
+            pass
+
+        variant = prompt_optimizer.propose_variant(stats)
+        if not variant:
+            _sched_logger.info("Optimizer: no new variant proposed")
+            return
+        # Only activate variants that address a measured deficiency.
+        if variant.get("rules_applied"):
+            activated = prompt_optimizer.activate_variant(variant["id"])
+            _sched_logger.info(
+                f"Optimizer activated variant {variant['id']} "
+                f"(rules={variant['rules_applied']}, activated={activated})"
+            )
+        else:
+            _sched_logger.info(f"Optimizer proposed {variant['id']} (no rules → not activated)")
+
+        # Recompile few-shot demonstrations from the latest high-quality pool.
+        try:
+            import prompt_compiler
+            res = prompt_compiler.compile()
+            _sched_logger.info(f"Few-shot demos compiled: {res}")
+        except Exception:
+            pass
+    except Exception as e:
+        _sched_logger.error(f"Optimizer error: {e}")
+
+
+def task_guardrails_cleanup():
+    """Cleanup expired guardrail session budgets."""
+    try:
+        from guardrails import budget_manager as gb
+        gb.cleanup()
+        _sched_logger.info("Guardrails budget cleanup done")
+    except Exception as e:
+        _sched_logger.error(f"Guardrails cleanup error: {e}")
+
+
+def task_learning_loop():
+    """Chạy vòng lặp tự học SAU cổng fitness (eval-gated, auto-rollback)."""
+    try:
+        from self_evolve import guarded_evolve
+        from learn_loop import run_full_cycle
+        summary = guarded_evolve("learning-loop", lambda: run_full_cycle(dry_run=False))
+        _sched_logger.info(
+            f"Learning loop: decision={summary['decision']} reason={summary['reason']}"
+        )
+    except Exception as e:
+        _sched_logger.error(f"Learning loop error: {e}\n{traceback.format_exc()}")
+
+
+def task_continuous_discovery():
+    """Tự học liên tục, đa luồng: mỗi chu kỳ quét 1 chủ đề (xoay vòng du lịch →
+    nông sản → OCOP) trên cả 3 vùng song song, geocode qua OSM, thêm provisional.
+    Bọc trong guarded_evolve (eval-gated, auto-rollback nếu hại KB).
+
+    NHỊP THÍCH NGHI ("học nhanh nhất có thể" một cách an toàn): vòng nào học
+    được nhiều (≥5 entity mới) → rút ngắn chu kỳ kế (tối thiểu 30 phút);
+    vòng khô (0 mới = bão hoà hoặc API lỗi) → giãn ra (tối đa 6h). Tránh dồn
+    tải 9router vô ích khi không còn gì mới để học.
+    """
+    try:
+        from self_evolve import guarded_evolve
+        import discover_province as dp
+        summary = guarded_evolve(
+            "continuous-discovery",
+            lambda: dp.run_next_rotation(workers=4, apply=True),
+        )
+        _sched_logger.info(f"Continuous discovery: decision={summary['decision']} reason={summary['reason']}")
+
+        # Adaptive pacing dựa trên năng suất vòng vừa rồi
+        res = summary.get("change_result")
+        added = res.get("added", 0) if isinstance(res, dict) else 0
+        task = _get_task("continuous-discovery")
+        if task:
+            if summary.get("decision") == "kept" and added >= 5:
+                task.interval = max(DISCOVERY_MIN_INTERVAL, int(task.interval * 0.5))
+            elif added == 0:
+                task.interval = min(DISCOVERY_MAX_INTERVAL, int(task.interval * 1.5))
+            _sched_logger.info(
+                f"Discovery adaptive: +{added} entities → next round in {round(task.interval/60)} min"
+            )
+    except Exception as e:
+        _sched_logger.error(f"Continuous discovery error: {e}\n{traceback.format_exc()}")
+
+
+def task_kb_promotion():
+    """Tự động thăng hạng entity provisional ĐÃ chứng tỏ hữu ích, SAU cổng fitness.
+
+    Hiện thực mô hình 'eval-gated autonomous': tri thức tự học sống sót qua sử
+    dụng thực tế (được truy vấn nhiều) sẽ được promote lên verified — nhưng cả
+    lô promote bị rollback nếu làm tụt fitness.
+    """
+    try:
+        from self_evolve import guarded_evolve
+        import kb_curation
+        summary = guarded_evolve("kb-promotion", lambda: kb_curation.auto_promote_pass(min_hits=3))
+        _sched_logger.info(f"KB promotion: decision={summary['decision']} reason={summary['reason']}")
+    except Exception as e:
+        _sched_logger.error(f"KB promotion error: {e}\n{traceback.format_exc()}")
+
+
+TASKS = [
+    ScheduledTask("auto-learn",     task_auto_learn,            interval_seconds=AUTO_LEARN_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 3h (env)
+    ScheduledTask("relationships",  task_relationship_discovery, interval_seconds=12 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
+    ScheduledTask("data-sync",      task_sync_data,              interval_seconds=3600),        # 1h
+    ScheduledTask("analytics-cleanup", task_cleanup_analytics,   interval_seconds=24 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h
+    # Level 6-7 tasks
+    ScheduledTask("graph-snapshot",    task_graph_snapshot,       interval_seconds=6 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 6h
+    ScheduledTask("knowledge-evo",     task_knowledge_evolution,  interval_seconds=24 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h
+    ScheduledTask("cache-warmup",      task_cache_warmup,         interval_seconds=3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),        # 1h
+    ScheduledTask("agent-evolution",   task_agent_evolution,      interval_seconds=12 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
+    ScheduledTask("optimizer-check",   task_optimizer_check,      interval_seconds=6 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 6h
+    ScheduledTask("guardrails-cleanup",task_guardrails_cleanup,   interval_seconds=12 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
+    ScheduledTask("learning-loop",    task_learning_loop,         interval_seconds=LEARNING_LOOP_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 1h (env)
+    ScheduledTask("kb-promotion",     task_kb_promotion,          interval_seconds=PROMOTION_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 6h (env)
+    ScheduledTask("continuous-discovery", task_continuous_discovery, interval_seconds=DISCOVERY_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 1h adaptive 30m–6h (env)
+]
+
+_scheduler_thread = None
+_running = False
+
+
+def _scheduler_loop():
+    global _running
+    _sched_logger.info("Background scheduler started")
+
+    while _running:
+        for task in TASKS:
+            if task.should_run():
+                task.run()
+        time.sleep(60)  # Check every minute
+
+
+def start_scheduler():
+    """Start the background scheduler (call from server startup)."""
+    global _scheduler_thread, _running
+
+    if not SCHEDULER_ENABLED:
+        _sched_logger.info("Background scheduler disabled by SCHEDULER_ENABLED")
+        return
+
+    if _scheduler_thread and _scheduler_thread.is_alive():
+        return
+
+    _running = True
+    _scheduler_thread = threading.Thread(target=_scheduler_loop, daemon=True, name="scheduler")
+    _scheduler_thread.start()
+    _sched_logger.info("Background scheduler thread started")
+
+
+def stop_scheduler():
+    global _running
+    _running = False
+    _sched_logger.info("Scheduler stopped")
+
+
+def scheduler_status() -> dict:
+    return {
+        "running": _running,
+        "enabled": SCHEDULER_ENABLED,
+        "run_startup_tasks": SCHEDULER_RUN_STARTUP_TASKS,
+        "autonomous_tasks_enabled": AUTONOMOUS_TASKS_ENABLED,
+        "tasks": [
+            {
+                "name": t.name,
+                "enabled": t.enabled,
+                "interval_hours": round(t.interval / 3600, 1),
+                "last_run": datetime.fromtimestamp(t.last_run).isoformat() if t.last_run else None,
+                "next_run_after": datetime.fromtimestamp(t.next_run_after).isoformat() if t.next_run_after else None,
+                "run_count": t.run_count,
+                "last_error": t.last_error,
+            }
+            for t in TASKS
+        ],
+    }
+
+
+# ── CLI ──
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="vinhlong360 Task Scheduler")
+    parser.add_argument("--once", action="store_true", help="Run all tasks once then exit")
+    parser.add_argument("--task", type=str, help="Run a specific task once")
+    parser.add_argument("--sync", action="store_true", help="Just sync data.json → data.js")
+    args = parser.parse_args()
+
+    print("=" * 50)
+    print("vinhlong360 — Task Scheduler")
+    print("=" * 50)
+
+    if args.sync:
+        sync_data_json_to_js()
+    elif args.task:
+        task_map = {t.name: t for t in TASKS}
+        if args.task in task_map:
+            task_map[args.task].run()
+        else:
+            print(f"  Unknown task: {args.task}")
+            print(f"  Available: {list(task_map.keys())}")
+    elif args.once:
+        for task in TASKS:
+            task.run()
+    else:
+        _running = True
+        try:
+            _scheduler_loop()
+        except KeyboardInterrupt:
+            print("\n  Scheduler stopped")

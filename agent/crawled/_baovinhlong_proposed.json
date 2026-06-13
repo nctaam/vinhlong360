@@ -1,0 +1,284 @@
+[
+  {
+    "id": "con-phung-con-ong-dao-dua",
+    "type": "attraction",
+    "name": "Cồn Phụng (Cồn Ông Đạo Dừa)",
+    "placeId": "xa-tra-on",
+    "summary": "Cù lao giữa sông Tiền nổi tiếng với sản xuất kẹo dừa, đồ lưu niệm từ dừa, vườn cây ăn trái. Du khách tham quan kẹo dừa, uống trà mật ong, nghe đờn ca tài tử và chèo xuồng ba lá.",
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/xa-hoi/du-lich/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Tân Thạch, huyện Châu Thành, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "vuon-cay-an-trai-cai-mon",
+    "type": "attraction",
+    "name": "Vườn cây ăn trái Cái Mơn",
+    "placeId": "xa-an-binh",
+    "summary": "Vườn nổi tiếng với sầu riêng Cái Mơn, cung ứng hàng triệu cây giống các loại: sầu riêng, măng cụt, xoài cát, nhãn tiêu, bòn bon. Nhiều nghệ nhân chuyên về cây cảnh tạo hình.",
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/xa-hoi/du-lich/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "lang-du-kich-dong-khoi",
+    "type": "history",
+    "name": "Làng du kích Đồng Khởi",
+    "placeId": "xa-an-binh",
+    "summary": "Di tích lịch sử nơi bùng phát phong trào Đồng Khởi 1960, có khu triển lãm vũ khí thô sơ người dân Bến Tre dùng chống xâm lược.",
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/xa-hoi/du-lich/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Định Thủy, huyện Mỏ Cày Nam, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "con-bung",
+    "type": "nature",
+    "name": "Cồn Bửng",
+    "placeId": "xa-an-binh",
+    "summary": "Khu du lịch sinh thái ven biển trên cù lao Thạnh Hải, huyện Thạnh Phú, với bãi cát và rừng ngập mặn.",
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/xa-hoi/du-lich/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "con-nhan",
+    "type": "nature",
+    "name": "Cồn Nhàn",
+    "placeId": "xa-an-binh",
+    "summary": "Khu du lịch sinh thái ven biển Ba Tri, khám phá cồn cát và rừng dương.",
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/xa-hoi/du-lich/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Huyện Ba Tri, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-anh-ba-khia",
+    "type": "attraction",
+    "name": "Khu du lịch sinh thái Anh Ba Khía",
+    "placeId": "xa-an-binh",
+    "summary": "Khu du lịch sinh thái được chọn là nơi ra mắt Chi hội Du lịch Bình Đại (5/2026). Trải nghiệm thiên nhiên và đặc sản cua, khía vùng biển Bình Đại.",
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/xa-hoi/du-lich/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Huyện Bình Đại, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "dong-muoi-bao-thanh",
+    "type": "craft_village",
+    "name": "Đồng muối Bảo Thạnh",
+    "placeId": "xa-an-binh",
+    "summary": "Làng nghề truyền thống sản xuất muối (công nhận 2008), 600ha với 761 hộ làm muối. Muối Ba Tri/Bảo Thạnh nổi tiếng với vị mặn dịu, không chát.",
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/xa-hoi/du-lich/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Bảo Thạnh, huyện Ba Tri, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "cay-goi-nuoc-di-san-ben-tre",
+    "type": "nature",
+    "name": "Cây Gội Nước Di Sản Bến Tre",
+    "placeId": "xa-an-binh",
+    "summary": "Cây Gội nước hơn 200 năm tuổi, chu vi gốc 200cm, cao 15m, tán 30-35m. Được công nhận Cây Di sản Việt Nam ngày 24/4/2026. Nằm tại phường Mỹ Tân.",
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/xa-hoi/du-lich/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Phường Mỹ Tân, phường Bến Tre, TP Vĩnh Long",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "cong-vien-my-hoa",
+    "type": "attraction",
+    "name": "Công viên Mỹ Hóa",
+    "placeId": "xa-an-binh",
+    "summary": "Công viên đường Hùng Vương, phường Bến Tre, nơi tổ chức Tuần lễ Văn hóa-Ẩm thực Bến Tre 2026 (24/4-3/5/2026), thu hút 3.000-5.000 lượt khách/ngày.",
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/xa-hoi/du-lich/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Đường Hùng Vương, phường Bến Tre, TP Vĩnh Long",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "cua-binh-dai",
+    "type": "product",
+    "name": "Cua Bình Đại",
+    "placeId": "xa-an-binh",
+    "summary": "Cua nuôi hoàn toàn thiên nhiên dưới tán rừng ngập mặn huyện Bình Đại, vị thịt ngọt chắc, đặc sản biển đặc trưng vùng Bình Đại.",
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/xa-hoi/du-lich/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "muoi-ba-tri",
+    "type": "product",
+    "name": "Muối Ba Tri",
+    "placeId": "xa-an-binh",
+    "summary": "Muối sản xuất tại làng nghề Bảo Thạnh, huyện Ba Tri (600ha). Vị mặn dịu không chát đặc trưng - sản phẩm OCOP nổi tiếng Bến Tre.",
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/xa-hoi/du-lich/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "sau-rieng-cai-mon",
+    "type": "product",
+    "name": "Sầu riêng Cái Mơn",
+    "placeId": "xa-an-binh",
+    "summary": "Sầu riêng đặc sản trồng tại xã Vĩnh Thành, huyện Chợ Lách - vùng chuyên canh nổi tiếng khắp ĐBSCL, giống sầu riêng Cái Mơn là giống uy tín nhất Nam Bộ.",
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/xa-hoi/du-lich/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "rung-duoc-duyen-hai",
+    "type": "nature",
+    "name": "Rừng Đước Duyên Hải",
+    "placeId": "xa-tra-on",
+    "summary": "Khu rừng ngập mặn gần 700ha tại xã Long Khánh, huyện Duyên Hải. Hệ sinh thái đa dạng với động thực vật quý hiếm. Du khách khám phá bằng xuồng hoặc đi bộ.",
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/xa-hoi/du-lich/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Long Khánh, huyện Duyên Hải, Trà Vinh",
+      "province_old": "Trà Vinh"
+    }
+  },
+  {
+    "id": "con-chim-tra-vinh",
+    "type": "attraction",
+    "name": "Cồn Chim Trà Vinh",
+    "placeId": "xa-tra-on",
+    "summary": "Cồn 60ha tại xã Hòa Minh, mô hình du lịch cộng đồng bền vững (tôm-lúa). Đặc trưng 'du lịch hẹn theo mùa', du khách đặt trước theo mùa vụ, trải nghiệm đồng quê.",
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/xa-hoi/du-lich/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Hòa Minh, huyện Châu Thành, Trà Vinh",
+      "province_old": "Trà Vinh"
+    }
+  },
+  {
+    "id": "sokfarm-tieu-can",
+    "type": "attraction",
+    "name": "Sokfarm Tiểu Cần",
+    "placeId": "xa-tra-on",
+    "summary": "Nông trại hữu cơ chuyên sản xuất mật hoa dừa tươi hữu cơ (Sokfarm), kết hợp du lịch trải nghiệm nông nghiệp. Sản phẩm đạt chứng nhận hữu cơ quốc tế.",
+    "source": {
+      "title": "baovinhlong.com.vn",
+      "url": "https://baovinhlong.com.vn/xa-hoi/du-lich/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Huyện Tiểu Cần, Trà Vinh",
+      "province_old": "Trà Vinh"
+    }
+  }
+]

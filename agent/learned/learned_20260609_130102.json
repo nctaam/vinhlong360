@@ -1,0 +1,482 @@
+[
+  {
+    "id": "saigon-vinh-long-hotel",
+    "type": "accommodation",
+    "name": "Saigon Vinh Long Hotel",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn tại Vĩnh Long, được giới thiệu có vị trí thuận tiện để ghé Chợ nổi Cái Bè và Văn Thánh Miếu. Đây là một lựa chọn lưu trú nổi bật trên trang.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.bluepillow.co.uk",
+      "url": "https://www.bluepillow.co.uk/vietnam/vinh-long"
+    },
+    "confidence": 0.88,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "riverside-park-eco-resort",
+    "type": "accommodation",
+    "name": "Riverside Park Eco Resort",
+    "placeId": "p-long-chau",
+    "summary": "Khu nghỉ dưỡng ở Long Hồ, Vĩnh Long. Nội dung mô tả đây là nơi lưu trú gần các điểm tham quan như Chợ nổi Cái Bè và Văn Thánh Miếu.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.bluepillow.co.uk",
+      "url": "https://www.bluepillow.co.uk/vietnam/vinh-long"
+    },
+    "confidence": 0.87,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "hotel-phuoc-thinh",
+    "type": "accommodation",
+    "name": "Hotel Phước Thịnh",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn 2 sao tại Vĩnh Long, có tiện nghi phòng máy lạnh và Wi-Fi miễn phí. Trang liệt kê đây là một trong các khách sạn được đề xuất.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.bluepillow.co.uk",
+      "url": "https://www.bluepillow.co.uk/vietnam/vinh-long"
+    },
+    "confidence": 0.89,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "van-trang-hotel",
+    "type": "accommodation",
+    "name": "Vân Trang Hotel",
+    "placeId": "p-long-chau",
+    "summary": "Khách sạn tại Vĩnh Long, được giới thiệu là chỗ nghỉ có sân hiên và dịch vụ lưu trú trong khu vực trung tâm của tỉnh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.bluepillow.co.uk",
+      "url": "https://www.bluepillow.co.uk/vietnam/vinh-long"
+    },
+    "confidence": 0.86,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "khach-san-hoang-khiem",
+    "type": "accommodation",
+    "name": "Khách Sạn Hoàng Khiêm",
+    "placeId": "p-long-chau",
+    "summary": "Cơ sở lưu trú ở Ấp Mỹ Thới (5), Vĩnh Long. Nội dung trang cho biết nơi này có ban công và là một trong những lựa chọn nghỉ dưỡng được niêm yết.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.bluepillow.co.uk",
+      "url": "https://www.bluepillow.co.uk/vietnam/vinh-long"
+    },
+    "confidence": 0.86,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "lo-lem-homestay",
+    "type": "accommodation",
+    "name": "Lọ Lem Homestay",
+    "placeId": "p-long-chau",
+    "summary": "Homestay tại Vĩnh Long, có ban công, sân hiên, chỗ đậu xe riêng miễn phí và Wi-Fi miễn phí. Đây là một lựa chọn lưu trú được giới thiệu trên trang.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.bluepillow.co.uk",
+      "url": "https://www.bluepillow.co.uk/vietnam/vinh-long"
+    },
+    "confidence": 0.88,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "ba-linh-homestay",
+    "type": "accommodation",
+    "name": "Ba Linh Homestay",
+    "placeId": "p-long-chau",
+    "summary": "Homestay ở Vĩnh Long, có nhà hàng, lễ tân 24 giờ và bếp chung. Trang đánh giá đây là một trong các bed & breakfast nổi bật.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.bluepillow.co.uk",
+      "url": "https://www.bluepillow.co.uk/vietnam/vinh-long"
+    },
+    "confidence": 0.88,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "cai-be-floating-market",
+    "type": "attraction",
+    "name": "Cai Be Floating Market",
+    "placeId": null,
+    "summary": "Chợ nổi Cái Bè là điểm tham quan được nhắc đến trong mô tả các khách sạn ở Vĩnh Long. Đây là một địa danh du lịch nổi tiếng của vùng Mekong.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.bluepillow.co.uk",
+      "url": "https://www.bluepillow.co.uk/vietnam/vinh-long"
+    },
+    "confidence": 0.82,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "van-thanh-mieu-temple",
+    "type": "attraction",
+    "name": "Van Thanh Mieu Temple",
+    "placeId": "p-long-chau",
+    "summary": "Văn Thánh Miếu là điểm tham quan được nêu trong mô tả khách sạn tại Vĩnh Long. Đây là một địa điểm văn hóa - lịch sử quen thuộc ở địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.bluepillow.co.uk",
+      "url": "https://www.bluepillow.co.uk/vietnam/vinh-long"
+    },
+    "confidence": 0.84,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "vincom-plaza-xuan-khanh",
+    "type": "attraction",
+    "name": "Vincom Plaza Xuan Khanh",
+    "placeId": null,
+    "summary": "Trung tâm thương mại được dùng làm mốc khoảng cách trong mô tả các chỗ ở tại Vĩnh Long. Đây là một địa danh đô thị cụ thể trong khu vực lân cận.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.bluepillow.co.uk",
+      "url": "https://www.bluepillow.co.uk/vietnam/vinh-long"
+    },
+    "confidence": 0.78,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "ninh-kieu-pier",
+    "type": "attraction",
+    "name": "Ninh Kieu Pier",
+    "placeId": null,
+    "summary": "Bến Ninh Kiều được nhắc đến trong phần mô tả vị trí của một số cơ sở lưu trú ở Vĩnh Long. Đây là điểm đến nổi tiếng của Cần Thơ, gần khu vực được nêu trên trang.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.bluepillow.co.uk",
+      "url": "https://www.bluepillow.co.uk/vietnam/vinh-long"
+    },
+    "confidence": 0.8,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "vincom-plaza-hung-vuong",
+    "type": "attraction",
+    "name": "Vincom Plaza Hung Vuong",
+    "placeId": null,
+    "summary": "Một trung tâm thương mại khác được liệt kê như mốc khoảng cách trong mô tả chỗ ở tại Vĩnh Long. Thông tin xuất hiện như một điểm tham chiếu vị trí.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.bluepillow.co.uk",
+      "url": "https://www.bluepillow.co.uk/vietnam/vinh-long"
+    },
+    "confidence": 0.77,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "nha-co-tran-dai-nghia",
+    "type": "attraction",
+    "name": "Nhà Cổ Trần Đại Nghĩa",
+    "placeId": "p-long-chau",
+    "summary": "Di tích lưu niệm gắn với quê hương và tuổi thơ của giáo sư Trần Đại Nghĩa. Đây là điểm tham quan văn hóa - giáo dục tại Vĩnh Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "dulichbinhminh.com",
+      "url": "https://dulichbinhminh.com/nha-co-tran-dai-nghia-vinh-long"
+    },
+    "confidence": 0.86,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "tran-dai-nghia",
+    "type": "person",
+    "name": "Trần Đại Nghĩa",
+    "placeId": "p-long-chau",
+    "summary": "Giáo sư, nhà khoa học, tên thật Phạm Quang Lễ, sinh ra tại Tường Lộc, Tam Bình, Vĩnh Long. Ông được biết đến là 'Cha đẻ ngành công nghiệp quốc phòng Việt Nam'.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "dulichbinhminh.com",
+      "url": "https://dulichbinhminh.com/nha-co-tran-dai-nghia-vinh-long"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "khu-luu-niem-tran-dai-nghia",
+    "type": "attraction",
+    "name": "khu lưu niệm Trần Đại Nghĩa",
+    "placeId": "p-long-chau",
+    "summary": "Quần thể lưu niệm gồm nhà cổ, nhà tưởng niệm, vườn cây xanh và tượng đài gắn với Trần Đại Nghĩa. Nơi đây được công nhận là di tích lịch sử cấp tỉnh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "dulichbinhminh.com",
+      "url": "https://dulichbinhminh.com/nha-co-tran-dai-nghia-vinh-long"
+    },
+    "confidence": 0.84,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "xa-tuong-loc",
+    "type": "history",
+    "name": "xã Tường Lộc",
+    "placeId": "xa-tam-binh",
+    "summary": "Địa bàn quê hương và nơi sinh của giáo sư Trần Đại Nghĩa. Đây là vị trí của Nhà Cổ Trần Đại Nghĩa.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "dulichbinhminh.com",
+      "url": "https://dulichbinhminh.com/nha-co-tran-dai-nghia-vinh-long"
+    },
+    "confidence": 0.88,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "huyen-tam-binh",
+    "type": "history",
+    "name": "huyện Tam Bình",
+    "placeId": "p-long-chau",
+    "summary": "Đơn vị hành chính của tỉnh Vĩnh Long, nơi tọa lạc Nhà Cổ Trần Đại Nghĩa và khu lưu niệm Trần Đại Nghĩa.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "dulichbinhminh.com",
+      "url": "https://dulichbinhminh.com/nha-co-tran-dai-nghia-vinh-long"
+    },
+    "confidence": 0.88,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "vinh-long",
+    "type": "nature",
+    "name": "Vĩnh Long",
+    "placeId": "p-long-chau",
+    "summary": "Tỉnh Vĩnh Long thuộc vùng đồng bằng sông Cửu Long, miền Nam Việt Nam. Nội dung trang nhắc đây là địa danh chính được đề cập trong bài.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "ru.pinterest.com",
+      "url": "https://ru.pinterest.com/pin/vnh-long-ng-bng-sng-cu-long-vit-nam--574138652497086146/"
+    },
+    "confidence": 0.88,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "chua-long-buu",
+    "type": "attraction",
+    "name": "Chùa Long Bửu",
+    "placeId": null,
+    "summary": "Một điểm tham quan/tôn giáo được gợi ý trong phần liên quan của trang. Tên này xuất hiện như một địa danh gắn với nội dung về Vĩnh Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "ru.pinterest.com",
+      "url": "https://ru.pinterest.com/pin/vnh-long-ng-bng-sng-cu-long-vit-nam--574138652497086146/"
+    },
+    "confidence": 0.58,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "pham-hung",
+    "type": "person",
+    "name": "Phạm Hùng",
+    "placeId": "p-long-chau",
+    "summary": "Nhà lãnh đạo kiên trung quê ở Vĩnh Long, từng giữ cương vị Chủ tịch Hội đồng Bộ trưởng. Ông được nhắc đến với đóng góp lớn trong chiến dịch Hồ Chí Minh và sự nghiệp giải phóng, xây dựng đất nước.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.langthangvinhlong.vn",
+      "url": "https://www.langthangvinhlong.vn/danh-nhân-lịch-sử"
+    },
+    "confidence": 0.88,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "vo-van-kiet",
+    "type": "person",
+    "name": "Võ Văn Kiệt",
+    "placeId": "p-long-chau",
+    "summary": "Nguyên Thủ tướng Chính phủ, người con ưu tú của quê hương Vĩnh Long, nổi tiếng với các chính sách đổi mới. Ông được nêu là một trong những danh nhân tiêu biểu của vùng đất này.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.langthangvinhlong.vn",
+      "url": "https://www.langthangvinhlong.vn/danh-nhân-lịch-sử"
+    },
+    "confidence": 0.88,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "khu-luu-niem-thu-tuong-chinh-phu-vo-van-kiet",
+    "type": "attraction",
+    "name": "Khu lưu niệm Thủ tướng Chính phủ Võ Văn Kiệt",
+    "placeId": "xa-trung-thanh",
+    "summary": "Khu lưu niệm tôn vinh và lưu giữ tư liệu, kỷ vật về Võ Văn Kiệt, đồng thời là nơi ông từng nghỉ ngơi khi về thăm quê. Địa điểm còn được gọi là \"Vườn nhà Ông Sáu Dân\".",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.langthangvinhlong.vn",
+      "url": "https://www.langthangvinhlong.vn/danh-nhân-lịch-sử"
+    },
+    "confidence": 0.86,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "nguyen-dinh-chieu",
+    "type": "person",
+    "name": "Nguyễn Đình Chiểu",
+    "placeId": "p-ben-tre",
+    "summary": "Nhà thơ yêu nước, thầy thuốc nhân dân, tác giả của nhiều tác phẩm nổi tiếng như Truyện Lục Vân Tiên. Ông là danh nhân gắn với Bến Tre.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.langthangvinhlong.vn",
+      "url": "https://www.langthangvinhlong.vn/danh-nhân-lịch-sử"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "khu-luu-niem-nguyen-dinh-chieu",
+    "type": "attraction",
+    "name": "Khu lưu niệm Nguyễn Đình Chiểu",
+    "placeId": "xa-ba-tri",
+    "summary": "Khu di tích lăng mộ Nguyễn Đình Chiểu, là nơi an táng và thờ tự danh nhân này. Đây là một địa điểm văn hóa - lịch sử quan trọng tại Bến Tre.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.langthangvinhlong.vn",
+      "url": "https://www.langthangvinhlong.vn/danh-nhân-lịch-sử"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "nguyen-thi-dinh",
+    "type": "person",
+    "name": "Nguyễn Thị Định",
+    "placeId": "p-ben-tre",
+    "summary": "Nữ tướng đầu tiên của Quân đội Nhân dân Việt Nam, lãnh đạo \"Đội quân tóc dài\" trong phong trào Đồng Khởi. Bà là một nhân vật lịch sử tiêu biểu của Bến Tre.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.langthangvinhlong.vn",
+      "url": "https://www.langthangvinhlong.vn/danh-nhân-lịch-sử"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "khu-luu-niem-nu-tuong-nguyen-thi-dinh",
+    "type": "attraction",
+    "name": "Khu lưu niệm Nữ tướng Nguyễn Thị Định",
+    "placeId": "xa-giong-trom",
+    "summary": "Khu lưu niệm lưu giữ, thờ tự và tái hiện cuộc đời, sự nghiệp cách mạng của Nguyễn Thị Định. Nơi đây có đền thờ, phòng trưng bày hiện vật, nhà làm việc và vườn cây cảnh.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.langthangvinhlong.vn",
+      "url": "https://www.langthangvinhlong.vn/danh-nhân-lịch-sử"
+    },
+    "confidence": 0.88,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "nguyen-thien-thanh",
+    "type": "person",
+    "name": "Nguyễn Thiện Thành",
+    "placeId": "xa-cang-long",
+    "summary": "Giáo sư, Thầy thuốc Nhân dân, Anh hùng Lao động, đại tá Quân đội, quê ở Trà Vinh. Ông là danh nhân y học nổi tiếng với nhiều đóng góp cho nền y học nước nhà.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.langthangvinhlong.vn",
+      "url": "https://www.langthangvinhlong.vn/danh-nhân-lịch-sử"
+    },
+    "confidence": 0.88,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "nguyen-thi-ut",
+    "type": "person",
+    "name": "Nguyễn Thị Út",
+    "placeId": "xa-cau-ke",
+    "summary": "Nữ anh hùng thường gọi là Út Tịch, quê tại Trà Vinh. Bà là biểu tượng kiên cường của phụ nữ miền Nam với câu nói nổi tiếng \"Còn cái lai quần cũng đánh\".",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "www.langthangvinhlong.vn",
+      "url": "https://www.langthangvinhlong.vn/danh-nhân-lịch-sử"
+    },
+    "confidence": 0.86,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "tinh-ben-tre",
+    "type": "history",
+    "name": "tỉnh Bến Tre",
+    "placeId": "p-ben-tre",
+    "summary": "Một trong ba tỉnh được nêu trong nghị quyết sắp xếp đơn vị hành chính cấp tỉnh năm 2025. Nội dung cho biết Bến Tre được sắp xếp vào tỉnh mới mang tên Vĩnh Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/gioi-thieu/lich-su-van-hoa"
+    },
+    "confidence": 0.87,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "tinh-tra-vinh",
+    "type": "history",
+    "name": "tỉnh Trà Vinh",
+    "placeId": "p-tra-vinh",
+    "summary": "Một trong ba tỉnh được nêu trong nghị quyết sắp xếp đơn vị hành chính cấp tỉnh năm 2025. Nội dung cho biết Trà Vinh được sắp xếp vào tỉnh mới mang tên Vĩnh Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/gioi-thieu/lich-su-van-hoa"
+    },
+    "confidence": 0.87,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "nghi-quyet-so-202-2025-qh15",
+    "type": "event",
+    "name": "Nghị quyết số 202/2025/QH15",
+    "placeId": null,
+    "summary": "Nghị quyết của Quốc hội ban hành ngày 12/6/2025 về việc sắp xếp đơn vị hành chính cấp tỉnh. Văn bản này là cơ sở pháp lý cho việc hợp nhất Bến Tre, Trà Vinh và Vĩnh Long.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/gioi-thieu/lich-su-van-hoa"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  },
+  {
+    "id": "nghi-quyet-so-1687-nq-ubtvqh15",
+    "type": "event",
+    "name": "Nghị quyết số 1687/NQ-UBTVQH15",
+    "placeId": null,
+    "summary": "Nghị quyết của Ủy ban Thường vụ Quốc hội ban hành ngày 16/6/2025 về sắp xếp các đơn vị hành chính cấp xã của tỉnh Vĩnh Long năm 2025. Đây là văn bản liên quan trực tiếp đến tổ chức hành chính của địa phương.",
+    "season": null,
+    "attributes": {},
+    "source": {
+      "title": "vinhlong.gov.vn",
+      "url": "https://vinhlong.gov.vn/gioi-thieu/lich-su-van-hoa"
+    },
+    "confidence": 0.9,
+    "updatedAt": "2026-06-09"
+  }
+]

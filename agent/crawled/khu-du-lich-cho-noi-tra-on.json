@@ -1,0 +1,17 @@
+{
+  "id": "khu-du-lich-cho-noi-tra-on",
+  "type": "attraction",
+  "name": "Khu du lịch chợ nổi Trà Ôn",
+  "placeId": "xa-tra-on",
+  "summary": "Điểm tham quan gắn với chợ nổi Trà Ôn, một nét văn hóa sông nước đặc trưng của Vĩnh Long. Trang nguồn hiện trả về lỗi 404 nên thông tin chi tiết trên trang không còn truy cập được.",
+  "season": null,
+  "attributes": {},
+  "source": {
+    "title": "vinhlongtourist.vn",
+    "url": "https://vinhlongtourist.vn/vi/khu-du-lich-cho-noi-tra-on"
+  },
+  "confidence": 0.85,
+  "updatedAt": "2026-06-10",
+  "_crawled_from": "/vi/khu-du-lich-cho-noi-tra-on",
+  "_address_raw": "Trà Ôn, tỉnh Vĩnh Long"
+}

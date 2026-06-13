@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vinhlong360 — Du lịch &amp; Sản phẩm địa phương</title>
+  <meta name="description" content="Cổng du lịch và sản phẩm địa phương Vĩnh Long: trải nghiệm miệt vườn, đặc sản theo mùa, OCOP, làng nghề và lịch trình gợi ý." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="components.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#9C3D22" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#/">
+        <span class="logo">vinhlong<span class="dot">360</span></span>
+        <span class="tld">.vn</span>
+      </a>
+      <nav class="main-nav">
+        <a href="#/" data-nav="/">Trang chủ</a>
+        <a href="#/du-lich" data-nav="du-lich">Du lịch</a>
+        <a href="#/san-pham" data-nav="san-pham">Sản phẩm địa phương</a>
+        <a href="#/lich-trinh" data-nav="lich-trinh">Lịch trình</a>
+        <a href="#/ban-do" data-nav="ban-do">Bản đồ</a>
+        <a href="#/cong-dong" data-nav="cong-dong">Cộng đồng</a>
+      </nav>
+      <form id="globalSearchForm" class="topbar-search" role="search">
+        <input type="search" placeholder="Tìm đặc sản, trải nghiệm…" aria-label="Tìm kiếm" />
+      </form>
+      <div class="auth-area" id="authArea">
+        <button class="auth-btn" id="authLoginBtn" onclick="showAuthModal()">Đăng nhập</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="app"></main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <strong>vinhlong360</strong> — cổng du lịch &amp; sản phẩm địa phương Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh).
+      <p class="disclaimer">⚠️ Dữ liệu mùa vụ, giá &amp; địa điểm là dữ liệu minh họa cần chủ thể địa phương xác nhận — mỗi mục đều có "độ tin cậy" và nguồn. Đơn vị hành chính theo mô hình 2 cấp từ 1/7/2025.</p>
+      <p style="margin-top:8px;font-size:.78rem"><a href="/admin.html" style="color:rgba(255,255,255,.5);text-decoration:none">AdminCP</a> · <a href="/admin-dashboard.html" style="color:rgba(255,255,255,.5);text-decoration:none">Analytics</a></p>
+    </div>
+  </footer>
+
+  <!-- Chat Widget -->
+  <button class="chat-fab" id="chatFab" onclick="toggleChat()" title="Hỏi AI về Vĩnh Long">💬</button>
+  <div class="chat-panel" id="chatPanel">
+    <div class="chat-panel-head">
+      <h3>🤖 Hỏi AI về Vĩnh Long</h3>
+      <button class="cp-close" onclick="toggleChat()">✕</button>
+    </div>
+    <div class="chat-panel-msgs" id="chatMsgs">
+      <div class="csuggestions">
+        <button onclick="chatAsk(this.textContent)">Tháng này nên đi đâu?</button>
+        <button onclick="chatAsk(this.textContent)">Đặc sản OCOP nổi bật?</button>
+        <button onclick="chatAsk(this.textContent)">Gợi ý lịch trình 2 ngày</button>
+      </div>
+    </div>
+    <div class="chat-panel-input">
+      <input id="chatInput" type="text" placeholder="Hỏi về Vĩnh Long..." />
+      <button id="chatSendBtn" onclick="chatSend()">Gửi</button>
+    </div>
+  </div>
+
+  <!-- Auth Modal -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal">
+      <div class="modal-head">
+        <h2>Đăng nhập</h2>
+        <button class="modal-close" onclick="hideAuthModal()">✕</button>
+      </div>
+      <div class="modal-body" id="authModalBody">
+        <!-- Populated by auth.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="data.js"></script>
+  <script src="store.js"></script>
+  <script src="map.js"></script>
+  <script src="ui.js"></script>
+  <script src="auth.js"></script>
+  <script src="social.js"></script>
+  <script src="feed.js"></script>
+  <script src="notifications.js"></script>
+  <script src="chat-widget.js"></script>
+  <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(function(){});</script>
+</body>
+</html>

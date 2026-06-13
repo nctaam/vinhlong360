@@ -1,0 +1,10 @@
+.git
+__pycache__
+*.pyc
+node_modules
+.claude
+*.log
+*.log.jsonl
+agent/data/
+data/
+ssl/

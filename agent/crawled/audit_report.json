@@ -1,0 +1,117 @@
+[
+  {
+    "query": "Tôi muốn thăm làng nghề gốm đỏ Mang Thít, cần biết gì để chuẩn bị?",
+    "quality": "mediocre",
+    "missing": [
+      "Giờ hoạt động cụ thể của các lò gốm và liệu có nhận khách vãng lai không — nhiều lò hiện chỉ sản xuất cầm chừng hoặc đã đóng cửa, không có thông tin cập nhật 2024-2025",
+      "Tình trạng hiện tại của làng nghề — số lò còn hoạt động giảm mạnh (từ vài trăm xuống còn vài chục), KB thường thiếu dữ liệu về lò nào còn mở, lò nào đã nghỉ",
+      "Cách kết hợp với điểm khác trong ngày — thiếu gợi ý lịch trình kết hợp Mang Thít + Cù lao An Bình + chợ nổi Trà Ôn thành 1 ngày hoàn chỉnh",
+      "Đặc sản/ẩm thực tại chỗ gần làng nghề — quán ăn địa phương, giá cả, món nên thử sau khi tham quan",
+      "Lưu ý thực tế khi đến — đường vào lò gốm hẹp, bụi đỏ nhiều (nên mặc gì), nên mang tiền mặt vì không có ATM/QR, và liên hệ trước để không đến lúc lò nghỉ"
+    ],
+    "suggestions": [
+      "Bổ sung entity 'Trạng thái hoạt động' cho mỗi điểm làng nghề với timestamp cập nhật — vì Mang Thít đang trong giai đoạn suy giảm, thông tin cũ (lò còn đông đúc) sẽ gây thất vọng cho khách; cần có trường is_active + last_verified_date",
+      "Thêm template trả lời dạng 'hành trình 1 ngày' kết hợp Mang Thít với các điểm lân cận (Cù lao Mây, chợ Trà Ôn, Vĩnh Long city) để tăng giá trị thực tế thay vì chỉ mô tả đơn lẻ một địa điểm",
+      "Tích hợp số điện thoại liên hệ trực tiếp ít nhất 2-3 cơ sở gốm còn đón khách (có thể lấy từ Sở Du lịch Vĩnh Long hoặc Hiệp hội làng nghề tỉnh) và gợi ý agent nhắc khách gọi trước để xác nhận lịch nung gốm"
+    ],
+    "expected": [
+      "Làng gốm đỏ Mang Thít (huyện Mang Thít, Vĩnh Long) — địa chỉ cụ thể, tọa độ GPS, khu vực lò gốm còn hoạt động",
+      "Lộ trình di chuyển từ TP. Vĩnh Long đến Mang Thít — khoảng cách ~30km, đi theo QL1A rồi rẽ vào đường tỉnh 902, tùy phương tiện xe máy/ô tô/xe buýt",
+      "Thời điểm tham quan tốt nhất — mùa khô (tháng 12 đến tháng 4), sáng sớm 6h-9h để thấy thợ đang làm việc và lò đang nung",
+      "Các cơ sở gốm còn hoạt động và đón khách — tên chủ lò, số điện thoại liên hệ, có hướng dẫn tự làm gốm hay không",
+      "Chi phí thực tế — vé vào tham quan (nếu có), giá mua sản phẩm gốm, chi phí thuê xe ôm/xe tự lái từ trung tâm VL"
+    ]
+  },
+  {
+    "query": "Đặc sản Trà Vinh nên mua về làm quà? Cái nào OCOP?",
+    "quality": "mediocre",
+    "missing": [
+      "Điểm bán chính thức sản phẩm OCOP tại TP Trà Vinh (địa chỉ cụ thể, giờ mở cửa)",
+      "Giá bán tham khảo từng sản phẩm (bánh tét bao nhiêu/đòn, dừa sáp bao nhiêu/trái)",
+      "Hạn sử dụng và cách bảo quản khi mang về xa (đặc biệt bánh tét, mắm)",
+      "Mùa thu hoạch/sẵn hàng của từng đặc sản (dừa sáp không phải lúc nào cũng có)",
+      "Sao OCOP cụ thể và năm chứng nhận của từng sản phẩm (3 sao vs 4 sao vs 5 sao)"
+    ],
+    "suggestions": [
+      "Thêm entity riêng cho từng sản phẩm OCOP với trường: tên_sao_ocop, nơi_bán, giá_tham_khảo, hạn_sử_dụng — vì người dùng cần thông tin mua hàng thực tế, không chỉ tên sản phẩm",
+      "Tạo danh sách điểm bán OCOP tập trung tại Trà Vinh (siêu thị Co.opmart TV, cửa hàng OCOP tỉnh, chợ Trà Vinh) với địa chỉ và bản đồ để agent có thể gợi ý 'mua ở đâu'",
+      "Phân loại đặc sản theo tiêu chí dễ mang: nhẹ/lâu hỏng (muối ớt, rượu) vs cần cẩn thận (bánh tét, mắm) để agent đưa lời khuyên thực tế cho khách đi xa"
+    ],
+    "expected": [
+      "Bánh tét Trà Cuôn (đặc sản nổi tiếng nhất TV, có OCOP 4 sao)",
+      "Muối ớt Trà Vinh (OCOP 3-4 sao, nhiều cơ sở sản xuất)",
+      "Dừa sáp Cầu Kè (đặc sản độc quyền TV, OCOP 4 sao)",
+      "Mắm kho Trà Vinh (đặc sản người Khmer, ít nơi có)",
+      "Rượu Xuân Thạnh (rượu gạo truyền thống, OCOP)"
+    ]
+  },
+  {
+    "query": "Chùa Khmer nào đẹp nhất ở Trà Vinh, đường đi thế nào?",
+    "quality": "good",
+    "missing": [
+      "Giờ mở cửa và giá vé tham quan các chùa (nhiều chùa Khmer miễn phí nhưng có thể có phí giữ xe, phí hướng dẫn)",
+      "Lịch lễ hội đặc trưng như Ok Om Bok (tháng 10 âm lịch), Chôl Chnăm Thmây (tết Khmer tháng 4) - thời điểm đẹp nhất để tham quan",
+      "Chi tiết đường đi cụ thể từ các điểm xuất phát phổ biến (TP HCM, Cần Thơ, Vĩnh Long) kèm thời gian, phương tiện xe khách/tự lái",
+      "Lưu ý văn hóa khi vào chùa Khmer: trang phục kín đáo, không mặc quần đùi/váy ngắn, cởi giày trước chánh điện",
+      "Combo tham quan gợi ý: Chùa Âng + Ao Bà Om + Bảo tàng Văn hóa Khmer trong cùng một buổi sáng"
+    ],
+    "suggestions": [
+      "Tích hợp dữ liệu định vị (tọa độ GPS, link Google Maps) cho từng chùa để agent có thể trả về chỉ đường turn-by-turn hoặc link maps trực tiếp thay vì mô tả mơ hồ",
+      "Bổ sung trường 'best_time_to_visit' và 'festivals' vào entity chùa Khmer để agent có thể tư vấn thời điểm phù hợp (tránh mùa mưa tháng 7-9, ưu tiên lễ hội Khmer tháng 4 và tháng 10)",
+      "Tạo entity 'itinerary_template' cho tuyến Trà Vinh 1 ngày/2 ngày gồm thứ tự tham quan tối ưu (Chùa Âng → Ao Bà Om → Chùa Hang → Chùa Cò), giúp agent trả lời câu hỏi lịch trình tổng thể thay vì chỉ trả lời điểm đơn lẻ"
+    ],
+    "expected": [
+      "Chùa Âng (Angkor Borei) - chùa Khmer cổ nhất và đẹp nhất Trà Vinh, nằm gần trung tâm TP Trà Vinh, cạnh ao Bà Om",
+      "Ao Bà Om (Ao vuông) - danh thắng gắn liền với Chùa Âng, hồ nước cổ 2.000 năm tuổi",
+      "Chùa Hang (Kompong Chrây) - chùa Khmer nổi tiếng có nhiều dơi sinh sống, cách TP Trà Vinh ~5km",
+      "Chùa Nôdol (Chùa Cò) - nổi tiếng với đàn cò, vạc hàng chục nghìn con cư trú",
+      "Tuyến đường từ TP HCM/Cần Thơ/Vĩnh Long đến Trà Vinh - QL53, QL54, phà hoặc cầu"
+    ]
+  },
+  {
+    "query": "Bến Tre có gì ngoài dừa và bánh kẹo?",
+    "quality": "mediocre",
+    "missing": [
+      "Giá vé vào cổng / tour cụ thể (cồn Phụng, vườn sinh thái) theo năm hiện tại",
+      "Giờ mở cửa và lịch hoạt động của các điểm (đặc biệt lễ hội mùa vụ)",
+      "Phương tiện di chuyển cụ thể từ TP.HCM / Vĩnh Long / Tiền Giang đến từng điểm (xe, phà, canô)",
+      "Mùa tốt nhất / mùa tránh: lũ tháng 9-11, mùa nước nổi ảnh hưởng cồn như thế nào",
+      "Combo tour / homestay được đánh giá tốt kèm giá tham khảo thực tế"
+    ],
+    "suggestions": [
+      "Thêm entity type 'experience' riêng biệt với 'destination': phân biệt địa điểm vật lý vs trải nghiệm (chèo xuồng, nghe đờn ca tài tử, thăm làng nghề) để agent gợi ý theo nhu cầu thay vì chỉ liệt kê tên",
+      "Gắn tag 'ngoài dừa/OCOP' cho các entity phi-dừa để agent có thể lọc và trả lời trực tiếp câu hỏi đối lập kiểu 'ngoài X còn gì'; tránh KB chỉ index theo sản phẩm mà bỏ sót trải nghiệm văn hoá/lịch sử",
+      "Bổ sung trường 'unique_selling_point' cho mỗi địa điểm: ví dụ Cồn Phụng = 'cù lao có lịch sử đạo Dừa độc đáo', Thạnh Phú = 'biển duy nhất của Bến Tre ít người biết' — giúp agent tạo câu trả lời mang tính khám phá thay vì chỉ mô tả chung chung"
+    ],
+    "expected": [
+      "Cồn Phụng - làng du lịch sinh thái trên cù lao sông Tiền, nơi có đạo Dừa",
+      "Vườn quốc gia Thạnh Phú - rừng ngập mặn và sinh thái biển Đông",
+      "Làng nghề đan lát Phước Tuy - thủ công mỹ nghệ từ lục bình, tre, mây",
+      "Cồn Qui / Cồn Ốc - cù lao miệt vườn với vườn cây ăn trái và chèo thuyền kayak",
+      "Di tích Đồng Khởi Bến Tre - địa danh lịch sử phong trào Đồng Khởi 1960"
+    ]
+  },
+  {
+    "query": "Lịch trình 2 ngày khám phá cù lao Vĩnh Long cho gia đình có trẻ em",
+    "quality": "mediocre",
+    "missing": [
+      "Giá vé và giờ hoạt động cụ thể: phà Đình Khao (xe máy/ô tô), tour đò chèo quanh cù lao (~150-200k/người), vườn trái cây vào cửa — thiếu dữ liệu này khiến lịch trình không thực tế",
+      "Tiêu chí an toàn cho trẻ em: homestay nào có hàng rào cầu ao, phao bơi cho trẻ, khu vui chơi trong vườn — đây là yếu tố gia đình quan tâm nhất nhưng KB thường bỏ qua",
+      "Mùa tốt nhất và cảnh báo mùa lũ: tháng 9-11 nước dâng ngập lối đi vườn, một số homestay đóng cửa — không có dữ liệu mùa vụ thì lịch trình sai hoàn toàn",
+      "Thời gian di chuyển thực tế nội cù lao: đường đê hẹp, xe đạp vs đi bộ, khoảng cách giữa các điểm — KB hay ghi 'gần nhau' mà không có km hoặc phút đi thực tế",
+      "Nhà hàng/quán ăn phục vụ trẻ em trên cù lao: giờ mở cửa, có ghế cao không, món phù hợp trẻ nhỏ — bữa ăn là phần quan trọng của trải nghiệm gia đình nhưng thường thiếu"
+    ],
+    "suggestions": [
+      "Cấu trúc entity theo 'slot lịch trình': thay vì chỉ lưu thông tin điểm đến, KB nên đánh tag mỗi điểm với buổi phù hợp (sáng sớm/buổi chiều/tối), độ tuổi tối thiểu, và thời gian tham quan tiêu chuẩn — giúp agent tự lắp ghép lịch 2 ngày mà không cần suy diễn",
+      "Thêm trường 'family_friendly_score' và ghi chú cụ thể cho từng điểm: ví dụ vườn trái cây An Bình ghi rõ 'trẻ dưới 5 tuổi cần bế qua cầu khỉ', làng gạch Mang Thít ghi 'lò gạch nóng, tránh mùa hè 11h-14h' — thông tin này không có trên web thông thường, cần thu thập thực địa hoặc từ review gia đình có con nhỏ",
+      "Bổ sung dữ liệu 'combo ghép cặp tỉnh': Vĩnh Long thường đi kết hợp Bến Tre (dừa/cầu Hàm Luông) hoặc Tiền Giang (Mỹ Tho/chợ nổi Cái Bè) vì khoảng cách dưới 40km — KB nên có template lịch trình liên tỉnh cho gia đình 2 ngày để agent đề xuất lộ trình tối ưu thay vì chỉ bó hẹp 1 tỉnh"
+    ],
+    "expected": [
+      "Cù Lao An Bình (xã An Bình, huyện Long Hồ) — điểm đến chính với vườn trái cây, homestay, xe đạp đạp vòng xanh",
+      "Bến phà Đình Khao / bến tàu du lịch TP Vĩnh Long — cửa ngõ di chuyển vào cù lao, cần giờ chạy và giá vé phà/đò",
+      "Làng nghề gạch gốm Mang Thít — di sản kiến trúc dọc sông, phù hợp cả gia đình trải nghiệm lò gạch, cần khoảng cách và cách ghép lịch",
+      "Homestay/nhà vườn cù lao (Lan Vương, Nam Bộ, Ba Lý...) — thông tin phòng gia đình, giá, tiện nghi cho trẻ em (giường phụ, cầu ao an toàn)",
+      "Chợ nổi Trà Ôn hoặc chợ nổi Cái Bè (tỉnh Tiền Giang, giáp ranh) — nếu ghép lịch ngày 2, cần giờ họp chợ sớm 5-7h và cách tiếp cận bằng đò"
+    ]
+  }
+]

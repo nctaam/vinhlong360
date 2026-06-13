@@ -1,0 +1,3350 @@
+"""
+vinhlong360 — Knowledge Agent Server (v3 — Production).
+
+FastAPI server cung cấp:
+  POST /chat          — chat endpoint (JSON) + rate limiting
+  GET  /chat/stream   — SSE streaming chat + rate limiting
+  POST /reload        — hot-reload data + cache invalidation + data sync
+  GET  /health        — health check + cache stats + response times
+  GET  /              — trang chat
+  /admin/*            — Admin API (CRUD, review, analytics, trigger-learn)
+  /analytics/*        — Analytics dashboard data
+  /system/*           — System monitoring (logs, rate limits, errors)
+
+Chạy:
+  pip install -r requirements.txt
+  python agent/server.py
+"""
+
+import json
+import os
+import re
+import sys
+import time
+import traceback
+import uuid
+import asyncio
+import threading
+from datetime import datetime
+from pathlib import Path
+
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+if sys.stdout.encoding != "utf-8":
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+
+from contextlib import asynccontextmanager
+
+from dotenv import load_dotenv
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+from openai import OpenAI
+from pydantic import BaseModel
+
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
+
+def _env_bool(name: str, default: bool) -> bool:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+BUILD_SEARCH_INDEXES = _env_bool("BUILD_SEARCH_INDEXES", True)
+BACKGROUND_INDEX_BUILD = _env_bool("BACKGROUND_INDEX_BUILD", True)
+
+import analytics
+import cache
+import knowledge
+from admin import router as admin_router
+from auth import router as auth_router
+from notifications import router as community_router
+from public_api import router as public_router
+from seo import router as seo_router
+from social import router as social_router
+from tools import TOOLS, SYSTEM_PROMPT
+from middleware import (
+    logger, chat_limiter, stream_limiter, admin_limiter,
+    response_tracker, error_tracker, generate_request_id, get_client_ip,
+)
+from itinerary_gen import generate_itinerary
+from scheduler import start_scheduler, scheduler_status, sync_data_json_to_js
+from memory import memory_manager
+from reflexion import reflexion_engine, quality_tracker
+from proactive import get_proactive_context, generate_welcome_message
+from agentic_rag import build_rag_context, classify_query
+
+try:
+    from vector_search import embedding_store, hybrid_search
+    HAS_VECTOR = True
+    logger.info("Vector search enabled")
+except ImportError:
+    HAS_VECTOR = False
+    logger.info("Vector search disabled (optional dependency)")
+
+try:
+    from realtime import get_realtime_context, get_weather, get_all_weather, get_upcoming_events
+    HAS_REALTIME = True
+except ImportError:
+    HAS_REALTIME = False
+    logger.info("Realtime data disabled (optional dependency)")
+
+try:
+    from circuit_breaker import safe_llm_call, all_breaker_stats, llm_breaker
+    HAS_CIRCUIT_BREAKER = True
+except ImportError:
+    HAS_CIRCUIT_BREAKER = False
+
+try:
+    from parallel_tools import ParallelToolExecutor, can_parallelize
+    HAS_PARALLEL = True
+except ImportError:
+    HAS_PARALLEL = False
+
+try:
+    from autocorrect import autocorrect, load_entity_names
+    HAS_AUTOCORRECT = True
+except ImportError:
+    HAS_AUTOCORRECT = False
+
+try:
+    from recommender import recommend
+    HAS_RECOMMENDER = True
+except ImportError:
+    HAS_RECOMMENDER = False
+
+try:
+    from freshness import check_freshness, freshness_report, auto_refresh_candidates
+    HAS_FRESHNESS = True
+except ImportError:
+    HAS_FRESHNESS = False
+
+try:
+    from image_recognition import process_upload, recognize_image
+    HAS_IMAGE_RECOGNITION = True
+except ImportError:
+    HAS_IMAGE_RECOGNITION = False
+
+try:
+    from metrics import generate_metrics, track_chat_request, track_tool_call, track_cache, track_feedback, track_error, set_gauge
+    HAS_METRICS = True
+except ImportError:
+    HAS_METRICS = False
+
+try:
+    from ab_testing import ab_manager
+    HAS_AB_TESTING = True
+except ImportError:
+    HAS_AB_TESTING = False
+
+try:
+    from prompt_cache import prompt_cache, estimate_tokens, compress_history
+    HAS_PROMPT_CACHE = True
+except ImportError:
+    HAS_PROMPT_CACHE = False
+
+try:
+    from orchestrator import Orchestrator, QueryRouter, handoff_log
+    HAS_ORCHESTRATOR = True
+except ImportError:
+    HAS_ORCHESTRATOR = False
+
+try:
+    from memory_graph import memory_graph
+    HAS_MEMORY_GRAPH = True
+except ImportError:
+    HAS_MEMORY_GRAPH = False
+
+try:
+    from tracing import tracer, trace_chat_request, trace_tool_call, trace_llm_call, trace_rag_retrieval, get_trace_summary, export_traces_json
+    HAS_TRACING = True
+except ImportError:
+    HAS_TRACING = False
+
+try:
+    from contextual_retrieval import contextual, bm25, enhanced_hybrid_search
+    HAS_CONTEXTUAL = True
+except ImportError:
+    HAS_CONTEXTUAL = False
+
+try:
+    import kb_context
+    HAS_KB_CONTEXT = True
+except ImportError:
+    HAS_KB_CONTEXT = False
+
+try:
+    import experience_memory
+    HAS_EXPERIENCE = True
+except ImportError:
+    HAS_EXPERIENCE = False
+
+try:
+    import prompt_compiler
+    HAS_FEWSHOT = True
+except ImportError:
+    HAS_FEWSHOT = False
+
+try:
+    from checkpoints import checkpoint_manager, confirmation_manager, needs_confirmation, format_confirmation_prompt
+    HAS_CHECKPOINTS = True
+except ImportError:
+    HAS_CHECKPOINTS = False
+
+# ── Level 6 modules ──
+
+try:
+    from guardrails import injection_detector, pii_masker, output_validator, budget_manager as guardrail_budget, check_input, check_output
+    HAS_GUARDRAILS = True
+except ImportError:
+    HAS_GUARDRAILS = False
+
+try:
+    from cost_tracker import token_counter, cost_attribution, budget_manager as cost_budget, track_llm_call, get_cost_report
+    HAS_COST_TRACKER = True
+except ImportError:
+    HAS_COST_TRACKER = False
+
+try:
+    from eval_framework import eval_runner, BENCHMARK_SUITE, run_benchmark, get_latest_report, get_report_history
+    HAS_EVAL = True
+except ImportError:
+    HAS_EVAL = False
+
+try:
+    from self_optimizer import performance_collector, prompt_optimizer, parameter_tuner, tool_weight_optimizer, record_outcome, get_optimization_report
+    HAS_OPTIMIZER = True
+except ImportError:
+    HAS_OPTIMIZER = False
+
+try:
+    from agent_relay import message_bus, scratchpad, task_decomposer, relay_orchestrator, relay_log
+    HAS_RELAY = True
+except ImportError:
+    HAS_RELAY = False
+
+try:
+    from semantic_cache import multi_tier_cache, semantic_get, semantic_put, cache_stats as semantic_cache_stats, cache_warmer
+    HAS_SEMANTIC_CACHE = True
+except ImportError:
+    HAS_SEMANTIC_CACHE = False
+
+try:
+    from streaming_tools import tool_stream, adaptive_selector, progress_tracker, streaming_executor
+    HAS_STREAMING = True
+except ImportError:
+    HAS_STREAMING = False
+
+try:
+    from advanced_graph import graph_analytics, community_detector, link_predictor, anomaly_detector, temporal_evolution
+    HAS_ADVANCED_GRAPH = True
+except ImportError:
+    HAS_ADVANCED_GRAPH = False
+
+# ── Level 7 modules ──
+
+try:
+    from llm_judge import llm_judge, judge_analytics, judge, get_judge_report
+    HAS_LLM_JUDGE = True
+except ImportError:
+    HAS_LLM_JUDGE = False
+
+try:
+    from dynamic_agents import agent_factory, dynamic_router, pattern_analyzer, agent_evolution, check_dynamic_route, get_agent_report
+    HAS_DYNAMIC_AGENTS = True
+except ImportError:
+    HAS_DYNAMIC_AGENTS = False
+
+try:
+    from a2a_protocol import agent_card, task_manager as a2a_task_manager, a2a_server, get_agent_card, handle_a2a, get_a2a_status
+    HAS_A2A = True
+except ImportError:
+    HAS_A2A = False
+
+try:
+    from knowledge_evolution import schema_analyzer, relation_inferrer, gap_detector, evolution_tracker, analyze_knowledge, get_evolution_report, get_knowledge_score
+    HAS_KNOWLEDGE_EVOLUTION = True
+except ImportError:
+    HAS_KNOWLEDGE_EVOLUTION = False
+
+try:
+    from multimodal_engine import text_analyzer, image_analyzer, multimodal_pipeline, analyze_text as mm_analyze_text, get_capabilities as mm_capabilities
+    HAS_MULTIMODAL = True
+except ImportError:
+    HAS_MULTIMODAL = False
+
+try:
+    from federation import node_registry, federated_memory, cache_coherency, canary_deployment, load_balancer, federation_manager
+    HAS_FEDERATION = True
+except ImportError:
+    HAS_FEDERATION = False
+
+# ── OpenAI client ──
+
+client = OpenAI(
+    api_key=os.environ["LLM_API_KEY"],
+    base_url=os.environ["LLM_BASE_URL"],
+)
+MODEL = os.environ.get("LLM_MODEL", "cx/gpt-5.4")
+MODEL_MINI = os.environ.get("LLM_MODEL_MINI", "cx/gpt-5.4-mini")
+
+# ── Web search (DuckDuckGo) ──
+
+def web_search(query: str, max_results: int = 5) -> list[dict]:
+    try:
+        from ddgs import DDGS
+        with DDGS() as ddgs:
+            results = list(ddgs.text(query, region="vn-vi", max_results=max_results))
+        return [{"title": r.get("title", ""), "url": r.get("href", ""), "snippet": r.get("body", "")} for r in results]
+    except Exception as e:
+        logger.error(f"Web search error: {e}")
+        return []
+
+
+def _tool_description(name: str, args: dict) -> str:
+    """Human-readable description of a tool call for UI tracing."""
+    descs = {
+        "search": lambda a: f"Tìm kiếm '{a.get('q', '')}'..." if a.get('q') else "Tìm kiếm knowledge base...",
+        "entity_detail": lambda a: f"Tra cứu chi tiết '{a.get('entity_id', '')}'...",
+        "seasonal_now": lambda a: f"Kiểm tra mùa vụ tháng {a.get('month', '')}...",
+        "list_itineraries": lambda a: f"Tìm lịch trình{' ' + a['area'] if a.get('area') else ''}...",
+        "itinerary_detail": lambda a: f"Xem lịch trình '{a.get('itinerary_id', '')}'...",
+        "places_in_area": lambda a: f"Liệt kê địa điểm tại {a.get('area', '')}...",
+        "stats": lambda a: "Thống kê knowledge base...",
+        "compare_areas": lambda a: f"So sánh {a.get('area_1', '')} và {a.get('area_2', '')}...",
+        "nearby_entities": lambda a: f"Tìm điểm gần '{a.get('entity_id', '')}'...",
+        "web_search": lambda a: f"Tìm trên web '{a.get('query', '')}'...",
+        "suggest_followups": lambda a: "Gợi ý câu hỏi tiếp theo...",
+        "generate_itinerary": lambda a: f"Tạo lịch trình {a.get('days', 1)} ngày...",
+        "weather": lambda a: f"Tra thời tiết {a.get('area', 'Vĩnh Long')}...",
+        "community_reviews": lambda a: f"Xem đánh giá cộng đồng về '{a.get('entity_id', '')}'...",
+        "trending_posts": lambda a: "Xem bài viết nổi bật trên cộng đồng...",
+    }
+    fn = descs.get(name)
+    if fn:
+        try:
+            return fn(args)
+        except Exception:
+            pass
+    return f"Đang xử lý {name}..."
+
+
+def generate_followups(context: str) -> list[str]:
+    try:
+        response = client.chat.completions.create(
+            model=MODEL_MINI,
+            messages=[{"role": "user", "content": f"""Dựa vào ngữ cảnh sau, gợi ý 3 câu hỏi tiếp theo ngắn gọn (< 40 ký tự) mà du khách có thể muốn hỏi.
+
+Ngữ cảnh: {context}
+
+Trả về JSON array gồm 3 string. Chỉ trả JSON, không text khác."""}],
+            temperature=0.7,
+        )
+        content = response.choices[0].message.content.strip()
+        content = re.sub(r"^```json\s*", "", content)
+        content = re.sub(r"\s*```$", "", content)
+        return json.loads(content)[:3]
+    except Exception:
+        return []
+
+
+# ── Tool dispatcher ──
+
+def _hybrid_rerank_search(args: dict) -> list[dict]:
+    """Run the KB search with hybrid reranking (BM25 + semantic + contextual).
+
+    Falls back to plain knowledge.search_entities() when the query is empty,
+    contextual retrieval is unavailable, or indexes aren't built. Structured
+    filters (type/area/month/ocop) are always respected: hybrid reranking only
+    reorders the filtered candidate set, never introduces entities outside it.
+    """
+    q = args.get("q")
+    entity_type = args.get("entity_type")
+    area = args.get("area")
+    month = args.get("month")
+    ocop_only = args.get("ocop_only", False)
+    limit = args.get("limit", 10)
+
+    has_filters = bool(entity_type or area or month or ocop_only)
+
+    # Authoritative filtered candidate pool (ranked by smart_rank).
+    keyword_results = knowledge.search_entities(
+        q=q, entity_type=entity_type, area=area, month=month,
+        ocop_only=ocop_only, limit=max(limit * 3, 30),
+    )
+
+    # Plain path: no text query, no hybrid infra, or empty pool.
+    if not q or not HAS_CONTEXTUAL or not keyword_results:
+        return keyword_results[:limit]
+
+    try:
+        allowed_ids = {e["id"] for e in keyword_results}
+        reranked = enhanced_hybrid_search(
+            query=q,
+            keyword_results=keyword_results,
+            entities=knowledge._entities,
+            relationships=getattr(knowledge, "_relationships", []) or [],
+            top_k=max(limit * 3, 30),
+        )
+        out = []
+        for r in reranked:
+            eid = r.get("id", r.get("entity_id", ""))
+            ent = knowledge.get_entity(eid) if eid else None
+            if not ent:
+                continue
+            # With filters active, only keep entities that passed the filter.
+            if has_filters and eid not in allowed_ids:
+                continue
+            out.append(ent)
+        # Backfill from keyword_results if hybrid dropped too many.
+        if len(out) < limit:
+            seen = {e["id"] for e in out}
+            for e in keyword_results:
+                if e["id"] not in seen:
+                    out.append(e)
+                    if len(out) >= limit:
+                        break
+        return out[:limit]
+    except Exception as e:
+        logger.error(f"Hybrid search failed, using keyword fallback: {e}")
+        return keyword_results[:limit]
+
+
+def call_tool(name: str, args: dict) -> str:
+    if name == "search":
+        result = _hybrid_rerank_search(args)
+        # Track entity hits (wrapped to prevent analytics errors from breaking search)
+        try:
+            for e in result[:3]:
+                analytics.track_entity_hit(e["id"])
+        except Exception:
+            pass
+        def _search_card(e):
+            attrs = e.get("attributes") or {}
+            place_obj = knowledge.get_place(e["id"]) or {}
+            # Location label: prefer places data, fallback to attributes
+            place_label = place_obj.get("name") or attrs.get("ward") or attrs.get("district") or attrs.get("province_old") or ""
+            card = {
+                "id": e["id"], "type": e["type"], "name": e["name"],
+                "summary": e.get("summary", ""),
+                "place": place_label,
+                "season": knowledge.season_text(e),
+                "confidence": e.get("confidence", 0),
+                "verified": e.get("verified", True) is not False and e.get("status") != "provisional",
+            }
+            # Include coords when available (powers map display)
+            coords = e.get("coords") or e.get("coordinates")
+            if coords:
+                card["coords"] = coords
+            # Practical info — critical for trip planning queries
+            if attrs.get("open_hours"):
+                card["open_hours"] = attrs["open_hours"]
+            if attrs.get("admission_fee"):
+                card["admission_fee"] = attrs["admission_fee"]
+            if attrs.get("best_time"):
+                card["best_time"] = attrs["best_time"]
+            if attrs.get("key_facts"):
+                card["key_facts"] = attrs["key_facts"]
+            if attrs.get("ocop"):
+                card["ocop"] = attrs["ocop"]
+            # Include address/district for context
+            if attrs.get("address"):
+                card["address"] = attrs["address"]
+            elif attrs.get("district"):
+                card["location"] = f"{attrs.get('ward', attrs['district'])}, {attrs.get('province_old', '')}"
+            return card
+        return json.dumps([_search_card(e) for e in result], ensure_ascii=False)
+
+    elif name == "entity_detail":
+        detail = knowledge.entity_detail(args["entity_id"])
+        try:
+            analytics.track_entity_hit(args["entity_id"])
+        except Exception:
+            pass
+        if not detail:
+            return json.dumps({"error": "Không tìm thấy: " + args["entity_id"]})
+        return json.dumps(detail, ensure_ascii=False, default=str)
+
+    elif name == "seasonal_now":
+        result = knowledge.seasonal_now(args["month"])
+        def _seasonal_card(e):
+            attrs = e.get("attributes") or {}
+            card = {
+                "id": e["id"], "type": e["type"], "name": e["name"],
+                "summary": e.get("summary", ""),
+                "season": knowledge.season_text(e),
+            }
+            if attrs.get("open_hours"):    card["open_hours"] = attrs["open_hours"]
+            if attrs.get("admission_fee"): card["admission_fee"] = attrs["admission_fee"]
+            if attrs.get("best_time"):     card["best_time"] = attrs["best_time"]
+            if attrs.get("ocop"):          card["ocop"] = attrs["ocop"]
+            if e.get("coords"):            card["coords"] = e["coords"]
+            return card
+        return json.dumps([_seasonal_card(e) for e in result], ensure_ascii=False)
+
+    elif name == "list_itineraries":
+        result = knowledge.list_itineraries(args.get("area"))
+        return json.dumps([{
+            "id": it["id"], "title": it["title"],
+            "area": it.get("area"), "duration": it.get("duration"),
+            "summary": it.get("summary", ""),
+            "stops": len(it.get("stops", [])),
+        } for it in result], ensure_ascii=False)
+
+    elif name == "itinerary_detail":
+        it = knowledge.get_itinerary(args["itinerary_id"])
+        if not it:
+            return json.dumps({"error": "Không tìm thấy: " + args["itinerary_id"]})
+        stops_detail = []
+        for s in it.get("stops", []):
+            e = knowledge.get_entity(s["id"])
+            stops_detail.append({
+                "time": s["time"], "id": s["id"],
+                "name": e["name"] if e else s["id"],
+                "summary": e.get("summary", "") if e else "",
+                "note": s.get("note", ""),
+            })
+        return json.dumps({**it, "stops": stops_detail}, ensure_ascii=False)
+
+    elif name == "places_in_area":
+        ps = knowledge.places(args["area"])
+        content_counts = {}
+        for e in knowledge._entities.values():
+            pid = e.get("placeId")
+            if pid and e["type"] in knowledge.CARD_TYPES:
+                content_counts[pid] = content_counts.get(pid, 0) + 1
+        return json.dumps([{
+            "id": p["id"], "name": p["name"], "level": p.get("level"),
+            "legacyArea": p.get("legacyArea", ""),
+            "content_count": content_counts.get(p["id"], 0),
+        } for p in ps], ensure_ascii=False)
+
+    elif name == "stats":
+        return json.dumps(knowledge.stats(), ensure_ascii=False)
+
+    elif name == "compare_areas":
+        result = knowledge.compare_areas(args["area_1"], args["area_2"])
+        return json.dumps(result, ensure_ascii=False)
+
+    elif name == "nearby_entities":
+        result = knowledge.nearby_entities(args["entity_id"], args.get("limit", 8))
+        # Enrich with practical info for each nearby entity
+        enriched_nearby = []
+        for item in result:
+            e = knowledge._entities.get(item["id"]) or {}
+            attrs = e.get("attributes") or {}
+            card = dict(item)
+            if attrs.get("open_hours"):    card["open_hours"] = attrs["open_hours"]
+            if attrs.get("admission_fee"): card["admission_fee"] = attrs["admission_fee"]
+            if attrs.get("ocop"):          card["ocop"] = attrs["ocop"]
+            if e.get("coords"):            card["coords"] = e["coords"]
+            enriched_nearby.append(card)
+        return json.dumps(enriched_nearby, ensure_ascii=False)
+
+    elif name == "ocop_products":
+        area = args.get("area")
+        min_stars = args.get("min_stars", 3)
+        category = args.get("category", "all")
+        limit = args.get("limit", 12)
+        results = []
+        CRAFT_KW = ["đan", "dệt", "gốm", "tre", "lá", "chiếu", "mây", "thủ công"]
+        DRINK_KW = ["rượu", "nước", "mật", "trà", "cà phê", "đường hoa"]
+        for e in knowledge._entities.values():
+            attrs = e.get("attributes") or {}
+            if not attrs.get("ocop"):
+                continue
+            # Area filter
+            if area:
+                place = knowledge.get_place(e["id"])
+                prov = attrs.get("province_old", "")
+                _PROV = {"ben-tre": "Bến Tre", "tra-vinh": "Trà Vinh", "vinh-long": "Vĩnh Long"}
+                area_ok = (place and place.get("area") == area) or prov == _PROV.get(area, "")
+                if not area_ok:
+                    continue
+            # Star filter
+            ocop_val = str(attrs["ocop"])
+            star_num = 0
+            import re as _re
+            m = _re.search(r"(\d)", ocop_val)
+            if m:
+                star_num = int(m.group(1))
+            if star_num and star_num < min_stars:
+                continue
+            # Category filter
+            if category != "all":
+                name_text = (e.get("name", "") + e.get("summary", "")).lower()
+                if category == "craft" and not any(kw in name_text for kw in CRAFT_KW):
+                    continue
+                if category == "drink" and not any(kw in name_text for kw in DRINK_KW):
+                    continue
+                if category == "food" and any(kw in name_text for kw in CRAFT_KW + DRINK_KW):
+                    continue
+            card = {
+                "id": e["id"], "name": e["name"],
+                "ocop": attrs["ocop"],
+                "summary": e.get("summary", "")[:120],
+                "province": attrs.get("province_old", ""),
+                "address": attrs.get("address", ""),
+            }
+            if attrs.get("admission_fee"): card["price"] = attrs["admission_fee"]
+            if attrs.get("phone"):         card["phone"] = attrs["phone"]
+            if e.get("coords"):            card["coords"] = e["coords"]
+            # Sort key: star desc
+            card["_star"] = star_num
+            results.append(card)
+        results.sort(key=lambda x: -x.pop("_star", 0))
+        return json.dumps(results[:limit], ensure_ascii=False)
+
+    elif name == "accommodation_search":
+        area = args.get("area")
+        acc_type = args.get("type", "all")
+        family = args.get("family_friendly", False)
+        limit = args.get("limit", 8)
+        TYPE_KW = {
+            "homestay": ["homestay", "nhà vườn", "nhà cổ", "nhà dân"],
+            "resort": ["resort", "khu nghỉ dưỡng"],
+            "hotel": ["khách sạn", "hotel"],
+            "guesthouse": ["nhà nghỉ", "guesthouse", "phòng trọ"],
+        }
+        FAMILY_KW = ["gia đình", "trẻ em", "vườn", "sân chơi", "an toàn", "cù lao"]
+        results = []
+        for e in knowledge._entities.values():
+            if e.get("type") != "accommodation":
+                continue
+            attrs = e.get("attributes") or {}
+            # Area filter
+            if area:
+                place = knowledge.get_place(e["id"])
+                prov = attrs.get("province_old", "")
+                _PROV = {"ben-tre": "Bến Tre", "tra-vinh": "Trà Vinh", "vinh-long": "Vĩnh Long"}
+                area_ok = (place and place.get("area") == area) or prov == _PROV.get(area, "")
+                if not area_ok:
+                    continue
+            # Type filter
+            if acc_type != "all":
+                kws = TYPE_KW.get(acc_type, [])
+                text = (e.get("name", "") + e.get("summary", "")).lower()
+                if not any(kw in text for kw in kws):
+                    continue
+            # Family filter
+            if family:
+                text = (e.get("name", "") + e.get("summary", "") + attrs.get("booking_note", "")).lower()
+                if not any(kw in text for kw in FAMILY_KW):
+                    continue
+            card = {
+                "id": e["id"], "name": e["name"],
+                "summary": e.get("summary", "")[:120],
+                "province": attrs.get("province_old", ""),
+                "address": attrs.get("address", ""),
+            }
+            if attrs.get("admission_fee") or attrs.get("price_range"):
+                card["price"] = attrs.get("admission_fee") or attrs.get("price_range")
+            if attrs.get("phone"):         card["phone"] = attrs["phone"]
+            if attrs.get("open_hours"):    card["check_in"] = attrs["open_hours"]
+            if attrs.get("booking_note"):  card["booking_note"] = attrs["booking_note"]
+            if e.get("coords"):            card["coords"] = e["coords"]
+            results.append(card)
+        return json.dumps(results[:limit], ensure_ascii=False)
+
+    elif name == "web_search":
+        results = web_search(args["query"])
+        if not results:
+            return json.dumps({"results": [], "note": "Không tìm thấy kết quả"})
+        return json.dumps({"results": results}, ensure_ascii=False)
+
+    elif name == "suggest_followups":
+        suggestions = generate_followups(args["context"])
+        return json.dumps({"suggestions": suggestions}, ensure_ascii=False)
+
+    elif name == "generate_itinerary":
+        result = generate_itinerary(
+            days=args.get("days", 1),
+            interests=args.get("interests"),
+            areas=args.get("areas"),
+            month=args.get("month"),
+            budget=args.get("budget", "trung_binh"),
+        )
+        return json.dumps(result, ensure_ascii=False)
+
+    elif name == "community_reviews":
+        try:
+            from social import get_community_reviews
+            entity_id = args.get("entity_id", "")
+            limit = args.get("limit", 5)
+            reviews = get_community_reviews(entity_id, limit)
+            if not reviews:
+                return json.dumps({"reviews": [], "note": f"Chưa có đánh giá cộng đồng cho '{entity_id}'"}, ensure_ascii=False)
+            return json.dumps({"reviews": reviews, "count": len(reviews)}, ensure_ascii=False, default=str)
+        except Exception as e:
+            return json.dumps({"reviews": [], "error": str(e)})
+
+    elif name == "trending_posts":
+        try:
+            from social import get_trending_posts
+            entity_type = args.get("entity_type")
+            limit = args.get("limit", 10)
+            posts = get_trending_posts(limit, entity_type)
+            if not posts:
+                return json.dumps({"posts": [], "note": "Chưa có bài viết nổi bật"}, ensure_ascii=False)
+            return json.dumps({"posts": posts, "count": len(posts)}, ensure_ascii=False, default=str)
+        except Exception as e:
+            return json.dumps({"posts": [], "error": str(e)})
+
+    elif name == "weather":
+        if HAS_REALTIME:
+            area = args.get("area", "vinh-long")
+            weather = get_weather(area)
+            events = get_upcoming_events(days_ahead=14, area=area)
+            return json.dumps({"weather": weather, "events": events}, ensure_ascii=False, default=str)
+        return json.dumps({"error": "Weather API not available"})
+
+    return json.dumps({"error": f"Unknown tool: {name}"})
+
+
+# ── FastAPI app ──
+
+def build_search_indexes():
+    """Build BM25 + contextual + TF-IDF indexes from the KB.
+
+    These power enhanced_hybrid_search. Previously they were never built at
+    startup (only via an admin endpoint), so the agent's search ran on plain
+    substring matching. Called at startup and after every KB reload.
+    """
+    knowledge._ensure()
+    entities = knowledge._entities
+    rels = getattr(knowledge, "_relationships", []) or []
+
+    # Adapt relationship key names (knowledge uses from/to/type; contextual
+    # expects source/target/label) so related-entity context is included.
+    adapted_rels = [
+        {"source": r.get("from", ""), "target": r.get("to", ""),
+         "type": r.get("type", ""), "label": ""}
+        for r in rels
+    ]
+
+    built = {}
+    if HAS_CONTEXTUAL:
+        try:
+            texts = contextual.build_all_contextual(entities, adapted_rels)
+            bm25.build_index(texts)
+            built["bm25_docs"] = len(texts)
+        except Exception as e:
+            logger.error(f"BM25/contextual index build failed: {e}")
+    if HAS_VECTOR:
+        try:
+            res = embedding_store.build_index(entities)
+            built["embeddings"] = res.get("total_embeddings", res) if isinstance(res, dict) else res
+        except Exception as e:
+            logger.error(f"Vector index build failed: {e}")
+    logger.info(f"Search indexes built: {built}")
+    return built
+
+
+_index_build_state = {
+    "enabled": BUILD_SEARCH_INDEXES,
+    "background": BACKGROUND_INDEX_BUILD,
+    "running": False,
+    "started_at": None,
+    "finished_at": None,
+    "last_result": None,
+    "last_error": None,
+}
+
+
+def start_search_index_build(background: bool = True):
+    if not BUILD_SEARCH_INDEXES:
+        logger.info("Search index build disabled by BUILD_SEARCH_INDEXES")
+        return {"enabled": False}
+    if _index_build_state["running"]:
+        return {"running": True}
+
+    def _run():
+        _index_build_state.update({
+            "running": True,
+            "started_at": datetime.now().isoformat(),
+            "finished_at": None,
+            "last_error": None,
+        })
+        try:
+            _index_build_state["last_result"] = build_search_indexes()
+        except Exception as e:
+            _index_build_state["last_error"] = str(e)
+            logger.error(f"Index build error: {e}")
+        finally:
+            _index_build_state["running"] = False
+            _index_build_state["finished_at"] = datetime.now().isoformat()
+
+    if background:
+        thread = threading.Thread(target=_run, daemon=True, name="search-index-build")
+        thread.start()
+        return {"running": True, "background": True}
+
+    _run()
+    return _index_build_state
+
+
+@asynccontextmanager
+async def lifespan(app):
+    """Khởi động background scheduler và preload data."""
+    knowledge._ensure()
+    # Load autocorrect entity names
+    if HAS_AUTOCORRECT:
+        try:
+            load_entity_names(knowledge._entities)
+            logger.info("Autocorrect loaded", entities=len(knowledge._entities))
+        except Exception:
+            pass
+    # Build search indexes without blocking readiness. Use BACKGROUND_INDEX_BUILD=false
+    # only when deployment should wait for the full enhanced search index.
+    start_search_index_build(background=BACKGROUND_INDEX_BUILD)
+    start_scheduler()
+    logger.info("Server started", model=MODEL, entities=len(knowledge._entities))
+    yield
+    logger.info("Server shutting down")
+    logger.flush()
+
+
+_server_start_time = time.time()
+
+app = FastAPI(
+    title="vinhlong360 Knowledge Agent",
+    version="8.2",
+    description="AI tourism assistant for Vĩnh Long province — 327 entities, 2070 relationships, 13 AI tools, agentic RAG, multi-turn reasoning.",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_tags=[
+        {"name": "Chat", "description": "AI chat endpoints"},
+        {"name": "Analytics", "description": "Usage analytics and insights"},
+        {"name": "System", "description": "System monitoring and health"},
+        {"name": "Search", "description": "Vector and knowledge search"},
+        {"name": "Recommendations", "description": "Smart recommendation engine"},
+        {"name": "Admin", "description": "Administration and CRUD"},
+    ],
+    lifespan=lifespan,
+)
+_raw_origins = os.environ.get("CORS_ORIGINS", "http://localhost:8360,http://localhost:3000,https://vinhlong360.vn")
+ALLOWED_ORIGINS = [o.strip() for o in _raw_origins.split(",") if o.strip()]
+if os.environ.get("ENVIRONMENT") == "production":
+    _local = [o for o in ALLOWED_ORIGINS if "localhost" in o or "127.0.0.1" in o]
+    if _local:
+        logger.warn(f"CORS: removing localhost origins in production mode: {_local}")
+        ALLOWED_ORIGINS = [o for o in ALLOWED_ORIGINS if o not in _local]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Content-Type", "X-Admin-Key", "Authorization"],
+)
+app.include_router(admin_router)
+app.include_router(auth_router)
+app.include_router(public_router)
+app.include_router(seo_router)
+app.include_router(social_router)
+app.include_router(community_router)
+
+
+MAX_BODY_SIZE = 1_048_576  # 1MB
+
+@app.middleware("http")
+async def limit_request_size(request: Request, call_next):
+    """Reject requests with body > 1MB to prevent DoS."""
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > MAX_BODY_SIZE:
+        return JSONResponse(status_code=413, content={"error": "Request body too large (max 1MB)"})
+    return await call_next(request)
+
+
+@app.middleware("http")
+async def track_response_time(request: Request, call_next):
+    """Track response time + request logging."""
+    start = time.time()
+    req_id = generate_request_id()
+    request.state.request_id = req_id
+
+    try:
+        response = await call_next(request)
+        duration_ms = (time.time() - start) * 1000
+        endpoint = f"{request.method} {request.url.path}"
+        response_tracker.record(endpoint, duration_ms, response.status_code)
+
+        if duration_ms > 5000:
+            logger.warn("Slow request", endpoint=endpoint, duration_ms=round(duration_ms), req_id=req_id)
+
+        response.headers["X-Request-Id"] = req_id
+        response.headers["X-Response-Time"] = f"{duration_ms:.0f}ms"
+        return response
+
+    except Exception as exc:
+        duration_ms = (time.time() - start) * 1000
+        endpoint = f"{request.method} {request.url.path}"
+        error_tracker.record_error(endpoint, str(exc), traceback.format_exc())
+        response_tracker.record(endpoint, duration_ms, 500)
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Internal server error", "request_id": req_id},
+        )
+
+
+from pydantic import Field, field_validator
+
+class ChatRequest(BaseModel):
+    message: str = Field(..., min_length=1, max_length=2000, description="User message")
+    history: list[dict] = Field(default=[], max_length=50, description="Conversation history")
+    session_id: str | None = Field(default=None, max_length=32)
+
+    @field_validator("message")
+    @classmethod
+    def sanitize_message(cls, v):
+        # Strip HTML/script tags
+        v = re.sub(r"<script[^>]*>.*?</script>", "", v, flags=re.DOTALL | re.IGNORECASE)
+        v = re.sub(r"<[^>]+>", "", v)
+        return v.strip()
+
+
+class ChatResponse(BaseModel):
+    reply: str
+    tool_calls: list[str] = []
+    suggestions: list[str] = []
+    session_id: str = ""
+    cached: bool = False
+
+
+# ── Pydantic models for validated POST endpoints ──
+
+class FeedbackRequest(BaseModel):
+    query: str = Field(default="", max_length=2000)
+    rating: int = Field(..., ge=0, le=1)
+    user_id: str = Field(default="anonymous", max_length=64)
+    session_id: str = Field(default="anonymous", max_length=64)
+    entity_id: str | None = Field(default=None, max_length=64)
+
+class CheckpointSaveRequest(BaseModel):
+    session_id: str = Field(default="", max_length=64)
+    messages: list[dict] = Field(default=[])
+    tools_used: list[str] = Field(default=[])
+    agent_state: dict = Field(default={})
+    metadata: dict = Field(default={})
+
+class GuardrailCheckRequest(BaseModel):
+    message: str = Field(..., min_length=1, max_length=5000)
+    session_id: str = Field(default="test", max_length=64)
+
+class JudgeEvaluateRequest(BaseModel):
+    query: str = Field(..., min_length=1, max_length=2000)
+    reply: str = Field(..., min_length=1, max_length=5000)
+
+class DynamicAgentCreateRequest(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100)
+    description: str = Field(default="", max_length=500)
+    trigger_patterns: list[str] = Field(default=[])
+    system_prompt_addon: str = Field(default="", max_length=2000)
+    tool_whitelist: list[str] | None = None
+
+class SemanticCacheInvalidateRequest(BaseModel):
+    entity_id: str | None = Field(default=None, max_length=64)
+    query: str | None = Field(default=None, max_length=500)
+
+class MultimodalAnalyzeRequest(BaseModel):
+    text: str = Field(..., min_length=1, max_length=10000)
+
+class FederationInvalidateRequest(BaseModel):
+    key: str = Field(..., min_length=1, max_length=200)
+    source_node: str = Field(..., min_length=1, max_length=100)
+
+class A2ARequest(BaseModel):
+    method: str = Field(..., min_length=1, max_length=100)
+    params: dict = Field(default={})
+
+
+def _resolve_contextual_query(message: str, history: list[dict]) -> str:
+    """
+    Resolve anaphoric references in message using recent conversation history.
+    E.g.: "từ bến tre đến bảo tàng" → "từ bến tre đến Bảo tàng Dừa Sáp Trà Vinh"
+    when previous turn mentioned that museum.
+    Pure rule-based, zero latency.
+    """
+    if not history:
+        return message
+    msg_lower = message.lower().strip()
+
+    # Types that commonly appear as ambiguous anaphors
+    ANAPHOR_TYPES = {
+        "bảo tàng":     ["bảo tàng"],
+        "khách sạn":    ["khách sạn", "hotel", "resort", "homestay"],
+        "nhà hàng":     ["nhà hàng", "quán ăn", "restaurant"],
+        "chùa":         ["chùa", "tịnh xá", "thiền viện"],
+        "đình":         ["đình"],
+        "khu du lịch":  ["khu du lịch", "khu nghỉ dưỡng"],
+        "cồn":          ["cồn", "đảo"],
+        "lăng":         ["lăng", "khu tưởng niệm"],
+        "làng nghề":    ["làng nghề"],
+        "điểm":         ["điểm du lịch", "điểm tham quan"],
+    }
+    PRONOUNS = {"ở đó": None, "đến đó": None, "tại đó": None, "nơi đó": None, "chỗ đó": None}
+
+    has_anaphor = any(a in msg_lower for a in ANAPHOR_TYPES)
+    has_pronoun = any(p in msg_lower for p in PRONOUNS)
+    if not has_anaphor and not has_pronoun:
+        return message
+
+    # Extract last assistant reply
+    last_reply = ""
+    for turn in reversed(history[-6:]):
+        if turn.get("role") == "assistant":
+            last_reply = turn.get("content", "")
+            break
+    if not last_reply:
+        return message
+
+    # Extract bold entity names (**...**) from assistant reply
+    import re as _re
+    bold_entities = _re.findall(r'\*\*([^*\n]{2,60})\*\*', last_reply)
+    # Also extract section headers (## Name) from structured replies
+    headers = _re.findall(r'(?:^|\n)#+\s*(.{5,60}?)(?:\n|$)', last_reply)
+    all_entities = bold_entities + headers
+
+    if not all_entities:
+        return message
+
+    resolved = message
+
+    # Resolve type-specific anaphors
+    for anaphor, keywords in ANAPHOR_TYPES.items():
+        if anaphor not in msg_lower:
+            continue
+        # Check if anaphor is used bare (not followed by a distinguishing proper noun)
+        # Heuristic: if the word right after anaphor is lowercase or empty, it's generic
+        pattern = _re.compile(r'\b' + _re.escape(anaphor) + r'\b', _re.IGNORECASE)
+        for entity in all_entities:
+            entity_lower = entity.lower()
+            if any(kw in entity_lower for kw in keywords) and len(entity) > len(anaphor) + 3:
+                new_resolved = pattern.sub(entity, resolved, count=1)
+                if new_resolved != resolved:
+                    resolved = new_resolved
+                    break
+
+    # Resolve pronouns with first bold entity
+    if has_pronoun and all_entities:
+        top = all_entities[0]
+        for pronoun in PRONOUNS:
+            if pronoun in resolved.lower():
+                resolved = _re.sub(
+                    _re.escape(pronoun), f"tại {top}", resolved, flags=_re.IGNORECASE, count=1
+                )
+
+    return resolved
+
+
+def _build_messages(
+    message: str,
+    history: list[dict],
+    session_id: str = "",
+    user_id: str = "",
+) -> tuple[list[dict], dict]:
+    """
+    Xây dựng messages cho LLM với đầy đủ context:
+      1. System prompt cơ bản
+      2. Proactive context (mùa vụ, thời gian, trending)
+      3. Agentic RAG routing (query classification + graph context)
+      4. Memory context (user profile + session preferences + skills)
+      5. Reflexion context (lessons from past failures)
+      6. A/B testing variant selection
+      7. History + user message
+
+    Returns: (messages, build_info) where build_info includes cache/AB stats
+    """
+    current_month = datetime.now().month
+
+    # Resolve anaphoric references (e.g. "bảo tàng" → specific museum from history)
+    # before RAG so entity detection picks up the correct entity.
+    rag_query = _resolve_contextual_query(message, history)
+
+    # Gather context pieces
+    proactive_ctx = get_proactive_context(month=current_month)
+    rag_ctx = build_rag_context(rag_query)
+    realtime_ctx = ""
+    if HAS_REALTIME:
+        try:
+            realtime_ctx = get_realtime_context() or ""
+        except Exception:
+            pass
+    memory_ctx = memory_manager.build_context(session_id, user_id, message)
+    reflexion_ctx = reflexion_engine.get_reflection_prompt(message)
+    graph_ctx = ""
+    if HAS_MEMORY_GRAPH:
+        try:
+            graph_ctx = memory_graph.build_graph_context(user_id) or ""
+        except Exception:
+            pass
+
+    # A/B testing: select prompt variant
+    ab_info = {}
+    base_prompt = SYSTEM_PROMPT
+    if HAS_AB_TESTING and session_id:
+        try:
+            variant = ab_manager.assign_variant("prompt_style", session_id)
+            if variant:
+                ab_info["prompt_style"] = variant["id"]
+                style = variant.get("config", {}).get("style", "balanced")
+                if style == "concise":
+                    base_prompt = SYSTEM_PROMPT + "\nPhong cách trả lời: ngắn gọn, súc tích, đi thẳng vào trọng tâm."
+                elif style == "detailed":
+                    base_prompt = SYSTEM_PROMPT + "\nPhong cách trả lời: chi tiết, đầy đủ thông tin, có ví dụ minh họa."
+        except Exception:
+            pass
+
+    # KB-in-context: inject a compact index (or full digest) of the knowledge base
+    # so the agent knows what exists → better searches + correct abstention. Static
+    # until reload, so it lands in the cacheable static layer via base_prompt.
+    if HAS_KB_CONTEXT:
+        try:
+            kb_ctx = kb_context.get_kb_context(knowledge._entities)
+            if kb_ctx:
+                base_prompt = base_prompt + "\n\n" + kb_ctx
+        except Exception:
+            pass
+
+    # Lazy context: skip heavy modules for simple queries (search/general)
+    # to reduce token count and speed up responses. Only load for complex queries.
+    _is_simple = not any(kw in message.lower() for kw in [
+        "lịch trình", "so sánh", "kế hoạch", "tour", "ngày",
+        "hành trình", "plan", "compare", "itinerary",
+    ])
+
+    # Experience memory (ReasoningBank-lite): inject distilled lessons + negative
+    # constraints relevant to this query. Query-dependent → fold into reflexion
+    # context so it flows through both the cached and manual assembly paths.
+    if HAS_EXPERIENCE and not _is_simple:
+        try:
+            experience_ctx = experience_memory.build_prompt(message) or ""
+            if experience_ctx:
+                reflexion_ctx = (reflexion_ctx or "") + ("\n" + experience_ctx)
+        except Exception:
+            pass
+
+    # Few-shot demonstrations (BootstrapFewShot). OFF by default (token cost);
+    # enable via FEWSHOT_DEMOS=on. Compiled artifact is static → works offline.
+    if HAS_FEWSHOT and not _is_simple:
+        try:
+            fewshot_ctx = prompt_compiler.build_prompt(message) or ""
+            if fewshot_ctx:
+                reflexion_ctx = (reflexion_ctx or "") + ("\n" + fewshot_ctx)
+        except Exception:
+            pass
+
+    # Use prompt cache if available
+    if HAS_PROMPT_CACHE:
+        # Get session history from memory or request
+        effective_history = history[-20:]
+        if session_id:
+            session = memory_manager.get_session(session_id)
+            ctx_messages = session.get_context_messages()
+            if ctx_messages:
+                effective_history = ctx_messages
+
+        messages, cache_info = prompt_cache.build_cached_prompt(
+            message=message,
+            history=effective_history,
+            session_id=session_id,
+            user_id=user_id,
+            system_prompt=base_prompt,
+            proactive_context=proactive_ctx or "",
+            rag_context=rag_ctx or "",
+            realtime_context=realtime_ctx,
+            memory_context=(memory_ctx or "") + ("\n" + graph_ctx if graph_ctx else ""),
+            reflexion_context=reflexion_ctx or "",
+        )
+        build_info = {**cache_info, "ab": ab_info}
+        return messages, build_info
+
+    # Fallback: manual assembly (original logic)
+    system_parts = [
+        base_prompt,
+        f"\nHôm nay: {datetime.now().strftime('%d/%m/%Y')}. Tháng hiện tại: {current_month}.",
+    ]
+
+    if proactive_ctx:
+        system_parts.append(f"\n{proactive_ctx}")
+    if rag_ctx:
+        system_parts.append(f"\n{rag_ctx}")
+    if realtime_ctx:
+        system_parts.append(f"\n{realtime_ctx}")
+    if memory_ctx:
+        system_parts.append(f"\n{memory_ctx}")
+    if graph_ctx:
+        system_parts.append(f"\n{graph_ctx}")
+    if reflexion_ctx:
+        system_parts.append(f"\n{reflexion_ctx}")
+
+    system = "\n".join(system_parts)
+    messages = [{"role": "system", "content": system}]
+
+    if session_id:
+        session = memory_manager.get_session(session_id)
+        ctx_messages = session.get_context_messages()
+        if ctx_messages:
+            messages.extend(ctx_messages)
+        else:
+            messages.extend(history[-20:])
+    else:
+        messages.extend(history[-20:])
+
+    messages.append({"role": "user", "content": message})
+    return messages, {"ab": ab_info}
+
+
+LLM_TIMEOUT = int(os.environ.get("LLM_TIMEOUT", "30"))
+
+
+def _make_llm_call_fn(model_override=None):
+    """Create an LLM call function for orchestrator injection.
+
+    ``model_override`` selects which model to use (MODEL or MODEL_MINI).
+    """
+    _model = model_override or MODEL
+
+    def _llm_call_fn(messages, tools, temperature):
+        if tools:
+            if HAS_CIRCUIT_BREAKER:
+                cb_result = safe_llm_call(client, model=_model, messages=messages, tools=tools, tool_choice="auto", timeout=LLM_TIMEOUT)
+                if not cb_result["success"]:
+                    class _MockChoice:
+                        class message:
+                            content = cb_result["message"]
+                            tool_calls = None
+                    class _MockResponse:
+                        choices = [_MockChoice()]
+                    return _MockResponse()
+                return cb_result["response"]
+            return client.chat.completions.create(
+                model=_model, messages=messages, tools=tools, tool_choice="auto",
+                timeout=LLM_TIMEOUT,
+            )
+
+        # No-tools synthesis call
+        if HAS_CIRCUIT_BREAKER:
+            cb_result = safe_llm_call(client, model=_model, messages=messages, timeout=LLM_TIMEOUT)
+            if not cb_result["success"]:
+                class _MockChoice:
+                    class message:
+                        content = cb_result["message"]
+                        tool_calls = None
+                class _MockResponse:
+                    choices = [_MockChoice()]
+                return _MockResponse()
+            return cb_result["response"]
+        return client.chat.completions.create(model=_model, messages=messages, timeout=LLM_TIMEOUT)
+
+    return _llm_call_fn
+
+
+_llm_call_fn_default = _make_llm_call_fn(MODEL)
+_llm_call_fn_mini = _make_llm_call_fn(MODEL_MINI)
+
+
+# Orchestrator singleton (lazy init)
+_orchestrator = None
+
+def _get_orchestrator():
+    global _orchestrator
+    if _orchestrator is None and HAS_ORCHESTRATOR:
+        _orchestrator = Orchestrator(TOOLS)
+    return _orchestrator
+
+
+# Shared parallel tool executor (concurrent multi-tool rounds in the live loop)
+_parallel_executor = None
+
+def _get_parallel_executor():
+    global _parallel_executor
+    if _parallel_executor is None and HAS_PARALLEL:
+        _parallel_executor = ParallelToolExecutor(call_tool, max_workers=4)
+    return _parallel_executor
+
+
+def _optimal_params_fn(category: str) -> dict:
+    """Return self_optimizer's tuned params for a query category (or {})."""
+    if not HAS_OPTIMIZER:
+        return {}
+    try:
+        return parameter_tuner.get_optimal_params(category)
+    except Exception:
+        return {}
+
+
+def _tool_order_fn(category: str) -> list:
+    """Return learned tool ordering for a category (tool_weight_optimizer)."""
+    if not HAS_OPTIMIZER:
+        return []
+    try:
+        return tool_weight_optimizer.suggest_tool_order(category)
+    except Exception:
+        return []
+
+
+def _run_agent_orchestrated(message, history, session_id, base_system_prompt):
+    """Run agent via the orchestrator, now wired with tuned params + parallel tools
+    + learned tool ordering + smart model routing."""
+    orch = _get_orchestrator()
+    # Pre-route to pick model BEFORE the full run (so the LLM call function
+    # is bound to the right model from the first round).
+    _cat, _agent = orch.route(message)
+    _use_mini = getattr(_agent, "use_mini", False)
+    _call_fn = _llm_call_fn_mini if _use_mini else _llm_call_fn_default
+    if _use_mini:
+        logger.info("Model routing: using MINI", category=_cat.value, agent=_agent.name)
+
+    result = orch.run(
+        message=message,
+        history=history,
+        session_id=session_id,
+        base_system_prompt=base_system_prompt,
+        call_tool_fn=call_tool,
+        llm_call_fn=_call_fn,
+        get_params_fn=_optimal_params_fn if HAS_OPTIMIZER else None,
+        tool_executor=_get_parallel_executor() if HAS_PARALLEL else None,
+        tool_order_fn=_tool_order_fn if HAS_OPTIMIZER else None,
+    )
+    return result["reply"], result["tools_used"], result["suggestions"]
+
+
+def _run_agent(messages: list[dict], max_rounds: int = 8, max_tool_calls: int = 15):
+    """
+    ReAct-style agent loop with multi-turn tool calling.
+
+    v7 enhancements:
+    - Circuit breaker protection on LLM calls
+    - Parallel tool execution for independent calls
+    - Self-correction on empty search results
+
+    Returns (reply, tools_used, suggestions).
+    """
+    tools_used = []
+    suggestions = []
+    total_tool_calls = 0
+    empty_results_count = 0
+
+    # Setup parallel executor if available
+    parallel_exec = None
+    if HAS_PARALLEL:
+        parallel_exec = ParallelToolExecutor(call_tool, max_workers=4)
+
+    for round_num in range(max_rounds):
+        # Circuit breaker protected LLM call
+        try:
+            if HAS_CIRCUIT_BREAKER:
+                cb_result = safe_llm_call(client, model=MODEL, messages=messages, tools=TOOLS, tool_choice="auto")
+                if not cb_result["success"]:
+                    return cb_result["message"], tools_used, suggestions
+                response = cb_result["response"]
+            else:
+                response = client.chat.completions.create(
+                    model=MODEL, messages=messages, tools=TOOLS, tool_choice="auto",
+                    timeout=LLM_TIMEOUT,
+                )
+            msg = response.choices[0].message
+        except Exception as llm_err:
+            logger.error("LLM API call failed", error=str(llm_err), round=round_num)
+            return "Xin lỗi, hệ thống đang tạm thời gặp sự cố kết nối. Vui lòng thử lại sau ít phút.", tools_used, suggestions
+
+        if not msg.tool_calls:
+            return msg.content or "", tools_used, suggestions
+
+        messages.append(msg)
+
+        # Prepare tool calls
+        pending_calls = []
+        for tc in msg.tool_calls:
+            if total_tool_calls >= max_tool_calls:
+                messages.append({
+                    "role": "tool", "tool_call_id": tc.id,
+                    "content": json.dumps({"error": "Tool call limit reached. Please respond with available information."})
+                })
+                continue
+            fn_name = tc.function.name
+            fn_args = json.loads(tc.function.arguments)
+            tools_used.append(f"{fn_name}({json.dumps(fn_args, ensure_ascii=False)})")
+            total_tool_calls += 1
+            pending_calls.append({"id": tc.id, "name": fn_name, "args": fn_args})
+
+        # Execute tools — PARALLEL when possible, sequential fallback
+        if parallel_exec and len(pending_calls) > 1:
+            call_items = [{"id": c["id"], "name": c["name"], "args": c["args"]} for c in pending_calls]
+            results = parallel_exec.execute_smart(call_items)
+            for pc, res in zip(pending_calls, results):
+                logger.info(f"Tool call (parallel)", tool=pc["name"],
+                            duration_ms=round(res.get("duration_ms", 0)), round=round_num + 1)
+                result = res.get("result", json.dumps({"error": res.get("error", "Unknown")}))
+                messages.append({"role": "tool", "tool_call_id": pc["id"], "content": result})
+                _post_tool_process(pc["name"], pc["args"], result, suggestions, messages, empty_results_count)
+        else:
+            for pc in pending_calls:
+                logger.info(f"Tool call #{total_tool_calls}", tool=pc["name"],
+                            args=str(pc["args"])[:200], round=round_num + 1)
+                result = call_tool(pc["name"], pc["args"])
+                messages.append({"role": "tool", "tool_call_id": pc["id"], "content": result})
+                empty_results_count = _post_tool_process(pc["name"], pc["args"], result, suggestions, messages, empty_results_count)
+
+    return msg.content or "Xin lỗi, tôi không thể trả lời đầy đủ câu hỏi này.", tools_used, suggestions
+
+
+def _post_tool_process(fn_name, fn_args, result, suggestions, messages, empty_results_count):
+    """Post-process tool result: track analytics, collect suggestions, self-correct.
+    Returns the updated empty_results_count (int is immutable, so must return).
+    """
+    # Track entity discussions
+    if fn_name in ("entity_detail", "nearby_entities") and "entity_id" in fn_args:
+        try:
+            analytics.track_entity_hit(fn_args["entity_id"])
+        except Exception:
+            pass
+
+    # Collect suggestions
+    if fn_name == "suggest_followups":
+        try:
+            data = json.loads(result)
+            sug = data.get("suggestions", [])
+            if sug:
+                suggestions.clear()
+                suggestions.extend(sug)
+        except Exception:
+            pass
+
+    # Self-correction: if search returned empty, inject a hint
+    if fn_name == "search":
+        try:
+            parsed = json.loads(result)
+            if isinstance(parsed, list) and len(parsed) == 0:
+                empty_results_count += 1
+                if empty_results_count <= 2:
+                    messages.append({
+                        "role": "system",
+                        "content": "[Observation]: Search returned 0 results. Try broader keywords, remove filters, or use web_search as fallback."
+                    })
+        except Exception:
+            pass
+
+    return empty_results_count
+
+
+@app.post("/chat", response_model=ChatResponse)
+async def chat(req: ChatRequest, request: Request):
+    # Rate limiting
+    client_ip = get_client_ip(request)
+    allowed, rate_info = chat_limiter.is_allowed(client_ip)
+    if not allowed:
+        logger.warn("Rate limited", ip=client_ip, endpoint="/chat")
+        return JSONResponse(
+            status_code=429,
+            content={"error": "Quá nhiều yêu cầu. Vui lòng thử lại sau.", "retry_after": rate_info["retry_after"]},
+            headers={"Retry-After": str(rate_info["retry_after"])},
+        )
+
+    session_id = req.session_id or str(uuid.uuid4())[:8]
+    user_id = session_id  # For now, session_id = user_id
+
+    # ── Guardrails: input safety (injection detect + PII mask + budget) ──
+    if HAS_GUARDRAILS:
+        try:
+            guard = check_input(req.message, session_id)
+            if not guard.get("allowed", True):
+                logger.warn("Guardrails blocked input", reason=guard.get("blocked_reason", ""), session_id=session_id)
+                return ChatResponse(
+                    reply=guard.get("blocked_reason", "Tin nhan bi chan vi ly do an toan."),
+                    tool_calls=[], suggestions=[], session_id=session_id,
+                )
+        except Exception:
+            pass
+
+    # Record user message in memory
+    memory_manager.on_message(session_id, "user", req.message)
+
+    # ── Semantic cache: embedding-based dedup (before regular cache) ──
+    if not req.history and HAS_SEMANTIC_CACHE:
+        try:
+            sem_cached = semantic_get(req.message)
+            if sem_cached:
+                if HAS_METRICS:
+                    track_cache("hit")
+                return ChatResponse(**sem_cached, session_id=session_id, cached=True)
+        except Exception:
+            pass
+
+    # Check cache (only for new conversations without history)
+    if not req.history:
+        cached = cache.get(req.message)
+        if cached:
+            if HAS_METRICS:
+                track_cache("hit")
+            return ChatResponse(**cached, session_id=session_id, cached=True)
+        elif HAS_METRICS:
+            track_cache("miss")
+
+    # Autocorrect user input
+    corrected_message = req.message
+    corrections = []
+    if HAS_AUTOCORRECT:
+        ac = autocorrect(req.message)
+        if ac.get("was_corrected"):
+            corrected_message = ac["corrected"]
+            corrections = ac.get("corrections", [])
+
+    t0 = time.time()
+    build_info = {}
+    _trace_ctx = None
+    try:
+        if HAS_TRACING:
+            _trace_ctx = trace_chat_request(corrected_message, session_id, MODEL)
+            _trace_ctx.__enter__()
+        messages, build_info = _build_messages(corrected_message, req.history, session_id, user_id)
+
+        # ── Dynamic agents: check for specialist match before orchestrator ──
+        _dyn_prompt_addon = ""
+        if HAS_DYNAMIC_AGENTS:
+            try:
+                dyn_route = check_dynamic_route(corrected_message)
+                if dyn_route:
+                    _dyn_prompt_addon = dyn_route.get("system_prompt_addon", "")
+                    agent_factory.update_performance(dyn_route["agent_id"], 5.0)  # default, updated later
+                    logger.info("Dynamic agent matched", agent=dyn_route.get("name", ""), session_id=session_id)
+            except Exception:
+                pass
+
+        # Extract the enriched system context (proactive + RAG + realtime + memory
+        # + reflexion + graph) that _build_messages just computed. Previously the
+        # orchestrated path received only the bare SYSTEM_PROMPT and discarded all
+        # of this — making the entire RAG/memory/reflexion pipeline dead weight on
+        # /chat. messages[0] is always the single consolidated system message.
+        _enriched_system = SYSTEM_PROMPT
+        if messages and messages[0].get("role") == "system" and isinstance(messages[0].get("content"), str):
+            _enriched_system = messages[0]["content"]
+        if _dyn_prompt_addon:
+            _enriched_system = _enriched_system + "\n\n" + _dyn_prompt_addon
+
+        # Inject the self_optimizer's active prompt variant (previously computed
+        # but never applied to the live prompt).
+        if HAS_OPTIMIZER:
+            try:
+                _variant = prompt_optimizer.get_current_variant()
+                _variant_addon = _variant.get("prompt_addon", "")
+                if _variant_addon:
+                    _enriched_system = _enriched_system + "\n\n" + _variant_addon
+            except Exception:
+                pass
+
+        # Use orchestrator when available for specialist routing
+        if HAS_ORCHESTRATOR:
+            reply, tools_used, suggestions = _run_agent_orchestrated(
+                corrected_message, req.history, session_id, _enriched_system,
+            )
+        else:
+            messages[0]["content"] = _enriched_system
+            reply, tools_used, suggestions = _run_agent(messages)
+    except Exception as exc:
+        error_tracker.record_error("/chat", str(exc), traceback.format_exc())
+        if HAS_METRICS:
+            track_error("/chat", type(exc).__name__)
+        logger.error("Chat error", error=str(exc), session_id=session_id)
+        reply = ""
+        tools_used, suggestions = [], []
+    finally:
+        if _trace_ctx:
+            try:
+                _trace_ctx.__exit__(None, None, None)
+            except Exception:
+                pass
+
+    # ── Knowledge-only fallback: supplement with KB data when LLM fails ──
+    _is_error_reply = (
+        not reply
+        or "sự cố" in reply
+        or ("lỗi" in reply.lower()[:60])
+        or (len(reply) < 100 and "thử lại" in reply)
+    )
+    logger.info(f"KB fallback check | is_error={_is_error_reply} | reply_len={len(reply) if reply else 0}")
+    if _is_error_reply and corrected_message.strip():
+        try:
+            # Clean query: strip question words (both with and without Vietnamese diacritics)
+            _clean_q = re.sub(
+                r'\b(ở đâu|o dau|đâu|dau|là gì|la gi|gì|gi|như thế nào|nhu the nao'
+                r'|có gì|co gi|bao nhiêu|bao nhieu|khi nào|khi nao|tại sao|tai sao'
+                r'|thế nào|the nao|nào|nao|ở|o|là|la|có|co|nên|nen|được|duoc'
+                r'|không|khong|bao giờ|bao gio|mấy|may|sao|đi|di|nên đi|nen di)\b',
+                '', corrected_message, flags=re.IGNORECASE
+            ).strip().rstrip('?').strip()
+            # Remove extra whitespace from stripping
+            _clean_q = re.sub(r'\s+', ' ', _clean_q).strip()
+            if not _clean_q:
+                _clean_q = corrected_message
+            # Detect month numbers for seasonal queries
+            _month_match = re.search(r'(?:tháng|thang)\s*(\d{1,2})', corrected_message, re.IGNORECASE)
+            _search_month = int(_month_match.group(1)) if _month_match and 1 <= int(_month_match.group(1)) <= 12 else None
+
+            logger.info(f"KB fallback search | query={_clean_q} | month={_search_month} | original={corrected_message[:80]}")
+            # Call knowledge.search_entities directly — avoid call_tool() which has
+            # analytics tracking that can crash on corrupt analytics files
+            # Check if query is purely about a month (e.g. cleaned to "Tháng 6" or empty)
+            _is_month_only = _search_month and re.match(
+                r'^(tháng|thang)?\s*\d{1,2}\s*$', _clean_q, re.IGNORECASE
+            )
+            if _is_month_only:
+                # Pure seasonal query — get seasonal + attractions for that month
+                kb_data = knowledge.seasonal_now(_search_month)
+                if not kb_data:
+                    kb_data = knowledge.search_entities(month=_search_month, limit=10)
+            else:
+                # Use hybrid rerank (BM25 + semantic) for better relevance when
+                # available; this is the degraded-mode path so quality matters.
+                kb_data = _hybrid_rerank_search({"q": _clean_q, "month": _search_month, "limit": 10})
+
+            # Progressive search: if full query returns nothing, try sub-phrases
+            if not kb_data:
+                words = _clean_q.split()
+                # Try bigrams first (e.g. "Chợ nổi", "Cái Bè")
+                if len(words) >= 2:
+                    for i in range(len(words) - 1):
+                        bigram = f"{words[i]} {words[i+1]}"
+                        kb_data = knowledge.search_entities(q=bigram, limit=10)
+                        if kb_data:
+                            logger.info(f"KB fallback bigram hit | q={bigram} | count={len(kb_data)}")
+                            break
+                # Try individual words (skip short ones)
+                if not kb_data:
+                    for w in sorted(words, key=len, reverse=True):
+                        if len(w) >= 3:
+                            kb_data = knowledge.search_entities(q=w, limit=10)
+                            if kb_data:
+                                logger.info(f"KB fallback word hit | q={w} | count={len(kb_data)}")
+                                break
+
+            _kb_count = len(kb_data) if isinstance(kb_data, list) else 0
+            logger.info(f"KB fallback results | count={_kb_count}")
+            # Relevance gate: drop entities that don't plausibly match the query
+            # (weak token matches) so the degraded mode abstains honestly instead
+            # of presenting irrelevant/out-of-domain data as an answer.
+            if isinstance(kb_data, list) and kb_data and not _is_month_only:
+                _relevant = [it for it in kb_data if knowledge.query_relevance(corrected_message, it)]
+                if not _relevant:
+                    logger.info("KB fallback: no relevant entity → abstaining")
+                    reply = (
+                        "Xin lỗi, hệ thống AI đang bảo trì và mình chưa tìm thấy thông tin "
+                        "xác thực về câu hỏi này trong cơ sở dữ liệu Vĩnh Long 360. "
+                        "Bạn thử hỏi về điểm tham quan, ẩm thực, đặc sản, lễ hội hoặc lịch trình "
+                        "ở Vĩnh Long, Bến Tre, Trà Vinh nhé!"
+                    )
+                    tools_used = ["abstain (kb-fallback)"]
+                    suggestions = []
+                    kb_data = []  # skip the listing block below
+                else:
+                    kb_data = _relevant
+            if isinstance(kb_data, list) and kb_data:
+                if _search_month:
+                    lines = [f"Hệ thống AI đang bảo trì. Thông tin tháng {_search_month} từ cơ sở dữ liệu:\n"]
+                else:
+                    lines = ["Hệ thống AI đang bảo trì. Dưới đây là thông tin từ cơ sở dữ liệu:\n"]
+                for item in kb_data[:5]:
+                    name = item.get("name", "")
+                    summary = item.get("summary", "")
+                    etype = item.get("type", "")
+                    place = (knowledge.get_place(item["id"]) or {}).get("name", "")
+                    if name and summary:
+                        loc = f" — {place}" if place else ""
+                        lines.append(f"• **{name}** ({etype}{loc}): {summary}")
+                    elif name:
+                        lines.append(f"• **{name}** ({etype})")
+                lines.append("\n*Khi hệ thống AI hoạt động trở lại, bạn sẽ nhận được câu trả lời chi tiết hơn.*")
+                reply = "\n".join(lines)
+                tools_used = ["search (kb-fallback)"]
+                suggestions = []
+        except Exception as kb_err:
+            logger.warn("KB fallback error", error=str(kb_err))
+            if not reply:
+                reply = "Xin lỗi, đã xảy ra lỗi khi xử lý câu hỏi. Vui lòng thử lại."
+
+    duration = time.time() - t0
+
+    # ── Cost tracking: record token usage ──
+    if HAS_COST_TRACKER:
+        try:
+            # Estimate tokens from message + reply when no response object
+            est_in = token_counter.estimate_tokens(corrected_message)
+            est_out = token_counter.estimate_tokens(reply)
+            cost_attribution.record(session_id, corrected_message[:200], "chat", None, MODEL,
+                                     {"prompt_tokens": est_in, "completion_tokens": est_out, "total_tokens": est_in + est_out},
+                                     token_counter.calculate_cost({"prompt_tokens": est_in, "completion_tokens": est_out}, MODEL))
+        except Exception:
+            pass
+
+    # Record assistant reply in memory
+    memory_manager.on_message(session_id, "assistant", reply)
+
+    # Memory graph: record entity interactions
+    if HAS_MEMORY_GRAPH:
+        try:
+            memory_graph.on_chat_complete(user_id, corrected_message, reply, [])
+        except Exception:
+            pass
+
+    # LLM memory extraction: extract preferences/facts
+    try:
+        memory_manager.on_chat_complete(session_id, user_id, corrected_message, reply)
+    except Exception:
+        pass
+
+    # Reflexion: evaluate answer quality
+    try:
+        evaluation = reflexion_engine.evaluate_answer(req.message, reply, tools_used)
+        quality_tracker.record(req.message, evaluation["score"], tools_used)
+
+        if evaluation["score"] < 5:
+            reflexion_engine.reflect_on_failure(req.message, reply, evaluation)
+            logger.warn("Low quality answer", score=evaluation["score"],
+                         issues=evaluation["issues"], query=req.message[:100])
+        elif evaluation["score"] >= 8:
+            # Good answer → save as skill
+            memory_manager.on_good_answer(
+                req.message[:100], tools_used,
+                f"Score {evaluation['score']}: {', '.join(evaluation['good_points'][:2])}",
+                reflexion_engine._categorize_query(req.message),
+            )
+        # Experience memory: distill a strategy item (≥8) or negative constraint (<5)
+        if HAS_EXPERIENCE:
+            try:
+                experience_memory.record(req.message, tools_used, evaluation["score"], reply)
+            except Exception:
+                pass
+        # Few-shot demo pool: capture high-scoring (query, answer) exemplars
+        if HAS_FEWSHOT:
+            try:
+                prompt_compiler.record_demo(req.message, reply, evaluation["score"])
+            except Exception:
+                pass
+    except Exception as eval_err:
+        logger.warn("Reflexion evaluation error", error=str(eval_err))
+        evaluation = {"score": 0, "issues": [], "good_points": []}
+
+    # ── Self optimizer: record outcome for auto-tuning ──
+    if HAS_OPTIMIZER:
+        try:
+            est_tokens = token_counter.estimate_tokens(reply) if HAS_COST_TRACKER else len(reply) // 3
+            record_outcome(session_id, corrected_message, "orchestrator" if HAS_ORCHESTRATOR else "direct",
+                          tools_used, evaluation["score"], duration, est_tokens)
+        except Exception:
+            pass
+
+    # ── LLM Judge: quality evaluation (non-blocking, best-effort) ──
+    if HAS_LLM_JUDGE and evaluation["score"] >= 3:
+        try:
+            judge_result = judge(corrected_message, reply)
+            if judge_result and judge_result.get("weighted_score", 0) < 4:
+                logger.info("LLM Judge low score", score=judge_result.get("weighted_score"), query=req.message[:80])
+        except Exception:
+            pass
+
+    # A/B testing: record outcome
+    if HAS_AB_TESTING and session_id:
+        try:
+            ab_manager.record_outcome("prompt_style", session_id, evaluation["score"])
+        except Exception:
+            pass
+
+    # Metrics tracking
+    if HAS_METRICS:
+        track_chat_request("ok", duration)
+
+    # Track analytics
+    try:
+        analytics.track_query(req.message, tools_used, reply, session_id)
+    except Exception:
+        pass
+
+    # ── Guardrails: output validation (PII mask + hallucination check) ──
+    if HAS_GUARDRAILS:
+        try:
+            out_check = check_output(reply, corrected_message, knowledge._entities if hasattr(knowledge, '_entities') else {})
+            if out_check.get("cleaned_reply"):
+                reply = out_check["cleaned_reply"]
+        except Exception:
+            pass
+
+    # Cache response (only if good quality)
+    if not req.history and len(reply) > 30 and evaluation["score"] >= 5:
+        cache_data = {"reply": reply, "tool_calls": tools_used, "suggestions": suggestions}
+        cache.put(req.message, cache_data)
+        # ── Semantic cache: store for embedding-based dedup ──
+        if HAS_SEMANTIC_CACHE:
+            try:
+                semantic_put(req.message, cache_data)
+            except Exception:
+                pass
+        if HAS_METRICS:
+            track_cache("set")
+
+    return ChatResponse(reply=reply, tool_calls=tools_used, suggestions=suggestions, session_id=session_id)
+
+
+# ── SSE Streaming ──
+
+@app.get("/chat/stream")
+async def chat_stream(request: Request, message: str, history: str = "[]", session_id: str = ""):
+    # Rate limiting
+    client_ip = get_client_ip(request)
+    allowed, rate_info = stream_limiter.is_allowed(client_ip)
+    if not allowed:
+        logger.warn("Rate limited", ip=client_ip, endpoint="/chat/stream")
+        async def rate_limit_stream():
+            yield f"data: {json.dumps({'type': 'error', 'content': 'Quá nhiều yêu cầu. Vui lòng thử lại sau.'}, ensure_ascii=False)}\n\n"
+        return StreamingResponse(rate_limit_stream(), media_type="text/event-stream")
+
+    try:
+        hist = json.loads(history)
+    except Exception:
+        hist = []
+
+    sid = session_id or str(uuid.uuid4())[:8]
+    user_id = sid
+
+    # ── Guardrails: input safety ──
+    if HAS_GUARDRAILS:
+        try:
+            guard = check_input(message, sid)
+            if not guard.get("allowed", True):
+                async def blocked_stream():
+                    yield f"data: {json.dumps({'type': 'text', 'content': guard.get('blocked_reason', 'Input blocked.')}, ensure_ascii=False)}\n\n"
+                    yield f"data: {json.dumps({'type': 'done', 'tools': [], 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
+                return StreamingResponse(blocked_stream(), media_type="text/event-stream")
+        except Exception:
+            pass
+
+    # Record in memory
+    memory_manager.on_message(sid, "user", message)
+
+    # ── Semantic cache: check before regular cache ──
+    if not hist and HAS_SEMANTIC_CACHE:
+        try:
+            sem_cached = semantic_get(message)
+            if sem_cached:
+                async def sem_cached_stream():
+                    reply = sem_cached.get("reply", "")
+                    words = reply.split(" ")
+                    for i in range(0, len(words), 3):
+                        chunk = " ".join(words[i:i+3])
+                        if i > 0:
+                            chunk = " " + chunk
+                        yield f"data: {json.dumps({'type': 'text', 'content': chunk}, ensure_ascii=False)}\n\n"
+                    suggestions = sem_cached.get("suggestions", [])
+                    yield f"data: {json.dumps({'type': 'done', 'tools': ['semantic_cache_hit'], 'suggestions': suggestions, 'session_id': sid}, ensure_ascii=False)}\n\n"
+                analytics.track_query(message, ["semantic_cache_hit"], sem_cached.get("reply", ""), sid)
+                return StreamingResponse(sem_cached_stream(), media_type="text/event-stream")
+        except Exception:
+            pass
+
+    # Check cache for history-less requests
+    if not hist:
+        cached = cache.get(message)
+        if cached:
+            async def cached_stream():
+                reply = cached.get("reply", "")
+                words = reply.split(" ")
+                for i in range(0, len(words), 3):
+                    chunk = " ".join(words[i:i+3])
+                    if i > 0:
+                        chunk = " " + chunk
+                    yield f"data: {json.dumps({'type': 'text', 'content': chunk}, ensure_ascii=False)}\n\n"
+                suggestions = cached.get("suggestions", [])
+                yield f"data: {json.dumps({'type': 'done', 'tools': ['cache_hit'], 'suggestions': suggestions, 'session_id': sid}, ensure_ascii=False)}\n\n"
+            analytics.track_query(message, ["cache_hit"], cached.get("reply", ""), sid)
+            return StreamingResponse(cached_stream(), media_type="text/event-stream")
+
+    # Autocorrect
+    original_message = message
+    if HAS_AUTOCORRECT:
+        ac = autocorrect(message)
+        if ac.get("was_corrected"):
+            message = ac["corrected"]
+
+    # Build messages with full 2026 architecture context
+    messages, _build_info = _build_messages(message, hist, sid, user_id)
+
+    # ── Parity with /chat: apply dynamic-agent addon + active prompt variant ──
+    # (Previously the streaming path missed these, giving lower quality than /chat.)
+    if messages and messages[0].get("role") == "system" and isinstance(messages[0].get("content"), str):
+        _sys = messages[0]["content"]
+        if HAS_DYNAMIC_AGENTS:
+            try:
+                _dyn = check_dynamic_route(message)
+                if _dyn and _dyn.get("system_prompt_addon"):
+                    _sys += "\n\n" + _dyn["system_prompt_addon"]
+            except Exception:
+                pass
+        if HAS_OPTIMIZER:
+            try:
+                _v = prompt_optimizer.get_current_variant().get("prompt_addon", "")
+                if _v:
+                    _sys += "\n\n" + _v
+            except Exception:
+                pass
+        messages[0]["content"] = _sys
+
+    # ── Smart model routing for stream path ──
+    _stream_model = MODEL
+    try:
+        from orchestrator import QueryRouter as _QR2, _CATEGORY_AGENTS
+        _stream_cat = _QR2.classify(message)
+        _stream_agent = _CATEGORY_AGENTS.get(_stream_cat)
+        if _stream_agent and getattr(_stream_agent, "use_mini", False):
+            _stream_model = MODEL_MINI
+            logger.info("Stream model routing: MINI", category=_stream_cat.value)
+    except Exception:
+        pass
+
+    # ── Tuned params (self_optimizer) for the streaming loop ──
+    _stream_temp = None
+    _stream_rounds = 4
+    if HAS_OPTIMIZER:
+        try:
+            from orchestrator import QueryRouter as _QR
+            _cat = _QR.classify(message).value
+            _p = parameter_tuner.get_optimal_params(_cat)
+            _stream_rounds = int(_p.get("max_rounds", 4))
+            _stream_temp = _p.get("temperature")
+        except Exception:
+            pass
+
+    async def event_stream():
+        # Send autocorrect info if corrected
+        if HAS_AUTOCORRECT and message != original_message:
+            yield f"data: {json.dumps({'type': 'autocorrect', 'original': original_message, 'corrected': message}, ensure_ascii=False)}\n\n"
+        tools_used = []
+        suggestions = []
+        max_rounds = _stream_rounds
+
+        for round_num in range(max_rounds):
+            try:
+                _kw = {"model": _stream_model, "messages": messages, "tools": TOOLS, "tool_choice": "auto", "timeout": LLM_TIMEOUT}
+                if _stream_temp is not None:
+                    _kw["temperature"] = _stream_temp
+                response = client.chat.completions.create(**_kw)
+                msg = response.choices[0].message
+            except Exception as exc:
+                error_tracker.record_error("/chat/stream", str(exc), traceback.format_exc())
+                yield f"data: {json.dumps({'type': 'text', 'content': 'Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại.'}, ensure_ascii=False)}\n\n"
+                yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
+                return
+
+            if msg.tool_calls:
+                messages.append(msg)
+                for tc in msg.tool_calls:
+                    fn_name = tc.function.name
+                    fn_args = json.loads(tc.function.arguments)
+                    tools_used.append(fn_name)
+
+                    # Tool-use Tracing: send start event with description
+                    tool_desc = _tool_description(fn_name, fn_args)
+                    yield f"data: {json.dumps({'type': 'tool_start', 'name': fn_name, 'description': tool_desc, 'args': fn_args}, ensure_ascii=False)}\n\n"
+
+                    t0 = time.time()
+                    result = call_tool(fn_name, fn_args)
+                    duration_ms = round((time.time() - t0) * 1000)
+                    messages.append({"role": "tool", "tool_call_id": tc.id, "content": result})
+
+                    # Tool-use Tracing: send done event with timing
+                    result_preview = result[:200] if len(result) > 200 else result
+                    yield f"data: {json.dumps({'type': 'tool_done', 'name': fn_name, 'duration_ms': duration_ms, 'preview': result_preview}, ensure_ascii=False)}\n\n"
+
+                    # Track entity discussions in memory
+                    if fn_name in ("entity_detail", "nearby_entities") and "entity_id" in fn_args:
+                        memory_manager.on_entity_discussed(sid, fn_args["entity_id"])
+
+                    if fn_name == "suggest_followups":
+                        try:
+                            data = json.loads(result)
+                            suggestions = data.get("suggestions", [])
+                        except Exception:
+                            pass
+            else:
+                # Stream the final response
+                stream = client.chat.completions.create(
+                    model=_stream_model, messages=messages, stream=True,
+                    timeout=LLM_TIMEOUT,
+                )
+                full_text = ""
+                for chunk in stream:
+                    delta = chunk.choices[0].delta
+                    if delta.content:
+                        full_text += delta.content
+                        yield f"data: {json.dumps({'type': 'text', 'content': delta.content}, ensure_ascii=False)}\n\n"
+
+                # Record in memory
+                memory_manager.on_message(sid, "assistant", full_text)
+
+                # Memory graph: record entity interactions
+                if HAS_MEMORY_GRAPH:
+                    try:
+                        memory_graph.on_chat_complete(user_id, message, full_text, [])
+                    except Exception:
+                        pass
+
+                # LLM memory extraction
+                try:
+                    memory_manager.on_chat_complete(sid, user_id, message, full_text)
+                except Exception:
+                    pass
+
+                # ── Cost tracking ──
+                if HAS_COST_TRACKER:
+                    try:
+                        est_in = token_counter.estimate_tokens(message)
+                        est_out = token_counter.estimate_tokens(full_text)
+                        cost_attribution.record(sid, message[:200], "stream", None, MODEL,
+                                                 {"prompt_tokens": est_in, "completion_tokens": est_out, "total_tokens": est_in + est_out},
+                                                 token_counter.calculate_cost({"prompt_tokens": est_in, "completion_tokens": est_out}, MODEL))
+                    except Exception:
+                        pass
+
+                # Reflexion: evaluate quality
+                evaluation = reflexion_engine.evaluate_answer(message, full_text, tools_used)
+                quality_tracker.record(message, evaluation["score"], tools_used)
+                if evaluation["score"] < 5:
+                    reflexion_engine.reflect_on_failure(message, full_text, evaluation)
+                elif evaluation["score"] >= 8:
+                    memory_manager.on_good_answer(
+                        message[:100], tools_used,
+                        f"Score {evaluation['score']}",
+                        reflexion_engine._categorize_query(message),
+                    )
+                if HAS_EXPERIENCE:
+                    try:
+                        experience_memory.record(message, tools_used, evaluation["score"], full_text)
+                    except Exception:
+                        pass
+                if HAS_FEWSHOT:
+                    try:
+                        prompt_compiler.record_demo(message, full_text, evaluation["score"])
+                    except Exception:
+                        pass
+
+                # ── Self optimizer: record outcome ──
+                if HAS_OPTIMIZER:
+                    try:
+                        est_tok = token_counter.estimate_tokens(full_text) if HAS_COST_TRACKER else len(full_text) // 3
+                        record_outcome(sid, message, "stream", tools_used, evaluation["score"], 0, est_tok)
+                    except Exception:
+                        pass
+
+                # ── LLM Judge: quality evaluation ──
+                if HAS_LLM_JUDGE and evaluation["score"] >= 3:
+                    try:
+                        judge(message, full_text)
+                    except Exception:
+                        pass
+
+                # A/B testing: record outcome
+                if HAS_AB_TESTING and sid:
+                    try:
+                        ab_manager.record_outcome("prompt_style", sid, evaluation["score"])
+                    except Exception:
+                        pass
+
+                # Metrics tracking
+                if HAS_METRICS:
+                    track_chat_request("ok", 0)  # duration not tracked in stream
+
+                # ── Guardrails: output validation ──
+                if HAS_GUARDRAILS:
+                    try:
+                        out_check = check_output(full_text, message, knowledge._entities if hasattr(knowledge, '_entities') else {})
+                        if out_check.get("cleaned_reply") and out_check["cleaned_reply"] != full_text:
+                            full_text = out_check["cleaned_reply"]
+                    except Exception:
+                        pass
+
+                # Track & cache
+                analytics.track_query(message, tools_used, full_text, sid)
+                if not hist and len(full_text) > 30 and evaluation["score"] >= 5:
+                    cache_data = {"reply": full_text, "tool_calls": tools_used, "suggestions": suggestions}
+                    cache.put(message, cache_data)
+                    # ── Semantic cache: store ──
+                    if HAS_SEMANTIC_CACHE:
+                        try:
+                            semantic_put(message, cache_data)
+                        except Exception:
+                            pass
+
+                # Send quality score for UI feedback prompt
+                yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': sid, 'quality': evaluation['score']}, ensure_ascii=False)}\n\n"
+                return
+
+        # ── Round-exhaustion: every round called tools without a final answer.
+        # Force ONE synthesis turn (no tools) so the user gets an answer built
+        # from gathered evidence instead of an empty response.
+        try:
+            messages.append({
+                "role": "system",
+                "content": ("[Hệ thống]: Đã đạt giới hạn số vòng. Hãy tổng hợp câu trả lời "
+                            "tốt nhất TỪ thông tin đã thu thập, KHÔNG gọi thêm tool, "
+                            "trả lời trực tiếp bằng tiếng Việt."),
+            })
+            synth = client.chat.completions.create(model=_stream_model, messages=messages, stream=True, timeout=LLM_TIMEOUT)
+            synth_text = ""
+            for chunk in synth:
+                delta = chunk.choices[0].delta
+                if delta.content:
+                    synth_text += delta.content
+                    yield f"data: {json.dumps({'type': 'text', 'content': delta.content}, ensure_ascii=False)}\n\n"
+            if synth_text:
+                memory_manager.on_message(sid, "assistant", synth_text)
+                analytics.track_query(message, tools_used, synth_text, sid)
+        except Exception:
+            pass
+
+        yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': sid}, ensure_ascii=False)}\n\n"
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
+
+
+# ── System endpoints ──
+
+@app.post("/reload")
+async def reload_data():
+    result = knowledge.reload()
+    cache.invalidate_all()
+    if HAS_PROMPT_CACHE:
+        prompt_cache.invalidate()
+    if HAS_KB_CONTEXT:
+        kb_context.invalidate()
+    # Rebuild search indexes so new/changed entities are searchable via hybrid.
+    try:
+        idx = build_search_indexes()
+        result["indexes"] = idx
+    except Exception as e:
+        logger.error(f"Index rebuild on reload failed: {e}")
+    sync_data_json_to_js()
+    logger.info("Data reloaded", **{k: v for k, v in result.items() if k != "indexes"})
+    return result
+
+
+_health_llm_cache = {"status": "not_checked", "checked_at": 0.0}
+
+
+async def _check_llm_health() -> str:
+    def _ping() -> str:
+        try:
+            client.chat.completions.create(
+                model=MODEL_MINI,
+                messages=[{"role": "user", "content": "ping"}],
+                max_tokens=5,
+                timeout=8,
+            )
+            return "ok"
+        except Exception as e:
+            return f"error: {type(e).__name__}"
+
+    status = await asyncio.to_thread(_ping)
+    _health_llm_cache["status"] = status
+    _health_llm_cache["checked_at"] = time.time()
+    return status
+
+
+@app.get("/health")
+async def health():
+    knowledge._ensure()
+
+    # Fast health must not call external services. Use /health/deep for LLM/API checks.
+    llm_status = _health_llm_cache["status"]
+
+    # Memory usage
+    try:
+        import psutil
+        proc = psutil.Process()
+        memory_mb = round(proc.memory_info().rss / 1024 / 1024, 1)
+    except Exception:
+        memory_mb = None
+
+    # Data quality quick check
+    total_entities = len([e for e in knowledge._entities.values() if e.get("type") != "place"])
+    missing_summary = len([e for e in knowledge._entities.values() if e.get("type") != "place" and not e.get("summary")])
+    data_quality = {
+        "total_entities": total_entities,
+        "missing_summary": missing_summary,
+        "coverage_pct": round((total_entities - missing_summary) / total_entities * 100, 1) if total_entities else 0,
+    }
+
+    # Overall status
+    errors_healthy = error_tracker.is_healthy()
+    overall = "ok" if errors_healthy else "degraded"
+
+    return {
+        "status": overall,
+        "version": "8.2",
+        "uptime_seconds": round(time.time() - _server_start_time, 0),
+        "memory_mb": memory_mb,
+        "llm_api": llm_status,
+        "llm_api_checked_at": datetime.fromtimestamp(_health_llm_cache["checked_at"]).isoformat() if _health_llm_cache["checked_at"] else None,
+        "deep_checks": False,
+        "entities": len(knowledge._entities),
+        "data_quality": data_quality,
+        "model": MODEL,
+        "cache": cache.stats(),
+        "response_times": response_tracker.stats(),
+        "rate_limits": chat_limiter.stats(),
+        "errors": error_tracker.stats(),
+        "scheduler": scheduler_status(),
+        "search_index": dict(_index_build_state),
+        "vector_search": embedding_store.stats() if HAS_VECTOR else {"available": False},
+        "kb_context": kb_context.stats() if HAS_KB_CONTEXT else {"available": False},
+        "experience_memory": experience_memory.stats() if HAS_EXPERIENCE else {"available": False},
+        "fewshot_compiler": prompt_compiler.stats() if HAS_FEWSHOT else {"available": False},
+        "realtime": {"available": HAS_REALTIME},
+        "circuit_breaker": all_breaker_stats() if HAS_CIRCUIT_BREAKER else {"available": False},
+        "parallel_tools": {"available": HAS_PARALLEL},
+        "autocorrect": {"available": HAS_AUTOCORRECT},
+        "recommender": {"available": HAS_RECOMMENDER},
+        "freshness": {"available": HAS_FRESHNESS},
+        "image_recognition": {"available": HAS_IMAGE_RECOGNITION},
+        "metrics": {"available": HAS_METRICS},
+        "ab_testing": {"available": HAS_AB_TESTING, "experiments": len(ab_manager.list_experiments()) if HAS_AB_TESTING else 0},
+        "prompt_cache": prompt_cache.stats() if HAS_PROMPT_CACHE else {"available": False},
+        "orchestrator": {"available": HAS_ORCHESTRATOR},
+        "memory_graph": {"available": HAS_MEMORY_GRAPH},
+        "tracing": {"available": HAS_TRACING},
+        "contextual_retrieval": {"available": HAS_CONTEXTUAL},
+        "checkpoints": {"available": HAS_CHECKPOINTS},
+        # Level 6
+        "guardrails": {"available": HAS_GUARDRAILS},
+        "cost_tracker": {"available": HAS_COST_TRACKER},
+        "eval_framework": {"available": HAS_EVAL},
+        "self_optimizer": {"available": HAS_OPTIMIZER},
+        "agent_relay": {"available": HAS_RELAY},
+        "semantic_cache": {"available": HAS_SEMANTIC_CACHE, **(semantic_cache_stats() if HAS_SEMANTIC_CACHE else {})},
+        "streaming_tools": {"available": HAS_STREAMING},
+        "advanced_graph": {"available": HAS_ADVANCED_GRAPH},
+        # Level 7
+        "llm_judge": {"available": HAS_LLM_JUDGE},
+        "dynamic_agents": {"available": HAS_DYNAMIC_AGENTS, "active_agents": len(agent_factory.get_active_agents()) if HAS_DYNAMIC_AGENTS else 0},
+        "a2a_protocol": {"available": HAS_A2A},
+        "knowledge_evolution": {"available": HAS_KNOWLEDGE_EVOLUTION},
+        "multimodal": {"available": HAS_MULTIMODAL},
+        "federation": {"available": HAS_FEDERATION},
+        "time": datetime.now().isoformat(),
+    }
+
+
+@app.get("/health/deep")
+async def deep_health():
+    await _check_llm_health()
+    payload = await health()
+    payload["deep_checks"] = True
+    if payload["llm_api"] != "ok" and payload["status"] == "ok":
+        payload["status"] = "degraded"
+    return payload
+
+
+# ── Prometheus metrics endpoint ──
+
+@app.get("/metrics", tags=["System"])
+async def metrics_endpoint():
+    """Prometheus-compatible metrics in text exposition format."""
+    if not HAS_METRICS:
+        return JSONResponse(status_code=501, content={"error": "Metrics module not available"})
+    # Update gauges before export
+    set_gauge("cache_size", len(cache._cache) if hasattr(cache, '_cache') else 0)
+    set_gauge("entities_total", len(knowledge._entities))
+    from fastapi.responses import Response
+    return Response(content=generate_metrics(), media_type="text/plain; charset=utf-8")
+
+
+# ── A/B Testing endpoints ──
+
+@app.get("/ab-testing/experiments", tags=["System"])
+async def ab_experiments():
+    """List all A/B testing experiments."""
+    if not HAS_AB_TESTING:
+        return {"error": "A/B testing not available"}
+    return {"experiments": ab_manager.list_experiments()}
+
+@app.get("/ab-testing/results/{experiment_name}", tags=["System"])
+async def ab_results(experiment_name: str):
+    """Get A/B test results with statistics."""
+    if not HAS_AB_TESTING:
+        return {"error": "A/B testing not available"}
+    results = ab_manager.get_results(experiment_name)
+    significance = ab_manager.is_significant(experiment_name)
+    return {"experiment": experiment_name, "results": results, "significance": significance}
+
+@app.get("/prompt-cache/stats", tags=["System"])
+async def prompt_cache_stats():
+    """Get prompt cache statistics."""
+    if not HAS_PROMPT_CACHE:
+        return {"available": False}
+    return {"available": True, **prompt_cache.stats()}
+
+
+# ── Analytics endpoints ──
+
+@app.get("/analytics/summary")
+async def analytics_summary():
+    try:
+        return analytics.get_summary()
+    except Exception:
+        return {"error": "Analytics data unavailable", "total_queries": 0, "unique_queries": 0}
+
+
+@app.get("/analytics/popular")
+async def analytics_popular(limit: int = 20):
+    return {"popular_queries": analytics.get_popular_queries(limit)}
+
+
+@app.get("/analytics/gaps")
+async def analytics_gaps(limit: int = 20):
+    return {"knowledge_gaps": analytics.get_knowledge_gaps(limit)}
+
+
+@app.get("/analytics/daily")
+async def analytics_daily(days: int = 30):
+    return {"daily_stats": analytics.get_daily_stats(days)}
+
+
+@app.get("/analytics/top-entities")
+async def analytics_top_entities(limit: int = 20):
+    return {"top_entities": analytics.get_top_entities(limit)}
+
+
+# ── System monitoring endpoints ──
+
+@app.get("/system/logs")
+async def system_logs(limit: int = 50, level: str = None):
+    return {"logs": logger.recent(limit, level)}
+
+
+@app.get("/system/errors")
+async def system_errors(limit: int = 20):
+    return {"errors": error_tracker.recent_errors(limit), **error_tracker.stats()}
+
+
+@app.get("/system/response-times")
+async def system_response_times():
+    return response_tracker.stats()
+
+
+@app.get("/system/scheduler")
+async def system_scheduler():
+    return scheduler_status()
+
+
+@app.get("/system/learning", tags=["System"])
+async def system_learning():
+    """Trạng thái vòng lặp tự học."""
+    try:
+        from learn_loop import learning_status
+        return learning_status()
+    except ImportError:
+        return {"error": "learn_loop module not available"}
+
+
+@app.post("/system/learning/run", tags=["System"])
+async def trigger_learning(request: Request):
+    """Trigger 1 vòng lặp tự học SAU cổng fitness (admin only, eval-gated)."""
+    from middleware import verify_admin_key
+    if not verify_admin_key(request):
+        return JSONResponse(status_code=401, content={"error": "Admin key required"})
+    try:
+        from self_evolve import guarded_evolve
+        from learn_loop import run_full_cycle
+        summary = guarded_evolve("learning-loop(manual)", lambda: run_full_cycle(dry_run=False))
+        return {"status": "completed", "decision": summary["decision"],
+                "reason": summary["reason"], "before": summary["before"], "after": summary["after"]}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.get("/system/self-evolution", tags=["System"])
+async def system_self_evolution():
+    """Trạng thái cơ chế tự tiến hoá có kiểm soát (fitness gate + rollback)."""
+    out = {}
+    try:
+        import self_evolve
+        out["evolution"] = self_evolve.status()
+    except Exception as e:
+        out["evolution"] = {"error": str(e)}
+    try:
+        import self_eval
+        out["current_fitness"] = self_eval.compute_fitness()
+    except Exception as e:
+        out["current_fitness"] = {"error": str(e)}
+    try:
+        import kb_curation
+        out["curation"] = kb_curation.stats()
+    except Exception as e:
+        out["curation"] = {"error": str(e)}
+    try:
+        import experience_memory
+        out["experience"] = experience_memory.stats()
+    except Exception as e:
+        out["experience"] = {"error": str(e)}
+    try:
+        import geocode
+        out["geocode"] = geocode.stats()
+    except Exception as e:
+        out["geocode"] = {"error": str(e)}
+    return out
+
+
+@app.get("/system/memory")
+async def system_memory():
+    return memory_manager.stats()
+
+
+@app.get("/system/traces", tags=["System"])
+async def system_traces(limit: int = 50):
+    """OpenTelemetry trace data."""
+    if not HAS_TRACING:
+        return {"available": False}
+    return {
+        "available": True,
+        "summary": get_trace_summary(),
+        "traces": export_traces_json(limit),
+    }
+
+
+@app.get("/system/handoffs", tags=["System"])
+async def system_handoffs(limit: int = 50):
+    """Multi-agent orchestrator handoff log."""
+    if not HAS_ORCHESTRATOR:
+        return {"available": False}
+    from dataclasses import asdict
+    records = handoff_log.recent(limit)
+    return {
+        "available": True,
+        "handoffs": [asdict(r) for r in records],
+        "stats": handoff_log.stats(),
+    }
+
+
+@app.get("/system/memory-graph", tags=["System"])
+async def system_memory_graph():
+    """Memory graph statistics."""
+    if not HAS_MEMORY_GRAPH:
+        return {"available": False}
+    graph_stats = memory_graph.stats()
+    return {
+        "available": True,
+        **graph_stats,
+        "patterns": memory_graph.get_emerging_patterns()[:10],
+    }
+
+
+# ── Checkpoint / Confirmation endpoints ──
+
+@app.get("/checkpoints/{session_id}", tags=["System"])
+async def list_checkpoints(session_id: str):
+    """List conversation checkpoints for a session."""
+    if not HAS_CHECKPOINTS:
+        return {"available": False}
+    return {"checkpoints": checkpoint_manager.list_checkpoints(session_id)}
+
+
+@app.post("/checkpoints", tags=["System"])
+async def save_checkpoint(req: CheckpointSaveRequest):
+    """Save a conversation checkpoint."""
+    if not HAS_CHECKPOINTS:
+        return JSONResponse(status_code=501, content={"error": "Checkpoints not available"})
+    cp_id = checkpoint_manager.save_checkpoint(
+        session_id=req.session_id,
+        messages=req.messages,
+        tools_used=req.tools_used,
+        agent_state=req.agent_state,
+        metadata=req.metadata,
+    )
+    return {"checkpoint_id": cp_id}
+
+
+@app.post("/checkpoints/{checkpoint_id}/resume", tags=["System"])
+async def resume_checkpoint(checkpoint_id: str):
+    """Resume from a conversation checkpoint."""
+    if not HAS_CHECKPOINTS:
+        return JSONResponse(status_code=501, content={"error": "Checkpoints not available"})
+    result = checkpoint_manager.resume_from(checkpoint_id)
+    if result is None:
+        return JSONResponse(status_code=404, content={"error": "Checkpoint not found"})
+    messages, agent_state = result
+    return {"messages": messages, "agent_state": agent_state}
+
+
+@app.get("/confirmations/{session_id}", tags=["System"])
+async def pending_confirmations(session_id: str):
+    """List pending confirmations for a session."""
+    if not HAS_CHECKPOINTS:
+        return {"available": False}
+    pending = confirmation_manager.get_pending(session_id)
+    return {"pending": [{"id": p.confirmation_id, "action_type": p.action_type,
+                         "description": p.description, "prompt": format_confirmation_prompt(p)}
+                        for p in pending]}
+
+
+@app.post("/confirm/{confirmation_id}", tags=["System"])
+async def confirm_action(confirmation_id: str):
+    """Confirm a pending action."""
+    if not HAS_CHECKPOINTS:
+        return JSONResponse(status_code=501, content={"error": "Checkpoints not available"})
+    params = confirmation_manager.confirm(confirmation_id)
+    if params is None:
+        return JSONResponse(status_code=404, content={"error": "Confirmation not found or expired"})
+    return {"confirmed": True, "params": params}
+
+
+@app.post("/reject/{confirmation_id}", tags=["System"])
+async def reject_action(confirmation_id: str, request: Request):
+    """Reject a pending action."""
+    if not HAS_CHECKPOINTS:
+        return JSONResponse(status_code=501, content={"error": "Checkpoints not available"})
+    body = await request.json() if request.headers.get("content-type") == "application/json" else {}
+    reason = body.get("reason", "")
+    confirmation_manager.reject(confirmation_id, reason)
+    return {"rejected": True}
+
+
+# ── Contextual retrieval endpoint ──
+
+@app.get("/search/enhanced", tags=["Search"])
+async def enhanced_search(q: str, limit: int = 10, rerank: bool = False):
+    """Enhanced hybrid search with BM25 + contextual embeddings."""
+    if not HAS_CONTEXTUAL:
+        return {"error": "Contextual retrieval not available", "results": []}
+    knowledge._ensure()
+    # Get initial keyword results
+    keyword_results = knowledge.search_entities(q=q, limit=limit * 3)
+    relationships = knowledge._relationships if hasattr(knowledge, '_relationships') else []
+    results = enhanced_hybrid_search(
+        query=q,
+        keyword_results=keyword_results,
+        entities=knowledge._entities,
+        relationships=relationships,
+        rerank=rerank,
+        top_k=limit,
+    )
+    enriched = []
+    for r in results:
+        eid = r.get("entity_id", r.get("id", ""))
+        e = knowledge.get_entity(eid)
+        if e:
+            enriched.append({
+                "entity_id": eid,
+                "name": e["name"],
+                "type": e["type"],
+                "summary": e.get("summary", "")[:150],
+                "score": r.get("score", r.get("combined_score", 0)),
+            })
+    return {"results": enriched}
+
+
+@app.get("/system/quality")
+async def system_quality():
+    return {
+        "quality": quality_tracker.stats(),
+        "reflexion": reflexion_engine.stats(),
+    }
+
+
+@app.post("/feedback")
+async def user_feedback(req: FeedbackRequest, request: Request):
+    """Nhận feedback từ user (thumbs up/down)."""
+    client_ip = get_client_ip(request)
+    allowed, _ = chat_limiter.is_allowed(f"fb:{client_ip}")
+    if not allowed:
+        return JSONResponse(status_code=429, content={"error": "Too many requests"})
+
+    user_id = req.user_id or req.session_id or "anonymous"
+    query = req.query
+    rating = req.rating
+    entity_id = req.entity_id
+    memory_manager.feedback(user_id, query, rating * 5, entity_id)
+    if HAS_METRICS:
+        track_feedback(positive=(rating == 1))
+
+    # Feed into learning loop
+    try:
+        from learn_loop import record_feedback
+        record_feedback(query=query, rating=rating, entity_id=entity_id, session_id=user_id)
+    except Exception:
+        pass  # Non-critical
+    logger.info("User feedback", user_id=user_id, rating=rating, query=query[:50])
+    return {"status": "ok"}
+
+
+@app.get("/welcome")
+async def welcome_message(session_id: str = ""):
+    """Welcome message cá nhân hóa."""
+    preferences = None
+    if session_id:
+        profile = memory_manager.cold.get_profile(session_id)
+        if profile.conversation_count > 0:
+            preferences = {
+                "interests": profile.interests,
+                "preferred_areas": profile.preferred_areas,
+            }
+    return generate_welcome_message(preferences)
+
+
+# ── Vector search endpoints ──
+
+@app.post("/vectors/build")
+async def build_vectors(request: Request):
+    """Build/rebuild vector embeddings index."""
+    if not HAS_VECTOR:
+        return JSONResponse(status_code=501, content={"error": "Vector search module not available"})
+    knowledge._ensure()
+    result = embedding_store.build_index(knowledge._entities)
+    return result
+
+@app.get("/vectors/stats")
+async def vector_stats():
+    if not HAS_VECTOR:
+        return {"available": False}
+    return {"available": True, **embedding_store.stats()}
+
+@app.get("/vectors/search")
+async def vector_search_endpoint(q: str, limit: int = 10):
+    if not HAS_VECTOR:
+        return {"error": "Vector search not available", "results": []}
+    results = embedding_store.search(q, top_k=limit)
+    # Enrich with entity names
+    enriched = []
+    for r in results:
+        e = knowledge.get_entity(r["entity_id"])
+        if e:
+            enriched.append({
+                **r,
+                "name": e["name"],
+                "type": e["type"],
+                "summary": e.get("summary", "")[:100],
+            })
+    return {"results": enriched}
+
+
+# ── Realtime endpoints ──
+
+@app.get("/weather")
+async def weather_endpoint(area: str = "vinh-long"):
+    if not HAS_REALTIME:
+        return {"error": "Realtime module not available"}
+    return get_weather(area)
+
+@app.get("/weather/all")
+async def weather_all():
+    if not HAS_REALTIME:
+        return {"error": "Realtime module not available"}
+    return {"areas": get_all_weather()}
+
+@app.get("/events")
+async def events_endpoint(days: int = 30, area: str = None):
+    if not HAS_REALTIME:
+        return {"error": "Realtime module not available"}
+    return {"events": get_upcoming_events(days, area)}
+
+
+# ── Recommendation endpoints ──
+
+@app.get("/recommend")
+async def recommend_endpoint(
+    entity_id: str = None, month: int = None,
+    weather: str = None, time_of_day: str = None,
+    limit: int = 10,
+):
+    if not HAS_RECOMMENDER:
+        return {"error": "Recommender not available"}
+    knowledge._ensure()
+    ctx = {}
+    if entity_id:
+        ctx["entity_id"] = entity_id
+    if month:
+        ctx["month"] = month
+    else:
+        ctx["month"] = datetime.now().month
+    if weather:
+        ctx["weather"] = weather
+    if time_of_day:
+        ctx["time_of_day"] = time_of_day
+    ctx["entities"] = knowledge._entities
+    ctx["relationships"] = knowledge._relationships if hasattr(knowledge, '_relationships') else []
+    ctx["limit"] = limit
+    result = recommend(ctx)
+    return result
+
+
+# ── Freshness endpoints ──
+
+@app.get("/freshness/check")
+async def freshness_check_endpoint():
+    if not HAS_FRESHNESS:
+        return {"error": "Freshness module not available"}
+    knowledge._ensure()
+    return check_freshness(knowledge._entities)
+
+@app.get("/freshness/report")
+async def freshness_report_endpoint():
+    if not HAS_FRESHNESS:
+        return {"error": "Freshness module not available"}
+    knowledge._ensure()
+    return {"report": freshness_report(knowledge._entities)}
+
+@app.get("/freshness/candidates")
+async def freshness_candidates_endpoint(limit: int = 20):
+    if not HAS_FRESHNESS:
+        return {"error": "Freshness module not available"}
+    knowledge._ensure()
+    return {"candidates": auto_refresh_candidates(knowledge._entities, limit)}
+
+
+# ── Image recognition endpoint ──
+
+@app.post("/image/recognize")
+async def image_recognize_endpoint(request: Request):
+    if not HAS_IMAGE_RECOGNITION:
+        return JSONResponse(status_code=501, content={"error": "Image recognition not available"})
+    content_type = request.headers.get("content-type", "")
+    if "multipart" in content_type:
+        form = await request.form()
+        file = form.get("file")
+        if not file:
+            return JSONResponse(status_code=400, content={"error": "No file uploaded"})
+        file_bytes = await file.read()
+        filename = getattr(file, "filename", "image.jpg")
+        ct = getattr(file, "content_type", "image/jpeg")
+        result = process_upload(file_bytes, filename, ct)
+        return result
+    else:
+        body = await request.json()
+        image_b64 = body.get("image")
+        if not image_b64:
+            return JSONResponse(status_code=400, content={"error": "No image data"})
+        # Limit base64 image size to ~10MB (13.3M base64 chars)
+        if len(image_b64) > 13_400_000:
+            return JSONResponse(status_code=413, content={"error": "Image too large (max 10MB)"})
+        knowledge._ensure()
+        result = recognize_image(image_b64, knowledge._entities)
+        return result
+
+
+# ── Autocorrect endpoint ──
+
+@app.get("/autocorrect")
+async def autocorrect_endpoint(q: str):
+    if not HAS_AUTOCORRECT:
+        return {"original": q, "corrected": q, "was_corrected": False}
+    return autocorrect(q)
+
+
+# ── Circuit breaker stats ──
+
+@app.get("/system/circuit-breakers")
+async def circuit_breaker_stats():
+    if not HAS_CIRCUIT_BREAKER:
+        return {"available": False}
+    return {"available": True, **all_breaker_stats()}
+
+
+# ── Knowledge graph data endpoint (for frontend visualization) ──
+
+@app.get("/graph")
+async def graph_endpoint(entity_id: str, hops: int = 2, max_nodes: int = 30):
+    """Return subgraph data for knowledge graph visualization."""
+    from agentic_rag import graph_expand
+    result = graph_expand(entity_id, max_hops=min(hops, 4), max_nodes=min(max_nodes, 50))
+    return result
+
+
+# ════════════════════════════════════════════════════════════════
+# Level 6 endpoints
+# ════════════════════════════════════════════════════════════════
+
+# ── Guardrails ──
+
+@app.get("/system/guardrails", tags=["Level6"])
+async def guardrails_status():
+    if not HAS_GUARDRAILS:
+        return {"available": False}
+    return {
+        "available": True,
+        "injection_patterns": len(injection_detector._patterns) if hasattr(injection_detector, '_patterns') else 0,
+        "budget_sessions": guardrail_budget.get_stats() if hasattr(guardrail_budget, 'get_stats') else {},
+    }
+
+@app.post("/system/guardrails/check-input", tags=["Level6"])
+async def guardrails_check_input(req: GuardrailCheckRequest):
+    if not HAS_GUARDRAILS:
+        return {"error": "Guardrails not available"}
+    return check_input(req.message, req.session_id)
+
+
+# ── Cost tracker ──
+
+@app.get("/system/costs", tags=["Level6"])
+async def cost_tracker_report():
+    if not HAS_COST_TRACKER:
+        return {"available": False}
+    return {"available": True, **get_cost_report()}
+
+@app.get("/system/costs/session/{session_id}", tags=["Level6"])
+async def cost_tracker_session(session_id: str):
+    if not HAS_COST_TRACKER:
+        return {"error": "Cost tracker not available"}
+    return cost_attribution.get_session_cost(session_id)
+
+@app.get("/system/costs/budget", tags=["Level6"])
+async def cost_budget_status():
+    if not HAS_COST_TRACKER:
+        return {"error": "Cost tracker not available"}
+    return {
+        "daily": cost_budget.check_budget("daily"),
+        "monthly": cost_budget.check_budget("monthly"),
+    }
+
+
+# ── Eval framework ──
+
+@app.get("/system/eval/latest", tags=["Level6"])
+async def eval_latest():
+    if not HAS_EVAL:
+        return {"available": False}
+    report = get_latest_report()
+    return {"available": True, "report": report}
+
+@app.get("/system/eval/history", tags=["Level6"])
+async def eval_history(limit: int = 10):
+    if not HAS_EVAL:
+        return {"available": False}
+    return {"available": True, "reports": get_report_history(limit)}
+
+
+# ── Self optimizer ──
+
+@app.get("/system/optimizer", tags=["Level6"])
+async def optimizer_report():
+    if not HAS_OPTIMIZER:
+        return {"available": False}
+    return {"available": True, **get_optimization_report()}
+
+
+# ── Agent relay ──
+
+@app.get("/system/relay", tags=["Level6"])
+async def relay_status():
+    if not HAS_RELAY:
+        return {"available": False}
+    return {
+        "available": True,
+        "messages": relay_log.stats(),
+        "scratchpad_sessions": len(scratchpad._data) if hasattr(scratchpad, '_data') else 0,
+    }
+
+@app.get("/system/relay/log", tags=["Level6"])
+async def relay_log_recent(limit: int = 50):
+    if not HAS_RELAY:
+        return {"error": "Agent relay not available"}
+    return {"messages": relay_log.recent(limit)}
+
+
+# ── Semantic cache ──
+
+@app.get("/system/semantic-cache", tags=["Level6"])
+async def semantic_cache_status():
+    if not HAS_SEMANTIC_CACHE:
+        return {"available": False}
+    return {"available": True, **semantic_cache_stats()}
+
+@app.post("/system/semantic-cache/invalidate", tags=["Level6"])
+async def semantic_cache_invalidate(req: SemanticCacheInvalidateRequest):
+    if not HAS_SEMANTIC_CACHE:
+        return {"error": "Semantic cache not available"}
+    if req.entity_id:
+        multi_tier_cache.invalidate_entity(req.entity_id)
+        return {"status": "ok", "invalidated": f"entity:{req.entity_id}"}
+    elif req.query:
+        multi_tier_cache.invalidate(req.query)
+        return {"status": "ok", "invalidated": f"query:{req.query[:50]}"}
+    return {"error": "Provide entity_id or query"}
+
+
+# ── Streaming tools ──
+
+@app.get("/system/streaming", tags=["Level6"])
+async def streaming_status():
+    if not HAS_STREAMING:
+        return {"available": False}
+    return {"available": True}
+
+@app.get("/system/streaming/progress/{session_id}", tags=["Level6"])
+async def streaming_progress(session_id: str):
+    if not HAS_STREAMING:
+        return {"error": "Streaming tools not available"}
+    return progress_tracker.get_progress(session_id)
+
+
+# ── Advanced graph ──
+
+@app.get("/system/advanced-graph", tags=["Level6"])
+async def advanced_graph_report():
+    if not HAS_ADVANCED_GRAPH:
+        return {"available": False}
+    return {"available": True, **graph_analytics.get_health_report()}
+
+@app.get("/system/advanced-graph/communities", tags=["Level6"])
+async def graph_communities():
+    if not HAS_ADVANCED_GRAPH:
+        return {"error": "Advanced graph not available"}
+    return {"communities": community_detector.get_community_summary()}
+
+@app.get("/system/advanced-graph/anomalies", tags=["Level6"])
+async def graph_anomalies():
+    if not HAS_ADVANCED_GRAPH:
+        return {"error": "Advanced graph not available"}
+    return {"anomalies": anomaly_detector.detect_anomalies(*graph_analytics._load_graph())}
+
+@app.get("/system/advanced-graph/predictions", tags=["Level6"])
+async def graph_link_predictions(top_k: int = 10):
+    if not HAS_ADVANCED_GRAPH:
+        return {"error": "Advanced graph not available"}
+    nodes, edges = graph_analytics._load_graph()
+    return {"predictions": link_predictor.predict_links(nodes, edges, top_k=top_k)}
+
+@app.get("/system/advanced-graph/trending", tags=["Level6"])
+async def graph_trending(hours: int = 24):
+    if not HAS_ADVANCED_GRAPH:
+        return {"error": "Advanced graph not available"}
+    return {"trending": temporal_evolution.get_trending_entities(hours)}
+
+
+# ════════════════════════════════════════════════════════════════
+# Level 7 endpoints
+# ════════════════════════════════════════════════════════════════
+
+# ── LLM Judge ──
+
+@app.get("/system/judge", tags=["Level7"])
+async def judge_report():
+    if not HAS_LLM_JUDGE:
+        return {"available": False}
+    return {"available": True, **get_judge_report()}
+
+@app.post("/system/judge/evaluate", tags=["Level7"])
+async def judge_evaluate(req: JudgeEvaluateRequest):
+    if not HAS_LLM_JUDGE:
+        return {"error": "LLM Judge not available"}
+    result = judge(req.query, req.reply)
+    return result
+
+
+# ── Dynamic agents ──
+
+@app.get("/system/dynamic-agents", tags=["Level7"])
+async def dynamic_agents_report():
+    if not HAS_DYNAMIC_AGENTS:
+        return {"available": False}
+    return {"available": True, **get_agent_report()}
+
+@app.post("/system/dynamic-agents/create", tags=["Level7"])
+async def dynamic_agents_create(req: DynamicAgentCreateRequest):
+    if not HAS_DYNAMIC_AGENTS:
+        return {"error": "Dynamic agents not available"}
+    spec = agent_factory.create_agent(
+        name=req.name,
+        description=req.description,
+        trigger_patterns=req.trigger_patterns,
+        system_prompt_addon=req.system_prompt_addon,
+        tool_whitelist=req.tool_whitelist,
+    )
+    return {"status": "created", "agent": spec.to_dict()}
+
+
+# ── A2A Protocol ──
+
+@app.get("/.well-known/agent.json", tags=["Level7"])
+async def a2a_well_known():
+    if not HAS_A2A:
+        return {"error": "A2A protocol not available"}
+    return get_agent_card()
+
+@app.post("/a2a", tags=["Level7"])
+async def a2a_endpoint(req: A2ARequest):
+    if not HAS_A2A:
+        return JSONResponse(status_code=501, content={"error": "A2A protocol not available"})
+    result = handle_a2a(req.method, "", req.params)
+    return result
+
+@app.get("/system/a2a", tags=["Level7"])
+async def a2a_status():
+    if not HAS_A2A:
+        return {"available": False}
+    return {"available": True, **get_a2a_status()}
+
+
+# ── Knowledge evolution ──
+
+@app.get("/system/knowledge-evolution", tags=["Level7"])
+async def knowledge_evolution_report():
+    if not HAS_KNOWLEDGE_EVOLUTION:
+        return {"available": False}
+    return {"available": True, **get_evolution_report()}
+
+@app.get("/system/knowledge-evolution/score", tags=["Level7"])
+async def knowledge_score():
+    if not HAS_KNOWLEDGE_EVOLUTION:
+        return {"error": "Knowledge evolution not available"}
+    return get_knowledge_score()
+
+@app.get("/system/knowledge-evolution/gaps", tags=["Level7"])
+async def knowledge_gaps():
+    if not HAS_KNOWLEDGE_EVOLUTION:
+        return {"error": "Knowledge evolution not available"}
+    return {"gaps": gap_detector.detect_gaps()}
+
+
+# ── Multimodal ──
+
+@app.get("/system/multimodal", tags=["Level7"])
+async def multimodal_status():
+    if not HAS_MULTIMODAL:
+        return {"available": False}
+    return {"available": True, **mm_capabilities()}
+
+@app.post("/system/multimodal/analyze-text", tags=["Level7"])
+async def multimodal_analyze(req: MultimodalAnalyzeRequest):
+    if not HAS_MULTIMODAL:
+        return {"error": "Multimodal engine not available"}
+    return mm_analyze_text(req.text)
+
+
+# ── Federation ──
+
+@app.get("/system/federation", tags=["Level7"])
+async def federation_status():
+    if not HAS_FEDERATION:
+        return {"available": False}
+    return {"available": True, **federation_manager.get_status()}
+
+@app.get("/system/federation/nodes", tags=["Level7"])
+async def federation_nodes():
+    if not HAS_FEDERATION:
+        return {"error": "Federation not available"}
+    return {"nodes": [n.to_dict() for n in node_registry.get_active_nodes()]}
+
+@app.get("/system/federation/canary", tags=["Level7"])
+async def federation_canary():
+    if not HAS_FEDERATION:
+        return {"error": "Federation not available"}
+    return canary_deployment.get_canary_status()
+
+@app.post("/federation/invalidate", tags=["Level7"])
+async def federation_invalidate(req: FederationInvalidateRequest):
+    """Receive cache invalidation from peer node."""
+    if not HAS_FEDERATION:
+        return {"error": "Federation not available"}
+    cache_coherency.receive_invalidation(req.key, req.source_node)
+    return {"status": "ok"}
+
+
+# ── Admin dashboard ──
+
+@app.get("/admin-dashboard", response_class=HTMLResponse)
+async def admin_dashboard():
+    """Serve admin analytics dashboard."""
+    dashboard_path = Path(__file__).resolve().parent.parent / "web" / "admin-dashboard.html"
+    if dashboard_path.exists():
+        return HTMLResponse(dashboard_path.read_text(encoding="utf-8"))
+    return HTMLResponse("<h1>Dashboard not found</h1><p>Place admin-dashboard.html in web/</p>")
+
+
+@app.get("/admincp", response_class=HTMLResponse)
+async def admincp():
+    """Serve AdminCP — CRUD management panel."""
+    admin_path = Path(__file__).resolve().parent.parent / "web" / "admin.html"
+    if admin_path.exists():
+        return HTMLResponse(admin_path.read_text(encoding="utf-8"))
+    return HTMLResponse("<h1>AdminCP not found</h1>")
+
+
+# ── Chat UI ──
+
+@app.get("/", response_class=HTMLResponse)
+async def home():
+    return CHAT_HTML
+
+
+CHAT_HTML = """<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vinhlong360 — Knowledge Agent</title>
+<style>
+* { box-sizing: border-box; margin: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; background: #fbf7ef; color: #20312b; }
+.chat-wrap { max-width: 720px; margin: 0 auto; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; }
+.header { text-align: center; margin-bottom: 20px; }
+h1 { font-size: 1.4rem; margin-bottom: 4px; }
+h1 span { color: #e8743b; }
+.subtitle { color: #6b7b73; font-size: .9rem; }
+.stats-bar { display: flex; justify-content: center; gap: 16px; margin-top: 8px; font-size: .8rem; color: #8a9a92; }
+.stats-bar span { background: #f0ece3; padding: 3px 10px; border-radius: 12px; }
+.messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 16px; }
+.msg { padding: 14px 18px; border-radius: 18px; max-width: 88%; line-height: 1.6; font-size: .95rem; }
+.msg.user { align-self: flex-end; background: #1f7a4d; color: #fff; border-bottom-right-radius: 4px; }
+.msg.assistant { align-self: flex-start; background: #fff; border: 1px solid #e6e0d4; border-bottom-left-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.msg.assistant h1,.msg.assistant h2,.msg.assistant h3 { font-size: 1rem; margin: 10px 0 4px; color: #1f7a4d; }
+.msg.assistant h1:first-child,.msg.assistant h2:first-child,.msg.assistant h3:first-child { margin-top: 0; }
+.msg.assistant ul,.msg.assistant ol { margin: 4px 0; padding-left: 20px; }
+.msg.assistant li { margin: 2px 0; }
+.msg.assistant strong { color: #1f7a4d; }
+.msg.assistant code { background: #f5f1e8; padding: 1px 5px; border-radius: 3px; font-size: .9em; }
+.msg.assistant p { margin: 6px 0; }
+.msg.assistant p:first-child { margin-top: 0; }
+.msg.assistant p:last-child { margin-bottom: 0; }
+.tools-info { font-size: .78rem; color: #8a9a92; margin-top: 10px; border-top: 1px solid #f0ece3; padding-top: 6px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.tools-info::before { content: "\\2699"; font-size: 1rem; }
+.tool-badge { display: inline-block; background: #f0ece3; padding: 2px 8px; border-radius: 8px; margin: 2px; font-family: monospace; font-size: .75rem; }
+.trace-panel { background: #f8f6f0; border: 1px solid #e6e0d4; border-radius: 12px; padding: 10px 14px; margin-bottom: 8px; font-size: .82rem; }
+.trace-step { display: flex; align-items: center; gap: 8px; padding: 4px 0; color: #6b7b73; transition: all .3s; }
+.trace-step.active { color: #1f7a4d; font-weight: 500; }
+.trace-step.done { color: #8a9a92; }
+.trace-icon { width: 18px; text-align: center; flex-shrink: 0; }
+.trace-step.active .trace-icon::after { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #1f7a4d; animation: pulse-dot 1s infinite; }
+.trace-step.done .trace-icon::after { content: "\\2713"; color: #1f7a4d; }
+.trace-time { margin-left: auto; font-size: .72rem; color: #b0bdb6; font-family: monospace; }
+@keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+.code-block { background: #2d2d2d; color: #f8f8f2; padding: 12px 16px; border-radius: 8px; overflow-x: auto; font-size: .85rem; margin: 8px 0; }
+.code-block code { background: none; padding: 0; color: inherit; }
+blockquote { border-left: 3px solid #1f7a4d; padding: 4px 12px; margin: 8px 0; color: #4a5a52; background: #f5faf7; border-radius: 0 8px 8px 0; }
+.md-table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: .88rem; }
+.md-table td { border: 1px solid #e6e0d4; padding: 6px 10px; }
+.md-table tr:nth-child(even) { background: #faf8f3; }
+.md-table tr:first-child td { background: #f0ece3; font-weight: 600; }
+hr { border: none; border-top: 1px solid #e6e0d4; margin: 12px 0; }
+.msg.assistant a { color: #1f7a4d; text-decoration: underline; }
+.msg.assistant a:hover { color: #0d5a33; }
+/* Accessibility: focus indicators */
+*:focus-visible { outline: 2px solid #1f7a4d; outline-offset: 2px; }
+.input-row input:focus-visible { box-shadow: 0 0 0 3px rgba(31,122,77,.2); }
+@media (prefers-reduced-motion: reduce) { .typing-dots span { animation: none; } .trace-step.active .trace-icon::after { animation: none; } }
+@media (prefers-contrast: more) { .msg.assistant { border-width: 2px; } .tool-badge { border: 1px solid #333; } }
+.feedback-row { display: flex; gap: 6px; margin-top: 8px; }
+.feedback-row button { padding: 4px 12px; border: 1px solid #e6e0d4; border-radius: 14px; background: #fff; cursor: pointer; font-size: .82rem; transition: all .15s; }
+.feedback-row button:hover { border-color: #1f7a4d; }
+.feedback-row button.voted { background: #f0faf5; border-color: #1f7a4d; color: #1f7a4d; pointer-events: none; }
+.typing { align-self: flex-start; padding: 14px 18px; }
+.typing-dots { display: flex; gap: 4px; align-items: center; }
+.typing-dots span { width: 8px; height: 8px; border-radius: 50%; background: #b0bdb6; animation: bounce .6s infinite alternate; }
+.typing-dots span:nth-child(2) { animation-delay: .2s; }
+.typing-dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes bounce { to { opacity: .3; transform: translateY(-4px); } }
+.suggestions { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+.suggestions button { padding: 8px 14px; border: 1px solid #e6e0d4; border-radius: 999px; background: #fff; cursor: pointer; font-size: .88rem; color: #20312b; transition: all .15s; }
+.suggestions button:hover { border-color: #1f7a4d; color: #1f7a4d; background: #f0faf5; }
+.input-row { display: flex; gap: 8px; position: sticky; bottom: 0; background: #fbf7ef; padding: 12px 0; }
+.input-row input { flex: 1; padding: 14px 16px; border: 1px solid #e6e0d4; border-radius: 14px; font-size: 1rem; background: #fff; outline: none; transition: border-color .15s; }
+.input-row input:focus { border-color: #1f7a4d; }
+.input-row button { padding: 0 24px; border: none; border-radius: 14px; background: #1f7a4d; color: #fff; font-weight: 700; font-size: 1rem; cursor: pointer; transition: opacity .15s; }
+.input-row button:disabled { opacity: .4; cursor: default; }
+</style>
+</head>
+<body>
+<div class="chat-wrap">
+  <div class="header">
+    <h1>vinhlong<span>360</span> Knowledge Agent</h1>
+    <p class="subtitle">Chuyên gia AI về tỉnh Vĩnh Long — du lịch, văn hóa, lịch sử, ẩm thực</p>
+    <div class="stats-bar" id="statsBar"></div>
+  </div>
+  <div class="suggestions" id="initSuggestions">
+    <button onclick="ask(this.textContent)">Tháng này nên đi đâu?</button>
+    <button onclick="ask(this.textContent)">Đặc sản OCOP nổi bật?</button>
+    <button onclick="ask(this.textContent)">Lập lịch trình 2 ngày ẩm thực</button>
+    <button onclick="ask(this.textContent)">Chùa Khmer ở Trà Vinh?</button>
+    <button onclick="ask(this.textContent)">So sánh Bến Tre và Trà Vinh</button>
+    <button onclick="ask(this.textContent)">Gần Cầu Mỹ Thuận có gì?</button>
+  </div>
+  <div class="messages" id="messages" role="log" aria-live="polite" aria-label="Lịch sử hội thoại"></div>
+  <div class="input-row">
+    <input id="input" type="text" placeholder="Hỏi về Vĩnh Long..." autofocus aria-label="Nhập câu hỏi về Vĩnh Long" role="textbox">
+    <button id="sendBtn" onclick="send()" aria-label="Gửi câu hỏi">Gửi</button>
+  </div>
+</div>
+<script>
+const msgs=document.getElementById('messages'),input=document.getElementById('input'),sendBtn=document.getElementById('sendBtn');
+let history=[];
+fetch('/health').then(r=>r.json()).then(d=>{
+  const c=d.cache||{};
+  document.getElementById('statsBar').innerHTML=
+    '<span>'+d.entities+' thực thể</span><span>Cache: '+c.hit_rate+'</span><span>'+d.model+'</span>';
+}).catch(()=>{});
+input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!sendBtn.disabled)send()});
+function ask(t){input.value=t;send()}
+async function send(){
+  const text=input.value.trim();if(!text)return;input.value='';
+  document.getElementById('initSuggestions').style.display='none';
+  addMsg('user',text);history.push({role:'user',content:text});sendBtn.disabled=true;
+  const typing=document.createElement('div');typing.className='typing';
+  typing.innerHTML='<div class="typing-dots"><span></span><span></span><span></span></div>';
+  msgs.appendChild(typing);msgs.scrollTop=msgs.scrollHeight;
+  const params=new URLSearchParams({message:text,history:JSON.stringify(history.slice(-20))});
+  try{
+    const response=await fetch('/chat/stream?'+params);const reader=response.body.getReader();
+    const decoder=new TextDecoder();typing.remove();
+    const msgDiv=addMsg('assistant','',true);const contentDiv=msgDiv.querySelector('.content')||msgDiv;
+    let fullText='',tools=[],buffer='';
+    while(true){const{done,value}=await reader.read();if(done)break;
+      buffer+=decoder.decode(value,{stream:true});const lines=buffer.split('\\n');buffer=lines.pop();
+      for(const line of lines){if(!line.startsWith('data: '))continue;
+        try{const data=JSON.parse(line.slice(6));
+          if(data.type==='autocorrect'){
+            const acDiv=document.createElement('div');
+            acDiv.style.cssText='font-size:.82rem;color:#8a9a92;padding:4px 10px;margin-bottom:6px;background:#fef9f0;border-radius:8px;border:1px solid #f0e6d4;';
+            acDiv.innerHTML='\\u270E \\u0110\\u00e3 s\\u1eeda: <s>'+data.original+'</s> \\u2192 <b>'+data.corrected+'</b>';
+            msgDiv.insertBefore(acDiv,contentDiv);
+          }else if(data.type==='tool_start'){tools.push(data.name);
+            if(!msgDiv.querySelector('.trace-panel')){const tp=document.createElement('div');tp.className='trace-panel';msgDiv.insertBefore(tp,contentDiv);}
+            const tp=msgDiv.querySelector('.trace-panel');
+            const step=document.createElement('div');step.className='trace-step active';step.id='trace-'+data.name+'-'+tools.length;
+            step.innerHTML='<span class="trace-icon"></span><span>'+data.description+'</span>';
+            tp.appendChild(step);msgs.scrollTop=msgs.scrollHeight;
+          }else if(data.type==='tool_done'){
+            const steps=msgDiv.querySelectorAll('.trace-step.active');
+            if(steps.length){const s=steps[steps.length-1];s.classList.remove('active');s.classList.add('done');
+              const tm=document.createElement('span');tm.className='trace-time';tm.textContent=data.duration_ms+'ms';s.appendChild(tm);}
+          }else if(data.type==='tool'){tools.push(data.name);
+            if(!msgDiv.querySelector('.tools-row')){const row=document.createElement('div');row.className='tools-info tools-row';row.textContent=' ';msgDiv.appendChild(row);}
+            const b=document.createElement('span');b.className='tool-badge';b.textContent=data.name;msgDiv.querySelector('.tools-row').appendChild(b);
+          }else if(data.type==='text'){fullText+=data.content;contentDiv.innerHTML=renderMd(fullText);msgs.scrollTop=msgs.scrollHeight;
+          }else if(data.type==='done'){
+            const tp=msgDiv.querySelector('.trace-panel');if(tp)tp.style.opacity='.6';
+            if(data.suggestions&&data.suggestions.length)showSuggestions(data.suggestions);
+            showFeedback(msgDiv,text);
+          }
+        }catch(e){}}
+    }
+    history.push({role:'assistant',content:fullText});
+  }catch(err){typing.remove();addMsg('assistant','Lỗi kết nối: '+err.message);}
+  sendBtn.disabled=false;input.focus();
+}
+function addMsg(role,content,isHtml){const div=document.createElement('div');div.className='msg '+role;
+  if(role==='assistant'&&isHtml)div.innerHTML='<div class="content"></div>';
+  else if(isHtml)div.innerHTML=content;else div.textContent=content;
+  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;return div;}
+function showSuggestions(items){const old=document.querySelector('.suggestions.dynamic');if(old)old.remove();
+  const div=document.createElement('div');div.className='suggestions dynamic';
+  items.forEach(t=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>{div.remove();ask(t);};div.appendChild(b);});
+  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
+function showFeedback(msgDiv,query){
+  const row=document.createElement('div');row.className='feedback-row';
+  const up=document.createElement('button');up.textContent='👍 Hữu ích';
+  const down=document.createElement('button');down.textContent='👎 Chưa tốt';
+  up.onclick=()=>{sendFeedback(query,1);up.classList.add('voted');down.style.display='none';};
+  down.onclick=()=>{sendFeedback(query,0);down.classList.add('voted');up.style.display='none';};
+  row.appendChild(up);row.appendChild(down);msgDiv.appendChild(row);
+}
+function sendFeedback(query,rating){
+  fetch('/feedback',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({query:query,rating:rating,session_id:'web'})}).catch(()=>{});
+}
+function renderMd(t){let h=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // Code blocks (``` ... ```)
+  h=h.replace(/```(\\w*)\\n([\\s\\S]*?)```/g,function(m,lang,code){return '<pre class="code-block"><code>'+code.trim()+'</code></pre>';});
+  // Inline code
+  h=h.replace(/`(.+?)`/g,'<code>$1</code>');
+  // Bold, italic
+  h=h.replace(/\\*\\*(.+?)\\*\\*/g,'<strong>$1</strong>').replace(/\\*(.+?)\\*/g,'<em>$1</em>');
+  // Headings
+  h=h.replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>');
+  // Blockquotes
+  h=h.replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>').replace(/<\\/blockquote>\\s*<blockquote>/g,'<br>');
+  // Links [text](url)
+  h=h.replace(/\\[([^\\]]+)\\]\\(([^)]+)\\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  // Tables
+  h=h.replace(/^\\|(.+)\\|$/gm,function(m,row){
+    var cells=row.split('|').map(function(c){return c.trim();});
+    return '<tr>'+cells.map(function(c){return c.match(/^[\\-:]+$/)?'':'<td>'+c+'</td>';}).join('')+'</tr>';
+  });
+  h=h.replace(/(<tr>.*<\\/tr>\\s*)+/gs,function(m){
+    var rows=m.trim();if(rows.indexOf('<td>')>=0)return '<table class="md-table">'+rows.replace(/<tr><\\/tr>/g,'')+'</table>';return rows;
+  });
+  // Lists
+  h=h.replace(/^[\\-\\*] (.+)$/gm,'<li>$1</li>').replace(/^(\\d+)\\. (.+)$/gm,'<li>$2</li>');
+  h=h.replace(/(<li>.*<\\/li>)/gs,function(m){return '<ul>'+m+'</ul>';}).replace(/<\\/ul>\\s*<ul>/g,'');
+  // Horizontal rule
+  h=h.replace(/^---$/gm,'<hr>');
+  // Paragraphs
+  h=h.replace(/\\n\\n/g,'</p><p>');h='<p>'+h+'</p>';
+  h=h.replace(/<p><(h[123]|ul|ol|pre|blockquote|table|hr)/g,'<$1').replace(/<\\/(h[123]|ul|ol|pre|blockquote|table)><\\/p>/g,'</$1>').replace(/<p><\\/p>/g,'').replace(/<hr><\\/p>/g,'<hr>');
+  return h;}
+</script>
+</body>
+</html>"""
+
+
+if __name__ == "__main__":
+    import uvicorn
+    print("=" * 64)
+    print("  vinhlong360 Knowledge Agent v8.2 — Level 7 Architecture")
+    print("=" * 64)
+    print(f"  Model:       {MODEL}")
+    print(f"  API:         {os.environ['LLM_BASE_URL']}")
+    print(f"  Chat:        /chat, /chat/stream  (+rate limit)")
+    print(f"  Admin:       /admin/*, /admin-dashboard")
+    print(f"  Analytics:   /analytics/*  (summary, gaps, daily)")
+    print(f"  System:      /system/*  (logs, errors, memory, quality)")
+    print(f"  Level 5:     /system/traces, /system/handoffs, /system/memory-graph")
+    print(f"               /checkpoints/*, /confirm/*, /search/enhanced")
+    print(f"  Level 6:     /system/guardrails, /system/costs, /system/eval/*")
+    print(f"               /system/optimizer, /system/relay, /system/semantic-cache")
+    print(f"               /system/streaming, /system/advanced-graph")
+    print(f"  Level 7:     /system/judge, /system/dynamic-agents, /a2a")
+    print(f"               /system/knowledge-evolution, /system/multimodal")
+    print(f"               /system/federation, /.well-known/agent.json")
+    print(f"  Feedback:    /feedback, /welcome")
+    print(f"  Tools:       13 AI tools (parallel execution)")
+    print(f"  Core Stack:")
+    print(f"    Agentic RAG:   Adaptive + Corrective + Graph (3-hop)")
+    print(f"    Memory:        Hot (session) + Cold (encrypted)")
+    print(f"    Reflexion:     Self-evaluation + skill documents")
+    print(f"    Proactive:     Seasonal + time-aware + trending")
+    print(f"    Middleware:     Rate-limit + logging + error-tracking")
+    print(f"    Scheduler:     auto-learn(6h) + rels(24h) + sync(1h)")
+    print(f"    Vector:        {'✓' if HAS_VECTOR else '✗'}")
+    print(f"    Realtime:      {'✓' if HAS_REALTIME else '✗'}")
+    print(f"    Circuit Break: {'✓' if HAS_CIRCUIT_BREAKER else '✗'}")
+    print(f"    Parallel:      {'✓' if HAS_PARALLEL else '✗'}")
+    print(f"    Autocorrect:   {'✓' if HAS_AUTOCORRECT else '✗'}")
+    print(f"    Recommender:   {'✓' if HAS_RECOMMENDER else '✗'}")
+    print(f"    Freshness:     {'✓' if HAS_FRESHNESS else '✗'}")
+    print(f"    Image Recog:   {'✓' if HAS_IMAGE_RECOGNITION else '✗'}")
+    print(f"  Level 5 (Multi-Agent):")
+    print(f"    Orchestrator:  {'✓' if HAS_ORCHESTRATOR else '✗'}  (Specialist Routing)")
+    print(f"    Memory Graph:  {'✓' if HAS_MEMORY_GRAPH else '✗'}  (Knowledge Compounding)")
+    print(f"    OTel Tracing:  {'✓' if HAS_TRACING else '✗'}  (GenAI Semantic)")
+    print(f"    Contextual:    {'✓' if HAS_CONTEXTUAL else '✗'}  (BM25 + Reranking)")
+    print(f"    Checkpoints:   {'✓' if HAS_CHECKPOINTS else '✗'}  (Human-in-the-Loop)")
+    print(f"    Metrics:       {'✓' if HAS_METRICS else '✗'}  (Prometheus)")
+    print(f"    A/B Testing:   {'✓' if HAS_AB_TESTING else '✗'}")
+    print(f"    Prompt Cache:  {'✓' if HAS_PROMPT_CACHE else '✗'}")
+    print(f"  Level 6 (Self-Optimizing):")
+    print(f"    Guardrails:    {'✓' if HAS_GUARDRAILS else '✗'}  (Safety + PII)")
+    print(f"    Cost Tracker:  {'✓' if HAS_COST_TRACKER else '✗'}  (Token Attribution)")
+    print(f"    Eval Framework:{'✓' if HAS_EVAL else '✗'}  (Benchmarks)")
+    print(f"    Self Optimizer:{'✓' if HAS_OPTIMIZER else '✗'}  (Auto-Tuning)")
+    print(f"    Agent Relay:   {'✓' if HAS_RELAY else '✗'}  (Inter-Agent Comm)")
+    print(f"    Semantic Cache:{'✓' if HAS_SEMANTIC_CACHE else '✗'}  (Embedding Dedup)")
+    print(f"    Streaming:     {'✓' if HAS_STREAMING else '✗'}  (Progressive Tools)")
+    print(f"    Adv. Graph:    {'✓' if HAS_ADVANCED_GRAPH else '✗'}  (Community Detect)")
+    print(f"  Level 7 (Self-Evolving):")
+    print(f"    LLM Judge:     {'✓' if HAS_LLM_JUDGE else '✗'}  (Quality Eval)")
+    print(f"    Dynamic Agents:{'✓' if HAS_DYNAMIC_AGENTS else '✗'}  (Self-Creating)")
+    print(f"    A2A Protocol:  {'✓' if HAS_A2A else '✗'}  (Google Standard)")
+    print(f"    Knowledge Evo: {'✓' if HAS_KNOWLEDGE_EVOLUTION else '✗'}  (Auto Schema)")
+    print(f"    Multimodal:    {'✓' if HAS_MULTIMODAL else '✗'}  (Text/Image/Audio)")
+    print(f"    Federation:    {'✓' if HAS_FEDERATION else '✗'}  (Distributed)")
+    from middleware import ADMIN_API_KEY
+    print(f"  Admin Key:   {ADMIN_API_KEY[:12]}... (set ADMIN_API_KEY in .env)")
+    print(f"  URL:         http://localhost:8360")
+    print("=" * 64)
+    uvicorn.run(app, host="0.0.0.0", port=8360)

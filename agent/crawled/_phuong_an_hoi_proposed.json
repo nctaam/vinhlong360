@@ -1,0 +1,100 @@
+[
+  {
+    "id": "khu-pho-am-thuc-bo-ho",
+    "type": "dish",
+    "name": "Khu phố ẩm thực Bờ Hồ",
+    "placeId": "xa-an-binh",
+    "summary": "Khu ẩm thực sầm uất dọc bờ Hồ Trúc Giang, nhiều quán ăn đặc sản Bến Tre: bánh xèo xứ dừa, hải sản, ẩm thực miệt vườn. Hoạt động chiều tối đến khuya.",
+    "source": {
+      "title": "mytour.vn / baodongkhoi.vn / mia.vn",
+      "url": "https://baodongkhoi.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Dọc Hồ Trúc Giang, Phường An Hội, TP Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "chua-van-phuoc-binh-dai",
+    "type": "attraction",
+    "name": "Chùa Vạn Phước Bình Đại",
+    "placeId": "xa-an-binh",
+    "summary": "Chùa Phật giáo nổi bật với tượng Phật Di Lặc mạ vàng cao 12,45m đặt trong công viên rộng rãi trên tỉnh lộ 883, huyện Bình Đại. Điểm tâm linh và tham quan độc đáo vùng biển BT.",
+    "source": {
+      "title": "mytour.vn / baodongkhoi.vn / mia.vn",
+      "url": "https://baodongkhoi.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Tỉnh lộ 883, huyện Bình Đại, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "lang-nghe-truyen-thong-phu-le",
+    "type": "craft_village",
+    "name": "Làng nghề truyền thống Phú Lễ",
+    "placeId": "xa-an-binh",
+    "summary": "Làng nghề nổi tiếng với rượu nếp Phú Lễ và nghề đan lán. Có Đình Phú Lễ xây dựng năm 1826 là di tích lịch sử. Nằm tại huyện Ba Tri, đặc sản rượu nếp Phú Lễ nổi tiếng cả miền Nam.",
+    "source": {
+      "title": "mytour.vn / baodongkhoi.vn / mia.vn",
+      "url": "https://baodongkhoi.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Phú Lễ, huyện Ba Tri, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "bung-lac-dia",
+    "type": "history",
+    "name": "Bưng Lạc Địa",
+    "placeId": "xa-an-binh",
+    "summary": "Di tích lịch sử cách mạng tại xã Tân Xuân, huyện Ba Tri — vùng căn cứ kháng chiến quan trọng của Bến Tre. Đang hoàn thiện xây dựng (2025) để phục vụ giáo dục truyền thống và du lịch.",
+    "source": {
+      "title": "mytour.vn / baodongkhoi.vn / mia.vn",
+      "url": "https://baodongkhoi.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.75,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "address": "Xã Tân Xuân, huyện Ba Tri, Bến Tre",
+      "province_old": "Bến Tre"
+    }
+  },
+  {
+    "id": "oc-gao-con-phu-da",
+    "type": "product",
+    "name": "Ốc gạo Cồn Phú Đa",
+    "placeId": "xa-an-binh",
+    "summary": "Đặc sản ốc gạo cồn Phú Đa, huyện Chợ Lách — ốc nhỏ thịt ngọt, hương vị đặc trưng sông nước miệt vườn Bến Tre. Món ăn bình dân mà nức tiếng.",
+    "source": {
+      "title": "mytour.vn / baodongkhoi.vn / mia.vn",
+      "url": "https://baodongkhoi.vn/"
+    },
+    "status": "provisional",
+    "verified": false,
+    "confidence": 0.8,
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "province_old": "Bến Tre"
+    },
+    "coords": [
+      9.8837431,
+      106.7340154
+    ]
+  }
+]

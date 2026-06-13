@@ -1,0 +1,17 @@
+{
+  "id": "chua-tien-chau",
+  "type": "attraction",
+  "name": "Chùa Tiên Châu",
+  "placeId": null,
+  "summary": "Trang được cung cấp không chứa thông tin giới thiệu về Chùa Tiên Châu mà chỉ hiển thị lỗi 404 và thông tin chung của website. Không thể xác minh địa chỉ, dịch vụ hay giờ mở cửa từ nội dung này.",
+  "season": null,
+  "attributes": {},
+  "source": {
+    "title": "vinhlongtourist.vn",
+    "url": "https://vinhlongtourist.vn/vi/chua-tien-chau"
+  },
+  "confidence": 0.85,
+  "updatedAt": "2026-06-10",
+  "_crawled_from": "/vi/chua-tien-chau",
+  "_address_raw": "Không có thông tin địa chỉ trong nội dung trang (trang 404)"
+}

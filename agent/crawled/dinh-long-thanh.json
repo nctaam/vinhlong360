@@ -1,0 +1,17 @@
+{
+  "id": "dinh-long-thanh",
+  "type": "attraction",
+  "name": "Đình Long Thanh",
+  "placeId": null,
+  "summary": "Trang đích hiện trả về lỗi 404 nên không có thông tin nội dung chi tiết về điểm tham quan này. Chỉ có thể xác định đây là trang dành cho Đình Long Thanh trên website du lịch Vĩnh Long.",
+  "season": null,
+  "attributes": {},
+  "source": {
+    "title": "vinhlongtourist.vn",
+    "url": "https://vinhlongtourist.vn/vi/dinh-long-thanh"
+  },
+  "confidence": 0.85,
+  "updatedAt": "2026-06-10",
+  "_crawled_from": "/vi/dinh-long-thanh",
+  "_address_raw": "Không rõ"
+}

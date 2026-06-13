@@ -1,0 +1,116 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: vl360-postgres
+    environment:
+      POSTGRES_DB: vinhlong360
+      POSTGRES_USER: vl360
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vl360_dev_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vl360 -d vinhlong360"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: vl360-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  agent:
+    build: .
+    container_name: vl360-agent
+    ports:
+      - "8360:8360"
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://vl360:${POSTGRES_PASSWORD:-vl360_dev_password}@postgres:5432/vinhlong360
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ./web:/app/web
+      - agent-data:/app/agent/data
+      - memory-data:/app/data/memory
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8360/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  bot-gateway:
+    build: .
+    container_name: vl360-bots
+    command: python agent/bot_gateway.py
+    ports:
+      - "8361:8361"
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://vl360:${POSTGRES_PASSWORD:-vl360_dev_password}@postgres:5432/vinhlong360
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      agent:
+        condition: service_healthy
+    restart: unless-stopped
+
+  nuxt:
+    build:
+      context: ./web-nuxt
+    container_name: vl360-nuxt
+    ports:
+      - "3000:3000"
+    environment:
+      API_BASE: http://agent:8360
+      HOST: 0.0.0.0
+      PORT: 3000
+    depends_on:
+      agent:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  nginx:
+    image: nginx:alpine
+    container_name: vl360-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./web:/var/www/html:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - agent
+      - nuxt
+    restart: unless-stopped
+
+volumes:
+  pg-data:
+  redis-data:
+  agent-data:
+  memory-data:

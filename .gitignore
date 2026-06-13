@@ -1,0 +1,32 @@
+.env
+!.env.example
+__pycache__/
+*.pyc
+node_modules/
+agent/data/
+*.log
+*.log.jsonl
+ssl/
+data/
+.key
+
+# Build artifacts
+.nuxt/
+.output/
+dist/
+.coverage
+*.coverage
+
+# Scratch / ETL intermediates (xem GĐ0.2)
+scratch/
+tmp_*.json
+tmp2_*.json
+prov_*.json
+out_*.json
+so_*.json
+provisional_*.json
+result_temp.json
+top200_output.json
+final_structured.json
+final_entities.json
+final_output.json

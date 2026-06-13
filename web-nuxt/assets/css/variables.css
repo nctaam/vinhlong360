@@ -1,0 +1,88 @@
+:root {
+  /* ── Brand palette (Vĩnh Long + Trà Vinh + Bến Tre) ── */
+  --primary: #9C3D22;
+  --primary-dark: #7A2E18;
+  --primary-light: #C4694E;
+  --accent: #E8A33D;
+  --accent-dark: #C4872A;
+  --secondary: #2E7D5B;
+  --secondary-dark: #1F5C41;
+  --tertiary: #33646E;
+
+  /* ── Neutral ── */
+  --bg: #FAF4E8;
+  --bg-warm: #F5EDD9;
+  --bg-alt: #F0EBE0;
+  --ink: #2B2622;
+  --muted: #6B7B73;
+  --line: #E6E0D4;
+  --border: #D9D3C7;
+  --card: #FFFFFF;
+  --shadow: 0 1px 2px rgba(156, 61, 34, .06), 0 8px 24px rgba(156, 61, 34, .07);
+  --radius: 16px;
+  --maxw: 1140px;
+  --primary-rgb: 156, 61, 34;
+  --focus-ring: 0 0 0 3px rgba(156, 61, 34, .15);
+
+  /* ── Design tokens ── */
+  --duration-fast: .12s;
+  --duration-normal: .18s;
+  --duration-slow: .3s;
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
+  --ease-bounce: cubic-bezier(.34, 1.56, .64, 1);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.05);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.08);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,.12);
+  --z-dropdown: 50;
+  --z-sticky: 100;
+  --z-overlay: 200;
+  --z-modal: 500;
+  --z-toast: 600;
+
+  /* ── Badge colors ── */
+  --badge-season-bg: #fbe7da;
+  --badge-ocop-bg: #e7f3ec;
+  --badge-year-bg: #eef1ef;
+  --nav-hover: #f0ece2;
+
+  /* ── Legacy aliases ── */
+  --green: var(--secondary);
+  --green-dark: var(--secondary-dark);
+  --orange: var(--accent);
+  --cream: var(--bg);
+
+  /* ── Category gradients ── */
+  --cat-experience: linear-gradient(135deg, #2E7D5B, #4BA97D);
+  --cat-product: linear-gradient(135deg, #E8A33D, #F0BE6A);
+  --cat-attraction: linear-gradient(135deg, #33646E, #4E8A96);
+  --cat-craft: linear-gradient(135deg, #9C3D22, #C4694E);
+  --cat-accommodation: linear-gradient(135deg, #5B6CC4, #8B9AF0);
+  --cat-dish: linear-gradient(135deg, #D94F3D, #F07A5F);
+  --cat-itinerary: linear-gradient(135deg, #9C3D22, #E8A33D);
+  --cat-org: linear-gradient(135deg, #6B7B73, #97A89C);
+  --cat-place: linear-gradient(135deg, #33646E, #4E8A96);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1a1a1a;
+    --bg-warm: #242424;
+    --bg-alt: #2c2c2e;
+    --ink: #e5e5e5;
+    --muted: #9a9a9a;
+    --line: #3a3a3c;
+    --border: #48484a;
+    --card: #2c2c2e;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .2), 0 8px 24px rgba(0, 0, 0, .25);
+    --nav-hover: #3a3a3c;
+    --badge-season-bg: #3d2a1e;
+    --badge-ocop-bg: #1e3328;
+    --badge-year-bg: #2a2d2a;
+    --primary-rgb: 196, 105, 78;
+    --focus-ring: 0 0 0 3px rgba(196, 105, 78, .25);
+  }
+}

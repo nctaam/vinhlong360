@@ -1,0 +1,52 @@
+{
+  "source": "vinhlongtourist.vn",
+  "crawled_at": "2026-06-10",
+  "note": "Site currently only covers old Vinh Long province. Ben Tre & Tra Vinh not yet updated post-merger.",
+  "attractions": [
+    {"name": "Cơ sở sản xuất Peace Farm", "desc": "Cơ sở sản xuất và kinh doanh nông sản, trải nghiệm nông nghiệp, giờ 7:00-18:00.", "addr": "79 Tân Quới Đông, Phường Long Châu, TP Vĩnh Long", "phone": "0908370824", "email": "hienpeacefarm@gmail.com", "type": "experience"},
+    {"name": "DN Du lịch sinh thái SaLa", "desc": "Khu du lịch sinh thái 25ha, trải nghiệm xanh đậm bản sắc văn hóa Nam bộ, cách TP Vĩnh Long ~30km. Giờ 7:00-18:00.", "addr": "Ấp Mỹ Phú Tân, xã Tam Bình, huyện Tam Bình", "phone": "02703729999", "email": "khudulichsala@gmail.com", "type": "attraction"},
+    {"name": "Du lịch vườn chú 7 Gặt", "desc": "Tham quan vườn trái cây, ăn uống đồng quê: gà, cá lóc, lươn, ếch, cá tai tượng, óc bu. Giờ 7:00-18:00.", "addr": "Ấp Phú Xuân, xã An Bình, huyện Long Hồ", "phone": "0978304031", "email": "leminhnhi01012987@gmail.com", "type": "attraction"},
+    {"name": "Khu du lịch SOMO FARM Cửu Long", "desc": "Nông trại kết hợp du lịch trải nghiệm, văn hóa đặc sản vùng đồng bằng sông Cửu Long. Giờ 7:00-18:00.", "addr": "Khóm 3, xã Cái Nhum, huyện Mang Thít", "email": "somofarmcuulong@somogroup.vn", "type": "attraction"},
+    {"name": "Bảo tàng Dừa Sáp Trà Vinh", "desc": "Bảo tàng ngoài công lập về dừa sáp - đặc sản hiếm có thế giới. Khai trương 12/2024, có khu trải nghiệm và bán đặc sản dừa sáp. Do Cty Vicosap điều hành.", "addr": "Số 221, ấp 2, xã Tam Ngãi, huyện Cầu Kè", "email": "hello@baotangduasap.com", "type": "attraction", "province_old": "Trà Vinh"},
+    {"name": "Khu mộ thân nhân danh thần Thoại Ngọc Hầu", "desc": "Di tích lịch sử trên Cù lao Dài, gắn liền cuộc di cư của gia đình danh thần Thoại Ngọc Hầu (Nguyễn Văn Thoại), người có công khai phá vùng đất phương Nam. Giờ 7:00-18:00.", "addr": "Cù lao Dài, xã Quới Thiện, huyện Vũng Liêm", "type": "history"},
+    {"name": "Lò cốm Cửu Long", "desc": "Cơ sở sản xuất cốm truyền thống trên cù lao An Bình, cạnh nhà dừa CocoHome, sản xuất cốm nếp đặc sản Nam Bộ. Giờ 7:00-18:00.", "addr": "Ấp Hoà Quí, xã An Bình, huyện Long Hồ", "phone": "0932871175", "email": "cocohomevinhlong@gmail.com", "type": "craft_village"},
+    {"name": "Bảo tàng Vĩnh Long", "desc": "Bảo tàng hạng II thành lập 1998, trưng bày hơn 28.000 hiện vật lịch sử-văn hóa. Có nhà tù Pháp 1915, hầm chiến sự 1963, xe tăng, máy bay, ghe độc mộc cổ. Đóng thứ 2 và CN.", "addr": "Số 01 Phan Bội Châu, Phường Long Châu, TP Vĩnh Long", "phone": "02703823181", "email": "btang.svhttdl@vinhlong.gov.vn", "hours": "7:00-11:00 và 13:00-17:00, đóng T2 và CN", "type": "attraction"},
+    {"name": "Chùa Gia Kiết", "desc": "Chùa Khmer tọa lạc tại xã Trà Côn, một trong nhóm chùa Khmer tiêu biểu của Vĩnh Long (Gia Kiết, Tòa Sen, Kỳ Son, Đại Thọ). Giờ 7:00-18:00.", "addr": "Xã Trà Côn, huyện Trà Ôn", "email": "chuagiakiet@gmail.com", "type": "attraction"}
+  ],
+  "accommodation": [
+    {"name": "ONE HOTEL", "stars": "2 sao", "addr": "34 Trưng Nữ Vương, Phường Long Châu, TP Vĩnh Long", "phone": "0973272777", "email": "longthanhnguyen199@gmail.com", "desc": "Khách sạn 2 sao tại trung tâm TP Vĩnh Long, có phòng Deluxe, VIP, bungalow gia đình."},
+    {"name": "The Grand Hotel Vĩnh Long", "stars": "boutique", "addr": "67F Võ Văn Kiệt, Phường Long Châu, TP Vĩnh Long", "phone": "0786796339", "email": "info@thegrandmaisons.com", "desc": "Khách sạn boutique vị trí đắc địa, phòng sạch hiện đại yên tĩnh, gần ẩm thực và giải trí. Có trên Agoda, Booking."},
+    {"name": "Khách sạn Paris Vĩnh Long", "stars": "nhà nghỉ", "addr": "Trần Phú, Phường Phước Hậu, TP Vĩnh Long", "phone": "0938126216", "email": "parishotel.cafe@gmail.com", "desc": "Khách sạn với WiFi miễn phí, mini bar, thang máy, điều hòa, vòi sen."},
+    {"name": "Khách Sạn Vin Vĩnh Long", "stars": "2 sao", "addr": "PG2-08A và PG2-18 Phạm Thái Bường, Phường Phước Hậu, TP Vĩnh Long", "phone": "02703883666", "email": "ksvinhotelvinhlong@gmail.com", "desc": "Khách sạn 2 sao, tiếp tân 24h, WiFi miễn phí, ATM, bãi xe riêng."}
+  ],
+  "restaurants": [
+    {"name": "Nhà hàng Hương Sen", "desc": "Nhà hàng ẩm thực không gian rộng, thoáng mát.", "addr": "51/14B Phạm Thái Bường, Phường Phước Hậu, TP Vĩnh Long"},
+    {"name": "Nhà hàng Ẩm Thực Phố", "desc": "Quán ăn rộng rãi trên đường Phạm Thái Bường, phù hợp tiệc liên hoan.", "addr": "52/1 Phạm Thái Bường, Phường Phước Hậu, TP Vĩnh Long"},
+    {"name": "Nhà hàng Ngân Vinh", "desc": "Nhà hàng ẩm thực đa dạng món ăn.", "addr": "33/12 Phạm Thái Bường, Phường Phước Hậu, TP Vĩnh Long", "phone": "02703820731"},
+    {"name": "Nhà hàng Phương Thủy", "desc": "Nhà hàng view sông Tiền thoáng mát, ẩm thực đa dạng.", "addr": "Số 2 Phan Bội Châu, Phường Long Châu, TP Vĩnh Long"},
+    {"name": "Nhà hàng Sáu Tú", "desc": "Quán ăn ấm cúng bình dân, đặc sản đồng quê Nam Bộ.", "addr": "284 Phạm Hùng, Phường Long Châu, TP Vĩnh Long"},
+    {"name": "Nhà hàng Song Thảo", "desc": "Ẩm thực gia đình dân dã đồng quê, không gian rộng rãi.", "addr": "252 Tân Quới Hưng, Phường Long Châu, TP Vĩnh Long"},
+    {"name": "Nhà hàng Thiên Tân", "desc": "Không gian lớn thoáng mát, phù hợp tổ chức tiệc và liên hoan.", "addr": "51/1 Phạm Thái Bường, Phường Phước Hậu, TP Vĩnh Long"},
+    {"name": "Tàu nhà hàng Sài Gòn Vĩnh Long", "desc": "Nhà hàng độc đáo trên tàu neo đậu bến công viên Sông Tiền, gần cầu Cái Cá. Trải nghiệm ẩm thực trên sông.", "addr": "04 Hưng Đạo Vương, Phường Long Châu, TP Vĩnh Long"}
+  ],
+  "shopping": [
+    {"name": "Bánh Nhật Ngọc", "desc": "Cơ sở sản xuất bánh đặc sản Vĩnh Long.", "addr": "19L/4 ấp Tân Hưng, xã Tân Hạnh, huyện Long Hồ", "type": "product"},
+    {"name": "Chợ Vĩnh Long", "desc": "Chợ truyền thống trung tâm thành phố Vĩnh Long, mua sắm đặc sản địa phương.", "addr": "Đoàn Thị Điểm, Phường Long Châu, TP Vĩnh Long", "type": "shopping"},
+    {"name": "Cửa hàng đặc sản Mekong", "desc": "Cửa hàng đặc sản địa phương, trái cây, bưởi sấy, quà tặng.", "addr": "92 Nguyễn Thị Minh Khai, Phường Long Châu, TP Vĩnh Long", "type": "shopping"},
+    {"name": "Cửa hàng thực phẩm an toàn Hoa Sao", "desc": "Cửa hàng thực phẩm an toàn, sản phẩm nông nghiệp sạch Vĩnh Long.", "addr": "72A Nguyễn Huệ, Phường Long Châu, TP Vĩnh Long", "type": "shopping"},
+    {"name": "Điểm trưng bày OCOP Vĩnh Long", "desc": "Điểm giới thiệu và bán sản phẩm OCOP, nông nghiệp tỉnh Vĩnh Long.", "addr": "12C Hoàng Thái Hiếu, Phường Long Châu, TP Vĩnh Long", "type": "shopping"}
+  ],
+  "products": [
+    {"name": "Xoài Cát Núm Vũng Liêm", "desc": "Đặc sản xoài cát hạt nhỏ của huyện Vũng Liêm, vị ngọt thanh, là quà quê đậm tình người Vĩnh Long.", "province": "Vĩnh Long", "type": "product"},
+    {"name": "Bánh lá dứa Vĩnh Long", "desc": "Bánh truyền thống gói lá dứa thơm đặc trưng của đồng bằng sông Cửu Long.", "province": "Vĩnh Long", "type": "product"},
+    {"name": "Nghề dệt lục bình Vĩnh Long", "desc": "Nghề thủ công truyền thống đan các sản phẩm từ sợi lục bình (bèo lục bình), tạo ra giỏ, túi, chiếu thủ công.", "province": "Vĩnh Long", "type": "craft_village"},
+    {"name": "Làng nghề chế tác mặt nạ Khmer Nguyệt Hóa", "desc": "Làng nghề truyền thống của đồng bào Khmer tại phường Nguyệt Hóa, chuyên chế tác mặt nạ, mão, tượng Phật. Di sản văn hóa phi vật thể.", "addr": "Phường Nguyệt Hóa, TP Trà Vinh", "province_old": "Trà Vinh", "type": "craft_village"}
+  ],
+  "tours": [
+    {"name": "Tour Nhà Gốm - Tát Mương Bắt Cá", "desc": "Tour 6 điểm: tham quan nhà gốm truyền thống và trải nghiệm tát mương bắt cá đặc trưng miền Tây.", "company": "Thiên Ý Thành", "duration": "1 ngày", "type": "experience"},
+    {"name": "Tour Vương quốc Gạch Ngói Mang Thít", "desc": "Tour tàu 5 điểm: khám phá làng nghề gạch ngói Mang Thít - Vương quốc đỏ nổi tiếng Vĩnh Long.", "company": "Thiên Ý Thành", "duration": "1 ngày", "type": "experience"},
+    {"name": "Tour Sông Nước Cái Bè - Vĩnh Long", "desc": "Tour ngày sông nước miệt vườn kết hợp Cái Bè (Tiền Giang) và Vĩnh Long, khám phá cù lao An Bình.", "company": "Mekong Travel", "duration": "1 ngày", "type": "experience"},
+    {"name": "Tour Đêm Miệt Vườn Vĩnh Long", "desc": "Tour đêm trải nghiệm văn hóa miệt vườn Nam Bộ, thưởng thức đờn ca tài tử, ẩm thực đặc sản.", "company": "Mekong Travel", "duration": "1 ngày", "type": "experience"},
+    {"name": "Tour Cái Thia - Làng Xoài Cát Hòa Lộc", "desc": "Tour khám phá Cái Thia và làng xoài Cát Hòa Lộc nổi tiếng.", "company": "Mekong Travel", "duration": "1 ngày", "type": "experience"}
+  ]
+}
