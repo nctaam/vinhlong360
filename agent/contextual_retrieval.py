@@ -268,6 +268,7 @@ class BM25:
         # Index state
         self._doc_tokens: dict[str, list[str]] = {}
         self._doc_lens: dict[str, int] = {}
+        self._doc_tf: dict[str, Counter] = {}  # GĐ11.3: precompute TF/doc (bỏ Counter() mỗi query)
         self._avg_dl: float = 0.0
         self._df: dict[str, int] = {}   # document frequency per token
         self._N: int = 0                 # total number of documents
@@ -283,6 +284,7 @@ class BM25:
         with self._lock:
             self._doc_tokens = {}
             self._doc_lens = {}
+            self._doc_tf = {}
             df: dict[str, int] = {}
             total_len = 0
 
@@ -290,6 +292,7 @@ class BM25:
                 tokens = _tokenize(text)
                 self._doc_tokens[doc_id] = tokens
                 self._doc_lens[doc_id] = len(tokens)
+                self._doc_tf[doc_id] = Counter(tokens)  # GĐ11.3: precompute 1 lần
                 total_len += len(tokens)
 
                 unique = set(tokens)
@@ -325,12 +328,11 @@ class BM25:
         results: list[dict] = []
 
         with self._lock:
-            for doc_id, doc_tokens in self._doc_tokens.items():
+            for doc_id, doc_tf in self._doc_tf.items():  # GĐ11.3: dùng TF precompute
                 dl = self._doc_lens.get(doc_id, 0)
                 if dl == 0:
                     continue
 
-                doc_tf = Counter(doc_tokens)
                 s = 0.0
                 for qt in q_tokens:
                     if qt not in doc_tf:
