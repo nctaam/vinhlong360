@@ -81,8 +81,11 @@ jobs:
           LLM_MODEL_MINI: "test-model-mini"
           ADMIN_API_KEY: "test-admin-key"
           CORS_ORIGINS: "http://localhost:8360"
+          DESTRUCTIVE_OPS_LOCKED: "1"
         run: |
-          pytest tests/ \
+          # Chạy CẢ tests/ và agent/tests/; bao gồm integration (chỉ loại 'slow').
+          pytest tests/ agent/tests/ \
+            -m "not slow" \
             -v \
             --tb=short \
             --cov=agent \
