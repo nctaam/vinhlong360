@@ -32,12 +32,52 @@ def _parse_data_js():
     )
 
 
-def _load():
+def _load_from_json():
+    """Seed/fallback: đọc trực tiếp từ web/data.json."""
     data = _parse_data_js()
     entities = {e["id"]: e for e in data["entities"]}
     relationships = data["relationships"]
     itineraries = {it["id"]: it for it in data["itineraries"]}
     return entities, relationships, itineraries
+
+
+def _load_from_db():
+    """GĐ3.5: DB là nguồn sự thật. Nạp toàn bộ vào in-memory (giữ tốc độ).
+
+    Nếu DB rỗng (fresh deploy/CI), tự seed từ web/data.json một lần.
+    """
+    from database import db  # lazy import: tránh vòng import lúc khởi tạo
+
+    Path(db.db_path).parent.mkdir(parents=True, exist_ok=True)
+    db.initialize()
+    stats = db.stats()
+    if (stats.get("entities", 0) + stats.get("places", 0)) == 0:
+        json_path = DATA_DIR / "data.json"
+        if json_path.exists():
+            db.migrate_from_json(str(json_path))
+    entities = {e["id"]: e for e in db.all_entities()}
+    relationships = db.all_relationships()
+    itineraries = {it["id"]: it for it in db.all_itineraries()}
+    return entities, relationships, itineraries
+
+
+# Nguồn dữ liệu thực tế đã dùng ở lần load gần nhất ("db" | "json") — để introspect.
+_data_source = None
+
+
+def _load():
+    """DB-primary với fallback an toàn về data.json (chat không bao giờ chết vì DB)."""
+    global _data_source
+    try:
+        entities, relationships, itineraries = _load_from_db()
+        if entities:
+            _data_source = "db"
+            return entities, relationships, itineraries
+    except Exception as exc:  # noqa: BLE001 - degrade gracefully
+        print(f"[knowledge] CANH BAO: nap tu DB that bai ({type(exc).__name__}: {exc}); "
+              f"fallback web/data.json")
+    _data_source = "json"
+    return _load_from_json()
 
 
 _entities, _relationships, _itineraries = None, None, None
@@ -50,10 +90,11 @@ def _ensure():
 
 
 def reload():
-    """Hot-reload data sau khi auto-learn thêm entities mới."""
+    """Hot-reload data từ DB (sau admin CRUD / auto-learn / migrate)."""
     global _entities, _relationships, _itineraries
     _entities, _relationships, _itineraries = _load()
-    return {"status": "ok", "entities": len(_entities), "itineraries": len(_itineraries)}
+    return {"status": "ok", "entities": len(_entities),
+            "itineraries": len(_itineraries), "source": _data_source}
 
 
 def _normalize_vn(text: str) -> str:

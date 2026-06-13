@@ -68,3 +68,34 @@ def test_health_is_ok(client_mocked):
     r = client_mocked.get("/health")
     assert r.status_code == 200
     assert r.json().get("status") in ("ok", "degraded")
+
+
+def test_admin_edit_reflects_in_chat_and_api(client_mocked):
+    """GĐ3.6 / DoD-3: sửa entity ở admin -> CẢ chat (knowledge in-memory) lẫn /api thấy ngay.
+
+    Đây là bằng chứng split-brain đã được gỡ (một nguồn = DB). Self-cleaning.
+    """
+    import knowledge  # cùng module singleton server đang dùng
+    from middleware import ADMIN_API_KEY as _ADMIN_KEY  # đúng key app đang dùng
+
+    eid = "test-gd3-splitbrain-entity"
+    hdr = {"X-Admin-Key": _ADMIN_KEY}
+    client_mocked.delete(f"/admin/entities/{eid}", headers=hdr)  # dọn tồn dư
+    try:
+        r = client_mocked.post("/admin/entities", headers=hdr, json={
+            "id": eid, "type": "dish", "name": "Món test GĐ3", "summary": "SENTINEL_GD3"})
+        assert r.status_code == 200, r.text
+
+        # /api đọc DB -> thấy
+        r2 = client_mocked.get(f"/api/entities/{eid}")
+        assert r2.status_code == 200, r2.text
+        assert r2.json().get("name") == "Món test GĐ3"
+
+        # chat source (knowledge in-memory, reload qua _sync_kb) -> thấy
+        assert eid in knowledge._entities
+        assert knowledge._entities[eid]["name"] == "Món test GĐ3"
+    finally:
+        client_mocked.delete(f"/admin/entities/{eid}", headers=hdr)
+
+    # xoá cũng write-through: chat không còn thấy
+    assert eid not in knowledge._entities

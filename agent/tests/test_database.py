@@ -197,6 +197,29 @@ def test_replace_from_json_with_override_roundtrip(db, tmp_path, monkeypatch):
     assert db.get_entity("new1")["name"] == "Mới"
 
 
+# ── Bulk getters (GĐ3.4: nguồn nạp knowledge in-memory) ──
+
+def test_all_entities_includes_place(db):
+    db.upsert_entity(_entity(eid="d1", etype="dish"))
+    db.upsert_entity(_entity(eid="p1", etype="place", name="Xã A"))
+    ids = {e["id"] for e in db.all_entities()}
+    assert ids == {"d1", "p1"}  # KHÁC list_entities: gồm cả place
+
+
+def test_all_relationships_shape(db):
+    db.upsert_entity(_entity(eid="e1"))
+    db.upsert_entity(_entity(eid="e2"))
+    db.add_relationship("e1", "e2", "near")
+    rels = db.all_relationships()
+    assert rels == [{"from": "e1", "to": "e2", "type": "near"}]
+
+
+def test_all_itineraries(db):
+    db.upsert_itinerary({"id": "it1", "title": "T", "stops": [{"name": "A"}]})
+    its = db.all_itineraries()
+    assert len(its) == 1 and its[0]["id"] == "it1" and isinstance(its[0]["stops"], list)
+
+
 # ── Gap GĐ3.1: SQLite chưa có bảng users (UGC/login crash ở local dev) ──
 
 @pytest.mark.xfail(reason="GĐ3.1 sẽ thêm bảng users/posts/... cho SQLite", strict=False)

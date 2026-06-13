@@ -24,9 +24,21 @@ from fastapi import APIRouter, HTTPException, Query, Request, Depends
 from pydantic import BaseModel, Field, field_validator
 
 import data_quality
+import knowledge
 from database import db
 from auth_middleware import get_current_user
 from middleware import admin_limiter, verify_admin_key, get_client_ip
+
+
+def _sync_kb():
+    """GĐ3.6: write-through — sau khi ghi DB, nạp lại knowledge để chat/tool thấy ngay.
+
+    Bọc try/except: lỗi reload không được làm hỏng thao tác admin đã commit.
+    """
+    try:
+        knowledge.reload()
+    except Exception:
+        pass
 
 # ── Auth dependency ──
 
@@ -246,6 +258,7 @@ async def update_entity(entity_id: str, update: EntityUpdate):
     existing.update(updates)
     existing["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
     db.upsert_entity(existing)
+    _sync_kb()
     return {"status": "updated", "entity": existing}
 
 
@@ -261,6 +274,7 @@ async def create_entity(entity: EntityCreate):
         "updatedAt": datetime.now().strftime("%Y-%m-%d"),
     }
     db.upsert_entity(new_entity)
+    _sync_kb()
     return {"status": "created", "entity": new_entity}
 
 
@@ -269,6 +283,7 @@ async def delete_entity(entity_id: str):
     """Xóa entity."""
     if not db.delete_entity(entity_id):
         raise HTTPException(404, f"Entity '{entity_id}' not found")
+    _sync_kb()
     return {"status": "deleted", "entity_id": entity_id}
 
 

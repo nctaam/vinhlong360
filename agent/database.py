@@ -432,6 +432,29 @@ class Database:
             """)
             return {r["type"]: r["count"] for r in rows}
 
+    # ── Bulk load (GĐ3.4: nguồn cho knowledge in-memory; KHÔNG loại trừ place) ──
+
+    def all_entities(self) -> list[dict]:
+        """Toàn bộ entity (gồm cả place) — dùng để nạp knowledge in-memory."""
+        self.initialize()
+        with self._conn() as conn:
+            rows = self._fetchall(conn, "SELECT * FROM entities")
+            return [self._parse_entity(r) for r in rows]
+
+    def all_relationships(self) -> list[dict]:
+        """Toàn bộ quan hệ ở shape {from,to,type} (khớp data.json/knowledge)."""
+        self.initialize()
+        with self._conn() as conn:
+            rows = self._fetchall(conn, "SELECT from_id, to_id, type FROM relationships")
+            return [{"from": r["from_id"], "to": r["to_id"], "type": r["type"]} for r in rows]
+
+    def all_itineraries(self) -> list[dict]:
+        """Toàn bộ itinerary (stops đã parse)."""
+        self.initialize()
+        with self._conn() as conn:
+            rows = self._fetchall(conn, "SELECT * FROM itineraries")
+            return [self._parse_itinerary(r) for r in rows]
+
     # ── Relationships ──
 
     def add_relationship(self, from_id: str, to_id: str, rel_type: str):
@@ -817,13 +840,21 @@ class Database:
                     VALUES (?, ?, ?, ?, ?, ?)
                 """, itinerary_rows)
 
+                # GĐ3.2: đếm in/out để migrate quan sát được tính lossless.
+                stored_rels = self._fetchone(conn, "SELECT COUNT(*) as c FROM relationships")["c"]
+                dropped = len(relationship_rows) - stored_rels
                 result = {
                     "status": "migrated",
                     "entities": len(entity_rows),
                     "relationships": len(relationship_rows),
+                    "relationships_stored": stored_rels,
+                    "relationships_dropped": dropped,
                     "itineraries": len(itinerary_rows),
                     "backend": "sqlite",
                 }
+                if dropped > 0:
+                    print(f"[replace_from_json] CANH BAO: {dropped} quan he trung (from,to,type) bi bo khi luu "
+                          f"(input {len(relationship_rows)} -> stored {stored_rels})")
 
         if self._use_pg:
             result = self.migrate_from_json(json_path)
