@@ -6,6 +6,8 @@
       <p>Tất cả địa điểm, đặc sản và trải nghiệm bạn đã lưu — sẵn sàng để lên lịch trình.</p>
     </div>
 
+    <!-- GĐ-audit: favorites đọc từ localStorage (client-only) → bọc ClientOnly tránh hydration mismatch -->
+    <ClientOnly>
     <!-- Quick stats -->
     <div v-if="count > 0" class="journey-stats">
       <div v-for="(items, type) in byType" :key="type" class="js-item">
@@ -55,6 +57,7 @@
         <NuxtLink to="/lich-trinh" class="btn btn-ghost">Lịch trình gợi ý</NuxtLink>
       </div>
     </div>
+    </ClientOnly>
   </section>
 </template>
 

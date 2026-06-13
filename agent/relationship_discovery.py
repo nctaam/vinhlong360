@@ -243,8 +243,16 @@ def main():
         llm_rels = discover_with_llm(content_entities)
         # Deduplicate with rule-based
         existing_pairs = {(r["from"], r["to"]) for r in new_rels}
-        llm_unique = [r for r in llm_rels if (r["from"], r["to"]) not in existing_pairs]
-        print(f"\n  LLM discovery: {len(llm_unique)} additional relationships")
+        # GĐ-audit: LLM hay bịa id không tồn tại -> CHỈ giữ rel mà cả from/to đều là entity thật
+        # (tránh quan hệ treo trỏ vào id không có).
+        entity_ids = {e["id"] for e in data["entities"]}
+        llm_unique = [
+            r for r in llm_rels
+            if (r["from"], r["to"]) not in existing_pairs
+            and r["from"] in entity_ids and r["to"] in entity_ids
+        ]
+        dropped = len(llm_rels) - len([r for r in llm_rels if r["from"] in entity_ids and r["to"] in entity_ids])
+        print(f"\n  LLM discovery: {len(llm_unique)} additional relationships ({dropped} bỏ vì id treo)")
         new_rels.extend(llm_unique)
 
     # Apply
