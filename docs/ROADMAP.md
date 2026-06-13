@@ -183,10 +183,10 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 **Tiên quyết:** DoD-3.
 
-- [ ] **11.1** Sparse-vector TF-IDF (`vector_search.py`): lưu vector thưa thay vì dày 31761 chiều → embeddings vài MB, RAM giảm; đồng bộ entity thiếu vector. → *Verify:* kích thước file + RAM giảm; recall không tụt. *Nghiệm thu:* nhẹ hơn.
-- [ ] **11.2** Index kề `dict[entity_id]→edges` cho `related()` (`knowledge.py:276`). → *Verify:* không còn quét tuyến tính/edge. *Nghiệm thu:* `entity_detail` nhanh hơn.
-- [ ] **11.3** Precompute BM25/contextual tokens lúc build index (`contextual_retrieval.py:311,534`). → *Nghiệm thu:* search nhanh hơn.
-- [ ] **11.4** `/reload` chạy nền + swap global atomic có khoá (`knowledge.py:54`). → *Verify:* reload không đóng băng `/health`. *Nghiệm thu:* reload an toàn.
+- [ ] **11.1** (HOÃN — rewrite lớn, file embeddings 208MB gitignored, đổi format lưu = rủi ro; không benchmark được trong sandbox) Sparse-vector TF-IDF. → Backlog.
+- [x] **11.2** ✅ Index kề `_get_adjacency()` cho `related()` (self-healing khi `_relationships` đổi). Verify: adjacency == brute-force trên entity nhiều cạnh. `entity_detail`/`nearby` (hot path) O(degree).
+- [x] **11.3** ✅ Precompute BM25 `_doc_tf` lúc build (bỏ `Counter()` mỗi doc mỗi query). 58 test contextual/vector xanh (điểm không đổi). (Contextual re-tokenize 534: BM25 đã xử lý phần nặng nhất.)
+- [ ] **11.4** (HOÃN — atomic swap đa-global cần refactor single-container đụng `server.py` đọc `knowledge._entities`; rủi ro lan rộng, lợi ích thấp ở tần suất reload-admin) → Backlog.
 
 **🚦 Cổng DoD-11:** thời gian /chat & RSS giảm rõ; reload không chặn; test xanh.
 
@@ -224,6 +224,7 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 - ~~(2026-06-13) GĐ3.1 — UGC/auth → SQLite~~ ✅ ĐÃ QUYẾT (Postgres-only): không port; `_require_pg` gắn 3 router UGC trả 503 trên SQLite; tài liệu CLAUDE.md §1.3 + docs/ugc-postgres.md. Lý do: dev/prod parity, tránh nợ 2 phương ngữ SQL, UGC vốn cần Postgres.
 - ~~(2026-06-13) GĐ3.8 — data-quality DB-native~~ ✅ XONG (commit 35ff28e): apply/rollback ghi thẳng DB, bỏ khoá. Footgun "xoá edit admin" đã gỡ.
+- **(2026-06-13) GĐ11 phần còn lại — chưa làm**: (a) 11.1 sparse-vector TF-IDF (giảm embeddings 208MB→vài MB; rewrite lớn, cần benchmark); (b) 11.4 `/reload` nền + atomic swap (cần single-container refactor đụng server.py).
 - **(2026-06-13) GĐ10 phần còn lại — chưa làm**: (a) 10.1 hybrid prerender (cần pipeline build có backend); (b) QA browser map clustering (env có ndaMapKey); (c) sửa mojibake `admin/data-quality.vue`; (d) siết `any` (146 chỗ); (e) rà clickable `<div>` toàn site → `<button>`.
 - **(2026-06-13) GĐ6 stub — chưa dọn**: endpoint Level7 trong `server.py` (relay/streaming/advanced-graph/a2a/knowledge-evo/multimodal/federation — đều guarded `HAS_X=False`, trả "not available") + import try/except + startup prints + 2 task scheduler (try/except, disabled). Vô hại; xen kẽ module GIỮ nên cần phẫu thuật cẩn thận. Dọn khi rảnh.
 - **(2026-06-13) GĐ5 phần còn lại — chưa làm**: (a) lưu timestamp/version consent vào DB (cột PG ở `users`); (b) GĐ5.6 đổi crawler/import sang lưu trích-đoạn+link (bản quyền) trước khi bật lại crawl; (c) 🛑 Track-H: pháp nhân + đăng ký NĐ147 + luật sư ICT — CHẶN ra mắt công khai.
