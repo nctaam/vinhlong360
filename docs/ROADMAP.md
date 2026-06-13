@@ -155,12 +155,12 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 **Tiên quyết:** DoD-3. **Lưu ý:** chọn analytics **cookieless** để né consent-banner (PDPL).
 
-- [ ] **9.1** Uptime: cấu hình UptimeRobot/BetterStack trỏ `/health` (keyword `"status":"ok"`) + `/health/deep` tần suất thấp; alert về **Telegram bot** (`TELEGRAM_BOT_TOKEN`). → *Nghiệm thu:* có alert khi tắt server (test). (🛑 nếu cần tài khoản/đăng ký dịch vụ → hỏi người.)
+- [ ] 🛑 **9.1** (Track-H — cần tài khoản UptimeRobot/BetterStack) Uptime trỏ `/health` keyword `"status":"ok"` + alert Telegram. Backend đã sẵn (/health + /health/deep).
 - [ ] 🛑 **9.2** (Track-H) Google Search Console: verify **DNS TXT** (cần H5) → submit `sitemap.xml` đang chạy. Claude chuẩn bị hướng dẫn; người thực hiện verify.
-- [ ] **9.3** Web analytics **cookieless self-host** (Umami/Plausible CE) — thêm container dùng Postgres sẵn có; nhúng script vào `nuxt.config.ts` head. → *Verify:* pageview ghi nhận. *Nghiệm thu:* không cần cookie-banner.
-- [ ] **9.4** Error tracking: hook `sentry_sdk.capture_exception()` vào `ErrorTracker.record_error` (`middleware.py:289`) + `@sentry/nuxt`. Dùng Sentry free hoặc GlitchTip self-host. → *Verify:* gây 1 lỗi test → thấy trong dashboard. *Nghiệm thu:* lỗi FE+BE được bắt.
-- [ ] **9.5** Sửa cost dùng **token thật**: gọi `track_llm_call()` (`cost_tracker.py:443`) thay vì ước lượng (`server.py:1668`). → *Verify:* `/system/costs` khớp usage thật. *Nghiệm thu:* đo được ngân sách.
-- [ ] **9.6** Trang admin **Analytics** (clone `ai.vue`) hiện `/analytics/popular`,`/analytics/gaps`,`/system/costs`. → *Nghiệm thu:* solo dev thấy "user hỏi gì / bí ở đâu / tốn bao nhiêu".
+- [ ] 🛑 **9.3** (Track-H — self-host container) Web analytics cookieless (Umami/Plausible CE) + nhúng script `nuxt.config`.
+- [ ] 🛑 **9.4** (Track-H — Sentry/GlitchTip account/host) Error tracking hook vào `ErrorTracker.record_error` + `@sentry/nuxt`.
+- [ ] **9.5** (HOÃN — cần thread token usage qua orchestrator.run; không verify được khi LLM offline) Cost dùng token thật thay ước lượng. → Backlog.
+- [x] **9.6** ✅ Trang admin **Thống kê** (`/admin/thong-ke`) qua endpoint auth `/admin/analytics-overview` (summary/popular/gaps/top/costs). gaps = backlog nội dung KB. Build OK.
 
 **🚦 Cổng DoD-9:** uptime alert chạy; analytics ghi nhận; lỗi được track; cost chính xác; trang Analytics hiển thị knowledge-gaps.
 

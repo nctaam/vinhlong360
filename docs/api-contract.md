@@ -18,6 +18,8 @@ This contract defines the shape that the FastAPI backend and Nuxt frontend shoul
   "area": "vinh-long",
   "placeId": "place-id",
   "source": "source label or URL",
+  "season": { "months": [6, 7], "peak": [6] },
+  "images": ["https://cdn/.../img1.webp"],
   "attributes": {}
 }
 ```
@@ -26,6 +28,8 @@ Rules:
 
 - `id`, `name`, and `type` are required.
 - `coordinates` is the canonical coordinate field.
+- `images` is an array of image URLs (DB column `images JSONB`; frontend đọc `entity.images[0]` làm cover + gallery). Mặc định `[]`.
+- `season` (nếu có) gồm `months` và `peak` (mảng số tháng 1..12) — dùng cho wedge "theo mùa".
 - Coordinates use `[lat, lng]` order.
 - `coords` is legacy compatibility only.
 - `area` identifies the province-level content bucket (`vinh-long`, `ben-tre`, or `tra-vinh`) when known.
