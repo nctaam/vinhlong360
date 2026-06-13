@@ -1534,14 +1534,17 @@ async def chat(req: ChatRequest, request: Request):
             except Exception:
                 pass
 
-        # Use orchestrator when available for specialist routing
+        # Use orchestrator when available for specialist routing.
+        # GĐ4.1: offload vòng lặp agent (OpenAI client ĐỒNG BỘ) sang thread để KHÔNG
+        # chặn event loop -> nhiều /chat đồng thời + /health không bị đóng băng.
         if HAS_ORCHESTRATOR:
-            reply, tools_used, suggestions = _run_agent_orchestrated(
+            reply, tools_used, suggestions = await asyncio.to_thread(
+                _run_agent_orchestrated,
                 corrected_message, req.history, session_id, _enriched_system,
             )
         else:
             messages[0]["content"] = _enriched_system
-            reply, tools_used, suggestions = _run_agent(messages)
+            reply, tools_used, suggestions = await asyncio.to_thread(_run_agent, messages)
     except Exception as exc:
         error_tracker.record_error("/chat", str(exc), traceback.format_exc())
         if HAS_METRICS:
@@ -2598,6 +2601,10 @@ async def welcome_message(session_id: str = ""):
 @app.post("/vectors/build")
 async def build_vectors(request: Request):
     """Build/rebuild vector embeddings index."""
+    # GĐ4.2: rebuild nặng -> chỉ admin (chống DoS compute ẩn danh).
+    from middleware import verify_admin_key
+    if not verify_admin_key(request):
+        return JSONResponse(status_code=401, content={"error": "unauthorized", "detail": "Cần X-Admin-Key"})
     if not HAS_VECTOR:
         return JSONResponse(status_code=501, content={"error": "Vector search module not available"})
     knowledge._ensure()
@@ -2707,6 +2714,11 @@ async def freshness_candidates_endpoint(limit: int = 20):
 
 @app.post("/image/recognize")
 async def image_recognize_endpoint(request: Request):
+    # GĐ4.2: mỗi call là 1 lượt LLM vision (tốn tiền) -> chỉ admin để chặn drain ví ẩn danh.
+    # (Frontend hiện không dùng. Mở cho user đã xác thực + rate-limit khi cần — Backlog.)
+    from middleware import verify_admin_key
+    if not verify_admin_key(request):
+        return JSONResponse(status_code=401, content={"error": "unauthorized", "detail": "Cần X-Admin-Key"})
     if not HAS_IMAGE_RECOGNITION:
         return JSONResponse(status_code=501, content={"error": "Image recognition not available"})
     content_type = request.headers.get("content-type", "")
