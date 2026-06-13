@@ -42,7 +42,7 @@
 
 <script setup lang="ts">
 const { relevanceScore, seasonText } = useSeason()
-const { canonicalUrl } = useSeoHelpers()
+// canonicalUrl là hàm auto-import từ composables/useSeoHelpers.ts (không phải composable).
 
 // Tháng mặc định = tháng hiện tại (runtime browser/SSR; nhất quán trong 1 lần render).
 const month = ref(new Date().getMonth() + 1)

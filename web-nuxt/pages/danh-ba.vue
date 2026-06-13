@@ -50,7 +50,7 @@
 <script setup lang="ts">
 import { OFFICE_KIND, AREA_META } from '~/composables/useConstants'
 
-const { canonicalUrl } = useSeoHelpers()
+// canonicalUrl là hàm auto-import từ composables/useSeoHelpers.ts (KHÔNG phải composable useSeoHelpers()).
 const ADMIN_LEVELS = ['phuong', 'xa', 'tinh']
 const route = useRoute()
 
