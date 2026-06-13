@@ -87,25 +87,17 @@ def write_json(data: dict, path: Path):
 
 
 def main():
+    # GĐ7: export DB -> web/data.json (+ data.js legacy). web-astro đã bị xoá (gom 1 frontend Nuxt).
     ROOT = Path(__file__).resolve().parent.parent
     web_data_js = ROOT / "web" / "data.js"
     web_data_json = ROOT / "web" / "data.json"
-    astro_data_json = ROOT / "web-astro" / "src" / "data" / "data.json"
-
-    args = sys.argv[1:]
-    web_only = "--web-only" in args
-    astro_only = "--astro-only" in args
 
     print("Exporting from database...")
     data = export_from_db()
     print(f"  {len(data['entities'])} entities, {len(data['relationships'])} relationships, {len(data['itineraries'])} itineraries")
 
-    if not astro_only:
-        write_data_js(data, web_data_js)
-        write_json(data, web_data_json)
-
-    if not web_only and astro_data_json.parent.exists():
-        write_json(data, astro_data_json)
+    write_data_js(data, web_data_js)
+    write_json(data, web_data_json)
 
     print("Done.")
 

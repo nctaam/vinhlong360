@@ -18,6 +18,8 @@ export const TYPE_META: Record<string, TypeMeta> = {
   event: { emoji: '🎉', label: 'Sự kiện', cat: 'event' },
   economy: { emoji: '📊', label: 'Kinh tế', cat: 'economy' },
   person: { emoji: '👤', label: 'Nhân vật', cat: 'person' },
+  drink: { emoji: '🥤', label: 'Đồ uống', cat: 'dish' },
+  itinerary: { emoji: '🗺️', label: 'Lịch trình', cat: 'itinerary' },
 }
 
 export const AREA_META: Record<string, { name: string; emoji: string; blurb: string }> = {
@@ -33,10 +35,12 @@ export const PRODUCT_TYPES = ['product'] as const
 export const REL_FWD: Record<string, string> = {
   hosts: 'Tổ chức', offered_by: 'Đặt qua', made_by: 'Sản xuất bởi',
   produced_in: 'Sản xuất tại', supplies_to: 'Cung ứng cho', near: 'Gần',
+  related_to: 'Liên quan', associated_with: 'Gắn với', located_in: 'Nằm tại', part_of: 'Thuộc',
 }
 export const REL_BWD: Record<string, string> = {
   hosts: 'Diễn ra tại', offered_by: 'Cung cấp', made_by: 'Sản phẩm',
   produced_in: 'Đặc sản', supplies_to: 'Nguồn cung', near: 'Gần',
+  related_to: 'Liên quan', associated_with: 'Gắn với', located_in: 'Bao gồm', part_of: 'Gồm',
 }
 
 export const FLOOD_MONTHS = [8, 9, 10, 11]
