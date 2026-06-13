@@ -259,25 +259,8 @@ def task_cleanup_analytics():
 
 # ── Level 6-7 scheduled tasks ──
 
-def task_graph_snapshot():
-    """Record temporal graph snapshot for evolution tracking."""
-    try:
-        from advanced_graph import temporal_evolution
-        temporal_evolution.record_snapshot()
-        _sched_logger.info("Graph snapshot recorded")
-    except Exception as e:
-        _sched_logger.error(f"Graph snapshot error: {e}")
-
-
-def task_knowledge_evolution():
-    """Run knowledge evolution analysis — detect gaps, infer relations."""
-    try:
-        from knowledge_evolution import schema_analyzer, relation_inferrer, gap_detector
-        gaps = gap_detector.detect_gaps()
-        gap_count = len(gaps) if gaps else 0
-        _sched_logger.info(f"Knowledge evolution: {gap_count} gaps detected")
-    except Exception as e:
-        _sched_logger.error(f"Knowledge evolution error: {e}")
+# GĐ6/11: task_graph_snapshot (advanced_graph) + task_knowledge_evolution (knowledge_evolution)
+# đã gỡ — module bị xoá (dead-weight), task vốn disabled (AUTONOMOUS_TASKS_ENABLED=false).
 
 
 def task_cache_warmup():
@@ -438,8 +421,6 @@ TASKS = [
     ScheduledTask("data-sync",      task_sync_data,              interval_seconds=3600),        # 1h
     ScheduledTask("analytics-cleanup", task_cleanup_analytics,   interval_seconds=24 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h
     # Level 6-7 tasks
-    ScheduledTask("graph-snapshot",    task_graph_snapshot,       interval_seconds=6 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 6h
-    ScheduledTask("knowledge-evo",     task_knowledge_evolution,  interval_seconds=24 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h
     ScheduledTask("cache-warmup",      task_cache_warmup,         interval_seconds=3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),        # 1h
     ScheduledTask("agent-evolution",   task_agent_evolution,      interval_seconds=12 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
     ScheduledTask("optimizer-check",   task_optimizer_check,      interval_seconds=6 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 6h

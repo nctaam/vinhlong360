@@ -151,25 +151,4 @@ class TestDynamicAgentCreateRequest:
         )
         assert len(req.trigger_patterns) == 2
 
-
-class TestMultimodalAnalyzeRequest:
-    """Test MultimodalAnalyzeRequest validation."""
-
-    def setup_method(self):
-        try:
-            from server import MultimodalAnalyzeRequest
-            self.MultimodalAnalyzeRequest = MultimodalAnalyzeRequest
-        except Exception:
-            pytest.skip("Cannot import MultimodalAnalyzeRequest")
-
-    def test_valid(self):
-        req = self.MultimodalAnalyzeRequest(text="analyze this")
-        assert req.text == "analyze this"
-
-    def test_empty(self):
-        with pytest.raises(ValidationError):
-            self.MultimodalAnalyzeRequest(text="")
-
-    def test_too_long(self):
-        with pytest.raises(ValidationError):
-            self.MultimodalAnalyzeRequest(text="x" * 10001)
+# GĐ6/11: TestMultimodalAnalyzeRequest đã gỡ — model thuộc module multimodal_engine (đã xoá).

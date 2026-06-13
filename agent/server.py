@@ -222,28 +222,10 @@ except ImportError:
     HAS_OPTIMIZER = False
 
 try:
-    from agent_relay import message_bus, scratchpad, task_decomposer, relay_orchestrator, relay_log
-    HAS_RELAY = True
-except ImportError:
-    HAS_RELAY = False
-
-try:
     from semantic_cache import multi_tier_cache, semantic_get, semantic_put, cache_stats as semantic_cache_stats, cache_warmer
     HAS_SEMANTIC_CACHE = True
 except ImportError:
     HAS_SEMANTIC_CACHE = False
-
-try:
-    from streaming_tools import tool_stream, adaptive_selector, progress_tracker, streaming_executor
-    HAS_STREAMING = True
-except ImportError:
-    HAS_STREAMING = False
-
-try:
-    from advanced_graph import graph_analytics, community_detector, link_predictor, anomaly_detector, temporal_evolution
-    HAS_ADVANCED_GRAPH = True
-except ImportError:
-    HAS_ADVANCED_GRAPH = False
 
 # ── Level 7 modules ──
 
@@ -259,29 +241,9 @@ try:
 except ImportError:
     HAS_DYNAMIC_AGENTS = False
 
-try:
-    from a2a_protocol import agent_card, task_manager as a2a_task_manager, a2a_server, get_agent_card, handle_a2a, get_a2a_status
-    HAS_A2A = True
-except ImportError:
-    HAS_A2A = False
-
-try:
-    from knowledge_evolution import schema_analyzer, relation_inferrer, gap_detector, evolution_tracker, analyze_knowledge, get_evolution_report, get_knowledge_score
-    HAS_KNOWLEDGE_EVOLUTION = True
-except ImportError:
-    HAS_KNOWLEDGE_EVOLUTION = False
-
-try:
-    from multimodal_engine import text_analyzer, image_analyzer, multimodal_pipeline, analyze_text as mm_analyze_text, get_capabilities as mm_capabilities
-    HAS_MULTIMODAL = True
-except ImportError:
-    HAS_MULTIMODAL = False
-
-try:
-    from federation import node_registry, federated_memory, cache_coherency, canary_deployment, load_balancer, federation_manager
-    HAS_FEDERATION = True
-except ImportError:
-    HAS_FEDERATION = False
+# GĐ6/11: federation, a2a_protocol, advanced_graph, agent_relay, streaming_tools,
+# multimodal_engine, knowledge_evolution đã bị XOÁ (dead-weight) — import/flag/endpoint
+# tương ứng đã gỡ. KHÔNG thêm lại trừ khi tái triển khai module thật.
 
 # ── OpenAI client ──
 
@@ -974,17 +936,6 @@ class DynamicAgentCreateRequest(BaseModel):
 class SemanticCacheInvalidateRequest(BaseModel):
     entity_id: str | None = Field(default=None, max_length=64)
     query: str | None = Field(default=None, max_length=500)
-
-class MultimodalAnalyzeRequest(BaseModel):
-    text: str = Field(..., min_length=1, max_length=10000)
-
-class FederationInvalidateRequest(BaseModel):
-    key: str = Field(..., min_length=1, max_length=200)
-    source_node: str = Field(..., min_length=1, max_length=100)
-
-class A2ARequest(BaseModel):
-    method: str = Field(..., min_length=1, max_length=100)
-    params: dict = Field(default={})
 
 
 def _resolve_contextual_query(message: str, history: list[dict]) -> str:
@@ -2261,17 +2212,10 @@ async def health():
         "cost_tracker": {"available": HAS_COST_TRACKER},
         "eval_framework": {"available": HAS_EVAL},
         "self_optimizer": {"available": HAS_OPTIMIZER},
-        "agent_relay": {"available": HAS_RELAY},
         "semantic_cache": {"available": HAS_SEMANTIC_CACHE, **(semantic_cache_stats() if HAS_SEMANTIC_CACHE else {})},
-        "streaming_tools": {"available": HAS_STREAMING},
-        "advanced_graph": {"available": HAS_ADVANCED_GRAPH},
         # Level 7
         "llm_judge": {"available": HAS_LLM_JUDGE},
         "dynamic_agents": {"available": HAS_DYNAMIC_AGENTS, "active_agents": len(agent_factory.get_active_agents()) if HAS_DYNAMIC_AGENTS else 0},
-        "a2a_protocol": {"available": HAS_A2A},
-        "knowledge_evolution": {"available": HAS_KNOWLEDGE_EVOLUTION},
-        "multimodal": {"available": HAS_MULTIMODAL},
-        "federation": {"available": HAS_FEDERATION},
         "time": datetime.now().isoformat(),
     }
 
@@ -2881,25 +2825,6 @@ async def optimizer_report():
     return {"available": True, **get_optimization_report()}
 
 
-# ── Agent relay ──
-
-@app.get("/system/relay", tags=["Level6"])
-async def relay_status():
-    if not HAS_RELAY:
-        return {"available": False}
-    return {
-        "available": True,
-        "messages": relay_log.stats(),
-        "scratchpad_sessions": len(scratchpad._data) if hasattr(scratchpad, '_data') else 0,
-    }
-
-@app.get("/system/relay/log", tags=["Level6"])
-async def relay_log_recent(limit: int = 50):
-    if not HAS_RELAY:
-        return {"error": "Agent relay not available"}
-    return {"messages": relay_log.recent(limit)}
-
-
 # ── Semantic cache ──
 
 @app.get("/system/semantic-cache", tags=["Level6"])
@@ -2919,55 +2844,6 @@ async def semantic_cache_invalidate(req: SemanticCacheInvalidateRequest):
         multi_tier_cache.invalidate(req.query)
         return {"status": "ok", "invalidated": f"query:{req.query[:50]}"}
     return {"error": "Provide entity_id or query"}
-
-
-# ── Streaming tools ──
-
-@app.get("/system/streaming", tags=["Level6"])
-async def streaming_status():
-    if not HAS_STREAMING:
-        return {"available": False}
-    return {"available": True}
-
-@app.get("/system/streaming/progress/{session_id}", tags=["Level6"])
-async def streaming_progress(session_id: str):
-    if not HAS_STREAMING:
-        return {"error": "Streaming tools not available"}
-    return progress_tracker.get_progress(session_id)
-
-
-# ── Advanced graph ──
-
-@app.get("/system/advanced-graph", tags=["Level6"])
-async def advanced_graph_report():
-    if not HAS_ADVANCED_GRAPH:
-        return {"available": False}
-    return {"available": True, **graph_analytics.get_health_report()}
-
-@app.get("/system/advanced-graph/communities", tags=["Level6"])
-async def graph_communities():
-    if not HAS_ADVANCED_GRAPH:
-        return {"error": "Advanced graph not available"}
-    return {"communities": community_detector.get_community_summary()}
-
-@app.get("/system/advanced-graph/anomalies", tags=["Level6"])
-async def graph_anomalies():
-    if not HAS_ADVANCED_GRAPH:
-        return {"error": "Advanced graph not available"}
-    return {"anomalies": anomaly_detector.detect_anomalies(*graph_analytics._load_graph())}
-
-@app.get("/system/advanced-graph/predictions", tags=["Level6"])
-async def graph_link_predictions(top_k: int = 10):
-    if not HAS_ADVANCED_GRAPH:
-        return {"error": "Advanced graph not available"}
-    nodes, edges = graph_analytics._load_graph()
-    return {"predictions": link_predictor.predict_links(nodes, edges, top_k=top_k)}
-
-@app.get("/system/advanced-graph/trending", tags=["Level6"])
-async def graph_trending(hours: int = 24):
-    if not HAS_ADVANCED_GRAPH:
-        return {"error": "Advanced graph not available"}
-    return {"trending": temporal_evolution.get_trending_entities(hours)}
 
 
 # ════════════════════════════════════════════════════════════════
@@ -3010,93 +2886,6 @@ async def dynamic_agents_create(req: DynamicAgentCreateRequest):
         tool_whitelist=req.tool_whitelist,
     )
     return {"status": "created", "agent": spec.to_dict()}
-
-
-# ── A2A Protocol ──
-
-@app.get("/.well-known/agent.json", tags=["Level7"])
-async def a2a_well_known():
-    if not HAS_A2A:
-        return {"error": "A2A protocol not available"}
-    return get_agent_card()
-
-@app.post("/a2a", tags=["Level7"])
-async def a2a_endpoint(req: A2ARequest):
-    if not HAS_A2A:
-        return JSONResponse(status_code=501, content={"error": "A2A protocol not available"})
-    result = handle_a2a(req.method, "", req.params)
-    return result
-
-@app.get("/system/a2a", tags=["Level7"])
-async def a2a_status():
-    if not HAS_A2A:
-        return {"available": False}
-    return {"available": True, **get_a2a_status()}
-
-
-# ── Knowledge evolution ──
-
-@app.get("/system/knowledge-evolution", tags=["Level7"])
-async def knowledge_evolution_report():
-    if not HAS_KNOWLEDGE_EVOLUTION:
-        return {"available": False}
-    return {"available": True, **get_evolution_report()}
-
-@app.get("/system/knowledge-evolution/score", tags=["Level7"])
-async def knowledge_score():
-    if not HAS_KNOWLEDGE_EVOLUTION:
-        return {"error": "Knowledge evolution not available"}
-    return get_knowledge_score()
-
-@app.get("/system/knowledge-evolution/gaps", tags=["Level7"])
-async def knowledge_gaps():
-    if not HAS_KNOWLEDGE_EVOLUTION:
-        return {"error": "Knowledge evolution not available"}
-    return {"gaps": gap_detector.detect_gaps()}
-
-
-# ── Multimodal ──
-
-@app.get("/system/multimodal", tags=["Level7"])
-async def multimodal_status():
-    if not HAS_MULTIMODAL:
-        return {"available": False}
-    return {"available": True, **mm_capabilities()}
-
-@app.post("/system/multimodal/analyze-text", tags=["Level7"])
-async def multimodal_analyze(req: MultimodalAnalyzeRequest):
-    if not HAS_MULTIMODAL:
-        return {"error": "Multimodal engine not available"}
-    return mm_analyze_text(req.text)
-
-
-# ── Federation ──
-
-@app.get("/system/federation", tags=["Level7"])
-async def federation_status():
-    if not HAS_FEDERATION:
-        return {"available": False}
-    return {"available": True, **federation_manager.get_status()}
-
-@app.get("/system/federation/nodes", tags=["Level7"])
-async def federation_nodes():
-    if not HAS_FEDERATION:
-        return {"error": "Federation not available"}
-    return {"nodes": [n.to_dict() for n in node_registry.get_active_nodes()]}
-
-@app.get("/system/federation/canary", tags=["Level7"])
-async def federation_canary():
-    if not HAS_FEDERATION:
-        return {"error": "Federation not available"}
-    return canary_deployment.get_canary_status()
-
-@app.post("/federation/invalidate", tags=["Level7"])
-async def federation_invalidate(req: FederationInvalidateRequest):
-    """Receive cache invalidation from peer node."""
-    if not HAS_FEDERATION:
-        return {"error": "Federation not available"}
-    cache_coherency.receive_invalidation(req.key, req.source_node)
-    return {"status": "ok"}
 
 
 # ── Admin dashboard ──
@@ -3385,17 +3174,10 @@ if __name__ == "__main__":
     print(f"    Cost Tracker:  {'✓' if HAS_COST_TRACKER else '✗'}  (Token Attribution)")
     print(f"    Eval Framework:{'✓' if HAS_EVAL else '✗'}  (Benchmarks)")
     print(f"    Self Optimizer:{'✓' if HAS_OPTIMIZER else '✗'}  (Auto-Tuning)")
-    print(f"    Agent Relay:   {'✓' if HAS_RELAY else '✗'}  (Inter-Agent Comm)")
     print(f"    Semantic Cache:{'✓' if HAS_SEMANTIC_CACHE else '✗'}  (Embedding Dedup)")
-    print(f"    Streaming:     {'✓' if HAS_STREAMING else '✗'}  (Progressive Tools)")
-    print(f"    Adv. Graph:    {'✓' if HAS_ADVANCED_GRAPH else '✗'}  (Community Detect)")
     print(f"  Level 7 (Self-Evolving):")
     print(f"    LLM Judge:     {'✓' if HAS_LLM_JUDGE else '✗'}  (Quality Eval)")
     print(f"    Dynamic Agents:{'✓' if HAS_DYNAMIC_AGENTS else '✗'}  (Self-Creating)")
-    print(f"    A2A Protocol:  {'✓' if HAS_A2A else '✗'}  (Google Standard)")
-    print(f"    Knowledge Evo: {'✓' if HAS_KNOWLEDGE_EVOLUTION else '✗'}  (Auto Schema)")
-    print(f"    Multimodal:    {'✓' if HAS_MULTIMODAL else '✗'}  (Text/Image/Audio)")
-    print(f"    Federation:    {'✓' if HAS_FEDERATION else '✗'}  (Distributed)")
     from middleware import ADMIN_API_KEY
     print(f"  Admin Key:   {ADMIN_API_KEY[:12]}... (set ADMIN_API_KEY in .env)")
     print(f"  URL:         http://localhost:8360")
