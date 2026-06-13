@@ -178,17 +178,20 @@ def discover_stream(region, category, etype, model):
 
 
 def _place_for(area, location, places):
+    """Trả ward khớp TÊN trong `location`; None nếu không khớp.
+
+    KHÔNG dồn bừa vào ward đầu tiên của khu vực (lỗi cũ): fallback kiểu đó biến
+    1 xã thành "thùng chứa" placeId sai (xem scripts/fix_placeid_buckets.py).
+    Thà để placeId=None (chưa phân loại) còn hơn gán sai xã.
+    """
     loc = _norm(location)
-    fallback = None
     for p in places:
         if p.get("area") != area:
             continue
-        if fallback is None:
-            fallback = p["id"]
         pn = _norm(p["name"]).replace("xa ", "").replace("phuong ", "")
         if pn and pn in loc:
             return p["id"]
-    return fallback
+    return None
 
 
 def run_discovery(topics, regions, workers, model, apply, label="manual"):
