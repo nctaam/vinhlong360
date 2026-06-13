@@ -212,10 +212,10 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 > ⚠️ **Dữ liệu cơ quan công quyền PHẢI có nguồn thật** (`source`+`updatedAt`) — **TUYỆT ĐỐI không tự sinh** địa chỉ/SĐT (sai = gây hại). Nạp dữ liệu thật = Track-H/B2G.
 
 ### A. Claim-listing cho DN (moat dữ liệu) — Postgres/UGC
-- [ ] **13.1** "Nhận listing": chủ DN yêu cầu sở hữu 1 entity → admin duyệt → chủ tự sửa hồ sơ (giá/giờ/mùa/ảnh/liên hệ). Dùng lại auth OTP + write-through `knowledge.reload()` (GĐ3.6). → *Verify:* chủ claim+sửa → phản ánh ở chat + /api. *Nghiệm thu:* dữ liệu chủ-thể-xác-nhận (`confidence` cao).
+- [~] **13.1** (MVP ✅; portal đầy đủ → Backlog) Nút "🏷️ Đây là cơ sở của tôi — đăng ký quản lý" → `/lien-he?claim=<id>`. ⏸ Luồng owner tự-sửa hồ sơ (claim record + admin duyệt + owner-edit) = Postgres/UGC, không test được sandbox → Backlog.
 
 ### B. Hồ sơ DN giàu schema + CTA liên hệ (KHÔNG booking)
-- [ ] **13.2** Trang DN: CTA **Zalo/điện thoại/"Hỏi giá"** (form liên hệ, KHÔNG chốt đơn) + schema `LocalBusiness`+subtype (Google rich-result). → *Verify:* không có flow đặt hàng; build OK. *Nghiệm thu:* tầng pháp lý nhẹ giữ nguyên.
+- [x] **13.2** ✅ Trang chi tiết: CTA **📞 Gọi / 💬 Zalo** (attributes.zalo) — chỉ liên hệ, KHÔNG đặt hàng; đã có sẵn tel:/địa chỉ/website/nguồn+báo-sai + schema FoodEstablishment/LodgingBusiness (subtype LocalBusiness, Google rich-result). Build OK.
 
 ### C. Danh bạ hành chính 124 xã/phường (codeable ngay; dữ liệu = Track-H)
 - [x] **13.3** ✅ type `facility` (placeId gắn xã) + TYPE_META + OFFICE_KIND; `db.facilities_by_place()` + `GET /api/facilities`. Test xanh. *(located_in dùng placeId — đủ cho danh bạ.)*
@@ -224,10 +224,10 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 - [ ] 🛑 **13.6** (DATA / Track-H — KHÔNG bịa) Nạp địa chỉ/SĐT thật UBND/công an/… 124 đơn vị từ **nguồn chính thống** (cổng tỉnh, NQ 1687/NQ-UBTVQH15) hoặc **hợp đồng B2G**. Biến động cao hậu hợp nhất → cơ chế làm tươi.
 
 ### D. Bảng cung theo mùa + lead B2B nhẹ (mở rộng wedge)
-- [ ] **13.7** Mở rộng `/theo-mua`: "tháng này HTX/vườn nào đang có …" (dùng `produced_in`+`season`) + form **"hỏi nguồn sỉ/liên hệ"** (KHÔNG chốt đơn). → *Verify:* chọn tháng → nguồn cung; form chỉ gửi liên hệ. *Nghiệm thu:* lead B2B ở tầng nhẹ.
+- [x] **13.7** ✅ `/theo-mua` banner lead B2B nhẹ "gửi yêu cầu nguồn sỉ" → `/lien-he` (KHÔNG chốt đơn on-site); item link sang trang chi tiết có CTA liên hệ. Build OK. *(View "HTX/vườn đang có X" sâu hơn = mở rộng sau khi có produced_in data.)*
 
 ### E. QR truy xuất hiển thị (marketing-trust)
-- [ ] **13.8** Trang sản phẩm + QR (`product`+`produced_in`+`source`) hiển thị truy xuất nguồn gốc — **KHÔNG thay** mã vùng trồng/đóng gói chính thức (xuất khẩu phải dùng hệ thống nhà nước). → *Nghiệm thu:* QR mở ra trang nguồn gốc có provenance.
+- [~] **13.8** ✅ Panel "🔎 Truy xuất nguồn gốc" cho product (source/produced_in/updatedAt sẵn có; KHÔNG thay mã vùng trồng chính thức). ⏸ QR-ảnh = cần dep `qrcode` + mạng registry → Backlog.
 
 ### F. Doanh thu (showcase-only)
 - [ ] 🛑 **13.9** (Track-H) Premium/featured listing (hộ KD để xuất hoá đơn) + theo đuổi **hợp đồng B2G** (Sở Du lịch/OCOP/UBND tỉnh) — vừa nguồn dữ liệu danh bạ vừa doanh thu chính. KHÔNG hoa hồng booking.
@@ -262,5 +262,6 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 - **(2026-06-13) GĐ10 phần còn lại — chưa làm**: (a) 10.1 hybrid prerender (cần pipeline build có backend); (b) QA browser map clustering (env có ndaMapKey); (c) sửa mojibake `admin/data-quality.vue`; (d) siết `any` (146 chỗ); (e) rà clickable `<div>` toàn site → `<button>`.
 - **(2026-06-13) GĐ6 stub — chưa dọn**: endpoint Level7 trong `server.py` (relay/streaming/advanced-graph/a2a/knowledge-evo/multimodal/federation — đều guarded `HAS_X=False`, trả "not available") + import try/except + startup prints + 2 task scheduler (try/except, disabled). Vô hại; xen kẽ module GIỮ nên cần phẫu thuật cẩn thận. Dọn khi rảnh.
 - **(2026-06-13) GĐ5 phần còn lại — chưa làm**: (a) lưu timestamp/version consent vào DB (cột PG ở `users`); (b) GĐ5.6 đổi crawler/import sang lưu trích-đoạn+link (bản quyền) trước khi bật lại crawl; (c) 🛑 Track-H: pháp nhân + đăng ký NĐ147 + luật sư ICT — CHẶN ra mắt công khai.
+- **(2026-06-13) GĐ13 phần còn lại — chưa làm**: (a) 13.1 owner-portal đầy đủ (claim record + admin duyệt + owner tự-sửa — Postgres/UGC, cần test với PG); (b) 13.8 QR-ảnh (dep `qrcode`); (c) 13.6 nạp dữ liệu danh bạ thật 124 đơn vị (Track-H/B2G); (d) 13.9 premium listing + hợp đồng B2G (Track-H); (e) mục "Danh bạ" trên trang `khu-vuc/[area]`; (f) nút báo-sai facility gắn /api/report.
 - **(2026-06-13) GĐ7 phần còn lại — chưa làm**: (a) `/api/constants` + Nuxt fetch để unify FE+BE constants (giờ `useConstants.ts` là nguồn FE duy nhất, chấp nhận được); (b) bỏ JS/HTML legacy trong `web/` + sửa `nginx.conf /legacy/` (giữ data.json/data.js/admin*.html/media); (c) gỡ field shim `coords`/`from`/`to` sau khi bỏ FE legacy.
 - **(2026-06-13) GĐ4 phần phụ — chưa làm**: (a) ẩn `/system/*`,`/analytics/*`,`/metrics` ở production (nhiều endpoint — cân nhắc require_admin chung); (b) rate-limit per-user cho `/image/recognize` khi mở cho user thường (giờ admin-only); (c) cân nhắc hạ `max_rounds` agent sau khi có eval baseline (tránh giảm chất lượng mù).
