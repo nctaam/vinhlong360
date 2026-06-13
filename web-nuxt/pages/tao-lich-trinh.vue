@@ -125,10 +125,10 @@
         <div v-if="savedPlans.length" class="saved-plans">
           <h3>Lịch trình đã lưu</h3>
           <div v-for="(plan, pi) in savedPlans" :key="pi" class="saved-plan-item">
-            <div class="saved-plan-info" @click="loadPlan(pi)">
+            <button type="button" class="saved-plan-info" style="background:none; border:none; padding:0; margin:0; font:inherit; color:inherit; text-align:left; cursor:pointer; display:block; width:100%;" @click="loadPlan(pi)">
               <strong>{{ plan.title || 'Lịch trình chưa đặt tên' }}</strong>
               <small>{{ plan.stops.length }} điểm · Lưu {{ formatDate(plan.savedAt) }}</small>
-            </div>
+            </button>
             <div class="saved-plan-actions">
               <button class="btn btn-sm btn-ghost" @click="sharePlan(pi)">Chia sẻ</button>
               <button class="btn btn-sm btn-ghost danger" @click="deletePlan(pi)">Xóa</button>

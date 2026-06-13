@@ -27,7 +27,7 @@
           <NuxtLink class="see-all" to="/hanh-trinh">Xem tất cả →</NuxtLink>
         </div>
         <div class="grid">
-          <div v-for="fav in recentSaved" :key="fav.id" class="card" style="cursor: pointer" @click="navigateTo(`/dia-diem/${fav.id}`)">
+          <NuxtLink v-for="fav in recentSaved" :key="fav.id" :to="`/dia-diem/${fav.id}`" class="card" style="cursor: pointer">
             <div v-if="fav.image" class="cover cover-img">
               <img :src="fav.image" :alt="fav.name" loading="lazy" />
             </div>
@@ -36,7 +36,7 @@
               <h3>{{ fav.name }}</h3>
               <p v-if="fav.place_name" class="place">{{ fav.place_name }}</p>
             </div>
-          </div>
+          </NuxtLink>
         </div>
         <div style="text-align: center; margin-top: 16px">
             <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-outline">Tạo lịch trình từ danh sách đã lưu</NuxtLink>
