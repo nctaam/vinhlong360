@@ -25,7 +25,14 @@ from pydantic import BaseModel, Field, field_validator
 
 import data_quality
 import knowledge
+import analytics
 from database import db
+
+try:
+    from cost_tracker import get_cost_report as _get_cost_report
+    _HAS_COST = True
+except Exception:  # noqa: BLE001
+    _HAS_COST = False
 from auth_middleware import get_current_user
 from middleware import admin_limiter, verify_admin_key, get_client_ip
 
@@ -39,6 +46,13 @@ def _sync_kb():
         knowledge.reload()
     except Exception:
         pass
+
+
+def _safe(fn, default):
+    try:
+        return fn()
+    except Exception:
+        return default
 
 # ── Auth dependency ──
 
@@ -685,6 +699,22 @@ async def moderation_stats():
         """, ())
     counts = {r["moderation_status"]: r["c"] for r in [db._row_to_dict(row) for row in rows]}
     return {"counts": counts}
+
+
+@router.get("/analytics-overview")
+async def analytics_overview():
+    """GĐ9.6: gói số liệu cho trang admin Analytics (1 call, đã auth qua require_admin).
+
+    - popular: user hỏi gì nhiều · gaps: câu bot bí (backlog nội dung) · costs: chi phí LLM.
+    """
+    out = {
+        "summary": _safe(lambda: analytics.get_summary(), {}),
+        "popular": _safe(lambda: analytics.get_popular_queries(20), []),
+        "gaps": _safe(lambda: analytics.get_knowledge_gaps(20), []),
+        "top_entities": _safe(lambda: analytics.get_top_entities(15), []),
+        "costs": _safe(_get_cost_report, {}) if _HAS_COST else {"available": False},
+    }
+    return out
 
 
 @router.get("/reports")
