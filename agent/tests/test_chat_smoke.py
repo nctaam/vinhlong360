@@ -127,3 +127,31 @@ def test_reload_requires_admin_and_reads_db(client_mocked):
     r = client_mocked.post("/reload", headers={"X-Admin-Key": _ADMIN_KEY})
     assert r.status_code == 200, r.text
     assert r.json().get("source") == "db"
+
+
+def test_directory_lookup_tool_dispatch(client_mocked):
+    """GĐ13: chat-tool `directory_lookup` -> knowledge.directory_search; trả note rõ khi rỗng,
+    trả results khi có facility. Bao phủ nhánh dispatch trong call_tool."""
+    import json as _json
+
+    import knowledge
+
+    # Chưa có dữ liệu -> note rõ ràng, không bịa
+    empty = _json.loads(server.call_tool("directory_lookup", {"query": "UBND xã không tồn tại 999"}))
+    assert empty["results"] == []
+    assert "danh bạ" in empty["note"].lower()
+
+    # Bơm tạm 1 facility vào KB in-memory rồi tra
+    fac = {
+        "id": "ubnd-test-gd13", "name": "UBND xã Test GĐ13", "type": "facility",
+        "placeId": None,
+        "attributes": {"office_kind": "ubnd", "address": "123 Đường Test", "phone": "0270 999 888"},
+        "source": {"url": "https://vinhlong.gov.vn"},
+    }
+    knowledge._entities[fac["id"]] = fac
+    try:
+        got = _json.loads(server.call_tool("directory_lookup", {"query": "UBND xã Test"}))
+        assert any(r["name"] == "UBND xã Test GĐ13" and r["phone"] == "0270 999 888"
+                   for r in got["results"])
+    finally:
+        knowledge._entities.pop(fac["id"], None)

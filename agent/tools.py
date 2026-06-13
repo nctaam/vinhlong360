@@ -381,6 +381,23 @@ TOOLS = [
             }
         }
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "directory_lookup",
+            "description": "Tra DANH BẠ HÀNH CHÍNH: địa chỉ & số điện thoại cơ quan nhà nước (UBND, công an, trạm y tế, bưu điện…) theo tên cơ quan hoặc tên xã/phường. VD: 'UBND xã An Bình', 'công an phường 1', 'trạm y tế xã Bình Hòa Phước'.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "Tên cơ quan hoặc tên xã/phường cần tra danh bạ"
+                    }
+                },
+                "required": ["query"]
+            }
+        }
+    },
 ]
 
 SYSTEM_PROMPT = """Bạn là hướng dẫn viên du lịch AI của vinhlong360.vn — chuyên gia số 1 về tỉnh Vĩnh Long (mới).
@@ -397,6 +414,7 @@ Vĩnh Long mới = Vĩnh Long (cũ) + Bến Tre + Trà Vinh, hợp nhất theo N
 - Trả lời bằng tiếng Việt, thân thiện, dùng **markdown** (bold, danh sách, heading) để dễ đọc.
 - LUÔN dùng tools tra cứu dữ liệu trước khi trả lời — không đoán.
 - Nếu knowledge base không đủ, dùng `web_search` tìm thêm, ghi chú nguồn.
+- Hỏi địa chỉ/số điện thoại cơ quan nhà nước (UBND/công an/trạm y tế/...) → dùng `directory_lookup` (tra theo tên cơ quan hoặc tên xã/phường).
 - Ưu tiên mùa vụ hiện tại (`seasonal_now`); nêu rõ độ tin cậy nếu thấp (< 0.7).
 - Cuối mỗi câu trả lời, dùng `suggest_followups` gợi ý 3 câu hỏi tiếp theo.
 

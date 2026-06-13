@@ -259,3 +259,65 @@ def test_is_searchable_includes_nonadmin_place():
     assert knowledge._is_searchable({"type": "place", "level": None}) is True   # quán/doanh nghiệp
     assert knowledge._is_searchable({"type": "place", "level": "phuong"}) is False
     assert knowledge._is_searchable({"type": "place", "level": "xa"}) is False
+
+
+def test_is_searchable_includes_facility():
+    """GĐ13: cơ quan nhà nước (facility) phải vào tìm kiếm."""
+    assert knowledge._is_searchable({"type": "facility"}) is True
+
+
+class TestDirectorySearch:
+    """GĐ13: tra danh bạ cơ quan hành chính (facility) theo tên hoặc tên xã/phường."""
+
+    @pytest.fixture(autouse=True)
+    def setup_kb(self, sample_data):
+        entities = {e["id"]: e for e in sample_data["entities"]}
+        # Thêm 1 facility thật để test (dữ liệu mẫu, không phải dữ liệu sản xuất)
+        entities["ubnd-xa-binh-hoa-phuoc"] = {
+            "id": "ubnd-xa-binh-hoa-phuoc",
+            "name": "UBND xã Bình Hòa Phước",
+            "type": "facility",
+            "placeId": "xa-binh-hoa-phuoc",
+            "attributes": {
+                "office_kind": "ubnd",
+                "address": "Ấp Bình Thuận, xã Bình Hòa Phước",
+                "phone": "0270 1234 567",
+                "hours": "7:30-17:00",
+            },
+            "source": {"url": "https://vinhlong.gov.vn"},
+            "updatedAt": "2026-06-13",
+        }
+        rels = sample_data["relationships"]
+        itins = {it["id"]: it for it in sample_data["itineraries"]}
+        with patch.object(knowledge, '_entities', entities), \
+             patch.object(knowledge, '_relationships', rels), \
+             patch.object(knowledge, '_itineraries', itins):
+            yield
+
+    def test_search_by_office_name(self):
+        results = knowledge.directory_search("UBND")
+        assert len(results) == 1
+        r = results[0]
+        assert r["name"] == "UBND xã Bình Hòa Phước"
+        assert r["office_kind"] == "ubnd"
+        assert r["phone"] == "0270 1234 567"
+        assert r["address"]
+        assert r["ward"] == "Bình Hòa Phước"
+        assert r["source"] == "https://vinhlong.gov.vn"
+
+    def test_search_by_ward_name(self):
+        # Tra theo tên xã (có dấu) vẫn ra cơ quan trong xã đó
+        results = knowledge.directory_search("Bình Hòa Phước")
+        assert any(r["name"] == "UBND xã Bình Hòa Phước" for r in results)
+
+    def test_empty_query_returns_all_facilities(self):
+        results = knowledge.directory_search("")
+        assert len(results) == 1
+
+    def test_no_match_returns_empty(self):
+        assert knowledge.directory_search("công an thành phố XYZ") == []
+
+    def test_only_facilities_returned(self):
+        # dish/product/place không bao giờ lọt vào danh bạ
+        results = knowledge.directory_search("")
+        assert all("office_kind" in r for r in results)

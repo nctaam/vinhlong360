@@ -196,9 +196,9 @@ ADMIN_LEVELS = {"phuong", "xa", "tinh", "huyen", "quan", "thi-tran", "thanh-pho"
 
 
 def _is_searchable(e: dict) -> bool:
-    """Entity hiển thị trong tìm kiếm: card-type, HOẶC place phi-hành-chính (quán/doanh nghiệp)."""
+    """Entity hiển thị trong tìm kiếm: card-type, place phi-hành-chính (quán/DN), HOẶC facility (cơ quan)."""
     t = e.get("type")
-    if t in CARD_TYPES:
+    if t in CARD_TYPES or t == "facility":  # GĐ13: cho cơ quan nhà nước vào tìm kiếm
         return True
     return t == "place" and e.get("level") not in ADMIN_LEVELS
 
@@ -355,6 +355,38 @@ def related(entity_id: str) -> list[dict]:
             other = _entities[r["from"]]
             out.append({"label": REL_BWD.get(r["type"], r["type"]),
                         "entity": other["name"], "id": other["id"]})
+    return out
+
+
+def directory_search(query: str, limit: int = 12) -> list[dict]:
+    """GĐ13: tra danh bạ cơ quan (facility) theo tên cơ quan HOẶC tên xã/phường.
+
+    Trả [{name, office_kind, address, phone, hours, ward, source, updated_at}].
+    Trống nếu chưa nạp dữ liệu danh bạ thật (13.6).
+    """
+    _ensure()
+    qn = _normalize_vn(query or "")
+    out = []
+    for e in _entities.values():
+        if e.get("type") != "facility":
+            continue
+        ward = _entities.get(e.get("placeId")) or {}
+        hay = _normalize_vn(f"{e.get('name', '')} {ward.get('name', '')}")
+        if not qn or qn in hay:
+            attrs = e.get("attributes") or {}
+            src = e.get("source") or {}
+            out.append({
+                "name": e.get("name"),
+                "office_kind": attrs.get("office_kind"),
+                "address": attrs.get("address"),
+                "phone": attrs.get("phone"),
+                "hours": attrs.get("hours"),
+                "ward": ward.get("name"),
+                "source": src.get("url") or src.get("title"),
+                "updated_at": e.get("updatedAt"),
+            })
+        if len(out) >= limit:
+            break
     return out
 
 

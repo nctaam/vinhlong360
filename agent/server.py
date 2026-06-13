@@ -702,6 +702,14 @@ def call_tool(name: str, args: dict) -> str:
             return json.dumps({"weather": weather, "events": events}, ensure_ascii=False, default=str)
         return json.dumps({"error": "Weather API not available"})
 
+    elif name == "directory_lookup":
+        results = knowledge.directory_search(args.get("query", ""))
+        if not results:
+            return json.dumps(
+                {"results": [], "note": "Chưa có dữ liệu danh bạ hành chính cho yêu cầu này (đang bổ sung từ nguồn chính thống)."},
+                ensure_ascii=False)
+        return json.dumps({"results": results}, ensure_ascii=False)
+
     return json.dumps({"error": f"Unknown tool: {name}"})
 
 
