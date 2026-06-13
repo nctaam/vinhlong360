@@ -204,6 +204,40 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 ---
 
+## GIAI ĐOẠN 13 — Hỗ trợ DN địa phương + Danh bạ hành chính (SHOWCASE-ONLY)
+
+**Mục tiêu:** "lớp khám phá/niềm tin có cấu trúc, AI trích dẫn được" cho DN địa phương + danh bạ công vụ 124 xã/phường. Tận dụng graph + SEO/GEO + claim-listing/UGC + wedge đã xây. **Tiên quyết:** DoD-3, DoD-5.
+
+> ⚠️ **BẤT BIẾN GĐ13 (CLAUDE §1.4):** CHỈ GIỚI THIỆU — **KHÔNG** đặt hàng/booking/thanh toán on-site, **KHÔNG** sàn bên-thứ-ba (giữ tầng pháp lý nhẹ, không kích đăng ký TMĐT NĐ52/85). CTA chỉ Zalo/điện thoại/"hỏi-giá-liên-hệ" (KHÔNG form chốt đơn giá+SL+xác nhận).
+> ⚠️ **Dữ liệu cơ quan công quyền PHẢI có nguồn thật** (`source`+`updatedAt`) — **TUYỆT ĐỐI không tự sinh** địa chỉ/SĐT (sai = gây hại). Nạp dữ liệu thật = Track-H/B2G.
+
+### A. Claim-listing cho DN (moat dữ liệu) — Postgres/UGC
+- [ ] **13.1** "Nhận listing": chủ DN yêu cầu sở hữu 1 entity → admin duyệt → chủ tự sửa hồ sơ (giá/giờ/mùa/ảnh/liên hệ). Dùng lại auth OTP + write-through `knowledge.reload()` (GĐ3.6). → *Verify:* chủ claim+sửa → phản ánh ở chat + /api. *Nghiệm thu:* dữ liệu chủ-thể-xác-nhận (`confidence` cao).
+
+### B. Hồ sơ DN giàu schema + CTA liên hệ (KHÔNG booking)
+- [ ] **13.2** Trang DN: CTA **Zalo/điện thoại/"Hỏi giá"** (form liên hệ, KHÔNG chốt đơn) + schema `LocalBusiness`+subtype (Google rich-result). → *Verify:* không có flow đặt hàng; build OK. *Nghiệm thu:* tầng pháp lý nhẹ giữ nguyên.
+
+### C. Danh bạ hành chính 124 xã/phường (codeable ngay; dữ liệu = Track-H)
+- [ ] **13.3** Thêm type `facility` (schema §2.3) + quan hệ `facility --located_in--> place`; bổ sung `facility` vào TYPE_META (`/api/constants`/`useConstants`). → *Verify:* tạo 1 facility test gắn 1 xã → query được. *Nghiệm thu:* graph có lớp cơ quan.
+- [ ] **13.4** Trang `/danh-ba` (chọn xã/phường → liệt kê UBND/công an/y tế/trường/bưu điện…) + mục "Danh bạ hành chính" trên trang `khu-vuc/[area]`; schema.org **`GovernmentOffice`** (address/telephone/openingHours). → *Verify:* build OK; trang render; JSON-LD hợp lệ. *Nghiệm thu:* AI/Google trích dẫn được "UBND xã X ở đâu/SĐT".
+- [ ] **13.5** Admin nhập/sửa facility (address/phone/hours/**source bắt buộc**) + nút **"Báo sai thông tin"** (dùng lại report GĐ5.4) + nhãn "thông tin tham khảo, vui lòng kiểm chứng". → *Verify:* lưu facility cần source; report → hàng đợi admin. *Nghiệm thu:* có provenance + kênh sửa sai.
+- [ ] 🛑 **13.6** (DATA / Track-H — KHÔNG bịa) Nạp địa chỉ/SĐT thật UBND/công an/… 124 đơn vị từ **nguồn chính thống** (cổng tỉnh, NQ 1687/NQ-UBTVQH15) hoặc **hợp đồng B2G**. Biến động cao hậu hợp nhất → cơ chế làm tươi.
+
+### D. Bảng cung theo mùa + lead B2B nhẹ (mở rộng wedge)
+- [ ] **13.7** Mở rộng `/theo-mua`: "tháng này HTX/vườn nào đang có …" (dùng `produced_in`+`season`) + form **"hỏi nguồn sỉ/liên hệ"** (KHÔNG chốt đơn). → *Verify:* chọn tháng → nguồn cung; form chỉ gửi liên hệ. *Nghiệm thu:* lead B2B ở tầng nhẹ.
+
+### E. QR truy xuất hiển thị (marketing-trust)
+- [ ] **13.8** Trang sản phẩm + QR (`product`+`produced_in`+`source`) hiển thị truy xuất nguồn gốc — **KHÔNG thay** mã vùng trồng/đóng gói chính thức (xuất khẩu phải dùng hệ thống nhà nước). → *Nghiệm thu:* QR mở ra trang nguồn gốc có provenance.
+
+### F. Doanh thu (showcase-only)
+- [ ] 🛑 **13.9** (Track-H) Premium/featured listing (hộ KD để xuất hoá đơn) + theo đuổi **hợp đồng B2G** (Sở Du lịch/OCOP/UBND tỉnh) — vừa nguồn dữ liệu danh bạ vừa doanh thu chính. KHÔNG hoa hồng booking.
+
+**🚦 Cổng DoD-13:** claim-listing hoạt động (chủ sửa → chat/api thấy); type `facility` + `/danh-ba` render với schema `GovernmentOffice`; nút báo-sai chạy; build + baseline xanh. (Dữ liệu thật danh bạ + B2G = Track-H, KHÔNG chặn phần code.)
+
+> **Pháp lý GĐ13 (nhắc):** showcase = tầng nhẹ (không đăng ký TMĐT). NHƯNG vẫn cần: NĐ147 (UGC/claim → giấy xác nhận đăng ký MXH + **pháp nhân**, Track-H), PDPL (consent — GĐ5 ✅), và **GĐ5.6 crawler chỉ trích-đoạn+link** (tránh giấy phép trang TTĐT tổng hợp).
+
+---
+
 ## VERIFY TỔNG THỂ (sau toàn bộ)
 
 - [ ] Sửa entity ở admin → phản ánh ngay ở **cả** chat lẫn Nuxt.
