@@ -65,6 +65,7 @@
             <h4>Khám phá</h4>
             <nav>
               <NuxtLink to="/du-lich">Du lịch</NuxtLink>
+              <NuxtLink to="/theo-mua">Theo mùa</NuxtLink>
               <NuxtLink to="/san-pham">Sản phẩm</NuxtLink>
               <NuxtLink to="/ocop">OCOP</NuxtLink>
               <NuxtLink to="/luu-tru">Lưu trú</NuxtLink>
