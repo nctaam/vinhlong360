@@ -221,7 +221,8 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 - [x] **13.3** ✅ type `facility` (placeId gắn xã) + TYPE_META + OFFICE_KIND; `db.facilities_by_place()` + `GET /api/facilities`. Test xanh. *(located_in dùng placeId — đủ cho danh bạ.)*
 - [x] **13.4** ✅ Trang `/danh-ba`: chọn xã/phường (gom 3 vùng) → liệt kê cơ quan + schema.org **`GovernmentOffice`** (address/telephone/openingHours) + footer link. Build OK; /api/facilities wired. *(Mục trên `khu-vuc/[area]` có thể thêm sau.)*
 - [x] **13.5** ✅ Admin nhập facility qua entity editor (thêm `facility`+`organization` vào VALID_TYPES) + nhãn "thông tin tham khảo" + link "Báo sai" → /lien-he; field `source`/`updatedAt` hiển thị. *(Nút báo-sai gắn /api/report cho facility = nâng cấp sau.)*
-- [ ] 🛑 **13.6** (DATA / Track-H — KHÔNG bịa) Nạp địa chỉ/SĐT thật UBND/công an/… 124 đơn vị từ **nguồn chính thống** (cổng tỉnh, NQ 1687/NQ-UBTVQH15) hoặc **hợp đồng B2G**. Biến động cao hậu hợp nhất → cơ chế làm tươi.
+- [x] **13.6a** ✅ (codeable) `facility` vào tìm kiếm (`_is_searchable`) + `knowledge.directory_search(query)` tra theo tên cơ quan/tên xã + chat-tool **`directory_lookup`** (server dispatch + SYSTEM_PROMPT) → hỏi "địa chỉ/SĐT UBND/công an xã X" trả lời được **ngay khi có dữ liệu**; rỗng → note rõ "đang bổ sung" (KHÔNG bịa). Tests: TestDirectorySearch + integration dispatch xanh.
+- [ ] 🛑 **13.6** (DATA / Track-H — KHÔNG bịa) Nạp địa chỉ/SĐT thật UBND/công an/… 124 đơn vị từ **nguồn chính thống** (cổng tỉnh, NQ 1687/NQ-UBTVQH15) hoặc **hợp đồng B2G**. Biến động cao hậu hợp nhất → cơ chế làm tươi. *(Đường code đã sẵn — 13.6a; chỉ chờ dữ liệu.)*
 
 ### D. Bảng cung theo mùa + lead B2B nhẹ (mở rộng wedge)
 - [x] **13.7** ✅ `/theo-mua` banner lead B2B nhẹ "gửi yêu cầu nguồn sỉ" → `/lien-he` (KHÔNG chốt đơn on-site); item link sang trang chi tiết có CTA liên hệ. Build OK. *(View "HTX/vườn đang có X" sâu hơn = mở rộng sau khi có produced_in data.)*
