@@ -132,13 +132,13 @@
     <section class="dq-history">
       <div class="dq-section-head">
         <div>
-          <h2>Lá»‹ch sá»­ apply</h2>
-          <p>Batch Ä‘Ã£ ghi vÃ o dá»¯ liá»‡u public, kÃ¨m diff vÃ  backup Ä‘á»ƒ rollback khi cáº§n.</p>
+          <h2>Lịch sử apply</h2>
+          <p>Batch đã ghi vào dữ liệu public, kèm diff và backup để rollback khi cần.</p>
         </div>
-        <button class="btn btn-outline btn-sm" :disabled="historyLoading" @click="fetchHistory">Táº£i láº¡i</button>
+        <button class="btn btn-outline btn-sm" :disabled="historyLoading" @click="fetchHistory">Tải lại</button>
       </div>
-      <div v-if="historyLoading" class="dq-history-empty">Äang táº£i lá»‹ch sá»­â€¦</div>
-      <div v-else-if="!history.length" class="dq-history-empty">ChÆ°a cÃ³ batch nÃ o Ä‘Æ°á»£c apply.</div>
+      <div v-if="historyLoading" class="dq-history-empty">Đang tải lịch sử…</div>
+      <div v-else-if="!history.length" class="dq-history-empty">Chưa có batch nào được apply.</div>
       <div v-else class="dq-history-list">
         <article v-for="h in history" :key="h.batch_id" class="dq-history-card">
           <div class="dq-history-card-head">
@@ -151,31 +151,31 @@
               class="btn btn-outline btn-sm danger"
               :disabled="!!rollingBack"
               @click="rollbackBatch(h.batch_id)"
-            >{{ rollingBack === h.batch_id ? 'Äang rollbackâ€¦' : 'Rollback' }}</button>
+            >{{ rollingBack === h.batch_id ? 'Đang rollback…' : 'Rollback' }}</button>
           </div>
           <p class="dq-history-meta">
-            {{ h.applied_count || h.restored_changes || 0 }} thay Ä‘á»•i
-            <span v-if="h.skipped_count">Â· {{ h.skipped_count }} bá» qua</span>
-            <span v-if="h.backup">Â· backup: {{ h.backup }}</span>
-            <span v-if="h.restored_from">Â· restored: {{ h.restored_from }}</span>
+            {{ h.applied_count || h.restored_changes || 0 }} thay đổi
+            <span v-if="h.skipped_count">· {{ h.skipped_count }} bỏ qua</span>
+            <span v-if="h.backup">· backup: {{ h.backup }}</span>
+            <span v-if="h.restored_from">· restored: {{ h.restored_from }}</span>
           </p>
           <div v-if="h.changes?.length" class="dq-diff-list">
             <div v-for="change in h.changes.slice(0, 4)" :key="change.candidate_id" class="dq-diff-item">
               <div>
                 <strong>{{ change.entity_name || change.entity_id }}</strong>
-                <small>{{ change.field }} Â· {{ pct(change.confidence) }}</small>
+                <small>{{ change.field }} · {{ pct(change.confidence) }}</small>
               </div>
-              <code>{{ preview(change.before) }} â†’ {{ preview(change.after) }}</code>
+              <code>{{ preview(change.before) }} → {{ preview(change.after) }}</code>
             </div>
-            <small v-if="h.changes.length > 4" class="dq-more">+{{ h.changes.length - 4 }} diff khÃ¡c</small>
+            <small v-if="h.changes.length > 4" class="dq-more">+{{ h.changes.length - 4 }} diff khác</small>
           </div>
           <div v-if="h.skipped?.length" class="dq-skipped-list">
             <strong>Skipped cần rà soát</strong>
             <div v-for="item in h.skipped.slice(0, 5)" :key="item.candidate_id" class="dq-skipped-item">
               <span>{{ item.entity_id || item.candidate_id }}</span>
-              <small>{{ item.field || 'unknown' }} Â· {{ item.reason || 'skipped' }}<template v-if="item.duplicate_of"> Â· trÃ¹ng {{ item.duplicate_of }}</template></small>
+              <small>{{ item.field || 'unknown' }} · {{ item.reason || 'skipped' }}<template v-if="item.duplicate_of"> · trùng {{ item.duplicate_of }}</template></small>
             </div>
-            <small v-if="h.skipped.length > 5" class="dq-more">+{{ h.skipped.length - 5 }} skipped khÃ¡c</small>
+            <small v-if="h.skipped.length > 5" class="dq-more">+{{ h.skipped.length - 5 }} skipped khác</small>
           </div>
         </article>
       </div>
@@ -254,7 +254,7 @@ async function fetchHistory() {
     })
     history.value = res.history || []
   } catch (e: any) {
-    showToast(e.data?.detail || 'KhÃ´ng thá»ƒ táº£i lá»‹ch sá»­ apply', 'error')
+    showToast(e.data?.detail || 'Không thể tải lịch sử apply', 'error')
   }
   historyLoading.value = false
 }
@@ -286,17 +286,17 @@ function applySelected() {
 }
 
 async function rollbackBatch(batchId: string) {
-  if (!batchId || !confirm(`Rollback batch ${batchId}? Dá»¯ liá»‡u hiá»‡n táº¡i sáº½ Ä‘Æ°á»£c backup trÆ°á»›c khi khá»ôi phá»¥c.`)) return
+  if (!batchId || !confirm(`Rollback batch ${batchId}? Dữ liệu hiện tại sẽ được backup trước khi khôi phục.`)) return
   rollingBack.value = batchId
   try {
     await $fetch(`/admin-api/data-quality/rollback/${encodeURIComponent(batchId)}`, {
       method: 'POST',
       headers: authHeaders(),
     })
-    showToast('ÄÃ£ rollback batch', 'success')
+    showToast('Đã rollback batch', 'success')
     await refreshAll(true)
   } catch (e: any) {
-    showToast(e.data?.detail || 'KhÃ´ng thá»ƒ rollback batch', 'error')
+    showToast(e.data?.detail || 'Không thể rollback batch', 'error')
   }
   rollingBack.value = ''
 }
