@@ -24,7 +24,15 @@ from pydantic import BaseModel, field_validator
 
 from database import db
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+
+def _require_pg():
+    # GĐ3.1 (quyết định): UGC/auth chạy trên Postgres (dev/prod parity, đúng kiến trúc).
+    # SQLite dev -> trả 503 rõ ràng thay vì crash 500.
+    if not db._use_pg:
+        raise HTTPException(503, detail="Tính năng UGC/auth cần Postgres. Local dev: docker compose up postgres.")
+
+
+router = APIRouter(prefix="/auth", tags=["auth"], dependencies=[Depends(_require_pg)])
 
 # ── Config ──
 

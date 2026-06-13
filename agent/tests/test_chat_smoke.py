@@ -101,6 +101,12 @@ def test_admin_edit_reflects_in_chat_and_api(client_mocked):
     assert eid not in knowledge._entities
 
 
+def test_ugc_degrades_to_503_on_sqlite(client_mocked):
+    """GĐ3.1 (quyết định): UGC/auth Postgres-only — trên SQLite dev trả 503 rõ ràng (không crash 500)."""
+    r = client_mocked.post("/auth/request-otp", json={"phone": "0912345678"})
+    assert r.status_code == 503, r.text
+
+
 def test_reload_requires_admin_and_reads_db(client_mocked):
     """GĐ3.8: /reload an toàn (nạp từ DB) nhưng yêu cầu admin."""
     from middleware import ADMIN_API_KEY as _ADMIN_KEY

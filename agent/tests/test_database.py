@@ -249,9 +249,10 @@ def test_data_quality_apply_and_rollback_db_native(db, tmp_path, monkeypatch):
     assert db.get_entity("e1")["source"] == {"title": "old", "url": "https://old.example/"}
 
 
-# ── Gap GĐ3.1: SQLite chưa có bảng users (UGC/login crash ở local dev) ──
+# ── GĐ3.1 (QUYẾT ĐỊNH): UGC/auth Postgres-only; SQLite KHÔNG có bảng users (by design) ──
+# Dev/prod parity. SQLite chỉ phục vụ tầng tri thức (entity/rel/itinerary).
 
-@pytest.mark.xfail(reason="GĐ3.1 sẽ thêm bảng users/posts/... cho SQLite", strict=False)
-def test_users_table_exists_after_gd31(db):
+@pytest.mark.xfail(reason="QUYẾT ĐỊNH: UGC Postgres-only — SQLite không có users (by design)", strict=False)
+def test_create_user_unavailable_on_sqlite_by_design(db):
     db.create_user("0900000000", "Test")
     assert db.get_user_by_phone("0900000000") is not None

@@ -18,7 +18,14 @@ from pydantic import BaseModel, field_validator
 from auth_middleware import get_current_user, require_user
 from database import db
 
-router = APIRouter(prefix="/api", tags=["community"])
+
+def _require_pg():
+    # GĐ3.1 (quyết định): UGC chạy Postgres. SQLite dev -> 503 rõ ràng.
+    if not db._use_pg:
+        raise HTTPException(503, detail="Tính năng cộng đồng (UGC) cần Postgres. Local dev: docker compose up postgres.")
+
+
+router = APIRouter(prefix="/api", tags=["community"], dependencies=[Depends(_require_pg)])
 
 
 # ── Models ──

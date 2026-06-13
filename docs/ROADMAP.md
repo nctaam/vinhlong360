@@ -64,7 +64,7 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 **Mục tiêu:** gỡ split-brain. **Tiên quyết:** DoD-1 (test_database) + DoD-2. **Bất biến:** B1, B3.
 
-- [!] **3.1** (HOÃN — xem Backlog: UGC/auth PG-specific, ngoài đường chat) Thêm bảng còn thiếu cho SQLite trong `database.py` (`users/posts/comments/notifications/follows/reviews`) đồng bộ DDL với `init.sql`. → *Verify:* test_database + chạy local đăng ký/đăng bài không `OperationalError`. *Nghiệm thu:* UGC/login chạy ở SQLite dev.
+- [x] **3.1** (QUYẾT ĐỊNH: UGC/auth = **Postgres-only**, KHÔNG port SQLite — dev/prod parity. SQLite→503 rõ ràng; dev UGC dùng docker postgres. Đã enact: `_require_pg` trên 3 router + test 503.) ~~Thêm bảng còn thiếu cho SQLite trong~~ `database.py` (`users/posts/comments/notifications/follows/reviews`) đồng bộ DDL với `init.sql`. → *Verify:* test_database + chạy local đăng ký/đăng bài không `OperationalError`. *Nghiệm thu:* UGC/login chạy ở SQLite dev.
 - [x] **3.2** Sửa `replace_from_json` không mất cạnh (log số in/out, fail nếu lệch bất thường); mở rộng cột import để không rớt field (`database.py:757`). → *Verify:* import xong đếm = nguồn. *Nghiệm thu:* migrate không mất mát.
 - [x] **3.3** B1 backup → migrate `web/data.json (đã sạch) → DB` (`database.py --replace` + `ALLOW_DESTRUCTIVE_DB_REPLACE=1`). Reconcile lệch 1703 vs 1693 (giữ tập giàu hơn). → *Verify:* đếm entity/rel trong DB = data.json. *Nghiệm thu:* DB khớp data.json sạch.
 - [x] **3.4** Thêm bulk getter `db.all_entities()/all_relationships()/all_itineraries()` nếu chưa có. → *Verify:* unit test getter. *Nghiệm thu:* lấy toàn bộ từ DB.
@@ -221,5 +221,5 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 > Khi phát hiện việc đáng làm ngoài roadmap, ghi vào đây kèm ngày + lý do, rồi tiếp tục task hiện tại.
 
-- **(2026-06-13) GĐ3.1 — UGC/auth → SQLite**: tách khỏi GĐ3. `users/posts/comments/...` + method `create_user`/`get_user_by_id`/`social.py` dùng cú pháp PG (`UUID`, `RETURNING`, `id::text`, `NOW()`). Port sang SQLite là việc lớn, rủi ro cao (sai 1 DDL → `db.initialize()` vỡ toàn hệ), NẰM NGOÀI đường chat/entity. Theo `architecture-decisions.md #3` (SQLite=dev cache, Postgres=primary), UGC nên chạy trên Postgres. Quyết định: hoặc (a) port có test riêng, hoặc (b) chấp nhận UGC chỉ chạy trên Postgres + tài liệu hoá "dev UGC cần docker postgres". Test `test_users_table_exists_after_gd31` đang xfail đánh dấu việc này.
+- ~~(2026-06-13) GĐ3.1 — UGC/auth → SQLite~~ ✅ ĐÃ QUYẾT (Postgres-only): không port; `_require_pg` gắn 3 router UGC trả 503 trên SQLite; tài liệu CLAUDE.md §1.3 + docs/ugc-postgres.md. Lý do: dev/prod parity, tránh nợ 2 phương ngữ SQL, UGC vốn cần Postgres.
 - ~~(2026-06-13) GĐ3.8 — data-quality DB-native~~ ✅ XONG (commit 35ff28e): apply/rollback ghi thẳng DB, bỏ khoá. Footgun "xoá edit admin" đã gỡ.

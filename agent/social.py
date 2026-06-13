@@ -26,7 +26,14 @@ from moderation import moderate_content, log_moderation
 from notifications import create_notification
 from storage import storage
 
-router = APIRouter(prefix="/api", tags=["social"])
+
+def _require_pg():
+    # GĐ3.1 (quyết định): UGC chạy Postgres. SQLite dev -> 503 rõ ràng.
+    if not db._use_pg:
+        raise HTTPException(503, detail="Tính năng cộng đồng (UGC) cần Postgres. Local dev: docker compose up postgres.")
+
+
+router = APIRouter(prefix="/api", tags=["social"], dependencies=[Depends(_require_pg)])
 
 # ── Models ──
 
