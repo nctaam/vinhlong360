@@ -45,6 +45,7 @@
           @like="toggleLike"
           @comment="id => navigateTo(`/bai-viet/${id}`)"
           @bookmark="toggleBookmark"
+          @report="reportPost"
         />
         <EmptyState v-if="!filteredPosts.length && !loading" :message="tab === 'reviews' ? 'Chưa có đánh giá nào.' : 'Chưa có bài viết nào.'" />
         <div v-if="loading" style="text-align: center; padding: 20px"><div class="spinner" style="margin: 0 auto"></div></div>
@@ -60,6 +61,7 @@ const route = useRoute()
 const userId = route.params.id as string
 const { isLoggedIn, authHeaders } = useAuth()
 const { show: showToast } = useToast()
+const { reportPost } = useReport()
 
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl(`/nguoi-dung/${userId}`) }],

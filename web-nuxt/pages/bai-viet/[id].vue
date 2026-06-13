@@ -3,7 +3,7 @@
     <NuxtLink class="back" to="/cong-dong">← Cộng đồng</NuxtLink>
 
     <div v-if="post" style="max-width: 720px">
-      <PostCard :post="post" @like="toggleLike" @bookmark="toggleBookmark" />
+      <PostCard :post="post" @like="toggleLike" @bookmark="toggleBookmark" @report="reportPost" />
 
       <!-- Comments -->
       <div class="comment-section">
@@ -40,6 +40,7 @@
 const route = useRoute()
 const postId = route.params.id as string
 const { isLoggedIn, authHeaders } = useAuth()
+const { reportPost } = useReport()
 
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl(`/bai-viet/${postId}`) }],

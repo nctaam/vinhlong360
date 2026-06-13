@@ -291,22 +291,8 @@ async function submitEntityReport() {
   reportSubmitting.value = false
 }
 
-async function reportPost(postId: string) {
-  // GĐ5.4: báo cáo bài đăng vi phạm -> hàng đợi kiểm duyệt admin (gỡ trong 24/48h).
-  if (!isLoggedIn.value) { showToast('Vui lòng đăng nhập để báo cáo', 'error'); return }
-  const reason = window.prompt('Lý do báo cáo bài viết này?')
-  if (!reason || reason.trim().length < 5) return
-  try {
-    await $fetch('/api/report', {
-      method: 'POST',
-      headers: authHeaders(),
-      body: { target_type: 'post', target_id: postId, reason: reason.trim() },
-    })
-    showToast('Đã gửi báo cáo. Cảm ơn bạn!', 'success')
-  } catch (e: any) {
-    showToast(e.data?.detail || 'Không thể gửi báo cáo', 'error')
-  }
-}
+// GĐ5.4 / GĐ13.6f: báo cáo bài đăng vi phạm -> /api/report (admin gỡ trong 24/48h). DRY qua useReport.
+const { reportPost } = useReport()
 
 async function toggleLike(postId: string) {
   if (!isLoggedIn.value) return
