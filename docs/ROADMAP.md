@@ -64,14 +64,14 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 **Mục tiêu:** gỡ split-brain. **Tiên quyết:** DoD-1 (test_database) + DoD-2. **Bất biến:** B1, B3.
 
-- [ ] **3.1** Thêm bảng còn thiếu cho SQLite trong `database.py` (`users/posts/comments/notifications/follows/reviews`) đồng bộ DDL với `init.sql`. → *Verify:* test_database + chạy local đăng ký/đăng bài không `OperationalError`. *Nghiệm thu:* UGC/login chạy ở SQLite dev.
-- [ ] **3.2** Sửa `replace_from_json` không mất cạnh (log số in/out, fail nếu lệch bất thường); mở rộng cột import để không rớt field (`database.py:757`). → *Verify:* import xong đếm = nguồn. *Nghiệm thu:* migrate không mất mát.
-- [ ] **3.3** B1 backup → migrate `web/data.json (đã sạch) → DB` (`database.py --replace` + `ALLOW_DESTRUCTIVE_DB_REPLACE=1`). Reconcile lệch 1703 vs 1693 (giữ tập giàu hơn). → *Verify:* đếm entity/rel trong DB = data.json. *Nghiệm thu:* DB khớp data.json sạch.
-- [ ] **3.4** Thêm bulk getter `db.all_entities()/all_relationships()/all_itineraries()` nếu chưa có. → *Verify:* unit test getter. *Nghiệm thu:* lấy toàn bộ từ DB.
-- [ ] **3.5** Viết lại `knowledge._ensure()`/`reload()` đọc từ DB → dựng **cùng cấu trúc in-memory** `_entities/_relationships/_itineraries` (`knowledge.py:46,54`). Tool/search/agent KHÔNG đổi interface. → *Verify:* `pytest agent/tests/test_knowledge.py -q` xanh; chat trả lời như trước. *Nghiệm thu:* chat nạp từ DB, tốc độ không đổi.
-- [ ] **3.6** Admin write-through: sau CRUD (`admin.py:248,263`) gọi `knowledge.reload()`. → *Verify:* sửa 1 entity ở admin → hỏi chat thấy ngay + `/api/entities` thấy ngay. *Nghiệm thu:* **split-brain biến mất** (test integration).
-- [ ] **3.7** `export_data.py`: chiều DB→`web/data.json` (backup + nguồn prerender). `auto_learn.py --apply` ghi DB thay vì append json (`auto_learn.py:649`). → *Verify:* export rồi `validate_data.py` xanh. *Nghiệm thu:* data.json là export, không còn là nguồn.
-- [ ] **3.8** Mở khoá `/reload` (giờ reload từ DB) + gắn auth & rate-limit; `database.py --replace` thành lệnh seed có cảnh báo; `/admin/data-quality/apply` thao tác trên DB (không DELETE-rồi-nạp-json). → *Verify:* `/reload` cần admin key. *Nghiệm thu:* lệnh phá dữ liệu cũ đã an toàn.
+- [!] **3.1** (HOÃN — xem Backlog: UGC/auth PG-specific, ngoài đường chat) Thêm bảng còn thiếu cho SQLite trong `database.py` (`users/posts/comments/notifications/follows/reviews`) đồng bộ DDL với `init.sql`. → *Verify:* test_database + chạy local đăng ký/đăng bài không `OperationalError`. *Nghiệm thu:* UGC/login chạy ở SQLite dev.
+- [x] **3.2** Sửa `replace_from_json` không mất cạnh (log số in/out, fail nếu lệch bất thường); mở rộng cột import để không rớt field (`database.py:757`). → *Verify:* import xong đếm = nguồn. *Nghiệm thu:* migrate không mất mát.
+- [x] **3.3** B1 backup → migrate `web/data.json (đã sạch) → DB` (`database.py --replace` + `ALLOW_DESTRUCTIVE_DB_REPLACE=1`). Reconcile lệch 1703 vs 1693 (giữ tập giàu hơn). → *Verify:* đếm entity/rel trong DB = data.json. *Nghiệm thu:* DB khớp data.json sạch.
+- [x] **3.4** Thêm bulk getter `db.all_entities()/all_relationships()/all_itineraries()` nếu chưa có. → *Verify:* unit test getter. *Nghiệm thu:* lấy toàn bộ từ DB.
+- [x] **3.5** Viết lại `knowledge._ensure()`/`reload()` đọc từ DB → dựng **cùng cấu trúc in-memory** `_entities/_relationships/_itineraries` (`knowledge.py:46,54`). Tool/search/agent KHÔNG đổi interface. → *Verify:* `pytest agent/tests/test_knowledge.py -q` xanh; chat trả lời như trước. *Nghiệm thu:* chat nạp từ DB, tốc độ không đổi.
+- [x] **3.6** Admin write-through: sau CRUD (`admin.py:248,263`) gọi `knowledge.reload()`. → *Verify:* sửa 1 entity ở admin → hỏi chat thấy ngay + `/api/entities` thấy ngay. *Nghiệm thu:* **split-brain biến mất** (test integration).
+- [x] **3.7** `export_data.py`: chiều DB→`web/data.json` (backup + nguồn prerender). `auto_learn.py --apply` ghi DB thay vì append json (`auto_learn.py:649`). → *Verify:* export rồi `validate_data.py` xanh. *Nghiệm thu:* data.json là export, không còn là nguồn.
+- [~] **3.8** (MỘT PHẦN) ✅ `/reload` mở khoá + auth (reload từ DB, an toàn). ⏸ `database.py --replace` + `/admin/data-quality/apply` VẪN khoá `DESTRUCTIVE_OPS_LOCKED=1` — cần rework DB-native (Backlog) trước khi gỡ. → *Verify:* `/reload` cần admin key (test xanh).
 
 **🚦 Cổng DoD-3:** Sửa entity ở admin phản ánh ở **cả chat lẫn /api** (test integration xanh); restart vẫn còn; `export_data.py`→`validate_data.py` xanh; test_database xanh. **Sau cổng này mới được bỏ khoá tạm GĐ0.5.**
 
@@ -221,4 +221,5 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 > Khi phát hiện việc đáng làm ngoài roadmap, ghi vào đây kèm ngày + lý do, rồi tiếp tục task hiện tại.
 
-- (trống)
+- **(2026-06-13) GĐ3.1 — UGC/auth → SQLite**: tách khỏi GĐ3. `users/posts/comments/...` + method `create_user`/`get_user_by_id`/`social.py` dùng cú pháp PG (`UUID`, `RETURNING`, `id::text`, `NOW()`). Port sang SQLite là việc lớn, rủi ro cao (sai 1 DDL → `db.initialize()` vỡ toàn hệ), NẰM NGOÀI đường chat/entity. Theo `architecture-decisions.md #3` (SQLite=dev cache, Postgres=primary), UGC nên chạy trên Postgres. Quyết định: hoặc (a) port có test riêng, hoặc (b) chấp nhận UGC chỉ chạy trên Postgres + tài liệu hoá "dev UGC cần docker postgres". Test `test_users_table_exists_after_gd31` đang xfail đánh dấu việc này.
+- **(2026-06-13) GĐ3.8 (phần còn lại) — data-quality DB-native**: `/admin/data-quality/apply|rollback` vẫn DELETE-rồi-nạp-từ-data.json → sẽ xoá edit admin trong DB. Cần rework thao tác THẲNG trên DB (không qua data.json) + test, rồi mới gỡ `DESTRUCTIVE_OPS_LOCKED` cho nhóm này. Hiện vẫn KHOÁ (an toàn). `/reload` đã mở + auth.
