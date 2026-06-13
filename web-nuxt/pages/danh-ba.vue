@@ -37,6 +37,9 @@
             <span v-else>{{ f.source?.title }}</span>
             <span v-if="f.updatedAt"> · cập nhật {{ f.updatedAt }}</span>
           </small>
+          <button class="fac-report" :disabled="reported[f.id]" @click="reportFacility(f)">
+            {{ reported[f.id] ? '✓ Đã gửi báo sai' : '⚠️ Báo thông tin sai' }}
+          </button>
         </li>
       </ul>
       <EmptyState v-else message="Chưa có dữ liệu danh bạ cho xã/phường này. Dữ liệu đang được bổ sung từ nguồn chính thống." />
@@ -75,6 +78,19 @@ const loading = ref(false)
 
 function attr(f: any, k: string) { return (f.attributes || {})[k] }
 function kindMeta(f: any) { return OFFICE_KIND[attr(f, 'office_kind')] || OFFICE_KIND.khac }
+
+const reported = ref<Record<string, boolean>>({})
+async function reportFacility(f: any) {
+  if (reported.value[f.id]) return
+  const detail = (globalThis.prompt?.('Thông tin nào sai? (địa chỉ / SĐT / giờ làm việc…)') || '').trim()
+  try {
+    await $fetch('/api/report', {
+      method: 'POST',
+      body: { target_id: f.id, target_type: 'facility', reason: 'Báo sai thông tin danh bạ', detail },
+    })
+    reported.value = { ...reported.value, [f.id]: true }
+  } catch { /* rate-limited / lỗi mạng — bỏ qua, người dùng có thể thử lại */ }
+}
 
 watch(wardId, async (id) => {
   facilities.value = []
@@ -122,4 +138,7 @@ useHead(() => ({
 .fac-kind { font-size: .8rem; color: var(--primary, #9C3D22); }
 .fac-row { font-size: .92rem; margin: 2px 0; }
 .fac-src { color: var(--muted, #999); display: block; margin-top: 6px; }
+.fac-report { margin-top: 8px; background: none; border: none; padding: 0; color: var(--muted, #999); font-size: .78rem; cursor: pointer; text-decoration: underline; }
+.fac-report:hover:not(:disabled) { color: var(--primary, #9C3D22); }
+.fac-report:disabled { cursor: default; text-decoration: none; color: #16a34a; }
 </style>

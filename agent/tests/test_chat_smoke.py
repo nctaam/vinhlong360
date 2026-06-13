@@ -129,6 +129,52 @@ def test_reload_requires_admin_and_reads_db(client_mocked):
     assert r.json().get("source") == "db"
 
 
+def test_info_report_submit_and_admin_list(client_mocked, tmp_path, monkeypatch):
+    """GĐ13.6f: POST /api/report (ẩn danh, JSONL) ghi nhận; admin xem qua /admin/info-reports;
+    rate-limit chặn spam. Tách khỏi UGC `reports` (Postgres)."""
+    import public_api
+    import admin as admin_mod
+    from middleware import report_limiter, ADMIN_API_KEY as _ADMIN_KEY
+
+    rfile = tmp_path / "reports.jsonl"
+    monkeypatch.setattr(public_api, "REPORTS_FILE", rfile)
+    monkeypatch.setattr(admin_mod, "_INFO_REPORTS_FILE", rfile)
+    report_limiter._requests.clear()  # state sạch (singleton toàn cục)
+
+    # 1) Gửi báo-sai hợp lệ
+    r = client_mocked.post("/api/report", json={
+        "target_id": "ubnd-xa-test", "target_type": "facility",
+        "reason": "Sai số điện thoại", "detail": "SĐT đúng là 0270 111 222"})
+    assert r.status_code == 200, r.text
+    assert r.json().get("ok") is True
+    assert rfile.exists()
+
+    # target_type lạ -> chuẩn hoá "other"
+    r2 = client_mocked.post("/api/report", json={
+        "target_id": "x", "target_type": "weird", "reason": "test"})
+    assert r2.status_code == 200, r2.text
+
+    # 2) Admin liệt kê (mới nhất trước)
+    hdr = {"X-Admin-Key": _ADMIN_KEY}
+    lst = client_mocked.get("/admin/info-reports", headers=hdr)
+    assert lst.status_code == 200, lst.text
+    body = lst.json()
+    assert body["total"] == 2
+    assert body["reports"][0]["target_id"] == "x"
+    assert body["reports"][0]["target_type"] == "other"
+    assert body["reports"][1]["reason"] == "Sai số điện thoại"
+
+    # admin endpoint yêu cầu auth
+    assert client_mocked.get("/admin/info-reports").status_code == 401
+
+    # 3) Rate-limit: limiter cho 5/5min — đã dùng 2, gửi thêm tới khi 429
+    last = None
+    for _ in range(6):
+        last = client_mocked.post("/api/report", json={"target_id": "y", "reason": "spam"})
+    assert last.status_code == 429, last.text
+    assert last.json().get("error") == "rate_limited"
+
+
 def test_directory_lookup_tool_dispatch(client_mocked):
     """GĐ13: chat-tool `directory_lookup` -> knowledge.directory_search; trả note rõ khi rỗng,
     trả results khi có facility. Bao phủ nhánh dispatch trong call_tool."""

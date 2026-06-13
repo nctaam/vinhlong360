@@ -8,17 +8,26 @@ Mount: app.include_router(public_router)
 """
 
 import json
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Request
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 from database import db
 from data_quality import entity_quality
+from middleware import report_limiter, get_client_ip
 
 router = APIRouter(prefix="/api", tags=["public"])
 
 _place_cache: dict[str, dict] = {}
 DEFAULT_RELATIONSHIP_LIMIT = 24
+
+# GĐ13.6f: báo cáo thông tin sai / nội dung vi phạm — lưu JSONL nhẹ (free-tier),
+# admin xem qua /admin/reports để xử lý (takedown/sửa). KHÔNG dùng DB/dịch vụ trả phí.
+REPORTS_FILE = Path(__file__).resolve().parent / "data" / "reports.jsonl"
+_VALID_TARGET_TYPES = {"facility", "entity", "post", "comment", "other"}
 
 def _get_place(place_id: str) -> dict | None:
     if place_id in _place_cache:
@@ -181,3 +190,45 @@ async def search(
 @router.get("/stats")
 async def public_stats():
     return db.stats()
+
+
+class ReportIn(BaseModel):
+    target_id: str = Field(..., min_length=1, max_length=200)
+    target_type: str = Field("entity", max_length=20)
+    reason: str = Field(..., min_length=1, max_length=60)
+    detail: str = Field("", max_length=2000)
+    contact: str = Field("", max_length=120)
+
+
+@router.post("/report")
+async def submit_report(payload: ReportIn, request: Request):
+    """GĐ13.6f: tiếp nhận báo-sai (facility/entity) & báo cáo nội dung (post/comment).
+
+    Lưu vào reports.jsonl cho admin xử lý — KHÔNG đăng/khoá tự động. Rate-limit theo IP.
+    """
+    ip = get_client_ip(request)
+    allowed, info = report_limiter.is_allowed(ip)
+    if not allowed:
+        return JSONResponse(
+            status_code=429,
+            content={"error": "rate_limited", "retry_after": info.get("retry_after", 60),
+                     "message": "Bạn gửi quá nhiều báo cáo. Vui lòng thử lại sau."},
+        )
+    target_type = payload.target_type if payload.target_type in _VALID_TARGET_TYPES else "other"
+    record = {
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "target_id": payload.target_id.strip(),
+        "target_type": target_type,
+        "reason": payload.reason.strip(),
+        "detail": payload.detail.strip(),
+        "contact": payload.contact.strip(),
+        "ip": ip,
+        "status": "open",
+    }
+    try:
+        REPORTS_FILE.parent.mkdir(exist_ok=True)
+        with open(REPORTS_FILE, "a", encoding="utf-8") as f:
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    except OSError:
+        return JSONResponse(status_code=500, content={"error": "store_failed"})
+    return {"ok": True, "message": "Đã ghi nhận. Cảm ơn bạn đã góp ý — chúng tôi sẽ kiểm tra."}

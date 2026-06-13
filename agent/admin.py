@@ -764,6 +764,31 @@ async def dismiss_report(report_id: str):
     return {"success": True}
 
 
+# GĐ13.6f: báo-sai thông tin (facility/entity) & báo nội dung ẩn danh — kênh nhẹ JSONL
+# (KHÔNG cần đăng nhập, không DB), tách khỏi UGC `reports` (Postgres) ở trên.
+_INFO_REPORTS_FILE = Path(__file__).resolve().parent / "data" / "reports.jsonl"
+
+
+@router.get("/info-reports")
+async def get_info_reports(limit: int = Query(100, ge=1, le=500)):
+    """Liệt kê báo-sai/báo cáo ẩn danh (reports.jsonl), mới nhất trước. Admin tự xử lý
+    (sửa entity qua editor / takedown thủ công)."""
+    if not _INFO_REPORTS_FILE.exists():
+        return {"reports": [], "total": 0}
+    items = []
+    with open(_INFO_REPORTS_FILE, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                items.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue
+    items.reverse()  # mới nhất trước
+    return {"reports": items[:limit], "total": len(items)}
+
+
 @router.get("/users")
 async def list_users(
     page: int = Query(1, ge=1),

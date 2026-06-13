@@ -203,9 +203,10 @@ class RateLimiter:
 chat_limiter = RateLimiter(max_requests=30, window_seconds=60)   # 30 req/min
 admin_limiter = RateLimiter(max_requests=10, window_seconds=60)  # 10 req/min
 stream_limiter = RateLimiter(max_requests=20, window_seconds=60)  # 20 req/min
+report_limiter = RateLimiter(max_requests=5, window_seconds=300)  # 5 báo cáo / 5 phút (chống spam)
 
 # Auto-cleanup: periodically remove stale IP entries every 5 minutes
-_all_limiters = [chat_limiter, admin_limiter, stream_limiter]
+_all_limiters = [chat_limiter, admin_limiter, stream_limiter, report_limiter]
 
 def _rate_limiter_cleanup_loop():
     while True:
