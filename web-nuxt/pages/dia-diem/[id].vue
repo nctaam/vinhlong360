@@ -169,10 +169,11 @@
           <span class="v">{{ Array.isArray(entity.attributes.amenities) ? entity.attributes.amenities.join(', ') : entity.attributes.amenities }}</span>
         </div>
 
-        <!-- GĐ13.2: liên hệ trực tiếp (showcase — KHÔNG đặt hàng) -->
-        <div v-if="entity.attributes?.phone || zaloLink" style="display:flex; gap:8px; flex-wrap:wrap; margin:14px 0 8px;">
+        <!-- GĐ13.2 + D2: liên hệ trực tiếp / hỏi mua qua kênh riêng chủ thể (showcase — KHÔNG đặt hàng/giỏ hàng/thanh toán on-site, KHÔNG link sàn TMĐT) -->
+        <div v-if="entity.attributes?.phone || zaloLink || buyContactUrl" style="display:flex; gap:8px; flex-wrap:wrap; margin:14px 0 8px;">
           <a v-if="entity.attributes?.phone" class="ns-action" :href="'tel:' + entity.attributes.phone" style="flex:1; text-align:center;">📞 Gọi</a>
           <a v-if="zaloLink" class="ns-action" :href="zaloLink" target="_blank" rel="nofollow" style="flex:1; text-align:center;">💬 Zalo</a>
+          <a v-if="buyContactUrl" class="ns-action" :href="buyContactUrl" target="_blank" rel="nofollow" style="flex:1; text-align:center;">🛒 Hỏi mua trực tiếp</a>
         </div>
         <!-- GĐ13.1 (MVP): chủ cơ sở nhận listing -->
         <NuxtLink :to="claimUrl" class="ns-action" style="display:block; text-align:center;">🏷️ Đây là cơ sở của tôi — đăng ký quản lý</NuxtLink>
@@ -257,6 +258,15 @@ const zaloLink = computed(() => {
 })
 // GĐ13.1 (MVP): chủ cơ sở "nhận listing" -> trang liên hệ kèm ngữ cảnh (luồng owner-edit đầy đủ = sau).
 const claimUrl = computed(() => `/lien-he?claim=${encodeURIComponent(id.value)}`)
+
+// D2 (2026-06-13): với sản phẩm OCOP, đưa website RIÊNG của chủ thể thành CTA "hỏi mua trực tiếp"
+// — dẫn khách về kênh bán/đặt riêng của họ. KHÔNG link sàn TMĐT, KHÔNG giỏ hàng/thanh toán on-site
+// (giữ showcase-only §1.4). Chỉ áp cho product để khỏi trùng link website ở phần "facts".
+const buyContactUrl = computed(() => {
+  if (entity.value?.type !== 'product') return ''
+  const w = entity.value?.attributes?.website
+  return w && String(w).startsWith('http') ? w : ''
+})
 
 const quality = computed(() => entity.value?.quality || {})
 const qualityMissingLabels = computed(() => {
