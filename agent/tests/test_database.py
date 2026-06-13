@@ -238,6 +238,22 @@ def test_facilities_by_place(db):
     assert len(db.facilities_by_place()) == 3  # tất cả facility
 
 
+def test_entities_by_place(db):
+    # Trang hub xã/phường: gom mọi entity nội dung theo placeId, trừ chính các place.
+    db.upsert_entity({"id": "xa-h", "type": "place", "name": "Xã H", "placeId": None})
+    db.upsert_entity({"id": "diem-1", "type": "attraction", "name": "Điểm 1", "placeId": "xa-h"})
+    db.upsert_entity({"id": "ks-1", "type": "accommodation", "name": "KS 1", "placeId": "xa-h"})
+    db.upsert_entity({"id": "sp-1", "type": "product", "name": "SP 1", "placeId": "xa-h"})
+    db.upsert_entity({"id": "diem-x", "type": "attraction", "name": "Điểm X", "placeId": "xa-khac"})
+
+    got = db.entities_by_place("xa-h")
+    ids = {e["id"] for e in got}
+    assert ids == {"diem-1", "ks-1", "sp-1"}          # đúng ward, gồm nhiều type
+    assert "xa-h" not in ids                          # KHÔNG gồm chính đơn vị place
+    assert "diem-x" not in ids                        # KHÔNG gồm ward khác
+    assert db.entities_by_place("khong-co") == []
+
+
 # ── GĐ3.8: data-quality apply/rollback DB-native (không DELETE-reload-json) ──
 
 def test_data_quality_apply_and_rollback_db_native(db, tmp_path, monkeypatch):

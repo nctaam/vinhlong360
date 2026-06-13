@@ -455,6 +455,19 @@ class Database:
             rows = self._fetchall(conn, "SELECT * FROM itineraries")
             return [self._parse_itinerary(r) for r in rows]
 
+    def entities_by_place(self, place_id: str) -> list[dict]:
+        """Tất cả entity nội dung thuộc 1 xã/phường (placeId), trừ chính các đơn vị place.
+        Phục vụ trang hub per-xã/phường (du lịch/lưu trú/sản phẩm/...)."""
+        self.initialize()
+        ph = self._ph
+        pcol = '"placeId"' if self._use_pg else "placeId"
+        with self._conn() as conn:
+            rows = self._fetchall(
+                conn,
+                f"SELECT * FROM entities WHERE {pcol} = {ph} AND type != {ph} ORDER BY type, name",
+                (place_id, "place"))
+            return [self._parse_entity(r) for r in rows]
+
     def facilities_by_place(self, place_id: str | None = None) -> list[dict]:
         """GĐ13.3: cơ quan hành chính (type=facility) theo xã/phường (placeId). Danh bạ hành chính."""
         self.initialize()

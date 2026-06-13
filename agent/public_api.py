@@ -152,6 +152,49 @@ async def list_facilities(place: Optional[str] = None):
     return {"facilities": db.facilities_by_place(place)}
 
 
+# Nhóm loại entity cho trang hub xã/phường (theo 4 mục người dùng cần).
+_WARD_GROUPS = {
+    "tourism": {"attraction", "nature", "experience", "craft_village", "history", "event"},
+    "lodging": {"accommodation"},
+    "products": {"product", "dish", "drink"},
+}
+
+
+@router.get("/places/{place_id}/overview")
+async def place_overview(place_id: str):
+    """Trang hub 1 xã/phường: danh bạ hành chính + du lịch + lưu trú + sản phẩm.
+
+    Gom theo placeId trong 1 lượt gọi. facilities rỗng đến khi có dữ liệu thật (Track-H 13.6).
+    """
+    place = db.get_entity(place_id)
+    if not place or place.get("type") != "place":
+        return JSONResponse(status_code=404, content={"error": "not_found", "detail": "Không phải xã/phường"})
+
+    ents = db.entities_by_place(place_id)
+    groups: dict[str, list] = {"tourism": [], "lodging": [], "products": [], "other": []}
+    for e in ents:
+        t = e.get("type")
+        placed = False
+        for g, types in _WARD_GROUPS.items():
+            if t in types:
+                groups[g].append(e)
+                placed = True
+                break
+        if not placed:
+            groups["other"].append(e)
+
+    return {
+        "place": {"id": place["id"], "name": place.get("name"), "area": place.get("area"),
+                  "level": place.get("level"), "summary": place.get("summary")},
+        "facilities": db.facilities_by_place(place_id),
+        "counts": {g: len(v) for g, v in groups.items()},
+        "tourism": groups["tourism"],
+        "lodging": groups["lodging"],
+        "products": groups["products"],
+        "other": groups["other"],
+    }
+
+
 @router.get("/itineraries")
 async def list_itineraries(area: Optional[str] = None):
     return db.list_itineraries(area=area)

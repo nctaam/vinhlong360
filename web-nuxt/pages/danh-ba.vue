@@ -22,6 +22,9 @@
 
     <div v-if="!wardId" class="muted">Hãy chọn một xã/phường để xem danh bạ.</div>
     <template v-else>
+      <p class="ward-hub-link">
+        <NuxtLink :to="`/xa-phuong/${wardId}`">🏘️ Xem trang đầy đủ xã/phường này (du lịch · lưu trú · đặc sản) →</NuxtLink>
+      </p>
       <div v-if="loading" class="muted">Đang tải…</div>
       <ul v-else-if="facilities.length" class="fac-list">
         <li v-for="f in facilities" :key="f.id" class="fac">
@@ -138,6 +141,8 @@ useHead(() => ({
 .fac-kind { font-size: .8rem; color: var(--primary, #9C3D22); }
 .fac-row { font-size: .92rem; margin: 2px 0; }
 .fac-src { color: var(--muted, #999); display: block; margin-top: 6px; }
+.ward-hub-link { margin: 0 0 14px; }
+.ward-hub-link a { color: var(--primary, #9C3D22); font-weight: 600; }
 .fac-report { margin-top: 8px; background: none; border: none; padding: 0; color: var(--muted, #999); font-size: .78rem; cursor: pointer; text-decoration: underline; }
 .fac-report:hover:not(:disabled) { color: var(--primary, #9C3D22); }
 .fac-report:disabled { cursor: default; text-decoration: none; color: #16a34a; }

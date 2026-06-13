@@ -195,6 +195,39 @@ def test_info_report_submit_and_admin_list(client_mocked, tmp_path, monkeypatch)
     assert last.json().get("error") == "rate_limited"
 
 
+def test_place_overview_endpoint(client_mocked):
+    """Trang hub xã/phường: /api/places/{id}/overview gom danh bạ + du lịch + lưu trú + sản phẩm.
+    404 nếu id không phải place."""
+    from database import db  # admin editor không cho type=place → seed thẳng DB
+
+    seeded = ["xa-test-hub", "diem-hub-1", "ks-hub-1", "sp-hub-1"]
+    try:
+        db.upsert_entity({"id": "xa-test-hub", "type": "place", "name": "Xã Test Hub",
+                          "area": "vinh-long", "level": "xa"})
+        db.upsert_entity({"id": "diem-hub-1", "type": "attraction", "name": "Điểm Hub 1",
+                          "summary": "x", "placeId": "xa-test-hub"})
+        db.upsert_entity({"id": "ks-hub-1", "type": "accommodation", "name": "KS Hub 1",
+                          "summary": "x", "placeId": "xa-test-hub"})
+        db.upsert_entity({"id": "sp-hub-1", "type": "product", "name": "SP Hub 1",
+                          "summary": "x", "placeId": "xa-test-hub"})
+
+        ov = client_mocked.get("/api/places/xa-test-hub/overview")
+        assert ov.status_code == 200, ov.text
+        body = ov.json()
+        assert body["place"]["name"] == "Xã Test Hub"
+        assert body["counts"]["tourism"] == 1
+        assert body["counts"]["lodging"] == 1
+        assert body["counts"]["products"] == 1
+        assert isinstance(body["facilities"], list)  # rỗng đến khi có dữ liệu thật
+        assert {e["id"] for e in body["tourism"]} == {"diem-hub-1"}
+
+        # id không phải place -> 404
+        assert client_mocked.get("/api/places/diem-hub-1/overview").status_code == 404
+    finally:
+        for eid in seeded:
+            db.delete_entity(eid)
+
+
 def test_directory_lookup_tool_dispatch(client_mocked):
     """GĐ13: chat-tool `directory_lookup` -> knowledge.directory_search; trả note rõ khi rỗng,
     trả results khi có facility. Bao phủ nhánh dispatch trong call_tool."""
