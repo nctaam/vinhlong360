@@ -268,6 +268,15 @@ def run_discovery(topics, regions, workers, model, apply, label="manual"):
     tmp = DATA.with_suffix(".discover.tmp")
     tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     tmp.replace(DATA)
+    # GĐ-audit (B1): ghi entity mới vào DB (nguồn sự thật cho chat); data.json là working copy.
+    try:
+        from database import db
+        for s in unique:
+            ent = next((x for x in data["entities"] if x["id"] == s["id"]), None)
+            if ent:
+                db.upsert_entity(ent)  # upsert nhận alias "coords"->"coordinates"
+    except Exception as exc:  # noqa: BLE001
+        print(f"[discover] CANH BAO: ghi DB that bai: {exc}")
     try:
         import scheduler
         scheduler.sync_data_json_to_js()

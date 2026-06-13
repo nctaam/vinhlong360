@@ -148,10 +148,24 @@ def main():
             print(f"  ✗ [{reason}] {e['name']} (id={e['id']})")
 
     if "--apply" in sys.argv and noisy:
+        # GĐ-audit (B1-invariant): backup TRƯỚC khi xoá file dữ liệu không tái tạo được.
+        try:
+            import subprocess
+            subprocess.run([sys.executable, str(ROOT / "scripts" / "backup_data.py")], check=False)
+        except Exception as exc:
+            print(f"  ⚠ backup that bai ({exc}) — van tiep tuc vi co --apply")
         data["entities"] = clean
-        with open(DATA_JSON, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-        print(f"\n✓ Đã xóa {len(noisy)} entity nhiễu")
+        tmp = DATA_JSON.with_suffix(".cleanup.tmp")  # ghi atomic (tránh hỏng file giữa chừng)
+        tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        tmp.replace(DATA_JSON)
+        # GĐ-audit (B1): xoá khỏi DB (chat đọc DB) — không chỉ data.json.
+        try:
+            from database import db
+            for e, _r in noisy:
+                db.delete_entity(e["id"])  # cascade rels + FTS
+        except Exception as exc:
+            print(f"  ⚠ xoa DB that bai: {exc}")
+        print(f"\n✓ Đã xóa {len(noisy)} entity nhiễu (DB + data.json)")
         print(f"  Còn lại: {len(clean)} entities")
     elif noisy:
         print(f"\nChạy với --apply để xóa: python agent/cleanup_noise.py --apply")

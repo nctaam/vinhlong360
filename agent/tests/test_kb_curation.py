@@ -37,6 +37,34 @@ def kb_with_provisional(tmp_path, monkeypatch):
     return data_json
 
 
+class TestDbWriteThrough:
+    """GĐ-audit B1: promote/reject phải ghi DB (chat đọc DB) — không chỉ data.json."""
+
+    def test_promote_and_reject_hit_db(self, kb_with_provisional):
+        from database import db
+        db.initialize()
+        ids = ["prov-1", "prov-2"]
+        try:
+            db.upsert_entity({"id": "prov-1", "name": "Quán mới X", "type": "dish",
+                              "confidence": 0.4, "status": "provisional", "verified": False})
+            db.upsert_entity({"id": "prov-2", "name": "Điểm Y", "type": "attraction",
+                              "confidence": 0.4, "status": "provisional", "verified": False})
+
+            # promote: DB phản ánh (confidence được nâng ≥0.7; DB không có cột verified)
+            r = kb_curation.promote("prov-1", min_confidence=0.7)
+            assert r["ok"] is True
+            got = db.get_entity("prov-1")
+            assert got is not None and got.get("confidence", 0) >= 0.7
+
+            # reject: entity bị xoá khỏi DB (trước fix B1, reject chỉ sửa data.json → chat vẫn thấy)
+            r2 = kb_curation.reject("prov-2")
+            assert r2["ok"] is True
+            assert db.get_entity("prov-2") is None
+        finally:
+            for i in ids:
+                db.delete_entity(i)
+
+
 class TestListProvisional:
     def test_lists_only_provisional(self, kb_with_provisional):
         prov = kb_curation.list_provisional()

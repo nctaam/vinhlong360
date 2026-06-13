@@ -262,6 +262,13 @@ def learn_from_gaps(max_gaps: int = 5, dry_run: bool = False) -> dict:
         for e in new_entities:
             kb["entities"].append(e)
         _save_kb(kb)
+        # GĐ-audit (B1): ghi entity mới vào DB (chat đọc DB) — không chỉ data.json.
+        try:
+            from database import db
+            for e in new_entities:
+                db.upsert_entity(e)
+        except Exception as exc:  # noqa: BLE001
+            _logger.error(f"learn_loop: ghi DB that bai: {exc}")
         added = len(new_entities)
         _logger.info(f"Added {added} entities to KB (low confidence, needs review)")
 
@@ -349,6 +356,13 @@ def _adjust_entity_confidence(entity_id: str, delta: float):
                 e["confidence"] = round(new_conf, 3)
                 e["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
                 _save_kb(kb)
+                # GĐ-audit (B1): cập nhật confidence vào DB (chat đọc DB).
+                try:
+                    from database import db
+                    if db.get_entity(entity_id):
+                        db.upsert_entity(e)
+                except Exception as exc:  # noqa: BLE001
+                    _logger.error(f"learn_loop: cap nhat confidence DB that bai: {exc}")
                 _logger.debug(f"Confidence {entity_id}: {old_conf} → {new_conf}")
                 return
     except Exception as e:

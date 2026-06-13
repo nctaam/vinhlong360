@@ -259,7 +259,14 @@ def main():
     if args.apply and new_rels:
         data["relationships"].extend(new_rels)
         DATA_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-        print(f"\n  ✅ Saved {len(new_rels)} new relationships → data.json")
+        # GĐ-audit (B1): ghi quan hệ mới vào DB (chat đọc DB) — không chỉ data.json.
+        try:
+            from database import db
+            for r in new_rels:
+                db.add_relationship(r["from"], r["to"], r["type"])
+        except Exception as exc:  # noqa: BLE001
+            print(f"  ⚠ ghi rel vào DB that bai: {exc}")
+        print(f"\n  ✅ Saved {len(new_rels)} new relationships → DB + data.json")
         print(f"  Total relationships: {len(data['relationships'])}")
     elif new_rels:
         print(f"\n  ⚠ Dry run — add --apply to save changes")

@@ -46,6 +46,24 @@ def _reload():
         pass
 
 
+# GĐ-audit (B1): DB là nguồn sự thật cho chat (knowledge.reload đọc DB). Mọi mutate KB
+# PHẢI ghi DB, không chỉ data.json (nếu chỉ data.json thì chat không thấy + bị export ghi đè).
+def _db_upsert(entity: dict):
+    try:
+        from database import db
+        db.upsert_entity(entity)
+    except Exception as e:  # noqa: BLE001 - không để lỗi DB làm hỏng thao tác (data.json vẫn ghi)
+        print(f"[kb_curation] CANH BAO: upsert DB that bai cho {entity.get('id')}: {e}")
+
+
+def _db_delete(entity_id: str):
+    try:
+        from database import db
+        db.delete_entity(entity_id)  # cascade xoá cả relationships + FTS
+    except Exception as e:  # noqa: BLE001
+        print(f"[kb_curation] CANH BAO: delete DB that bai cho {entity_id}: {e}")
+
+
 def _is_provisional(e: dict) -> bool:
     return e.get("status") == "provisional" or e.get("verified") is False
 
@@ -74,6 +92,7 @@ def promote(entity_id: str, min_confidence: float = 0.7) -> dict:
             e["verified"] = True
             e["confidence"] = max(e.get("confidence", 0), min_confidence)
             _save_kb(kb)
+            _db_upsert(e)   # B1: ghi DB để chat thấy
             _reload()
             return {"ok": True, "id": entity_id, "status": "verified"}
     return {"ok": False, "error": "not found"}
@@ -95,6 +114,7 @@ def reject(entity_id: str) -> dict:
         if r.get("from") != entity_id and r.get("to") != entity_id
     ]
     _save_kb(kb)
+    _db_delete(entity_id)   # B1: xoá khỏi DB (cascade rels) để chat thấy
     _reload()
     return {"ok": True, "id": entity_id, "removed": before - len(kb["entities"])}
 
@@ -199,6 +219,7 @@ def auto_promote_pass(min_hits: int = 3, dry_run: bool = False) -> dict:
                 e["status"] = "verified"
                 e["verified"] = True
                 e["confidence"] = max(e.get("confidence", 0), 0.6)
+                _db_upsert(e)   # B1: ghi DB để chat thấy
             promoted.append(e["id"])
     if promoted and not dry_run:
         _save_kb(kb)
