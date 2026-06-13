@@ -78,7 +78,7 @@ const { data, error: fetchError } = await useAsyncData('map-entities', () =>
 )
 
 let mapInited = false
-let allMarkers: { marker: any; type: string }[] = []
+let mapRef: any = null  // GĐ10.2: tham chiếu map để cập nhật source khi lọc
 
 function esc(s: string) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -86,16 +86,32 @@ function esc(s: string) {
 
 // GĐ10.4: normalizeCoords gom vào composables/useCoords.ts (Nuxt auto-import).
 
-function updateMarkers() {
+// GĐ10.2: dựng GeoJSON từ entity đã lọc (thay 700 DOM marker bằng nguồn GeoJSON + clustering).
+function buildGeoJSON() {
   const show = activeTypes.value
-  for (const { marker, type } of allMarkers) {
-    const el = marker.getElement()
-    if (show.has('all') || show.has(type)) {
-      el.style.display = ''
-    } else {
-      el.style.display = 'none'
-    }
+  const features: any[] = []
+  for (const e of (data.value?.entities || [])) {
+    if (!(show.has('all') || show.has(e.type))) continue
+    const coords = normalizeCoords(e.coordinates ?? e.coords)
+    if (!coords) continue
+    const [lat, lng] = coords
+    const meta = TYPE_META[e.type] || { emoji: '📍' }
+    features.push({
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [lng, lat] },
+      properties: {
+        id: e.id, name: e.name, etype: e.type,
+        emoji: meta.emoji, label: meta.label || e.type,
+        color: MARKER_COLORS[e.type] || '#9C3D22',
+      },
+    })
   }
+  return { type: 'FeatureCollection', features }
+}
+
+function updateMarkers() {
+  // Lọc theo type = nạp lại dữ liệu nguồn (clustering tự dựng lại).
+  mapRef?.getSource?.('entities')?.setData(buildGeoJSON())
 }
 
 watch(mapEl, async (el) => {
@@ -103,30 +119,65 @@ watch(mapEl, async (el) => {
   mapInited = true
 
   const { map, maplibregl } = await createMap(el)
+  mapRef = map
 
-  function addMarkers() {
-    const entities = data.value?.entities || []
-    for (const e of entities) {
-      const coords = normalizeCoords(e.coordinates ?? e.coords)
-      if (!coords) continue
-      const [lat, lng] = coords
-      const meta = TYPE_META[e.type] || { emoji: '📍' }
-      const color = MARKER_COLORS[e.type] || '#9C3D22'
+  function addClusterLayers() {
+    if (map.getSource('entities')) return
+    map.addSource('entities', {
+      type: 'geojson',
+      data: buildGeoJSON(),
+      cluster: true,
+      clusterMaxZoom: 14,
+      clusterRadius: 50,
+    })
+    map.addLayer({
+      id: 'clusters', type: 'circle', source: 'entities', filter: ['has', 'point_count'],
+      paint: {
+        'circle-color': '#9C3D22',
+        'circle-opacity': 0.85,
+        'circle-radius': ['step', ['get', 'point_count'], 16, 10, 22, 50, 30],
+      },
+    })
+    map.addLayer({
+      id: 'cluster-count', type: 'symbol', source: 'entities', filter: ['has', 'point_count'],
+      layout: { 'text-field': ['get', 'point_count_abbreviated'], 'text-size': 12 },
+      paint: { 'text-color': '#ffffff' },
+    })
+    map.addLayer({
+      id: 'unclustered', type: 'circle', source: 'entities', filter: ['!', ['has', 'point_count']],
+      paint: {
+        'circle-color': ['get', 'color'],
+        'circle-radius': 7,
+        'circle-stroke-width': 2,
+        'circle-stroke-color': '#ffffff',
+      },
+    })
 
-      const popup = new maplibregl.Popup({ offset: 25 }).setHTML(
-        `<strong>${esc(meta.emoji)} ${esc(e.name)}</strong><br><small>${esc(meta.label || e.type)}</small><br><a href="/dia-diem/${esc(e.id)}">Xem chi tiết →</a>`
-      )
-
-      const marker = new maplibregl.Marker({ color })
-        .setLngLat([lng, lat])
-        .setPopup(popup)
+    map.on('click', 'clusters', (ev: any) => {
+      const f = map.queryRenderedFeatures(ev.point, { layers: ['clusters'] })[0]
+      if (!f) return
+      ;(map.getSource('entities') as any).getClusterExpansionZoom(f.properties.cluster_id, (err: any, zoom: number) => {
+        if (err) return
+        map.easeTo({ center: f.geometry.coordinates, zoom })
+      })
+    })
+    map.on('click', 'unclustered', (ev: any) => {
+      const f = ev.features?.[0]
+      if (!f) return
+      const p = f.properties
+      new maplibregl.Popup({ offset: 12 })
+        .setLngLat(f.geometry.coordinates)
+        .setHTML(`<strong>${esc(p.emoji)} ${esc(p.name)}</strong><br><small>${esc(p.label)}</small><br><a href="/dia-diem/${esc(p.id)}">Xem chi tiết →</a>`)
         .addTo(map)
-
-      allMarkers.push({ marker, type: e.type })
+    })
+    for (const lid of ['clusters', 'unclustered']) {
+      map.on('mouseenter', lid, () => { map.getCanvas().style.cursor = 'pointer' })
+      map.on('mouseleave', lid, () => { map.getCanvas().style.cursor = '' })
     }
   }
 
-  addMarkers()
+  if (map.isStyleLoaded()) addClusterLayers()
+  else map.on('load', addClusterLayers)
 })
 
 useSeoMeta({
