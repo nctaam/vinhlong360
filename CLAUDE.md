@@ -14,6 +14,7 @@ MXH du lịch/OCOP/cộng đồng cho Vĩnh Long mới (VL+Bến Tre+Trà Vinh).
 1. **DB là nguồn sự thật duy nhất** cho entity/relationship/itinerary + user/UGC. Chat **nạp toàn bộ vào RAM lúc khởi động** (giữ tốc độ); `web/data.json` chỉ còn là **export/backup + nguồn build prerender**.
 2. **Một frontend = Nuxt + hybrid rendering**. Xoá `web-astro`, bỏ JS/HTML legacy trong `web/`.
 3. **UGC/auth (users/posts/comments/...) = Postgres-only** (dev/prod parity). SQLite chỉ phục vụ tầng tri thức (entity/rel/itinerary); endpoint UGC trên SQLite trả **503** rõ ràng. Dev cộng đồng: `docker compose up postgres`. KHÔNG port UGC sang SQLite (tránh nợ 2 phương ngữ SQL).
+4. **CHỈ GIỚI THIỆU — KHÔNG đặt hàng/booking/thanh toán on-site, KHÔNG sàn bên-thứ-ba.** Giữ ở "tầng nhẹ" pháp lý (không kích đăng ký TMĐT NĐ52/85). CTA chỉ là liên hệ Zalo/điện thoại/hỏi-giá (KHÔNG form chốt đơn giá+SL+xác nhận). Doanh thu: premium/featured listing + hợp đồng B2G + quảng cáo (KHÔNG hoa hồng booking). Cũng KHÔNG đăng lại nguyên văn tin báo (crawler chỉ trích-đoạn+link — tránh giấy phép trang TTĐT tổng hợp).
 
 ## 2. Bất biến — VI PHẠM = DỪNG NGAY (không bao giờ phá)
 
