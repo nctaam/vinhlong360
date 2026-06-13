@@ -54,6 +54,8 @@ def _env_bool(name: str, default: bool) -> bool:
 
 BUILD_SEARCH_INDEXES = _env_bool("BUILD_SEARCH_INDEXES", True)
 BACKGROUND_INDEX_BUILD = _env_bool("BACKGROUND_INDEX_BUILD", True)
+# GĐ4.4: LLM Judge tốn nguyên 1 lượt LLM/chat cho telemetry -> mặc định TẮT (bật khi cần đo).
+LLM_JUDGE_ENABLED = _env_bool("LLM_JUDGE_ENABLED", False)
 
 import analytics
 import cache
@@ -808,12 +810,16 @@ async def lifespan(app):
 
 _server_start_time = time.time()
 
+# GĐ4.7: ẩn tài liệu API (docs/redoc/openapi) ở production để giảm lộ bề mặt nội bộ.
+_IS_PROD = os.environ.get("ENVIRONMENT", "development").strip().lower() == "production"
+
 app = FastAPI(
     title="vinhlong360 Knowledge Agent",
     version="8.2",
-    description="AI tourism assistant for Vĩnh Long province — 327 entities, 2070 relationships, 13 AI tools, agentic RAG, multi-turn reasoning.",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    description="AI tourism assistant cho Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh).",
+    docs_url=None if _IS_PROD else "/docs",
+    redoc_url=None if _IS_PROD else "/redoc",
+    openapi_url=None if _IS_PROD else "/openapi.json",
     openapi_tags=[
         {"name": "Chat", "description": "AI chat endpoints"},
         {"name": "Analytics", "description": "Usage analytics and insights"},
@@ -1738,7 +1744,7 @@ async def chat(req: ChatRequest, request: Request):
             pass
 
     # ── LLM Judge: quality evaluation (non-blocking, best-effort) ──
-    if HAS_LLM_JUDGE and evaluation["score"] >= 3:
+    if HAS_LLM_JUDGE and LLM_JUDGE_ENABLED and evaluation["score"] >= 3:
         try:
             judge_result = judge(corrected_message, reply)
             if judge_result and judge_result.get("weighted_score", 0) < 4:
@@ -1769,8 +1775,9 @@ async def chat(req: ChatRequest, request: Request):
             out_check = check_output(reply, corrected_message, knowledge._entities if hasattr(knowledge, '_entities') else {})
             if out_check.get("cleaned_reply"):
                 reply = out_check["cleaned_reply"]
-        except Exception:
-            pass
+        except Exception as guard_err:
+            # GĐ4.5: không nuốt lỗi im lặng — log để biết guardrail output hỏng.
+            logger.error("Output guardrail failed", error=str(guard_err))
 
     # Cache response (only if good quality)
     if not req.history and len(reply) > 30 and evaluation["score"] >= 5:
@@ -2038,7 +2045,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                         pass
 
                 # ── LLM Judge: quality evaluation ──
-                if HAS_LLM_JUDGE and evaluation["score"] >= 3:
+                if HAS_LLM_JUDGE and LLM_JUDGE_ENABLED and evaluation["score"] >= 3:
                     try:
                         judge(message, full_text)
                     except Exception:

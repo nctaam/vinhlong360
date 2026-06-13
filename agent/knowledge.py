@@ -170,6 +170,18 @@ def season_text(e: dict) -> str:
 CARD_TYPES = ["experience", "product", "dish", "craft_village", "attraction", "accommodation",
               "person", "event", "history", "nature", "economy"]
 
+# GĐ4.5: cấp hành chính của type=place. 'place' phi-hành-chính (level ngoài tập này) thực chất
+# là quán/nhà hàng/doanh nghiệp/địa danh bị gán nhầm type=place -> nên cho vào tìm kiếm.
+ADMIN_LEVELS = {"phuong", "xa", "tinh", "huyen", "quan", "thi-tran", "thanh-pho"}
+
+
+def _is_searchable(e: dict) -> bool:
+    """Entity hiển thị trong tìm kiếm: card-type, HOẶC place phi-hành-chính (quán/doanh nghiệp)."""
+    t = e.get("type")
+    if t in CARD_TYPES:
+        return True
+    return t == "place" and e.get("level") not in ADMIN_LEVELS
+
 AREA_META = {
     "vinh-long": {"name": "Vĩnh Long", "emoji": "🍊"},
     "ben-tre": {"name": "Bến Tre", "emoji": "🥥"},
@@ -219,7 +231,7 @@ def search_entities(
     _ensure()
     results = []
     for e in _entities.values():
-        if e["type"] not in CARD_TYPES:
+        if not _is_searchable(e):  # GĐ4.5: gồm cả place phi-hành-chính (quán/nhà hàng)
             continue
         if entity_type and e["type"] != entity_type:
             continue

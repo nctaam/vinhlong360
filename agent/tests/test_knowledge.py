@@ -250,3 +250,12 @@ class TestCompareAreas:
         assert result["area_1"]["area"] == "vinh-long"
         assert result["area_2"]["area"] == "tra-vinh"
         assert result["area_1"]["total_content"] >= 1
+
+
+def test_is_searchable_includes_nonadmin_place():
+    """GĐ4.5: quán/nhà hàng bị gán type=place (level phi-hành-chính) phải tìm được;
+    đơn vị hành chính (phuong/xa/tinh) thì không."""
+    assert knowledge._is_searchable({"type": "dish"}) is True
+    assert knowledge._is_searchable({"type": "place", "level": None}) is True   # quán/doanh nghiệp
+    assert knowledge._is_searchable({"type": "place", "level": "phuong"}) is False
+    assert knowledge._is_searchable({"type": "place", "level": "xa"}) is False

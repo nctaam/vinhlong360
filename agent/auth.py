@@ -50,6 +50,11 @@ VN_PHONE_RE = re.compile(r"^(0|\+84)(3|5|7|8|9)\d{8}$")
 
 _otp_rate: dict[str, float] = {}
 
+# GĐ4.7: rate-limit theo IP (chống SMS-pump bằng cách xoay nhiều số điện thoại).
+OTP_IP_LIMIT = 5          # tối đa 5 lần / cửa sổ
+OTP_IP_WINDOW = 600       # 10 phút
+_otp_ip_rate: dict[str, list[float]] = {}
+
 
 # ── Models ──
 
@@ -144,6 +149,16 @@ async def request_otp(body: OTPRequest, request: Request):
     if now - last < OTP_RATE_LIMIT_SECONDS:
         wait = int(OTP_RATE_LIMIT_SECONDS - (now - last))
         raise HTTPException(429, f"Vui lòng đợi {wait}s trước khi gửi lại OTP")
+
+    # GĐ4.7: chặn SMS-pump theo IP (xoay nhiều số). XFF lấy IP gốc nếu sau proxy.
+    ip = (request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+          or (request.client.host if request.client else "unknown"))
+    hits = [t for t in _otp_ip_rate.get(ip, []) if now - t < OTP_IP_WINDOW]
+    if len(hits) >= OTP_IP_LIMIT:
+        raise HTTPException(429, "Quá nhiều yêu cầu OTP từ IP này. Vui lòng thử lại sau.")
+    hits.append(now)
+    _otp_ip_rate[ip] = hits
+
     _otp_rate[phone] = now
 
     code = _generate_otp()
