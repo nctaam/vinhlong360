@@ -21,6 +21,9 @@ import retrieval_eval
 # Build indexes once for the whole module
 @pytest.fixture(scope="module", autouse=True)
 def _indexes():
+    # GĐ-audit: reset KB in-memory về DB thật trước khi build index — tránh flaky khi test
+    # khác (integration) đã mutate KB global trước đó (_ensure() là no-op nếu _entities đã set).
+    knowledge.reload()
     retrieval_eval._build_indexes()
     yield
 

@@ -75,14 +75,21 @@ def write_data_js(data: dict, path: Path):
         "};\n"
         "})();\n"
     )
-    path.write_text(js, encoding="utf-8")
+    _atomic_write(path, js)
     print(f"  data.js  -> {path}")
 
 
-def write_json(data: dict, path: Path):
-    """Write as plain JSON."""
+def _atomic_write(path: Path, text: str):
+    """GĐ-audit: ghi atomic (temp + replace) — crash giữa chừng không làm hỏng file đích."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    tmp = path.with_suffix(path.suffix + ".export.tmp")
+    tmp.write_text(text, encoding="utf-8")
+    tmp.replace(path)
+
+
+def write_json(data: dict, path: Path):
+    """Write as plain JSON (atomic)."""
+    _atomic_write(path, json.dumps(data, ensure_ascii=False, indent=2))
     print(f"  data.json -> {path}")
 
 

@@ -38,27 +38,27 @@
 
       <!-- 2) Địa điểm du lịch -->
       <section class="ward-sec">
-        <h2>🗺️ Địa điểm &amp; trải nghiệm du lịch <span class="cnt">{{ data.tourism.length }}</span></h2>
-        <div v-if="data.tourism.length" class="grid">
-          <EntityCard v-for="e in data.tourism" :key="e.id" :entity="e" />
+        <h2>🗺️ Địa điểm &amp; trải nghiệm du lịch <span class="cnt">{{ (data.tourism || []).length }}</span></h2>
+        <div v-if="(data.tourism || []).length" class="grid">
+          <EntityCard v-for="e in (data.tourism || [])" :key="e.id" :entity="e" />
         </div>
         <p v-else class="sec-empty">Chưa có địa điểm du lịch.</p>
       </section>
 
       <!-- 3) Lưu trú -->
       <section class="ward-sec">
-        <h2>🏡 Lưu trú <span class="cnt">{{ data.lodging.length }}</span></h2>
-        <div v-if="data.lodging.length" class="grid">
-          <EntityCard v-for="e in data.lodging" :key="e.id" :entity="e" />
+        <h2>🏡 Lưu trú <span class="cnt">{{ (data.lodging || []).length }}</span></h2>
+        <div v-if="(data.lodging || []).length" class="grid">
+          <EntityCard v-for="e in (data.lodging || [])" :key="e.id" :entity="e" />
         </div>
         <p v-else class="sec-empty">Chưa có cơ sở lưu trú.</p>
       </section>
 
       <!-- 4) Sản phẩm địa phương -->
       <section class="ward-sec">
-        <h2>🍊 Sản phẩm &amp; đặc sản địa phương <span class="cnt">{{ data.products.length }}</span></h2>
-        <div v-if="data.products.length" class="grid">
-          <EntityCard v-for="e in data.products" :key="e.id" :entity="e" />
+        <h2>🍊 Sản phẩm &amp; đặc sản địa phương <span class="cnt">{{ (data.products || []).length }}</span></h2>
+        <div v-if="(data.products || []).length" class="grid">
+          <EntityCard v-for="e in (data.products || [])" :key="e.id" :entity="e" />
         </div>
         <p v-else class="sec-empty">Chưa có sản phẩm địa phương.</p>
       </section>
