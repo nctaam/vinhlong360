@@ -266,6 +266,75 @@ def test_is_searchable_includes_facility():
     assert knowledge._is_searchable({"type": "facility"}) is True
 
 
+class TestReload:
+    """GĐ11.4: reload() swap state nhất quán + làm tươi adjacency. Hợp đồng hành vi
+    (giữ qua refactor background/atomic-swap)."""
+
+    def _fake_load(self, entities, rels, itins):
+        return lambda: ({e["id"]: e for e in entities}, rels, {it["id"]: it for it in itins})
+
+    def test_reload_rebuilds_globals_from_load(self, monkeypatch):
+        ents = [{"id": "x", "name": "X", "type": "dish"}]
+        monkeypatch.setattr(knowledge, "_load", self._fake_load(ents, [], []))
+        res = knowledge.reload()
+        assert res["status"] == "ok"
+        assert res["entities"] == 1
+        assert knowledge.get_entity("x")["name"] == "X"
+
+    def test_reload_refreshes_adjacency(self, monkeypatch):
+        # Lần 1: A -> B
+        ents = [{"id": "a", "name": "A", "type": "dish"},
+                {"id": "b", "name": "B", "type": "dish"},
+                {"id": "c", "name": "C", "type": "dish"}]
+        monkeypatch.setattr(knowledge, "_load",
+                            self._fake_load(ents, [{"from": "a", "to": "b", "type": "near"}], []))
+        knowledge.reload()
+        assert any(r["id"] == "b" for r in knowledge.related("a"))
+
+        # Lần 2: A -> C (adjacency phải phản ánh cạnh mới, bỏ cạnh cũ)
+        monkeypatch.setattr(knowledge, "_load",
+                            self._fake_load(ents, [{"from": "a", "to": "c", "type": "near"}], []))
+        knowledge.reload()
+        ids = {r["id"] for r in knowledge.related("a")}
+        assert "c" in ids and "b" not in ids
+
+    def test_reload_uses_lock_and_resets_adjacency(self, monkeypatch):
+        # GĐ11.4: tồn tại _reload_lock; reload vô hiệu adjacency (đặt None) để dựng lại.
+        assert isinstance(knowledge._reload_lock, type(__import__("threading").Lock()))
+        ents = [{"id": "a", "name": "A", "type": "dish"}, {"id": "b", "name": "B", "type": "dish"}]
+        monkeypatch.setattr(knowledge, "_load",
+                            self._fake_load(ents, [{"from": "a", "to": "b", "type": "near"}], []))
+        knowledge.reload()
+        knowledge.related("a")                       # dựng adjacency
+        assert knowledge._adjacency is not None
+        knowledge.reload()                           # reload phải reset adjacency
+        assert knowledge._adjacency is None
+
+    def test_concurrent_reloads_no_corruption(self, monkeypatch):
+        # Nhiều reload song song không làm hỏng state (khoá tuần-tự-hoá). Kết thúc: state hợp lệ.
+        import threading as _t
+        ents = [{"id": f"e{i}", "name": f"E{i}", "type": "dish"} for i in range(20)]
+        rels = [{"from": "e0", "to": f"e{i}", "type": "near"} for i in range(1, 20)]
+        monkeypatch.setattr(knowledge, "_load", self._fake_load(ents, rels, []))
+        errors = []
+
+        def worker():
+            try:
+                for _ in range(5):
+                    knowledge.reload()
+            except Exception as e:  # noqa: BLE001
+                errors.append(e)
+
+        threads = [_t.Thread(target=worker) for _ in range(4)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+        assert not errors
+        assert len(knowledge._entities) == 20
+        assert len(knowledge.related("e0")) == 19
+
+
 class TestDirectorySearch:
     """GĐ13: tra danh bạ cơ quan hành chính (facility) theo tên hoặc tên xã/phường."""
 

@@ -7,6 +7,7 @@ cho Knowledge Agent (tương đương store.js phía Python).
 
 import json
 import re
+import threading
 import unicodedata
 from pathlib import Path
 
@@ -109,12 +110,28 @@ def _ensure():
         _entities, _relationships, _itineraries = _load()
 
 
+# GĐ11.4: khoá tuần-tự-hoá reload (chống 2 reload đua nhau dựng + swap lẫn lộn).
+# Reader (/chat, search, related) KHÔNG lấy khoá này → reload không đóng băng đọc;
+# phần build nặng (_load đọc DB) nằm trong khoá nên chỉ chặn reload khác, không chặn reader.
+_reload_lock = threading.Lock()
+
+
 def reload():
-    """Hot-reload data từ DB (sau admin CRUD / auto-learn / migrate)."""
-    global _entities, _relationships, _itineraries
-    _entities, _relationships, _itineraries = _load()
-    return {"status": "ok", "entities": len(_entities),
-            "itineraries": len(_itineraries), "source": _data_source}
+    """Hot-reload data từ DB (sau admin CRUD / auto-learn / migrate).
+
+    GĐ11.4: build nặng + swap dưới `_reload_lock` (tuần tự hoá reload). Endpoint /reload
+    gọi qua asyncio.to_thread nên event loop KHÔNG bị đóng băng trong lúc đọc DB.
+    Sau swap, vô hiệu adjacency để dựng lại theo _relationships mới (atomic-ish swap).
+    """
+    global _entities, _relationships, _itineraries, _adjacency, _adj_src
+    with _reload_lock:
+        new_e, new_r, new_i = _load()         # nặng (đọc DB) — chỉ chặn reload khác, không chặn reader
+        _entities, _relationships, _itineraries = new_e, new_r, new_i
+        _adjacency = None                     # vô hiệu index kề -> dựng lại lazy theo rel mới
+        _adj_src = None
+        src = _data_source
+    return {"status": "ok", "entities": len(new_e),
+            "itineraries": len(new_i), "source": src}
 
 
 def _normalize_vn(text: str) -> str:

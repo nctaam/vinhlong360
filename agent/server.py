@@ -2147,19 +2147,25 @@ async def reload_data(request: Request):
     from middleware import verify_admin_key
     if not verify_admin_key(request):
         return JSONResponse(status_code=401, content={"error": "unauthorized", "detail": "Cần X-Admin-Key"})
-    result = knowledge.reload()
-    cache.invalidate_all()
-    if HAS_PROMPT_CACHE:
-        prompt_cache.invalidate()
-    if HAS_KB_CONTEXT:
-        kb_context.invalidate()
-    # Rebuild search indexes so new/changed entities are searchable via hybrid.
-    try:
-        idx = build_search_indexes()
-        result["indexes"] = idx
-    except Exception as e:
-        logger.error(f"Index rebuild on reload failed: {e}")
-    sync_data_json_to_js()
+
+    def _reload_blocking():
+        # GĐ11.4: toàn bộ phần nặng (reload DB + rebuild index + sync) chạy trong thread
+        # → event loop không bị đóng băng (/health vẫn đáp ứng trong lúc reload).
+        result = knowledge.reload()
+        cache.invalidate_all()
+        if HAS_PROMPT_CACHE:
+            prompt_cache.invalidate()
+        if HAS_KB_CONTEXT:
+            kb_context.invalidate()
+        # Rebuild search indexes so new/changed entities are searchable via hybrid.
+        try:
+            result["indexes"] = build_search_indexes()
+        except Exception as e:
+            logger.error(f"Index rebuild on reload failed: {e}")
+        sync_data_json_to_js()
+        return result
+
+    result = await asyncio.to_thread(_reload_blocking)
     logger.info("Data reloaded", **{k: v for k, v in result.items() if k != "indexes"})
     return result
 
