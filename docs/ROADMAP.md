@@ -269,6 +269,8 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 - **(2026-06-13) Lỗ hổng CI phát hiện khi demo browser**: `npm run build` KHÔNG SSR-render từng route → 2 trang (`/danh-ba`, `/theo-mua`) gọi `useSeoHelpers()` (composable không tồn tại) vẫn build OK nhưng **500 lúc SSR** suốt từ khi tạo. Đã sửa (commit ced5e50). **Đề xuất**: thêm route-render smoke (vd `nuxt build` + script fetch các route chính kỳ vọng 200, hoặc `@nuxt/test-utils`) vào CI để bắt lớp lỗi này. Chưa làm.
 
+- **(2026-06-13) Trang hub từng xã/phường — XONG** (commit 949c843, theo yêu cầu chủ dự án + khớp D1): `/xa-phuong/[id]` gom 4 mục (🏛️ danh bạ · 🗺️ du lịch · 🏡 lưu trú · 🍊 sản phẩm) cho mỗi xã/phường; `GET /api/places/{id}/overview` (+`db.entities_by_place`); link từ `khu-vuc/[area]` (list 35 ward VL) + `danh-ba`. 51/124 ward có nội dung; danh bạ mỗi ward = empty-state đến khi có dữ liệu thật (13.6 Track-H). **Còn (đề xuất)**: SSR-prerender các trang ward (CWV/SEO — gắn 10.1); breadcrumb/sitemap thêm ward; nav top-level "Xã/phường".
+
 ### 📊 Hàm ý từ deep-research nhu cầu người dùng (2026-06-13) — định hướng, KHÔNG tự đổi §1
 > Nguồn: memory `research-vinhlong360-demand.md` (24 nguồn, 25 claim verify 3-phiếu, 23 xác nhận / 2 bác). Đây là **ưu tiên hóa & việc đề xuất**, không thay quyết định kiến trúc §1.4 (showcase-only vẫn giữ).
 
