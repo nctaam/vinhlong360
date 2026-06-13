@@ -49,12 +49,20 @@ import { OFFICE_KIND, AREA_META } from '~/composables/useConstants'
 
 const { canonicalUrl } = useSeoHelpers()
 const ADMIN_LEVELS = ['phuong', 'xa', 'tinh']
+const route = useRoute()
 
 const { data: places } = await useAsyncData('dir-places', () => $fetch<any>('/api/places'))
 
+// Pre-scope theo ?area= (đến từ trang khu-vuc/[area]); rỗng/không hợp lệ → hiện cả 3 vùng.
+const areaFilter = computed(() => {
+  const a = route.query.area as string
+  return a && AREA_META[a] ? a : ''
+})
+
 const wardGroups = computed(() => {
   const wards = (places.value || []).filter((p: any) => ADMIN_LEVELS.includes(p.level))
-  return Object.keys(AREA_META).map(area => ({
+  const areas = areaFilter.value ? [areaFilter.value] : Object.keys(AREA_META)
+  return areas.map(area => ({
     area,
     label: AREA_META[area].name,
     wards: wards.filter((w: any) => w.area === area).sort((a: any, b: any) => a.name.localeCompare(b.name, 'vi')),

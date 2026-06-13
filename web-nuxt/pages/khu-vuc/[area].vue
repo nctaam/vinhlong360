@@ -22,6 +22,7 @@
         <NuxtLink :to="`/luu-tru`" class="chip">🏡 Lưu trú</NuxtLink>
         <NuxtLink to="/tuyen-duong" class="chip">🛤️ Tuyến đường</NuxtLink>
       <NuxtLink to="/ban-do" no-prefetch class="chip">🗺️ Bản đồ</NuxtLink>
+      <NuxtLink :to="`/danh-ba?area=${areaKey}`" class="chip">🏛️ Danh bạ hành chính</NuxtLink>
       </div>
     </div>
   </section>
