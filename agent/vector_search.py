@@ -109,10 +109,11 @@ class TFIDFStore:
         self._lock = Lock()
         self._loaded = False
         # Core data
-        self._vocab: dict[str, int] = {}       # token → index
-        self._idf: dict[str, float] = {}       # token → IDF score
-        self._vectors: dict[str, list[float]] = {}  # entity_id → TF-IDF vector
-        self._texts: dict[str, str] = {}        # entity_id → source text
+        # GĐ11.1: vector THƯA (sparse) — chỉ lưu token có trọng số khác 0 thay vì
+        # mảng dày vocab_size (~31k) chiều toàn 0 → embeddings.json & RAM giảm mạnh.
+        self._idf: dict[str, float] = {}              # token → IDF score
+        self._vectors: dict[str, dict[str, float]] = {}  # entity_id → {token: weight} (L2-normalized)
+        self._texts: dict[str, str] = {}              # entity_id → source text
         self._doc_count: int = 0
 
     def _load(self):
@@ -122,12 +123,13 @@ class TFIDFStore:
         try:
             if EMBEDDINGS_FILE.exists():
                 raw = json.loads(EMBEDDINGS_FILE.read_text(encoding="utf-8"))
-                if raw.get("type") == "tfidf":
-                    self._vocab = raw.get("vocab", {})
+                if raw.get("type") == "tfidf-sparse":
                     self._idf = raw.get("idf", {})
                     self._vectors = raw.get("vectors", {})
                     self._texts = raw.get("texts", {})
                     self._doc_count = raw.get("doc_count", 0)
+                # Định dạng cũ (dense "tfidf") → KHÔNG nạp (tránh phình RAM 208MB);
+                # để build_index() dựng lại dạng sparse ở lần build kế tiếp.
         except Exception:
             pass
         self._loaded = True
@@ -136,12 +138,11 @@ class TFIDFStore:
         """Save embeddings to disk."""
         try:
             data = {
-                "type": "tfidf",
+                "type": "tfidf-sparse",
                 "doc_count": self._doc_count,
-                "vocab_size": len(self._vocab),
+                "vocab_size": len(self._idf),
                 "entity_count": len(self._vectors),
                 "updated_at": time.strftime("%Y-%m-%d %H:%M"),
-                "vocab": self._vocab,
                 "idf": self._idf,
                 "vectors": self._vectors,
                 "texts": self._texts,
@@ -191,29 +192,21 @@ class TFIDFStore:
             for eid, text in docs.items():
                 doc_tokens[eid] = _tokenize(text)
 
-            # Step 2: Build vocabulary
-            all_tokens = set()
-            for tokens in doc_tokens.values():
-                all_tokens.update(tokens)
-            self._vocab = {token: idx for idx, token in enumerate(sorted(all_tokens))}
-
-            # Step 3: Compute IDF (Inverse Document Frequency)
+            # Step 2: Compute IDF (Inverse Document Frequency)
             N = len(docs)
             self._doc_count = N
             doc_freq: Counter = Counter()
             for tokens in doc_tokens.values():
-                unique_tokens = set(tokens)
-                doc_freq.update(unique_tokens)
+                doc_freq.update(set(tokens))
 
             self._idf = {}
             for token, freq in doc_freq.items():
                 # Smooth IDF: log(N / (1 + df)) + 1
                 self._idf[token] = math.log(N / (1 + freq)) + 1
 
-            # Step 4: Compute TF-IDF vectors (sparse → dense)
+            # Step 3: Compute SPARSE TF-IDF vectors ({token: weight}, chỉ token khác 0)
             self._vectors = {}
             self._texts = docs
-            vocab_size = len(self._vocab)
 
             for eid, tokens in doc_tokens.items():
                 if not tokens:
@@ -221,19 +214,16 @@ class TFIDFStore:
                 tf = Counter(tokens)
                 max_tf = max(tf.values()) if tf else 1
 
-                # Build sparse vector then convert to dense
-                vec = [0.0] * vocab_size
+                vec: dict[str, float] = {}
                 for token, count in tf.items():
-                    if token in self._vocab:
-                        idx = self._vocab[token]
-                        # Augmented TF: 0.5 + 0.5 * (tf / max_tf)
-                        normalized_tf = 0.5 + 0.5 * (count / max_tf)
-                        vec[idx] = normalized_tf * self._idf.get(token, 1.0)
+                    # Augmented TF: 0.5 + 0.5 * (tf / max_tf)
+                    normalized_tf = 0.5 + 0.5 * (count / max_tf)
+                    vec[token] = normalized_tf * self._idf.get(token, 1.0)
 
-                # Normalize vector (L2)
-                norm = _norm(vec)
+                # Normalize (L2) — chia cho chuẩn trên các giá trị khác 0
+                norm = math.sqrt(sum(v * v for v in vec.values()))
                 if norm > 0:
-                    vec = [v / norm for v in vec]
+                    vec = {t: v / norm for t, v in vec.items()}
 
                 self._vectors[eid] = vec
 
@@ -241,13 +231,13 @@ class TFIDFStore:
             return {
                 "status": "built",
                 "entities": len(self._vectors),
-                "vocab_size": vocab_size,
+                "vocab_size": len(self._idf),
                 "total": len(self._vectors)
             }
 
-    def _embed_query(self, query: str) -> list[float] | None:
-        """Create TF-IDF vector for a query using existing vocabulary."""
-        if not self._vocab:
+    def _embed_query(self, query: str) -> dict[str, float] | None:
+        """Tạo vector THƯA {token: weight} cho query dựa trên IDF đã học."""
+        if not self._idf:
             return None
 
         tokens = _tokenize(query)
@@ -256,24 +246,21 @@ class TFIDFStore:
 
         tf = Counter(tokens)
         max_tf = max(tf.values()) if tf else 1
-        vocab_size = len(self._vocab)
 
-        vec = [0.0] * vocab_size
-        matched = 0
+        vec: dict[str, float] = {}
         for token, count in tf.items():
-            if token in self._vocab:
-                idx = self._vocab[token]
+            # Chỉ giữ token đã biết (có trong IDF) — token lạ không đóng góp similarity
+            if token in self._idf:
                 normalized_tf = 0.5 + 0.5 * (count / max_tf)
-                vec[idx] = normalized_tf * self._idf.get(token, 1.0)
-                matched += 1
+                vec[token] = normalized_tf * self._idf[token]
 
-        if matched == 0:
+        if not vec:
             return None
 
-        # Normalize
-        norm = _norm(vec)
+        # Normalize (L2)
+        norm = math.sqrt(sum(v * v for v in vec.values()))
         if norm > 0:
-            vec = [v / norm for v in vec]
+            vec = {t: v / norm for t, v in vec.items()}
 
         return vec
 
@@ -293,10 +280,16 @@ class TFIDFStore:
         if query_vec is None:
             return []
 
-        # Calculate similarities (sparse dot product optimization)
+        # Sparse cosine: cả hai vector đã L2-normalize → cosine = dot.
+        # Lặp theo token query (ít) và tra trong vector entity (dict) → O(docs × |query|).
+        q_items = list(query_vec.items())
         scores = []
         for eid, vec in self._vectors.items():
-            sim = _dot(query_vec, vec)  # Vectors already normalized → dot = cosine
+            sim = 0.0
+            for token, qw in q_items:
+                w = vec.get(token)
+                if w is not None:
+                    sim += qw * w
             if sim > 0.01:  # Skip near-zero
                 scores.append({"entity_id": eid, "score": round(sim, 4)})
 
@@ -308,7 +301,7 @@ class TFIDFStore:
             self._load()
         return {
             "type": "tfidf",
-            "vocab_size": len(self._vocab),
+            "vocab_size": len(self._idf),
             "total_embeddings": len(self._vectors),
             "doc_count": self._doc_count,
             "file_exists": EMBEDDINGS_FILE.exists(),

@@ -114,6 +114,46 @@ class TestSaveLoadRoundtrip:
         assert after[0]["entity_id"] == "bun-mam"
 
 
+class TestSparseStorage:
+    """GĐ11.1: vector lưu dạng THƯA — {token: weight} chỉ token khác 0, KHÔNG mảng dày vocab_size."""
+
+    def test_vector_is_sparse_dict(self, store, corpus):
+        store.build_index(corpus, force=True)
+        vec = store._vectors["cam-sanh"]
+        assert isinstance(vec, dict)
+        # số phần tử khác 0 nhỏ hơn nhiều so với vocab toàn cục (nếu là dense sẽ = vocab_size)
+        assert 0 < len(vec) < len(store._idf)
+        # đã L2-normalize → chuẩn ~1
+        import math as _m
+        assert _m.sqrt(sum(v * v for v in vec.values())) == pytest.approx(1.0, abs=1e-6)
+
+    def test_storage_far_smaller_than_dense(self, store, monkeypatch, tmp_path):
+        # Corpus đủ rộng để vocab lớn: lưu sparse phải nhỏ hơn nhiều lần so với dense tương đương.
+        big = {
+            f"e{i}": {"type": "product", "name": f"Sản phẩm số {i}",
+                      "summary": f"Mô tả đặc sản vùng {i} với từ khoá riêng biệt unik{i}."}
+            for i in range(60)
+        }
+        store.build_index(big, force=True)
+        vocab = len(store._idf)
+        sparse_nonzero = sum(len(v) for v in store._vectors.values())
+        dense_cells = vocab * len(store._vectors)
+        # mật độ thưa: tổng ô khác 0 << số ô nếu lưu dày
+        assert sparse_nonzero < dense_cells / 10
+        assert (tmp_path / "embeddings.json").exists()
+
+    def test_old_dense_format_not_loaded(self, store, tmp_path, monkeypatch):
+        # File định dạng cũ (dense "tfidf") KHÔNG được nạp (tránh phình RAM) → để rebuild.
+        import json as _json
+        (tmp_path / "embeddings.json").write_text(_json.dumps({
+            "type": "tfidf", "vocab": {"a": 0}, "idf": {"a": 1.0},
+            "vectors": {"x": [0.0, 1.0]}, "texts": {"x": "a"}, "doc_count": 1,
+        }), encoding="utf-8")
+        fresh = vs.TFIDFStore()
+        assert fresh.search("a", top_k=3) == []   # không nạp dense cũ
+        assert fresh._vectors == {}
+
+
 class TestStats:
     def test_stats_structure(self, store, corpus):
         store.build_index(corpus, force=True)
