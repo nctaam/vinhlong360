@@ -722,6 +722,14 @@ class Database:
         """Replace knowledge tables from data.json, backing up SQLite first."""
         self.initialize()
 
+        # GĐ0.5: khoá replace trong giai đoạn ổn định. Migrate có chủ đích (GĐ3.3) dùng
+        # ALLOW_DESTRUCTIVE_DB_REPLACE=1 để vượt; mở khoá hẳn ở GĐ3.8.
+        if os.environ.get("DESTRUCTIVE_OPS_LOCKED", "1") == "1" and os.environ.get("ALLOW_DESTRUCTIVE_DB_REPLACE") != "1":
+            raise RuntimeError(
+                "replace_from_json bị khoá (DESTRUCTIVE_OPS_LOCKED=1). "
+                "Đặt ALLOW_DESTRUCTIVE_DB_REPLACE=1 cho migrate có chủ đích (GĐ3.3)."
+            )
+
         if self._use_pg and os.environ.get("ALLOW_DESTRUCTIVE_DB_REPLACE") != "1":
             raise RuntimeError("Refusing to replace PostgreSQL data without ALLOW_DESTRUCTIVE_DB_REPLACE=1")
 

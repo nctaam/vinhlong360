@@ -360,6 +360,9 @@ async def data_quality_review(
 
 @router.post("/data-quality/apply")
 async def data_quality_apply(body: DataQualityApplyRequest):
+    # GĐ0.5: khoá (apply ghi data.json rồi replace DB -> xoá edit admin). Mở ở GĐ3.8.
+    if os.environ.get("DESTRUCTIVE_OPS_LOCKED", "1") == "1":
+        raise HTTPException(423, detail="data-quality apply bị khoá (DESTRUCTIVE_OPS_LOCKED=1) tới hết GĐ3.")
     result = data_quality.apply_candidates(body.candidate_ids, dry_run=body.dry_run)
     if result.get("applied_count") and not body.dry_run:
         db.replace_from_json(str(data_quality.DATA_PATH))
@@ -371,6 +374,9 @@ async def data_quality_history(limit: int = Query(20, ge=1, le=200)):
 
 @router.post("/data-quality/rollback/{batch_id}")
 async def data_quality_rollback(batch_id: str):
+    # GĐ0.5: khoá (rollback cũng replace DB từ data.json). Mở ở GĐ3.8.
+    if os.environ.get("DESTRUCTIVE_OPS_LOCKED", "1") == "1":
+        raise HTTPException(423, detail="data-quality rollback bị khoá (DESTRUCTIVE_OPS_LOCKED=1) tới hết GĐ3.")
     try:
         result = data_quality.rollback_apply(batch_id)
     except ValueError as exc:

@@ -2109,6 +2109,12 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
 
 @app.post("/reload")
 async def reload_data():
+    # GĐ0.5: khoá thao tác phá dữ liệu trong giai đoạn ổn định (mở ở GĐ3.8).
+    if os.environ.get("DESTRUCTIVE_OPS_LOCKED", "1") == "1":
+        return JSONResponse(
+            status_code=423,
+            content={"error": "locked", "detail": "/reload bị khoá (DESTRUCTIVE_OPS_LOCKED=1) tới hết GĐ3."},
+        )
     result = knowledge.reload()
     cache.invalidate_all()
     if HAS_PROMPT_CACHE:
