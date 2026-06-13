@@ -114,9 +114,9 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 **Tiên quyết:** DoD-4.
 
-- [ ] **6.1** Xoá module dead-weight + test tương ứng: `federation`, `a2a_protocol`, `advanced_graph`, `agent_relay`, `streaming_tools`, `multimodal_engine`, `eval_framework`(giữ run_eval/retrieval_eval nếu dùng), `knowledge_evolution`; gỡ import + `HAS_*` + endpoint `/a2a`,`/system/federation/*`. → *Verify:* `python -c "import server"` OK; `pytest -q` xanh. *Nghiệm thu:* server chạy, LOC giảm.
-- [ ] **6.2** Log WARNING khi import optional fail (`server.py:79-282`) + field `/health` liệt kê tính năng tắt. → *Nghiệm thu:* không còn tắt tính năng im lặng.
-- [ ] **6.3** Sửa metadata sai `server.py:814` (tính từ `len(knowledge._entities)` runtime). → *Verify:* `/` hiển thị số đúng. *Nghiệm thu:* hết "327 entities".
+- [x] **6.1** ✅ Xoá 7 module dead-weight + test (**-7508 LOC**, -203 test): `federation`, `a2a_protocol`, `advanced_graph`, `agent_relay`, `streaming_tools`, `multimodal_engine`, `knowledge_evolution`. **Giữ `eval_framework`** (run_eval/retrieval_eval dùng). Mọi usage guarded → `HAS_X=False` degrade; server+scheduler import OK; baseline 1058 passed. ⏸ Stub guarded trong server.py (endpoint Level7 trả "not available") + task scheduler (try/except, disabled) = vô hại, để Backlog (xen kẽ module giữ → phẫu thuật rủi ro).
+- [x] **6.2** ✅ `/health` đã liệt kê availability từng feature (`server.py:2235-2245`). (Không log warning per-import để tránh nhiễu cho module đã chủ đích xoá.)
+- [x] **6.3** ✅ Đã sửa ở GĐ4.7: genericize description (bỏ "327 entities, 2070 relationships" sai).
 
 **🚦 Cổng DoD-6:** server import & test xanh sau khi xoá; `/health` liệt kê tính năng tắt.
 
@@ -224,6 +224,7 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 - ~~(2026-06-13) GĐ3.1 — UGC/auth → SQLite~~ ✅ ĐÃ QUYẾT (Postgres-only): không port; `_require_pg` gắn 3 router UGC trả 503 trên SQLite; tài liệu CLAUDE.md §1.3 + docs/ugc-postgres.md. Lý do: dev/prod parity, tránh nợ 2 phương ngữ SQL, UGC vốn cần Postgres.
 - ~~(2026-06-13) GĐ3.8 — data-quality DB-native~~ ✅ XONG (commit 35ff28e): apply/rollback ghi thẳng DB, bỏ khoá. Footgun "xoá edit admin" đã gỡ.
+- **(2026-06-13) GĐ6 stub — chưa dọn**: endpoint Level7 trong `server.py` (relay/streaming/advanced-graph/a2a/knowledge-evo/multimodal/federation — đều guarded `HAS_X=False`, trả "not available") + import try/except + startup prints + 2 task scheduler (try/except, disabled). Vô hại; xen kẽ module GIỮ nên cần phẫu thuật cẩn thận. Dọn khi rảnh.
 - **(2026-06-13) GĐ5 phần còn lại — chưa làm**: (a) lưu timestamp/version consent vào DB (cột PG ở `users`); (b) GĐ5.6 đổi crawler/import sang lưu trích-đoạn+link (bản quyền) trước khi bật lại crawl; (c) 🛑 Track-H: pháp nhân + đăng ký NĐ147 + luật sư ICT — CHẶN ra mắt công khai.
 - **(2026-06-13) GĐ7 phần còn lại — chưa làm**: (a) `/api/constants` + Nuxt fetch để unify FE+BE constants (giờ `useConstants.ts` là nguồn FE duy nhất, chấp nhận được); (b) bỏ JS/HTML legacy trong `web/` + sửa `nginx.conf /legacy/` (giữ data.json/data.js/admin*.html/media); (c) gỡ field shim `coords`/`from`/`to` sau khi bỏ FE legacy.
 - **(2026-06-13) GĐ4 phần phụ — chưa làm**: (a) ẩn `/system/*`,`/analytics/*`,`/metrics` ở production (nhiều endpoint — cân nhắc require_admin chung); (b) rate-limit per-user cho `/image/recognize` khi mở cho user thường (giờ admin-only); (c) cân nhắc hạ `max_rounds` agent sau khi có eval baseline (tránh giảm chất lượng mù).
