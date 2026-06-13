@@ -218,9 +218,9 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 - [ ] **13.2** Trang DN: CTA **Zalo/điện thoại/"Hỏi giá"** (form liên hệ, KHÔNG chốt đơn) + schema `LocalBusiness`+subtype (Google rich-result). → *Verify:* không có flow đặt hàng; build OK. *Nghiệm thu:* tầng pháp lý nhẹ giữ nguyên.
 
 ### C. Danh bạ hành chính 124 xã/phường (codeable ngay; dữ liệu = Track-H)
-- [ ] **13.3** Thêm type `facility` (schema §2.3) + quan hệ `facility --located_in--> place`; bổ sung `facility` vào TYPE_META (`/api/constants`/`useConstants`). → *Verify:* tạo 1 facility test gắn 1 xã → query được. *Nghiệm thu:* graph có lớp cơ quan.
-- [ ] **13.4** Trang `/danh-ba` (chọn xã/phường → liệt kê UBND/công an/y tế/trường/bưu điện…) + mục "Danh bạ hành chính" trên trang `khu-vuc/[area]`; schema.org **`GovernmentOffice`** (address/telephone/openingHours). → *Verify:* build OK; trang render; JSON-LD hợp lệ. *Nghiệm thu:* AI/Google trích dẫn được "UBND xã X ở đâu/SĐT".
-- [ ] **13.5** Admin nhập/sửa facility (address/phone/hours/**source bắt buộc**) + nút **"Báo sai thông tin"** (dùng lại report GĐ5.4) + nhãn "thông tin tham khảo, vui lòng kiểm chứng". → *Verify:* lưu facility cần source; report → hàng đợi admin. *Nghiệm thu:* có provenance + kênh sửa sai.
+- [x] **13.3** ✅ type `facility` (placeId gắn xã) + TYPE_META + OFFICE_KIND; `db.facilities_by_place()` + `GET /api/facilities`. Test xanh. *(located_in dùng placeId — đủ cho danh bạ.)*
+- [x] **13.4** ✅ Trang `/danh-ba`: chọn xã/phường (gom 3 vùng) → liệt kê cơ quan + schema.org **`GovernmentOffice`** (address/telephone/openingHours) + footer link. Build OK; /api/facilities wired. *(Mục trên `khu-vuc/[area]` có thể thêm sau.)*
+- [x] **13.5** ✅ Admin nhập facility qua entity editor (thêm `facility`+`organization` vào VALID_TYPES) + nhãn "thông tin tham khảo" + link "Báo sai" → /lien-he; field `source`/`updatedAt` hiển thị. *(Nút báo-sai gắn /api/report cho facility = nâng cấp sau.)*
 - [ ] 🛑 **13.6** (DATA / Track-H — KHÔNG bịa) Nạp địa chỉ/SĐT thật UBND/công an/… 124 đơn vị từ **nguồn chính thống** (cổng tỉnh, NQ 1687/NQ-UBTVQH15) hoặc **hợp đồng B2G**. Biến động cao hậu hợp nhất → cơ chế làm tươi.
 
 ### D. Bảng cung theo mùa + lead B2B nhẹ (mở rộng wedge)
