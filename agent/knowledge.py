@@ -81,6 +81,26 @@ def _load():
 
 
 _entities, _relationships, _itineraries = None, None, None
+# GĐ11.2: index kề {entity_id: [rel,...]} -> related() O(degree). Tự dựng lại (self-healing)
+# khi _relationships đổi identity (qua reload HOẶC test patch trực tiếp).
+_adjacency = None
+_adj_src = None
+
+
+def _get_adjacency() -> dict:
+    """Trả index kề, dựng lại nếu chưa có hoặc _relationships đã đổi (đối tượng khác)."""
+    global _adjacency, _adj_src
+    if _adjacency is None or _adj_src is not _relationships:
+        adj: dict[str, list] = {}
+        for r in (_relationships or []):
+            f, t = r.get("from"), r.get("to")
+            if f:
+                adj.setdefault(f, []).append(r)
+            if t and t != f:
+                adj.setdefault(t, []).append(r)
+        _adjacency = adj
+        _adj_src = _relationships
+    return _adjacency
 
 
 def _ensure():
@@ -326,7 +346,7 @@ def related(entity_id: str) -> list[dict]:
     REL_BWD = {"hosts": "Diễn ra tại", "offered_by": "Cung cấp", "made_by": "Sản phẩm",
                "produced_in": "Đặc sản", "supplies_to": "Nguồn cung", "near": "Gần"}
     out = []
-    for r in _relationships:
+    for r in (_get_adjacency().get(entity_id) or []):  # GĐ11.2: chỉ duyệt cạnh kề entity này
         if r["from"] == entity_id and r["to"] in _entities:
             other = _entities[r["to"]]
             out.append({"label": REL_FWD.get(r["type"], r["type"]),
