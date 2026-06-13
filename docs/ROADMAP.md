@@ -170,10 +170,10 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 **Tiên quyết:** DoD-7, DoD-8.
 
-- [ ] **10.1** Hybrid rendering: route rules Nuxt prerender trang chi tiết/danh mục/itinerary (nguồn = export DB→json), SSR trang động (search/map/cá nhân). → *Verify:* trang chi tiết có HTML tĩnh; Lighthouse LCP cải thiện. *Nghiệm thu:* CWV tốt hơn.
-- [ ] **10.2** Bản đồ: GeoJSON source + clustering native maplibre thay 700 DOM marker (`ban-do.vue:124`). → *Verify:* map mượt với toàn bộ entity trên mobile. *Nghiệm thu:* hết jank.
-- [ ] **10.3** A11y `AuthModal`: `role="dialog"`+focus-trap+Esc+aria-label OTP; sửa clickable `<div>`→`<button>`. → *Verify:* keyboard điều hướng được. *Nghiệm thu:* WCAG cơ bản.
-- [ ] **10.4** Dọn: xoá `composables/useApi.ts` (chết), gom `normalizeCoords` trùng, sửa mojibake admin, siết `any`. → *Verify:* build + typecheck. *Nghiệm thu:* sạch.
+- [ ] **10.1** (HOÃN — cần backend chạy lúc build để prerender ~1700 trang; rủi ro, làm khi có pipeline build ổn) Hybrid rendering: route rules Nuxt prerender chi tiết/danh mục/itinerary, SSR trang động.
+- [x] **10.2** (build-verify ✅; CẦN QA BROWSER) Bản đồ: GeoJSON source + clustering native maplibre thay 700 DOM marker (cluster/zoom/popup/lọc-type). ⚠️ Chưa QA browser (basemap openmap.vn cần `ndaMapKey`+mạng tile — sandbox không có) → verify ở env có key.
+- [x] **10.3** ✅ A11y `AuthModal`: `role="dialog"`+aria-modal+aria-labelledby+Esc+focus-trap+auto-focus+aria-label OTP/SĐT/nút đóng. (Clickable div→button: chưa thấy div click trong AuthModal; rà toàn site = Backlog.)
+- [x] **10.4** (MỘT PHẦN ✅) Xoá `composables/useApi.ts` (chết); gom `normalizeCoords`→`useCoords.ts`. ⏸ Mojibake `admin/data-quality.vue` (encoding, admin-only) + siết `any` (146 chỗ) = Backlog.
 
 **🚦 Cổng DoD-10:** build xanh; Lighthouse CWV (LCP≤2.5s/INP≤200ms/CLS≤0.1) đạt "Good" trên trang chi tiết & danh mục.
 
@@ -224,6 +224,7 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 - ~~(2026-06-13) GĐ3.1 — UGC/auth → SQLite~~ ✅ ĐÃ QUYẾT (Postgres-only): không port; `_require_pg` gắn 3 router UGC trả 503 trên SQLite; tài liệu CLAUDE.md §1.3 + docs/ugc-postgres.md. Lý do: dev/prod parity, tránh nợ 2 phương ngữ SQL, UGC vốn cần Postgres.
 - ~~(2026-06-13) GĐ3.8 — data-quality DB-native~~ ✅ XONG (commit 35ff28e): apply/rollback ghi thẳng DB, bỏ khoá. Footgun "xoá edit admin" đã gỡ.
+- **(2026-06-13) GĐ10 phần còn lại — chưa làm**: (a) 10.1 hybrid prerender (cần pipeline build có backend); (b) QA browser map clustering (env có ndaMapKey); (c) sửa mojibake `admin/data-quality.vue`; (d) siết `any` (146 chỗ); (e) rà clickable `<div>` toàn site → `<button>`.
 - **(2026-06-13) GĐ6 stub — chưa dọn**: endpoint Level7 trong `server.py` (relay/streaming/advanced-graph/a2a/knowledge-evo/multimodal/federation — đều guarded `HAS_X=False`, trả "not available") + import try/except + startup prints + 2 task scheduler (try/except, disabled). Vô hại; xen kẽ module GIỮ nên cần phẫu thuật cẩn thận. Dọn khi rảnh.
 - **(2026-06-13) GĐ5 phần còn lại — chưa làm**: (a) lưu timestamp/version consent vào DB (cột PG ở `users`); (b) GĐ5.6 đổi crawler/import sang lưu trích-đoạn+link (bản quyền) trước khi bật lại crawl; (c) 🛑 Track-H: pháp nhân + đăng ký NĐ147 + luật sư ICT — CHẶN ra mắt công khai.
 - **(2026-06-13) GĐ7 phần còn lại — chưa làm**: (a) `/api/constants` + Nuxt fetch để unify FE+BE constants (giờ `useConstants.ts` là nguồn FE duy nhất, chấp nhận được); (b) bỏ JS/HTML legacy trong `web/` + sửa `nginx.conf /legacy/` (giữ data.json/data.js/admin*.html/media); (c) gỡ field shim `coords`/`from`/`to` sau khi bỏ FE legacy.
