@@ -21,7 +21,14 @@
             />
           </div>
           <p v-if="error" class="form-error">{{ error }}</p>
-          <button class="btn btn-primary" style="width: 100%" :disabled="sending" @click="sendOtp">
+          <label class="consent-row" style="display:flex; gap:8px; align-items:flex-start; margin:12px 0; font-size:.85rem; line-height:1.4;">
+            <input v-model="consent" type="checkbox" style="margin-top:3px;" />
+            <span>Tôi đồng ý với
+              <NuxtLink to="/dieu-khoan-su-dung" target="_blank" @click="close">Điều khoản sử dụng</NuxtLink> và
+              <NuxtLink to="/chinh-sach-bao-mat" target="_blank" @click="close">Chính sách bảo mật</NuxtLink>.
+            </span>
+          </label>
+          <button class="btn btn-primary" style="width: 100%" :disabled="sending || !consent" @click="sendOtp">
             {{ sending ? 'Đang gửi…' : 'Gửi mã OTP' }}
           </button>
         </div>
@@ -77,6 +84,7 @@ const otpDigits = ref(['', '', '', '', '', ''])
 const otpRefs = ref<HTMLInputElement[]>([])
 const error = ref('')
 const sending = ref(false)
+const consent = ref(false)  // GĐ5.2: consent bắt buộc (không tick sẵn) trước khi gửi OTP
 const countdown = ref(0)
 let countdownTimer: ReturnType<typeof setInterval> | null = null
 
@@ -86,6 +94,7 @@ function close() {
   setTimeout(() => {
     step.value = 'phone'
     error.value = ''
+    consent.value = false
     otpDigits.value = ['', '', '', '', '', '']
   }, 300)
 }

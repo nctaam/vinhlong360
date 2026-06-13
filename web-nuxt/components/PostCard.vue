@@ -56,6 +56,9 @@
       <button :class="['post-action', { active: post.user_bookmarked }]" @click="$emit('bookmark', post.id)">
         {{ post.user_bookmarked ? '🔖' : '📑' }}
       </button>
+      <button class="post-action" title="Báo cáo nội dung vi phạm" @click="$emit('report', post.id)">
+        🚩
+      </button>
     </div>
 
     <Teleport to="body">
@@ -76,6 +79,7 @@ defineEmits<{
   (e: 'like', id: string): void
   (e: 'comment', id: string): void
   (e: 'bookmark', id: string): void
+  (e: 'report', id: string): void
 }>()
 
 const POST_TYPE_LABELS: Record<string, string> = {

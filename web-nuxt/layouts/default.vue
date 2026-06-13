@@ -94,6 +94,11 @@
         </div>
         <div class="footer-bottom">
           <p class="disclaimer">Thông tin mùa vụ, giá &amp; địa điểm mang tính tham khảo — vui lòng xác nhận với địa phương trước khi sử dụng.</p>
+          <nav class="footer-legal" style="display:flex; gap:16px; flex-wrap:wrap; margin:8px 0;">
+            <NuxtLink to="/chinh-sach-bao-mat" style="color:var(--muted)">Chính sách bảo mật</NuxtLink>
+            <NuxtLink to="/dieu-khoan-su-dung" style="color:var(--muted)">Điều khoản sử dụng</NuxtLink>
+            <NuxtLink to="/lien-he" style="color:var(--muted)">Liên hệ</NuxtLink>
+          </nav>
           <p>&copy; 2024–2026 vinhlong360. <NuxtLink to="/admin" style="color: var(--muted)">AdminCP</NuxtLink></p>
         </div>
       </div>

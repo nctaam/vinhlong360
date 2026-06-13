@@ -265,6 +265,19 @@ async def get_me(request: Request):
     return {"user": _safe_user(user)}
 
 
+@router.delete("/account")
+async def delete_account(request: Request):
+    # GĐ5.5: quyền xoá dữ liệu (PDPL). Xoá user -> FK ON DELETE CASCADE xoá posts/comments/
+    # likes/bookmarks/follows/notifications/reports/sessions liên quan.
+    user = await _get_current_user_or_none(request)
+    if not user:
+        raise HTTPException(401, "Chưa đăng nhập")
+    uid = str(user["id"])
+    with db._conn() as conn:
+        db._execute(conn, f"DELETE FROM users WHERE id::text = {db._ph}", (uid,))
+    return {"status": "deleted", "message": "Tài khoản và dữ liệu liên quan đã được xoá."}
+
+
 @router.put("/profile")
 async def update_profile(body: ProfileUpdate, request: Request):
     user = await _get_current_user_or_none(request)
