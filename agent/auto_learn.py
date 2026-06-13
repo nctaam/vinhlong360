@@ -638,25 +638,28 @@ def learn_round(category: str = None, num_topics: int = 5) -> list[dict]:
 
 
 def apply_learned(entities: list[dict]):
-    """Thêm entities đã học vào data.json."""
-    with open(DATA_JSON, encoding="utf-8") as f:
-        data = json.load(f)
+    """GĐ3.7: thêm entities đã học vào DB (nguồn sự thật), không còn append data.json.
 
-    existing_ids = {e["id"] for e in data["entities"]}
+    DB là SoT; chat/`/api` đọc DB. Sau khi thêm, reload knowledge để chat thấy ngay.
+    """
+    from database import db  # lazy import
+
     added = []
     for e in entities:
-        if e["id"] not in existing_ids:
-            data["entities"].append(e)
-            existing_ids.add(e["id"])
+        if not db.get_entity(e["id"]):
+            db.upsert_entity(e)
             added.append(e)
 
     if added:
-        with open(DATA_JSON, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-        print(f"\n✓ Đã thêm {len(added)} entity vào data.json")
-        print(f"  Tổng entities: {len(data['entities'])}")
+        print(f"\n✓ Đã thêm {len(added)} entity vào DB")
+        try:
+            import knowledge
+            knowledge.reload()
+        except Exception:
+            pass
     else:
         print("\n  Không có entity mới để thêm (tất cả đã trùng)")
+    return added
 
 
 def continuous_learn(interval_minutes: int = 30):

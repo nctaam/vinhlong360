@@ -99,3 +99,12 @@ def test_admin_edit_reflects_in_chat_and_api(client_mocked):
 
     # xoá cũng write-through: chat không còn thấy
     assert eid not in knowledge._entities
+
+
+def test_reload_requires_admin_and_reads_db(client_mocked):
+    """GĐ3.8: /reload an toàn (nạp từ DB) nhưng yêu cầu admin."""
+    from middleware import ADMIN_API_KEY as _ADMIN_KEY
+    assert client_mocked.post("/reload").status_code == 401  # ẩn danh bị chặn
+    r = client_mocked.post("/reload", headers={"X-Admin-Key": _ADMIN_KEY})
+    assert r.status_code == 200, r.text
+    assert r.json().get("source") == "db"

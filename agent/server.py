@@ -2108,13 +2108,12 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
 # ── System endpoints ──
 
 @app.post("/reload")
-async def reload_data():
-    # GĐ0.5: khoá thao tác phá dữ liệu trong giai đoạn ổn định (mở ở GĐ3.8).
-    if os.environ.get("DESTRUCTIVE_OPS_LOCKED", "1") == "1":
-        return JSONResponse(
-            status_code=423,
-            content={"error": "locked", "detail": "/reload bị khoá (DESTRUCTIVE_OPS_LOCKED=1) tới hết GĐ3."},
-        )
+async def reload_data(request: Request):
+    # GĐ3.8: /reload giờ AN TOÀN (nạp lại từ DB, không xoá gì). Yêu cầu admin để
+    # chống DoS rebuild ẩn danh (security audit). data-quality/replace VẪN khoá.
+    from middleware import verify_admin_key
+    if not verify_admin_key(request):
+        return JSONResponse(status_code=401, content={"error": "unauthorized", "detail": "Cần X-Admin-Key"})
     result = knowledge.reload()
     cache.invalidate_all()
     if HAS_PROMPT_CACHE:
