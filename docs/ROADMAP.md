@@ -272,6 +272,16 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 - **(2026-06-13) Trang hub từng xã/phường — XONG** (commit 949c843, theo yêu cầu chủ dự án + khớp D1): `/xa-phuong/[id]` gom 4 mục (🏛️ danh bạ · 🗺️ du lịch · 🏡 lưu trú · 🍊 sản phẩm) cho mỗi xã/phường; `GET /api/places/{id}/overview` (+`db.entities_by_place`); link từ `khu-vuc/[area]` (list 35 ward VL) + `danh-ba`. 51/124 ward có nội dung; danh bạ mỗi ward = empty-state đến khi có dữ liệu thật (13.6 Track-H). **Còn (đề xuất)**: SSR-prerender các trang ward (CWV/SEO — gắn 10.1); breadcrumb/sitemap thêm ward; nav top-level "Xã/phường".
 
+### 🔬 Audit hệ thống toàn diện (2026-06-14) — 3 agent (backend/data/frontend)
+**ĐÃ FIX (commit 4f3ddd9, ff6d654):** /api/entities?month= pagination (total/offset đúng); Content-Length hỏng→400; /chat/stream parity (strip HTML+cắt 2000+cap history); /reload invalidate _place_cache; upsert nhận alias `coords`→`coordinates`; /hanh-trinh hydration (ClientOnly); lọc rel LLM treo. +3 test; full 1091+ passed.
+
+**CÒN NỢ (theo severity):**
+- 🔴 **CRITICAL — split-brain ETL ghi data.json (B1)**: `learn_loop.py`, `kb_curation.py` (+scheduler `kb-promotion`), `cleanup_noise.py`, `relationship_discovery.py`, `discover_province.py`, `import_*.py` ghi `web/data.json` rồi gọi `knowledge.reload()` — NHƯNG reload đọc **DB** (GĐ3). ⇒ writes vô hình với chat + bị `export_data.py` ghi đè. **Hiện LATENT** (autonomous scheduler OFF qua .env — PHẢI giữ OFF). Fix: route mọi ghi KB qua `database.db` (như `auto_learn.apply_learned`/`data_quality` đã làm); data.json = export-only. Refactor lớn ~6 file, mỗi file 1 test (B4) — KHÔNG big-bang, làm tuần tự.
+- 🟠 **HIGH — importer còn province→bucket (B2)**: `import_baovinhlong.py:21-58`, `import_phuong_an_hoi.py`, `import_deep_crawl.py:19-23`, `import_govsite.py:56-79` vẫn map cả tỉnh → 1 xã. Chạy lại = tái nhiễm placeId bug đã dọn. Fix: `guess_place_id` trả None khi không khớp tên ward thật (như `discover_province._place_for`).
+- 🟡 **MED — an toàn ghi file**: `export_data.py` + `cleanup_noise.py --apply` ghi `web/data.json` không backup/không atomic (file không tái tạo được, B1-invariant). Fix: backup trước + temp-then-replace.
+- 🟡 **MED — abstention retrieval yếu**: test `slow` `TestAbstention` đỏ (rate 0.5<0.7) — search trả entity nội địa cho query ngoài-vùng ("buffet Tokyo", "vé Paris"). Cần ngưỡng/loại-vùng. (Test bị deselect mặc định.) Cũng có **flaky test-isolation**: `test_retrieval_eval` recall đỏ khi chạy SAU integration test khác (KB global bị pollute) — cần reset state giữa test.
+- 🟢 **LOW**: `database.get_query_stats` f-string INTERVAL (chưa có caller, latent); `kb_curation.find_near_duplicate` over-merge (2-token); `xa-phuong/[id].vue` thêm `?.` phòng thủ.
+
 ### 📊 Hàm ý từ deep-research nhu cầu người dùng (2026-06-13) — định hướng, KHÔNG tự đổi §1
 > Nguồn: memory `research-vinhlong360-demand.md` (24 nguồn, 25 claim verify 3-phiếu, 23 xác nhận / 2 bác). Đây là **ưu tiên hóa & việc đề xuất**, không thay quyết định kiến trúc §1.4 (showcase-only vẫn giữ).
 
