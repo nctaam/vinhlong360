@@ -108,11 +108,8 @@ def slugify(text):
 
 
 def guess_place_id(addr):
-    if not addr:
-        return None
-    for kw, pid in PLACE_KEYWORDS.items():
-        if kw.lower() in addr.lower():
-            return pid
+    # GĐ-audit (B2): PLACE_KEYWORDS map district cũ → xã "thùng chứa" (Bến Tre→xa-an-binh,
+    # Trà Vinh→xa-tra-on). Bỏ — cần crosswalk chính thống; để None còn hơn gán sai.
     return None
 
 

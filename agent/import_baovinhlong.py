@@ -87,12 +87,9 @@ def slugify(text):
 
 
 def guess_place_id(addr, province_old=None):
-    if addr:
-        for kw, pid in PLACE_KEYWORDS.items():
-            if kw.lower() in addr.lower():
-                return pid
-    if province_old and province_old in PROVINCE_PLACE:
-        return PROVINCE_PLACE[province_old]
+    # GĐ-audit (B2): KHÔNG còn map cả tỉnh cũ → 1 xã "thùng chứa" (gây bug placeId dồn
+    # Bến Tre→xa-an-binh, Trà Vinh→xa-tra-on). Gán xã đúng cần crosswalk "đơn vị cũ→xã mới"
+    # chính thống (Track-H). Trước khi có → để None (chưa phân loại) còn hơn sai.
     return None
 
 

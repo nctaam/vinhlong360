@@ -68,12 +68,8 @@ def slugify(text):
 
 
 def guess_place_id(addr, province_old=None):
-    if addr:
-        for kw, pid in PLACE_KEYWORDS.items():
-            if kw.lower() in addr.lower():
-                return pid
-    if province_old and province_old in PROVINCE_PLACE:
-        return PROVINCE_PLACE[province_old]
+    # GĐ-audit (B2): bỏ map cả tỉnh → 1 xã "thùng chứa". Cần crosswalk chính thống để gán đúng;
+    # trước đó để None (chưa phân loại) còn hơn sai. Xem scripts/fix_placeid_buckets.py.
     return None
 
 

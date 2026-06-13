@@ -66,17 +66,8 @@ def slugify(text):
 
 
 def guess_place_id(addr, province_old, default_pid):
-    if addr:
-        # Trà Ôn is VL but maps to xa-tra-on placeId
-        if "Trà Ôn" in addr:
-            return "xa-tra-on"
-        for kw, pid in PLACE_KEYWORDS.items():
-            if kw.lower() in addr.lower():
-                return pid
-    if default_pid:
-        return default_pid
-    if province_old == "Vĩnh Long":
-        return "p-long-chau"
+    # GĐ-audit (B2): bỏ default_pid + province fallback (dồn cả tỉnh vào 1 xã "thùng chứa").
+    # Cần crosswalk chính thống để gán xã đúng; trước đó để None còn hơn sai.
     return None
 
 
