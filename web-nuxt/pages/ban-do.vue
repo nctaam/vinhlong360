@@ -84,24 +84,7 @@ function esc(s: string) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
-function normalizeCoords(raw: any): [number, number] | null {
-  let coords = raw
-  for (let i = 0; i < 3 && typeof coords === 'string'; i++) {
-    try { coords = JSON.parse(coords) } catch { return null }
-  }
-  if (coords && !Array.isArray(coords) && typeof coords === 'object') {
-    coords = [coords.lat ?? coords.latitude, coords.lng ?? coords.lon ?? coords.longitude]
-  }
-  if (!Array.isArray(coords) || coords.length !== 2) return null
-  let lat = Number(coords[0])
-  let lng = Number(coords[1])
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
-  if (Math.abs(lat) > 90 && Math.abs(lng) <= 90) {
-    ;[lat, lng] = [lng, lat]
-  }
-  if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return null
-  return [lat, lng]
-}
+// GĐ10.4: normalizeCoords gom vào composables/useCoords.ts (Nuxt auto-import).
 
 function updateMarkers() {
   const show = activeTypes.value

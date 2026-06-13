@@ -1,9 +1,9 @@
 <template>
   <div :class="['modal-overlay', { show: visible }]" @click.self="close">
-    <div class="modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title" ref="modalEl">
       <div class="modal-head">
-        <h2>Đăng nhập</h2>
-        <button class="modal-close" @click="close">✕</button>
+        <h2 id="auth-modal-title">Đăng nhập</h2>
+        <button class="modal-close" aria-label="Đóng" @click="close">✕</button>
       </div>
       <div class="modal-body">
         <!-- Step 1: Phone -->
@@ -15,6 +15,7 @@
               v-model="phone"
               class="input"
               type="tel"
+              aria-label="Số điện thoại"
               placeholder="0901234567"
               maxlength="11"
               @keyup.enter="sendOtp"
@@ -46,6 +47,7 @@
               type="text"
               maxlength="1"
               inputmode="numeric"
+              :aria-label="`Ô mã OTP số ${i}`"
               @input="onOtpInput(i - 1)"
               @keydown.backspace="onOtpBackspace(i - 1, $event)"
             />
@@ -86,6 +88,7 @@ const error = ref('')
 const sending = ref(false)
 const consent = ref(false)  // GĐ5.2: consent bắt buộc (không tick sẵn) trước khi gửi OTP
 const countdown = ref(0)
+const modalEl = ref<HTMLElement | null>(null)  // GĐ10.3: focus-trap dialog
 let countdownTimer: ReturnType<typeof setInterval> | null = null
 
 function close() {
@@ -99,8 +102,31 @@ function close() {
   }, 300)
 }
 
+// GĐ10.3: a11y dialog — Esc đóng + focus-trap + auto-focus khi mở.
+function onModalKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape') { close(); return }
+  if (e.key !== 'Tab' || !modalEl.value) return
+  const list = Array.from(
+    modalEl.value.querySelectorAll<HTMLElement>('button, [href], input, [tabindex]:not([tabindex="-1"])')
+  ).filter(el => !el.hasAttribute('disabled') && el.offsetParent !== null)
+  if (!list.length) return
+  const first = list[0], last = list[list.length - 1]
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+}
+
+watch(() => props.visible, (v) => {
+  if (v) {
+    document.addEventListener('keydown', onModalKeydown)
+    nextTick(() => modalEl.value?.querySelector<HTMLElement>('input, button')?.focus())
+  } else {
+    document.removeEventListener('keydown', onModalKeydown)
+  }
+})
+
 onUnmounted(() => {
   if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null }
+  document.removeEventListener('keydown', onModalKeydown)
 })
 
 async function sendOtp() {
