@@ -30,6 +30,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--prefix", "web-nuxt"],
       "port": 3000
+    },
+    {
+      "name": "nuxt-prod",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["web-nuxt/.output/server/index.mjs"],
+      "port": 3000
     }
   ]
 }
