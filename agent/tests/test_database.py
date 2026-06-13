@@ -220,6 +220,35 @@ def test_all_itineraries(db):
     assert len(its) == 1 and its[0]["id"] == "it1" and isinstance(its[0]["stops"], list)
 
 
+# ── GĐ3.8: data-quality apply/rollback DB-native (không DELETE-reload-json) ──
+
+def test_data_quality_apply_and_rollback_db_native(db, tmp_path, monkeypatch):
+    import data_quality
+
+    db.upsert_entity(_entity(eid="e1", etype="dish",
+                             source={"title": "old", "url": "https://old.example/"}))
+    monkeypatch.setattr(data_quality, "db", db)          # apply/rollback dùng temp DB
+    monkeypatch.setattr(data_quality, "BURST_DIR", tmp_path)  # cô lập apply_history
+
+    cand = {
+        "candidate_id": "c1", "entity_id": "e1", "field": "source",
+        "apply_policy": "auto_apply", "url_verified": True,
+        "suggested_value": {"title": "New", "url": "https://new.example/page"},
+        "evidence_urls": ["https://new.example/page"], "confidence": 0.9,
+    }
+    monkeypatch.setattr(data_quality, "load_candidate_queue", lambda **k: {"auto_apply": [cand]})
+
+    res = data_quality.apply_candidates(["c1"], dry_run=False)
+    assert res["applied_count"] == 1
+    # ghi THẲNG vào DB (không qua data.json)
+    assert db.get_entity("e1")["source"]["url"] == "https://new.example/page"
+
+    rb = data_quality.rollback_apply(res["batch_id"])
+    assert rb["restored_changes"] == 1
+    # đã revert về before
+    assert db.get_entity("e1")["source"] == {"title": "old", "url": "https://old.example/"}
+
+
 # ── Gap GĐ3.1: SQLite chưa có bảng users (UGC/login crash ở local dev) ──
 
 @pytest.mark.xfail(reason="GĐ3.1 sẽ thêm bảng users/posts/... cho SQLite", strict=False)

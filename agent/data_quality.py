@@ -12,6 +12,8 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
+from database import db
+
 ROOT = Path(__file__).resolve().parent.parent
 DATA_PATH = ROOT / "web" / "data.json"
 DATA_JS_PATH = ROOT / "web" / "data.js"
@@ -282,8 +284,8 @@ def apply_candidates(candidate_ids: list[str] | None = None, *, dry_run: bool = 
         if is_evidence_auto_apply(record):
             selected.append({**record, "candidate_id": cid})
 
-    data = load_data()
-    by_id = {str(e.get("id")): e for e in data.get("entities", []) if isinstance(e, dict) and e.get("id")}
+    # GĐ3.8: nguồn = DB (nguồn sự thật), không còn đọc/ghi qua data.json.
+    by_id = {str(e.get("id")): e for e in db.all_entities() if isinstance(e, dict) and e.get("id")}
     coordinate_owners: dict[tuple[float, float], str] = {}
     for entity_id, entity in by_id.items():
         key = _coordinate_key(entity.get("coordinates"))
@@ -339,12 +341,16 @@ def apply_candidates(candidate_ids: list[str] | None = None, *, dry_run: bool = 
 
     backup = None
     if applied and not dry_run:
-        backup = _write_data_files(data)
+        # GĐ3.8: ghi THẲNG vào DB (chỉ entity thay đổi) — không DELETE-rồi-nạp-json,
+        # nên KHÔNG xoá edit admin khác. Rollback dùng `before` trong history.
+        changed_ids = {str(c["entity_id"]) for c in changes}
+        for eid in changed_ids:
+            db.upsert_entity(by_id[eid])
         _append_apply_history({
             "record_type": "apply",
             "batch_id": batch_id,
             "applied_at": applied_at,
-            "backup": backup,
+            "backend": "db",
             "applied_count": len(applied),
             "skipped_count": len(skipped),
             "changes": changes,
@@ -369,17 +375,17 @@ def rollback_apply(batch_id: str, output_dir: Path | None = None) -> dict[str, A
     target = next((row for row in history if row.get("record_type") == "apply" and row.get("batch_id") == batch_id), None)
     if not target:
         raise FileNotFoundError(f"apply batch '{batch_id}' not found")
-    backup_path = Path(str(target.get("backup") or ""))
-    if not backup_path.exists():
-        raise FileNotFoundError(f"backup for batch '{batch_id}' not found")
-
-    BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+    # GĐ3.8: rollback DB-native — đặt lại từng field về `before` đã lưu trong history.
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    current_backup = BACKUP_DIR / f"rollback_before_{batch_id}_{stamp}.json"
-    shutil.copy2(DATA_PATH, current_backup)
-
-    restored_data = load_data(backup_path)
-    _write_data_without_backup(restored_data)
+    reverted = 0
+    for change in target.get("changes") or []:
+        eid = str(change.get("entity_id") or "")
+        entity = db.get_entity(eid)
+        if not entity:
+            continue
+        _set_entity_field(entity, str(change.get("field") or ""), change.get("before"))
+        db.upsert_entity(entity)
+        reverted += 1
 
     rolled_back_at = datetime.now().isoformat(timespec="seconds")
     _append_apply_history({
@@ -387,14 +393,11 @@ def rollback_apply(batch_id: str, output_dir: Path | None = None) -> dict[str, A
         "batch_id": f"rollback_{batch_id}_{stamp}",
         "rollback_of": batch_id,
         "rolled_back_at": rolled_back_at,
-        "restored_from": str(backup_path),
-        "current_backup": str(current_backup),
-        "restored_changes": target.get("applied_count", 0),
+        "backend": "db",
+        "restored_changes": reverted,
     }, output_dir=output_dir)
     return {
         "status": "rolled_back",
         "rollback_of": batch_id,
-        "restored_from": str(backup_path),
-        "current_backup": str(current_backup),
-        "restored_changes": target.get("applied_count", 0),
+        "restored_changes": reverted,
     }

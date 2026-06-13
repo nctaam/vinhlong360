@@ -53,14 +53,15 @@ def test_load_candidate_queue_refresh_rebuilds(tmp_path, monkeypatch):
 
 
 def test_apply_candidates_records_history_and_rollback(tmp_path, monkeypatch):
-    data_path = tmp_path / "data.json"
-    data_js_path = tmp_path / "data.js"
-    backup_dir = tmp_path / "backups"
+    # GĐ3.8: apply/rollback DB-native — ghi thẳng DB, rollback dùng `before` trong history.
+    from database import Database
     burst_dir = tmp_path / "burst"
-    data_path.write_text(
-        json.dumps({"entities": [{"id": "entity-1", "name": "Entity 1", "type": "product"}], "relationships": [], "itineraries": []}),
-        encoding="utf-8",
-    )
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    tdb = Database(db_path=str(tmp_path / "dq.db"))
+    tdb._use_pg = False
+    tdb._dsn = None
+    tdb.initialize()
+    tdb.upsert_entity({"id": "entity-1", "name": "Entity 1", "type": "product"})
 
     queue = {
         "auto_apply": [
@@ -79,19 +80,16 @@ def test_apply_candidates_records_history_and_rollback(tmp_path, monkeypatch):
         "reject": [],
     }
 
-    monkeypatch.setattr(data_quality, "DATA_PATH", data_path)
-    monkeypatch.setattr(data_quality, "DATA_JS_PATH", data_js_path)
-    monkeypatch.setattr(data_quality, "BACKUP_DIR", backup_dir)
+    monkeypatch.setattr(data_quality, "db", tdb)
     monkeypatch.setattr(data_quality, "BURST_DIR", burst_dir)
     monkeypatch.setattr(data_quality, "load_candidate_queue", lambda refresh=True: queue)
 
     result = data_quality.apply_candidates(dry_run=False)
 
     assert result["applied_count"] == 1
-    assert result["changes"][0]["before"] is None
     assert result["changes"][0]["after"]["url"] == "https://example.com/evidence"
-    updated = json.loads(data_path.read_text(encoding="utf-8"))
-    assert updated["entities"][0]["source"]["url"] == "https://example.com/evidence"
+    # ghi THẲNG vào DB (không qua data.json)
+    assert tdb.get_entity("entity-1")["source"]["url"] == "https://example.com/evidence"
 
     history = data_quality.load_apply_history(output_dir=burst_dir)
     assert history["total"] == 1
@@ -99,8 +97,8 @@ def test_apply_candidates_records_history_and_rollback(tmp_path, monkeypatch):
 
     rollback = data_quality.rollback_apply(result["batch_id"], output_dir=burst_dir)
 
-    restored = json.loads(data_path.read_text(encoding="utf-8"))
-    assert "source" not in restored["entities"][0]
+    # rollback DB-native: source về before ({} hoặc None)
+    assert tdb.get_entity("entity-1").get("source") in ({}, None)
     assert rollback["status"] == "rolled_back"
     history_after = data_quality.load_apply_history(output_dir=burst_dir)
     assert history_after["total"] == 2

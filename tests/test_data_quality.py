@@ -36,7 +36,7 @@ def test_filter_candidates_by_kind_and_bucket() -> None:
     assert result["candidates"][0]["candidate_id"]
 
 
-def test_apply_candidates_dry_run_only_evidence_auto_apply(monkeypatch) -> None:
+def test_apply_candidates_dry_run_only_evidence_auto_apply(tmp_path, monkeypatch) -> None:
     queue = {
         "auto_apply": [
             {
@@ -66,15 +66,25 @@ def test_apply_candidates_dry_run_only_evidence_auto_apply(monkeypatch) -> None:
             },
         ]
     }
-    data = {"entities": [{"id": "e1"}, {"id": "e2"}, {"id": "e3"}], "relationships": [], "itineraries": []}
+    # GĐ3.8: apply_candidates đọc từ DB (DB-native), không còn load_data().
+    from database import Database
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    tdb = Database(db_path=str(tmp_path / "dq.db"))
+    tdb._use_pg = False
+    tdb._dsn = None
+    tdb.initialize()
+    for eid in ("e1", "e2", "e3"):
+        tdb.upsert_entity({"id": eid, "type": "product", "name": eid, "coordinates": [10.25, 105.97]})
 
+    monkeypatch.setattr(dq, "db", tdb)
+    monkeypatch.setattr(dq, "BURST_DIR", tmp_path)
     monkeypatch.setattr(dq, "load_candidate_queue", lambda refresh=True: queue)
-    monkeypatch.setattr(dq, "load_data", lambda: data)
 
     result = dq.apply_candidates(dry_run=True)
 
-    assert result["applied_count"] == 2
+    assert result["applied_count"] == 2  # source + coordinates có evidence; placeId bị loại
     assert result["backup"] is None
     assert {item["field"] for item in result["applied"]} == {"source", "coordinates"}
-    assert "source" not in data["entities"][0]
-    assert "coordinates" not in data["entities"][1]
+    # dry_run: DB KHÔNG bị thay đổi
+    assert tdb.get_entity("e1").get("source") in ({}, None)
+    assert tdb.get_entity("e2")["coordinates"] == [10.25, 105.97]
