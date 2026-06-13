@@ -129,6 +129,26 @@ def test_reload_requires_admin_and_reads_db(client_mocked):
     assert r.json().get("source") == "db"
 
 
+def test_internal_endpoints_gated_in_prod(client_mocked, monkeypatch):
+    """GĐ4 phụ (a): ở production, /system/*, /analytics/*, /metrics ẩn sau admin key (404 nếu thiếu);
+    dev thì mở. Nuxt không gọi trực tiếp các path này."""
+    from middleware import ADMIN_API_KEY as _ADMIN_KEY
+
+    # Dev (mặc định): /metrics mở
+    monkeypatch.setattr(server, "_IS_PROD", False)
+    assert client_mocked.get("/metrics").status_code == 200
+
+    # Prod: ẩn nếu không có key
+    monkeypatch.setattr(server, "_IS_PROD", True)
+    assert client_mocked.get("/metrics").status_code == 404
+    assert client_mocked.get("/system/logs").status_code == 404
+    assert client_mocked.get("/analytics/summary").status_code == 404
+    # Có admin key -> qua middleware (200 hoặc lỗi nội bộ endpoint, miễn KHÔNG phải 404-gate)
+    assert client_mocked.get("/metrics", headers={"X-Admin-Key": _ADMIN_KEY}).status_code == 200
+    # Path công khai vẫn mở ở prod
+    assert client_mocked.get("/health").status_code == 200
+
+
 def test_info_report_submit_and_admin_list(client_mocked, tmp_path, monkeypatch):
     """GĐ13.6f: POST /api/report (ẩn danh, JSONL) ghi nhận; admin xem qua /admin/info-reports;
     rate-limit chặn spam. Tách khỏi UGC `reports` (Postgres)."""

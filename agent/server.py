@@ -871,6 +871,21 @@ async def limit_request_size(request: Request, call_next):
 
 
 @app.middleware("http")
+async def gate_internal_endpoints(request: Request, call_next):
+    """GĐ4 phụ (a): ở production, ẩn endpoint nội bộ (/system/*, /analytics/*, /metrics)
+    sau admin key — tránh lộ chi phí/trace/log. Không có key → 404 (giấu cả sự tồn tại).
+    Dev (ENVIRONMENT != production) giữ nguyên để tiện debug. Nuxt KHÔNG gọi các path này
+    trực tiếp (đi qua /admin/*) nên không ảnh hưởng UI."""
+    if _IS_PROD:
+        path = request.url.path
+        if path == "/metrics" or path.startswith("/system") or path.startswith("/analytics"):
+            from middleware import verify_admin_key
+            if not verify_admin_key(request):
+                return JSONResponse(status_code=404, content={"detail": "Not Found"})
+    return await call_next(request)
+
+
+@app.middleware("http")
 async def track_response_time(request: Request, call_next):
     """Track response time + request logging."""
     start = time.time()
