@@ -169,6 +169,20 @@
           <span class="v">{{ Array.isArray(entity.attributes.amenities) ? entity.attributes.amenities.join(', ') : entity.attributes.amenities }}</span>
         </div>
 
+        <!-- GĐ13.2: liên hệ trực tiếp (showcase — KHÔNG đặt hàng) -->
+        <div v-if="entity.attributes?.phone || zaloLink" style="display:flex; gap:8px; flex-wrap:wrap; margin:14px 0 8px;">
+          <a v-if="entity.attributes?.phone" class="ns-action" :href="'tel:' + entity.attributes.phone" style="flex:1; text-align:center;">📞 Gọi</a>
+          <a v-if="zaloLink" class="ns-action" :href="zaloLink" target="_blank" rel="nofollow" style="flex:1; text-align:center;">💬 Zalo</a>
+        </div>
+        <!-- GĐ13.1 (MVP): chủ cơ sở nhận listing -->
+        <NuxtLink :to="claimUrl" class="ns-action" style="display:block; text-align:center;">🏷️ Đây là cơ sở của tôi — đăng ký quản lý</NuxtLink>
+        <!-- GĐ13.8: truy xuất nguồn gốc (sản phẩm) -->
+        <div v-if="entity.type === 'product'" style="margin-top:12px; padding:10px 12px; border:1px solid rgba(0,0,0,.1); border-radius:8px; font-size:.85rem;">
+          <strong>🔎 Truy xuất nguồn gốc</strong>
+          <p style="margin:4px 0; color:var(--muted,#777)">Xem "Nguồn dữ liệu" &amp; quan hệ "Sản xuất tại" ở trên. Thông tin tham khảo — vui lòng kiểm chứng với cơ sở. (Không thay mã vùng trồng/đóng gói chính thức cho xuất khẩu.)</p>
+          <small v-if="entity.updatedAt">Cập nhật: {{ entity.updatedAt }}</small>
+        </div>
+
         <ClientOnly>
           <AIBestTime :entity-id="id" :entity-name="entity.name" />
         </ClientOnly>
@@ -234,6 +248,15 @@ const areaName = computed(() => {
 })
 
 const seasonLabel = computed(() => seasonText(entity.value?.season))
+
+// GĐ13.2: link Zalo từ attributes.zalo (số hoặc URL). KHÔNG đặt hàng — chỉ liên hệ.
+const zaloLink = computed(() => {
+  const z = entity.value?.attributes?.zalo
+  if (!z) return ''
+  return String(z).startsWith('http') ? z : `https://zalo.me/${String(z).replace(/\D/g, '')}`
+})
+// GĐ13.1 (MVP): chủ cơ sở "nhận listing" -> trang liên hệ kèm ngữ cảnh (luồng owner-edit đầy đủ = sau).
+const claimUrl = computed(() => `/lien-he?claim=${encodeURIComponent(id.value)}`)
 
 const quality = computed(() => entity.value?.quality || {})
 const qualityMissingLabels = computed(() => {

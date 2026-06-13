@@ -18,6 +18,12 @@
       <span v-if="peakCount"> · trong đó <strong>{{ peakCount }}</strong> cao điểm</span>
     </p>
 
+    <!-- GĐ13.7: lead B2B nhẹ (chỉ liên hệ — KHÔNG đặt hàng on-site) -->
+    <p class="b2b-note">
+      🤝 Cần <strong>mua sỉ nông sản theo mùa</strong> hoặc kết nối HTX/nhà vườn? Liên hệ trực tiếp cơ sở ở mỗi mục,
+      hoặc <NuxtLink to="/lien-he">gửi yêu cầu nguồn sỉ</NuxtLink>.
+    </p>
+
     <ClientOnly>
       <SkeletonGrid v-if="!data" />
     </ClientOnly>
@@ -81,7 +87,9 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/theo-mua') }] })
 .month-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0; }
 .month-chip { padding: 6px 12px; border: 1px solid rgba(0,0,0,.12); border-radius: 999px; background: var(--surface, #fff); cursor: pointer; font-size: .9rem; }
 .month-chip.active { background: var(--primary, #9C3D22); color: #fff; border-color: var(--primary, #9C3D22); }
-.season-count { color: var(--muted, #666); margin: 8px 0 20px; }
+.season-count { color: var(--muted, #666); margin: 8px 0 12px; }
+.b2b-note { background: #f0f9f0; border: 1px solid #cce8cc; border-radius: 8px; padding: 10px 12px; font-size: .88rem; margin: 0 0 20px; }
+.b2b-note a { color: var(--primary, #9C3D22); }
 .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
 .season-item { position: relative; display: flex; flex-direction: column; }
 .season-badge { position: absolute; top: 8px; left: 8px; z-index: 2; background: rgba(0,0,0,.6); color: #fff; font-size: .72rem; padding: 2px 8px; border-radius: 999px; }
