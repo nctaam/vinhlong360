@@ -125,12 +125,13 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 ## GIAI ĐOẠN 7 — Gom về một frontend
 
 **Tiên quyết:** DoD-3 (data.json là export). **Bất biến:** B2 (verify mới xoá).
+> ⚠️ Lưu ý số GĐ: việc "gom frontend" là **GĐ7** này (KHÔNG phải GĐ5). **GĐ5 = Compliance** (privacy/consent/report/xoá-tài-khoản) — **launch-blocker, CHƯA làm**, nên ưu tiên trước khi ra mắt.
 
-- [ ] **7.1** Backend serve `GET /api/constants` (TYPE_META/AREA_META/REL labels/season). → *Verify:* trả JSON đủ 15 type + nhãn quan hệ. *Nghiệm thu:* một nguồn constants.
-- [ ] **7.2** Nuxt fetch `/api/constants`, xoá bản TYPE_META nhân đôi trong `composables/useConstants.ts`; bổ sung type thiếu (`drink`,`itinerary`) + nhãn `related_to`/`associated_with`. → *Verify:* trang chi tiết hiện đúng nhãn (không chữ Anh thô). *Nghiệm thu:* thêm type mới chỉ sửa DB.
-- [ ] **7.3** Dời `web/data.json` → `agent/data/data.json`; sửa tham chiếu (`knowledge.py:13`,`database.py:953`,`scheduler.py:88`). → *Verify:* server khởi động đọc đúng path. *Nghiệm thu:* data ra khỏi `web/`.
-- [ ] **7.4** Sau khi 7.1-7.3 verify: **xoá `web-astro/`**; bỏ JS/HTML legacy trong `web/` (giữ admin dashboard nếu Nuxt admin chưa thay thế). → *Verify:* grep không còn ai import `web/store.js`/`web/data.js`; `npm run build` OK. *Nghiệm thu:* còn 1 frontend.
-- [ ] **7.5** Gỡ field shim legacy (`coords`,`from`/`to`) khi không còn consumer legacy. → *Verify:* test + build xanh. *Nghiệm thu:* chỉ còn canonical.
+- [~] **7.1** (HOÃN) Backend serve `GET /api/constants`. → Chưa làm: sau khi xoá astro/web copies, `useConstants.ts` là nguồn FE DUY NHẤT nên endpoint chưa có consumer. Làm khi muốn unify FE+BE (Backlog).
+- [~] **7.2** (MỘT PHẦN ✅) Bổ sung type thiếu (`drink`,`itinerary`) + nhãn `related_to`/`associated_with`/`located_in`/`part_of` vào `useConstants.ts` (hết chữ Anh thô; Nuxt build OK). ⏸ Phần "Nuxt fetch /api/constants" hoãn (rủi ro refactor async — Backlog).
+- [!] **7.3** (HUỶ) ~~Dời `web/data.json` → `agent/data/`~~ — SAI: `agent/data/` đã gitignore → mất seed khỏi git (trái GĐ0). **Giữ `data.json` ở `web/` (tracked seed).**
+- [~] **7.4** (MỘT PHẦN) ✅ **Xoá `web-astro/`** (mồ côi; export_data bỏ ghi astro; build OK). ⏸ Bỏ JS/HTML legacy trong `web/` HOÃN — cần phối hợp `nginx.conf /legacy/` + xác nhận backend chỉ serve `web/admin*.html`. Giữ `web/data.json|data.js|admin*.html|media`.
+- [ ] **7.5** (HOÃN) Gỡ field shim legacy (`coords`,`from`/`to`) — chỉ làm sau khi bỏ hẳn FE legacy `web/` (B2).
 
 **🚦 Cổng DoD-7:** `npm run build` xanh; chỉ còn `web-nuxt`; thêm 1 type test bằng cách đổi DB → UI tự nhận.
 
@@ -223,4 +224,5 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 - ~~(2026-06-13) GĐ3.1 — UGC/auth → SQLite~~ ✅ ĐÃ QUYẾT (Postgres-only): không port; `_require_pg` gắn 3 router UGC trả 503 trên SQLite; tài liệu CLAUDE.md §1.3 + docs/ugc-postgres.md. Lý do: dev/prod parity, tránh nợ 2 phương ngữ SQL, UGC vốn cần Postgres.
 - ~~(2026-06-13) GĐ3.8 — data-quality DB-native~~ ✅ XONG (commit 35ff28e): apply/rollback ghi thẳng DB, bỏ khoá. Footgun "xoá edit admin" đã gỡ.
+- **(2026-06-13) GĐ7 phần còn lại — chưa làm**: (a) `/api/constants` + Nuxt fetch để unify FE+BE constants (giờ `useConstants.ts` là nguồn FE duy nhất, chấp nhận được); (b) bỏ JS/HTML legacy trong `web/` + sửa `nginx.conf /legacy/` (giữ data.json/data.js/admin*.html/media); (c) gỡ field shim `coords`/`from`/`to` sau khi bỏ FE legacy.
 - **(2026-06-13) GĐ4 phần phụ — chưa làm**: (a) ẩn `/system/*`,`/analytics/*`,`/metrics` ở production (nhiều endpoint — cân nhắc require_admin chung); (b) rate-limit per-user cho `/image/recognize` khi mở cho user thường (giờ admin-only); (c) cân nhắc hạ `max_rounds` agent sau khi có eval baseline (tránh giảm chất lượng mù).
