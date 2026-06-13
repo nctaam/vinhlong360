@@ -70,6 +70,7 @@
               <NuxtLink to="/ocop">OCOP</NuxtLink>
               <NuxtLink to="/luu-tru">Lưu trú</NuxtLink>
               <NuxtLink to="/ban-do" no-prefetch>Bản đồ</NuxtLink>
+              <NuxtLink to="/danh-ba">Danh bạ hành chính</NuxtLink>
               <NuxtLink to="/tuyen-duong">Tuyến đường</NuxtLink>
             </nav>
           </div>

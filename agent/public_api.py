@@ -137,6 +137,12 @@ async def list_places(area: Optional[str] = None):
     return [db._row_to_dict(r) for r in rows]
 
 
+@router.get("/facilities")
+async def list_facilities(place: Optional[str] = None):
+    """GĐ13.4: danh bạ hành chính — cơ quan công vụ (UBND/công an/...) theo xã/phường."""
+    return {"facilities": db.facilities_by_place(place)}
+
+
 @router.get("/itineraries")
 async def list_itineraries(area: Optional[str] = None):
     return db.list_itineraries(area=area)

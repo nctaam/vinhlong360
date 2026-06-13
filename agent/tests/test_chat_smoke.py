@@ -107,6 +107,13 @@ def test_ugc_degrades_to_503_on_sqlite(client_mocked):
     assert r.status_code == 503, r.text
 
 
+def test_facilities_endpoint_wired(client_mocked):
+    """GĐ13.4: /api/facilities trả {facilities:[...]} (rỗng khi chưa có dữ liệu danh bạ)."""
+    r = client_mocked.get("/api/facilities")
+    assert r.status_code == 200, r.text
+    assert isinstance(r.json().get("facilities"), list)
+
+
 def test_cost_endpoints_require_admin(client_mocked):
     """GĐ4.2: /image/recognize (LLM vision) + /vectors/build (rebuild nặng) chặn ẩn danh."""
     assert client_mocked.post("/image/recognize", json={"image": "x"}).status_code == 401

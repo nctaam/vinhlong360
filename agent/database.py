@@ -455,6 +455,20 @@ class Database:
             rows = self._fetchall(conn, "SELECT * FROM itineraries")
             return [self._parse_itinerary(r) for r in rows]
 
+    def facilities_by_place(self, place_id: str | None = None) -> list[dict]:
+        """GĐ13.3: cơ quan hành chính (type=facility) theo xã/phường (placeId). Danh bạ hành chính."""
+        self.initialize()
+        ph = self._ph
+        pcol = '"placeId"' if self._use_pg else "placeId"
+        with self._conn() as conn:
+            if place_id:
+                rows = self._fetchall(
+                    conn, f"SELECT * FROM entities WHERE type = {ph} AND {pcol} = {ph}",
+                    ("facility", place_id))
+            else:
+                rows = self._fetchall(conn, f"SELECT * FROM entities WHERE type = {ph}", ("facility",))
+            return [self._parse_entity(r) for r in rows]
+
     # ── Relationships ──
 
     def add_relationship(self, from_id: str, to_id: str, rel_type: str):

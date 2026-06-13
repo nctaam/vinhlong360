@@ -220,6 +220,24 @@ def test_all_itineraries(db):
     assert len(its) == 1 and its[0]["id"] == "it1" and isinstance(its[0]["stops"], list)
 
 
+# ── GĐ13.3: danh bạ hành chính (facility theo placeId) ──
+
+def test_facilities_by_place(db):
+    db.upsert_entity({"id": "ubnd-xa-a", "type": "facility", "name": "UBND xã A",
+                      "placeId": "xa-a",
+                      "attributes": {"office_kind": "ubnd", "address": "Số 1", "phone": "0270..."}})
+    db.upsert_entity({"id": "ca-xa-a", "type": "facility", "name": "Công an xã A",
+                      "placeId": "xa-a", "attributes": {"office_kind": "cong_an"}})
+    db.upsert_entity({"id": "ubnd-xa-b", "type": "facility", "name": "UBND xã B", "placeId": "xa-b"})
+
+    a = db.facilities_by_place("xa-a")
+    assert {f["id"] for f in a} == {"ubnd-xa-a", "ca-xa-a"}
+    assert a[0]["attributes"].get("office_kind") in ("ubnd", "cong_an")  # JSON attrs parse lại
+    assert {f["id"] for f in db.facilities_by_place("xa-b")} == {"ubnd-xa-b"}
+    assert db.facilities_by_place("khong-co") == []
+    assert len(db.facilities_by_place()) == 3  # tất cả facility
+
+
 # ── GĐ3.8: data-quality apply/rollback DB-native (không DELETE-reload-json) ──
 
 def test_data_quality_apply_and_rollback_db_native(db, tmp_path, monkeypatch):

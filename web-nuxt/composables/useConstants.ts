@@ -20,6 +20,18 @@ export const TYPE_META: Record<string, TypeMeta> = {
   person: { emoji: '👤', label: 'Nhân vật', cat: 'person' },
   drink: { emoji: '🥤', label: 'Đồ uống', cat: 'dish' },
   itinerary: { emoji: '🗺️', label: 'Lịch trình', cat: 'itinerary' },
+  facility: { emoji: '🏛️', label: 'Cơ quan hành chính', cat: 'facility' },
+}
+
+// GĐ13.4: nhãn loại cơ quan công vụ (facility.attributes.office_kind) cho danh bạ hành chính.
+export const OFFICE_KIND: Record<string, { emoji: string; label: string }> = {
+  ubnd: { emoji: '🏛️', label: 'UBND xã/phường' },
+  cong_an: { emoji: '👮', label: 'Công an' },
+  y_te: { emoji: '🏥', label: 'Trạm y tế' },
+  truong_hoc: { emoji: '🏫', label: 'Trường học' },
+  buu_dien: { emoji: '📮', label: 'Bưu điện' },
+  tu_phap: { emoji: '⚖️', label: 'Tư pháp – Hộ tịch' },
+  khac: { emoji: '🏢', label: 'Cơ quan khác' },
 }
 
 export const AREA_META: Record<string, { name: string; emoji: string; blurb: string }> = {
