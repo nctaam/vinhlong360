@@ -24,6 +24,12 @@ router = APIRouter(prefix="/api", tags=["public"])
 _place_cache: dict[str, dict] = {}
 DEFAULT_RELATIONSHIP_LIMIT = 24
 
+
+def invalidate_place_cache():
+    """Xoá cache tên/khu-vực xã/phường — gọi sau /reload để tránh phục vụ tên cũ
+    khi admin đổi/di chuyển place."""
+    _place_cache.clear()
+
 # GĐ13.6f: báo cáo thông tin sai / nội dung vi phạm — lưu JSONL nhẹ (free-tier),
 # admin xem qua /admin/reports để xử lý (takedown/sửa). KHÔNG dùng DB/dịch vụ trả phí.
 REPORTS_FILE = Path(__file__).resolve().parent / "data" / "reports.jsonl"
@@ -71,18 +77,24 @@ async def list_entities(
     limit: int = Query(50, le=1000),
     offset: int = Query(0, ge=0),
 ):
+    def _in_month(e):
+        return month in ((e.get("season") or {}).get("months") or [])
+
     if q:
         results = db.search_entities(q=q, entity_type=type, area=area, limit=limit)
+        if month:
+            results = [e for e in results if _in_month(e)]
+        total = len([e for e in results if _in_month(e)]) if month else db.count_entities_filtered(
+            entity_type=type, area=area, q=q)
+    elif month:
+        # GĐ-audit fix: lọc month TRÊN TOÀN BỘ tập (không phân trang trước rồi mới lọc) →
+        # total đúng + offset/limit đúng. Dataset nhỏ (<2k) nên nạp full an toàn.
+        full = db.list_entities(entity_type=type, area=area, limit=100000, offset=0)
+        filtered = [e for e in full if _in_month(e)]
+        total = len(filtered)
+        results = filtered[offset:offset + limit]
     else:
         results = db.list_entities(entity_type=type, area=area, limit=limit, offset=offset)
-
-    if month:
-        results = [
-            e for e in results
-            if month in (e.get("season", {}) or {}).get("months", [])
-        ]
-        total = len(results)
-    else:
         total = db.count_entities_filtered(entity_type=type, area=area, q=q)
 
     _enrich_place(results)

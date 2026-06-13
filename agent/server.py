@@ -64,6 +64,7 @@ from admin import router as admin_router
 from auth import router as auth_router
 from notifications import router as community_router
 from public_api import router as public_router
+import public_api as _public_api
 from seo import router as seo_router
 from social import router as social_router
 from tools import TOOLS, SYSTEM_PROMPT
@@ -827,8 +828,13 @@ MAX_BODY_SIZE = 1_048_576  # 1MB
 async def limit_request_size(request: Request, call_next):
     """Reject requests with body > 1MB to prevent DoS."""
     content_length = request.headers.get("content-length")
-    if content_length and int(content_length) > MAX_BODY_SIZE:
-        return JSONResponse(status_code=413, content={"error": "Request body too large (max 1MB)"})
+    if content_length:
+        try:
+            if int(content_length) > MAX_BODY_SIZE:
+                return JSONResponse(status_code=413, content={"error": "Request body too large (max 1MB)"})
+        except ValueError:
+            # Content-Length không phải số -> request hỏng, trả 400 (tránh 500 do int() ném).
+            return JSONResponse(status_code=400, content={"error": "Invalid Content-Length header"})
     return await call_next(request)
 
 
@@ -880,6 +886,14 @@ async def track_response_time(request: Request, call_next):
 
 from pydantic import Field, field_validator
 
+def _sanitize_message(v: str) -> str:
+    """Strip HTML/script tags khỏi message người dùng. Dùng cho cả POST /chat
+    (validator) lẫn GET /chat/stream (query param) — đảm bảo parity."""
+    v = re.sub(r"<script[^>]*>.*?</script>", "", v or "", flags=re.DOTALL | re.IGNORECASE)
+    v = re.sub(r"<[^>]+>", "", v)
+    return v.strip()
+
+
 class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=2000, description="User message")
     history: list[dict] = Field(default=[], max_length=50, description="Conversation history")
@@ -888,10 +902,7 @@ class ChatRequest(BaseModel):
     @field_validator("message")
     @classmethod
     def sanitize_message(cls, v):
-        # Strip HTML/script tags
-        v = re.sub(r"<script[^>]*>.*?</script>", "", v, flags=re.DOTALL | re.IGNORECASE)
-        v = re.sub(r"<[^>]+>", "", v)
-        return v.strip()
+        return _sanitize_message(v)
 
 
 class ChatResponse(BaseModel):
@@ -1782,8 +1793,18 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
             yield f"data: {json.dumps({'type': 'error', 'content': 'Quá nhiều yêu cầu. Vui lòng thử lại sau.'}, ensure_ascii=False)}\n\n"
         return StreamingResponse(rate_limit_stream(), media_type="text/event-stream")
 
+    # Parity với POST /chat: cắt độ dài + strip HTML (query param không qua pydantic validator).
+    message = _sanitize_message(message)[:2000]
+    if not message:
+        async def empty_stream():
+            yield f"data: {json.dumps({'type': 'error', 'content': 'Tin nhắn trống.'}, ensure_ascii=False)}\n\n"
+        return StreamingResponse(empty_stream(), media_type="text/event-stream")
+
     try:
         hist = json.loads(history)
+        if not isinstance(hist, list):
+            hist = []
+        hist = hist[:50]
     except Exception:
         hist = []
 
@@ -2104,6 +2125,7 @@ async def reload_data(request: Request):
         # → event loop không bị đóng băng (/health vẫn đáp ứng trong lúc reload).
         result = knowledge.reload()
         cache.invalidate_all()
+        _public_api.invalidate_place_cache()  # tránh phục vụ place_name/area cũ sau reload
         if HAS_PROMPT_CACHE:
             prompt_cache.invalidate()
         if HAS_KB_CONTEXT:

@@ -195,6 +195,29 @@ def test_info_report_submit_and_admin_list(client_mocked, tmp_path, monkeypatch)
     assert last.json().get("error") == "rate_limited"
 
 
+def test_entities_month_pagination(client_mocked):
+    """GĐ-audit: /api/entities?month= phải lọc TOÀN BỘ tập rồi mới phân trang → total đúng
+    + limit/offset đúng (trước đây lọc sau khi đã phân trang → total sai, trang thiếu)."""
+    from database import db
+    seeded = [f"m-seed-{i}" for i in range(5)]
+    try:
+        for i in range(5):  # 5 entity đều vào mùa tháng 7
+            db.upsert_entity({"id": f"m-seed-{i}", "type": "experience", "name": f"Mùa 7 #{i}",
+                              "summary": "x", "season": {"months": [7]}})
+        r = client_mocked.get("/api/entities?month=7&limit=2&offset=0")
+        assert r.status_code == 200, r.text
+        body = r.json()
+        # total phản ánh TOÀN BỘ entity tháng 7 (>=5), không phải chỉ trang hiện tại
+        assert body["total"] >= 5, body["total"]
+        assert len(body["entities"]) == 2  # limit tôn trọng
+        # trang 2 có dữ liệu (trước fix có thể rỗng)
+        r2 = client_mocked.get("/api/entities?month=7&limit=2&offset=2")
+        assert len(r2.json()["entities"]) >= 1
+    finally:
+        for eid in seeded:
+            db.delete_entity(eid)
+
+
 def test_place_overview_endpoint(client_mocked):
     """Trang hub xã/phường: /api/places/{id}/overview gom danh bạ + du lịch + lưu trú + sản phẩm.
     404 nếu id không phải place."""

@@ -238,6 +238,19 @@ def test_facilities_by_place(db):
     assert len(db.facilities_by_place()) == 3  # tất cả facility
 
 
+def test_upsert_accepts_coords_alias(db):
+    # GĐ-audit: ETL/auto_learn ghi entity["coords"] (legacy) — upsert phải map sang coordinates
+    # để không mất toạ độ đã geocode.
+    db.upsert_entity({"id": "e-coords", "type": "attraction", "name": "Điểm có coords",
+                      "coords": [10.25, 105.97]})
+    e = db.get_entity("e-coords")
+    assert e.get("coordinates") == [10.25, 105.97]
+    # "coordinates" vẫn được ưu tiên nếu có cả hai
+    db.upsert_entity({"id": "e-both", "type": "attraction", "name": "X",
+                      "coordinates": [1, 2], "coords": [9, 9]})
+    assert db.get_entity("e-both").get("coordinates") == [1, 2]
+
+
 def test_entities_by_place(db):
     # Trang hub xã/phường: gom mọi entity nội dung theo placeId, trừ chính các place.
     db.upsert_entity({"id": "xa-h", "type": "place", "name": "Xã H", "placeId": None})

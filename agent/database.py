@@ -239,7 +239,9 @@ class Database:
         attrs_val = entity.get("attributes", {})
         source_val = entity.get("source", {})
         images_val = entity.get("images", [])
-        coords_val = entity.get("coordinates")
+        # GĐ-audit: chấp nhận alias legacy "coords" để ETL/auto_learn không mất toạ độ
+        # đã geocode (nhiều path ghi entity["coords"] thay vì "coordinates").
+        coords_val = entity.get("coordinates") or entity.get("coords")
         updated = entity.get("updatedAt", datetime.now().strftime("%Y-%m-%d"))
 
         with self._conn() as conn:
