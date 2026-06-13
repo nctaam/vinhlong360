@@ -196,9 +196,9 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 **Tiên quyết:** DoD-3, DoD-8.
 
-- [ ] **12.1** Backfill `season` cho phần lớn 90 experience + 113 dish (hiện chỉ 8 experience có cửa sổ thật) — nguồn kiểm chứng được. → *Verify:* đếm entity có `season.peak` thật tăng mạnh. *Nghiệm thu:* wedge "có cảm giác đầy".
-- [ ] **12.2** Bổ sung provenance thật: thay dần 471 entity tự-trích vinhlong360.vn bằng nguồn ngoài. → *Nghiệm thu:* tỉ lệ URL nguồn ngoài tăng.
-- [ ] **12.3** Trang "Tháng này đi đâu/ăn gì" dùng `season` + relevance scoring đã có. → *Verify:* chọn tháng → hiện trải nghiệm/đặc sản đúng mùa. *Nghiệm thu:* wedge chạy.
+- [ ] 🛑 **12.1** (cần NGUỒN DỮ LIỆU thật — không tự bịa mùa vụ) Backfill `season` cho phần lớn experience/dish (hiện 41/421 wedge có mùa). Cần LLM-có-web hoặc nghiên cứu tay. → Track-H/data.
+- [ ] 🛑 **12.2** (cần nguồn ngoài) Bổ sung provenance thật thay 471 entity tự-trích vinhlong360.vn.
+- [x] **12.3** ✅ Trang `/theo-mua`: chọn tháng → wedge (experience/product/dish) đang vào mùa, sắp cao-điểm trước (relevanceScore≥2), badge Cao điểm/Đang mùa + seasonText. Footer link. Dữ liệu thật T6=27/T11=31/T1=29. Build OK. Đầy dần khi 12.1 backfill.
 
 **🚦 Cổng DoD-12:** trang theo mùa hiển thị đủ nội dung thật theo tháng.
 
