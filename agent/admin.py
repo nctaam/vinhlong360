@@ -88,7 +88,8 @@ def _sanitize(text: str) -> str:
     return text.strip()
 
 VALID_TYPES = {"experience", "product", "dish", "craft_village", "attraction",
-               "accommodation", "person", "event", "history", "nature", "economy"}
+               "accommodation", "person", "event", "history", "nature", "economy",
+               "facility", "organization"}  # GĐ13: facility=cơ quan công vụ, organization=HTX/cơ sở
 
 class EntityUpdate(BaseModel):
     name: str | None = Field(None, min_length=1, max_length=200)
