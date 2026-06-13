@@ -278,9 +278,11 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 **CÒN NỢ (theo severity):**
 - ~~🔴 CRITICAL — split-brain ETL ghi data.json (B1)~~ ✅ **XONG** (commit 002c63b): kb_curation (promote/reject/auto_promote), learn_loop (add+confidence), discover_province (add), cleanup_noise (delete+backup+atomic), relationship_discovery (add rel) — tất cả ghi thẳng `database.db` (data.json = working copy). +test write-through. **Phát hiện phụ**: DB không có cột verified/status → provisional quarantine vô tác dụng với chat (đọc DB); auto-learn entity vào DB là live ngay (product-note, chưa xử lý).
 - ~~🟠 HIGH — importer còn province→bucket (B2)~~ ✅ **XONG** (commit 1001ca1): 4 importer `guess_place_id` trả None (bỏ map cả tỉnh→1 xã); chạy lại → unclassified thay vì mis-bucket.
-- ~~🟡 MED — an toàn ghi file `cleanup_noise`~~ ✅ (gộp B1: backup+atomic). **Còn**: `export_data.py` ghi `web/data.json` không backup/atomic — thêm temp-then-replace + backup.
-- 🟡 **MED — abstention retrieval yếu**: test `slow` `TestAbstention` đỏ (rate 0.5<0.7) — search trả entity nội địa cho query ngoài-vùng ("buffet Tokyo", "vé Paris"). Cần ngưỡng/loại-vùng. (Test bị deselect mặc định.) Cũng có **flaky test-isolation**: `test_retrieval_eval` recall đỏ khi chạy SAU integration test khác (KB global bị pollute) — cần reset state giữa test.
-- 🟢 **LOW**: `database.get_query_stats` f-string INTERVAL (chưa có caller, latent); `kb_curation.find_near_duplicate` over-merge (2-token); `xa-phuong/[id].vue` thêm `?.` phòng thủ.
+- ~~🟡 MED — an toàn ghi file~~ ✅ XONG: `cleanup_noise` (B1: backup+atomic) + `export_data.py` (commit 874ea48: atomic temp-then-replace; file regenerable từ DB nên đủ).
+- ~~🟡 flaky test-isolation `test_retrieval_eval`~~ ✅ XONG (874ea48: fixture `knowledge.reload()` reset KB — 4 recall test pass trong combined run). ~~2 test lỗi thời `tests/test_integration.py`~~ ✅ (0fcdf7f: feedback 422, /reload 401).
+- 🟡 **MED — abstention retrieval yếu (CÒN)**: test `slow` `TestAbstention` đỏ (rate 0.5<0.7) — search trả entity nội địa cho query ngoài-vùng ("buffet Tokyo", "vé Paris"). Cần phát hiện địa danh ngoài-vùng để abstain. Test deselect mặc định.
+- 🟡 **MED — provisional quarantine vô tác dụng (product-note)**: DB không có cột verified/status; auto_learn upsert entity provisional (conf~0.35) thẳng vào DB → live với chat không qua review. Quyết định sản phẩm: có cần lọc verified ở chat/search không (cần cột DB + filter)?
+- 🟢 **LOW**: `database.get_query_stats` f-string INTERVAL (chưa có caller, latent); `kb_curation.find_near_duplicate` over-merge (2-token).
 
 ### 📊 Hàm ý từ deep-research nhu cầu người dùng (2026-06-13) — định hướng, KHÔNG tự đổi §1
 > Nguồn: memory `research-vinhlong360-demand.md` (24 nguồn, 25 claim verify 3-phiếu, 23 xác nhận / 2 bác). Đây là **ưu tiên hóa & việc đề xuất**, không thay quyết định kiến trúc §1.4 (showcase-only vẫn giữ).
