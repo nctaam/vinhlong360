@@ -33,7 +33,7 @@
 .rel-list a:hover { text-decoration: underline; }
 .rel-distance { color: var(--muted); font-size: .78rem; white-space: nowrap; }
 .rel-more { margin-top: 12px; border: 1px solid var(--line); background: var(--card); color: var(--primary-fg); border-radius: 8px; padding: 8px 12px; font-weight: 700; cursor: pointer; }
-.rel-more:hover:not(:disabled) { border-color: var(--primary-fg); background: #f7f4ec; }
+.rel-more:hover:not(:disabled) { border-color: var(--primary-fg); background: var(--bg-warm); }
 .rel-more:disabled { opacity: .6; cursor: wait; }
 
 .detail-aside { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 18px 16px; box-shadow: var(--shadow); position: sticky; top: 78px; }
@@ -62,8 +62,8 @@
 
 /* month strip */
 .month-strip { display: flex; gap: 4px; flex-wrap: wrap; }
-.ms-cell { width: 30px; height: 30px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-size: .78rem; background: #eef1ef; color: var(--muted); border: 1px solid var(--line); }
-.ms-cell.on { background: #fbe7da; color: var(--primary-fg); border-color: #f3c9b1; }
+.ms-cell { width: 30px; height: 30px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-size: .78rem; background: var(--badge-year-bg); color: var(--muted); border: 1px solid var(--line); }
+.ms-cell.on { background: var(--badge-season-bg); color: var(--primary-fg); border-color: rgba(var(--primary-rgb), .3); }
 .ms-cell.on.peak { background: var(--accent); color: var(--ink); border-color: var(--accent); }
 .ms-legend { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: .82rem; margin-top: 8px; }
 .ms-legend .ms-cell { width: 16px; height: 16px; }
@@ -89,7 +89,7 @@
 .reviews-summary { display: flex; align-items: center; gap: 6px; font-size: .92rem; }
 .review-count { color: var(--muted); }
 
-.review-form { background: #f7f4ec; border-radius: var(--radius); padding: 16px; margin-bottom: 20px; }
+.review-form { background: var(--bg-warm); border-radius: var(--radius); padding: 16px; margin-bottom: 20px; }
 .rf-rating { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .rf-label { font-size: .88rem; font-weight: 600; color: var(--muted); }
 .rf-error { color: #D94F3D; font-size: .85rem; margin-top: 6px; }

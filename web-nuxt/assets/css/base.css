@@ -361,21 +361,19 @@ h1, h2, h3 { line-height: 1.2; }
 .area-links { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--line); }
 .area-links h2 { font-size: 1.1rem; margin: 0 0 8px; }
 
-@media (prefers-color-scheme: dark) {
-  .topbar { background: rgba(28, 28, 30, .96); }
-  .site-footer { background: #1c1c1e; }
-  .post-card, .sidebar-card, .create-post { background: var(--card); }
-  .hero-search input { background: var(--bg-alt); color: var(--ink); border-color: var(--line); }
-  .topbar-search input { background: var(--bg-alt); color: var(--ink); }
-  .chat-panel-input { background: var(--card); }
-  .chat-panel-input input { background: var(--bg-alt); color: var(--ink); }
-  .chat-panel-msgs .cmsg.assistant { background: var(--card); }
-  .region-card { background: var(--card); }
-  .stop-card { background: var(--card); }
-  .saved-plan-item { background: var(--card); }
-  .transport-mode { background: var(--card); }
-  img { opacity: .92; }
-}
+/* Dark mode (color-mode thêm .dark; tự áp theo OS khi preference=system) */
+.dark .site-footer { background: #1c1c1e; }
+.dark .post-card, .dark .sidebar-card, .dark .create-post { background: var(--card); }
+.dark .hero-search input { background: var(--bg-alt); color: var(--ink); border-color: var(--line); }
+.dark .topbar-search input { background: var(--bg-alt); color: var(--ink); }
+.dark .chat-panel-input { background: var(--card); }
+.dark .chat-panel-input input { background: var(--bg-alt); color: var(--ink); }
+.dark .chat-panel-msgs .cmsg.assistant { background: var(--card); }
+.dark .region-card { background: var(--card); }
+.dark .stop-card { background: var(--card); }
+.dark .saved-plan-item { background: var(--card); }
+.dark .transport-mode { background: var(--card); }
+.dark img:not(.no-dim) { opacity: .94; }
 @media (max-width: 480px) {
   .chat-panel { bottom: 0; right: 0; width: 100vw; height: 100dvh; max-height: 100dvh; border-radius: 0; padding-bottom: env(safe-area-inset-bottom); }
   .chat-fab { bottom: 16px; right: 16px; }

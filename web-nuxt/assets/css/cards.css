@@ -58,14 +58,11 @@
 .place-list { margin: 12px 0 20px; }
 .place-list h3 { font-size: .85rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin: 16px 0 8px; }
 .place-chips { gap: 6px; }
-.place-chip { font-size: .82rem; padding: 5px 12px; background: #f5f1e8; border-color: transparent; cursor: default; }
+.place-chip { font-size: .82rem; padding: 5px 12px; background: var(--bg-alt); border-color: transparent; cursor: default; }
 .place-chip.has-content { background: var(--card); border-color: var(--primary-fg); color: var(--primary-fg); font-weight: 600; }
 .legacy-note { color: var(--muted); font-size: .82em; font-style: italic; }
 
-@media (prefers-color-scheme: dark) {
-  .card { background: var(--card); }
-  .region-card { background: var(--card); }
-  .place-chip { background: var(--bg-alt); }
-  .place-chip.has-content { background: var(--card); }
-  .cover-tag.cat-product { color: #fff; }
-}
+/* Dark mode (color-mode .dark) */
+.dark .card { background: var(--card); }
+.dark .region-card { background: var(--card); }
+.dark .cover-tag.cat-product { color: #fff; }

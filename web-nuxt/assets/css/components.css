@@ -99,7 +99,7 @@
 }
 .toast {
   padding: 12px 20px; border-radius: 12px;
-  background: var(--ink); color: #fff;
+  background: var(--ink-900); color: #fff;
   font-size: .9rem; font-weight: 600;
   box-shadow: 0 4px 20px rgba(0,0,0,.2);
   pointer-events: auto;
@@ -277,7 +277,7 @@
 /* ── Save / Favorite button ── */
 .save-btn { display: inline-flex; align-items: center; gap: 5px; background: var(--surface-translucent); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: .88rem; font-weight: 600; color: var(--ink); backdrop-filter: blur(4px); transition: all .15s; }
 .save-btn:hover { background: var(--card); border-color: var(--primary-fg); }
-.save-btn.saved { background: #fde8e4; border-color: #e8a0a0; }
+.save-btn.saved { background: var(--badge-season-bg); border-color: var(--accent); color: var(--primary-fg); }
 .save-btn-sm { padding: 4px 10px; font-size: .78rem; }
 .save-icon { font-size: 1rem; line-height: 1; }
 .save-btn-sm .save-icon { font-size: .85rem; }
