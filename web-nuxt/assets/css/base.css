@@ -38,7 +38,7 @@ h1, h2, h3 { line-height: 1.2; }
 /* ── Hero ── */
 .hero { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #fff; position: relative; overflow: hidden; }
 .hero-inner { max-width: var(--maxw); margin: 0 auto; padding: 56px 20px 64px; position: relative; z-index: 1; }
-.hero h1 { margin: 0; font-size: clamp(1.5rem, 5vw, 2.5rem); letter-spacing: -.5px; }
+.hero h1 { margin: 0; font-size: clamp(1.75rem, 5.5vw, 3rem); letter-spacing: -.5px; line-height: 1.1; font-weight: 800; }
 .hero p { margin: 14px 0 0; font-size: 1.15rem; opacity: .92; max-width: 640px; }
 .hero-search { display: flex; gap: 10px; margin: 26px 0 0; max-width: 560px; }
 .hero-search input { flex: 1; padding: 14px 18px; border: 2px solid transparent; border-radius: 12px; font-size: 1rem; transition: border-color .15s, box-shadow .15s; }
@@ -59,9 +59,9 @@ h1, h2, h3 { line-height: 1.2; }
 .wc-desc { color: var(--muted); }
 
 /* ── Blocks / sections ── */
-.block { max-width: var(--maxw); margin: 0 auto; padding: 34px 20px 6px; }
-.section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; gap: 12px; }
-.section-head h2 { margin: 0; font-size: 1.4rem; }
+.block { max-width: var(--maxw); margin: 0 auto; padding: var(--space-12) 20px var(--space-2); }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--space-5); gap: 12px; }
+.section-head h2 { margin: 0; font-size: var(--text-2xl); font-weight: 800; letter-spacing: -.02em; line-height: 1.15; }
 .see-all { color: var(--primary-fg); font-weight: 700; font-size: .92rem; white-space: nowrap; }
 .see-all:hover { text-decoration: underline; }
 

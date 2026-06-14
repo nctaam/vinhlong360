@@ -1,7 +1,7 @@
 /* ── Grid + cards ── */
 .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: transform .12s ease, box-shadow .12s ease; display: flex; flex-direction: column; }
-.card:hover { transform: translateY(-3px); box-shadow: 0 8px 18px rgba(20, 84, 53, .14), 0 18px 40px rgba(20, 84, 53, .12); }
+.card:hover { transform: translateY(-4px); box-shadow: 0 6px 16px rgba(43, 38, 34, .10), 0 16px 36px rgba(43, 38, 34, .12); }
 .card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; transform: translateY(-3px); }
 .cover { height: 96px; display: flex; align-items: center; justify-content: center; position: relative; }
 .cover span { font-size: 2.6rem; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .2)); }
