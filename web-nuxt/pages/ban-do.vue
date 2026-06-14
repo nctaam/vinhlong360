@@ -54,6 +54,7 @@ const typeFilters = [
   { value: 'product', label: '🍊 Đặc sản' },
 ]
 
+const route = useRoute()
 const activeTypes = ref(new Set(['all']))
 
 function toggleType(type: string) {
@@ -173,6 +174,21 @@ watch(mapEl, async (el) => {
     for (const lid of ['clusters', 'unclustered']) {
       map.on('mouseenter', lid, () => { map.getCanvas().style.cursor = 'pointer' })
       map.on('mouseleave', lid, () => { map.getCanvas().style.cursor = '' })
+    }
+
+    // Focus 1 điểm khi đến từ trang chi tiết (?id hoặc ?lat&lng) — thay vì chỉ hiện bản đồ chung
+    const fid = route.query.id as string | undefined
+    let flat = parseFloat(route.query.lat as string)
+    let flng = parseFloat(route.query.lng as string)
+    const fent = fid ? (data.value?.entities || []).find((e: any) => e.id === fid) : null
+    if (fent) { const c = normalizeCoords(fent.coordinates ?? fent.coords); if (c) { flat = c[0]; flng = c[1] } }
+    if (isFinite(flat) && isFinite(flng)) {
+      map.flyTo({ center: [flng, flat], zoom: 15 })
+      const m: any = fent ? (TYPE_META[fent.type] || { emoji: '📍' }) : { emoji: '📍' }
+      const nm = fent ? fent.name : 'Địa điểm'
+      new maplibregl.Popup({ offset: 12 }).setLngLat([flng, flat])
+        .setHTML(`<strong>${esc(m.emoji || '📍')} ${esc(nm)}</strong>${fent ? `<br><small>${esc(m.label || fent.type)}</small>` : ''}`)
+        .addTo(map)
     }
   }
 

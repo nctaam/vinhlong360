@@ -29,7 +29,7 @@
         <div v-if="hasHighlights" class="highlights">
           <a v-if="entity.attributes?.phone" class="hl hl-action" :href="'tel:' + entity.attributes.phone">📞 Gọi</a>
           <a v-if="zaloLink" class="hl hl-action" :href="zaloLink" target="_blank" rel="nofollow">💬 Zalo</a>
-          <a v-if="hasCoords" class="hl hl-action" href="/ban-do">🗺️ Bản đồ</a>
+          <NuxtLink v-if="hasCoords" class="hl hl-action" :to="mapUrl">🗺️ Bản đồ</NuxtLink>
           <span v-if="entity.attributes?.hours" class="hl">🕒 {{ entity.attributes.hours }}</span>
           <span v-if="priceText" class="hl">💰 {{ priceText }}</span>
           <span v-if="addressText" class="hl">📍 {{ addressText }}</span>
@@ -207,7 +207,7 @@
           </ClientOnly>
         <NuxtLink to="/tao-lich-trinh" no-prefetch class="ns-action">📋 Thêm vào lịch trình</NuxtLink>
           <NuxtLink v-if="entity.type !== 'accommodation'" to="/luu-tru" class="ns-action">🏡 Tìm chỗ ở gần đây</NuxtLink>
-        <NuxtLink to="/ban-do" no-prefetch class="ns-action">🗺️ Xem trên bản đồ</NuxtLink>
+        <NuxtLink :to="mapUrl" no-prefetch class="ns-action">🗺️ Xem trên bản đồ</NuxtLink>
           <NuxtLink to="/tuyen-duong" class="ns-action">🛤️ Tuyến đường gợi ý</NuxtLink>
         </div>
       </aside>
@@ -281,6 +281,12 @@ const buyContactUrl = computed(() => {
 const priceText = computed(() => entity.value?.attributes?.price || entity.value?.attributes?.fee || '')
 const addressText = computed(() => entity.value?.attributes?.address || entity.value?.place_name || '')
 const hasCoords = computed(() => !!normalizeCoords(entity.value?.coordinates ?? entity.value?.coords))
+// Link bản đồ FOCUS đúng điểm này (truyền id + toạ độ) — không ra bản đồ chung
+const mapUrl = computed(() => {
+  const c = normalizeCoords(entity.value?.coordinates ?? entity.value?.coords)
+  const base = `/ban-do?id=${encodeURIComponent(id.value)}`
+  return c ? `${base}&lat=${c[0]}&lng=${c[1]}` : base
+})
 const hasHighlights = computed(() => !!(entity.value?.attributes?.phone || zaloLink.value || entity.value?.attributes?.hours || priceText.value || addressText.value || hasCoords.value))
 
 const quality = computed(() => entity.value?.quality || {})
