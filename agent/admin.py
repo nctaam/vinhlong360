@@ -302,6 +302,46 @@ async def delete_entity(entity_id: str):
     return {"status": "deleted", "entity_id": entity_id}
 
 
+@router.get("/unclassified")
+async def list_unclassified(limit: int = Query(50, ge=1, le=500), offset: int = Query(0, ge=0),
+                            q: Optional[str] = None):
+    """Entity nội dung CHƯA gán xã/phường (placeId rỗng) — để admin gán đúng (lấp nợ placeId)."""
+    ql = (q or "").lower().strip()
+    out = []
+    for e in db.all_entities():
+        if e.get("type") == "place" or e.get("placeId"):
+            continue
+        if ql and ql not in e.get("name", "").lower():
+            continue
+        out.append({"id": e["id"], "name": e.get("name"), "type": e.get("type"),
+                    "area": e.get("area"), "summary": (e.get("summary") or "")[:100]})
+    out.sort(key=lambda x: x.get("name", ""))
+    return {"total": len(out), "entities": out[offset:offset + limit]}
+
+
+class AssignPlaceRequest(BaseModel):
+    place_id: Optional[str] = Field(None, max_length=100)
+
+
+@router.post("/entities/{entity_id}/place")
+async def assign_place(entity_id: str, body: AssignPlaceRequest):
+    """Gán (hoặc gỡ) xã/phường cho 1 entity. Validate place_id là place thật (chống gán bừa)."""
+    e = db.get_entity(entity_id)
+    if not e:
+        raise HTTPException(404, f"Entity '{entity_id}' not found")
+    pid = body.place_id or None
+    if pid:
+        p = db.get_entity(pid)
+        if not p or p.get("type") != "place":
+            raise HTTPException(400, f"'{pid}' không phải xã/phường hợp lệ")
+        e["area"] = p.get("area") or e.get("area")  # đồng bộ area theo xã
+    e["placeId"] = pid
+    e["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
+    db.upsert_entity(e)
+    _sync_kb()
+    return {"status": "ok", "id": entity_id, "placeId": pid}
+
+
 # ── Itinerary CRUD ──
 
 @router.get("/itineraries")

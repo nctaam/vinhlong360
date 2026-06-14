@@ -129,6 +129,39 @@ def test_reload_requires_admin_and_reads_db(client_mocked):
     assert r.json().get("source") == "db"
 
 
+def test_assign_place_to_unclassified(client_mocked):
+    """Feature: gán xã cho entity chưa phân loại — list unclassified + assign + validate."""
+    from database import db
+    from middleware import ADMIN_API_KEY as _ADMIN_KEY
+    hdr = {"X-Admin-Key": _ADMIN_KEY}
+    seeded = ["xa-assign-test", "ent-unclass-1"]
+    try:
+        db.upsert_entity({"id": "xa-assign-test", "type": "place", "name": "Xã Assign Test",
+                          "area": "vinh-long", "level": "xa"})
+        db.upsert_entity({"id": "ent-unclass-1", "type": "attraction", "name": "Điểm chưa phân loại ZZZ",
+                          "summary": "x"})  # placeId rỗng
+
+        # xuất hiện trong danh sách chưa phân loại
+        lst = client_mocked.get("/admin/unclassified?q=ZZZ", headers=hdr)
+        assert lst.status_code == 200, lst.text
+        assert any(e["id"] == "ent-unclass-1" for e in lst.json()["entities"])
+
+        # gán vào place không hợp lệ -> 400
+        bad = client_mocked.post("/admin/entities/ent-unclass-1/place", headers=hdr,
+                                 json={"place_id": "ent-unclass-1"})  # không phải place
+        assert bad.status_code == 400
+
+        # gán đúng xã -> reflected ở DB + area đồng bộ
+        ok = client_mocked.post("/admin/entities/ent-unclass-1/place", headers=hdr,
+                                json={"place_id": "xa-assign-test"})
+        assert ok.status_code == 200, ok.text
+        got = db.get_entity("ent-unclass-1")
+        assert got["placeId"] == "xa-assign-test" and got["area"] == "vinh-long"
+    finally:
+        for i in seeded:
+            db.delete_entity(i)
+
+
 def test_admin_ai_triage_endpoint(client_mocked):
     """On-demand agent: POST /admin/ai/triage trả 200 + context kể cả khi LLM hỏng (degrade);
     yêu cầu admin."""
