@@ -129,6 +129,48 @@ def test_reload_requires_admin_and_reads_db(client_mocked):
     assert r.json().get("source") == "db"
 
 
+def test_entity_image_management(client_mocked):
+    """Feature: quản lý ảnh entity — add (validate URL) + remove theo index."""
+    from database import db
+    from middleware import ADMIN_API_KEY as _ADMIN_KEY
+    hdr = {"X-Admin-Key": _ADMIN_KEY}
+    eid = "img-test-ent"
+    try:
+        db.upsert_entity({"id": eid, "type": "attraction", "name": "Ảnh test"})
+        # URL sai -> 400
+        assert client_mocked.post(f"/admin/entities/{eid}/images", headers=hdr, json={"url": "ftp://x"}).status_code == 400
+        # add hợp lệ
+        r = client_mocked.post(f"/admin/entities/{eid}/images", headers=hdr, json={"url": "https://ex.com/a.jpg"})
+        assert r.status_code == 200 and "https://ex.com/a.jpg" in r.json()["images"]
+        # remove index 0
+        d = client_mocked.delete(f"/admin/entities/{eid}/images/0", headers=hdr)
+        assert d.status_code == 200 and "https://ex.com/a.jpg" not in d.json().get("images", [])
+    finally:
+        db.delete_entity(eid)
+
+
+def test_bulk_operations(client_mocked):
+    """Feature: thao tác hàng loạt — bulk-delete + bulk-update-confidence."""
+    from database import db
+    from middleware import ADMIN_API_KEY as _ADMIN_KEY
+    hdr = {"X-Admin-Key": _ADMIN_KEY}
+    ids = ["bulk-a", "bulk-b"]
+    try:
+        for i in ids:
+            db.upsert_entity({"id": i, "type": "dish", "name": f"Bulk {i}", "confidence": 0.5})
+        # bulk confidence
+        r = client_mocked.post("/admin/entities/bulk-update-confidence?confidence=0.9", headers=hdr, json=ids)
+        assert r.status_code == 200 and r.json()["count"] == 2
+        assert db.get_entity("bulk-a")["confidence"] == 0.9
+        # bulk delete
+        r2 = client_mocked.post("/admin/entities/bulk-delete", headers=hdr, json=ids)
+        assert r2.status_code == 200 and r2.json()["count"] == 2
+        assert db.get_entity("bulk-a") is None
+    finally:
+        for i in ids:
+            db.delete_entity(i)
+
+
 def test_cost_overview_endpoint(client_mocked):
     """Feature: bảng chi phí — /admin/cost-overview trả llm + agent_budget; auth-gated."""
     from middleware import ADMIN_API_KEY as _ADMIN_KEY
