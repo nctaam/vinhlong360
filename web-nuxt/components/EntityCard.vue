@@ -1,7 +1,8 @@
 <template>
   <NuxtLink :to="`/dia-diem/${entity.id}`" :class="['card', `cat-${typeMeta.cat}`]">
     <div v-if="coverImage && !imgError" class="cover cover-img">
-      <img :src="coverImage" :alt="entity.name" loading="lazy" width="400" height="240" decoding="async" @error="imgError = true" />
+      <NuxtImg v-if="isRemote" :src="coverImage" :alt="entity.name" loading="lazy" width="400" height="240" sizes="sm:100vw md:50vw lg:400px" decoding="async" @error="imgError = true" />
+      <img v-else :src="coverImage" :alt="entity.name" loading="lazy" width="400" height="240" decoding="async" @error="imgError = true" />
       <span class="cover-tag" :class="`cat-${typeMeta.cat}`">{{ typeMeta.emoji }} {{ typeMeta.label }}</span>
       <ClientOnly><SaveButton class="card-save" :entity="entity" size="sm" /></ClientOnly>
     </div>
@@ -40,6 +41,7 @@ const coverImage = computed(() => {
   if (Array.isArray(imgs) && imgs.length > 0) return imgs[0]
   return null
 })
+const isRemote = computed(() => typeof coverImage.value === 'string' && /^https?:\/\//.test(coverImage.value))
 const isYearRoundSeason = computed(() => !props.entity.season || isYearRound(props.entity.season))
 const seasonLabel = computed(() => seasonText(props.entity.season))
 const placeName = computed(() => props.entity.placeName || props.entity.place_name || '')

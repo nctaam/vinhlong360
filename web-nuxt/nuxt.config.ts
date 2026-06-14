@@ -5,6 +5,24 @@ export default defineNuxtConfig({
 
   ssr: true,
 
+  modules: ['@nuxt/fonts', '@nuxt/image'],
+
+  // Self-host font (bỏ Google CDN) — giảm latency bên thứ 3 + CLS (font-metric optimization).
+  fonts: {
+    defaults: { weights: [400, 600, 700, 800], subsets: ['vietnamese', 'latin', 'latin-ext'] },
+    families: [{ name: 'Inter', provider: 'google' }],
+  },
+
+  // Ảnh: provider weserv (miễn phí, transcode WebP off-VPS) — KHÔNG dùng IPX
+  // (VPS 1GB/1CPU không kham transcode remote-image server-side; xem docs/design-system-plan.md).
+  image: {
+    provider: 'weserv',
+    weserv: { baseURL: 'https://images.weserv.nl' },
+    format: ['webp'],
+    quality: 72,
+    screens: { sm: 360, md: 480, lg: 720, xl: 960 },
+  },
+
   css: [
     '~/assets/css/variables.css',
     '~/assets/css/base.css',
@@ -37,9 +55,6 @@ export default defineNuxtConfig({
         { name: 'twitter:site', content: '@vinhlong360' },
       ],
       link: [
-        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap' },
         { rel: 'dns-prefetch', href: 'https://maptiles.openmap.vn' },
         { rel: 'sitemap', type: 'application/xml', href: '/sitemap.xml' },
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
