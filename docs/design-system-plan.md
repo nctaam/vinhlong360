@@ -118,6 +118,20 @@ Schema.org JSON-LD theo loại: `TouristAttraction`, `LocalBusiness`, `Product` 
 
 ---
 
+## 4b. Pattern BỐ CỤC/IA học từ thế giới (deep-research 2026-06-14, 25/25 claim verify 3-0)
+
+> Nguồn chính: NN/g (mega-menu, menu-design, illusion-of-completeness), Baymard (navigation, split-view, applied-filters, product-page, avoid-horizontal-tabs), Visit California, michi-no-eki.com. Caveat: phần lớn Baymard từ e-commerce → pattern *bố cục* chuyển sạch, khung *bán hàng* KHÔNG áp (showcase-only §1.4).
+
+1. **IA theo intent + region-first.** Tổ chức nav theo *ý định/hoạt động* (Nơi đến / Trải nghiệm / Cảm hứng / Cung đường) + *vùng trước* (3 tỉnh → huyện/xã → điểm), KHÔNG list điểm phẳng. Desktop hiện nav trực tiếp (mega-menu cho phân cấp sâu), hamburger CHỈ mobile, submenu **click-not-hover**, mỗi cấp ≤~10 mục, nhóm quan trọng góc trên-trái, label mang thông tin.
+2. **Trang chủ = hub xếp tầng** (Visit California): 3 card vùng tĩnh (VL chỉ 3 tỉnh nên KHÔNG cần carousel) + section theo chủ đề/mùa/bài viết. SSR tĩnh hợp Nuxt.
+3. **Chống "illusion of completeness"** (NN/g): hero KHÔNG lấp kín viewport, cho section kế *peek* trên fold + scroll cue; tránh đường kẻ ngang full-width + khoảng trắng quá lớn (báo hiệu "hết trang"). Quan trọng cho trang chi tiết nơi giờ/giá/liên hệ/map hay nằm dưới fold.
+4. **Listing**: hiện **chip "filter đang áp"** (72% site chuẩn có; thiếu → khó gỡ, mobile phải mở lại panel). Catalog mỏng của VL → **đi thẳng tới listing**, tránh intermediary page. Có toạ độ → cân nhắc split-view list+map (desktop), mobile = **tab/toggle list↔map** (đừng nhúng map cướp scroll).
+5. **Trang chi tiết**: dùng **one-long-page + sticky TOC** hoặc **collapsed sections** — **TRÁNH horizontal tabs** (27% user bỏ sót nội dung). Surface khối **"Highlights" quét nhanh** (giờ/giá/liên hệ Zalo/địa chỉ/map) — 78% site KHÔNG có. Gallery ~7 loại ảnh + nav + zoom (tap/double-tap mobile).
+6. **OCOP showcase = michi-no-eki**: trình bày tường thuật ("Đặc sản nổi bật"), KHÔNG cart/giá/nút mua; nhúng trong nội dung biên tập điểm; nhấn farm-to-table + đặc sản có tên. (Đúng §1.4.)
+7. **Danh bạ/directory = taxonomy kép**: duyệt theo địa lý (vùng→tỉnh, map tỉnh clickable) SONG SONG lọc faceted theo thuộc tính/tiện ích (loại, hạng OCOP, dịch vụ). Route theo tỉnh + facet query params (Nuxt SSR).
+
+**Câu hỏi mở (chưa đủ nguồn):** tích hợp UGC/cộng đồng vào trang chi tiết (Atlas Obscura/Culture Trip — claim không verify được); layout danh bạ *hành chính* (civic) khác directory sản phẩm thế nào.
+
 ## 5. Quyết định đã chốt (để các phiên sau không đề xuất lại)
 - **Giữ CSS thuần + tokens biến CSS.** KHÔNG Tailwind, KHÔNG Style Dictionary.
 - **Giữ hệ màu hiện tại** (terracotta–amber–green–teal / cream). Chỉ hệ thống hóa, không đổi hue.
