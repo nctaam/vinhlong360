@@ -75,6 +75,11 @@ const id = computed(() => route.params.id as string)
 const { data } = await useAsyncData(`ward-${id.value}`, () =>
   $fetch<any>(`/api/places/${id.value}/overview`).catch(() => null))
 
+// Slug không hợp lệ → 404 thật (tránh soft-404: 200 + không h1, hại SEO/a11y)
+if (!data.value?.place) {
+  throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy xã/phường', fatal: true })
+}
+
 const areaMeta = computed(() => AREA_META[data.value?.place?.area] || { name: '', emoji: '📍' })
 const totalContent = computed(() => {
   const c = data.value?.counts || {}
