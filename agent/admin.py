@@ -829,7 +829,39 @@ async def get_info_reports(limit: int = Query(100, ge=1, le=500)):
             except json.JSONDecodeError:
                 continue
     items.reverse()  # mới nhất trước
-    return {"reports": items[:limit], "total": len(items)}
+    open_count = sum(1 for r in items if r.get("status", "open") == "open")
+    return {"reports": items[:limit], "total": len(items), "open": open_count}
+
+
+class ReportActionRequest(BaseModel):
+    ts: str = Field(..., min_length=1, max_length=64)   # khóa theo timestamp ISO (ổn định)
+    status: str = Field(..., pattern="^(open|resolved|dismissed)$")
+
+
+@router.post("/info-reports/action")
+async def info_report_action(body: ReportActionRequest):
+    """Đổi trạng thái 1 báo-sai (resolve/dismiss/open) — ghi lại reports.jsonl atomic."""
+    if not _INFO_REPORTS_FILE.exists():
+        raise HTTPException(404, "Không có báo cáo")
+    records, found = [], False
+    for line in _INFO_REPORTS_FILE.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            r = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if r.get("ts") == body.ts:
+            r["status"] = body.status
+            found = True
+        records.append(r)
+    if not found:
+        raise HTTPException(404, f"Không tìm thấy báo cáo ts={body.ts}")
+    tmp = _INFO_REPORTS_FILE.with_suffix(".tmp")
+    tmp.write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in records) + "\n", encoding="utf-8")
+    tmp.replace(_INFO_REPORTS_FILE)
+    return {"status": "ok", "ts": body.ts, "new_status": body.status}
 
 
 @router.post("/ai/triage")

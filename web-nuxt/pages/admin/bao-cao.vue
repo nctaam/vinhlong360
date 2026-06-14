@@ -42,6 +42,30 @@
         </tbody>
       </table>
     </div>
+
+    <h2 style="font-size:1.1rem; margin:24px 0 8px">⚠️ Báo sai thông tin (ẩn danh) <small class="muted">— {{ infoOpen }} chưa xử lý</small></h2>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead><tr><th>Loại</th><th>Đối tượng</th><th>Lý do</th><th>Trạng thái</th><th>Ngày</th><th>Thao tác</th></tr></thead>
+        <tbody>
+          <tr v-for="r in infoReports" :key="r.ts" :style="{ opacity: (r.status || 'open') === 'open' ? 1 : .5 }">
+            <td>{{ r.target_type }}</td>
+            <td><NuxtLink v-if="infoLink(r)" :to="infoLink(r)" target="_blank">{{ r.target_id }}</NuxtLink><span v-else>{{ r.target_id }}</span></td>
+            <td style="max-width:300px">{{ r.reason }}<br><small class="muted">{{ r.detail }}</small></td>
+            <td>{{ infoStatus(r.status) }}</td>
+            <td style="font-size:.82rem; color:var(--muted)">{{ formatDate(r.ts) }}</td>
+            <td class="admin-actions">
+              <template v-if="(r.status || 'open') === 'open'">
+                <button class="btn-success" @click="infoAction(r, 'resolved')">Xử lý</button>
+                <button class="btn-danger" @click="infoAction(r, 'dismissed')">Bỏ qua</button>
+              </template>
+              <span v-else>—</span>
+            </td>
+          </tr>
+          <tr v-if="!infoReports.length"><td colspan="6" style="text-align:center; padding:20px; color:var(--muted)">Không có báo sai nào.</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 
@@ -51,6 +75,35 @@ definePageMeta({ layout: 'admin', middleware: 'admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const reports = ref<any[]>([])
+const infoReports = ref<any[]>([])
+const infoOpen = ref(0)
+
+async function fetchInfoReports() {
+  try {
+    const res = await $fetch<any>('/admin-api/info-reports?limit=200', { headers: authHeaders() })
+    infoReports.value = res.reports || []
+    infoOpen.value = res.open ?? 0
+  } catch { /* ẩn danh channel, bỏ qua nếu lỗi */ }
+}
+
+async function infoAction(r: any, status: string) {
+  try {
+    await $fetch('/admin-api/info-reports/action', { method: 'POST', headers: authHeaders(), body: { ts: r.ts, status } })
+    r.status = status
+    infoOpen.value = infoReports.value.filter(x => (x.status || 'open') === 'open').length
+  } catch (e: any) { showToast(e?.data?.detail || 'Lỗi cập nhật', 'error') }
+}
+
+function infoStatus(s: string) {
+  return s === 'resolved' ? 'Đã xử lý' : s === 'dismissed' ? 'Bỏ qua' : 'Chưa xử lý'
+}
+function infoLink(r: any) {
+  const id = r.target_id
+  if (!id) return ''
+  if (r.target_type === 'post') return `/bai-viet/${id}`
+  if (r.target_type === 'facility' || r.target_type === 'entity') return `/dia-diem/${id}`
+  return ''
+}
 
 async function fetchReports() {
   try {
@@ -101,5 +154,5 @@ function formatDate(d: string) {
   return d ? new Date(d).toLocaleDateString('vi-VN') : ''
 }
 
-onMounted(() => fetchReports())
+onMounted(() => { fetchReports(); fetchInfoReports() })
 </script>

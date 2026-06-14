@@ -129,6 +129,34 @@ def test_reload_requires_admin_and_reads_db(client_mocked):
     assert r.json().get("source") == "db"
 
 
+def test_info_report_resolve_action(client_mocked, tmp_path, monkeypatch):
+    """Feature: hàng đợi báo-sai có action — resolve đổi status trong reports.jsonl."""
+    import public_api
+    import admin as admin_mod
+    from middleware import ADMIN_API_KEY as _ADMIN_KEY
+    rfile = tmp_path / "reports.jsonl"
+    monkeypatch.setattr(public_api, "REPORTS_FILE", rfile)
+    monkeypatch.setattr(admin_mod, "_INFO_REPORTS_FILE", rfile)
+    hdr = {"X-Admin-Key": _ADMIN_KEY}
+
+    # tạo 1 báo-sai
+    client_mocked.post("/api/report", json={"target_id": "x1", "target_type": "facility", "reason": "sai sđt"})
+    lst = client_mocked.get("/admin/info-reports", headers=hdr).json()
+    assert lst["open"] == 1
+    ts = lst["reports"][0]["ts"]
+
+    # resolve
+    r = client_mocked.post("/admin/info-reports/action", headers=hdr, json={"ts": ts, "status": "resolved"})
+    assert r.status_code == 200, r.text
+    after = client_mocked.get("/admin/info-reports", headers=hdr).json()
+    assert after["open"] == 0
+    assert after["reports"][0]["status"] == "resolved"
+
+    # ts không tồn tại -> 404
+    assert client_mocked.post("/admin/info-reports/action", headers=hdr,
+                              json={"ts": "khong-co", "status": "open"}).status_code == 404
+
+
 def test_create_facility_keeps_official_source(client_mocked):
     """Feature danh bạ: tạo facility giữ NGUỒN chính thống (không bị ghi đè 'admin') + vào /api/facilities."""
     from database import db
