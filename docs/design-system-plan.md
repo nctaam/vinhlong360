@@ -89,13 +89,18 @@ Audit bằng script tính tỉ lệ WCAG mọi cặp màu. Đã sửa:
 
 ⚠️ **Phát hiện hoãn sang Bước 4:** `--primary` dùng đa vai trò (chữ 46×, nền 15×, viền 18×). Ở dark mode `--primary` (#9C3D22) làm **chữ** trên nền tối chỉ đạt 2.06–2.57 (fail), nhưng lighten token sẽ phá nút nền-terracotta-chữ-trắng. → Cần **tách token foreground/background brand** khi tái cấu trúc dark mode (.dark) ở Bước 4.
 
-### Bước 3 — Self-host font + tối ưu ảnh (lợi ích CWV lớn nhất)
-- `@nuxt/fonts`: bỏ `<link>` Google Fonts, self-host Inter (subset `vietnamese`); cân nhắc 1 display font có dấu đẹp cho heading (Be Vietnam Pro), giữ Inter cho body.
-- `@nuxt/image`: ảnh entity → `<NuxtImg>` WebP/AVIF, hero `priority`, dưới fold `lazy`.
+### Bước 3 — Self-host font + tối ưu ảnh ✅ XONG
+- `@nuxt/fonts`: self-host Inter (subset vietnamese/latin/latin-ext, weights 400/600/700/800); bỏ `<link>` Google Fonts CDN + preconnect. Build → 0 ref googleapis/gstatic, 6 woff2 trong `_fonts/`.
+- `@nuxt/image`: provider **`weserv`** (miễn phí, transcode WebP OFF-VPS) thay vì IPX — **VPS 1GB/1CPU không kham transcode remote-image server-side** (cùng lý do đã tắt BUILD_SEARCH_INDEXES). EntityCard `<img>`→`<NuxtImg>` có guard (chỉ URL tuyệt đối; tương đối giữ `<img>`).
+- *Không* thêm display font thứ 2 (Inter có dấu Việt tốt; 1 font = nhẹ hơn).
 
-### Bước 4 — Dark mode có nút bật/tắt + tách brand fg/bg (0.5–1 buổi)
-`@nuxtjs/color-mode`; chuyển dark token sang selector `.dark` (giữ media query làm mặc định); nút toggle ở header; không đổi markup component.
-**Kèm:** tách brand token foreground/background — dark mode lighten brand cho CHỮ (vd `--clay-300/400` cho text/link) trong khi nút giữ nền terracotta đậm + chữ trắng. Sửa fail dark-mode brand-as-text từ Bước 2.
+### Bước 4 — Dark mode toggle + tách brand fg/bg ✅ XONG
+- `@nuxtjs/color-mode` (classSuffix '', preference system, fallback light); nút toggle 🌙/☀️ ở header (ClientOnly, 44px). Dark token: `@media`→ selector `.dark` (system vẫn auto).
+- Tách brand fg: `--primary-fg/-fg-strong/--secondary-fg/--tertiary-fg`. Light = base (0 đổi pixel); dark lighten (≥4.5:1 trên card tối) — fix dark-mode brand-as-text từ Bước 2. Nút nền brand giữ `--primary` đậm + chữ trắng.
+- Dark surfaces: 35 `#fff`→`var(--card)` (light bất biến); topbar/journey-bar/save-btn → `--surface-translucent`; overlay-trên-ảnh giữ nguyên.
+
+### Bước 5 — JSON-LD Schema.org (GEO) ✅ XONG (đã có sẵn + bổ sung)
+Codebase **đã có JSON-LD đầy đủ** (17 trang): WebSite+SearchAction, Organization+areaServed (3 tỉnh)+logo, entity theo type (TouristAttraction/Product/LodgingBusiness/LocalBusiness…)+address+geo+Offer+citation, TouristTrip (lịch trình), BreadcrumbList. Bổ sung lỗ hổng duy nhất: `inLanguage: 'vi-VN'` cho WebSite/Organization/entity.
 
 ### Bước 5 — JSON-LD cho GEO (đòn bẩy GEO=SEO)
 Schema.org JSON-LD theo loại: `TouristAttraction`, `LocalBusiness`, `Product` (OCOP), `TouristTrip` (lịch trình), `BreadcrumbList`. Render SSR qua `useHead`.

@@ -399,6 +399,7 @@ if (entity.value && !entity.value.error) {
     '@type': ldType,
     name: e.name,
     description: e.summary,
+    inLanguage: 'vi-VN',
     url: `https://vinhlong360.vn/dia-diem/${e.id}`,
     address: {
       '@type': 'PostalAddress',

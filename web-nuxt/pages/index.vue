@@ -256,6 +256,7 @@ useHead({
         name: 'vinhlong360',
         url: 'https://vinhlong360.vn',
         description: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long, Bến Tre, Trà Vinh.',
+        inLanguage: 'vi-VN',
         potentialAction: {
           '@type': 'SearchAction',
           target: 'https://vinhlong360.vn/tim-kiem?q={search_term_string}',
@@ -272,6 +273,7 @@ useHead({
         url: 'https://vinhlong360.vn',
         logo: 'https://vinhlong360.vn/icons/icon-512.png',
         description: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long, Bến Tre, Trà Vinh.',
+        inLanguage: 'vi-VN',
         areaServed: [
           { '@type': 'AdministrativeArea', name: 'Vĩnh Long' },
           { '@type': 'AdministrativeArea', name: 'Bến Tre' },
