@@ -2117,8 +2117,20 @@ async def reload_data(request: Request):
     # GĐ3.8: /reload giờ AN TOÀN (nạp lại từ DB, không xoá gì). Yêu cầu admin để
     # chống DoS rebuild ẩn danh (security audit). data-quality/replace VẪN khoá.
     from middleware import verify_admin_key
-    if not verify_admin_key(request):
-        return JSONResponse(status_code=401, content={"error": "unauthorized", "detail": "Cần X-Admin-Key"})
+    # Chấp nhận X-Admin-Key (server) HOẶC phiên admin đăng nhập (frontend admin) — đồng bộ
+    # với require_admin của /admin-api/* (trước đây /reload chỉ nhận X-Admin-Key nên nút
+    # "Reload KB" trong admin UI luôn bị 401).
+    authed = verify_admin_key(request)
+    if not authed:
+        try:
+            from auth_middleware import get_current_user
+            _u = await get_current_user(request)
+            authed = bool(_u and _u.get("role") == "admin")
+        except Exception:
+            authed = False
+    if not authed:
+        return JSONResponse(status_code=401, content={"error": "unauthorized",
+                            "detail": "Cần X-Admin-Key hoặc phiên admin"})
 
     def _reload_blocking():
         # GĐ11.4: toàn bộ phần nặng (reload DB + rebuild index + sync) chạy trong thread

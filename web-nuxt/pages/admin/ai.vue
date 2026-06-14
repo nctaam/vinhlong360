@@ -199,7 +199,7 @@ async function triggerLearn() {
 
 async function reload() {
   try {
-    await $fetch('/reload', { method: 'POST' })
+    await $fetch('/reload', { method: 'POST', headers: authHeaders() })
     triggerResult.value = 'KB reloaded'
     await fetchHealth()
   } catch { triggerResult.value = 'Reload failed' }
