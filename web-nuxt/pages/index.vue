@@ -274,7 +274,8 @@ useSeoMeta({
 useHead({
   link: [
     { rel: 'canonical', href: canonicalUrl('/') },
-    { rel: 'preload', as: 'image', href: '/img/hero.jpg', fetchpriority: 'high' },
+    { rel: 'preload', as: 'image', href: '/img/hero-mobile.jpg', fetchpriority: 'high', media: '(max-width: 640px)' },
+    { rel: 'preload', as: 'image', href: '/img/hero.jpg', fetchpriority: 'high', media: '(min-width: 641px)' },
   ],
   script: [
     {
