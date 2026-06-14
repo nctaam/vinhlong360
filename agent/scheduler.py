@@ -253,6 +253,56 @@ def task_cleanup_analytics():
         _sched_logger.error(f"Analytics cleanup error: {e}")
 
 
+def task_admin_digest():
+    """Digest quản lý định kỳ → Telegram admin. MIỄN PHÍ: tính từ DB/file, KHÔNG gọi LLM
+    (không vi phạm §B8 — thay cho 'agent tự động' tốn LLM 24/7). No-op nếu chưa cấu hình
+    TELEGRAM_BOT_TOKEN + ADMIN_TELEGRAM_IDS."""
+    import os
+    token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+    admin_ids = [x.strip() for x in os.environ.get("ADMIN_TELEGRAM_IDS", "").split(",") if x.strip()]
+    if not token or not admin_ids:
+        return  # chưa cấu hình admin Telegram → bỏ qua
+
+    parts = []
+    try:
+        import knowledge
+        s = knowledge.stats()
+        parts.append(f"• Nội dung: {s.get('total_content', 0)} · Địa điểm: {s.get('places', 0)} · Lịch trình: {s.get('itineraries', 0)}")
+    except Exception as e:
+        _sched_logger.error(f"digest stats error: {e}")
+    # Báo-sai (reports.jsonl) — free, đọc file
+    try:
+        rf = AGENT_DIR / "data" / "reports.jsonl"
+        n = sum(1 for ln in rf.read_text(encoding="utf-8").splitlines() if ln.strip()) if rf.exists() else 0
+        if n:
+            parts.append(f"• ⚠️ Báo sai: {n} (xem /baosai)")
+    except Exception:
+        pass
+    # Kiểm duyệt chờ (Postgres-only; bỏ qua nếu lỗi)
+    try:
+        from database import db
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT COUNT(*) AS c FROM posts WHERE status = {ph}", ("pending",))
+            if row and row["c"]:
+                parts.append(f"• 🧐 Chờ duyệt: {row['c']}")
+    except Exception:
+        pass
+
+    if not parts:
+        return
+    from datetime import datetime
+    text = "📊 *vinhlong360 — digest quản lý*\n" + "\n".join(parts)
+    try:
+        import httpx
+        for cid in admin_ids:
+            httpx.post(f"https://api.telegram.org/bot{token}/sendMessage",
+                       json={"chat_id": cid, "text": text, "parse_mode": "Markdown"}, timeout=15)
+        _sched_logger.info(f"Admin digest sent to {len(admin_ids)} chat(s)")
+    except Exception as e:
+        _sched_logger.error(f"digest send error: {e}")
+
+
 # ══════════════════════════════════════════════════
 #  SCHEDULER ENGINE
 # ══════════════════════════════════════════════════
@@ -420,6 +470,8 @@ TASKS = [
     ScheduledTask("relationships",  task_relationship_discovery, interval_seconds=12 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
     ScheduledTask("data-sync",      task_sync_data,              interval_seconds=3600),        # 1h
     ScheduledTask("analytics-cleanup", task_cleanup_analytics,   interval_seconds=24 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h
+    # Digest quản lý MIỄN PHÍ (không LLM) — chạy bất kể AUTONOMOUS_TASKS_ENABLED; no-op nếu chưa cấu hình admin TG.
+    ScheduledTask("admin-digest",      task_admin_digest,         interval_seconds=24 * 3600, run_immediately=False),  # 24h
     # Level 6-7 tasks
     ScheduledTask("cache-warmup",      task_cache_warmup,         interval_seconds=3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),        # 1h
     ScheduledTask("agent-evolution",   task_agent_evolution,      interval_seconds=12 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
