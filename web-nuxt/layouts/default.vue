@@ -7,20 +7,22 @@
           <span class="logo">vinhlong<span class="dot">360</span></span>
           <span class="tld">.vn</span>
         </NuxtLink>
-        <button class="nav-toggle" aria-label="Menu" @click="mobileNav = !mobileNav">
+        <button class="nav-toggle" :aria-expanded="mobileNav" aria-controls="main-nav" aria-label="Menu" @click="mobileNav = !mobileNav">
           <span></span><span></span><span></span>
         </button>
         <div class="nav-backdrop" :class="{ show: mobileNav }" @click="mobileNav = false"></div>
-        <nav class="main-nav" :class="{ open: mobileNav }">
-          <NuxtLink to="/" :class="{ active: route.path === '/' }" @click="mobileNav = false">Trang chủ</NuxtLink>
-          <NuxtLink to="/du-lich" :class="{ active: route.path === '/du-lich' }" @click="mobileNav = false">Du lịch</NuxtLink>
-          <NuxtLink to="/luu-tru" :class="{ active: route.path === '/luu-tru' }" @click="mobileNav = false">Lưu trú</NuxtLink>
-          <NuxtLink to="/san-pham" :class="{ active: route.path === '/san-pham' }" @click="mobileNav = false">Sản phẩm</NuxtLink>
-          <NuxtLink to="/ocop" :class="{ active: route.path === '/ocop' }" @click="mobileNav = false">OCOP</NuxtLink>
-          <NuxtLink to="/lich-trinh" :class="{ active: route.path.startsWith('/lich-trinh') || route.path === '/tao-lich-trinh' }" @click="mobileNav = false">Lịch trình</NuxtLink>
-          <NuxtLink to="/hanh-trinh" :class="{ active: route.path === '/hanh-trinh' }" @click="mobileNav = false">❤️</NuxtLink>
-          <NuxtLink to="/ban-do" no-prefetch :class="{ active: route.path === '/ban-do' }" @click="mobileNav = false">Bản đồ</NuxtLink>
-          <NuxtLink to="/cong-dong" :class="{ active: route.path === '/cong-dong' }" @click="mobileNav = false">Cộng đồng</NuxtLink>
+        <nav id="main-nav" class="main-nav" :class="{ open: mobileNav }">
+          <template v-for="(g, i) in navGroups" :key="g.label">
+            <NuxtLink v-if="g.to" :to="g.to" :class="{ active: isActive(g) }" @click="closeAll">{{ g.label }}</NuxtLink>
+            <div v-else class="nav-group" :class="{ open: openGroup === i }">
+              <button type="button" class="nav-group-btn" :class="{ active: isActive(g) }" :aria-expanded="openGroup === i" @click="toggleGroup(i)">
+                {{ g.label }}<span class="caret" aria-hidden="true">▾</span>
+              </button>
+              <div class="nav-panel" :class="{ open: openGroup === i }">
+                <NuxtLink v-for="c in g.children" :key="c.to" :to="c.to" :class="{ active: route.path === c.to }" @click="closeAll">{{ c.label }}</NuxtLink>
+              </div>
+            </div>
+          </template>
         </nav>
         <form class="topbar-search" role="search" @submit.prevent="onSearch">
           <input
@@ -128,7 +130,44 @@ const searchQuery = ref('')
 const showAuth = ref(false)
 const mobileNav = ref(false)
 
-watch(() => route.path, () => { mobileNav.value = false })
+// Nav theo intent + region-first (deep-research: NN/g mega-menu, Visit California)
+const navGroups: Array<{ label: string; to?: string; children?: { to: string; label: string }[] }> = [
+  { label: 'Khám phá', children: [
+    { to: '/du-lich', label: 'Du lịch & trải nghiệm' },
+    { to: '/luu-tru', label: 'Lưu trú' },
+    { to: '/theo-mua', label: 'Đặc sản theo mùa' },
+    { to: '/ban-do', label: 'Bản đồ' },
+    { to: '/danh-ba', label: 'Danh bạ hành chính' },
+    { to: '/tuyen-duong', label: 'Tuyến đường gợi ý' },
+  ] },
+  { label: 'Đặc sản', children: [
+    { to: '/san-pham', label: 'Sản phẩm địa phương' },
+    { to: '/ocop', label: 'Sản phẩm OCOP' },
+  ] },
+  { label: 'Lịch trình', children: [
+    { to: '/lich-trinh', label: 'Lịch trình gợi ý' },
+    { to: '/tao-lich-trinh', label: 'Tạo lịch trình' },
+    { to: '/hanh-trinh', label: 'Đã lưu ❤️' },
+  ] },
+  { label: 'Cộng đồng', to: '/cong-dong' },
+]
+const openGroup = ref<number | null>(null)
+function toggleGroup(i: number) { openGroup.value = openGroup.value === i ? null : i }
+function closeAll() { openGroup.value = null; mobileNav.value = false }
+function isActive(g: { to?: string; children?: { to: string }[] }) {
+  if (g.to) return route.path === g.to
+  return !!g.children?.some(c => route.path === c.to || route.path.startsWith(c.to + '/'))
+}
+
+watch(() => route.path, () => { closeAll() })
+
+onMounted(() => {
+  const onDoc = (e: MouseEvent) => { if (!(e.target as HTMLElement)?.closest('.main-nav')) openGroup.value = null }
+  const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') openGroup.value = null }
+  document.addEventListener('click', onDoc)
+  document.addEventListener('keydown', onEsc)
+  onUnmounted(() => { document.removeEventListener('click', onDoc); document.removeEventListener('keydown', onEsc) })
+})
 
 function onSearch() {
   if (searchQuery.value.trim()) {
