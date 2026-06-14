@@ -75,11 +75,12 @@ async function sendMessage(text: string) {
   const history = messages.value.slice(-10).map(m => ({ role: m.role, content: m.content }))
 
   try {
-    const res = await fetch('/chat/stream', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: userMsg, history, session_id: sessionId.value }),
+    const params = new URLSearchParams({
+      message: userMsg,
+      history: JSON.stringify(history),
+      session_id: sessionId.value,
     })
+    const res = await fetch(`/chat/stream?${params}`)
     if (!res.ok || !res.body) {
       messages.value.push({ role: 'assistant', content: 'Xin lỗi, không thể kết nối. Vui lòng thử lại.' })
       streaming.value = false

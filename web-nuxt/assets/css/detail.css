@@ -1,4 +1,14 @@
 /* ── Detail page ── */
+
+/* Breadcrumb */
+.breadcrumb { max-width: var(--maxw); margin: 0 auto; padding: 12px 20px 0; }
+.breadcrumb ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; font-size: .82rem; color: var(--muted); }
+.breadcrumb li::after { content: '/'; margin-left: 6px; opacity: .5; }
+.breadcrumb li:last-child::after { display: none; }
+.breadcrumb li:last-child { color: var(--ink); font-weight: 600; }
+.breadcrumb a { color: var(--primary-fg); }
+.breadcrumb a:hover { text-decoration: underline; }
+
 /* Highlights quét nhanh (giờ/giá/liên hệ/map) — đầu trang, trên fold */
 .highlights { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
 .hl { display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px; border-radius: 999px; font-size: .88rem; font-weight: 600; min-height: 40px; line-height: 1.2; }
@@ -8,6 +18,7 @@ a.hl:hover { background: var(--primary-dark); }
 a.hl:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .detail-cover { color: #fff; background: var(--cat-place); padding: 30px 20px 34px; position: relative; overflow: hidden; }
+.detail-cover.has-cover-img { background-size: cover; background-position: center; min-height: 240px; display: flex; align-items: flex-end; padding: 40px 20px 34px; }
 .detail-cover.cat-experience { background: var(--cat-experience); }
 .detail-cover.cat-product { background: var(--cat-product); }
 .detail-cover.cat-attraction { background: var(--cat-attraction); }
@@ -135,14 +146,44 @@ a.hl:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .ns-action { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 10px; font-size: .88rem; font-weight: 600; color: var(--ink); background: var(--bg-warm); border: none; cursor: pointer; transition: background .12s; text-align: left; }
 .ns-action:hover { background: var(--line); }
 
+/* ── Season block (was inline style) ── */
+.season-block { margin-top: 20px; }
+.section-subtitle { font-size: 1.1rem; margin: 0 0 8px; }
+
+/* ── Contact row + claim CTA (was inline style) ── */
+.contact-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0 8px; }
+.contact-cta { flex: 1; text-align: center; justify-content: center; }
+.claim-cta { display: block; text-align: center; justify-content: center; }
+
+/* ── Traceability (product, was inline style) ── */
+.traceability { margin-top: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: .85rem; }
+.traceability p { margin: 4px 0; color: var(--muted); }
+
+/* ── Relationship list improvements ── */
+.rel-list li { padding: 8px 0; border-bottom: 1px solid var(--line); }
+.rel-list li:last-child { border-bottom: none; }
+
 @media (max-width: 840px) {
   .detail-body { grid-template-columns: 1fr; }
   .detail-aside { position: static; }
+  .breadcrumb { padding: 10px 16px 0; }
 }
 @media (max-width: 768px) {
   .reviews-header { flex-direction: column; gap: 6px; }
   .ri-date { margin-left: 0; }
 }
+@media (max-width: 480px) {
+  .detail-cover h1 { font-size: 1.5rem; }
+  .detail-cover.has-cover-img { min-height: 200px; }
+}
+
+/* ── Dark mode ── */
+.dark .ocop-highlight { background: linear-gradient(135deg, rgba(253,246,227,.08) 0%, rgba(251,231,218,.08) 100%); border-color: rgba(243,201,177,.2); }
+.dark .ocop-highlight strong { color: var(--primary-fg); }
+.dark .quality-panel { background: rgba(243,251,245,.06); border-color: rgba(185,219,198,.2); }
+.dark .quality-panel.needs-review { background: rgba(255,248,242,.06); border-color: rgba(243,201,177,.2); }
+.dark .traceability { border-color: var(--line); }
+.dark .breadcrumb li:last-child { color: var(--ink); }
 
 /* ── Map ── */
 .map-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }

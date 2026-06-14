@@ -1,9 +1,18 @@
 <template>
   <div v-if="entity">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ol>
+        <li><NuxtLink to="/">Trang chủ</NuxtLink></li>
+        <li><NuxtLink :to="typeBreadcrumbUrl">{{ typeMeta.label }}</NuxtLink></li>
+        <li v-if="entity.place_area"><NuxtLink :to="`/khu-vuc/${entity.place_area}`">{{ areaName }}</NuxtLink></li>
+        <li aria-current="page">{{ entity.name }}</li>
+      </ol>
+    </nav>
+
     <!-- Cover -->
-    <div :class="['detail-cover', `cat-${typeMeta.cat}`]">
+    <div :class="['detail-cover', `cat-${typeMeta.cat}`, { 'has-cover-img': coverImage }]" :style="coverImage ? { backgroundImage: `linear-gradient(to top, rgba(0,0,0,.6) 0%, rgba(0,0,0,.25) 50%, rgba(0,0,0,.1) 100%), url(${coverImage})` } : {}">
       <div class="dc-inner">
-        <a class="back" href="#" @click.prevent="goBack">← Quay lại</a>
         <span class="dc-emoji">{{ typeMeta.emoji }}</span>
         <span class="dc-type">{{ typeMeta.label }}</span>
         <h1>{{ entity.name }}</h1>
@@ -37,8 +46,8 @@
         <p class="lead">{{ entity.summary }}</p>
 
         <!-- Month strip -->
-        <div v-if="entity.season?.months" style="margin-top: 20px">
-          <h2 style="font-size: 1.1rem; margin: 0 0 8px">Mùa vụ</h2>
+        <div v-if="entity.season?.months" class="season-block">
+          <h2 class="section-subtitle">Mùa vụ</h2>
           <div class="month-strip">
             <span
               v-for="m in 12"
@@ -178,18 +187,17 @@
           <span class="v">{{ Array.isArray(entity.attributes.amenities) ? entity.attributes.amenities.join(', ') : entity.attributes.amenities }}</span>
         </div>
 
-        <!-- GĐ13.2 + D2: liên hệ trực tiếp / hỏi mua qua kênh riêng chủ thể (showcase — KHÔNG đặt hàng/giỏ hàng/thanh toán on-site, KHÔNG link sàn TMĐT) -->
-        <div v-if="entity.attributes?.phone || zaloLink || buyContactUrl" style="display:flex; gap:8px; flex-wrap:wrap; margin:14px 0 8px;">
-          <a v-if="entity.attributes?.phone" class="ns-action" :href="'tel:' + entity.attributes.phone" style="flex:1; text-align:center;">📞 Gọi</a>
-          <a v-if="zaloLink" class="ns-action" :href="zaloLink" target="_blank" rel="nofollow" style="flex:1; text-align:center;">💬 Zalo</a>
-          <a v-if="buyContactUrl" class="ns-action" :href="buyContactUrl" target="_blank" rel="nofollow" style="flex:1; text-align:center;">🛒 Hỏi mua trực tiếp</a>
+        <!-- Liên hệ trực tiếp (showcase — KHÔNG đặt hàng/giỏ hàng/thanh toán on-site) -->
+        <div v-if="entity.attributes?.phone || zaloLink || buyContactUrl" class="contact-row">
+          <a v-if="entity.attributes?.phone" class="ns-action contact-cta" :href="'tel:' + entity.attributes.phone">📞 Gọi</a>
+          <a v-if="zaloLink" class="ns-action contact-cta" :href="zaloLink" target="_blank" rel="nofollow">💬 Zalo</a>
+          <a v-if="buyContactUrl" class="ns-action contact-cta" :href="buyContactUrl" target="_blank" rel="nofollow">🛒 Hỏi mua trực tiếp</a>
         </div>
-        <!-- GĐ13.1 (MVP): chủ cơ sở nhận listing -->
-        <NuxtLink :to="claimUrl" class="ns-action" style="display:block; text-align:center;">🏷️ Đây là cơ sở của tôi — đăng ký quản lý</NuxtLink>
-        <!-- GĐ13.8: truy xuất nguồn gốc (sản phẩm) -->
-        <div v-if="entity.type === 'product'" style="margin-top:12px; padding:10px 12px; border:1px solid rgba(0,0,0,.1); border-radius:8px; font-size:.85rem;">
+        <NuxtLink :to="claimUrl" class="ns-action claim-cta">🏷️ Đây là cơ sở của tôi — đăng ký quản lý</NuxtLink>
+        <!-- Truy xuất nguồn gốc (sản phẩm) -->
+        <div v-if="entity.type === 'product'" class="traceability">
           <strong>🔎 Truy xuất nguồn gốc</strong>
-          <p style="margin:4px 0; color:var(--muted,#777)">Xem "Nguồn dữ liệu" &amp; quan hệ "Sản xuất tại" ở trên. Thông tin tham khảo — vui lòng kiểm chứng với cơ sở. (Không thay mã vùng trồng/đóng gói chính thức cho xuất khẩu.)</p>
+          <p>Xem "Nguồn dữ liệu" &amp; quan hệ "Sản xuất tại" ở trên. Thông tin tham khảo — vui lòng kiểm chứng với cơ sở.</p>
           <small v-if="entity.updatedAt">Cập nhật: {{ entity.updatedAt }}</small>
         </div>
 
@@ -256,6 +264,18 @@ const areaName = computed(() => {
   const area = entity.value?.place_area || entity.value?.area
   return AREA_META[area]?.name || area || ''
 })
+
+const coverImage = computed(() => {
+  const imgs = entity.value?.images
+  return Array.isArray(imgs) && imgs.length ? imgs[0] : ''
+})
+
+const TYPE_BREADCRUMB: Record<string, string> = {
+  product: '/san-pham', experience: '/du-lich', attraction: '/du-lich',
+  dish: '/du-lich', craft_village: '/du-lich', accommodation: '/luu-tru',
+  organization: '/danh-ba', place: '/xa-phuong',
+}
+const typeBreadcrumbUrl = computed(() => TYPE_BREADCRUMB[entity.value?.type] || '/du-lich')
 
 const seasonLabel = computed(() => seasonText(entity.value?.season))
 
