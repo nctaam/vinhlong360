@@ -21,8 +21,8 @@
       },
       "images": [],
       "coordinates": [
-        10.8457244,
-        106.8249973
+        10.226721,
+        106.421493
       ],
       "area": "ben-tre",
       "level": null,
@@ -1242,10 +1242,7 @@
         "method": "nominatim"
       },
       "images": [],
-      "coordinates": [
-        11.2743141,
-        106.5088673
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -1283,10 +1280,7 @@
         "method": "nominatim"
       },
       "images": [],
-      "coordinates": [
-        11.2939808,
-        107.0394299
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -1495,8 +1489,8 @@
       },
       "images": [],
       "coordinates": [
-        10.9298894,
-        106.8258042
+        10.088641,
+        106.491291
       ],
       "area": "vinh-long",
       "level": null,
@@ -2006,10 +2000,7 @@
         "method": "llm+nominatim"
       },
       "images": [],
-      "coordinates": [
-        10.8020535,
-        106.696959
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -2063,8 +2054,8 @@
       },
       "images": [],
       "coordinates": [
-        10.7887212,
-        106.6772145
+        9.91583,
+        106.30355
       ],
       "area": "tra-vinh",
       "level": null,
@@ -2144,8 +2135,8 @@
       },
       "images": [],
       "coordinates": [
-        10.4043574,
-        107.1864312
+        9.808893,
+        106.490598
       ],
       "area": "tra-vinh",
       "level": null,
@@ -2401,10 +2392,7 @@
         "method": "llm+nominatim"
       },
       "images": [],
-      "coordinates": [
-        10.6593124,
-        107.1731788
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -2983,8 +2971,8 @@
       },
       "images": [],
       "coordinates": [
-        10.7534213,
-        106.6654068
+        10.239116,
+        106.375283
       ],
       "area": "ben-tre",
       "level": null,
@@ -3386,10 +3374,7 @@
         "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su"
       },
       "images": [],
-      "coordinates": [
-        11.0089685,
-        106.7154695
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -3876,8 +3861,8 @@
       },
       "images": [],
       "coordinates": [
-        10.6404274,
-        107.2833633
+        10.226437,
+        105.962533
       ],
       "area": "vinh-long",
       "level": null,
@@ -4021,10 +4006,7 @@
         "url": "https://vinhlong.gov.vn/du-khach/le-hoi-truyen-thong"
       },
       "images": [],
-      "coordinates": [
-        11.423812,
-        106.6073391
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -4448,10 +4430,7 @@
         "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
       },
       "images": [],
-      "coordinates": [
-        10.5352828,
-        107.4135997
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -4618,10 +4597,7 @@
         "url": "https://vinhlong.gov.vn/du-khach/%C4%91ia-%C4%91iem-mua-sam"
       },
       "images": [],
-      "coordinates": [
-        10.7692667,
-        106.6933366
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -8351,10 +8327,7 @@
         "url": null
       },
       "images": [],
-      "coordinates": [
-        11.4276362,
-        106.5619271
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -9383,10 +9356,7 @@
         "url": "https://mytour.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.6256838,
-        107.0554594
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -9503,8 +9473,8 @@
       },
       "images": [],
       "coordinates": [
-        10.6892265,
-        106.8357087
+        9.765139,
+        106.342332
       ],
       "area": "tra-vinh",
       "level": null,
@@ -9683,8 +9653,8 @@
       },
       "images": [],
       "coordinates": [
-        10.7887212,
-        106.6772145
+        9.813842,
+        106.188284
       ],
       "area": "tra-vinh",
       "level": null,
@@ -11310,8 +11280,8 @@
       },
       "images": [],
       "coordinates": [
-        11.423812,
-        106.6073391
+        10.182408,
+        106.043813
       ],
       "area": "vinh-long",
       "level": null,
@@ -12129,8 +12099,8 @@
       },
       "images": [],
       "coordinates": [
-        10.9629837,
-        106.7936911
+        9.623677,
+        106.560546
       ],
       "area": "tra-vinh",
       "level": null,
@@ -12363,8 +12333,8 @@
       },
       "images": [],
       "coordinates": [
-        10.7685232,
-        106.693335
+        10.254827,
+        105.970177
       ],
       "area": "vinh-long",
       "level": null,
@@ -13079,10 +13049,7 @@
         "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
       },
       "images": [],
-      "coordinates": [
-        10.7715128,
-        106.6942511
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -13185,8 +13152,8 @@
       },
       "images": [],
       "coordinates": [
-        10.825099,
-        106.5887477
+        10.246845,
+        105.977851
       ],
       "area": "vinh-long",
       "level": null,
@@ -13394,10 +13361,7 @@
         "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
       },
       "images": [],
-      "coordinates": [
-        10.0569223,
-        104.0247068
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -13605,8 +13569,8 @@
       },
       "images": [],
       "coordinates": [
-        10.733188,
-        106.6901635
+        10.247262,
+        106.154258
       ],
       "area": "vinh-long",
       "level": null,
@@ -13639,10 +13603,7 @@
         "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
       },
       "images": [],
-      "coordinates": [
-        10.7979061,
-        106.6897753
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -13811,10 +13772,7 @@
         "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
       },
       "images": [],
-      "coordinates": [
-        11.3153978,
-        106.4930106
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -13873,8 +13831,8 @@
       },
       "images": [],
       "coordinates": [
-        10.7729443,
-        106.6711467
+        10.254887,
+        105.973113
       ],
       "area": "vinh-long",
       "level": null,
@@ -14359,10 +14317,7 @@
         "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
       },
       "images": [],
-      "coordinates": [
-        10.7704304,
-        106.650936
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -14388,10 +14343,7 @@
         "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
       },
       "images": [],
-      "coordinates": [
-        10.7704304,
-        106.650936
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -14733,8 +14685,8 @@
       },
       "images": [],
       "coordinates": [
-        10.8597393,
-        106.6006592
+        10.235295,
+        106.382344
       ],
       "area": "ben-tre",
       "level": null,
@@ -14762,8 +14714,8 @@
       },
       "images": [],
       "coordinates": [
-        11.3021893,
-        106.6302412
+        9.957059,
+        106.542251
       ],
       "area": "vinh-long",
       "level": null,
@@ -14845,8 +14797,8 @@
       },
       "images": [],
       "coordinates": [
-        10.2849808,
-        104.6438281
+        10.033506,
+        106.603843
       ],
       "area": "vinh-long",
       "level": null,
@@ -14904,10 +14856,7 @@
         "url": "https://vinhlongtourist.vn"
       },
       "images": [],
-      "coordinates": [
-        11.423812,
-        106.6073391
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -15683,8 +15632,8 @@
       },
       "images": [],
       "coordinates": [
-        11.2991406,
-        106.8044873
+        9.920847,
+        106.424869
       ],
       "area": "tra-vinh",
       "level": null,
@@ -15838,10 +15787,7 @@
         "url": "https://baodongkhoi.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.766989,
-        106.693433
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -16042,8 +15988,8 @@
       },
       "images": [],
       "coordinates": [
-        10.4234622,
-        105.0003534
+        9.808382,
+        106.184681
       ],
       "area": "tra-vinh",
       "level": null,
@@ -16175,10 +16121,7 @@
         "url": "https://mytour.vn/"
       },
       "images": [],
-      "coordinates": [
-        11.2991406,
-        106.8044873
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -16228,10 +16171,7 @@
         "url": "https://mytour.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.8718039,
-        106.7605884
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -16257,8 +16197,8 @@
       },
       "images": [],
       "coordinates": [
-        10.3211141,
-        107.0836401
+        9.965771,
+        106.348323
       ],
       "area": "tra-vinh",
       "level": null,
@@ -16419,8 +16359,8 @@
       },
       "images": [],
       "coordinates": [
-        10.9502839,
-        106.8127833
+        9.940954,
+        106.277346
       ],
       "area": "tra-vinh",
       "level": null,
@@ -16446,10 +16386,7 @@
         "url": "https://mytour.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.7839548,
-        106.6801651
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -16820,10 +16757,7 @@
         "url": "https://mytour.vn/"
       },
       "images": [],
-      "coordinates": [
-        11.0660639,
-        106.5849136
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -17017,10 +16951,7 @@
         "url": "https://mytour.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.0176634,
-        104.0128231
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -17310,10 +17241,7 @@
         "url": "https://mytour.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.7636547,
-        106.6723967
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -17391,10 +17319,7 @@
         "url": "https://mytour.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.733188,
-        106.6901635
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -17441,10 +17366,7 @@
         "method": "llm+nominatim"
       },
       "images": [],
-      "coordinates": [
-        11.423812,
-        106.6073391
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -17466,10 +17388,7 @@
         "method": "llm+nominatim"
       },
       "images": [],
-      "coordinates": [
-        10.8377473,
-        106.9627754
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -17906,10 +17825,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.7965145,
-        106.7432412
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -18050,10 +17966,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.7702229,
-        106.6912783
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -18080,10 +17993,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.7634512,
-        106.6918889
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -18311,10 +18221,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.7745159,
-        106.7040687
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -18369,10 +18276,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.8289607,
-        106.6422652
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -18400,8 +18304,8 @@
       },
       "images": [],
       "coordinates": [
-        10.7725665,
-        106.7006849
+        10.279745,
+        106.287566
       ],
       "area": "ben-tre",
       "level": null,
@@ -18455,10 +18359,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.8797358,
-        106.8061911
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -18772,10 +18673,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.7273075,
-        106.8992059
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -18803,10 +18701,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.768733,
-        106.6957939
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -18833,10 +18728,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.7716406,
-        106.6710043
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -19003,8 +18895,8 @@
       },
       "images": [],
       "coordinates": [
-        11.2293859,
-        106.389821
+        10.255831,
+        106.1237
       ],
       "area": "ben-tre",
       "level": null,
@@ -19224,8 +19116,8 @@
       },
       "images": [],
       "coordinates": [
-        10.3583265,
-        107.0886653
+        10.057061,
+        106.611816
       ],
       "area": "ben-tre",
       "level": null,
@@ -19284,8 +19176,8 @@
       },
       "images": [],
       "coordinates": [
-        11.2885728,
-        106.1385464
+        9.640602,
+        106.503562
       ],
       "area": "tra-vinh",
       "level": null,
@@ -19313,10 +19205,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        11.2991406,
-        106.8044873
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -19681,10 +19570,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.7780263,
-        106.7020418
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -19768,10 +19654,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.8034142,
-        106.6851133
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -19936,8 +19819,8 @@
       },
       "images": [],
       "coordinates": [
-        10.9562282,
-        106.8130419
+        9.924698,
+        106.355271
       ],
       "area": "tra-vinh",
       "level": null,
@@ -20138,10 +20021,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.6403543,
-        107.2311473
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -20168,8 +20048,8 @@
       },
       "images": [],
       "coordinates": [
-        10.4466893,
-        105.1981763
+        9.808893,
+        106.490598
       ],
       "area": "tra-vinh",
       "level": null,
@@ -20224,10 +20104,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.6779526,
-        105.0771526
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -20991,10 +20868,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.0436919,
-        104.0187905
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -21021,8 +20895,8 @@
       },
       "images": [],
       "coordinates": [
-        10.7628184,
-        106.6932824
+        10.099225,
+        106.187965
       ],
       "area": "vinh-long",
       "level": null,
@@ -21343,10 +21217,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.7790336,
-        106.666823
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -21520,10 +21391,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.9567864,
-        106.8433496
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -22066,8 +21934,8 @@
       },
       "images": [],
       "coordinates": [
-        10.7636349,
-        106.6912768
+        10.252983,
+        105.970477
       ],
       "area": "vinh-long",
       "level": null,
@@ -22243,10 +22111,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.7273588,
-        106.6731779
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -22448,8 +22313,8 @@
       },
       "images": [],
       "coordinates": [
-        10.845075,
-        106.7949297
+        10.071986,
+        106.467629
       ],
       "area": "vinh-long",
       "level": null,
@@ -22508,8 +22373,8 @@
       },
       "images": [],
       "coordinates": [
-        10.9298894,
-        106.8258042
+        9.739201,
+        106.240578
       ],
       "area": "vinh-long",
       "level": null,
@@ -23073,10 +22938,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.4053301,
-        105.4460627
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -23192,8 +23054,8 @@
       },
       "images": [],
       "coordinates": [
-        10.3946627,
-        107.2322543
+        10.239192,
+        106.451401
       ],
       "area": "vinh-long",
       "level": null,
@@ -23222,10 +23084,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.8372539,
-        106.8408392
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -23309,10 +23168,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.6897778,
-        107.2016849
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -23367,10 +23223,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.8477863,
-        106.8438575
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -23428,10 +23281,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.8351424,
-        106.8363081
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -23458,10 +23308,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.8385225,
-        106.8348053
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -23546,8 +23393,8 @@
       },
       "images": [],
       "coordinates": [
-        10.4678725,
-        107.2154365
+        10.262997,
+        105.969111
       ],
       "area": "vinh-long",
       "level": null,
@@ -23720,10 +23567,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.8712542,
-        106.722856
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -23750,10 +23594,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        11.1397504,
-        106.466045
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -24010,10 +23851,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.8879648,
-        105.7603187
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -24298,10 +24136,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        11.2987862,
-        106.1312095
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -24548,10 +24383,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.8978628,
-        106.8658877
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -25182,10 +25014,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.8058511,
-        106.6583917
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -25448,10 +25277,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.737376,
-        106.7030139
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -25679,10 +25505,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.7542248,
-        106.6596551
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -26058,8 +25881,8 @@
       },
       "images": [],
       "coordinates": [
-        10.798384,
-        106.7298134
+        10.208721,
+        106.377143
       ],
       "area": "ben-tre",
       "level": null,
@@ -26229,8 +26052,8 @@
       },
       "images": [],
       "coordinates": [
-        10.2354717,
-        104.0003586
+        10.139241,
+        106.388693
       ],
       "area": "ben-tre",
       "level": null,
@@ -26349,8 +26172,8 @@
       },
       "images": [],
       "coordinates": [
-        10.804164,
-        106.6941427
+        10.212759,
+        106.4539
       ],
       "area": "ben-tre",
       "level": null,
@@ -26410,8 +26233,8 @@
       },
       "images": [],
       "coordinates": [
-        10.23531,
-        104.0019981
+        10.200218,
+        106.478781
       ],
       "area": "ben-tre",
       "level": null,
@@ -26527,10 +26350,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.23531,
-        104.0019981
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -26699,10 +26519,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.9629837,
-        106.7936911
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -26816,10 +26633,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.9683018,
-        106.7978678
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -26847,8 +26661,8 @@
       },
       "images": [],
       "coordinates": [
-        10.4064572,
-        107.2206501
+        10.206282,
+        106.391685
       ],
       "area": "ben-tre",
       "level": null,
@@ -27041,10 +26855,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.9683018,
-        106.7978678
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -27099,8 +26910,8 @@
       },
       "images": [],
       "coordinates": [
-        10.712775,
-        106.6236886
+        9.886787,
+        106.584156
       ],
       "area": "ben-tre",
       "level": null,
@@ -27159,8 +26970,8 @@
       },
       "images": [],
       "coordinates": [
-        11.2293859,
-        106.389821
+        10.276525,
+        106.2974
       ],
       "area": "ben-tre",
       "level": null,
@@ -27188,10 +26999,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.7756957,
-        106.6849605
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -27219,10 +27027,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.9060097,
-        106.8316359
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -27250,8 +27055,8 @@
       },
       "images": [],
       "coordinates": [
-        10.6698246,
-        106.5492371
+        10.437577,
+        106.403698
       ],
       "area": "ben-tre",
       "level": null,
@@ -27279,10 +27084,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.9683018,
-        106.7978678
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -27310,8 +27112,8 @@
       },
       "images": [],
       "coordinates": [
-        10.3465064,
-        107.075426
+        9.832629,
+        106.656587
       ],
       "area": "ben-tre",
       "level": null,
@@ -27340,8 +27142,8 @@
       },
       "images": [],
       "coordinates": [
-        11.0671617,
-        106.4880247
+        10.207343,
+        106.392528
       ],
       "area": "ben-tre",
       "level": null,
@@ -27370,8 +27172,8 @@
       },
       "images": [],
       "coordinates": [
-        10.7748656,
-        106.6954038
+        9.945123,
+        106.514852
       ],
       "area": "ben-tre",
       "level": null,
@@ -27430,8 +27232,8 @@
       },
       "images": [],
       "coordinates": [
-        10.5001715,
-        107.4714011
+        10.242285,
+        106.388223
       ],
       "area": "ben-tre",
       "level": null,
@@ -27519,10 +27321,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.7436851,
-        106.5405917
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -27663,10 +27462,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.3718299,
-        107.0766754
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -27751,8 +27547,8 @@
       },
       "images": [],
       "coordinates": [
-        11.1348955,
-        106.6045658
+        10.013476,
+        106.686607
       ],
       "area": "ben-tre",
       "level": null,
@@ -27807,10 +27603,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.954215,
-        106.8091139
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -27838,10 +27631,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.8775692,
-        106.6795096
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -27898,10 +27688,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.9532274,
-        106.8110912
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -27960,8 +27747,8 @@
       },
       "images": [],
       "coordinates": [
-        10.8289607,
-        106.6422652
+        10.238759,
+        106.603593
       ],
       "area": "ben-tre",
       "level": null,
@@ -27989,10 +27776,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        11.3400971,
-        106.4167065
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -28193,10 +27977,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.7971326,
-        106.7104076
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -28339,8 +28120,8 @@
       },
       "images": [],
       "coordinates": [
-        10.8841829,
-        106.778731
+        10.206282,
+        106.391685
       ],
       "area": "ben-tre",
       "level": null,
@@ -28478,10 +28259,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.7683986,
-        106.6939643
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -28508,10 +28286,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.8289607,
-        106.6422652
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -28705,10 +28480,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        11.098559,
-        107.0373276
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -28850,8 +28622,8 @@
       },
       "images": [],
       "coordinates": [
-        10.9993168,
-        106.8079007
+        9.936488,
+        106.341636
       ],
       "area": "tra-vinh",
       "level": null,
@@ -28879,10 +28651,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.7342832,
-        106.719193
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -28995,10 +28764,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.4172627,
-        106.9713636
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -29086,8 +28852,8 @@
       },
       "images": [],
       "coordinates": [
-        10.3633692,
-        107.0756744
+        9.822117,
+        106.482082
       ],
       "area": "tra-vinh",
       "level": null,
@@ -29172,10 +28938,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.7825959,
-        106.6951271
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -29263,10 +29026,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.0309573,
-        105.0569037
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -29522,8 +29282,8 @@
       },
       "images": [],
       "coordinates": [
-        10.3211141,
-        107.0836401
+        9.941192,
+        106.334819
       ],
       "area": "tra-vinh",
       "level": null,
@@ -29579,8 +29339,8 @@
       },
       "images": [],
       "coordinates": [
-        11.0134488,
-        106.5997678
+        9.667871,
+        106.55633
       ],
       "area": "tra-vinh",
       "level": null,
@@ -29608,10 +29368,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.7109597,
-        106.6217283
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -29753,10 +29510,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.9524115,
-        106.8102871
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -30116,10 +29870,7 @@
         "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi"
       },
       "images": [],
-      "coordinates": [
-        10.7191034,
-        105.1104603
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -30278,8 +30029,8 @@
       },
       "images": [],
       "coordinates": [
-        11.3119234,
-        106.7501737
+        9.951983,
+        106.520605
       ],
       "area": "ben-tre",
       "level": null,
@@ -30494,10 +30245,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        11.1105876,
-        107.0525895
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -30581,10 +30329,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.7507846,
-        106.6561843
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -30689,8 +30434,8 @@
       },
       "images": [],
       "coordinates": [
-        9.7115797,
-        104.9736435
+        10.039806,
+        105.747663
       ],
       "area": "ben-tre",
       "level": null,
@@ -30886,8 +30631,8 @@
       },
       "images": [],
       "coordinates": [
-        10.9188933,
-        106.933135
+        10.258294,
+        106.077313
       ],
       "area": "ben-tre",
       "level": null,
@@ -30999,10 +30744,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        9.9535118,
-        105.1208501
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -31082,10 +30824,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.7784499,
-        106.6959617
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -31251,8 +30990,8 @@
       },
       "images": [],
       "coordinates": [
-        10.124759,
-        105.1855445
+        9.883735,
+        106.163031
       ],
       "area": "tra-vinh",
       "level": null,
@@ -31369,8 +31108,8 @@
       },
       "images": [],
       "coordinates": [
-        10.8385039,
-        106.9323981
+        9.940447,
+        106.163425
       ],
       "area": "tra-vinh",
       "level": null,
@@ -31454,10 +31193,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        10.6821665,
-        105.0800863
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -31595,10 +31331,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        11.2574329,
-        106.1542654
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -31715,10 +31448,7 @@
         "url": "https://vinhlong360.vn/"
       },
       "images": [],
-      "coordinates": [
-        8.6816975,
-        106.60894
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -31929,10 +31659,7 @@
         "url": null
       },
       "images": [],
-      "coordinates": [
-        10.8868114,
-        106.6997158
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -32150,10 +31877,7 @@
         "url": null
       },
       "images": [],
-      "coordinates": [
-        10.9781649,
-        106.6574382
-      ],
+      "coordinates": null,
       "area": "tra-vinh",
       "level": null,
       "parentId": null,
@@ -32458,10 +32182,7 @@
         "url": null
       },
       "images": [],
-      "coordinates": [
-        10.7863576,
-        106.6663425
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -32501,10 +32222,7 @@
         "url": null
       },
       "images": [],
-      "coordinates": [
-        10.42231,
-        107.2260726
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -32585,10 +32303,7 @@
         "url": null
       },
       "images": [],
-      "coordinates": [
-        10.9915793,
-        106.6510527
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -32800,8 +32515,8 @@
       },
       "images": [],
       "coordinates": [
-        10.8927709,
-        106.8256697
+        10.264807,
+        105.915484
       ],
       "area": "vinh-long",
       "level": null,
@@ -33322,8 +33037,8 @@
       },
       "images": [],
       "coordinates": [
-        10.3211141,
-        107.0836401
+        9.946571,
+        106.102831
       ],
       "area": "tra-vinh",
       "level": null,
@@ -33351,8 +33066,8 @@
       },
       "images": [],
       "coordinates": [
-        10.7838094,
-        106.6369877
+        10.112071,
+        106.228167
       ],
       "area": "vinh-long",
       "level": null,
@@ -33495,8 +33210,8 @@
       },
       "images": [],
       "coordinates": [
-        10.70376,
-        105.1358741
+        10.262997,
+        105.969111
       ],
       "area": "vinh-long",
       "level": null,
@@ -33837,8 +33552,8 @@
       },
       "images": [],
       "coordinates": [
-        10.7605288,
-        106.6978249
+        10.001705,
+        106.263211
       ],
       "area": "vinh-long",
       "level": null,
@@ -33925,10 +33640,7 @@
         "url": "https://www.langthangvinhlong.vn/danh-nhân-lịch-sử"
       },
       "images": [],
-      "coordinates": [
-        10.7524209,
-        106.6850044
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -34414,8 +34126,8 @@
       },
       "images": [],
       "coordinates": [
-        10.9755983,
-        106.7652399
+        10.03281,
+        106.44619
       ],
       "area": "vinh-long",
       "level": null,
@@ -35259,10 +34971,7 @@
         "url": "https://pasgo.vn/kham-pha/quan-an-ngon-vinh-long-1868"
       },
       "images": [],
-      "coordinates": [
-        10.5719444,
-        107.0563895
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -35431,10 +35140,7 @@
         "url": "https://nucuoimekong.com/cu-lao-an-binh"
       },
       "images": [],
-      "coordinates": [
-        10.5150537,
-        107.2313993
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -35489,10 +35195,7 @@
         "url": "https://nucuoimekong.com/cu-lao-an-binh"
       },
       "images": [],
-      "coordinates": [
-        10.7298927,
-        105.5001075
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -35518,10 +35221,7 @@
         "url": "https://nucuoimekong.com/cu-lao-an-binh"
       },
       "images": [],
-      "coordinates": [
-        10.5150537,
-        107.2313993
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -36379,10 +36079,7 @@
         "url": null
       },
       "images": [],
-      "coordinates": [
-        10.7841158,
-        106.648427
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -36447,8 +36144,8 @@
       },
       "images": [],
       "coordinates": [
-        10.0190434,
-        104.013903
+        10.04859,
+        106.591927
       ],
       "area": "vinh-long",
       "level": null,
@@ -36611,10 +36308,7 @@
         "url": null
       },
       "images": [],
-      "coordinates": [
-        10.0190434,
-        104.013903
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -36640,8 +36334,8 @@
       },
       "images": [],
       "coordinates": [
-        9.5254875,
-        105.3585823
+        9.940954,
+        106.277346
       ],
       "area": "vinh-long",
       "level": null,
@@ -36882,10 +36576,7 @@
         "url": null
       },
       "images": [],
-      "coordinates": [
-        10.7790336,
-        106.666823
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -37631,10 +37322,7 @@
         "url": null
       },
       "images": [],
-      "coordinates": [
-        10.7704304,
-        106.650936
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -37841,10 +37529,7 @@
         "url": null
       },
       "images": [],
-      "coordinates": [
-        10.5150537,
-        107.2313993
-      ],
+      "coordinates": null,
       "area": "vinh-long",
       "level": null,
       "parentId": null,
@@ -38219,10 +37904,7 @@
         "url": null
       },
       "images": [],
-      "coordinates": [
-        10.7687223,
-        106.6459554
-      ],
+      "coordinates": null,
       "area": "ben-tre",
       "level": null,
       "parentId": null,
@@ -38834,8 +38516,8 @@
       },
       "images": [],
       "coordinates": [
-        10.7887212,
-        106.6772145
+        10.254091,
+        106.36343
       ],
       "area": "ben-tre",
       "level": null,
@@ -44964,8 +44646,8 @@
       },
       "images": [],
       "coordinates": [
-        10.5699974,
-        107.158575
+        10.163906,
+        106.706607
       ],
       "area": "ben-tre",
       "level": null,
@@ -45024,8 +44706,8 @@
       },
       "images": [],
       "coordinates": [
-        10.3560725,
-        104.8655168
+        9.638576,
+        106.30242
       ],
       "area": "tra-vinh",
       "level": null,
@@ -53901,18 +53583,8 @@
       "type": "produced_in"
     },
     {
-      "from": "cua-binh-dai",
-      "to": "lo-com-cuu-long-vlt",
-      "type": "produced_in"
-    },
-    {
       "from": "muoi-ba-tri",
       "to": "dong-muoi-bao-thanh",
-      "type": "produced_in"
-    },
-    {
-      "from": "sau-rieng-cai-mon",
-      "to": "lo-com-cuu-long-vlt",
       "type": "produced_in"
     },
     {
@@ -54213,11 +53885,6 @@
     {
       "from": "khu-pho-am-thuc-bo-ho",
       "to": "lang-nghe-truyen-thong-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "oc-gao-con-phu-da",
-      "to": "lo-com-cuu-long-vlt",
       "type": "produced_in"
     },
     {
@@ -55536,211 +55203,11 @@
       "type": "related_to"
     },
     {
-      "from": "nhan-ido-an-binh",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "nhan-ido-an-binh",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "nhan-ido-an-binh",
-      "to": "lang-nghe-dan-lat-an-duc",
-      "type": "produced_in"
-    },
-    {
-      "from": "cam-xoan-tra-on",
-      "to": "lang-nghe-dan-chapay-phu-can",
-      "type": "produced_in"
-    },
-    {
       "from": "cam-xoan-tra-on",
       "to": "banh-trang-cu-lao-may-lang-nghe-banh-trang",
       "type": "produced_in"
     },
     {
-      "from": "ca-dieu-hong-nuoi-be-long-ho",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "ca-dieu-hong-nuoi-be-long-ho",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "ca-dieu-hong-nuoi-be-long-ho",
-      "to": "lang-nghe-dan-lat-an-duc",
-      "type": "produced_in"
-    },
-    {
-      "from": "chom-chom-an-binh",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "chom-chom-an-binh",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "chom-chom-an-binh",
-      "to": "lang-nghe-dan-lat-an-duc",
-      "type": "produced_in"
-    },
-    {
-      "from": "banh-xeo-mien-tay",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "banh-xeo-mien-tay",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "banh-xeo-mien-tay",
-      "to": "lang-nghe-dan-lat-an-duc",
-      "type": "produced_in"
-    },
-    {
-      "from": "lau-mam-mien-tay",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "lau-mam-mien-tay",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "lau-mam-mien-tay",
-      "to": "lang-nghe-dan-lat-an-duc",
-      "type": "produced_in"
-    },
-    {
-      "from": "goi-cuon-tom-thit",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "goi-cuon-tom-thit",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "goi-cuon-tom-thit",
-      "to": "lang-nghe-dan-lat-an-duc",
-      "type": "produced_in"
-    },
-    {
-      "from": "chao-ca-loc-rau-dang",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "chao-ca-loc-rau-dang",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "chao-ca-loc-rau-dang",
-      "to": "lang-nghe-dan-lat-an-duc",
-      "type": "produced_in"
-    },
-    {
-      "from": "ca-keo-kho-to",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "ca-keo-kho-to",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "ca-keo-kho-to",
-      "to": "lang-nghe-dan-lat-an-duc",
-      "type": "produced_in"
-    },
-    {
-      "from": "tom-cang-xanh-nuong",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "tom-cang-xanh-nuong",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "tom-cang-xanh-nuong",
-      "to": "lang-nghe-dan-lat-an-duc",
-      "type": "produced_in"
-    },
-    {
-      "from": "ca-loc-nuong-trui",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "ca-loc-nuong-trui",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "ca-loc-nuong-trui",
-      "to": "lang-nghe-dan-lat-an-duc",
-      "type": "produced_in"
-    },
-    {
-      "from": "canh-chua-ca-linh",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "canh-chua-ca-linh",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "canh-chua-ca-linh",
-      "to": "lang-nghe-dan-lat-an-duc",
-      "type": "produced_in"
-    },
-    {
-      "from": "banh-xeo-cu-lao",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "banh-xeo-cu-lao",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "banh-xeo-cu-lao",
-      "to": "lang-nghe-dan-lat-an-duc",
-      "type": "produced_in"
-    },
-    {
-      "from": "tom-rang-muoi-ot",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "tom-rang-muoi-ot",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "tom-rang-muoi-ot",
-      "to": "lang-nghe-dan-lat-an-duc",
-      "type": "produced_in"
-    },
-    {
       "from": "cua-binh-dai",
       "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
       "type": "produced_in"
@@ -56632,11 +56099,6 @@
     },
     {
       "from": "oc-gao-phu-da",
-      "to": "lo-com-cuu-long-vlt",
-      "type": "produced_in"
-    },
-    {
-      "from": "oc-gao-phu-da",
       "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
       "type": "produced_in"
     },
@@ -56652,11 +56114,6 @@
     },
     {
       "from": "hu-tieu-ba-phu",
-      "to": "lo-com-cuu-long-vlt",
-      "type": "produced_in"
-    },
-    {
-      "from": "hu-tieu-ba-phu",
       "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
       "type": "produced_in"
     },
@@ -56672,11 +56129,6 @@
     },
     {
       "from": "oc-gao-vinh-binh",
-      "to": "lo-com-cuu-long-vlt",
-      "type": "produced_in"
-    },
-    {
-      "from": "oc-gao-vinh-binh",
       "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
       "type": "produced_in"
     },
@@ -56692,11 +56144,6 @@
     },
     {
       "from": "sau-rieng-cap-dong-cho-lach",
-      "to": "lo-com-cuu-long-vlt",
-      "type": "produced_in"
-    },
-    {
-      "from": "sau-rieng-cap-dong-cho-lach",
       "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
       "type": "produced_in"
     },
@@ -57677,42 +57124,12 @@
     },
     {
       "from": "dua-sap-cang-long",
-      "to": "vung-cam-sanh-tra-on",
-      "type": "produced_in"
-    },
-    {
-      "from": "dua-sap-cang-long",
-      "to": "lang-banh-trang-tra-on",
-      "type": "produced_in"
-    },
-    {
-      "from": "dua-sap-cang-long",
-      "to": "lang-nghe-dan-chapay-phu-can",
-      "type": "produced_in"
-    },
-    {
-      "from": "dua-sap-cang-long",
-      "to": "banh-trang-cu-lao-may-lang-nghe-banh-trang",
-      "type": "produced_in"
-    },
-    {
-      "from": "bun-nuoc-leo-cang-long",
-      "to": "vung-cam-sanh-tra-on",
-      "type": "produced_in"
-    },
-    {
-      "from": "bun-nuoc-leo-cang-long",
-      "to": "lang-banh-trang-tra-on",
-      "type": "produced_in"
-    },
-    {
-      "from": "bun-nuoc-leo-cang-long",
       "to": "lang-nghe-dan-chapay-phu-can",
       "type": "produced_in"
     },
     {
       "from": "bun-nuoc-leo-cang-long",
-      "to": "banh-trang-cu-lao-may-lang-nghe-banh-trang",
+      "to": "lang-nghe-dan-chapay-phu-can",
       "type": "produced_in"
     },
     {
@@ -58772,11 +58189,6 @@
     },
     {
       "from": "banh-trang-ngot-le-hang",
-      "to": "lang-nghe-dan-chapay-phu-can",
-      "type": "produced_in"
-    },
-    {
-      "from": "banh-trang-ngot-le-hang",
       "to": "banh-trang-cu-lao-may-lang-nghe-banh-trang",
       "type": "produced_in"
     },
@@ -58792,11 +58204,6 @@
     },
     {
       "from": "hop-tac-xa-cam-phuong-thuy",
-      "to": "lang-nghe-dan-chapay-phu-can",
-      "type": "produced_in"
-    },
-    {
-      "from": "hop-tac-xa-cam-phuong-thuy",
       "to": "banh-trang-cu-lao-may-lang-nghe-banh-trang",
       "type": "produced_in"
     },
@@ -58806,62 +58213,12 @@
       "type": "produced_in"
     },
     {
-      "from": "tau-hu-ky-my-hoa-binh-minh",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "tau-hu-ky-my-hoa-binh-minh",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "tau-hu-ky-my-hoa-binh-minh",
-      "to": "lang-nghe-dan-lat-an-duc",
-      "type": "produced_in"
-    },
-    {
       "from": "buoi-nam-roi-my-hoa",
       "to": "lo-com-cuu-long-vlt",
       "type": "produced_in"
     },
     {
-      "from": "buoi-nam-roi-my-hoa",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "buoi-nam-roi-my-hoa",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "buoi-nam-roi-my-hoa",
-      "to": "lang-nghe-dan-lat-an-duc",
-      "type": "produced_in"
-    },
-    {
       "from": "tau-hu-ky-cai-von",
-      "to": "lo-com-cuu-long-vlt",
-      "type": "produced_in"
-    },
-    {
-      "from": "tau-hu-ky-cai-von",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "tau-hu-ky-cai-von",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "tau-hu-ky-cai-von",
-      "to": "lang-nghe-dan-lat-an-duc",
-      "type": "produced_in"
-    },
-    {
-      "from": "mut-me-cai-von",
       "to": "lo-com-cuu-long-vlt",
       "type": "produced_in"
     },
@@ -58886,38 +58243,8 @@
       "type": "produced_in"
     },
     {
-      "from": "tra-kho-qua-rung-cai-von",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "tra-kho-qua-rung-cai-von",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "tra-kho-qua-rung-cai-von",
-      "to": "lang-nghe-dan-lat-an-duc",
-      "type": "produced_in"
-    },
-    {
       "from": "tra-gung-mat-ong-dong-binh",
       "to": "lo-com-cuu-long-vlt",
-      "type": "produced_in"
-    },
-    {
-      "from": "tra-gung-mat-ong-dong-binh",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "tra-gung-mat-ong-dong-binh",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "tra-gung-mat-ong-dong-binh",
-      "to": "lang-nghe-dan-lat-an-duc",
       "type": "produced_in"
     },
     {
@@ -58926,38 +58253,8 @@
       "type": "produced_in"
     },
     {
-      "from": "tra-gung-mat-ong-nguyen-chat-gingo",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "tra-gung-mat-ong-nguyen-chat-gingo",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "tra-gung-mat-ong-nguyen-chat-gingo",
-      "to": "lang-nghe-dan-lat-an-duc",
-      "type": "produced_in"
-    },
-    {
       "from": "khoai-lang-say-binh-tan",
       "to": "lo-com-cuu-long-vlt",
-      "type": "produced_in"
-    },
-    {
-      "from": "khoai-lang-say-binh-tan",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "khoai-lang-say-binh-tan",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "khoai-lang-say-binh-tan",
-      "to": "lang-nghe-dan-lat-an-duc",
       "type": "produced_in"
     },
     {
@@ -58966,38 +58263,8 @@
       "type": "produced_in"
     },
     {
-      "from": "man-an-phuoc-ocop",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "man-an-phuoc-ocop",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "man-an-phuoc-ocop",
-      "to": "lang-nghe-dan-lat-an-duc",
-      "type": "produced_in"
-    },
-    {
       "from": "khoai-lang-say-dong-phat",
       "to": "lo-com-cuu-long-vlt",
-      "type": "produced_in"
-    },
-    {
-      "from": "khoai-lang-say-dong-phat",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "khoai-lang-say-dong-phat",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "khoai-lang-say-dong-phat",
-      "to": "lang-nghe-dan-lat-an-duc",
       "type": "produced_in"
     },
     {
@@ -59006,38 +58273,8 @@
       "type": "produced_in"
     },
     {
-      "from": "khoai-lang-say-gion-mien-tay",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "khoai-lang-say-gion-mien-tay",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "khoai-lang-say-gion-mien-tay",
-      "to": "lang-nghe-dan-lat-an-duc",
-      "type": "produced_in"
-    },
-    {
       "from": "dua-hau-tan-hung-ocop",
       "to": "lo-com-cuu-long-vlt",
-      "type": "produced_in"
-    },
-    {
-      "from": "dua-hau-tan-hung-ocop",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "dua-hau-tan-hung-ocop",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "dua-hau-tan-hung-ocop",
-      "to": "lang-nghe-dan-lat-an-duc",
       "type": "produced_in"
     },
     {
@@ -59046,58 +58283,13 @@
       "type": "produced_in"
     },
     {
-      "from": "vu-sua-hoang-kim-thanh-binh-ocop",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "vu-sua-hoang-kim-thanh-binh-ocop",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "vu-sua-hoang-kim-thanh-binh-ocop",
-      "to": "lang-nghe-dan-lat-an-duc",
-      "type": "produced_in"
-    },
-    {
       "from": "cu-cai-non-muoi-chua-bui-thi-thanh-thao-ocop",
       "to": "lo-com-cuu-long-vlt",
       "type": "produced_in"
     },
     {
-      "from": "cu-cai-non-muoi-chua-bui-thi-thanh-thao-ocop",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "cu-cai-non-muoi-chua-bui-thi-thanh-thao-ocop",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "cu-cai-non-muoi-chua-bui-thi-thanh-thao-ocop",
-      "to": "lang-nghe-dan-lat-an-duc",
-      "type": "produced_in"
-    },
-    {
       "from": "khoai-lang-tan-thanh-ocop",
       "to": "lo-com-cuu-long-vlt",
-      "type": "produced_in"
-    },
-    {
-      "from": "khoai-lang-tan-thanh-ocop",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "produced_in"
-    },
-    {
-      "from": "khoai-lang-tan-thanh-ocop",
-      "to": "lang-nghe-dan-lat-may-tre-phu-le",
-      "type": "produced_in"
-    },
-    {
-      "from": "khoai-lang-tan-thanh-ocop",
-      "to": "lang-nghe-dan-lat-an-duc",
       "type": "produced_in"
     },
     {
@@ -61137,22 +60329,7 @@
     },
     {
       "from": "bun-suong",
-      "to": "vung-cam-sanh-tra-on",
-      "type": "produced_in"
-    },
-    {
-      "from": "bun-suong",
-      "to": "lang-banh-trang-tra-on",
-      "type": "produced_in"
-    },
-    {
-      "from": "bun-suong",
       "to": "lang-nghe-dan-chapay-phu-can",
-      "type": "produced_in"
-    },
-    {
-      "from": "bun-suong",
-      "to": "banh-trang-cu-lao-may-lang-nghe-banh-trang",
       "type": "produced_in"
     },
     {
@@ -61163,11 +60340,6 @@
     {
       "from": "mam-song-khoai-lang",
       "to": "nghe-det-luc-binh-vinh-long",
-      "type": "produced_in"
-    },
-    {
-      "from": "mam-tep-chua",
-      "to": "lo-com-cuu-long-vlt",
       "type": "produced_in"
     },
     {
@@ -64842,11 +64014,6 @@
     },
     {
       "from": "cam-sanh-tra-on",
-      "to": "lang-nghe-dan-chapay-phu-can",
-      "type": "produced_in"
-    },
-    {
-      "from": "cam-sanh-tra-on",
       "to": "banh-trang-cu-lao-may-lang-nghe-banh-trang",
       "type": "produced_in"
     },
@@ -64858,11 +64025,6 @@
     {
       "from": "ca-chay-song-hau",
       "to": "lang-banh-trang-tra-on",
-      "type": "produced_in"
-    },
-    {
-      "from": "ca-chay-song-hau",
-      "to": "lang-nghe-dan-chapay-phu-can",
       "type": "produced_in"
     },
     {
@@ -64882,11 +64044,6 @@
     },
     {
       "from": "banh-trang-ngot-le-hang-htx-banh-trang-cu-lao-may",
-      "to": "lang-nghe-dan-chapay-phu-can",
-      "type": "produced_in"
-    },
-    {
-      "from": "banh-trang-ngot-le-hang-htx-banh-trang-cu-lao-may",
       "to": "banh-trang-cu-lao-may-lang-nghe-banh-trang",
       "type": "produced_in"
     },
@@ -64898,11 +64055,6 @@
     {
       "from": "kho-ca-loc-phu-thanh",
       "to": "lang-banh-trang-tra-on",
-      "type": "produced_in"
-    },
-    {
-      "from": "kho-ca-loc-phu-thanh",
-      "to": "lang-nghe-dan-chapay-phu-can",
       "type": "produced_in"
     },
     {
@@ -68777,22 +67929,7 @@
     },
     {
       "from": "tom-kho-cham-mam-chua-ngot-duyen-hai",
-      "to": "vung-cam-sanh-tra-on",
-      "type": "produced_in"
-    },
-    {
-      "from": "tom-kho-cham-mam-chua-ngot-duyen-hai",
-      "to": "lang-banh-trang-tra-on",
-      "type": "produced_in"
-    },
-    {
-      "from": "tom-kho-cham-mam-chua-ngot-duyen-hai",
       "to": "lang-nghe-dan-chapay-phu-can",
-      "type": "produced_in"
-    },
-    {
-      "from": "tom-kho-cham-mam-chua-ngot-duyen-hai",
-      "to": "banh-trang-cu-lao-may-lang-nghe-banh-trang",
       "type": "produced_in"
     },
     {
@@ -82221,11 +81358,6 @@
       "type": "near"
     },
     {
-      "from": "chua-phat-ngoc-xa-loi",
-      "to": "chua-ong-that-phu-mieu",
-      "type": "near"
-    },
-    {
       "from": "bao-tang-tong-hop-tinh-tra-vinh",
       "to": "chol-chnam-thmay",
       "type": "near"
@@ -83141,11 +82273,6 @@
       "type": "near"
     },
     {
-      "from": "chua-phat-ngoc-xa-loi",
-      "to": "le-gio-phan-thanh-gian-tai-van-thanh-mieu",
-      "type": "near"
-    },
-    {
       "from": "sieu-thi-coop-mart-vinh-long",
       "to": "thanh-loc",
       "type": "near"
@@ -83763,11 +82890,6 @@
     {
       "from": "ba-du",
       "to": "chua-ong-that-phu-mieu",
-      "type": "near"
-    },
-    {
-      "from": "sau-rieng-say-thang-hoa-sau-ri",
-      "to": "chua-tien-chau-tien-chau-tu",
       "type": "near"
     },
     {
@@ -84696,11 +83818,6 @@
       "type": "near"
     },
     {
-      "from": "chua-phat-ngoc-xa-loi",
-      "to": "ba-du",
-      "type": "near"
-    },
-    {
       "from": "don-ca-tai-tu-nam-bo",
       "to": "thanh-tra",
       "type": "near"
@@ -85391,11 +84508,6 @@
       "type": "near"
     },
     {
-      "from": "khach-san-minh-khue",
-      "to": "le-gio-phan-thanh-gian-tai-van-thanh-mieu",
-      "type": "near"
-    },
-    {
       "from": "thanh-tra-binh-minh",
       "to": "khach-san-binh-minh",
       "type": "near"
@@ -85618,11 +84730,6 @@
     {
       "from": "sieu-thi-coop-mart-vinh-long",
       "to": "test",
-      "type": "near"
-    },
-    {
-      "from": "di-tich-cua-huu-thanh-long-ho-cay-da-cua-huu",
-      "to": "le-gio-phan-thanh-gian-tai-van-thanh-mieu",
       "type": "near"
     },
     {
@@ -86526,11 +85633,6 @@
       "type": "near"
     },
     {
-      "from": "chua-long-buu",
-      "to": "tran-quang-quon",
-      "type": "near"
-    },
-    {
       "from": "khu-du-lich-truong-huy-long-ho",
       "to": "vuon-trai-cay-dac-san-long-ho",
       "type": "near"
@@ -86663,11 +85765,6 @@
     {
       "from": "ca-keo-kho-to",
       "to": "chua-ong",
-      "type": "near"
-    },
-    {
-      "from": "tran-quang-quon",
-      "to": "di-tich-cua-huu-thanh-long-ho-cay-da-cua-huu",
       "type": "near"
     },
     {
@@ -87481,11 +86578,6 @@
       "type": "near"
     },
     {
-      "from": "khu-mo-than-nhan-danh-than-thoai-ngoc-hau",
-      "to": "tran-quang-quon",
-      "type": "near"
-    },
-    {
       "from": "mam-tep-chua",
       "to": "tra-gung-mat-ong-dong-binh",
       "type": "near"
@@ -88266,11 +87358,6 @@
       "type": "near"
     },
     {
-      "from": "khach-san-kim-chi-hoang-gia",
-      "to": "chua-phuoc-hau-ngai-tu",
-      "type": "near"
-    },
-    {
       "from": "khach-san-binh-dai",
       "to": "oc-gao-con-phu-da",
       "type": "near"
@@ -88443,11 +87530,6 @@
     {
       "from": "banh-xeo-mien-tay",
       "to": "khu-du-lich-vuon-sinh-thai-ba-ngoi",
-      "type": "near"
-    },
-    {
-      "from": "tran-quang-quon",
-      "to": "chua-ong-that-phu-mieu",
       "type": "near"
     },
     {
@@ -88636,11 +87718,6 @@
       "type": "near"
     },
     {
-      "from": "khu-mo-than-nhan-danh-than-thoai-ngoc-hau",
-      "to": "le-ha-dien-dinh-tan-hoa",
-      "type": "near"
-    },
-    {
       "from": "ca-tai-tuong-chien-xu",
       "to": "nha-co-cai-cuong",
       "type": "near"
@@ -88803,11 +87880,6 @@
     {
       "from": "cho-thanh-phu",
       "to": "khu-bao-ton-oc-gao-phu-da",
-      "type": "near"
-    },
-    {
-      "from": "tran-quang-quon",
-      "to": "ba-du",
       "type": "near"
     },
     {
@@ -89411,11 +88483,6 @@
       "type": "near"
     },
     {
-      "from": "chao-ca-loc-rau-dang",
-      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-      "type": "near"
-    },
-    {
       "from": "khach-san-binh-dai",
       "to": "tom-rang-muoi-ot",
       "type": "near"
@@ -89462,17 +88529,7 @@
     },
     {
       "from": "tran-quang-quon",
-      "to": "chua-tien-chau-tien-chau-tu",
-      "type": "near"
-    },
-    {
-      "from": "tran-quang-quon",
       "to": "vuon-trai-cay-6-tan",
-      "type": "near"
-    },
-    {
-      "from": "cho-thanh-phu",
-      "to": "khu-du-lich-vuon-sinh-thai-ba-ngoi",
       "type": "near"
     },
     {
@@ -97261,11 +96318,6 @@
       "type": "near"
     },
     {
-      "from": "chua-an-linh",
-      "to": "gao-sach-lua-tom-thanh-phu",
-      "type": "near"
-    },
-    {
       "from": "le-cung-trang-ok-om-bok",
       "to": "mat-ong-hai-nuong",
       "type": "near"
@@ -98446,11 +97498,6 @@
       "type": "near"
     },
     {
-      "from": "mang-cut-binh-hoa-phuoc",
-      "to": "co-so-san-xuat-peace-farm",
-      "type": "near"
-    },
-    {
       "from": "con-tam-hiep-dao-tam-hiep",
       "to": "chien-thang-giong-dua-giong-trom",
       "type": "near"
@@ -99211,11 +98258,6 @@
       "type": "near"
     },
     {
-      "from": "lang-nghe-che-bien-hai-san-kho-thanh-phong",
-      "to": "duong-ho-chi-minh-tren-bien-ben-xuat-phat-thanh-phong",
-      "type": "near"
-    },
-    {
       "from": "banh-tet-tra-cuon",
       "to": "chao-am-tra-vinh",
       "type": "near"
@@ -99288,11 +98330,6 @@
     {
       "from": "le-gio-nguyen-dinh-chieu",
       "to": "maison-du-pays-de-ben-tre",
-      "type": "near"
-    },
-    {
-      "from": "den-tho-lanh-binh-nguyen-ngoc-thang",
-      "to": "chua-an-linh",
       "type": "near"
     },
     {
@@ -99526,11 +98563,6 @@
       "type": "near"
     },
     {
-      "from": "mang-cut-binh-hoa-phuoc",
-      "to": "cho-thanh-phu",
-      "type": "near"
-    },
-    {
       "from": "loi-choi-sa-ot-tra-vinh",
       "to": "chua-co-chua-nodol-chua-phno-don",
       "type": "near"
@@ -99748,11 +98780,6 @@
     {
       "from": "suong-nguyet-anh",
       "to": "ca-chuon-kho-binh-dai",
-      "type": "near"
-    },
-    {
-      "from": "khach-san-thanh-xuan",
-      "to": "chua-phuoc-hau-ngai-tu",
       "type": "near"
     },
     {
@@ -100296,16 +99323,6 @@
       "type": "near"
     },
     {
-      "from": "dinh-an-qui",
-      "to": "bien-binh-dai",
-      "type": "near"
-    },
-    {
-      "from": "muoi-bao-thanh",
-      "to": "bien-binh-dai",
-      "type": "near"
-    },
-    {
       "from": "thanh-tra-binh-minh",
       "to": "khu-du-lich-vuon-sinh-thai-ba-ngoi",
       "type": "near"
@@ -100463,11 +99480,6 @@
     {
       "from": "cu-lao-my-hoa",
       "to": "khach-san-tan-xuan",
-      "type": "near"
-    },
-    {
-      "from": "nghia-trung-mieu",
-      "to": "sau-rieng-say-thang-hoa-sau-ri",
       "type": "near"
     },
     {
@@ -101423,11 +100435,6 @@
     {
       "from": "tranh-dua-hop-kieng-cocohand",
       "to": "duong-ho-chi-minh-tren-bien-ben-xuat-phat-thanh-phong",
-      "type": "near"
-    },
-    {
-      "from": "duong-ho-chi-minh-tren-bien-ben-xuat-phat-thanh-phong",
-      "to": "cua-bien-thanh-phu",
       "type": "near"
     },
     {
