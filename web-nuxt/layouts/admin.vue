@@ -16,6 +16,7 @@
         <NuxtLink to="/admin/users" :class="{ active: route.path === '/admin/users' }">👥 Users</NuxtLink>
         <NuxtLink to="/admin/bao-cao" :class="{ active: route.path === '/admin/bao-cao' }">🚩 Báo cáo</NuxtLink>
         <NuxtLink to="/admin/thong-ke" :class="{ active: route.path === '/admin/thong-ke' }">📈 Thống kê</NuxtLink>
+        <NuxtLink to="/admin/duyet-tu-hoc" :class="{ active: route.path === '/admin/duyet-tu-hoc' }">🧪 Duyệt & Tiện ích</NuxtLink>
         <NuxtLink to="/admin/ai" :class="{ active: route.path === '/admin/ai' }">🤖 Knowledge Agent</NuxtLink>
       </nav>
       <div class="admin-sidebar-footer">

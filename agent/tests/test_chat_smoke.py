@@ -129,6 +129,19 @@ def test_reload_requires_admin_and_reads_db(client_mocked):
     assert r.json().get("source") == "db"
 
 
+def test_provisional_sources_export_endpoints(client_mocked):
+    """Feature: trang Duyệt & Tiện ích — /provisional, /sources, /export trả 200 + shape, auth-gated."""
+    from middleware import ADMIN_API_KEY as _ADMIN_KEY
+    hdr = {"X-Admin-Key": _ADMIN_KEY}
+    assert client_mocked.get("/admin/provisional").status_code == 401  # gated
+    prov = client_mocked.get("/admin/provisional", headers=hdr)
+    assert prov.status_code == 200 and "provisional" in prov.json()
+    src = client_mocked.get("/admin/sources", headers=hdr)
+    assert src.status_code == 200 and "sources" in src.json()
+    exp = client_mocked.post("/admin/export", headers=hdr)
+    assert exp.status_code == 200 and "entities" in exp.json()
+
+
 def test_relationship_management(client_mocked):
     """Feature: quản lý quan hệ — add (POST) + list (/api) + remove (DELETE)."""
     from database import db
