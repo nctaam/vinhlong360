@@ -272,6 +272,11 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 - **(2026-06-13) Trang hub từng xã/phường — XONG** (commit 949c843, theo yêu cầu chủ dự án + khớp D1): `/xa-phuong/[id]` gom 4 mục (🏛️ danh bạ · 🗺️ du lịch · 🏡 lưu trú · 🍊 sản phẩm) cho mỗi xã/phường; `GET /api/places/{id}/overview` (+`db.entities_by_place`); link từ `khu-vuc/[area]` (list 35 ward VL) + `danh-ba`. 51/124 ward có nội dung; danh bạ mỗi ward = empty-state đến khi có dữ liệu thật (13.6 Track-H). **Còn (đề xuất)**: SSR-prerender các trang ward (CWV/SEO — gắn 10.1); breadcrumb/sitemap thêm ward; nav top-level "Xã/phường".
 
+### 🛠 Hệ thống quản lý (admin CP + bot + agent) — 2026-06-14
+**ĐÃ XÂY:** (1) Admin CP polish (commit 4f44b51): sửa nút Reload (nhận phiên admin, trước 401) + dashboard hiện "Báo sai" (/admin/info-reports). (2) **Bot Telegram quản lý** (794ceb7): lệnh `/admin /thongke /choduyet /baosai /reloadkb` gated theo `ADMIN_TELEGRAM_IDS`, gọi /admin/* bằng X-Admin-Key. (3) **Digest định kỳ MIỄN PHÍ** (088a7ff): scheduler `admin-digest` 24h gửi số liệu DB qua Telegram — KHÔNG LLM (§B8-safe), no-op nếu chưa cấu hình. (4) **Agent on-demand** (d5491bb): `POST /admin/ai/triage` + nút "🤖 Gợi ý ưu tiên" — 1 lần gọi LLM khi bấm, degrade an toàn khi LLM hỏng.
+**CẦN CẤU HÌNH (.env, người dùng):** `ADMIN_TELEGRAM_IDS=<chat_id,...>` để bật bot quản lý + digest. `ADMIN_API_KEY` đã có.
+**🛑 GIỮ — chờ override §B8:** "agent tự động ĐỊNH KỲ gọi LLM" (lựa chọn của chủ dự án) **CHƯA xây** vì vi phạm bất biến §B8 (vòng lặp LLM nền = rò chi phí 24/7, đúng lỗi GĐ0 đã tắt) + liên quan split-brain. Đã thay bằng digest-miễn-phí + agent-on-demand. Muốn bật autonomous-LLM thật → cần chủ dự án xác nhận override §B8 + tôi sẽ thêm **cap ngân sách cứng** (số lần/ngày) trước khi bật.
+
 ### 🔬 Audit hệ thống toàn diện (2026-06-14) — 3 agent (backend/data/frontend)
 **ĐÃ FIX (commit 4f3ddd9, ff6d654):** /api/entities?month= pagination (total/offset đúng); Content-Length hỏng→400; /chat/stream parity (strip HTML+cắt 2000+cap history); /reload invalidate _place_cache; upsert nhận alias `coords`→`coordinates`; /hanh-trinh hydration (ClientOnly); lọc rel LLM treo. +3 test; full 1091+ passed.
 
