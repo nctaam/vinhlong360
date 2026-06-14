@@ -279,7 +279,10 @@
 .save-btn:hover { background: var(--card); border-color: var(--primary-fg); }
 .save-btn.saved { background: var(--badge-season-bg); border-color: var(--accent); color: var(--primary-fg); }
 .save-btn-sm { padding: 4px 10px; font-size: .78rem; }
-.save-icon { font-size: 1rem; line-height: 1; }
+.save-icon { font-size: 1rem; line-height: 1; display: inline-block; }
+/* Micro-interaction: "pop" khi lưu (behavioral feedback; transform-only, tôn trọng prefers-reduced-motion) */
+.save-btn.saved .save-icon { animation: savePop .35s var(--ease-bounce); }
+@keyframes savePop { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
 .save-btn-sm .save-icon { font-size: .85rem; }
 .save-label { white-space: nowrap; }
 
