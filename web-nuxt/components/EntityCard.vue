@@ -6,8 +6,10 @@
       <span class="cover-tag" :class="`cat-${typeMeta.cat}`">{{ typeMeta.emoji }} {{ typeMeta.label }}</span>
       <ClientOnly><SaveButton class="card-save" :entity="entity" size="sm" /></ClientOnly>
     </div>
-    <div v-else :class="['cover', `cat-${typeMeta.cat}`]">
-      <CategoryIcon :cat="typeMeta.cat" />
+    <div v-else class="cover cover-img" :class="`cat-${typeMeta.cat}`">
+      <img v-if="!catImgError" :src="`/img/cat/${typeMeta.cat}.jpg`" :alt="typeMeta.label" loading="lazy" width="400" height="240" decoding="async" @error="catImgError = true" />
+      <CategoryIcon v-else :cat="typeMeta.cat" />
+      <span class="cover-tag" :class="`cat-${typeMeta.cat}`">{{ typeMeta.emoji }} {{ typeMeta.label }}</span>
       <ClientOnly><SaveButton class="card-save" :entity="entity" size="sm" /></ClientOnly>
     </div>
     <div class="card-b">
@@ -35,6 +37,7 @@ const props = defineProps<{
 }>()
 
 const imgError = ref(false)
+const catImgError = ref(false)
 const typeMeta = computed(() => TYPE_META[props.entity.type] || { emoji: '•', label: props.entity.type, cat: 'place' })
 const coverImage = computed(() => {
   const imgs = props.entity.images
