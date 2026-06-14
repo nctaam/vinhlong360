@@ -296,7 +296,10 @@
 @media (max-width: 480px) { .journey-bar { bottom: 16px; left: 12px; right: 12px; transform: none; border-radius: 16px; } @keyframes jbSlideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } } }
 
 /* ── Supplementary hints (AI-powered, shown as subtle suggestions) ── */
-.ai-recommend { margin-top: 32px; }
+/* Căn giữa + max-width như .block — fix bug grid trải full-width văng mép trái ở desktop */
+.ai-recommend { max-width: var(--maxw); margin: 32px auto 0; padding: 0 20px; }
+/* Trong trang chi tiết đã có container hẹp → bỏ gutter/cap để khớp các mục cùng cột */
+.detail-main .ai-recommend, .detail-aside .ai-recommend { max-width: none; padding: 0; }
 .ai-tips { background: var(--bg-warm); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; margin-top: 20px; }
 .ai-tips-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; cursor: pointer; background: none; border: none; font: inherit; color: inherit; width: 100%; text-align: left; }
 .ai-tips-header h3 { margin: 0; font-size: .95rem; color: var(--ink); }
