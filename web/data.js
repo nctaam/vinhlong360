@@ -3925,22 +3925,132 @@ var places = [
     "id": "p-an-hoi",
     "type": "place",
     "name": "Phường An Hội",
-    "summary": "Phường An Hội là phường trung tâm thành phố Bến Tre, được thành lập năm 2020 trên cơ sở hợp nhất 3 phường cũ (Phường 1, 2, 3). Nơi đây tập trung nhiều công trình quan trọng: Công viên An Hội, Hồ Trúc Giang, Bảo tàng Bến Tre, Đình An Hội (di tích cấp tỉnh), Chùa Viên Minh, chợ Bến Tre, Chợ đêm Bến Tre và trung tâm thương mại Sense City. Các tuyến đường chính: Đại lộ Đồng Khởi, Hùng Vương, Nguyễn Đình Chiểu, 3 Tháng 2, Nam Kỳ Khởi Nghĩa, Trần Quốc Tuấn.",
+    "summary": "Phường An Hội là phường trung tâm và lớn nhất TP Bến Tre (thuộc tỉnh Vĩnh Long mới từ 01/07/2025), hình thành qua 3 đợt sáp nhập: (1) 01/02/2020 — hợp nhất Phường 1, 2, 3 thành An Hội (NQ 856); (2) 01/12/2024 — nhập thêm Phường 4, 5 (NQ 1237); (3) 16/06/2025 — nhập thêm xã Mỹ Thạnh An, Phú Nhuận và Sơn Phú (NQ 1687). Diện tích 31,9 km², dân số 53.476 người, 32 khu phố, mật độ 1.676 người/km². Nơi đây tập trung các công trình quan trọng: Hồ Trúc Giang (đào thời Pháp ~1930, 2 ha), Đình Thần An Hội (giữa TK 19, di tích cấp tỉnh), Chùa Viên Minh (1874, Bắc tông), Bảo tàng Bến Tre (1981, 2 ha), Công viên An Hội (2015, 3 ha, chợ đêm cuối tuần), chợ Bến Tre (trăm tuổi), Sense City. Các tuyến đường chính: Đại lộ Đồng Khởi, Hùng Vương, Nguyễn Đình Chiểu, Nam Kỳ Khởi Nghĩa. Phần đô thị lõi (P.1-5 cũ) sầm uất; phần mở rộng (Mỹ Thạnh An, Phú Nhuận, Sơn Phú) vẫn mang đặc trưng nông thôn miệt vườn xứ dừa.",
     "area": "ben-tre",
     "coordinates": [
       10.2009202,
       106.3727946
     ],
     "source": {
-      "title": "UBND phường An Hội + Wikipedia TP Bến Tre",
-      "url": "https://vi.wikipedia.org/wiki/B%E1%BA%BFn_Tre_(th%C3%A0nh_ph%E1%BB%91)"
+      "title": "NQ 1687/NQ-UBTVQH15 + Wikipedia + UBND tỉnh",
+      "url": "https://xaydungchinhsach.chinhphu.vn/toan-van-nghi-quyet-so-1687-nq-ubtvqh15-sap-xep-cac-dvhc-cap-xa-cua-tinh-vinh-long-nam-2025-11925061621323394.htm"
     },
-    "confidence": 0.7,
+    "confidence": 0.95,
     "level": "phuong",
     "parentId": "thanh-pho-ben-tre-ben-tre",
     "legacyArea": "TP Bến Tre",
     "created_at": "2026-06-13 17:02:13",
-    "updatedAt": "2026-06-10"
+    "updatedAt": "2026-06-10",
+    "attributes": {
+      "area_km2": 31.9,
+      "population": 53476,
+      "density_per_km2": 1676,
+      "khu_pho": 32,
+      "merge_note": "GĐ1 (2020): P.1+2+3→An Hội; GĐ2 (12/2024): +P.4+5; GĐ3 (06/2025): +xã Mỹ Thạnh An, Phú Nhuận, Sơn Phú",
+      "merge_phases": [
+        {
+          "date": "2020-02-01",
+          "resolution": "NQ 856/NQ-UBTVQH14",
+          "units": [
+            "Phường 1",
+            "Phường 2",
+            "Phường 3"
+          ],
+          "result_area_km2": 0.92,
+          "result_pop": 11502
+        },
+        {
+          "date": "2024-12-01",
+          "resolution": "NQ 1237/NQ-UBTVQH15",
+          "units": [
+            "Phường 4",
+            "Phường 5"
+          ],
+          "result_area_km2": 1.79,
+          "result_pop": 25516
+        },
+        {
+          "date": "2025-06-16",
+          "resolution": "NQ 1687/NQ-UBTVQH15",
+          "units": [
+            "xã Mỹ Thạnh An",
+            "xã Phú Nhuận",
+            "xã Sơn Phú"
+          ],
+          "result_area_km2": 31.9,
+          "result_pop": 53476
+        }
+      ],
+      "pre_merge_units": [
+        {
+          "name": "Phường 1",
+          "area_km2": 0.26,
+          "pop": 4456
+        },
+        {
+          "name": "Phường 2",
+          "area_km2": 0.22,
+          "pop": 2279
+        },
+        {
+          "name": "Phường 3",
+          "area_km2": 0.44,
+          "pop": 4767
+        },
+        {
+          "name": "Phường 4",
+          "area_km2": 0.39,
+          "pop": 5768
+        },
+        {
+          "name": "Phường 5",
+          "area_km2": 0.49,
+          "pop": 5935
+        },
+        {
+          "name": "Xã Mỹ Thạnh An",
+          "area_km2": 10.29,
+          "pop": 12025,
+          "aps": [
+            "An Thạnh A",
+            "An Thạnh B",
+            "An Thuận A",
+            "An Thuận B",
+            "Mỹ An A",
+            "Mỹ An B",
+            "Mỹ An C"
+          ]
+        },
+        {
+          "name": "Xã Phú Nhuận",
+          "area_km2": 5.07,
+          "pop": 3570,
+          "note": "Từ huyện Giồng Trôm, nhập vào thị xã Bến Tre năm 1984"
+        },
+        {
+          "name": "Xã Sơn Phú",
+          "area_km2": 14.02,
+          "pop": 7293,
+          "note": "Từ huyện Giồng Trôm, cách TP Bến Tre 5km, đạt NTM, nông nghiệp miệt vườn"
+        }
+      ],
+      "boundaries": {
+        "east": "Phường Phú Khương, xã Lương Phú",
+        "west": "Phường Bến Tre (sông Hàm Luông)",
+        "south": "Xã Phước Long",
+        "north": "Phường Sơn Đông"
+      },
+      "headquarters": "96 Tán Kế, Khu phố 6",
+      "key_roads": [
+        "Đại lộ Đồng Khởi",
+        "Hùng Vương",
+        "Nguyễn Đình Chiểu",
+        "3 Tháng 2",
+        "Nam Kỳ Khởi Nghĩa",
+        "Trần Quốc Tuấn",
+        "Tỉnh lộ 887"
+      ]
+    }
   },
   {
     "id": "p-phu-khuong",
@@ -8957,7 +9067,7 @@ var items = [
     "id": "dinh-an-hoi",
     "type": "history",
     "name": "Đình An Hội",
-    "summary": "Đình An Hội, sắc phong năm 1846 (đời Thiệu Trị), do Huỳnh Văn Sắc sáng lập. Diện tích 1.150m², hình chữ Nhất, gỗ quý không dùng đinh, mái ngói âm dương, 17 bệ thờ. Có rồng sứ và tượng Bát Tiên trên mái từ thế kỷ XIX. Di tích cấp tỉnh (2014). Tổ chức lễ Hùng Vương và lễ hội truyền thống.",
+    "summary": "Đình Thần An Hội được xây dựng giữa thế kỷ 19, là di tích lịch sử - văn hóa cấp tỉnh (QĐ 2253/QĐ-UBND ngày 11/11/2014). Diện tích gần 1.150 m², kiến trúc chữ Nhất (一) đặc trưng đình làng thời Nguyễn, gồm: võ ca, sân tương, trung điện, chánh điện, hậu đình. Mái ngói âm dương uốn cong, đầu đao cong vút lấy cảm hứng từ mũi thuyền văn minh sông nước cổ. Tọa lạc trên đường Nguyễn Đình Chiểu, đối diện trung tâm thương mại, giữa lòng phường An Hội.",
     "area": "ben-tre",
     "placeId": "p-an-hoi",
     "coordinates": [
@@ -8965,21 +9075,24 @@ var items = [
       106.3770442
     ],
     "source": {
-      "title": "bentretourism.vn / mia.vn",
-      "url": "https://bentretourism.vn/vi/dinhanhoi",
-      "maps": "https://maps.app.goo.gl/H79AmfqVEoX6bbw27"
+      "title": "Báo Đồng Khởi + bentretourism.vn",
+      "url": "https://mia.vn/cam-nang-du-lich/tham-quan-dinh-an-hoi-ben-tre-voi-lich-su-hon-tram-nam-tuoi-10432"
     },
     "attributes": {
       "address": "Đường Nguyễn Đình Chiểu, Phường An Hội (cũ Phường 2), TP Bến Tre",
       "area": "1.150m²",
-      "heritage_level": "Di tích Lịch sử - Văn hóa cấp tỉnh",
+      "heritage_level": "Di tích cấp tỉnh",
       "travel_tip": "Ghé thăm vào buổi sáng sớm (7-9h) để gặp người dân địa phương làm lễ và nghe kể chuyện lịch sử từ người trông coi đình.",
       "key_facts": "Sắc phong năm 1846 đời Thiệu Trị | Diện tích 1.150m² | Vào cửa miễn phí",
       "founded": "trước 1846 (sắc phong năm Thiệu Trị)",
       "founder": "Huỳnh Văn Sắc",
-      "ceremonies": "Lễ Kỳ Yên (12-13/3 ÂL), Lễ Lạp Miếu"
+      "ceremonies": "Lễ Kỳ Yên (12-13/3 ÂL), Lễ Lạp Miếu",
+      "heritage_decision": "QĐ 2253/QĐ-UBND ngày 11/11/2014",
+      "area_m2": 1150,
+      "built": "Giữa thế kỷ 19",
+      "architecture": "Chữ Nhất (一), ngói âm dương, đầu đao cong"
     },
-    "confidence": 0.75,
+    "confidence": 0.9,
     "created_at": "2026-06-13 04:00:38",
     "updatedAt": "2026-06-11T00:00:00Z"
   },
@@ -8987,7 +9100,7 @@ var items = [
     "id": "chua-vien-minh-ben-tre",
     "type": "history",
     "name": "Chùa Viên Minh (Bến Tre)",
-    "summary": "Hơn 150 năm tuổi, chùa Viên Minh tọa lạc ngay trung tâm thành phố Bến Tre như một ốc đảo bình yên giữa nhịp sống đô thị. Mái ngói cổ kính phủ màu thời gian, cây đa đại thụ buông tán rộng che mát sân chùa. Tiếng chuông mõ sớm chiều vang xa đủ để kéo bước chân người về chốn thanh tịnh. Đây là tổ đình uy tín nơi nhiều thế hệ tăng ni đất Bến Tre xuất thân.",
+    "summary": "Chùa Viên Minh là ngôi cổ tự thuộc hệ phái Phật giáo Bắc tông, xây dựng năm 1874, tọa lạc tại số 1 đường Nam Kỳ Khởi Nghĩa, trung tâm phường An Hội. Diện tích hơn 3.300 m², trùng tu lớn năm 1951 và 2002. Điểm đặc sắc: hai bức tượng Thích Ca và A Di Đà có cốt nan tre, Phật đài Thích Ca cao 7 mét, tượng Quan Thế Âm 3 mét có hạc chầu hai bên. Là điểm sinh hoạt tôn giáo lớn, thu hút hàng nghìn tín đồ vào các dịp Vu Lan, Phật Đản, Tết.",
     "area": "ben-tre",
     "placeId": "p-an-hoi",
     "coordinates": [
@@ -9001,9 +9114,14 @@ var items = [
     },
     "attributes": {
       "travel_tip": "Sáng sớm trước 7h là thời điểm đẹp nhất — sương còn đọng, chuông mõ ngân và ít khách tham quan.",
-      "highlight": "Tổ đình 150 năm tuổi giữa lòng Bến Tre — trung tâm tâm linh và lịch sử Phật giáo Nam Bộ."
+      "highlight": "Tổ đình 150 năm tuổi giữa lòng Bến Tre — trung tâm tâm linh và lịch sử Phật giáo Nam Bộ.",
+      "built": "1874",
+      "area_m2": 3300,
+      "sect": "Phật giáo Bắc tông",
+      "address": "Số 1 Nam Kỳ Khởi Nghĩa, P. An Hội",
+      "renovated": "1951, 2002"
     },
-    "confidence": 0.75,
+    "confidence": 0.9,
     "created_at": "2026-06-13 04:00:38",
     "updatedAt": "2026-06-11T00:00:00Z"
   },
@@ -9011,7 +9129,7 @@ var items = [
     "id": "bao-tang-ben-tre",
     "type": "attraction",
     "name": "Bảo tàng Bến Tre",
-    "summary": "Tọa lạc trên khuôn viên 20.000m² từng là dinh Tỉnh trưởng thời Pháp thuộc, Bảo tàng Bến Tre lưu giữ hơn 15.000 hiện vật kể chuyện vùng đất dừa qua từng thời kỳ lịch sử. Bước vào đây là bước vào ký ức của xứ cù lao — từ những công cụ lao động thô mộc của người nông dân miệt vườn đến hiện vật kháng chiến hào hùng của 'Đội quân tóc dài' Bến Tre. Không gian cây xanh thoáng mát bao quanh giúp chuyến tham quan trở nên thư thái. Ghé buổi sáng để có trọn 2 tiếng khám phá yên tĩnh trước khi nắng lên.",
+    "summary": "Bảo tàng Bến Tre thành lập năm 1981, diện tích 20.000 m² (2 ha), tọa lạc tại 146 Hùng Vương, phường An Hội. Trưng bày hiện vật, tranh ảnh về lịch sử tự nhiên và xã hội vùng đất xứ dừa. Điểm nhấn: Nhà Dừa — ngôi nhà ba gian dựng hoàn toàn bằng gỗ dừa, thờ Chủ tịch Hồ Chí Minh và anh hùng Phạm Ngọc Thảo. Mở cửa 7h00 – 17h00 các ngày trong tuần. Miễn phí tham quan.",
     "area": "ben-tre",
     "placeId": "p-an-hoi",
     "coordinates": [
@@ -9024,8 +9142,8 @@ var items = [
       "maps": "https://maps.app.goo.gl/H79AmfqVEoX6bbw27"
     },
     "attributes": {
-      "address": "Số 146 đường Hùng Vương, phường An Hội, Thành phố Bến Tre, tỉnh Bến Tre",
-      "hours": "7:30-11:30 và 13:30-16:30, Thứ 2 - Thứ 6",
+      "address": "146 Hùng Vương, P. An Hội",
+      "hours": "07:00–17:00",
       "fee": "50.000đ người lớn, 20.000đ trẻ em",
       "open_hours": "7:00 – 17:00 hàng ngày (kể cả cuối tuần)",
       "admission_fee": "Người lớn: 50.000 VNĐ; Trẻ em cao trên 1,2m: 20.000 VNĐ; Trẻ em cao dưới 1,2m: miễn phí",
@@ -9042,9 +9160,12 @@ var items = [
       "season_note": "Mùa khô, ít mưa, đi lại dễ, tham quan trong nhà thoải mái không lo ngập úng",
       "peak_event": "Các triển lãm chuyên đề dịp 30/4 và Tết Nguyên Đán",
       "travel_tip": "Đến trước 8h30 vào buổi sáng — khách đoàn thường đến từ 9h trở đi, bạn sẽ có không gian thoải mái để chụp ảnh và nghe thuyết minh tự do.",
-      "highlight": "Khuôn viên dinh thự Pháp cổ rợp bóng cây, lưu giữ ký ức toàn vẹn của xứ Bến Tre từ thời tiền sử đến kháng chiến."
+      "highlight": "Khuôn viên dinh thự Pháp cổ rợp bóng cây, lưu giữ ký ức toàn vẹn của xứ Bến Tre từ thời tiền sử đến kháng chiến.",
+      "established": 1981,
+      "area_m2": 20000,
+      "admission": "Miễn phí"
     },
-    "confidence": 0.92,
+    "confidence": 0.9,
     "created_at": "2026-06-13 04:00:38",
     "updatedAt": "2026-06-11T00:00:00Z"
   },
@@ -9052,7 +9173,7 @@ var items = [
     "id": "ho-truc-giang",
     "type": "nature",
     "name": "Hồ Trúc Giang",
-    "summary": "Hồ Trúc Giang (còn gọi là Bờ Hồ hoặc Hồ Chung Thủy) nằm ở trung tâm TP Bến Tre, xây dựng năm 1930, diện tích khoảng 2 ha, hình thang, cải tạo hoàn thành năm 2006. Giữa hồ có nhà thủy tạ, bao quanh là hàng cây me tây và phượng vĩ cổ thụ. Đây là không gian xanh lý tưởng để đi dạo, tập thể dục, ngắm cảnh buổi sáng và chiều tối.",
+    "summary": "Hồ Trúc Giang là hồ nước nhân tạo rộng khoảng 2 ha nằm giữa trung tâm phường An Hội, được đào vào thời Pháp thuộc (~1930) để lấy đất lấp vùng Phường 3 cũ. Ban đầu chỉ 1 ha, mở rộng lên 2 ha qua các dự án nâng cấp thập niên 1970 và 1990. Được mệnh danh 'viên ngọc xanh giữa lòng thành phố', hồ bao quanh bởi hàng cây tỏa bóng mát, là không gian cộng đồng tổ chức sự kiện, lễ hội, đờn ca tài tử và giải đua SUP. Liền kề Công viên An Hội và chợ đêm Bến Tre.",
     "area": "ben-tre",
     "placeId": "p-an-hoi",
     "coordinates": [
@@ -9072,9 +9193,12 @@ var items = [
       "built_year": "1930",
       "area": "~2 ha",
       "renovated": "2006",
-      "aliases": "Bờ Hồ, Hồ Chung Thủy"
+      "aliases": "Bờ Hồ, Hồ Chung Thủy",
+      "area_ha": 2,
+      "built": "~1930 (thời Pháp)",
+      "expanded": "Thập niên 1970, 1990"
     },
-    "confidence": 0.75,
+    "confidence": 0.9,
     "created_at": "2026-06-13 04:00:38",
     "updatedAt": "2026-06-11T00:00:00Z"
   },
@@ -9082,7 +9206,7 @@ var items = [
     "id": "cong-vien-an-hoi",
     "type": "attraction",
     "name": "Công viên An Hội",
-    "summary": "Công viên An Hội nằm ngay trên Đại lộ Đồng Khởi, trải dài như một dải lụa xanh mướt giữa trung tâm thành phố Bến Tre. Đây là sân khấu ngoài trời không bao giờ tắt đèn: sáng thì tiếng trẻ em cười vang, chiều là các cụ đánh cờ tướng dưới tán bàng, tối đến thành điểm hẹn của đôi lứa và gia đình. Lễ hội Dừa, chương trình âm nhạc đường phố, hội chợ OCOP — tất cả đều ghé qua đây. Nếu muốn cảm nhận hơi thở đời thường của người Bến Tre, hãy tới đây vào buổi chiều mát và ngồi xuống một cái ghế đá.",
+    "summary": "Công viên An Hội xây dựng từ năm 2015, diện tích khoảng 30.000 m² (3 ha), tổng vốn đầu tư hơn 80 tỷ đồng, kết nối mở rộng từ các công viên Đồng Khởi, Hoàng Lam, Cái Cối. Là trung tâm văn hóa - giải trí - giáo dục môi trường của phường An Hội. Mỗi cuối tuần, công viên biến thành Chợ đêm Bến Tre (từ 2012) với gian hàng thủ công, ẩm thực dừa, sản phẩm xanh và chương trình đờn ca tài tử. Tổ chức nhiều sự kiện lớn: Chợ quê xứ Dừa, Ngày hội Văn hóa Ẩm thực, Giải đua SUP.",
     "area": "ben-tre",
     "placeId": "p-an-hoi",
     "coordinates": [
@@ -9099,9 +9223,17 @@ var items = [
       "season_note": "Mùa khô, cây cối xanh tươi sau mưa, không khí dễ chịu, thích hợp vui chơi ngoài trời",
       "peak_event": "Tết Nguyên Đán — công viên trang trí lễ hội, đông người vui xuân",
       "travel_tip": "Kiểm tra lịch sự kiện UBND tỉnh Bến Tre trước khi đến — công viên thường xuyên tổ chức lễ hội và hội chợ miễn phí.",
-      "highlight": "Phòng khách xanh của Bến Tre — trung tâm lễ hội và văn hóa cộng đồng sôi động"
+      "highlight": "Phòng khách xanh của Bến Tre — trung tâm lễ hội và văn hóa cộng đồng sôi động",
+      "area_m2": 30000,
+      "built": "2015",
+      "investment": "80 tỷ VND",
+      "events": [
+        "Chợ đêm Bến Tre (cuối tuần)",
+        "Chợ quê xứ Dừa",
+        "Ngày hội Văn hóa Ẩm thực xứ Dừa"
+      ]
     },
-    "confidence": 0.75,
+    "confidence": 0.9,
     "created_at": "2026-06-13 04:00:38",
     "updatedAt": "2026-06-11T00:00:00Z"
   },
@@ -9404,7 +9536,7 @@ var items = [
     "id": "cho-ben-tre",
     "type": "experience",
     "name": "Chợ Bến Tre",
-    "summary": "Chợ Bến Tre tại phường An Hội là trái tim thương mại của xứ Dừa — nơi mùi thơm kẹo dừa Thanh Long quyện với tiếng rao hàng và màu vàng óng của bánh tráng phơi sương. Quầy nào cũng chất đầy đặc sản: dừa sáp béo ngậy, mứt dừa giòn rụm, rượu dừa ngọt dịu. Len lỏi qua từng dãy hàng, bạn không chỉ mua đồ mà còn chạm vào nhịp sống thật của người Bến Tre — chân chất, ấm áp và mộc mà đáng yêu. Dành ít nhất một buổi sáng để ăn hủ tiếu tươi ngay trong chợ trước khi mua quà về nhà.",
+    "summary": "Chợ Bến Tre là ngôi chợ trăm năm tuổi, xây cuối thế kỷ 19 thời Pháp thuộc, tọa lạc tại 30 Hùng Vương, phường An Hội. Một mặt hướng sông Bến Tre, mặt kia giáp đường Nguyễn Đình Chiểu. Đặc biệt: chia thành 'chợ Phường 2' và 'chợ Phường 3' nối bằng cầu qua sông. Cấu trúc như mê cung, nổi tiếng với ẩm thực địa phương: bánh tráng, kẹo dừa, bánh canh.",
     "area": "ben-tre",
     "placeId": "p-an-hoi",
     "coordinates": [
@@ -9420,9 +9552,11 @@ var items = [
       "season_note": "Mùa khô dễ đi lại, chợ đặc sản dừa và bánh mứt tấp nập nhất trước Tết; sáng sớm là lúc hàng hóa phong phú nhất",
       "peak_event": "Tháng 12–1 trước Tết Nguyên Đán — kẹo dừa, mứt dừa, bánh phồng đặc sản bán sỉ lẻ rầm rộ",
       "travel_tip": "Đến trước 8h để chọn hàng tươi ngon nhất và tránh đông; mang tiền mặt vì hầu hết tiểu thương chưa có POS.",
-      "highlight": "Thiên đường đặc sản dừa — kẹo, bánh, rượu và nhịp sống chân chất xứ Bến Tre"
+      "highlight": "Thiên đường đặc sản dừa — kẹo, bánh, rượu và nhịp sống chân chất xứ Bến Tre",
+      "built": "Cuối thế kỷ 19",
+      "address": "30 Hùng Vương, P. An Hội"
     },
-    "confidence": 0.75,
+    "confidence": 0.9,
     "created_at": "2026-06-13 04:00:38",
     "updatedAt": "2026-06-11T00:00:00Z"
   },
