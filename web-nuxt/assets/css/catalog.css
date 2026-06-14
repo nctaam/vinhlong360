@@ -2,26 +2,26 @@
 .controls { margin: 18px 0 8px; }
 .control-label { font-size: .8rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin: 14px 0 8px; }
 .search-row { display: flex; gap: 10px; flex-wrap: wrap; }
-.search-row input[type=search] { flex: 1 1 260px; padding: 12px 16px; border: 1.5px solid var(--border-input); border-radius: 12px; font-size: 1rem; background: #fff; transition: border-color .15s, box-shadow .15s; }
-.search-row input[type=search]:focus { outline: none; border-color: var(--primary); box-shadow: var(--focus-ring); }
-.search-row select { padding: 12px 14px; border: 1.5px solid var(--border-input); border-radius: 12px; background: #fff; color: var(--ink); transition: border-color .15s, box-shadow .15s; }
-.search-row select:focus { outline: none; border-color: var(--primary); box-shadow: var(--focus-ring); }
+.search-row input[type=search] { flex: 1 1 260px; padding: 12px 16px; border: 1.5px solid var(--border-input); border-radius: 12px; font-size: 1rem; background: var(--card); transition: border-color .15s, box-shadow .15s; }
+.search-row input[type=search]:focus { outline: none; border-color: var(--primary-fg); box-shadow: var(--focus-ring); }
+.search-row select { padding: 12px 14px; border: 1.5px solid var(--border-input); border-radius: 12px; background: var(--card); color: var(--ink); transition: border-color .15s, box-shadow .15s; }
+.search-row select:focus { outline: none; border-color: var(--primary-fg); box-shadow: var(--focus-ring); }
 .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
-.chip { border: 1px solid var(--line); background: #fff; color: var(--ink); padding: 8px 14px; border-radius: 999px; font-size: .9rem; cursor: pointer; transition: all .12s ease; white-space: nowrap; }
-.chip:hover { border-color: var(--primary); }
+.chip { border: 1px solid var(--line); background: var(--card); color: var(--ink); padding: 8px 14px; border-radius: 999px; font-size: .9rem; cursor: pointer; transition: all .12s ease; white-space: nowrap; }
+.chip:hover { border-color: var(--primary-fg); }
 .chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.chip.active { background: var(--primary); color: #fff; border-color: var(--primary-fg); }
 .chip.season.active { background: var(--accent); color: var(--ink); border-color: var(--accent); }
 .result-meta { color: var(--muted); font-size: .92rem; margin: 14px 0 14px; }
 
 /* ── Itinerary cards + timeline ── */
 .grid.itin { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
-.itinerary .back, .detail .back, .back { display: inline-block; color: var(--primary); font-weight: 700; margin-bottom: 12px; }
+.itinerary .back, .detail .back, .back { display: inline-block; color: var(--primary-fg); font-weight: 700; margin-bottom: 12px; }
 .back:hover { text-decoration: underline; }
 .timeline { list-style: none; margin: 18px 0 0; padding: 0 0 0 4px; }
 .step { display: grid; grid-template-columns: 120px 1fr; gap: 14px; padding-bottom: 18px; position: relative; }
-.step-time { font-weight: 700; color: var(--primary-dark); font-size: .92rem; padding-top: 14px; }
-.step-card { display: flex; gap: 12px; background: #fff; border: 1px solid var(--line); border-left: 5px solid var(--secondary); border-radius: 12px; padding: 12px 14px; box-shadow: var(--shadow); }
+.step-time { font-weight: 700; color: var(--primary-fg-strong); font-size: .92rem; padding-top: 14px; }
+.step-card { display: flex; gap: 12px; background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--secondary); border-radius: 12px; padding: 12px 14px; box-shadow: var(--shadow); }
 .step-card.cat-product { border-left-color: var(--accent); }
 .step-card.cat-attraction { border-left-color: #2a9d8f; }
 .step-card.cat-dish { border-left-color: #d94f3d; }

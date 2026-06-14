@@ -5,7 +5,10 @@ export default defineNuxtConfig({
 
   ssr: true,
 
-  modules: ['@nuxt/fonts', '@nuxt/image'],
+  modules: ['@nuxt/fonts', '@nuxt/image', '@nuxtjs/color-mode'],
+
+  // Dark mode: thêm class .dark vào <html>; mặc định theo OS, nút toggle ghi đè.
+  colorMode: { classSuffix: '', preference: 'system', fallback: 'light', storageKey: 'vl360-color-mode' },
 
   // Self-host font (bỏ Google CDN) — giảm latency bên thứ 3 + CLS (font-metric optimization).
   fonts: {

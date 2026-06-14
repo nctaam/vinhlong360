@@ -42,6 +42,11 @@
   --secondary: var(--leaf-600);
   --secondary-dark: var(--leaf-700);
   --tertiary: var(--river-600);
+  /* Brand foreground (dùng làm CHỮ) — light = base; dark lighten (xem .dark) để đạt WCAG trên nền tối */
+  --primary-fg: var(--primary);
+  --primary-fg-strong: var(--primary-dark);
+  --secondary-fg: var(--secondary);
+  --tertiary-fg: var(--tertiary);
 
   --bg: var(--sand-50);
   --bg-warm: var(--sand-100);
@@ -52,6 +57,7 @@
   --border: var(--sand-400);
   --border-input: #8F8676; /* viền control (input/select) — WCAG 1.4.11 ≥3:1 trên nền trắng */
   --card: var(--white);
+  --surface-translucent: rgba(255, 255, 255, .94); /* topbar/journey-bar/save-btn (blur) */
   /* alias semantic rõ nghĩa (tiện dùng dần ở component mới) */
   --surface: var(--card);
   --text: var(--ink);
@@ -137,24 +143,30 @@
   --cat-place: linear-gradient(135deg, #33646E, #4E8A96);
 }
 
-/* ── Dark mode: remap semantic tokens (Bước 4 sẽ thêm nút toggle .dark) ── */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1a1a1a;
-    --bg-warm: #242424;
-    --bg-alt: #2c2c2e;
-    --ink: #e5e5e5;
-    --muted: #9a9a9a;
-    --line: #3a3a3c;
-    --border: #48484a;
-    --border-input: #7e7e82; /* ≥3:1 trên card tối #2c2c2e */
-    --card: #2c2c2e;
-    --shadow: 0 1px 2px rgba(0, 0, 0, .2), 0 8px 24px rgba(0, 0, 0, .25);
-    --nav-hover: #3a3a3c;
-    --badge-season-bg: #3d2a1e;
-    --badge-ocop-bg: #1e3328;
-    --badge-year-bg: #2a2d2a;
-    --primary-rgb: 196, 105, 78;
-    --focus-ring: 0 0 0 3px rgba(196, 105, 78, .25);
-  }
+/* ── Dark mode: @nuxtjs/color-mode thêm class .dark vào <html>.
+   Remap semantic tokens + lighten brand-foreground cho đạt WCAG trên nền tối.
+   (preference 'system' → tự áp .dark theo OS; nút toggle ở header ghi đè.) ── */
+.dark {
+  --bg: #1a1a1a;
+  --bg-warm: #242424;
+  --bg-alt: #2c2c2e;
+  --ink: #e5e5e5;
+  --muted: #9a9a9a;
+  --line: #3a3a3c;
+  --border: #48484a;
+  --border-input: #7e7e82; /* ≥3:1 trên card tối #2c2c2e */
+  --card: #2c2c2e;
+  --surface-translucent: rgba(28, 28, 30, .92);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .2), 0 8px 24px rgba(0, 0, 0, .25);
+  --nav-hover: #3a3a3c;
+  --badge-season-bg: #3d2a1e;
+  --badge-ocop-bg: #1e3328;
+  --badge-year-bg: #2a2d2a;
+  --primary-rgb: 196, 105, 78;
+  --focus-ring: 0 0 0 3px rgba(196, 105, 78, .25);
+  /* brand-foreground lighten (đạt ≥4.5:1 trên card tối) — nút nền brand vẫn dùng --primary đậm + chữ trắng */
+  --primary-fg: #D98A6F;
+  --primary-fg-strong: #E09980;
+  --secondary-fg: #4BA97D;
+  --tertiary-fg: #6BA6B2;
 }

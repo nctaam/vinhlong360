@@ -31,6 +31,15 @@
           />
         </form>
         <div class="auth-area">
+          <ClientOnly>
+            <button class="theme-toggle" :aria-label="colorMode.value === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'" :title="colorMode.value === 'dark' ? 'Giao diện sáng' : 'Giao diện tối'" @click="toggleColorMode">
+              <span v-if="colorMode.value === 'dark'">☀️</span>
+              <span v-else>🌙</span>
+            </button>
+            <template #fallback>
+              <button class="theme-toggle" aria-label="Đổi giao diện sáng/tối">🌙</button>
+            </template>
+          </ClientOnly>
           <template v-if="isLoggedIn">
             <NotificationBell />
             <UserMenu />
@@ -111,6 +120,10 @@
 <script setup lang="ts">
 const route = useRoute()
 const { isLoggedIn } = useAuth()
+const colorMode = useColorMode()
+function toggleColorMode() {
+  colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
+}
 const searchQuery = ref('')
 const showAuth = ref(false)
 const mobileNav = ref(false)
