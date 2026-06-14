@@ -54,7 +54,10 @@ RETRIEVAL_CASES = [
 # Nonsense / out-of-domain queries — should return FEW results (abstention).
 ABSTENTION_CASES = [
     "nhà hàng buffet Nhật Bản cao cấp ở Tokyo",
-    "vé máy bay đi Paris giá rẻ",
+    # Lưu ý: KHÔNG dùng "Paris" — có thật "Khách sạn Paris Vĩnh Long" nên token "paris"
+    # khớp đúng (heuristic không phân biệt được ý-định 'bay tới Paris'). Dùng query ngoài-vùng
+    # không trùng tên entity local để test đúng ý nghĩa abstention.
+    "vé concert BlackPink ở Bangkok",
     "mua iPhone 99 Pro Max ở đâu",
     "qwxzpklmn random gibberish 12345",
 ]

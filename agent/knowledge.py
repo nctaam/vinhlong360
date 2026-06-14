@@ -148,6 +148,9 @@ _RELEVANCE_STOPWORDS = frozenset({
     "cho", "den", "tu", "ve", "mot", "cac", "nay", "do", "gia", "re", "cao",
     "dep", "ngon", "hay", "nhat", "tot", "moi", "nhieu", "it", "lon", "nho",
     "di", "an", "mua", "xem", "tim", "bao", "may", "sao", "khi", "tai", "voi",
+    # GĐ-audit: từ phân loại/thương mại quá chung (gây khớp giả: "nhà hàng"→Lệ "Hằng",
+    # "Nhà hàng X") — KHÔNG phải dấu hiệu phân biệt. Không đụng từ nội dung đặc trưng.
+    "nha", "hang", "buffet", "cap", "ve", "phong", "dat",
 })
 
 

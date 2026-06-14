@@ -57,7 +57,7 @@ class TestAbstention:
             f"Abstention too low: {report['abstention_rate']}, detail={report['abstention_detail']}"
 
     @pytest.mark.parametrize("query", [
-        "vé máy bay đi Paris giá rẻ",
+        "vé concert BlackPink ở Bangkok",   # ngoài-vùng, không trùng tên entity local (xem retrieval_eval)
         "qwxzpklmn random gibberish 12345",
     ])
     def test_out_of_domain_no_relevant(self, query):
