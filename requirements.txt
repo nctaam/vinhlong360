@@ -6,6 +6,7 @@ httpx>=0.28
 ddgs>=7.0
 cryptography>=42.0
 mcp>=1.0
+python-telegram-bot>=20
 opentelemetry-api>=1.25
 opentelemetry-sdk>=1.25
 

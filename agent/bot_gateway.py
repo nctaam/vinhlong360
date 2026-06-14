@@ -453,6 +453,9 @@ class BotGateway:
         app.run_polling(
             allowed_updates=Update.ALL_TYPES,
             drop_pending_updates=True,  # Fix conflict with stale getUpdates
+            # stop_signals=None: chạy dưới systemd/non-main-thread → PTB không cài signal
+            # handler (tránh "set_wakeup_fd only works in main thread"). systemd lo restart/stop.
+            stop_signals=None,
         )
 
     async def _tg_start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
