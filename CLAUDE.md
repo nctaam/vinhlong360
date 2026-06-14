@@ -25,7 +25,7 @@ MXH du lịch/OCOP/cộng đồng cho Vĩnh Long mới (VL+Bến Tre+Trà Vinh).
 - **B5. Mỗi task để lại hệ thống chạy được.** Không big-bang. Commit nhỏ sau mỗi task.
 - **B6. Không re-host nội dung/ảnh có bản quyền** cào từ gov/báo/mytour. Chỉ lưu tiêu đề + trích đoạn + link gốc; ảnh chỉ dùng nguồn cấp phép (Wikimedia/UGC/Pexels-Unsplash theo điều khoản).
 - **B7. Không bao giờ chạy lệnh phá dữ liệu** (`database.py --replace`, `/admin/data-quality/apply`, `/reload`) khi chưa tới đúng task cho phép trong roadmap, và luôn backup trước.
-- **B8. Tôn trọng ngân sách.** Không thêm dịch vụ trả phí, không bật vòng lặp gọi LLM nền. Mặc định free-tier.
+- **B8. Tôn trọng ngân sách.** Không thêm dịch vụ trả phí. Mặc định free-tier. **Ngoại lệ DUY NHẤT cho "vòng lặp LLM nền"** (chủ dự án duyệt 2026-06-14, kiểm soát chặt): agent tự động gọi LLM CHỈ khi đủ 3 điều kiện — (a) opt-in `AUTONOMOUS_AGENT_ENABLED=true` (OFF mặc định), (b) cap cứng/ngày qua `agent/autonomous_budget.py` (`AUTONOMOUS_AGENT_MAX_CALLS_PER_DAY`, mặc định 20; vượt cap = bỏ qua), (c) kill-switch tức thì (đổi flag = tắt). Vòng lặp LLM nền CŨ (auto-learn/discovery/promotion qua `SCHEDULER_ENABLE_AUTONOMOUS_TASKS`) VẪN tắt mặc định. KHÔNG nới các điều kiện này nếu không có chủ dự án.
 
 ## 3. Giao thức thực thi tự động (chống trôi)
 

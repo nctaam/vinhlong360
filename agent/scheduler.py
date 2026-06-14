@@ -303,6 +303,77 @@ def task_admin_digest():
         _sched_logger.error(f"digest send error: {e}")
 
 
+def _send_telegram_admins(text: str) -> bool:
+    """Gửi 1 tin Telegram tới mọi ADMIN_TELEGRAM_IDS (free, HTTP API)."""
+    import os
+    token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+    ids = [x.strip() for x in os.environ.get("ADMIN_TELEGRAM_IDS", "").split(",") if x.strip()]
+    if not token or not ids:
+        return False
+    sent = False
+    try:
+        import httpx
+        for cid in ids:
+            httpx.post(f"https://api.telegram.org/bot{token}/sendMessage",
+                       json={"chat_id": cid, "text": text, "parse_mode": "Markdown"}, timeout=15)
+            sent = True
+    except Exception as e:
+        _sched_logger.error(f"telegram send error: {e}")
+    return sent
+
+
+def task_autonomous_agent():
+    """Agent TỰ ĐỘNG gọi LLM — NGOẠI LỆ CÓ-KIỂM-SOÁT của §B8 (chủ dự án duyệt):
+    OFF mặc định; mỗi lần chạy tốn TỐI ĐA 1 lần gọi LLM (đã trừ cap cứng/ngày), gửi gợi
+    ý quản trị cho admin qua Telegram. Bỏ qua nếu tắt hoặc hết cap (kiểm soát chi phí)."""
+    import autonomous_budget as ab
+    if not ab.enabled():
+        return  # kill-switch: AUTONOMOUS_AGENT_ENABLED=false (mặc định)
+    if not ab.try_consume(1):
+        _sched_logger.warning("autonomous-agent: hết cap LLM/ngày → bỏ qua (kiểm soát chi phí)")
+        return
+
+    ctx = []
+    try:
+        import knowledge
+        s = knowledge.stats()
+        ctx.append(f"- Nội dung: {s.get('total_content', 0)}, lịch trình: {s.get('itineraries', 0)}")
+    except Exception:
+        pass
+    try:
+        from database import db
+        ph = db._ph
+        with db._conn() as conn:
+            lc = db._fetchone(conn, f"SELECT COUNT(*) AS c FROM entities WHERE type != {ph} AND confidence < 0.7", ("place",))
+            ctx.append(f"- Cần xem lại (confidence < 0.7): {lc['c'] if lc else 0}")
+    except Exception:
+        pass
+    try:
+        rf = AGENT_DIR / "data" / "reports.jsonl"
+        n = sum(1 for ln in rf.read_text(encoding="utf-8").splitlines() if ln.strip()) if rf.exists() else 0
+        ctx.append(f"- Báo cáo sai thông tin: {n}")
+    except Exception:
+        pass
+    raw = "\n".join(ctx) or "(không có dữ liệu)"
+
+    try:
+        from server import client, MODEL_MINI
+        resp = client.chat.completions.create(
+            model=MODEL_MINI, temperature=0.3, max_tokens=400,
+            messages=[
+                {"role": "system", "content": "Bạn là trợ lý quản trị vinhlong360. Đề xuất TỐI ĐA 3 việc ưu tiên xử lý, ngắn gọn, tiếng Việt, có thứ tự."},
+                {"role": "user", "content": f"Tình hình hiện tại:\n{raw}\n\nĐề xuất việc ưu tiên:"},
+            ])
+        suggestion = resp.choices[0].message.content
+    except Exception as e:
+        _sched_logger.error(f"autonomous-agent LLM error: {e}")
+        return  # LLM lỗi → không gửi (cap đã trừ; lần sau thử lại)
+
+    st = ab.status()
+    _send_telegram_admins(f"🤖 *Agent quản trị* (LLM dùng {st['used_today']}/{st['cap_per_day']} hôm nay)\n{suggestion}")
+    _sched_logger.info("autonomous-agent: đã gửi gợi ý quản trị")
+
+
 # ══════════════════════════════════════════════════
 #  SCHEDULER ENGINE
 # ══════════════════════════════════════════════════
@@ -472,6 +543,9 @@ TASKS = [
     ScheduledTask("analytics-cleanup", task_cleanup_analytics,   interval_seconds=24 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h
     # Digest quản lý MIỄN PHÍ (không LLM) — chạy bất kể AUTONOMOUS_TASKS_ENABLED; no-op nếu chưa cấu hình admin TG.
     ScheduledTask("admin-digest",      task_admin_digest,         interval_seconds=24 * 3600, run_immediately=False),  # 24h
+    # Agent tự động gọi LLM CÓ CAP (§B8 ngoại lệ kiểm soát) — task tự gate qua AUTONOMOUS_AGENT_ENABLED
+    # (off mặc định) + cap cứng/ngày. Đăng ký enabled=True nhưng no-op khi flag off.
+    ScheduledTask("autonomous-agent",  task_autonomous_agent,     interval_seconds=24 * 3600, run_immediately=False),  # 24h, capped
     # Level 6-7 tasks
     ScheduledTask("cache-warmup",      task_cache_warmup,         interval_seconds=3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),        # 1h
     ScheduledTask("agent-evolution",   task_agent_evolution,      interval_seconds=12 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
@@ -520,12 +594,21 @@ def stop_scheduler():
     _sched_logger.info("Scheduler stopped")
 
 
+def _autonomous_agent_status() -> dict:
+    try:
+        import autonomous_budget as ab
+        return ab.status()
+    except Exception:
+        return {"enabled": False}
+
+
 def scheduler_status() -> dict:
     return {
         "running": _running,
         "enabled": SCHEDULER_ENABLED,
         "run_startup_tasks": SCHEDULER_RUN_STARTUP_TASKS,
         "autonomous_tasks_enabled": AUTONOMOUS_TASKS_ENABLED,
+        "autonomous_agent": _autonomous_agent_status(),
         "tasks": [
             {
                 "name": t.name,
