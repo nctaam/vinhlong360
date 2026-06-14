@@ -156,6 +156,7 @@ class EntityCreate(BaseModel):
     season: dict | None = None
     attributes: dict = {}
     images: list[str] = []
+    source: dict | None = None  # GĐ13: cho phép khai nguồn chính thống (vd danh bạ facility — KHÔNG bịa)
 
     @field_validator("name", mode="before")
     @classmethod
@@ -283,9 +284,11 @@ async def create_entity(entity: EntityCreate):
     if db.get_entity(entity.id):
         raise HTTPException(409, f"Entity '{entity.id}' already exists")
 
+    payload = entity.model_dump()
+    src = payload.pop("source", None) or {"title": "admin", "method": "manual"}
     new_entity = {
-        **entity.model_dump(),
-        "source": {"title": "admin", "method": "manual"},
+        **payload,
+        "source": src,
         "updatedAt": datetime.now().strftime("%Y-%m-%d"),
     }
     db.upsert_entity(new_entity)

@@ -10,6 +10,7 @@
         <NuxtLink to="/admin" :class="{ active: route.path === '/admin' }">📊 Dashboard</NuxtLink>
         <NuxtLink to="/admin/entities" :class="{ active: route.path === '/admin/entities' }">📋 Entities</NuxtLink>
         <NuxtLink to="/admin/chua-phan-loai" :class="{ active: route.path === '/admin/chua-phan-loai' }">📍 Chưa phân loại</NuxtLink>
+        <NuxtLink to="/admin/danh-ba" :class="{ active: route.path === '/admin/danh-ba' }">🏛️ Danh bạ</NuxtLink>
         <NuxtLink to="/admin/lich-trinh" :class="{ active: route.path === '/admin/lich-trinh' }">🗺️ Lịch trình</NuxtLink>
         <NuxtLink to="/admin/kiem-duyet" :class="{ active: route.path === '/admin/kiem-duyet' }">🛡️ Kiểm duyệt</NuxtLink>
         <NuxtLink to="/admin/users" :class="{ active: route.path === '/admin/users' }">👥 Users</NuxtLink>

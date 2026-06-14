@@ -129,6 +129,25 @@ def test_reload_requires_admin_and_reads_db(client_mocked):
     assert r.json().get("source") == "db"
 
 
+def test_create_facility_keeps_official_source(client_mocked):
+    """Feature danh bạ: tạo facility giữ NGUỒN chính thống (không bị ghi đè 'admin') + vào /api/facilities."""
+    from database import db
+    from middleware import ADMIN_API_KEY as _ADMIN_KEY
+    hdr = {"X-Admin-Key": _ADMIN_KEY}
+    eid = "ubnd-test-danhba"
+    try:
+        r = client_mocked.post("/admin/entities", headers=hdr, json={
+            "id": eid, "type": "facility", "name": "UBND xã Test Danh Bạ", "placeId": "xa-x",
+            "attributes": {"office_kind": "ubnd", "phone": "0270 111 222", "address": "Ấp 1"},
+            "source": {"url": "https://vinhlong.gov.vn", "title": "cổng tỉnh"}})
+        assert r.status_code == 200, r.text
+        got = db.get_entity(eid)
+        assert got["source"].get("url") == "https://vinhlong.gov.vn"   # KHÔNG bị ghi đè 'admin'
+        assert got["attributes"]["office_kind"] == "ubnd"
+    finally:
+        db.delete_entity(eid)
+
+
 def test_assign_place_to_unclassified(client_mocked):
     """Feature: gán xã cho entity chưa phân loại — list unclassified + assign + validate."""
     from database import db
