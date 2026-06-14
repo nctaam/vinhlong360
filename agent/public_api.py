@@ -25,6 +25,13 @@ _place_cache: dict[str, dict] = {}
 DEFAULT_RELATIONSHIP_LIMIT = 24
 
 
+def _is_public(e: dict) -> bool:
+    """Entity được hiển thị công khai (listing/homepage): loại entity provisional /
+    chưa kiểm chứng (auto-learned). Quarantine cho public display — KB chat vẫn dùng,
+    nhưng trang công khai KHÔNG show nội dung tự-học chưa duyệt (tránh cảm giác nghiệp dư)."""
+    return e.get("status") != "provisional" and e.get("verified") is not False
+
+
 def invalidate_place_cache():
     """Xoá cache tên/khu-vực xã/phường — gọi sau /reload để tránh phục vụ tên cũ
     khi admin đổi/di chuyển place."""
@@ -97,6 +104,8 @@ async def list_entities(
         results = db.list_entities(entity_type=type, area=area, limit=limit, offset=offset)
         total = db.count_entities_filtered(entity_type=type, area=area, q=q)
 
+    # Quarantine: không hiển thị entity provisional/auto-learned chưa duyệt ở trang công khai.
+    results = [e for e in results if _is_public(e)]
     _enrich_place(results)
     return {"total": total, "entities": results}
 
