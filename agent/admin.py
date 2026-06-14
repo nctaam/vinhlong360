@@ -789,6 +789,46 @@ async def get_info_reports(limit: int = Query(100, ge=1, le=500)):
     return {"reports": items[:limit], "total": len(items)}
 
 
+@router.post("/ai/triage")
+async def ai_triage():
+    """On-demand: trợ lý LLM gợi ý ≤3 việc quản trị ưu tiên từ tình hình hiện tại.
+    Chỉ chạy KHI admin bấm (1 lần gọi LLM — KHÔNG vòng lặp nền, tôn trọng §B8).
+    Trả context thô nếu LLM không khả dụng (degrade an toàn)."""
+    ctx = []
+    try:
+        ph = db._ph
+        with db._conn() as conn:
+            lc = db._fetchone(conn, f"SELECT COUNT(*) AS c FROM entities WHERE type != {ph} AND confidence < 0.7", ("place",))
+            ctx.append(f"- Entity cần xem lại (confidence < 0.7): {lc['c'] if lc else 0}")
+    except Exception:
+        pass
+    reports = []
+    try:
+        if _INFO_REPORTS_FILE.exists():
+            for ln in _INFO_REPORTS_FILE.read_text(encoding="utf-8").splitlines():
+                if ln.strip():
+                    reports.append(json.loads(ln))
+    except Exception:
+        pass
+    ctx.append(f"- Báo cáo sai thông tin: {len(reports)}")
+    for r in reports[-5:]:
+        ctx.append(f"    · [{r.get('target_type')}] {r.get('target_id')}: {str(r.get('reason', ''))[:60]}")
+    raw = "\n".join(ctx) or "(không có dữ liệu)"
+
+    try:
+        from server import client, MODEL_MINI
+        resp = client.chat.completions.create(
+            model=MODEL_MINI, temperature=0.3, max_tokens=400,
+            messages=[
+                {"role": "system", "content": "Bạn là trợ lý quản trị của vinhlong360. Dựa trên tình hình, đề xuất TỐI ĐA 3 việc ưu tiên xử lý, ngắn gọn, tiếng Việt, có thứ tự."},
+                {"role": "user", "content": f"Tình hình hiện tại:\n{raw}\n\nĐề xuất việc ưu tiên:"},
+            ])
+        return {"ok": True, "suggestion": resp.choices[0].message.content, "context": raw}
+    except Exception as e:  # noqa: BLE001 - LLM down/budget → vẫn trả context để admin tự xử
+        return {"ok": False, "suggestion": None, "context": raw,
+                "note": "LLM không khả dụng — xem tình hình thô bên dưới.", "detail": str(e)[:120]}
+
+
 @router.get("/users")
 async def list_users(
     page: int = Query(1, ge=1),

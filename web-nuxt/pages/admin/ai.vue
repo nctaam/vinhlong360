@@ -98,8 +98,12 @@
         </button>
         <button class="btn btn-accent" @click="reload">🔄 Reload KB</button>
         <button class="btn btn-secondary" @click="fetchHealth">📊 Refresh</button>
+        <button class="btn btn-outline" :disabled="triageLoading" @click="triage">
+          {{ triageLoading ? 'Đang phân tích…' : '🤖 Gợi ý ưu tiên xử lý' }}
+        </button>
       </div>
       <p v-if="triggerResult" style="margin-top: 10px; font-size: .88rem; color: var(--muted)">{{ triggerResult }}</p>
+      <div v-if="triageOut" style="margin-top: 12px; padding: 12px; border: 1px solid rgba(0,0,0,.1); border-radius: 8px; white-space: pre-wrap; font-size: .9rem">{{ triageOut }}</div>
     </div>
 
     <!-- Response Times -->
@@ -195,6 +199,22 @@ async function triggerLearn() {
     triggerResult.value = 'Error: ' + (e.data?.detail || e.message || 'failed')
   }
   triggerLoading.value = false
+}
+
+const triageLoading = ref(false)
+const triageOut = ref('')
+async function triage() {
+  triageLoading.value = true
+  triageOut.value = ''
+  try {
+    const r = await $fetch<any>('/admin-api/ai/triage', { method: 'POST', headers: authHeaders() })
+    triageOut.value = r.ok
+      ? `🤖 ${r.suggestion}`
+      : `${r.note || 'LLM lỗi'}\n\n${r.context || ''}`
+  } catch (e: any) {
+    triageOut.value = 'Lỗi: ' + (e?.data?.detail || e?.message || 'không gọi được')
+  }
+  triageLoading.value = false
 }
 
 async function reload() {

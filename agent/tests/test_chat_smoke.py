@@ -129,6 +129,19 @@ def test_reload_requires_admin_and_reads_db(client_mocked):
     assert r.json().get("source") == "db"
 
 
+def test_admin_ai_triage_endpoint(client_mocked):
+    """On-demand agent: POST /admin/ai/triage trả 200 + context kể cả khi LLM hỏng (degrade);
+    yêu cầu admin."""
+    from middleware import ADMIN_API_KEY as _ADMIN_KEY
+    # ẩn danh bị chặn
+    assert client_mocked.post("/admin/ai/triage").status_code == 401
+    r = client_mocked.post("/admin/ai/triage", headers={"X-Admin-Key": _ADMIN_KEY})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert "context" in body          # luôn có tình hình thô
+    assert "ok" in body               # ok=True nếu LLM chạy, False nếu hỏng — đều 200
+
+
 def test_internal_endpoints_gated_in_prod(client_mocked, monkeypatch):
     """GĐ4 phụ (a): ở production, /system/*, /analytics/*, /metrics ẩn sau admin key (404 nếu thiếu);
     dev thì mở. Nuxt không gọi trực tiếp các path này."""
