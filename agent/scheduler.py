@@ -289,9 +289,18 @@ def task_admin_digest():
     except Exception:
         pass
 
+    # Cảnh báo ngân sách: nếu agent tự động bật, báo mức dùng LLM/cap (free, không gọi LLM).
+    try:
+        import autonomous_budget as ab
+        if ab.enabled():
+            st = ab.status()
+            warn = " ⚠️ GẦN CAP!" if st["remaining_today"] <= max(1, st["cap_per_day"] // 5) else ""
+            parts.append(f"• 💰 Agent LLM: {st['used_today']}/{st['cap_per_day']} hôm nay{warn}")
+    except Exception:
+        pass
+
     if not parts:
         return
-    from datetime import datetime
     text = "📊 *vinhlong360 — digest quản lý*\n" + "\n".join(parts)
     try:
         import httpx

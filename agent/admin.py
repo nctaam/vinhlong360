@@ -864,6 +864,30 @@ async def info_report_action(body: ReportActionRequest):
     return {"status": "ok", "ts": body.ts, "new_status": body.status}
 
 
+@router.get("/cost-overview")
+async def cost_overview():
+    """Bảng chi phí: chi phí LLM (cost_tracker) + ngân sách agent tự động (cap/dùng/còn).
+    Bảo vệ ngân sách <1tr/tháng khi autonomous-LLM được bật."""
+    out: dict = {"llm": {"available": False}, "agent_budget": {"enabled": False}}
+    try:
+        import autonomous_budget as ab
+        out["agent_budget"] = ab.status()
+    except Exception:
+        pass
+    try:
+        from cost_tracker import cost_attribution
+        s = cost_attribution.get_summary()
+        out["llm"] = {
+            "available": True,
+            "total_cost_usd": s.get("total_cost", 0),
+            "total_calls": s.get("count", s.get("total_calls", 0)),
+            "daily": cost_attribution.get_daily_costs(7),
+        }
+    except Exception:
+        pass
+    return out
+
+
 @router.post("/ai/triage")
 async def ai_triage():
     """On-demand: trợ lý LLM gợi ý ≤3 việc quản trị ưu tiên từ tình hình hiện tại.

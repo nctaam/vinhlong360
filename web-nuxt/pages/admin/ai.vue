@@ -106,6 +106,25 @@
       <div v-if="triageOut" style="margin-top: 12px; padding: 12px; border: 1px solid rgba(0,0,0,.1); border-radius: 8px; white-space: pre-wrap; font-size: .9rem">{{ triageOut }}</div>
     </div>
 
+    <!-- Chi phí & ngân sách -->
+    <div style="margin-bottom: 24px">
+      <h2 style="font-size: 1.1rem; margin-bottom: 10px">💰 Chi phí & ngân sách</h2>
+      <div class="stat-grid" v-if="cost">
+        <div class="stat-card">
+          <div class="stat-value">{{ cost.llm?.available ? '$' + (cost.llm.total_cost_usd || 0).toFixed(4) : '—' }}</div>
+          <div class="stat-label">LLM tích lũy</div>
+        </div>
+        <div class="stat-card" :style="{ borderColor: agentNearCap ? '#e67e22' : '' }">
+          <div class="stat-value">{{ cost.agent_budget?.enabled ? `${cost.agent_budget.used_today}/${cost.agent_budget.cap_per_day}` : 'TẮT' }}</div>
+          <div class="stat-label">Agent LLM hôm nay {{ agentNearCap ? '⚠️' : '' }}</div>
+        </div>
+      </div>
+      <p class="muted" style="font-size:.82rem; margin-top:6px">
+        Agent tự động: {{ cost?.agent_budget?.enabled ? 'BẬT' : 'TẮT (mặc định)' }} —
+        đổi qua .env AUTONOMOUS_AGENT_ENABLED + AUTONOMOUS_AGENT_MAX_CALLS_PER_DAY.
+      </p>
+    </div>
+
     <!-- Response Times -->
     <div v-if="health?.response_times" style="margin-bottom: 24px">
       <h2 style="font-size: 1.1rem; margin-bottom: 10px">Response Times</h2>
@@ -201,6 +220,15 @@ async function triggerLearn() {
   triggerLoading.value = false
 }
 
+const cost = ref<any>(null)
+const agentNearCap = computed(() => {
+  const b = cost.value?.agent_budget
+  return b?.enabled && b.remaining_today <= Math.max(1, Math.floor(b.cap_per_day / 5))
+})
+async function fetchCost() {
+  try { cost.value = await $fetch<any>('/admin-api/cost-overview', { headers: authHeaders() }) } catch { /* ignore */ }
+}
+
 const triageLoading = ref(false)
 const triageOut = ref('')
 async function triage() {
@@ -225,5 +253,5 @@ async function reload() {
   } catch { triggerResult.value = 'Reload failed' }
 }
 
-onMounted(() => fetchHealth())
+onMounted(() => { fetchHealth(); fetchCost() })
 </script>

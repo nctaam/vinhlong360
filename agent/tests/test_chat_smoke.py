@@ -129,6 +129,17 @@ def test_reload_requires_admin_and_reads_db(client_mocked):
     assert r.json().get("source") == "db"
 
 
+def test_cost_overview_endpoint(client_mocked):
+    """Feature: bảng chi phí — /admin/cost-overview trả llm + agent_budget; auth-gated."""
+    from middleware import ADMIN_API_KEY as _ADMIN_KEY
+    assert client_mocked.get("/admin/cost-overview").status_code == 401
+    r = client_mocked.get("/admin/cost-overview", headers={"X-Admin-Key": _ADMIN_KEY})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert "llm" in body and "agent_budget" in body
+    assert "enabled" in body["agent_budget"]  # off mặc định
+
+
 def test_info_report_resolve_action(client_mocked, tmp_path, monkeypatch):
     """Feature: hàng đợi báo-sai có action — resolve đổi status trong reports.jsonl."""
     import public_api
