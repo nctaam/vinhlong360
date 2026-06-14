@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'vl360-v2'
+const CACHE_VERSION = 'vl360-v3'
 const ASSET_CACHE = `${CACHE_VERSION}-assets`
 const HTML_CACHE = `${CACHE_VERSION}-html`
 const PRECACHE = ['/manifest.json', '/favicon.svg']
@@ -69,6 +69,16 @@ async function cacheFirst(request, cacheName) {
   return response
 }
 
+// Phục vụ cache ngay + cập nhật nền → ảnh tên-cố-định (/img/*) tự refresh sau 1 lần tải
+async function staleWhileRevalidate(request, cacheName) {
+  const cache = await caches.open(cacheName)
+  const cached = await cache.match(request)
+  const fetching = fetch(request)
+    .then((response) => { if (response.ok) cache.put(request, response.clone()); return response })
+    .catch(() => cached || Response.error())
+  return cached || fetching
+}
+
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return
   const url = new URL(event.request.url)
@@ -81,7 +91,12 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (isAsset(url, event.request)) {
-    event.respondWith(cacheFirst(event.request, ASSET_CACHE))
+    // /_nuxt/ = file content-hashed (bất biến) → cacheFirst; còn lại (/img/* tên cố định) → SWR
+    if (url.pathname.startsWith('/_nuxt/')) {
+      event.respondWith(cacheFirst(event.request, ASSET_CACHE))
+    } else {
+      event.respondWith(staleWhileRevalidate(event.request, ASSET_CACHE))
+    }
     return
   }
 
