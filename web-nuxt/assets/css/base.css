@@ -65,6 +65,19 @@ h1, h2, h3 { line-height: 1.2; }
 .see-all { color: var(--primary-fg); font-weight: 700; font-size: .92rem; white-space: nowrap; }
 .see-all:hover { text-decoration: underline; }
 
+/* ── Region-first tiles (trang chủ) ── */
+.regions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 720px) { .regions { grid-template-columns: 1fr; } }
+.region-tile { position: relative; min-height: 200px; border-radius: var(--radius); overflow: hidden; background-color: var(--primary); background-size: cover; background-position: center; display: flex; align-items: flex-end; color: #fff; box-shadow: var(--shadow); transition: transform .15s ease, box-shadow .15s ease; }
+.region-tile::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(43,38,34,.88) 0%, rgba(43,38,34,.4) 55%, rgba(43,38,34,.1) 100%); }
+.region-tile:hover { transform: translateY(-4px); box-shadow: 0 16px 36px rgba(43,38,34,.20); }
+.region-tile:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.region-tile-in { position: relative; padding: 18px; width: 100%; }
+.region-emoji { font-size: 1.7rem; line-height: 1; }
+.region-tile h3 { margin: 6px 0 5px; font-size: 1.3rem; font-weight: 800; letter-spacing: -.01em; }
+.region-tile p { margin: 0 0 10px; font-size: .85rem; opacity: .92; line-height: 1.45; }
+.region-cta { font-weight: 700; font-size: .9rem; }
+
 .page { max-width: var(--maxw); margin: 0 auto; padding: 28px 20px 20px; }
 .page-head h1 { margin: 0 0 6px; font-size: clamp(1.4rem, 4vw, 2rem); }
 .page-head p { margin: 0 0 4px; color: var(--muted); max-width: 720px; }

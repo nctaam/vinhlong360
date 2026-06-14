@@ -19,6 +19,30 @@
     </section>
     <WeatherBar />
 
+    <!-- Region-first: 3 vùng (region-first IA — deep-research Visit California / michi-no-eki) -->
+    <section class="block">
+      <div class="section-head">
+        <h2>🗺️ Khám phá 3 vùng</h2>
+        <NuxtLink class="see-all" to="/ban-do" no-prefetch>Xem bản đồ →</NuxtLink>
+      </div>
+      <div class="regions">
+        <NuxtLink
+          v-for="slug in areaKeys"
+          :key="slug"
+          :to="`/khu-vuc/${slug}`"
+          class="region-tile"
+          :style="{ backgroundImage: `url(/img/cat/${REGION_IMG[slug] || 'place'}.jpg)` }"
+        >
+          <div class="region-tile-in">
+            <span class="region-emoji">{{ AREA_META[slug].emoji }}</span>
+            <h3>{{ AREA_META[slug].name }}</h3>
+            <p>{{ AREA_META[slug].blurb }}</p>
+            <span class="region-cta">Khám phá →</span>
+          </div>
+        </NuxtLink>
+      </div>
+    </section>
+
     <!-- Saved recently (client-side) -->
     <ClientOnly>
       <section v-if="recentSaved.length" class="block">
@@ -219,6 +243,8 @@ const itineraries = computed(() => {
 })
 
 const areaKeys = Object.keys(AREA_META)
+// Ảnh nền 3 vùng (tái dùng minh họa category — chủ đề khớp từng tỉnh)
+const REGION_IMG: Record<string, string> = { 'vinh-long': 'attraction', 'ben-tre': 'nature', 'tra-vinh': 'history' }
 
 const areaCounts = computed(() => {
   const counts: Record<string, number> = {}

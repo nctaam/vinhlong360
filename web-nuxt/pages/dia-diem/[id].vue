@@ -25,6 +25,15 @@
     <!-- Body -->
     <div class="detail-body">
       <div class="detail-main">
+        <!-- Highlights quét nhanh (Baymard: 78% site thiếu; chống info bị chôn dưới fold) -->
+        <div v-if="hasHighlights" class="highlights">
+          <a v-if="entity.attributes?.phone" class="hl hl-action" :href="'tel:' + entity.attributes.phone">📞 Gọi</a>
+          <a v-if="zaloLink" class="hl hl-action" :href="zaloLink" target="_blank" rel="nofollow">💬 Zalo</a>
+          <a v-if="hasCoords" class="hl hl-action" href="/ban-do">🗺️ Bản đồ</a>
+          <span v-if="entity.attributes?.hours" class="hl">🕒 {{ entity.attributes.hours }}</span>
+          <span v-if="priceText" class="hl">💰 {{ priceText }}</span>
+          <span v-if="addressText" class="hl">📍 {{ addressText }}</span>
+        </div>
         <p class="lead">{{ entity.summary }}</p>
 
         <!-- Month strip -->
@@ -267,6 +276,12 @@ const buyContactUrl = computed(() => {
   const w = entity.value?.attributes?.website
   return w && String(w).startsWith('http') ? w : ''
 })
+
+// Highlights (quét nhanh đầu trang)
+const priceText = computed(() => entity.value?.attributes?.price || entity.value?.attributes?.fee || '')
+const addressText = computed(() => entity.value?.attributes?.address || entity.value?.place_name || '')
+const hasCoords = computed(() => !!normalizeCoords(entity.value?.coordinates ?? entity.value?.coords))
+const hasHighlights = computed(() => !!(entity.value?.attributes?.phone || zaloLink.value || entity.value?.attributes?.hours || priceText.value || addressText.value || hasCoords.value))
 
 const quality = computed(() => entity.value?.quality || {})
 const qualityMissingLabels = computed(() => {
