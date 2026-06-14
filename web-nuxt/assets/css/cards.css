@@ -15,6 +15,7 @@
 .cover-tag.cat-craft { background: rgba(156,61,34,.85); }
 .cover-tag.cat-accommodation { background: rgba(91,108,196,.85); }
 .cover-tag.cat-dish { background: rgba(217,79,61,.85); }
+.cover-tag.cat-itinerary { background: rgba(156,61,34,.85); }
 .card-save { position: absolute; top: 8px; right: 8px; z-index: 2; }
 .card-b { padding: 14px 15px 14px; display: flex; flex-direction: column; gap: 7px; flex: 1; }
 .card-type { font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--primary-fg); }

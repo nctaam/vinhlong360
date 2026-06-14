@@ -37,7 +37,7 @@
             <span class="region-emoji">{{ AREA_META[slug].emoji }}</span>
             <h3>{{ AREA_META[slug].name }}</h3>
             <p>{{ AREA_META[slug].blurb }}</p>
-            <span class="region-cta">Khám phá →</span>
+            <span class="region-cta">{{ areaCounts[slug] || 0 }} điểm · Khám phá →</span>
           </div>
         </NuxtLink>
       </div>
@@ -171,14 +171,6 @@
     </section>
 
     <!-- Areas -->
-    <section class="block">
-      <div class="section-head">
-        <h2>📍 Khám phá theo khu vực</h2>
-      </div>
-      <div class="region-grid">
-        <AreaCard v-for="ak in areaKeys" :key="ak" :area-key="ak" :count="areaCounts[ak] || 0" />
-      </div>
-    </section>
   </div>
 </template>
 
