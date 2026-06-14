@@ -10512,7 +10512,7 @@
       "type": "experience",
       "name": "Du Lịch Sinh Thái Cộng Đồng Thạnh Phong",
       "summary": "Hành trình khám phá vẻ đẹp bình dị nhưng đầy cuốn hút của miền Tây Nam Bộ - Vĩnh Long cùng tour du lịch Vĩnh Long độc đáo từ Vietluxtour! Ba tỉnh thành này nổi tiếng với cảnh quan sông nước hữu tình, những vườn cây trái trĩu quả, di sản văn hóa tâm linh đặc sắc và các làng nghề truyền thống lâu đời.",
-      "placeId": null,
+      "placeId": "xa-thanh-phong",
       "confidence": 0.7,
       "season": null,
       "attributes": {
@@ -26421,7 +26421,7 @@
       "type": "product",
       "name": "Cá khô đặc sản Thạnh Phong (OCOP)",
       "summary": "Các sản phẩm cá khô gồm cá đối, cá rô phi, cá chim đỏ, cá thòi lòi do Công ty Chế biến Thủy sản Phát Huy tại xã Thạnh Phong sản xuất, đạt chứng nhận OCOP. Đây là sản phẩm thủy sản chế biến đặc trưng của vùng biển Thạnh Phú.",
-      "placeId": null,
+      "placeId": "xa-thanh-phong",
       "confidence": 0.7,
       "season": null,
       "attributes": {
@@ -26477,7 +26477,7 @@
       "type": "product",
       "name": "Xoài tứ quý và cua biển Thạnh Phong (OCOP)",
       "summary": "Xoài tứ quý và cua biển do Hợp tác xã Dịch vụ Nông nghiệp Thạnh Phong cung cấp, đạt chứng nhận OCOP. Xoài tứ quý cho trái quanh năm là đặc sản trái cây, cua biển là thủy sản tươi đặc trưng vùng ven biển Thạnh Phú.",
-      "placeId": null,
+      "placeId": "xa-thanh-phong",
       "confidence": 0.7,
       "season": null,
       "attributes": {
@@ -26532,7 +26532,7 @@
       "type": "history",
       "name": "Di tích Đường Hồ Chí Minh trên Biển – Bến Thạnh Phong",
       "summary": "Bến xuất phát của những chuyến tàu không số chở vũ khí từ miền Bắc vào miền Nam trong kháng chiến chống Mỹ. Đây là căn cứ cách mạng trọng yếu trước 1975, gắn liền với tên gọi 'đầu cầu tiếp nhận vũ khí Bắc – Nam', được công nhận là di tích lịch sử quốc gia.",
-      "placeId": null,
+      "placeId": "xa-thanh-phong",
       "confidence": 0.7,
       "season": null,
       "attributes": {
@@ -26562,7 +26562,7 @@
       "type": "nature",
       "name": "Rừng ngập mặn Thạnh Phong",
       "summary": "Khu rừng ngập mặn được bảo tồn nguyên vẹn tại xã Thạnh Phong, hệ động thực vật phong phú. Du khách có thể chèo thuyền ba lá vào rừng, câu cá, bắt cua, thưởng ngoạn cảnh quan hoàng hôn yên bình.",
-      "placeId": null,
+      "placeId": "xa-thanh-phong",
       "confidence": 0.7,
       "season": null,
       "attributes": {
@@ -26592,7 +26592,7 @@
       "type": "product",
       "name": "Khô cá bông lau, cá đù đỏ, cá bống cát một nắng Thạnh Phong",
       "summary": "Các sản phẩm OCOP (đạt chứng nhận 3–4 sao) do Công ty TNHH Chế biến thủy sản Phát Huy sản xuất tại xã Thạnh Phong. Gồm khô cá bông lau, cá rô phi, cá đù đỏ, cá bống cát một nắng theo phương pháp ướp truyền thống đặc trưng địa phương.",
-      "placeId": null,
+      "placeId": "xa-thanh-phong",
       "confidence": 0.7,
       "season": null,
       "attributes": {
@@ -26646,7 +26646,7 @@
       "type": "craft_village",
       "name": "Làng nghề chế biến hải sản khô Thạnh Phong",
       "summary": "Làng nghề truyền thống chế biến và phơi khô hải sản tại xã Thạnh Phong với phương pháp ướp muối, phơi nắng truyền thống lâu đời. Sản phẩm đặc trưng gồm các loại cá khô, tôm khô được bán rộng rãi trong và ngoài tỉnh.",
-      "placeId": null,
+      "placeId": "xa-thanh-phong",
       "confidence": 0.7,
       "season": null,
       "attributes": {
@@ -27097,7 +27097,7 @@
       "type": "history",
       "name": "Đường Hồ Chí Minh trên biển - Bến xuất phát Thạnh Phong",
       "summary": "Địa điểm lịch sử ghi dấu điểm xuất phát của những con tàu không số vượt biển chở vũ khí, hàng hóa từ miền Bắc vào miền Nam trong thời kỳ kháng chiến chống Mỹ. Là di tích cách mạng quan trọng của huyện Thạnh Phú.",
-      "placeId": null,
+      "placeId": "xa-thanh-phong",
       "confidence": 0.7,
       "season": null,
       "attributes": {
@@ -49034,6 +49034,27 @@
       "legacyArea": null,
       "updatedAt": "2026-06-11T00:00:00Z",
       "created_at": "2026-06-13 04:00:38"
+    },
+    {
+      "id": "xa-thanh-phong",
+      "type": "place",
+      "name": "Xã Thạnh Phong",
+      "level": "xa",
+      "area": "ben-tre",
+      "parentId": "vinh-long",
+      "legacyArea": "Thạnh Phú",
+      "source": {
+        "title": "Nghị quyết 1687/NQ-UBTVQH15 (sáp nhập 2025)",
+        "method": "official-admin-list"
+      },
+      "confidence": 0.9,
+      "coordinates": [
+        9.879678,
+        106.610864
+      ],
+      "placeId": null,
+      "images": [],
+      "summary": "Xã Thạnh Phong là xã thuộc khu vực Bến Tre. Thông tin phân vùng hiện có trong dữ liệu: Thạnh Phú. Bản ghi này đóng vai trò mốc hành chính để liên kết các điểm đến, sản phẩm và trải nghiệm địa phương trong vinhlong360."
     }
   ],
   "relationships": [
