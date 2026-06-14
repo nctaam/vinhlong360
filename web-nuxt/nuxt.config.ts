@@ -54,8 +54,12 @@ export default defineNuxtConfig({
         { property: 'og:site_name', content: 'vinhlong360' },
         { property: 'og:locale', content: 'vi_VN' },
         { property: 'og:type', content: 'website' },
+        { property: 'og:image', content: 'https://vinhlong360.vn/img/og-default.jpg' },
+        { property: 'og:image:width', content: '1536' },
+        { property: 'og:image:height', content: '1024' },
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'twitter:site', content: '@vinhlong360' },
+        { name: 'twitter:image', content: 'https://vinhlong360.vn/img/og-default.jpg' },
       ],
       link: [
         { rel: 'dns-prefetch', href: 'https://maptiles.openmap.vn' },
