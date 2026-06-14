@@ -91,6 +91,11 @@ ZALO_OA_SECRET = os.environ.get("ZALO_OA_SECRET", "")
 
 MAP_URL = os.environ.get("MAP_URL", "https://vinhlong360.vn/map")
 
+# Quản trị qua Telegram: chỉ chat ID trong ADMIN_TELEGRAM_IDS (CSV) mới gọi được lệnh admin.
+# Bot gọi /admin/* trên agent bằng X-Admin-Key (server-side). KHÔNG bật vòng lặp LLM nền (§B8).
+ADMIN_API_KEY = os.environ.get("ADMIN_API_KEY", "")
+ADMIN_TELEGRAM_IDS = {x.strip() for x in os.environ.get("ADMIN_TELEGRAM_IDS", "").split(",") if x.strip()}
+
 
 async def _async_sleep(seconds: float):
     """Async sleep helper for retry delays."""
@@ -433,6 +438,12 @@ class BotGateway:
         app.add_handler(CommandHandler("help", self._tg_help))
         app.add_handler(CommandHandler("map", self._tg_map))
         app.add_handler(CommandHandler("reset", self._tg_reset))
+        # ── Lệnh quản trị (gated theo ADMIN_TELEGRAM_IDS) ──
+        app.add_handler(CommandHandler("admin", self._tg_admin))
+        app.add_handler(CommandHandler("thongke", self._tg_thongke))
+        app.add_handler(CommandHandler("choduyet", self._tg_choduyet))
+        app.add_handler(CommandHandler("baosai", self._tg_baosai))
+        app.add_handler(CommandHandler("reloadkb", self._tg_reloadkb))
         app.add_handler(
             MessageHandler(filters.TEXT & ~filters.COMMAND, self._tg_message)
         )
@@ -498,6 +509,87 @@ class BotGateway:
         await update.message.reply_text(
             "✅ Đã xóa lịch sử hội thoại. Bắt đầu cuộc trò chuyện mới!"
         )
+
+    # ── Quản trị (admin-only) ──────────────────────────────────────────
+
+    def _is_admin(self, update: Update) -> bool:
+        uid = str(update.effective_user.id) if update.effective_user else ""
+        return bool(ADMIN_TELEGRAM_IDS) and uid in ADMIN_TELEGRAM_IDS
+
+    async def _deny(self, update: Update):
+        await update.message.reply_text("⛔ Lệnh quản trị chỉ dành cho admin.")
+
+    async def _admin_api(self, method: str, path: str, **kwargs):
+        """Gọi /admin/* (hoặc /reload) trên agent với X-Admin-Key. Trả JSON hoặc ném lỗi."""
+        headers = {"X-Admin-Key": ADMIN_API_KEY}
+        async with httpx.AsyncClient(timeout=60) as client:
+            r = await client.request(method, f"{self.agent_url}{path}", headers=headers, **kwargs)
+            r.raise_for_status()
+            return r.json()
+
+    async def _tg_admin(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        if not self._is_admin(update):
+            return await self._deny(update)
+        await update.message.reply_text(
+            "🛠 *Quản trị vinhlong360*\n"
+            "/thongke — số liệu tri thức (entities/quan hệ/cần xem lại)\n"
+            "/choduyet — bài cộng đồng chờ duyệt\n"
+            "/baosai — báo cáo sai thông tin gần đây\n"
+            "/reloadkb — nạp lại tri thức từ DB",
+            parse_mode="Markdown")
+
+    async def _tg_thongke(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        if not self._is_admin(update):
+            return await self._deny(update)
+        try:
+            s = await self._admin_api("GET", "/admin/stats")
+            await update.message.reply_text(
+                f"📊 *Thống kê tri thức*\n"
+                f"• Entities: {s.get('total_entities', 0)}\n"
+                f"• Địa điểm: {s.get('total_places', 0)}\n"
+                f"• Quan hệ: {s.get('total_relationships', 0)}\n"
+                f"• Lịch trình: {s.get('total_itineraries', 0)}\n"
+                f"• Cần xem lại (conf<0.7): {s.get('low_confidence', 0)}",
+                parse_mode="Markdown")
+        except Exception as e:  # noqa: BLE001
+            await update.message.reply_text(f"⚠️ Lỗi lấy thống kê: {e}")
+
+    async def _tg_choduyet(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        if not self._is_admin(update):
+            return await self._deny(update)
+        try:
+            m = await self._admin_api("GET", "/admin/moderation/stats")
+            await update.message.reply_text(
+                f"🧐 *Kiểm duyệt cộng đồng*\n• Chờ duyệt: {m.get('pending', 0)}\n"
+                f"Mở /admin/kiem-duyet trên web để xử lý.", parse_mode="Markdown")
+        except Exception as e:  # noqa: BLE001
+            await update.message.reply_text(f"⚠️ Lỗi (UGC cần Postgres?): {e}")
+
+    async def _tg_baosai(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        if not self._is_admin(update):
+            return await self._deny(update)
+        try:
+            data = await self._admin_api("GET", "/admin/info-reports?limit=5")
+            reports = data.get("reports", [])
+            if not reports:
+                return await update.message.reply_text("✅ Không có báo cáo sai thông tin nào.")
+            lines = [f"⚠️ *Báo sai gần đây* (tổng {data.get('total', 0)}):"]
+            for r in reports:
+                lines.append(f"• [{r.get('target_type')}] {r.get('target_id')} — {r.get('reason', '')[:60]}")
+            await update.message.reply_text("\n".join(lines), parse_mode="Markdown")
+        except Exception as e:  # noqa: BLE001
+            await update.message.reply_text(f"⚠️ Lỗi lấy báo sai: {e}")
+
+    async def _tg_reloadkb(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        if not self._is_admin(update):
+            return await self._deny(update)
+        try:
+            await update.message.reply_text("⏳ Đang nạp lại tri thức từ DB…")
+            res = await self._admin_api("POST", "/reload")
+            await update.message.reply_text(
+                f"✅ Đã reload: {res.get('entities', '?')} entities (nguồn: {res.get('source', '?')})")
+        except Exception as e:  # noqa: BLE001
+            await update.message.reply_text(f"⚠️ Reload lỗi: {e}")
 
     async def _tg_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle incoming text messages."""
@@ -877,6 +969,9 @@ if __name__ == "__main__":
     if not HAS_TELEGRAM and TELEGRAM_TOKEN:
         print("            (token set but python-telegram-bot not installed)")
     print(f"  Zalo:     {'configured' if ZALO_OA_ID else 'disabled (set ZALO_OA_ID, ZALO_OA_SECRET)'}")
+    _admin_state = (f"{len(ADMIN_TELEGRAM_IDS)} chat ID" if ADMIN_TELEGRAM_IDS
+                    else "disabled (set ADMIN_TELEGRAM_IDS=<chat_id,...>)")
+    print(f"  Admin TG: {_admin_state}{'' if ADMIN_API_KEY else '  ⚠ thiếu ADMIN_API_KEY'}")
     print(f"  API:      http://localhost:8361")
     print("=" * 55)
 
