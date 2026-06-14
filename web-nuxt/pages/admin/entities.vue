@@ -84,6 +84,22 @@
               <button class="btn btn-secondary btn-sm" :disabled="!newImage.trim()" @click="addImage">Thêm ảnh</button>
             </div>
           </div>
+
+          <!-- Quản lý quan hệ (chỉ khi sửa) -->
+          <div v-if="editingEntity" class="img-mgr">
+            <strong style="font-size:.9rem">Quan hệ ({{ rels.length }})</strong>
+            <div v-for="(r, i) in rels" :key="i" class="img-row">
+              <span class="img-url">{{ r.type }} → {{ r.target_name || r.source_name || r.to_id }}</span>
+              <button class="btn-danger btn-sm" @click="removeRel(r)">Xóa</button>
+            </div>
+            <div style="display:flex; gap:6px; margin-top:6px">
+              <select v-model="newRel.type" class="input" style="flex:0 0 130px">
+                <option v-for="t in relTypes" :key="t" :value="t">{{ t }}</option>
+              </select>
+              <input v-model="newRel.to_id" class="input" placeholder="ID entity đích" @keyup.enter="addRel" />
+              <button class="btn btn-secondary btn-sm" :disabled="!newRel.to_id.trim()" @click="addRel">Thêm</button>
+            </div>
+          </div>
         </div>
         <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px">
           <button class="btn btn-outline" @click="showModal = false">Hủy</button>
@@ -143,7 +159,38 @@ function openEdit(e: any) {
   form.value = { id: e.id, name: e.name, type: e.type, placeId: e.placeId || '', summary: e.summary || '',
                  confidence: e.confidence || 0.8, images: Array.isArray(e.images) ? [...e.images] : [] }
   newImage.value = ''
+  newRel.value = { to_id: '', type: 'related_to' }
+  fetchRels(e.id)
   showModal.value = true
+}
+
+// ── Quản lý quan hệ ──
+const relTypes = ['related_to', 'near', 'produced_in', 'located_in', 'associated_with', 'part_of', 'hosts']
+const rels = ref<any[]>([])
+const newRel = ref<{ to_id: string; type: string }>({ to_id: '', type: 'related_to' })
+async function fetchRels(id: string) {
+  rels.value = []
+  try {
+    const r = await $fetch<any>(`/api/entities/${id}/relationships?limit=100`)
+    rels.value = r.relationships || []
+  } catch { /* ignore */ }
+}
+async function addRel() {
+  const to = newRel.value.to_id.trim()
+  if (!to || !editingEntity.value) return
+  try {
+    await $fetch('/admin-api/relationships', { method: 'POST', headers: authHeaders(),
+      body: { from_id: form.value.id, to_id: to, type: newRel.value.type } })
+    newRel.value.to_id = ''
+    await fetchRels(form.value.id)
+  } catch (e: any) { showToast(e?.data?.detail || 'Thêm quan hệ lỗi (id đích tồn tại?)', 'error') }
+}
+async function removeRel(r: any) {
+  const params = new URLSearchParams({ from_id: r.from_id, to_id: r.to_id, type: r.type })
+  try {
+    await $fetch(`/admin-api/relationships?${params}`, { method: 'DELETE', headers: authHeaders() })
+    await fetchRels(form.value.id)
+  } catch { showToast('Xóa quan hệ lỗi', 'error') }
 }
 
 async function saveEntity() {

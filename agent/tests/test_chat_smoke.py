@@ -129,6 +129,31 @@ def test_reload_requires_admin_and_reads_db(client_mocked):
     assert r.json().get("source") == "db"
 
 
+def test_relationship_management(client_mocked):
+    """Feature: quản lý quan hệ — add (POST) + list (/api) + remove (DELETE)."""
+    from database import db
+    from middleware import ADMIN_API_KEY as _ADMIN_KEY
+    hdr = {"X-Admin-Key": _ADMIN_KEY}
+    ids = ["rel-from", "rel-to"]
+    try:
+        for i in ids:
+            db.upsert_entity({"id": i, "type": "attraction", "name": f"Rel {i}", "placeId": "p-x"})
+        # add
+        r = client_mocked.post("/admin/relationships", headers=hdr,
+                               json={"from_id": "rel-from", "to_id": "rel-to", "type": "related_to"})
+        assert r.status_code == 200, r.text
+        lst = client_mocked.get("/api/entities/rel-from/relationships").json()
+        assert any(x["type"] == "related_to" and x["to_id"] == "rel-to" for x in lst["relationships"])
+        # remove
+        d = client_mocked.delete("/admin/relationships?from_id=rel-from&to_id=rel-to&type=related_to", headers=hdr)
+        assert d.status_code == 200
+        lst2 = client_mocked.get("/api/entities/rel-from/relationships").json()
+        assert not any(x["to_id"] == "rel-to" for x in lst2["relationships"])
+    finally:
+        for i in ids:
+            db.delete_entity(i)
+
+
 def test_entity_image_management(client_mocked):
     """Feature: quản lý ảnh entity — add (validate URL) + remove theo index."""
     from database import db
