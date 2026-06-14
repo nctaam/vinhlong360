@@ -46,6 +46,19 @@ if USE_PG:
     import psycopg2.extras
 
 
+# Bbox vùng VL+Bến Tre+Trà Vinh — guard validate toạ độ geocode (chống khớp nhầm tỉnh khác)
+_REGION_BBOX = (9.2, 10.65, 105.6, 106.95)  # lat_min, lat_max, lng_min, lng_max
+
+
+def _coords_in_region(c) -> bool:
+    """True nếu [lat, lng] nằm trong vùng 3 tỉnh. Toạ độ ngoài vùng = geocode sai → loại."""
+    try:
+        lat, lng = float(c[0]), float(c[1])
+    except (TypeError, IndexError, ValueError):
+        return False
+    return _REGION_BBOX[0] <= lat <= _REGION_BBOX[1] and _REGION_BBOX[2] <= lng <= _REGION_BBOX[3]
+
+
 # ══════════════════════════════════════════════════
 #  DATABASE CLASS
 # ══════════════════════════════════════════════════
@@ -242,6 +255,10 @@ class Database:
         # GĐ-audit: chấp nhận alias legacy "coords" để ETL/auto_learn không mất toạ độ
         # đã geocode (nhiều path ghi entity["coords"] thay vì "coordinates").
         coords_val = entity.get("coordinates") or entity.get("coords")
+        # Guard geocode: bỏ toạ độ NGOÀI vùng VL+Bến Tre+Trà Vinh (crawler/geocoder hay
+        # khớp nhầm tên → pin sai tỉnh). Thà null còn hơn sai (xem fix data 2026-06-14).
+        if coords_val and not _coords_in_region(coords_val):
+            coords_val = None
         updated = entity.get("updatedAt", datetime.now().strftime("%Y-%m-%d"))
 
         with self._conn() as conn:
