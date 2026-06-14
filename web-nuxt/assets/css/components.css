@@ -14,7 +14,7 @@
 .btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
 
 .btn-accent { background: var(--accent); color: var(--ink); }
-.btn-accent:hover:not(:disabled) { background: var(--accent-dark); color: #fff; }
+.btn-accent:hover:not(:disabled) { background: var(--accent-dark); color: var(--ink); }
 
 .btn-secondary { background: var(--secondary); color: #fff; }
 .btn-secondary:hover:not(:disabled) { background: var(--secondary-dark); }
@@ -35,7 +35,7 @@
 /* ── Inputs ── */
 .input, .textarea, .select {
   width: 100%; padding: 12px 16px;
-  border: 1.5px solid var(--line); border-radius: 10px;
+  border: 1.5px solid var(--border-input); border-radius: 10px;
   font-size: .95rem; background: #fff; color: var(--ink);
   transition: border-color .15s, box-shadow .15s;
   min-height: 44px;
@@ -107,7 +107,7 @@
 }
 .toast.success { background: var(--secondary); }
 .toast.error { background: #D94F3D; }
-.toast.warning { background: var(--accent-dark); color: #fff; }
+.toast.warning { background: var(--accent-dark); color: var(--ink); }
 
 @keyframes toastIn { from { opacity: 0; transform: translateY(12px); } }
 @keyframes toastOut { to { opacity: 0; transform: translateY(-8px); } }

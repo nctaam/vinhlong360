@@ -2,9 +2,9 @@
 .controls { margin: 18px 0 8px; }
 .control-label { font-size: .8rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin: 14px 0 8px; }
 .search-row { display: flex; gap: 10px; flex-wrap: wrap; }
-.search-row input[type=search] { flex: 1 1 260px; padding: 12px 16px; border: 1.5px solid var(--line); border-radius: 12px; font-size: 1rem; background: #fff; transition: border-color .15s, box-shadow .15s; }
+.search-row input[type=search] { flex: 1 1 260px; padding: 12px 16px; border: 1.5px solid var(--border-input); border-radius: 12px; font-size: 1rem; background: #fff; transition: border-color .15s, box-shadow .15s; }
 .search-row input[type=search]:focus { outline: none; border-color: var(--primary); box-shadow: var(--focus-ring); }
-.search-row select { padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink); transition: border-color .15s, box-shadow .15s; }
+.search-row select { padding: 12px 14px; border: 1.5px solid var(--border-input); border-radius: 12px; background: #fff; color: var(--ink); transition: border-color .15s, box-shadow .15s; }
 .search-row select:focus { outline: none; border-color: var(--primary); box-shadow: var(--focus-ring); }
 .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .chip { border: 1px solid var(--line); background: #fff; color: var(--ink); padding: 8px 14px; border-radius: 999px; font-size: .9rem; cursor: pointer; transition: all .12s ease; white-space: nowrap; }
