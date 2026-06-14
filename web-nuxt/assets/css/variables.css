@@ -1,39 +1,108 @@
-:root {
-  /* ── Brand palette (Vĩnh Long + Trà Vinh + Bến Tre) ── */
-  --primary: #9C3D22;
-  --primary-dark: #7A2E18;
-  --primary-light: #C4694E;
-  --accent: #E8A33D;
-  --accent-dark: #C4872A;
-  --secondary: #2E7D5B;
-  --secondary-dark: #1F5C41;
-  --tertiary: #33646E;
+/* ============================================================
+   DESIGN TOKENS — 3 tầng (primitive → semantic → component)
+   Xem docs/design-system-plan.md. Giữ alias cũ để không vỡ component.
+   ============================================================ */
 
-  /* ── Neutral ── */
-  --bg: #FAF4E8;
-  --bg-warm: #F5EDD9;
-  --bg-alt: #F0EBE0;
-  --ink: #2B2622;
-  --muted: #6B7B73;
-  --line: #E6E0D4;
-  --border: #D9D3C7;
-  --card: #FFFFFF;
-  --shadow: 0 1px 2px rgba(156, 61, 34, .06), 0 8px 24px rgba(156, 61, 34, .07);
-  --radius: 16px;
-  --maxw: 1140px;
+:root {
+  /* ── TẦNG 1: PRIMITIVE — thang màu thô, đặt tên theo cảnh quan Tây Nam Bộ ── */
+  /* Clay (gạch nung Mang Thít) */
+  --clay-50:  #F7E9E3;
+  --clay-100: #EFD2C7;
+  --clay-400: #C4694E;
+  --clay-600: #9C3D22;
+  --clay-700: #7A2E18;
+  --clay-900: #4A1C0E;
+  /* Amber (đặc sản / nắng) */
+  --amber-100: #FAEBD0;
+  --amber-500: #E8A33D;
+  --amber-600: #C4872A;
+  /* Leaf (miệt vườn / dừa) */
+  --leaf-100: #E7F3EC;
+  --leaf-600: #2E7D5B;
+  --leaf-700: #1F5C41;
+  /* River (sông nước phù sa) */
+  --river-100: #DCEAEC;
+  --river-600: #33646E;
+  /* Sand (nền ấm) + Ink (chữ) — neutral */
+  --sand-50:  #FAF4E8;
+  --sand-100: #F5EDD9;
+  --sand-200: #F0EBE0;
+  --sand-300: #E6E0D4;
+  --sand-400: #D9D3C7;
+  --ink-700:  #6B7B73;
+  --ink-900:  #2B2622;
+  --white:    #FFFFFF;
+
+  /* ── TẦNG 2: SEMANTIC — alias ngữ nghĩa (giữ tên cũ để tương thích) ── */
+  --primary: var(--clay-600);
+  --primary-dark: var(--clay-700);
+  --primary-light: var(--clay-400);
+  --accent: var(--amber-500);
+  --accent-dark: var(--amber-600);
+  --secondary: var(--leaf-600);
+  --secondary-dark: var(--leaf-700);
+  --tertiary: var(--river-600);
+
+  --bg: var(--sand-50);
+  --bg-warm: var(--sand-100);
+  --bg-alt: var(--sand-200);
+  --ink: var(--ink-900);
+  --muted: var(--ink-700);
+  --line: var(--sand-300);
+  --border: var(--sand-400);
+  --card: var(--white);
+  /* alias semantic rõ nghĩa (tiện dùng dần ở component mới) */
+  --surface: var(--card);
+  --text: var(--ink);
+  --text-muted: var(--muted);
+
   --primary-rgb: 156, 61, 34;
   --focus-ring: 0 0 0 3px rgba(156, 61, 34, .15);
+  --shadow: 0 1px 2px rgba(156, 61, 34, .06), 0 8px 24px rgba(156, 61, 34, .07);
 
-  /* ── Design tokens ── */
+  /* ── Typography scale (base 16px) ── */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-display: var(--font-sans); /* Bước 3 có thể đổi sang display font có dấu đẹp */
+  --text-xs:   .75rem;    /* 12 */
+  --text-sm:   .875rem;   /* 14 */
+  --text-base: 1rem;      /* 16 */
+  --text-lg:   1.125rem;  /* 18 */
+  --text-xl:   1.375rem;  /* 22 */
+  --text-2xl:  1.75rem;   /* 28 */
+  --text-3xl:  2.25rem;   /* 36 */
+  --leading-tight:   1.2;
+  --leading-snug:    1.35;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.7;
+  --weight-normal: 400;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
+
+  /* ── Spacing scale (lưới 8pt, base 4px) ── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ── Radius / motion / elevation / z-index ── */
+  --radius: 16px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+  --maxw: 1140px;
   --duration-fast: .12s;
   --duration-normal: .18s;
   --duration-slow: .3s;
   --ease-out: cubic-bezier(.2, .8, .2, 1);
   --ease-bounce: cubic-bezier(.34, 1.56, .64, 1);
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-full: 999px;
   --shadow-sm: 0 1px 3px rgba(0,0,0,.05);
   --shadow-md: 0 4px 12px rgba(0,0,0,.08);
   --shadow-lg: 0 12px 32px rgba(0,0,0,.12);
@@ -45,11 +114,11 @@
 
   /* ── Badge colors ── */
   --badge-season-bg: #fbe7da;
-  --badge-ocop-bg: #e7f3ec;
+  --badge-ocop-bg: var(--leaf-100);
   --badge-year-bg: #eef1ef;
   --nav-hover: #f0ece2;
 
-  /* ── Legacy aliases ── */
+  /* ── Legacy aliases (giữ tới khi bỏ frontend legacy) ── */
   --green: var(--secondary);
   --green-dark: var(--secondary-dark);
   --orange: var(--accent);
@@ -67,6 +136,7 @@
   --cat-place: linear-gradient(135deg, #33646E, #4E8A96);
 }
 
+/* ── Dark mode: remap semantic tokens (Bước 4 sẽ thêm nút toggle .dark) ── */
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #1a1a1a;
