@@ -64,12 +64,12 @@
   --text-muted: var(--muted);
 
   --primary-rgb: 156, 61, 34;
-  --focus-ring: 0 0 0 3px rgba(156, 61, 34, .15);
-  --shadow: 0 1px 2px rgba(156, 61, 34, .06), 0 8px 24px rgba(156, 61, 34, .07);
+  --focus-ring: 0 0 0 4px rgba(156, 61, 34, .12);
+  --shadow: 0 1px 3px rgba(0, 0, 0, .04), 0 6px 20px rgba(0, 0, 0, .06);
 
-  /* ── Typography scale (base 16px) ── */
-  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-display: var(--font-sans); /* Bước 3 có thể đổi sang display font có dấu đẹp */
+  /* ── Typography scale (Apple HIG-inspired, base 16px) ── */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-display: var(--font-sans);
   --text-xs:   .75rem;    /* 12 */
   --text-sm:   .875rem;   /* 14 */
   --text-base: 1rem;      /* 16 */
@@ -77,14 +77,18 @@
   --text-xl:   1.375rem;  /* 22 */
   --text-2xl:  1.75rem;   /* 28 */
   --text-3xl:  2.25rem;   /* 36 */
-  --leading-tight:   1.2;
-  --leading-snug:    1.35;
+  --text-4xl:  2.75rem;   /* 44 — Apple-style display heading */
+  --leading-tight:   1.15;
+  --leading-snug:    1.3;
   --leading-normal:  1.5;
-  --leading-relaxed: 1.7;
+  --leading-relaxed: 1.65;
   --weight-normal: 400;
+  --weight-medium: 500;
   --weight-semibold: 600;
   --weight-bold: 700;
   --weight-extrabold: 800;
+  --tracking-tight: -0.022em;
+  --tracking-tighter: -0.032em;
 
   /* ── Spacing scale (lưới 8pt, base 4px) ── */
   --space-1:  4px;
@@ -98,21 +102,23 @@
   --space-12: 48px;
   --space-16: 64px;
 
-  /* ── Radius / motion / elevation / z-index ── */
-  --radius: 16px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  /* ── Radius / motion / elevation / z-index (Apple HIG) ── */
+  --radius: 20px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
   --radius-full: 999px;
   --maxw: 1140px;
-  --duration-fast: .12s;
-  --duration-normal: .18s;
-  --duration-slow: .3s;
+  --duration-fast: .15s;
+  --duration-normal: .25s;
+  --duration-slow: .4s;
   --ease-out: cubic-bezier(.2, .8, .2, 1);
+  --ease-spring: cubic-bezier(.34, 1.3, .64, 1);
   --ease-bounce: cubic-bezier(.34, 1.56, .64, 1);
-  --shadow-sm: 0 1px 3px rgba(0,0,0,.05);
-  --shadow-md: 0 4px 12px rgba(0,0,0,.08);
-  --shadow-lg: 0 12px 32px rgba(0,0,0,.12);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.03);
+  --shadow-md: 0 2px 8px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06);
+  --shadow-lg: 0 4px 12px rgba(0,0,0,.06), 0 20px 48px rgba(0,0,0,.1);
   --z-dropdown: 50;
   --z-sticky: 100;
   --z-overlay: 200;
@@ -147,18 +153,18 @@
    Remap semantic tokens + lighten brand-foreground cho đạt WCAG trên nền tối.
    (preference 'system' → tự áp .dark theo OS; nút toggle ở header ghi đè.) ── */
 .dark {
-  --bg: #1a1a1a;
-  --bg-warm: #242424;
+  --bg: #000000;
+  --bg-warm: #1c1c1e;
   --bg-alt: #2c2c2e;
-  --ink: #e5e5e5;
-  --muted: #9a9a9a;
-  --line: #3a3a3c;
+  --ink: #f5f5f7;
+  --muted: #98989d;
+  --line: #38383a;
   --border: #48484a;
-  --border-input: #7e7e82; /* ≥3:1 trên card tối #2c2c2e */
-  --card: #2c2c2e;
-  --surface-translucent: rgba(28, 28, 30, .92);
-  --shadow: 0 1px 2px rgba(0, 0, 0, .2), 0 8px 24px rgba(0, 0, 0, .25);
-  --nav-hover: #3a3a3c;
+  --border-input: #7e7e82;
+  --card: #1c1c1e;
+  --surface-translucent: rgba(28, 28, 30, .88);
+  --shadow: 0 1px 3px rgba(0, 0, 0, .3), 0 8px 32px rgba(0, 0, 0, .35);
+  --nav-hover: #2c2c2e;
   --badge-season-bg: #3d2a1e;
   --badge-ocop-bg: #1e3328;
   --badge-year-bg: #2a2d2a;
