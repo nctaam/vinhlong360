@@ -60,5 +60,19 @@ useSeoMeta({
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl('/tim-kiem') }],
   meta: [{ name: 'robots', content: 'noindex,follow' }],
+  script: [{
+    type: 'application/ld+json',
+    innerHTML: JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'vinhlong360',
+      url: 'https://vinhlong360.vn',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: { '@type': 'EntryPoint', urlTemplate: 'https://vinhlong360.vn/tim-kiem?q={search_term_string}' },
+        'query-input': 'required name=search_term_string',
+      },
+    }),
+  }],
 })
 </script>

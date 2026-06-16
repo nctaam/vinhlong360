@@ -7,11 +7,16 @@
 .search-row select { padding: 12px 14px; border: 1.5px solid var(--border-input); border-radius: 12px; background: var(--card); color: var(--ink); transition: border-color .15s, box-shadow .15s; }
 .search-row select:focus { outline: none; border-color: var(--primary-fg); box-shadow: var(--focus-ring); }
 .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
-.chip { border: 1px solid var(--line); background: var(--card); color: var(--ink); padding: 8px 14px; border-radius: 999px; font-size: .9rem; cursor: pointer; transition: all .12s ease; white-space: nowrap; }
+.chip { border: 1px solid var(--line); background: var(--card); color: var(--ink); padding: 8px 14px; border-radius: 999px; font-size: .9rem; cursor: pointer; transition: all .12s ease; white-space: nowrap; display: inline-flex; align-items: center; min-height: 44px; }
 .chip:hover { border-color: var(--primary-fg); }
 .chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .chip.active { background: var(--primary); color: #fff; border-color: var(--primary-fg); }
 .chip.season.active { background: var(--accent); color: var(--ink); border-color: var(--accent); }
+@media (max-width: 840px) {
+  .chip-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 4px; }
+  .chip-row::-webkit-scrollbar { display: none; }
+  .chip-row.wrap-mobile { flex-wrap: wrap; overflow-x: visible; }
+}
 .result-meta { color: var(--muted); font-size: .92rem; margin: 14px 0 14px; }
 
 /* ── Itinerary cards + timeline ── */

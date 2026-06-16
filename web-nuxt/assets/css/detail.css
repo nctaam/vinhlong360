@@ -261,6 +261,7 @@ a.hl:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* ── Map ── */
 .map-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+@media (max-width: 840px) { .map-filters { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 4px; } .map-filters::-webkit-scrollbar { display: none; } }
 #mapContainer { height: 560px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); background: #e8e4d8; }
 @media (max-width: 768px) { #mapContainer { height: 400px; } }
 @media (max-width: 480px) { #mapContainer { height: 300px; } }

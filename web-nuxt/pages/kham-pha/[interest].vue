@@ -144,22 +144,22 @@ useHead({
   link: [{ rel: 'canonical', href: canonicalUrl(`/kham-pha/${interest}`) }],
 })
 
-useHead({
+useHead(() => ({
   script: [{
     type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'CollectionPage',
-      name: `${interestMeta.value.label} — Khám phá miền Tây`,
-      description: interestMeta.value.description,
-      url: `https://vinhlong360.vn/kham-pha/${interest}`,
-    }),
+    innerHTML: JSON.stringify(itemListJsonLd(
+      `${interestMeta.value.label} — Khám phá miền Tây`,
+      interestMeta.value.description,
+      `/kham-pha/${interest}`,
+      filtered.value,
+    )),
   }],
-})
+}))
 </script>
 
 <style scoped>
 .interest-nav { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+@media (max-width: 840px) { .interest-nav { flex-wrap: wrap; overflow-x: visible; } }
 .related-section { margin-top: 32px; }
 .related-section h2 { font-size: 1.1rem; margin: 0 0 12px; }
 .related-links { display: flex; gap: 8px; }

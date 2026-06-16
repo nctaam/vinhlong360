@@ -17,14 +17,14 @@
     <div v-if="wards.length" class="area-links">
       <h2>Xã / phường ({{ wards.length }})</h2>
       <p class="muted" style="margin:4px 0 8px; font-size:.9rem">Mỗi xã/phường có trang riêng: du lịch · lưu trú · đặc sản · danh bạ hành chính.</p>
-      <div class="chip-row" style="margin-top: 4px">
+      <div class="chip-row wrap-mobile" style="margin-top: 4px">
         <NuxtLink v-for="w in wards" :key="w.id" :to="`/xa-phuong/${w.id}`" class="chip">{{ w.name }}</NuxtLink>
       </div>
     </div>
 
     <div v-if="areaMeta" class="area-links">
       <h2>Khám phá thêm {{ areaMeta.name }}</h2>
-      <div class="chip-row" style="margin-top: 8px">
+      <div class="chip-row wrap-mobile" style="margin-top: 8px">
         <NuxtLink :to="`/du-lich?type=experience&mua=all`" class="chip">🌾 Trải nghiệm</NuxtLink>
         <NuxtLink :to="`/san-pham`" class="chip">🍊 Sản phẩm</NuxtLink>
         <NuxtLink :to="`/luu-tru`" class="chip">🏡 Lưu trú</NuxtLink>
