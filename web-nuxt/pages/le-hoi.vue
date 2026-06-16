@@ -226,10 +226,10 @@ useSeoMeta({
 
 <style>
 .lehoi-badge {
-  background: #8b2500;
+  background: var(--primary-dark);
 }
 .lehoi-dot {
-  background: #8b2500 !important;
+  background: var(--primary-dark) !important;
 }
 .event-lunar {
   font-style: italic;

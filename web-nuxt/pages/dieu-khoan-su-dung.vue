@@ -42,10 +42,10 @@ useSeoMeta({
 </script>
 
 <style scoped>
-.legal-page { max-width: 760px; margin: 0 auto; padding: 32px 20px 64px; line-height: 1.7; }
-.legal-page h1 { font-size: 1.8rem; margin-bottom: 4px; }
-.legal-page h2 { font-size: 1.15rem; margin: 28px 0 8px; }
-.legal-updated { color: var(--text-muted, #888); font-size: .9rem; margin-bottom: 20px; }
-.legal-page ul { padding-left: 20px; }
-.legal-page li { margin: 6px 0; }
+.legal-page { max-width: 760px; margin: 0 auto; padding: var(--space-8) var(--space-5) var(--space-16); line-height: var(--leading-relaxed); }
+.legal-page h1 { font-size: var(--text-2xl); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); margin-bottom: var(--space-1); }
+.legal-page h2 { font-size: var(--text-lg); font-weight: var(--weight-semibold); margin: var(--space-8) 0 var(--space-2); }
+.legal-updated { color: var(--muted); font-size: var(--text-sm); margin-bottom: var(--space-5); }
+.legal-page ul { padding-left: var(--space-5); }
+.legal-page li { margin: var(--space-2) 0; }
 </style>

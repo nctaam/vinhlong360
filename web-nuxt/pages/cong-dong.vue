@@ -351,17 +351,17 @@ useHead({
 <style scoped>
 .report-entity-card {
   display: grid;
-  gap: 12px;
-  margin-bottom: 16px;
-  padding: 16px;
-  border: 1px solid #f3c9b1;
-  border-radius: 8px;
-  background: #fff8f2;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--clay-100);
+  border-radius: var(--radius-md);
+  background: var(--clay-50);
 }
-.report-entity-card h2 { margin: 2px 0 4px; font-size: 1.05rem; }
-.report-entity-card p { margin: 0; color: var(--muted); }
-.report-kicker { font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; font-weight: 800; color: #9a5b00 !important; }
-.report-form-inline { display: grid; gap: 10px; }
-.report-reasons { display: flex; flex-wrap: wrap; gap: 6px; }
+.report-entity-card h2 { margin: 2px 0 var(--space-1); font-size: var(--text-base); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); }
+.report-entity-card p { margin: 0; color: var(--muted); font-size: var(--text-sm); }
+.report-kicker { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .04em; font-weight: var(--weight-extrabold); color: var(--accent-dark); }
+.report-form-inline { display: grid; gap: var(--space-3); }
+.report-reasons { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .report-form-inline .btn { justify-self: start; }
 </style>
