@@ -276,22 +276,50 @@
   background: var(--primary); color: #fff; border-color: var(--primary-fg);
 }
 
-/* ── Save / Favorite button ── */
-.save-btn { display: inline-flex; align-items: center; gap: 5px; background: var(--surface-translucent); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: .88rem; font-weight: 600; color: var(--ink); backdrop-filter: blur(4px); transition: all .15s; }
-.save-btn:hover { background: var(--card); border-color: var(--primary-fg); }
-.save-btn.saved { background: var(--badge-season-bg); border-color: var(--accent); color: var(--primary-fg); }
-.save-btn-sm { padding: 4px 10px; font-size: .78rem; }
-.save-icon { font-size: 1rem; line-height: 1; display: inline-block; }
-/* Micro-interaction: "pop" khi lưu (behavioral feedback; transform-only, tôn trọng prefers-reduced-motion) */
-.save-btn.saved .save-icon { animation: savePop .35s var(--ease-bounce); }
-@keyframes savePop { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
-.save-btn-sm .save-icon { font-size: .85rem; }
+/* ── Save / Favorite button (Apple HIG) ── */
+.save-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  background: var(--surface-translucent); backdrop-filter: saturate(180%) blur(16px); -webkit-backdrop-filter: saturate(180%) blur(16px);
+  border: 1px solid var(--line); border-radius: var(--radius-full);
+  padding: var(--space-2) var(--space-3); min-height: 44px;
+  cursor: pointer; font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink);
+  transition: transform var(--duration-fast) var(--ease-spring), background var(--duration-fast), border-color var(--duration-fast), box-shadow var(--duration-fast);
+}
+.save-btn:hover { background: var(--card); border-color: var(--primary-fg); box-shadow: var(--shadow-sm); }
+.save-btn:active { transform: scale(.92); }
+.save-btn.saved { background: rgba(220, 38, 38, .08); border-color: rgba(220, 38, 38, .25); color: #dc2626; }
+.save-btn.saved:hover { background: rgba(220, 38, 38, .14); }
+.save-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+
+/* Card variant: circle icon-only */
+.save-btn-sm {
+  width: 40px; height: 40px; min-height: 40px; padding: 0;
+  background: rgba(0, 0, 0, .35); backdrop-filter: saturate(180%) blur(12px); -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border: none; color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
+}
+.save-btn-sm:hover { background: rgba(0, 0, 0, .5); border: none; box-shadow: 0 2px 12px rgba(0, 0, 0, .25); }
+.save-btn-sm.saved { background: #fff; color: #dc2626; border: none; box-shadow: 0 2px 8px rgba(0, 0, 0, .12); }
+.save-btn-sm.saved:hover { background: #fff; }
+
+/* SVG heart icon */
+.save-icon { width: 20px; height: 20px; flex-shrink: 0; display: block; transition: transform var(--duration-fast) var(--ease-spring); }
+.save-btn-sm .save-icon { width: 18px; height: 18px; }
+.save-btn.saved .save-icon { animation: savePop .4s var(--ease-bounce); }
+@keyframes savePop { 0% { transform: scale(1); } 30% { transform: scale(1.3); } 60% { transform: scale(.9); } 100% { transform: scale(1); } }
 .save-label { white-space: nowrap; }
+
+/* Dark mode */
+.dark .save-btn:not(.save-btn-sm) { background: rgba(28, 28, 30, .88); border-color: var(--line); }
+.dark .save-btn:not(.save-btn-sm):hover { background: var(--card); }
+.dark .save-btn-sm { background: rgba(255, 255, 255, .18); }
+.dark .save-btn-sm:hover { background: rgba(255, 255, 255, .28); }
+.dark .save-btn-sm.saved { background: rgba(28, 28, 30, .9); }
 
 /* ── Journey Bar (floating) ── */
 .journey-bar { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 90; background: var(--surface-translucent); backdrop-filter: blur(8px); border: 1px solid var(--line); border-radius: 999px; padding: 8px 10px 8px 18px; display: flex; align-items: center; gap: 14px; box-shadow: 0 4px 24px rgba(0,0,0,.12); animation: jbSlideUp .3s ease; }
 .jb-summary { display: flex; align-items: center; gap: 6px; font-size: .9rem; color: var(--ink); white-space: nowrap; }
-.jb-heart { font-size: 1.1rem; }
+.jb-heart { width: 20px; height: 20px; flex-shrink: 0; }
 .jb-actions { display: flex; gap: 6px; }
 .jb-link { white-space: nowrap; }
 @keyframes jbSlideUp { from { opacity: 0; transform: translateX(-50%) translateY(16px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }

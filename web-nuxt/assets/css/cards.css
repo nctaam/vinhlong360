@@ -9,7 +9,7 @@
 .cover-img img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--duration-slow) var(--ease-out); }
 .card:hover .cover-img img { transform: scale(1.06); }
 .cover-tag { position: absolute; bottom: 8px; left: 8px; font-size: .7rem; font-weight: var(--weight-semibold); padding: 4px 10px; border-radius: var(--radius-full); color: #fff; background: rgba(0,0,0,.5); backdrop-filter: saturate(180%) blur(12px); -webkit-backdrop-filter: saturate(180%) blur(12px); letter-spacing: .02em; }
-.card-save { position: absolute; top: 10px; right: 10px; z-index: 2; }
+.card-save { position: absolute; top: var(--space-3); right: var(--space-3); z-index: 2; }
 .card-b { padding: 16px 16px 18px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
 .card-type { font-size: .7rem; font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: .05em; color: var(--primary-fg); }
 .card h3 { margin: 0; font-size: 1.06rem; font-weight: var(--weight-semibold); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; letter-spacing: var(--tracking-tight); }
