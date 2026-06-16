@@ -206,7 +206,9 @@ async def place_overview(place_id: str):
 
     return {
         "place": {"id": place["id"], "name": place.get("name"), "area": place.get("area"),
-                  "level": place.get("level"), "summary": place.get("summary")},
+                  "level": place.get("level"), "summary": place.get("summary"),
+                  "attributes": place.get("attributes", {}),
+                  "coordinates": place.get("coordinates")},
         "facilities": db.facilities_by_place(place_id),
         "counts": {g: len(v) for g, v in groups.items()},
         "tourism": groups["tourism"],
@@ -254,6 +256,206 @@ async def search(
 @router.get("/stats")
 async def public_stats():
     return db.stats()
+
+
+# ── Homepage curated feed ──────────────────────────────────────────
+
+_TOURISM_TYPES = {"experience", "attraction", "dish", "nature", "craft_village",
+                  "history", "accommodation", "event"}
+
+
+def _event_is_past(e: dict) -> bool:
+    """True if event has date_end and it's already passed."""
+    attrs = e.get("attributes") or {}
+    date_end = attrs.get("date_end")
+    if not date_end:
+        return False
+    try:
+        return datetime.strptime(date_end, "%Y-%m-%d").date() < datetime.now().date()
+    except (ValueError, TypeError):
+        return False
+
+
+def _homepage_score(e: dict, month: int) -> float:
+    from smart_rank import smart_score
+    s = smart_score(e, month=month, q_match_level="none")
+    if e.get("images"):
+        s += 2.0
+    if len(e.get("summary", "") or "") > 80:
+        s += 1.0
+    return s
+
+
+def _diverse_pick(entities: list[dict], max_per_type: int = 2,
+                  max_per_area: int = 4, limit: int = 8) -> list[dict]:
+    result = []
+    type_counts: dict[str, int] = {}
+    area_counts: dict[str, int] = {}
+    for e in entities:
+        t = e["type"]
+        a = e.get("place_area") or "unknown"
+        if type_counts.get(t, 0) >= max_per_type:
+            continue
+        if area_counts.get(a, 0) >= max_per_area:
+            continue
+        result.append(e)
+        type_counts[t] = type_counts.get(t, 0) + 1
+        area_counts[a] = area_counts.get(a, 0) + 1
+        if len(result) >= limit:
+            break
+    return result
+
+
+@router.get("/homepage")
+async def homepage_curated():
+    """Curated homepage: smart-scored, type/area diverse, seasonal-aware."""
+    month = datetime.now().month
+
+    all_ents = db.list_entities(limit=100000, offset=0)
+    public = [e for e in all_ents if _is_public(e) and not _event_is_past(e)]
+    _enrich_place(public)
+
+    for e in public:
+        e["_score"] = _homepage_score(e, month)
+
+    # Seasonal: entities actually in season this month (not year-round)
+    def _in_season(e):
+        s = e.get("season")
+        if not s:
+            return False
+        months = s.get("months") or []
+        if len(months) >= 11:
+            return False
+        return month in months or month in (s.get("peak") or [])
+
+    seasonal_pool = [e for e in public
+                     if e["type"] in ("product", "experience", "dish", "event")
+                     and _in_season(e)]
+    seasonal_pool.sort(key=lambda e: e["_score"], reverse=True)
+    seasonal = seasonal_pool[:4]
+
+    seasonal_ids = {e["id"] for e in seasonal}
+
+    # Experiences: tourism types, diverse, excluding seasonal duplicates
+    tourism = [e for e in public
+               if e["type"] in _TOURISM_TYPES and e["id"] not in seasonal_ids]
+    tourism.sort(key=lambda e: e["_score"], reverse=True)
+    experiences = _diverse_pick(tourism, max_per_type=2, max_per_area=4, limit=8)
+
+    # Products fallback (when seasonal is empty)
+    products_pool = [e for e in public if e["type"] == "product"]
+    products_pool.sort(key=lambda e: e["_score"], reverse=True)
+    products = products_pool[:8]
+
+    itineraries = db.list_itineraries()[:4]
+    stats = db.stats()
+
+    # Area counts for region tiles
+    card_types = {"product", "dish", "drink", "experience", "attraction", "nature",
+                  "craft_village", "history", "accommodation", "event"}
+    area_counts: dict[str, int] = {}
+    for e in public:
+        a = e.get("place_area") or e.get("area")
+        if e["type"] in card_types and a:
+            area_counts[a] = area_counts.get(a, 0) + 1
+
+    # Upcoming events (next 30 days, sorted by date_start)
+    today = datetime.now().date()
+    from datetime import timedelta
+    cutoff = today + timedelta(days=30)
+    upcoming_pool = []
+    for e in public:
+        if e["type"] != "event":
+            continue
+        attrs = e.get("attributes") or {}
+        ds = attrs.get("date_start")
+        if not ds:
+            continue
+        try:
+            d = datetime.strptime(ds, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            continue
+        if today <= d <= cutoff:
+            e["_days_until"] = (d - today).days
+            upcoming_pool.append(e)
+    upcoming_pool.sort(key=lambda x: x.get("_days_until", 999))
+    upcoming_events = upcoming_pool[:3]
+    for e in upcoming_events:
+        e.pop("_score", None)
+        e["days_until"] = e.pop("_days_until", None)
+
+    # Seasonal tagline
+    _TAGLINES = {
+        1: "Tết Nguyên đán — không khí miệt vườn ngập sắc xuân",
+        2: "Mùa xuân miệt vườn — trái cây đầu mùa đang chín",
+        3: "Tháng 3 lễ hội đình làng — khám phá văn hóa cổ truyền",
+        4: "Mùa Chôl Chnăm Thmây — lễ hội Khmer sôi động",
+        5: "Mùa trái cây bắt đầu — chôm chôm, sầu riêng, măng cụt",
+        6: "Mùa trái cây đang chín rộ — miệt vườn ngọt lịm",
+        7: "Giữa mùa trái cây — vườn trái cây mở cửa đón khách",
+        8: "Mùa Vu Lan — lễ hội lồng đèn sắp đến",
+        9: "Trung thu miệt vườn — lồng đèn và bánh dân gian",
+        10: "Mùa Ok Om Bok — đua ghe ngo sôi động miền Tây",
+        11: "Cuối năm — khám phá làng nghề và đặc sản Tết",
+        12: "Mùa Tết đang đến — đặc sản và quà tặng miệt vườn",
+    }
+    seasonal_tagline = _TAGLINES.get(month, "Khám phá miệt vườn theo cách của người bản địa")
+
+    for section in [seasonal, experiences, products]:
+        for e in section:
+            e.pop("_score", None)
+
+    return {
+        "seasonal": seasonal,
+        "experiences": experiences,
+        "products": products,
+        "itineraries": itineraries,
+        "stats": stats,
+        "area_counts": area_counts,
+        "month": month,
+        "upcoming_events": upcoming_events,
+        "seasonal_tagline": seasonal_tagline,
+    }
+
+
+@router.get("/events")
+async def list_events(
+    area: Optional[str] = None,
+    include_past: bool = False,
+    limit: int = Query(50, le=200),
+):
+    """Sự kiện: sắp xếp theo date_start, mặc định ẩn sự kiện đã qua."""
+    today = datetime.now().date()
+    all_ents = db.list_entities(entity_type="event", limit=100000, offset=0)
+    events = [e for e in all_ents if _is_public(e)]
+    _enrich_place(events)
+
+    if area:
+        events = [e for e in events
+                  if (e.get("place_area") or e.get("area")) == area]
+
+    if not include_past:
+        events = [e for e in events if not _event_is_past(e)]
+
+    def _sort_key(e):
+        attrs = e.get("attributes") or {}
+        ds = attrs.get("date_start")
+        if ds:
+            try:
+                return (0, datetime.strptime(ds, "%Y-%m-%d").date())
+            except (ValueError, TypeError):
+                pass
+        s = (e.get("season") or {}).get("months") or []
+        if s:
+            first = min(s)
+            d = datetime(today.year, first, 1).date()
+            if d < today:
+                d = datetime(today.year + 1, first, 1).date()
+            return (1, d)
+        return (2, datetime(today.year, 12, 31).date())
+
+    events.sort(key=_sort_key)
+    return {"total": len(events), "events": events[:limit]}
 
 
 class ReportIn(BaseModel):

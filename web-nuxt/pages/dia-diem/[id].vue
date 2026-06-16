@@ -10,13 +10,15 @@
       </ol>
     </nav>
 
-    <!-- Cover -->
-    <div :class="['detail-cover', `cat-${typeMeta.cat}`, { 'has-cover-img': coverImage }]" :style="coverImage ? { backgroundImage: `linear-gradient(to top, rgba(0,0,0,.6) 0%, rgba(0,0,0,.25) 50%, rgba(0,0,0,.1) 100%), url(${coverImage})` } : {}">
+    <!-- Cover + Hero Image -->
+    <div :class="['detail-cover', `cat-${typeMeta.cat}`, { 'has-cover-img': coverImage }]">
+      <img v-if="coverImage" :src="coverImage" :alt="entity.name" class="dc-bg" @click="openCoverLightbox" />
+      <div v-if="coverImage" class="dc-overlay"></div>
       <div class="dc-inner">
         <span class="dc-emoji">{{ typeMeta.emoji }}</span>
         <span class="dc-type">{{ typeMeta.label }}</span>
         <h1>{{ entity.name }}</h1>
-        <p v-if="entity.place_name" class="dc-place">📍 {{ entity.place_name }}</p>
+        <p v-if="entity.place_name" class="dc-place">📍 <NuxtLink v-if="entity.placeId" :to="`/xa-phuong/${entity.placeId}`" class="dc-place-link">{{ entity.place_name }}</NuxtLink><template v-else>{{ entity.place_name }}</template></p>
         <div class="dc-actions">
           <ClientOnly>
             <SaveButton :entity="entity" :show-label="true" />
@@ -26,10 +28,36 @@
           </ClientOnly>
         </div>
       </div>
+      <button v-if="entity.images?.length" class="dc-photo-btn" @click="openCoverLightbox">
+        <span class="dc-photo-icon">&#128247;</span>
+        {{ entity.images.length === 1 ? 'Xem ảnh' : `${entity.images.length} ảnh` }}
+      </button>
+      <div v-if="entity.images?.length > 1" class="dc-thumbs">
+        <img
+          v-for="(src, i) in entity.images.slice(0, 4)"
+          :key="i"
+          :src="src"
+          :alt="`${entity.name} - ${i + 1}`"
+          :class="['dc-thumb', { active: i === 0 }]"
+          @click="openCoverLightbox(i)"
+        />
+        <span v-if="entity.images.length > 4" class="dc-thumb-more" @click="openCoverLightbox(4)">
+          +{{ entity.images.length - 4 }}
+        </span>
+      </div>
+      <small v-if="imageCredit" class="dc-credit">{{ imageCredit }}</small>
     </div>
 
-    <!-- Image Gallery -->
-    <ImageGallery v-if="entity.images?.length" :images="entity.images" :alt="entity.name" />
+    <!-- Lightbox (replaces old ImageGallery) -->
+    <Teleport to="body">
+      <div v-if="lightboxOpen" class="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh" @click.self="lightboxOpen = false">
+        <button class="lb-close" aria-label="Đóng" @click="lightboxOpen = false">&times;</button>
+        <button v-if="entity.images?.length > 1" class="lb-prev" aria-label="Ảnh trước" @click="lbPrev">&#8249;</button>
+        <img :src="entity.images[lbIndex]" :alt="`${entity.name} - ${lbIndex + 1}`" class="lb-img" />
+        <button v-if="entity.images?.length > 1" class="lb-next" aria-label="Ảnh tiếp" @click="lbNext">&#8250;</button>
+        <div class="lb-counter" aria-live="polite">{{ lbIndex + 1 }} / {{ entity.images.length }}</div>
+      </div>
+    </Teleport>
 
     <!-- Body -->
     <div class="detail-body">
@@ -121,7 +149,10 @@
         </div>
         <div v-if="entity.place_name" class="fact">
           <span class="k">Địa điểm</span>
-          <span class="v">{{ entity.place_name }}</span>
+          <span class="v">
+            <NuxtLink v-if="entity.placeId" :to="`/xa-phuong/${entity.placeId}`" style="color: var(--primary); font-weight: 600">{{ entity.place_name }}</NuxtLink>
+            <template v-else>{{ entity.place_name }}</template>
+          </span>
         </div>
         <div v-if="entity.place_area" class="fact">
           <span class="k">Khu vực</span>
@@ -132,25 +163,6 @@
         <div v-if="entity.season" class="fact">
           <span class="k">Mùa</span>
           <span class="v">{{ seasonLabel }}</span>
-        </div>
-
-        <div class="quality-panel" :class="{ 'needs-review': !quality.has_source }">
-          <div class="quality-head">
-            <span class="quality-dot" :class="quality.has_source ? 'ok' : 'warn'"></span>
-            <strong>{{ quality.has_source ? 'Đã có nguồn dữ liệu' : 'Cần bổ sung nguồn' }}</strong>
-          </div>
-          <a
-            v-if="quality.source_url"
-            class="quality-source"
-            :href="quality.source_url"
-            target="_blank"
-            rel="noopener noreferrer"
-          >{{ quality.source_title || sourceHost || 'Nguồn tham khảo' }}</a>
-          <p v-else class="quality-note">Thông tin này đang chờ bổ sung nguồn xác minh.</p>
-          <div v-if="qualityMissingLabels.length" class="quality-tags">
-            <span v-for="label in qualityMissingLabels" :key="label">{{ label }}</span>
-          </div>
-          <NuxtLink class="quality-report" :to="reportUrl">Báo sai dữ liệu</NuxtLink>
         </div>
 
         <!-- Practical info from attributes -->
@@ -194,6 +206,7 @@
           <a v-if="buyContactUrl" class="ns-action contact-cta" :href="buyContactUrl" target="_blank" rel="nofollow">🛒 Hỏi mua trực tiếp</a>
         </div>
         <NuxtLink :to="claimUrl" class="ns-action claim-cta">🏷️ Đây là cơ sở của tôi — đăng ký quản lý</NuxtLink>
+        <NuxtLink class="quality-report" :to="reportUrl">Báo sai dữ liệu</NuxtLink>
         <!-- Truy xuất nguồn gốc (sản phẩm) -->
         <div v-if="entity.type === 'product'" class="traceability">
           <strong>🔎 Truy xuất nguồn gốc</strong>
@@ -219,6 +232,13 @@
           <NuxtLink to="/tuyen-duong" class="ns-action">🛤️ Tuyến đường gợi ý</NuxtLink>
         </div>
       </aside>
+    </div>
+
+    <!-- Sticky mobile CTA bar (always visible, thumb zone) -->
+    <div v-if="entity.attributes?.phone || zaloLink || hasCoords" class="sticky-cta-bar">
+      <a v-if="entity.attributes?.phone" class="scta-phone" :href="'tel:' + entity.attributes.phone">📞 Gọi</a>
+      <a v-if="zaloLink" class="scta-zalo" :href="zaloLink" target="_blank" rel="nofollow">💬 Zalo</a>
+      <NuxtLink v-if="hasCoords" class="scta-map" :to="mapUrl">🗺️ Bản đồ</NuxtLink>
     </div>
   </div>
   <div v-else class="page">
@@ -269,6 +289,37 @@ const coverImage = computed(() => {
   const imgs = entity.value?.images
   return Array.isArray(imgs) && imgs.length ? imgs[0] : ''
 })
+
+const imageCredit = computed(() => {
+  const credits = entity.value?.image_credits
+  if (!Array.isArray(credits) || !credits.length) return ''
+  const c = credits[0]
+  return c.author ? `${c.author} · ${c.license || 'CC'}` : ''
+})
+
+const lightboxOpen = ref(false)
+const lbIndex = ref(0)
+function openCoverLightbox(idx = 0) {
+  if (!entity.value?.images?.length) return
+  lbIndex.value = typeof idx === 'number' ? idx : 0
+  lightboxOpen.value = true
+}
+function lbPrev() {
+  const len = entity.value?.images?.length || 1
+  lbIndex.value = (lbIndex.value - 1 + len) % len
+}
+function lbNext() {
+  const len = entity.value?.images?.length || 1
+  lbIndex.value = (lbIndex.value + 1) % len
+}
+function onLbKey(e: KeyboardEvent) {
+  if (!lightboxOpen.value) return
+  if (e.key === 'Escape') lightboxOpen.value = false
+  if (e.key === 'ArrowLeft') lbPrev()
+  if (e.key === 'ArrowRight') lbNext()
+}
+onMounted(() => window.addEventListener('keydown', onLbKey))
+onUnmounted(() => window.removeEventListener('keydown', onLbKey))
 
 const TYPE_BREADCRUMB: Record<string, string> = {
   product: '/san-pham', experience: '/du-lich', attraction: '/du-lich',
@@ -431,6 +482,7 @@ if (entity.value && !entity.value.error) {
     organization: 'LocalBusiness',
     attraction: 'TouristAttraction',
     experience: 'TouristAttraction',
+    event: 'Event',
     place: 'Place',
   }
   const ldType = TYPE_TO_SCHEMA[e.type] || 'TouristAttraction'
@@ -468,6 +520,22 @@ if (entity.value && !entity.value.error) {
   }
   if (e.attributes?.hours) {
     ld.openingHours = e.attributes.hours
+  }
+  if (ldType === 'Event') {
+    if (e.attributes?.date_start) ld.startDate = e.attributes.date_start
+    if (e.attributes?.date_end) ld.endDate = e.attributes.date_end
+    if (e.place_name || areaName.value) {
+      ld.location = {
+        '@type': 'Place',
+        name: e.place_name || areaName.value,
+        address: { '@type': 'PostalAddress', addressRegion: areaName.value, addressCountry: 'VN' },
+      }
+      if (geoCoords) {
+        ld.location.geo = { '@type': 'GeoCoordinates', latitude: geoCoords[0], longitude: geoCoords[1] }
+      }
+    }
+    ld.eventStatus = 'https://schema.org/EventScheduled'
+    ld.eventAttendanceMode = 'https://schema.org/OfflineEventAttendanceMode'
   }
   if (ldType === 'Product') {
     if (e.attributes?.price) {

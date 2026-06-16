@@ -51,6 +51,14 @@
       </div>
     </header>
 
+    <div v-if="showBeta" class="beta-banner">
+      <div class="beta-inner">
+        <span class="beta-icon">🚧</span>
+        <p><strong>Trang đang trong giai đoạn xây dựng.</strong> Một số tính năng có thể chưa hoàn thiện hoặc thay đổi. Cảm ơn bạn đã ghé thăm!</p>
+        <button class="beta-close" aria-label="Đóng thông báo" @click="dismissBeta">&times;</button>
+      </div>
+    </div>
+
     <main id="main-content">
       <slot />
     </main>
@@ -67,52 +75,57 @@
 
     <footer class="site-footer">
       <div class="footer-inner">
-        <div class="footer-grid">
+        <div class="footer-top">
           <div class="footer-brand">
-            <strong class="footer-logo">vinhlong360<span style="color: var(--accent)">.vn</span></strong>
-            <p>Cổng du lịch &amp; sản phẩm địa phương — khám phá Vĩnh Long, Bến Tre, Trà Vinh theo cách của người bản địa.</p>
+            <NuxtLink to="/" class="footer-logo">
+              <span class="logo">vinhlong<span class="dot">360</span></span><span class="tld">.vn</span>
+            </NuxtLink>
+            <p>Khám phá Vĩnh Long, Bến Tre, Trà Vinh<br>theo cách của người bản địa.</p>
           </div>
-          <div class="footer-links">
-            <h4>Khám phá</h4>
-            <nav>
-              <NuxtLink to="/du-lich">Du lịch</NuxtLink>
-              <NuxtLink to="/theo-mua">Theo mùa</NuxtLink>
-              <NuxtLink to="/san-pham">Sản phẩm</NuxtLink>
-              <NuxtLink to="/ocop">OCOP</NuxtLink>
-              <NuxtLink to="/luu-tru">Lưu trú</NuxtLink>
-              <NuxtLink to="/ban-do" no-prefetch>Bản đồ</NuxtLink>
-              <NuxtLink to="/danh-ba">Danh bạ hành chính</NuxtLink>
-              <NuxtLink to="/tuyen-duong">Tuyến đường</NuxtLink>
-            </nav>
-          </div>
-          <div class="footer-links">
-            <h4>Theo sở thích</h4>
-            <nav>
-              <NuxtLink to="/kham-pha/am-thuc">Ẩm thực</NuxtLink>
-              <NuxtLink to="/kham-pha/thien-nhien">Thiên nhiên</NuxtLink>
-              <NuxtLink to="/kham-pha/van-hoa">Văn hóa</NuxtLink>
-              <NuxtLink to="/kham-pha/lang-nghe">Làng nghề</NuxtLink>
-              <NuxtLink to="/kham-pha/mua-sam">Mua sắm</NuxtLink>
-            </nav>
-          </div>
-          <div class="footer-links">
-            <h4>Công cụ</h4>
-            <nav>
-              <NuxtLink to="/tao-lich-trinh" no-prefetch>Tạo lịch trình</NuxtLink>
-              <NuxtLink to="/lich-trinh">Lịch trình gợi ý</NuxtLink>
-              <NuxtLink to="/hanh-trinh">Đã lưu</NuxtLink>
-              <NuxtLink to="/cong-dong">Cộng đồng</NuxtLink>
-            </nav>
+          <div class="footer-nav">
+            <div class="footer-col">
+              <h4>Khám phá</h4>
+              <nav>
+                <NuxtLink to="/du-lich">Du lịch & trải nghiệm</NuxtLink>
+                <NuxtLink to="/san-pham">Sản phẩm địa phương</NuxtLink>
+                <NuxtLink to="/ocop">Sản phẩm OCOP</NuxtLink>
+                <NuxtLink to="/theo-mua">Đặc sản theo mùa</NuxtLink>
+                <NuxtLink to="/luu-tru">Lưu trú</NuxtLink>
+                <NuxtLink to="/le-hoi">Lễ hội truyền thống</NuxtLink>
+                <NuxtLink to="/su-kien">Sự kiện</NuxtLink>
+              </nav>
+            </div>
+            <div class="footer-col">
+              <h4>Công cụ</h4>
+              <nav>
+                <NuxtLink to="/ban-do" no-prefetch>Bản đồ</NuxtLink>
+                <NuxtLink to="/lich-trinh">Lịch trình gợi ý</NuxtLink>
+                <NuxtLink to="/tao-lich-trinh" no-prefetch>Tạo lịch trình</NuxtLink>
+                <NuxtLink to="/danh-ba">Danh bạ hành chính</NuxtLink>
+                <NuxtLink to="/cong-dong">Cộng đồng</NuxtLink>
+              </nav>
+            </div>
+            <div class="footer-col">
+              <h4>3 vùng</h4>
+              <nav>
+                <NuxtLink to="/khu-vuc/vinh-long">🍊 Vĩnh Long</NuxtLink>
+                <NuxtLink to="/khu-vuc/ben-tre">🥥 Bến Tre</NuxtLink>
+                <NuxtLink to="/khu-vuc/tra-vinh">🛕 Trà Vinh</NuxtLink>
+              </nav>
+            </div>
           </div>
         </div>
         <div class="footer-bottom">
           <p class="disclaimer">Thông tin mùa vụ, giá &amp; địa điểm mang tính tham khảo — vui lòng xác nhận với địa phương trước khi sử dụng.</p>
-          <nav class="footer-legal" style="display:flex; gap:16px; flex-wrap:wrap; margin:8px 0;">
-            <NuxtLink to="/chinh-sach-bao-mat" style="color:var(--muted)">Chính sách bảo mật</NuxtLink>
-            <NuxtLink to="/dieu-khoan-su-dung" style="color:var(--muted)">Điều khoản sử dụng</NuxtLink>
-            <NuxtLink to="/lien-he" style="color:var(--muted)">Liên hệ</NuxtLink>
-          </nav>
-          <p>&copy; 2024–2026 vinhlong360. <NuxtLink to="/admin" style="color: var(--muted)">AdminCP</NuxtLink></p>
+          <div class="footer-bottom-row">
+            <p>&copy; 2024–2026 vinhlong360</p>
+            <nav class="footer-legal">
+              <NuxtLink to="/chinh-sach-bao-mat">Bảo mật</NuxtLink>
+              <NuxtLink to="/dieu-khoan-su-dung">Điều khoản</NuxtLink>
+              <NuxtLink to="/lien-he">Liên hệ</NuxtLink>
+              <NuxtLink to="/admin">Admin</NuxtLink>
+            </nav>
+          </div>
         </div>
       </div>
     </footer>
@@ -129,6 +142,11 @@ function toggleColorMode() {
 const searchQuery = ref('')
 const showAuth = ref(false)
 const mobileNav = ref(false)
+const showBeta = ref(false)
+onMounted(() => {
+  if (localStorage.getItem('vl360_beta_dismissed') !== '1') showBeta.value = true
+})
+function dismissBeta() { showBeta.value = false; localStorage.setItem('vl360_beta_dismissed', '1') }
 
 // Nav theo intent + region-first (deep-research: NN/g mega-menu, Visit California)
 const navGroups: Array<{ label: string; to?: string; children?: { to: string; label: string }[] }> = [
@@ -139,6 +157,8 @@ const navGroups: Array<{ label: string; to?: string; children?: { to: string; la
     { to: '/ban-do', label: 'Bản đồ' },
     { to: '/danh-ba', label: 'Danh bạ hành chính' },
     { to: '/tuyen-duong', label: 'Tuyến đường gợi ý' },
+    { to: '/le-hoi', label: 'Lễ hội truyền thống' },
+    { to: '/su-kien', label: 'Sự kiện' },
   ] },
   { label: 'Đặc sản', children: [
     { to: '/san-pham', label: 'Sản phẩm địa phương' },

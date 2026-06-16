@@ -33,6 +33,7 @@ export default defineNuxtConfig({
     '~/assets/css/cards.css',
     '~/assets/css/detail.css',
     '~/assets/css/catalog.css',
+    '~/assets/css/events.css',
   ],
 
   app: {

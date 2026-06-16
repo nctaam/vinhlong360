@@ -4,18 +4,11 @@
 .card:hover { transform: translateY(-4px); box-shadow: 0 6px 16px rgba(43, 38, 34, .10), 0 16px 36px rgba(43, 38, 34, .12); }
 .card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; transform: translateY(-3px); }
 .cover { height: 96px; display: flex; align-items: center; justify-content: center; position: relative; }
-.cover span { font-size: 2.6rem; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .2)); }
+.cover span:not(.cover-tag) { font-size: 2.6rem; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .2)); }
 .cover-img { position: relative; height: 140px; overflow: hidden; }
 .cover-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .2s ease; }
 .card:hover .cover-img img { transform: scale(1.05); }
-.cover-tag { position: absolute; bottom: 8px; left: 8px; font-size: .75rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.3); }
-.cover-tag.cat-experience { background: rgba(46,125,91,.85); }
-.cover-tag.cat-product { background: rgba(232,163,61,.85); color: var(--ink); }
-.cover-tag.cat-attraction { background: rgba(51,100,110,.85); }
-.cover-tag.cat-craft { background: rgba(156,61,34,.85); }
-.cover-tag.cat-accommodation { background: rgba(91,108,196,.85); }
-.cover-tag.cat-dish { background: rgba(217,79,61,.85); }
-.cover-tag.cat-itinerary { background: rgba(156,61,34,.85); }
+.cover-tag { position: absolute; bottom: 6px; left: 6px; font-size: .68rem; font-weight: 700; padding: 3px 8px; border-radius: 999px; color: #fff; background: rgba(0,0,0,.55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); letter-spacing: .02em; }
 .card-save { position: absolute; top: 8px; right: 8px; z-index: 2; }
 .card-b { padding: 14px 15px 14px; display: flex; flex-direction: column; gap: 7px; flex: 1; }
 .card-type { font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--primary-fg); }
@@ -66,4 +59,3 @@
 /* Dark mode (color-mode .dark) */
 .dark .card { background: var(--card); }
 .dark .region-card { background: var(--card); }
-.dark .cover-tag.cat-product { color: #fff; }
