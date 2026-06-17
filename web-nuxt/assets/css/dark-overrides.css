@@ -1,0 +1,126 @@
+/* ============================================================
+   DARK MODE OVERRIDES — global rules
+   ============================================================
+   Vue scoped CSS breaks `:global(.dark) .class` — the descendant
+   selector is silently dropped. These rules live here as proper
+   global CSS so they actually apply. Organized by component/page.
+   ============================================================ */
+
+/* ── Shared components ── */
+
+/* ScrollToTop */
+.dark .scroll-top { background: rgba(28, 28, 30, .85); border-color: var(--line); box-shadow: 0 2px 12px rgba(0,0,0,.3); }
+.dark .scroll-top:hover { box-shadow: 0 4px 16px rgba(0,0,0,.4); }
+
+/* ShareButton */
+.dark .share-btn { background: rgba(28, 28, 30, .88); border-color: var(--line); }
+.dark .share-btn:hover { background: rgba(255,255,255,.06); }
+
+/* PostCard */
+.dark .post-entity-link { background: rgba(255,255,255,.06); }
+.dark .post-entity-link:hover { background: rgba(255,255,255,.1); }
+
+/* Breadcrumb */
+.dark .breadcrumb a:hover { background: rgba(255,255,255,.06); }
+
+/* ── 404 catch-all ([...slug]) ── */
+.dark .nf-search input { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); color: var(--ink); }
+.dark .nf-search input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(232, 163, 61, .15); }
+.dark .nf-search input::placeholder { color: rgba(255,255,255,.35); }
+.dark .nf-btn-outline { border-color: var(--accent); color: var(--accent); }
+
+/* ── Post detail (bai-viet/[id]) ── */
+.dark .comment-form { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.08); }
+.dark .comment-form:focus-within { background: rgba(255,255,255,.06); border-color: var(--primary-fg); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .15); }
+.dark .comment-form .input { color: var(--ink); }
+.dark .comment-form .input::placeholder { color: rgba(255,255,255,.35); }
+.dark .comment-item { border-color: rgba(255,255,255,.06); }
+.dark .comment-item:hover { background: rgba(255,255,255,.03); }
+
+/* ── Map (ban-do) ── */
+.dark #mapContainer { border-color: rgba(255,255,255,.08); box-shadow: 0 4px 20px rgba(0,0,0,.3); }
+.dark #mapContainer:hover { box-shadow: 0 6px 28px rgba(0,0,0,.4); }
+
+/* ── Ward hub (xa-phuong/[id]) ── */
+.dark .wp-card { border-color: rgba(255,255,255,.08); }
+.dark .wp-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+.dark .wp-contact-item { border-color: rgba(255,255,255,.06); }
+.dark .wp-contact-main { background: rgba(255,255,255,.04); }
+.dark .wp-fac { border-color: rgba(255,255,255,.06); }
+.dark .wp-fac:hover { background: rgba(255,255,255,.04); }
+.dark .wp-map-btn { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.08); }
+.dark .wp-map-btn:hover { background: rgba(255,255,255,.08); }
+.dark .wp-map-container { border-color: rgba(255,255,255,.08); }
+
+/* ── Itinerary detail (lich-trinh/[id]) ── */
+.dark .step-card { border-color: rgba(255,255,255,.08); }
+.dark .step-card:hover { border-color: rgba(255,255,255,.15); box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+.dark .route-leg-line { background: rgba(255,255,255,.1); }
+.dark .route-map { border-color: rgba(255,255,255,.08); box-shadow: 0 4px 20px rgba(0,0,0,.3); }
+
+/* ── Itinerary list (lich-trinh/index) ── */
+.dark .saved-section { border-bottom-color: rgba(255,255,255,.08); }
+.dark .js-item { border-color: rgba(255,255,255,.08); }
+.dark .js-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+
+/* ── Create itinerary (tao-lich-trinh) ── */
+.dark .picker-item:hover { background: rgba(255,255,255,.05); }
+.dark .stop-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,.3); }
+
+/* ── Routes (tuyen-duong) ── */
+.dark .route-card { border-color: rgba(255,255,255,.08); }
+.dark .route-card:hover { border-color: rgba(255,255,255,.15); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+.dark .route-tips { background: rgba(255,255,255,.04); }
+.dark .route-stops li:hover { background: rgba(255,255,255,.03); }
+
+/* ── Search (tim-kiem) ── */
+.dark .quick-pick { border-color: rgba(255,255,255,.08); }
+.dark .quick-pick:hover { border-color: var(--primary-fg); box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+
+/* ── Seasonal (theo-mua) ── */
+.dark .b2b-note { background: rgba(46, 125, 91, .08); border-color: rgba(46, 125, 91, .25); }
+.dark .season-badge { background: rgba(0,0,0,.7); }
+
+/* ── Community (cong-dong) ── */
+.dark .create-post:focus-within { box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .12); }
+.dark .sidebar-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+.dark .report-entity-card { background: rgba(255,255,255,.04); }
+
+/* ── Directory (danh-ba) ── */
+.dark .fac { border-color: rgba(255,255,255,.08); }
+.dark .fac:hover { border-color: rgba(255,255,255,.15); box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+.dark .dir-disclaimer { background: rgba(234, 140, 30, .08); border-color: rgba(234, 140, 30, .25); }
+
+/* ── Contact (lien-he) ── */
+.dark .contact-card { border-color: rgba(255,255,255,.08); }
+.dark .contact-card:hover { border-color: rgba(255,255,255,.15); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+.dark .card-claim { background: color-mix(in srgb, var(--accent) 6%, var(--card)); border-color: rgba(255,255,255,.12); }
+.dark .card-note { color: rgba(255,255,255,.4) !important; }
+
+/* ── Profile (nguoi-dung/[id]) ── */
+.dark .profile-cover { border-color: rgba(255,255,255,.06); }
+.dark .profile-stats { border-color: rgba(255,255,255,.06); }
+.dark .stat-item:hover { background: rgba(255,255,255,.05); }
+.dark .profile-tabs { border-color: rgba(255,255,255,.08); }
+
+/* ── Explore by interest (kham-pha/[interest]) ── */
+.dark .interest-nav .chip.active { box-shadow: 0 1px 6px rgba(0,0,0,.3); }
+
+/* ── Admin: users ── */
+.dark .status-active { background: rgba(46, 125, 91, .18); color: #34d399; }
+.dark .status-banned { background: rgba(220, 38, 38, .16); color: #f87171; }
+.dark .admin-select-inline { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); color: var(--ink); }
+
+/* ── Admin: stats (thong-ke) ── */
+.dark .stat-panel { border-color: rgba(255,255,255,.08); }
+.dark .stat-panel:hover { box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+
+/* ── Admin: reports (bao-cao) ── */
+.dark .status-pending { background: rgba(234, 140, 30, .18); color: #f59e0b; }
+.dark .status-resolved { background: rgba(46, 125, 91, .18); color: #34d399; }
+.dark .status-dismissed { background: rgba(255,255,255,.06); color: rgba(255,255,255,.4); }
+
+/* ── Admin: data quality ── */
+.dark .dq-diff-item { background: rgba(255,255,255,.04); }
+.dark .dq-apply-result { background: rgba(33,150,83,.1); border-color: var(--primary); color: var(--primary); }
+.dark .dq-skipped-list { background: rgba(230,126,34,.06); }

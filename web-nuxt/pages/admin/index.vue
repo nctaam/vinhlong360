@@ -1,8 +1,11 @@
 <template>
   <div>
-    <h1>Dashboard</h1>
+    <div class="admin-head-row">
+      <h1>Dashboard</h1>
+      <button class="admin-refresh" :disabled="loading" @click="fetchDashboard">🔄 Làm mới</button>
+    </div>
 
-    <div v-if="loading" style="text-align: center; padding: 40px"><div class="spinner"></div></div>
+    <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
     <template v-else>
     <div class="stat-grid">
       <div class="stat-card">
@@ -29,16 +32,16 @@
         <div class="stat-value">{{ modStats.pending }}</div>
         <div class="stat-label">Chờ duyệt</div>
       </div>
-      <NuxtLink v-if="infoReports !== null" to="/admin/bao-cao" class="stat-card" style="text-decoration:none; color:inherit">
+      <NuxtLink v-if="infoReports !== null" to="/admin/bao-cao" class="stat-card admin-link-plain">
         <div class="stat-value">{{ infoReports }}</div>
         <div class="stat-label">Báo sai ⚠️</div>
       </NuxtLink>
     </div>
 
-    <h2 style="font-size: 1.1rem; margin-bottom: 12px">Theo loại</h2>
+    <h2 class="admin-section-title">Theo loại</h2>
     <div class="stat-grid">
-      <div v-for="(count, type) in stats.by_type" :key="type" class="stat-card">
-        <div class="stat-value" style="font-size: 1.3rem">{{ count }}</div>
+      <div v-for="(count, type) in stats.by_type" :key="type" class="stat-card admin-type-stat">
+        <div class="stat-value">{{ count }}</div>
         <div class="stat-label">{{ type }}</div>
       </div>
     </div>
@@ -56,7 +59,8 @@ const modStats = ref<any>({})
 const infoReports = ref<number | null>(null)
 const loading = ref(true)
 
-onMounted(async () => {
+async function fetchDashboard() {
+  loading.value = true
   try {
     const [s, m, ir] = await Promise.all([
       $fetch<any>('/admin-api/stats', { headers: authHeaders() }),
@@ -70,5 +74,7 @@ onMounted(async () => {
     showToast('Không thể tải dữ liệu dashboard', 'error')
   }
   loading.value = false
-})
+}
+
+onMounted(fetchDashboard)
 </script>

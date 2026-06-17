@@ -35,6 +35,7 @@
 </template>
 
 <script setup lang="ts">
+useReveal()
 useSeoMeta({
   title: 'Điều khoản sử dụng — vinhlong360',
   description: 'Điều khoản sử dụng nền tảng vinhlong360.vn: tài khoản, nội dung người dùng, báo cáo & gỡ nội dung.',
@@ -44,8 +45,12 @@ useSeoMeta({
 <style scoped>
 .legal-page { max-width: 760px; margin: 0 auto; padding: var(--space-8) var(--space-5) var(--space-16); line-height: var(--leading-relaxed); }
 .legal-page h1 { font-size: var(--text-2xl); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); margin-bottom: var(--space-1); }
-.legal-page h2 { font-size: var(--text-lg); font-weight: var(--weight-semibold); margin: var(--space-8) 0 var(--space-2); }
-.legal-updated { color: var(--muted); font-size: var(--text-sm); margin-bottom: var(--space-5); }
+.legal-page h2 { font-size: var(--text-lg); font-weight: var(--weight-semibold); margin: var(--space-8) 0 var(--space-3); padding-bottom: var(--space-2); border-bottom: 1px solid var(--line); }
+.legal-updated { color: var(--muted); font-size: var(--text-sm); margin-bottom: var(--space-6); }
+.legal-page p { font-size: var(--text-sm); color: var(--ink-secondary, var(--ink)); }
 .legal-page ul { padding-left: var(--space-5); }
-.legal-page li { margin: var(--space-2) 0; }
+.legal-page li { margin: var(--space-2) 0; font-size: var(--text-sm); color: var(--ink-secondary, var(--ink)); }
+.legal-page a { color: var(--primary-fg); font-weight: var(--weight-semibold); text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color var(--duration-fast); }
+.legal-page a:hover { text-decoration-color: var(--primary-fg); }
+.legal-page a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 </style>

@@ -1,9 +1,12 @@
 <template>
-  <div class="admin-page">
-    <h1>Thống kê & Phân tích</h1>
-    <p class="muted">User hỏi gì · bot bí ở đâu (backlog nội dung) · chi phí LLM.</p>
+  <div>
+    <div class="admin-head-row">
+      <h1>Thống kê & Phân tích</h1>
+      <button class="admin-refresh" :disabled="loading" @click="fetchData">🔄 Làm mới</button>
+    </div>
+    <p class="admin-muted">User hỏi gì · bot bí ở đâu (backlog nội dung) · chi phí LLM.</p>
 
-    <div v-if="loading" class="muted">Đang tải…</div>
+    <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
     <template v-else>
       <!-- Summary -->
       <div class="stat-grid">
@@ -19,7 +22,7 @@
           <ol v-if="(data.popular || []).length" class="rows">
             <li v-for="(it, i) in data.popular" :key="i"><span>{{ label(it) }}</span><b>{{ count(it) }}</b></li>
           </ol>
-          <p v-else class="muted">Chưa có dữ liệu.</p>
+          <p v-else class="admin-muted">Chưa có dữ liệu.</p>
         </section>
 
         <section class="panel">
@@ -27,7 +30,7 @@
           <ol v-if="(data.gaps || []).length" class="rows">
             <li v-for="(it, i) in data.gaps" :key="i"><span>{{ label(it) }}</span><b>{{ count(it) }}</b></li>
           </ol>
-          <p v-else class="muted">Không có gap — tốt!</p>
+          <p v-else class="admin-muted">Không có gap — tốt!</p>
         </section>
 
         <section class="panel">
@@ -35,7 +38,7 @@
           <ol v-if="(data.top_entities || []).length" class="rows">
             <li v-for="(it, i) in data.top_entities" :key="i"><span>{{ it.name || it.id || label(it) }}</span><b>{{ count(it) }}</b></li>
           </ol>
-          <p v-else class="muted">Chưa có dữ liệu.</p>
+          <p v-else class="admin-muted">Chưa có dữ liệu.</p>
         </section>
       </div>
     </template>
@@ -61,29 +64,31 @@ const costTotal = computed(() => {
   return v != null ? (typeof v === 'number' ? v.toLocaleString('vi-VN') : v) : '—'
 })
 
-onMounted(async () => {
+async function fetchData() {
+  loading.value = true
   try {
     data.value = await $fetch<any>('/admin-api/analytics-overview', { headers: authHeaders() })
   } catch (e: any) {
     showToast(e.data?.detail || 'Không thể tải thống kê', 'error')
-  } finally {
-    loading.value = false
   }
-})
+  loading.value = false
+}
+
+onMounted(fetchData)
 </script>
 
 <style scoped>
-.admin-page { padding: 24px; }
-.muted { color: var(--muted, #888); }
-.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 16px 0 24px; }
-.stat-card { background: var(--surface, #fff); border: 1px solid rgba(0,0,0,.08); border-radius: 10px; padding: 16px; text-align: center; }
 .stat-num { font-size: 1.6rem; font-weight: 700; }
 .stat-lbl { font-size: .82rem; color: var(--muted, #888); margin-top: 4px; }
 .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-.panel { background: var(--surface, #fff); border: 1px solid rgba(0,0,0,.08); border-radius: 10px; padding: 16px; }
+.panel { background: var(--bg, #fff); border: 1px solid var(--line, #eee); border-radius: 10px; padding: 16px; }
 .panel h2 { font-size: 1rem; margin-bottom: 10px; }
 .rows { list-style: none; padding: 0; margin: 0; }
-.rows li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,.05); font-size: .9rem; }
+.rows li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line, #eee); font-size: .9rem; }
 .rows li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rows li b { color: var(--primary, #9C3D22); }
+.rows li b { color: var(--primary); }
+
+.panel { transition: transform var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-out); }
+.panel:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
 </style>

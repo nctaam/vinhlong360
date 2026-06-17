@@ -6,42 +6,30 @@
       <div class="hero-inner">
         <h1>{{ seasonalTagline }}</h1>
         <p class="hero-sub">Trải nghiệm miệt vườn, đặc sản theo mùa, lễ hội truyền thống — tất cả trong một bản đồ.</p>
-        <form class="hero-search" @submit.prevent="onHeroSearch">
-          <input v-model="heroQ" type="search" placeholder="Tìm: chôm chôm, kẹo dừa, cù lao An Bình…" />
+        <form class="hero-search" role="search" aria-label="Tìm kiếm trang chủ" @submit.prevent="onHeroSearch">
+          <input v-model="heroQ" type="search" placeholder="Tìm: chôm chôm, kẹo dừa, cù lao An Bình…" aria-label="Tìm kiếm điểm đến, đặc sản" />
           <button type="submit">Tìm</button>
         </form>
         <div class="hero-pills">
+          <NuxtLink to="/lich-trinh" class="hero-pill">🗓️ Cuối tuần 2N1Đ</NuxtLink>
+          <NuxtLink to="/kham-pha/am-thuc" class="hero-pill">🍲 Ẩm thực</NuxtLink>
+          <NuxtLink to="/ocop" class="hero-pill">🎁 Quà OCOP</NuxtLink>
           <NuxtLink to="/du-lich" class="hero-pill">🌿 Miệt vườn</NuxtLink>
           <NuxtLink to="/le-hoi" class="hero-pill">🎭 Lễ hội</NuxtLink>
-          <NuxtLink to="/san-pham" class="hero-pill">🍊 Đặc sản</NuxtLink>
-          <NuxtLink to="/lich-trinh" class="hero-pill">📋 Lịch trình</NuxtLink>
+          <NuxtLink to="/ban-do" class="hero-pill" no-prefetch>🗺️ Bản đồ</NuxtLink>
         </div>
-        <dl v-if="stats" class="hero-stats">
-          <div class="hero-stat">
-            <dd>{{ stats.total }}</dd>
-            <dt>điểm dữ liệu</dt>
-          </div>
-          <div class="hero-stat">
-            <dd>{{ stats.places }}</dd>
-            <dt>xã/phường</dt>
-          </div>
-          <div class="hero-stat">
-            <dd>{{ stats.itineraries }}</dd>
-            <dt>lịch trình</dt>
-          </div>
-        </dl>
       </div>
     </section>
 
     <!-- 2. "Đang diễn ra" — upcoming events + seasonal merged -->
-    <section v-if="upcomingEvents.length || seasonal.length" class="block">
+    <section v-if="upcomingEvents.length || seasonal.length" class="block reveal">
       <div class="section-head">
         <h2>Đang diễn ra</h2>
         <NuxtLink class="see-all" to="/su-kien">Xem lịch →</NuxtLink>
       </div>
 
       <!-- Upcoming events -->
-      <div v-if="upcomingEvents.length" class="happening-scroll">
+      <div v-if="upcomingEvents.length" class="happening-scroll" role="region" aria-label="Sự kiện sắp diễn ra">
         <NuxtLink
           v-for="ev in upcomingEvents"
           :key="ev.id"
@@ -66,19 +54,19 @@
       <!-- Seasonal products/experiences -->
       <div v-if="seasonal.length" class="happening-section">
         <p class="happening-label">🔥 Đang vào mùa tháng {{ currentMonth }}</p>
-        <div class="scroll-row">
+        <div class="scroll-row" role="region" aria-label="Đặc sản theo mùa">
           <EntityCard v-for="e in seasonal" :key="e.id" :entity="e" :season-filter="String(currentMonth)" />
         </div>
       </div>
     </section>
 
     <!-- 3. Lịch trình gợi ý (đẩy lên sớm — 25% user là Planner) -->
-    <section v-if="itineraries.length" class="block">
+    <section v-if="itineraries.length" class="block reveal">
       <div class="section-head">
         <h2>Lịch trình gợi ý</h2>
         <NuxtLink class="see-all" to="/lich-trinh">Xem tất cả →</NuxtLink>
       </div>
-      <div class="scroll-row">
+      <div class="scroll-row" role="region" aria-label="Lịch trình gợi ý">
         <ItineraryCard v-for="it in itineraries" :key="it.id" :itinerary="it" />
       </div>
       <div class="block-cta">
@@ -87,7 +75,7 @@
     </section>
 
     <!-- 4. 3 Vùng -->
-    <section class="block">
+    <section class="block reveal">
       <div class="section-head">
         <h2>Khám phá 3 vùng</h2>
         <NuxtLink class="see-all" to="/ban-do" no-prefetch>Xem bản đồ →</NuxtLink>
@@ -111,23 +99,23 @@
     </section>
 
     <!-- 5. Trải nghiệm nổi bật (giảm 8→4, có story) -->
-    <section class="block">
+    <section class="block reveal">
       <div class="section-head">
         <h2>Trải nghiệm nổi bật</h2>
         <NuxtLink class="see-all" to="/du-lich">Xem tất cả →</NuxtLink>
       </div>
-      <div class="scroll-row">
+      <div class="scroll-row" role="region" aria-label="Trải nghiệm nổi bật">
         <EntityCard v-for="e in topExperiences" :key="e.id" :entity="e" />
       </div>
     </section>
 
     <!-- 6. Đặc sản (fallback khi seasonal trống, hoặc products riêng) -->
-    <section v-if="!seasonal.length && products.length" class="block">
+    <section v-if="!seasonal.length && products.length" class="block reveal">
       <div class="section-head">
         <h2>Đặc sản &amp; sản phẩm</h2>
         <NuxtLink class="see-all" to="/san-pham">Xem tất cả →</NuxtLink>
       </div>
-      <div class="scroll-row">
+      <div class="scroll-row" role="region" aria-label="Đặc sản và sản phẩm">
         <EntityCard v-for="e in products" :key="e.id" :entity="e" />
       </div>
     </section>
@@ -137,9 +125,9 @@
       <section v-if="recentSaved.length" class="block">
         <div class="section-head">
           <h2>Đã lưu gần đây</h2>
-          <NuxtLink class="see-all" to="/hanh-trinh">Xem tất cả →</NuxtLink>
+          <NuxtLink class="see-all" to="/lich-trinh">Xem tất cả →</NuxtLink>
         </div>
-        <div class="scroll-row">
+        <div class="scroll-row" role="region" aria-label="Đã lưu gần đây">
           <NuxtLink v-for="fav in recentSaved" :key="fav.id" :to="`/dia-diem/${fav.id}`" class="card">
             <div v-if="fav.image" class="cover cover-img">
               <img :src="fav.image" :alt="fav.name" loading="lazy" />
@@ -155,11 +143,13 @@
           <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-outline">Tạo lịch trình từ danh sách đã lưu</NuxtLink>
         </div>
       </section>
-      <AIRecommendations title="Có thể bạn quan tâm" :limit="4" />
+      <NuxtErrorBoundary>
+        <AIRecommendations title="Có thể bạn quan tâm" :limit="4" />
+      </NuxtErrorBoundary>
     </ClientOnly>
 
     <!-- 8. Quick links + Chatbot CTA -->
-    <section class="block block-compact">
+    <section class="block block-compact reveal">
       <div class="section-head">
         <h2>Khám phá thêm</h2>
       </div>
@@ -186,6 +176,7 @@
 <script setup lang="ts">
 import { TYPE_META, AREA_META } from '~/composables/useConstants'
 
+useReveal()
 const { favorites } = useFavorites()
 const recentSaved = computed(() => favorites.value.slice(0, 4))
 function getFavTypeMeta(type: string) {
@@ -204,15 +195,6 @@ const products = computed(() => homeData.value?.products || [])
 const itineraries = computed(() => homeData.value?.itineraries || [])
 const upcomingEvents = computed(() => homeData.value?.upcoming_events || [])
 const seasonalTagline = computed(() => homeData.value?.seasonal_tagline || 'Khám phá Vĩnh Long theo cách của người bản địa')
-const stats = computed(() => {
-  const raw = homeData.value?.stats
-  if (!raw) return null
-  return {
-    total: raw.entities || 0,
-    places: raw.places || 0,
-    itineraries: raw.itineraries || 0,
-  }
-})
 
 const areaKeys = Object.keys(AREA_META)
 const REGION_IMG: Record<string, string> = { 'vinh-long': 'attraction', 'ben-tre': 'nature', 'tra-vinh': 'history' }
@@ -347,29 +329,6 @@ useHead({
 .home .block { padding-top: var(--space-16); padding-bottom: var(--space-4); }
 .home .block-compact { padding-top: var(--space-8); padding-bottom: var(--space-12); }
 
-/* Hero stats — semantic dl, no border-left dividers */
-.home .hero-stats {
-  display: flex;
-  gap: var(--space-8);
-  margin: var(--space-6) 0 0;
-  padding: 0;
-  flex-wrap: wrap;
-}
-.home .hero-stat {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
-}
-.home .hero-stat dd {
-  margin: 0;
-  font-size: var(--text-xl);
-  font-weight: var(--weight-bold);
-}
-.home .hero-stat dt {
-  font-size: var(--text-sm);
-  opacity: .8;
-  font-weight: var(--weight-normal);
-}
 
 /* ── Hero quick-pick pills ── */
 .hero-pills {
@@ -396,14 +355,27 @@ useHead({
 }
 .hero-pill:hover {
   background: rgba(255,255,255,.3);
-  transform: translateY(-2px) scale(1.02);
+  transform: translateY(-2px);
+}
+.hero-pill:active {
+  transform: scale(.95);
+  transition-duration: .1s;
+}
+.hero-pill:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 
-/* ── Horizontal scroll row (mobile → scroll, desktop → grid) ── */
+/* ── Horizontal scroll row (mobile → scroll, tablet → 2col, desktop → grid) ── */
 .scroll-row {
   display: grid;
   gap: var(--space-5);
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+@media (min-width: 769px) and (max-width: 1024px) {
+  .scroll-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 @media (max-width: 768px) {
   .scroll-row {
@@ -411,11 +383,15 @@ useHead({
     gap: var(--space-3);
     overflow-x: auto;
     scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
     -webkit-overflow-scrolling: touch;
     padding-bottom: var(--space-2);
     scrollbar-width: none;
+    mask-image: linear-gradient(to right, #000 90%, transparent);
+    -webkit-mask-image: linear-gradient(to right, #000 90%, transparent);
   }
   .scroll-row::-webkit-scrollbar { display: none; }
+  .scroll-row:hover, .scroll-row:focus-within { mask-image: none; -webkit-mask-image: none; }
   .scroll-row > * {
     flex: 0 0 280px;
     scroll-snap-align: start;
@@ -446,8 +422,16 @@ useHead({
   transition: transform var(--duration-fast) var(--ease-spring), box-shadow var(--duration-fast) var(--ease-out);
 }
 .event-card:hover {
-  transform: translateY(-4px) scale(1.01);
+  transform: translateY(-3px);
   box-shadow: var(--shadow-md);
+}
+.event-card:active {
+  transform: scale(.97);
+  transition-duration: .1s;
+}
+.event-card:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
 }
 .ec-date {
   display: flex;
@@ -522,10 +506,14 @@ useHead({
     border-color var(--duration-fast) var(--ease-out);
 }
 .quick-link:hover {
-  transform: translateY(-2px) scale(1.02);
+  transform: translateY(-2px);
   box-shadow: var(--shadow-sm);
   border-color: var(--primary-fg);
   color: var(--primary-fg);
+}
+.quick-link:active {
+  transform: scale(.95);
+  transition-duration: .1s;
 }
 .quick-link:focus-visible {
   outline: 2px solid var(--primary);
@@ -564,7 +552,14 @@ useHead({
 .chatbot-cta-btn:hover {
   background: var(--primary-dark, var(--primary));
   transform: translateY(-1px);
-  opacity: .88;
+}
+.chatbot-cta-btn:active {
+  transform: scale(.95);
+  transition-duration: .1s;
+}
+.chatbot-cta-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
 }
 
 /* Dark mode: hero gradient */

@@ -5,7 +5,7 @@
       <span class="ai-toggle">{{ expanded ? '▲' : '▼' }}</span>
     </button>
     <div v-if="expanded" class="ai-tips-body">
-      <div v-if="loading" class="ai-loading"><div class="spinner" style="margin: 0 auto"></div><small>Đang tạo gợi ý…</small></div>
+      <div v-if="loading" class="ai-loading"><div class="spinner spinner-center"></div><small>Đang tạo gợi ý…</small></div>
       <div v-else-if="tips" class="ai-content" v-html="formatTips(tips)"></div>
       <div v-else class="ai-loading"><small>Không tạo được gợi ý lúc này.</small></div>
     </div>
@@ -28,8 +28,8 @@ function sanitize(text: string) {
 function formatTips(text: string) {
   return sanitize(text)
     .replace(/\n/g, '<br>')
-    .replace(/•\s*/g, '<span style="color:var(--primary)">•</span> ')
-    .replace(/- /g, '<span style="color:var(--primary)">•</span> ')
+    .replace(/•\s*/g, '<span class="tip-bullet">•</span> ')
+    .replace(/- /g, '<span class="tip-bullet">•</span> ')
 }
 
 async function toggle() {
@@ -43,3 +43,10 @@ async function toggle() {
   }
 }
 </script>
+
+<style scoped>
+.spinner-center { margin: 0 auto; }
+:deep(.tip-bullet) { color: var(--primary); }
+.ai-tips-body { animation: tipsSlideIn .25s var(--ease-out); }
+@keyframes tipsSlideIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+</style>

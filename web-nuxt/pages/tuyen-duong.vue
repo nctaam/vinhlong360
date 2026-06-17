@@ -1,10 +1,27 @@
 <template>
   <section class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tuyến đường gợi ý' }]" />
-    <div class="page-head">
-      <h1>Tuyến đường gợi ý</h1>
-      <p>Các vòng khám phá tự lái / xe máy qua miệt vườn, làng nghề và văn hóa bản địa.</p>
-    </div>
+
+    <!-- Hero -->
+    <section class="catalog-hero cat-route">
+      <div class="catalog-hero-inner">
+        <span class="catalog-hero-icon">🛤️</span>
+        <div>
+          <h1>Tuyến đường gợi ý</h1>
+          <p>Các vòng khám phá tự lái / xe máy qua miệt vườn, làng nghề và văn hóa bản địa — chọn vòng, lên xe và đi.</p>
+        </div>
+      </div>
+      <div class="catalog-stats">
+        <div class="stat-item">
+          <span class="stat-num">{{ ROUTES.length }}</span>
+          <span class="stat-label">tuyến đường</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num">3</span>
+          <span class="stat-label">khu vực</span>
+        </div>
+      </div>
+    </section>
 
     <div class="controls">
       <p class="control-label">Khu vực</p>
@@ -47,11 +64,36 @@
         </div>
       </div>
     </div>
+
+    <!-- Cross-links -->
+    <section class="block catalog-cross reveal">
+      <h2>Khám phá thêm</h2>
+      <div class="cross-links">
+        <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
+          <span class="cross-icon">🗺️</span>
+          <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
+        </NuxtLink>
+        <NuxtLink to="/lich-trinh" class="cross-card">
+          <span class="cross-icon">🗓️</span>
+          <div><strong>Lịch trình</strong><p>Tuyến đi sẵn</p></div>
+        </NuxtLink>
+        <NuxtLink to="/du-lich" class="cross-card">
+          <span class="cross-icon">🌿</span>
+          <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
+        </NuxtLink>
+        <NuxtLink to="/luu-tru" class="cross-card">
+          <span class="cross-icon">🏡</span>
+          <div><strong>Lưu trú</strong><p>Homestay, nhà vườn</p></div>
+        </NuxtLink>
+      </div>
+    </section>
   </section>
 </template>
 
 <script setup lang="ts">
 import { AREA_META } from '~/composables/useConstants'
+
+useReveal()
 
 const areaFilter = ref('all')
 
@@ -191,8 +233,9 @@ useHead({
 
 <style scoped>
 .route-grid { display: flex; flex-direction: column; gap: var(--space-6); }
-.route-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: transform var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-out); }
-.route-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.route-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: transform var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-out), border-color var(--duration-fast); }
+.route-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); }
+.route-card:active { transform: translateY(0) scale(.99); transition-duration: .08s; }
 .route-header { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-5) var(--space-6); color: #fff; }
 .route-header h2 { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); }
 .route-meta { font-size: var(--text-sm); opacity: .9; }
@@ -204,9 +247,13 @@ useHead({
 .route-body p { margin: 0 0 var(--space-3); line-height: var(--leading-relaxed); color: var(--ink); }
 .route-body h3 { font-size: var(--text-base); font-weight: var(--weight-semibold); margin: var(--space-4) 0 var(--space-2); }
 .route-stops { margin: 0 0 var(--space-3); padding-left: var(--space-5); }
-.route-stops li { margin-bottom: var(--space-2); line-height: var(--leading-normal); }
+.route-stops li { margin-bottom: var(--space-2); line-height: var(--leading-normal); transition: transform var(--duration-fast) var(--ease-out); }
+.route-stops li:hover { transform: translateX(2px); }
 .route-stops strong { color: var(--ink); }
 .route-stops span { color: var(--muted); font-size: var(--text-sm); }
 .route-tips { background: var(--badge-season-bg); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); font-size: var(--text-sm); margin-bottom: var(--space-3); line-height: var(--leading-normal); }
 .route-links { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.route-links .btn { transition: all var(--duration-fast) var(--ease-out); }
+.route-links .btn:active { transform: scale(.95); transition-duration: .08s; }
+
 </style>

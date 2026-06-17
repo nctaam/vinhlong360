@@ -1,6 +1,6 @@
 <template>
   <div v-if="!data?.place" class="page">
-    <p class="empty" style="padding:40px 0">Không tìm thấy xã/phường này.</p>
+    <p class="empty">Không tìm thấy xã/phường này.</p>
   </div>
 
   <div v-else class="wp">
@@ -61,7 +61,7 @@
         </section>
 
         <!-- Lưu trú -->
-        <section v-if="data.lodging?.length" class="wp-sec">
+        <section v-if="data.lodging?.length" class="wp-sec reveal">
           <h2><span class="sec-icon">🏡</span> Lưu trú <span class="cnt">({{ data.lodging.length }})</span></h2>
           <div class="wp-grid">
             <EntityCard v-for="e in data.lodging" :key="e.id" :entity="e" />
@@ -69,7 +69,7 @@
         </section>
 
         <!-- Sản phẩm -->
-        <section v-if="data.products?.length" class="wp-sec">
+        <section v-if="data.products?.length" class="wp-sec reveal">
           <h2><span class="sec-icon">🍊</span> Đặc sản &amp; sản phẩm <span class="cnt">({{ data.products.length }})</span></h2>
           <div class="wp-grid">
             <EntityCard v-for="e in data.products" :key="e.id" :entity="e" />
@@ -118,6 +118,8 @@
 
 <script setup lang="ts">
 import { AREA_META, OFFICE_KIND, TYPE_META } from '~/composables/useConstants'
+
+useReveal()
 
 const route = useRoute()
 const id = computed(() => route.params.id as string)
@@ -213,7 +215,7 @@ watch(mapEl, async (el) => {
     new maplibregl.Marker({ element: el })
       .setLngLat([c[1], c[0]])
       .setPopup(new maplibregl.Popup({ offset: 20, maxWidth: '220px' }).setHTML(
-        `<a href="/dia-diem/${ent.id}" style="font-weight:700;color:#9C3D22">${ent.name}</a><br><small>${meta.label}</small>`
+        `<a href="/dia-diem/${ent.id}" class="map-popup-link">${ent.name}</a><br><small>${meta.label}</small>`
       ))
       .addTo(map)
     bounds.extend([c[1], c[0]])
@@ -226,49 +228,50 @@ watch(mapEl, async (el) => {
 </script>
 
 <style scoped>
-.wp { max-width: var(--maxw, 1100px); margin: 0 auto; padding: 0 16px 64px; }
+.wp { max-width: var(--maxw, 1100px); margin: 0 auto; padding: 0 var(--space-4) var(--space-16); }
 
 /* Hero */
-.wp-hero { border-radius: 16px; padding: 32px 28px; margin-top: 8px; color: #fff; position: relative; overflow: hidden; }
+.wp-hero { border-radius: var(--radius-lg, 16px); padding: var(--space-8) var(--space-6); margin-top: var(--space-2); color: #fff; position: relative; overflow: hidden; }
 .wp-hero.area-vinh-long { background: linear-gradient(135deg, #9C3D22 0%, #c0542e 50%, #d4764a 100%); }
 .wp-hero.area-ben-tre { background: linear-gradient(135deg, #1b7a3d 0%, #27944e 50%, #4bae6a 100%); }
 .wp-hero.area-tra-vinh { background: linear-gradient(135deg, #6b3fa0 0%, #8354b8 50%, #a070d0 100%); }
 .wp-hero-inner { position: relative; z-index: 1; }
-.wp-level { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; opacity: .85; font-weight: 700; }
-.wp-hero h1 { margin: 4px 0 6px; font-size: 1.8rem; }
-.wp-region { margin: 0; opacity: .9; }
-.wp-region a { color: #fff; text-decoration: underline; text-underline-offset: 2px; }
-.wp-region-emoji { margin-right: 4px; }
+.wp-level { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .06em; opacity: .85; font-weight: var(--weight-bold); }
+.wp-hero h1 { margin: var(--space-1) 0 var(--space-1); font-size: clamp(1.5rem, 4vw, 1.8rem); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); }
+.wp-region { margin: 0; opacity: .9; font-size: var(--text-sm); }
+.wp-region a { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+.wp-region-emoji { margin-right: var(--space-1); }
 
-.wp-stats { display: flex; gap: 24px; margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.25); }
+.wp-stats { display: flex; gap: var(--space-6); margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid rgba(255,255,255,.25); }
 .wp-stat { text-align: center; }
-.wp-stat-val { display: block; font-size: 1.3rem; font-weight: 800; }
-.wp-stat-label { font-size: .75rem; opacity: .8; text-transform: uppercase; letter-spacing: .03em; }
+.wp-stat-val { display: block; font-size: var(--text-xl); font-weight: var(--weight-extrabold); }
+.wp-stat-label { font-size: var(--text-xs); opacity: .8; text-transform: uppercase; letter-spacing: .03em; }
 
 /* Summary */
-.wp-summary { max-width: 72ch; font-size: 1rem; line-height: 1.65; color: var(--ink); margin: 20px 0 4px; }
+.wp-summary { max-width: 72ch; font-size: var(--text-base); line-height: var(--leading-relaxed); color: var(--ink); margin: var(--space-5) 0 var(--space-1); }
 
 /* Map */
-.wp-map-sec { margin: 20px 0 8px; }
-.wp-map-container { width: 100%; height: 380px; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); }
-:deep(.wp-marker) { font-size: 1.6rem; cursor: pointer; filter: drop-shadow(0 1px 3px rgba(0,0,0,.4)); line-height: 1; transition: transform .15s; }
-:deep(.wp-marker:hover) { transform: scale(1.3); }
+.wp-map-sec { margin: var(--space-5) 0 var(--space-2); }
+.wp-map-container { width: 100%; height: 380px; border-radius: var(--radius-lg, 16px); overflow: hidden; border: 1px solid var(--line); }
+:deep(.wp-marker) { font-size: 1.6rem; cursor: pointer; filter: drop-shadow(0 1px 3px rgba(0,0,0,.4)); line-height: 1; transition: transform .2s var(--ease-spring); }
+:deep(.wp-marker:hover) { transform: scale(1.25); }
 
 /* Body layout */
-.wp-body { display: grid; grid-template-columns: 1fr 320px; gap: 28px; margin-top: 20px; align-items: start; }
+.wp-body { display: grid; grid-template-columns: 1fr 320px; gap: var(--space-6); margin-top: var(--space-5); align-items: start; }
 
 /* Sections */
-.wp-sec { margin-bottom: 28px; }
-.wp-sec h2 { font-size: 1.15rem; margin: 0 0 14px; display: flex; align-items: center; gap: 6px; }
+.wp-sec { margin-bottom: var(--space-6); }
+.wp-sec h2 { font-size: var(--text-base); font-weight: var(--weight-semibold); margin: 0 0 var(--space-4); display: flex; align-items: center; gap: var(--space-2); }
 .sec-icon { font-size: 1.2rem; }
-.cnt { color: var(--muted); font-weight: 400; font-size: .88rem; }
-.wp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
-.wp-empty { color: var(--muted); font-size: .92rem; padding: 20px 0; }
+.cnt { color: var(--muted); font-weight: var(--weight-normal); font-size: var(--text-sm); }
+.wp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: var(--space-4); }
+.wp-empty { color: var(--muted); font-size: var(--text-sm); padding: var(--space-5) 0; }
 
 /* Sidebar cards */
-.wp-aside { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 78px; }
-.wp-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius, 12px); padding: 18px; box-shadow: var(--shadow); }
-.wp-card h3 { font-size: 1rem; margin: 0 0 12px; }
+.wp-aside { display: flex; flex-direction: column; gap: var(--space-4); position: sticky; top: 78px; }
+.wp-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg, 16px); padding: var(--space-5); box-shadow: var(--shadow); transition: transform var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-out); }
+.wp-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.wp-card h3 { font-size: var(--text-base); font-weight: var(--weight-semibold); margin: 0 0 var(--space-3); }
 
 /* Contact list */
 .wp-contact { display: flex; flex-direction: column; gap: 10px; }
@@ -282,15 +285,17 @@ watch(mapEl, async (el) => {
 
 /* Facilities */
 .wp-fac-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
-.wp-fac { padding: 8px 0; border-bottom: 1px solid var(--line); }
+.wp-fac { padding: 8px 0; border-bottom: 1px solid var(--line); transition: background var(--duration-fast) var(--ease-out); border-radius: 6px; }
+.wp-fac:hover { background: var(--bg-warm); }
 .wp-fac:last-child { border-bottom: none; }
 .wp-fac-kind { font-size: .75rem; color: var(--primary); display: block; margin-bottom: 2px; }
 .wp-fac-row { font-size: .85rem; color: var(--muted); margin-top: 2px; }
 .wp-fac-row a { color: var(--primary); }
 
 /* Map button */
-.wp-map-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border-radius: var(--radius, 12px); background: var(--bg-warm, #faf6f2); border: 1px solid var(--line); font-weight: 700; font-size: .92rem; color: var(--ink); transition: background .12s; }
+.wp-map-btn { display: flex; align-items: center; justify-content: center; gap: var(--space-2); padding: var(--space-3); border-radius: var(--radius-lg, 16px); background: var(--bg-warm, #faf6f2); border: 1px solid var(--line); font-weight: var(--weight-bold); font-size: var(--text-sm); color: var(--ink); min-height: 44px; transition: background var(--duration-fast, .15s), transform var(--duration-fast, .15s); }
 .wp-map-btn:hover { background: var(--line); }
+.wp-map-btn:active { transform: scale(.97); }
 
 /* Responsive */
 @media (max-width: 840px) {
@@ -304,4 +309,5 @@ watch(mapEl, async (el) => {
   .wp-stat-val { font-size: 1.1rem; }
   .wp-map-container { height: 260px; border-radius: 10px; }
 }
+
 </style>

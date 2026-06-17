@@ -1,19 +1,40 @@
 <template>
-  <div v-if="nearby.length" class="nearby-section">
-    <h2>Gần đây tại {{ areaLabel }}</h2>
-    <div class="nearby-grid">
-      <NuxtLink
-        v-for="e in nearby"
-        :key="e.id"
-        :to="`/dia-diem/${e.id}`"
-        class="nearby-item"
-      >
-        <span class="nearby-emoji">{{ getTypeMeta(e.type).emoji }}</span>
-        <div class="nearby-info">
-          <strong>{{ e.name }}</strong>
-          <small>{{ getTypeMeta(e.type).label }}</small>
-        </div>
-      </NuxtLink>
+  <div v-if="nearby.length || sameType.length" class="nearby-section">
+    <div v-if="nearby.length">
+      <h2>Gần đây tại {{ areaLabel }}</h2>
+      <div class="nearby-grid">
+        <NuxtLink
+          v-for="e in nearby"
+          :key="e.id"
+          :to="`/dia-diem/${e.id}`"
+          class="nearby-item"
+        >
+          <NuxtImg v-if="getThumb(e)" :src="getThumb(e)" :alt="e.name" class="nearby-thumb" width="56" height="56" loading="lazy" />
+          <span v-else class="nearby-emoji">{{ getTypeMeta(e.type).emoji }}</span>
+          <div class="nearby-info">
+            <strong>{{ e.name }}</strong>
+            <small>{{ getTypeMeta(e.type).label }}</small>
+          </div>
+        </NuxtLink>
+      </div>
+    </div>
+    <div v-if="sameType.length" class="nearby-sametype">
+      <h2>{{ sameTypeLabel }} khác</h2>
+      <div class="nearby-grid">
+        <NuxtLink
+          v-for="e in sameType"
+          :key="e.id"
+          :to="`/dia-diem/${e.id}`"
+          class="nearby-item"
+        >
+          <NuxtImg v-if="getThumb(e)" :src="getThumb(e)" :alt="e.name" class="nearby-thumb" width="56" height="56" loading="lazy" />
+          <span v-else class="nearby-emoji">{{ getTypeMeta(e.type).emoji }}</span>
+          <div class="nearby-info">
+            <strong>{{ e.name }}</strong>
+            <small v-if="e.place_name">{{ e.place_name }}</small>
+          </div>
+        </NuxtLink>
+      </div>
     </div>
   </div>
 </template>
@@ -28,9 +49,10 @@ const props = defineProps<{
 }>()
 
 const areaLabel = computed(() => AREA_META[props.area]?.name || props.area)
+const sameTypeLabel = computed(() => TYPE_META[props.entityType]?.label || props.entityType)
 
 const { data } = await useAsyncData(`nearby-${props.area}`, () =>
-  $fetch<any>(`/api/entities?area=${encodeURIComponent(props.area)}&limit=50`)
+  $fetch<any>(`/api/entities?area=${encodeURIComponent(props.area)}&limit=80`)
 )
 
 const nearby = computed(() => {
@@ -62,7 +84,25 @@ const nearby = computed(() => {
   return picked
 })
 
+const sameType = computed(() => {
+  if (!data.value) return []
+  return (data.value.entities || [])
+    .filter((e: any) =>
+      (e.place_area || e.area) === props.area &&
+      e.id !== props.entityId &&
+      e.type === props.entityType
+    )
+    .slice(0, 4)
+})
+
 function getTypeMeta(type: string) {
   return TYPE_META[type] || { emoji: '📍', label: type }
+}
+
+function getThumb(e: any): string | null {
+  const imgs = e.images || e.image_urls
+  if (Array.isArray(imgs) && imgs.length > 0) return imgs[0]
+  if (typeof e.image === 'string' && e.image) return e.image
+  return null
 }
 </script>

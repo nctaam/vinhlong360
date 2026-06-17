@@ -14,6 +14,7 @@ export default defineNuxtConfig({
   fonts: {
     defaults: { weights: [400, 600, 700, 800], subsets: ['vietnamese', 'latin', 'latin-ext'] },
     families: [{ name: 'Inter', provider: 'google' }],
+    display: 'swap',
   },
 
   // Ảnh: provider weserv (miễn phí, transcode WebP off-VPS) — KHÔNG dùng IPX
@@ -34,6 +35,7 @@ export default defineNuxtConfig({
     '~/assets/css/detail.css',
     '~/assets/css/catalog.css',
     '~/assets/css/events.css',
+    '~/assets/css/dark-overrides.css',
   ],
 
   app: {
@@ -63,6 +65,7 @@ export default defineNuxtConfig({
         { name: 'twitter:image', content: 'https://vinhlong360.vn/img/og-default.jpg' },
       ],
       link: [
+        { rel: 'preconnect', href: 'https://images.weserv.nl' },
         { rel: 'dns-prefetch', href: 'https://maptiles.openmap.vn' },
         { rel: 'sitemap', type: 'application/xml', href: '/sitemap.xml' },
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
@@ -70,7 +73,7 @@ export default defineNuxtConfig({
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
       ],
       script: [
-        { innerHTML: "if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js')}", type: 'text/javascript' },
+        { innerHTML: "if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js')})}", type: 'text/javascript' },
       ],
     },
   },
@@ -83,6 +86,23 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
+    // ISR: entity detail pages cached 1h, revalidate in background
+    '/dia-diem/**': { swr: 3600 },
+    '/khu-vuc/**': { swr: 3600 },
+    '/xa-phuong/**': { swr: 3600 },
+    // Listing pages: shorter cache
+    '/du-lich': { swr: 600 },
+    '/san-pham': { swr: 600 },
+    '/ocop': { swr: 600 },
+    '/le-hoi': { swr: 600 },
+    '/luu-tru': { swr: 600 },
+    '/lich-trinh': { swr: 600 },
+    '/lich-trinh/**': { swr: 1800 },
+    '/su-kien': { swr: 300 },
+    '/theo-mua': { swr: 600 },
+    // Static pages: long cache
+    '/': { swr: 300 },
+    '/ban-do': { swr: 1800 },
     '/admin/**': { ssr: false },
     '/api/stats': { proxy: `${apiBase}/api/stats`, swr: 300 },
     '/api/places': { proxy: `${apiBase}/api/places`, swr: 600 },
@@ -103,6 +123,10 @@ export default defineNuxtConfig({
     '/events': { proxy: `${apiBase}/events` },
     '/sitemap.xml': { proxy: `${apiBase}/sitemap.xml` },
     '/robots.txt': { proxy: `${apiBase}/robots.txt` },
+  },
+
+  experimental: {
+    viewTransition: true,
   },
 
   vite: {

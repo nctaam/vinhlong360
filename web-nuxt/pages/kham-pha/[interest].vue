@@ -1,10 +1,23 @@
 <template>
   <section class="page">
     <Breadcrumb :items="breadcrumbItems" />
-    <div class="page-head">
-      <h1>{{ interestMeta.emoji }} {{ interestMeta.label }}</h1>
-      <p>{{ interestMeta.description }}</p>
-    </div>
+
+    <!-- Hero -->
+    <section class="catalog-hero cat-interest">
+      <div class="catalog-hero-inner">
+        <span class="catalog-hero-icon">{{ interestMeta.emoji }}</span>
+        <div>
+          <h1>{{ interestMeta.label }}</h1>
+          <p>{{ interestMeta.description }}</p>
+        </div>
+      </div>
+      <div v-if="filtered.length" class="catalog-stats">
+        <div class="stat-item">
+          <span class="stat-num">{{ filtered.length }}</span>
+          <span class="stat-label">mục</span>
+        </div>
+      </div>
+    </section>
 
     <div class="interest-nav">
       <NuxtLink
@@ -17,47 +30,55 @@
 
     <div class="controls">
       <p class="control-label">Khu vực</p>
-      <div class="chip-row">
-        <button :class="['chip', { active: areaFilter === 'all' }]" @click="areaFilter = 'all'">Tất cả</button>
+      <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
+        <button :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả</button>
         <button
           v-for="(meta, key) in AREA_META"
           :key="key"
           :class="['chip', { active: areaFilter === key }]"
+          :aria-pressed="areaFilter === key"
           @click="areaFilter = key as string"
         >{{ meta.emoji }} {{ meta.name }}</button>
       </div>
     </div>
 
-    <p class="result-meta">{{ filtered.length }} kết quả</p>
-    <SkeletonGrid v-if="!data" :count="6" />
+    <p class="result-meta" aria-live="polite">{{ filtered.length }} kết quả</p>
+    <EmptyState v-if="fetchError" icon="⚠️" title="Không thể tải dữ liệu" message="Vui lòng thử lại sau." />
+    <SkeletonGrid v-else-if="!data" :count="6" />
     <div v-else-if="filtered.length" class="grid">
       <EntityCard v-for="e in filtered" :key="e.id" :entity="e" />
     </div>
     <EmptyState v-else message="Không tìm thấy kết quả phù hợp." />
 
-    <div v-if="interestMeta.relatedRoutes?.length" class="related-section">
-      <h2>🛤️ Tuyến đường liên quan</h2>
-      <div class="related-links">
-        <NuxtLink to="/tuyen-duong" class="btn btn-outline">Xem tất cả tuyến đường →</NuxtLink>
+    <!-- Cross-links -->
+    <section class="block catalog-cross reveal">
+      <h2>Khám phá thêm</h2>
+      <div class="cross-links">
+        <NuxtLink v-if="interestMeta.relatedRoutes?.length" to="/tuyen-duong" class="cross-card">
+          <span class="cross-icon">🛤️</span>
+          <div><strong>Tuyến đường</strong><p>Vòng khám phá gợi ý</p></div>
+        </NuxtLink>
+        <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
+          <span class="cross-icon">🗺️</span>
+          <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
+        </NuxtLink>
+        <NuxtLink to="/lich-trinh" class="cross-card">
+          <span class="cross-icon">🗓️</span>
+          <div><strong>Lịch trình</strong><p>Tuyến đi sẵn</p></div>
+        </NuxtLink>
+        <NuxtLink to="/ocop" class="cross-card">
+          <span class="cross-icon">⭐</span>
+          <div><strong>OCOP</strong><p>Sản phẩm sao</p></div>
+        </NuxtLink>
       </div>
-    </div>
-
-    <div class="related-section">
-      <h2>📂 Khám phá theo chủ đề khác</h2>
-      <div class="interest-nav">
-        <NuxtLink
-          v-for="(meta, key) in INTEREST_META"
-          :key="key"
-          :to="`/kham-pha/${key}`"
-          :class="['chip', { active: key === interest }]"
-        >{{ meta.emoji }} {{ meta.label }}</NuxtLink>
-      </div>
-    </div>
+    </section>
   </section>
 </template>
 
 <script setup lang="ts">
 import { AREA_META } from '~/composables/useConstants'
+
+useReveal()
 
 interface InterestDef {
   emoji: string
@@ -106,7 +127,12 @@ const INTEREST_META: Record<string, InterestDef> = {
 
 const route = useRoute()
 const interest = route.params.interest as string
-const interestMeta = computed(() => INTEREST_META[interest] || INTEREST_META['am-thuc'])
+
+if (!INTEREST_META[interest]) {
+  throw createError({ statusCode: 404, statusMessage: 'Chủ đề không tồn tại' })
+}
+
+const interestMeta = computed(() => INTEREST_META[interest])
 
 const breadcrumbItems = computed(() => [
   { label: 'Trang chủ', to: '/' },
@@ -117,7 +143,7 @@ const breadcrumbItems = computed(() => [
 const areaFilter = ref('all')
 useFilterUrl({ vung: areaFilter }, { vung: 'all' })
 
-const { data } = await useAsyncData(`interest-${interest}`, () =>
+const { data, error: fetchError } = await useAsyncData(`interest-${interest}`, () =>
   $fetch<any>('/api/entities?limit=200')
 )
 
@@ -158,9 +184,13 @@ useHead(() => ({
 </script>
 
 <style scoped>
-.interest-nav { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+.interest-nav { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-5); }
+.interest-nav .chip { transition: all var(--duration-fast) var(--ease-out); }
+.interest-nav .chip:active { transform: scale(.95); transition-duration: .08s; }
+.interest-nav .chip.active { box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+
 @media (max-width: 840px) { .interest-nav { flex-wrap: wrap; overflow-x: visible; } }
-.related-section { margin-top: 32px; }
-.related-section h2 { font-size: 1.1rem; margin: 0 0 12px; }
-.related-links { display: flex; gap: 8px; }
+
+.result-meta { color: var(--muted); font-size: var(--text-sm); margin-bottom: var(--space-3); }
+
 </style>

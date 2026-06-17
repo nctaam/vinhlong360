@@ -7,11 +7,11 @@
           <span class="logo">vinhlong<span class="dot">360</span></span>
           <span class="tld">.vn</span>
         </NuxtLink>
-        <button class="nav-toggle" :aria-expanded="mobileNav" aria-controls="main-nav" aria-label="Menu" @click="mobileNav = !mobileNav">
+        <button class="nav-toggle" :aria-expanded="mobileNav" aria-haspopup="true" aria-controls="main-nav" aria-label="Menu" @click="mobileNav = !mobileNav">
           <span></span><span></span><span></span>
         </button>
-        <div class="nav-backdrop" :class="{ show: mobileNav }" @click="mobileNav = false"></div>
-        <nav id="main-nav" class="main-nav" :class="{ open: mobileNav }">
+        <div class="nav-backdrop" :class="{ show: mobileNav }" aria-hidden="true" @click="mobileNav = false"></div>
+        <nav id="main-nav" class="main-nav" :class="{ open: mobileNav }" @keydown="onNavKeydown">
           <template v-for="(g, i) in navGroups" :key="g.label">
             <NuxtLink v-if="g.to" :to="g.to" :class="{ active: isActive(g) }" @click="closeAll">{{ g.label }}</NuxtLink>
             <div v-else class="nav-group" :class="{ open: openGroup === i }">
@@ -24,14 +24,7 @@
             </div>
           </template>
         </nav>
-        <form class="topbar-search" role="search" @submit.prevent="onSearch">
-          <input
-            v-model="searchQuery"
-            type="search"
-            placeholder="Tìm đặc sản, trải nghiệm…"
-            aria-label="Tìm kiếm"
-          />
-        </form>
+        <SearchAutocomplete class="topbar-search" />
         <div class="auth-area">
           <ClientOnly>
             <button class="theme-toggle" :aria-label="colorMode.value === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'" :title="colorMode.value === 'dark' ? 'Giao diện sáng' : 'Giao diện tối'" @click="toggleColorMode">
@@ -69,6 +62,7 @@
     </ClientOnly>
     <ChatWidget />
     <ClientOnly>
+      <OnboardingSheet />
       <JourneyBar />
       <ToastContainer />
     </ClientOnly>
@@ -113,6 +107,13 @@
                 <NuxtLink to="/khu-vuc/tra-vinh">🛕 Trà Vinh</NuxtLink>
               </nav>
             </div>
+            <div class="footer-col">
+              <h4>Dành cho cơ sở</h4>
+              <nav>
+                <NuxtLink to="/lien-he?ref=claim">🏷️ Đăng ký quản lý trang</NuxtLink>
+                <NuxtLink to="/lien-he">🤝 Hợp tác quảng bá</NuxtLink>
+              </nav>
+            </div>
           </div>
         </div>
         <div class="footer-bottom">
@@ -139,7 +140,6 @@ const colorMode = useColorMode()
 function toggleColorMode() {
   colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
 }
-const searchQuery = ref('')
 const showAuth = ref(false)
 const mobileNav = ref(false)
 const showBeta = ref(false)
@@ -167,7 +167,7 @@ const navGroups: Array<{ label: string; to?: string; children?: { to: string; la
   { label: 'Lịch trình', children: [
     { to: '/lich-trinh', label: 'Lịch trình gợi ý' },
     { to: '/tao-lich-trinh', label: 'Tạo lịch trình' },
-    { to: '/hanh-trinh', label: 'Đã lưu ❤️' },
+    { to: '/lich-trinh', label: 'Đã lưu ❤️' },
   ] },
   { label: 'Cộng đồng', to: '/cong-dong' },
 ]
@@ -181,17 +181,43 @@ function isActive(g: { to?: string; children?: { to: string }[] }) {
 
 watch(() => route.path, () => { closeAll() })
 
-onMounted(() => {
-  const onDoc = (e: MouseEvent) => { if (!(e.target as HTMLElement)?.closest('.main-nav')) openGroup.value = null }
-  const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') openGroup.value = null }
-  document.addEventListener('click', onDoc)
-  document.addEventListener('keydown', onEsc)
-  onUnmounted(() => { document.removeEventListener('click', onDoc); document.removeEventListener('keydown', onEsc) })
+watch(mobileNav, (open) => {
+  if (typeof document === 'undefined') return
+  document.body.style.overflow = open ? 'hidden' : ''
+  if (open) {
+    nextTick(() => {
+      const nav = document.getElementById('main-nav')
+      const first = nav?.querySelector<HTMLElement>('a, button')
+      first?.focus()
+    })
+  }
 })
 
-function onSearch() {
-  if (searchQuery.value.trim()) {
-    navigateTo(`/tim-kiem?q=${encodeURIComponent(searchQuery.value.trim())}`)
-  }
+function onNavKeydown(e: KeyboardEvent) {
+  if (!mobileNav.value) return
+  if (e.key === 'Escape') { mobileNav.value = false; return }
+  if (e.key !== 'Tab') return
+  const nav = document.getElementById('main-nav')
+  if (!nav) return
+  const focusable = Array.from(
+    nav.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])')
+  ).filter(el => el.offsetParent !== null)
+  if (!focusable.length) return
+  const first = focusable[0], last = focusable[focusable.length - 1]
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
 }
+
+onMounted(() => {
+  const onDoc = (e: MouseEvent) => { if (!(e.target as HTMLElement)?.closest('.main-nav')) openGroup.value = null }
+  const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') { openGroup.value = null; mobileNav.value = false } }
+  document.addEventListener('click', onDoc)
+  document.addEventListener('keydown', onEsc)
+  onUnmounted(() => {
+    document.removeEventListener('click', onDoc)
+    document.removeEventListener('keydown', onEsc)
+    document.body.style.overflow = ''
+  })
+})
+
 </script>

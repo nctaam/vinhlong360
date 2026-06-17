@@ -2,12 +2,11 @@
   <section class="page">
     <NuxtLink class="back" to="/cong-dong">← Cộng đồng</NuxtLink>
 
-    <div v-if="post" style="max-width: 720px">
+    <div v-if="post" class="post-detail-wrap reveal">
       <PostCard :post="post" @like="toggleLike" @bookmark="toggleBookmark" @report="reportPost" />
 
-      <!-- Comments -->
       <div class="comment-section">
-        <h3 class="comment-title">💬 Bình luận ({{ comments.length }})</h3>
+        <h3 class="comment-title">Bình luận ({{ comments.length }})</h3>
 
         <div v-if="isLoggedIn" class="comment-form">
           <input
@@ -28,7 +27,7 @@
           </div>
         </div>
 
-        <p v-if="!comments.length" class="empty" style="padding: 10px 0">Chưa có bình luận.</p>
+        <p v-if="!comments.length" class="comment-empty">Chưa có bình luận nào. Hãy là người đầu tiên!</p>
       </div>
     </div>
 
@@ -37,6 +36,7 @@
 </template>
 
 <script setup lang="ts">
+useReveal()
 const route = useRoute()
 const postId = route.params.id as string
 const { isLoggedIn, authHeaders } = useAuth()
@@ -156,3 +156,25 @@ if (post.value) {
   })
 }
 </script>
+
+<style scoped>
+.post-detail-wrap { max-width: 720px; }
+
+.comment-section { margin-top: var(--space-5); }
+.comment-title { font-size: var(--text-lg); font-weight: var(--weight-semibold); margin-bottom: var(--space-4); }
+
+.comment-form { display: flex; gap: var(--space-2); margin-bottom: var(--space-5); padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--bg-alt); transition: border-color var(--duration-normal) var(--ease-out), box-shadow var(--duration-normal) var(--ease-out); }
+.comment-form:focus-within { border-color: var(--primary-fg); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .1); }
+.comment-form .input { flex: 1; border: none; background: transparent; outline: none; font-size: var(--text-sm); min-height: 44px; }
+.comment-form .btn { transition: transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast); }
+.comment-form .btn:active { transform: scale(.95); }
+
+.comment-item { display: flex; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--line); transition: background var(--duration-fast) var(--ease-out); }
+.comment-item:last-child { border-bottom: none; }
+.comment-item:hover { background: var(--bg-alt); }
+.comment-time { color: var(--muted); font-size: var(--text-xs); }
+.comment-text { margin-top: var(--space-1); font-size: var(--text-sm); line-height: var(--leading-relaxed); }
+
+.comment-empty { color: var(--muted); font-size: var(--text-sm); padding: var(--space-6) 0; text-align: center; }
+
+</style>

@@ -1,8 +1,8 @@
 <template>
   <NuxtLink :to="`/dia-diem/${entity.id}`" :class="['card', `cat-${typeMeta.cat}`]">
     <div v-if="coverImage && !imgError" class="cover cover-img">
-      <NuxtImg v-if="isRemote" :src="coverImage" :alt="entity.name" loading="lazy" width="400" height="240" sizes="sm:100vw md:50vw lg:400px" decoding="async" @error="imgError = true" />
-      <img v-else :src="coverImage" :alt="entity.name" loading="lazy" width="400" height="240" decoding="async" @error="imgError = true" />
+      <NuxtImg v-if="isRemote" :src="coverImage" :alt="entity.name" loading="lazy" width="400" height="240" sizes="sm:100vw md:50vw lg:400px" decoding="async" @load="($event.target as HTMLElement)?.classList.add('loaded')" @error="imgError = true" />
+      <img v-else :src="coverImage" :alt="entity.name" loading="lazy" width="400" height="240" decoding="async" @load="($event.target as HTMLElement)?.classList.add('loaded')" @error="imgError = true" />
       <span class="cover-tag" :class="`cat-${typeMeta.cat}`">{{ typeMeta.emoji }} {{ typeMeta.label }}</span>
       <ClientOnly><SaveButton class="card-save" :entity="entity" size="sm" /></ClientOnly>
     </div>
@@ -15,8 +15,12 @@
     <div class="card-b">
       <span class="card-type">{{ typeMeta.label }}</span>
       <h3>{{ entity.name }}</h3>
-      <p class="summary">{{ entity.summary || '' }}</p>
+      <p class="summary">{{ cardSummary }}</p>
       <p v-if="placeName" class="place">{{ placeName }}</p>
+      <div v-if="cardMeta" class="card-meta">
+        <span v-if="cardMeta.price" class="cm-item">💰 {{ cardMeta.price }}</span>
+        <span v-if="cardMeta.hours" class="cm-item">🕒 {{ cardMeta.hours }}</span>
+      </div>
       <div class="badges">
         <span v-if="isPeak" class="badge peak">🔥 Đang rộ</span>
         <span v-if="isYearRoundSeason" class="badge year">Quanh năm</span>
@@ -49,4 +53,21 @@ const isYearRoundSeason = computed(() => !props.entity.season || isYearRound(pro
 const seasonLabel = computed(() => seasonText(props.entity.season))
 const placeName = computed(() => props.entity.placeName || props.entity.place_name || '')
 const isPeak = computed(() => props.seasonFilter && relevanceScore(props.entity, props.seasonFilter) === 4)
+const cardSummary = computed(() => {
+  const desc = props.entity.description
+  if (desc && typeof desc === 'string') {
+    const first = desc.split(/\n\s*\n/)[0]?.trim()
+    if (first && first.length > 20) return first
+  }
+  return props.entity.summary || ''
+})
+const cardMeta = computed(() => {
+  const a = props.entity.attributes
+  if (!a) return null
+  const t = props.entity.type
+  if (t !== 'product' && t !== 'dish' && t !== 'experience') return null
+  const price = a.price || a.fee || null
+  const hours = a.hours || null
+  return (price || hours) ? { price, hours } : null
+})
 </script>

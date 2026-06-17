@@ -57,7 +57,7 @@
     {
       "name": "Đã lưu",
       "short_name": "Đã lưu",
-      "url": "/hanh-trinh",
+      "url": "/lich-trinh",
       "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
     }
   ]

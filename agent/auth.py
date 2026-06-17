@@ -1,15 +1,19 @@
 """
-vinhlong360 — OTP SMS Authentication.
+vinhlong360 — Authentication (OTP + Password).
 
 Endpoints:
-  POST /auth/request-otp  — gửi OTP qua SMS (eSMS.vn)
-  POST /auth/verify-otp   — xác minh OTP, tạo session
-  POST /auth/logout        — hủy session
-  GET  /auth/me            — thông tin user hiện tại
+  POST /auth/request-otp   — gửi OTP qua SMS (eSMS.vn)
+  POST /auth/verify-otp    — xác minh OTP, tạo session
+  POST /auth/set-password   — đặt/đổi mật khẩu (cần đăng nhập)
+  POST /auth/login          — đăng nhập bằng SĐT + mật khẩu
+  POST /auth/check-phone    — kiểm tra SĐT đã có mật khẩu chưa
+  POST /auth/logout         — hủy session
+  GET  /auth/me             — thông tin user hiện tại
 
 Tuân thủ NĐ 147/2024: xác thực SĐT VN trước khi cho đăng bài/bình luận.
 """
 
+import base64
 import hashlib
 import hmac
 import os
@@ -85,6 +89,42 @@ class OTPVerify(BaseModel):
         return v
 
 
+class PasswordLogin(BaseModel):
+    phone: str
+    password: str
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(cls, v: str) -> str:
+        v = v.strip().replace(" ", "").replace("-", "")
+        if v.startswith("+84"):
+            v = "0" + v[3:]
+        return v
+
+
+class SetPassword(BaseModel):
+    password: str
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        if len(v) < 6:
+            raise ValueError("Mật khẩu phải từ 6 ký tự trở lên")
+        return v
+
+
+class CheckPhone(BaseModel):
+    phone: str
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(cls, v: str) -> str:
+        v = v.strip().replace(" ", "").replace("-", "")
+        if v.startswith("+84"):
+            v = "0" + v[3:]
+        return v
+
+
 class ProfileUpdate(BaseModel):
     display_name: str | None = None
     bio: str | None = None
@@ -109,6 +149,19 @@ def _hash_otp(code: str) -> str:
 
 def _generate_token() -> str:
     return secrets.token_urlsafe(48)
+
+
+def _hash_password(password: str) -> str:
+    salt = os.urandom(16)
+    key = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, 200_000)
+    return base64.b64encode(salt + key).decode()
+
+
+def _verify_password(password: str, stored: str) -> bool:
+    decoded = base64.b64decode(stored)
+    salt, stored_key = decoded[:16], decoded[16:]
+    key = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, 200_000)
+    return hmac.compare_digest(key, stored_key)
 
 
 async def _send_sms(phone: str, message: str) -> bool:
@@ -243,8 +296,61 @@ async def verify_otp(body: OTPVerify, request: Request):
         "success": True,
         "token": token,
         "user": _safe_user(user),
+        "has_password": bool(user.get("password_hash")),
         "expires_at": expires.isoformat(),
     }
+
+
+@router.post("/check-phone")
+async def check_phone(body: CheckPhone):
+    phone = _normalize_phone(body.phone)
+    user = db.get_user_by_phone(phone)
+    return {"has_password": bool(user and user.get("password_hash"))}
+
+
+@router.post("/login")
+async def login_password(body: PasswordLogin, request: Request):
+    phone = _normalize_phone(body.phone)
+    user = db.get_user_by_phone(phone)
+
+    if not user or not user.get("password_hash"):
+        raise HTTPException(401, "Số điện thoại hoặc mật khẩu không đúng")
+
+    if not user.get("is_active", True):
+        raise HTTPException(403, "Tài khoản đã bị vô hiệu hóa")
+
+    if not _verify_password(body.password, user["password_hash"]):
+        raise HTTPException(401, "Số điện thoại hoặc mật khẩu không đúng")
+
+    token = _generate_token()
+    expires = datetime.now(timezone.utc) + timedelta(days=SESSION_EXPIRE_DAYS)
+    ip = request.client.host if request.client else ""
+    ua = request.headers.get("user-agent", "")
+
+    with db._conn() as conn:
+        db._execute(conn, f"""
+            INSERT INTO user_sessions (user_id, token, user_agent, ip_address, expires_at)
+            VALUES ({db._ph}::uuid, {db._ph}, {db._ph}, {db._ph}, {db._ph})
+        """, (str(user["id"]), token, ua, ip, expires.isoformat()))
+
+    return {
+        "success": True,
+        "token": token,
+        "user": _safe_user(user),
+        "expires_at": expires.isoformat(),
+    }
+
+
+@router.post("/set-password")
+async def set_password(body: SetPassword, request: Request):
+    user = await _get_current_user_or_none(request)
+    if not user:
+        raise HTTPException(401, "Chưa đăng nhập")
+
+    hashed = _hash_password(body.password)
+    db.update_user(str(user["id"]), password_hash=hashed)
+
+    return {"success": True, "message": "Đã đặt mật khẩu thành công"}
 
 
 @router.post("/logout")

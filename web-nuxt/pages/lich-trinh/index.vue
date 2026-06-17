@@ -1,43 +1,178 @@
 <template>
-  <section class="page">
-    <div class="page-head">
-      <h1>Lịch trình gợi ý</h1>
-      <p>Tuyến tham quan được thiết kế sẵn — chỉ cần chọn và đi.</p>
-    </div>
+  <div class="page">
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình' }]" />
 
-    <div class="controls">
-      <div class="chip-row">
-        <button :class="['chip', { active: areaFilter === 'all' }]" @click="areaFilter = 'all'">Tất cả</button>
-        <button
-          v-for="(meta, key) in AREA_META"
-          :key="key"
-          :class="['chip', { active: areaFilter === key }]"
-          @click="areaFilter = key as string"
-        >{{ meta.emoji }} {{ meta.name }}</button>
+    <!-- Hero -->
+    <section class="catalog-hero cat-itinerary">
+      <div class="catalog-hero-inner">
+        <span class="catalog-hero-icon">🗓️</span>
+        <div>
+          <h1>Lịch trình</h1>
+          <p>Tuyến tham quan Vĩnh Long, Bến Tre, Trà Vinh được thiết kế sẵn — chỉ cần chọn và đi. Hoặc tự tạo lịch trình cá nhân theo sở thích.</p>
+        </div>
       </div>
+      <div v-if="itineraries?.length" class="catalog-stats">
+        <div class="stat-item">
+          <span class="stat-num">{{ itineraries.length }}</span>
+          <span class="stat-label">lịch trình</span>
+        </div>
+        <div v-for="a in areaCounts" :key="a.key" class="stat-item">
+          <span class="stat-num">{{ a.count }}</span>
+          <span class="stat-label">{{ a.name }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Đã lưu (client-only, từ localStorage) -->
+    <ClientOnly>
+      <section v-if="count > 0" class="block saved-section">
+        <div class="section-head">
+          <h2>❤️ Đã lưu <span class="saved-count">({{ count }})</span></h2>
+          <button class="btn btn-sm btn-ghost danger" @click="clearAll">Xóa tất cả</button>
+        </div>
+        <div class="journey-stats">
+          <div v-for="(items, type) in byType" :key="type" class="js-item">
+            <span class="js-emoji">{{ getTypeMeta(type).emoji }}</span>
+            <strong>{{ items.length }}</strong>
+            <span>{{ getTypeMeta(type).label }}</span>
+          </div>
+        </div>
+        <div class="scroll-row saved-row" role="region" aria-label="Mục đã lưu">
+          <NuxtLink v-for="fav in recentSaved" :key="fav.id" :to="`/dia-diem/${fav.id}`" class="card">
+            <div v-if="fav.image" class="cover cover-img">
+              <img :src="fav.image" :alt="fav.name" loading="lazy" />
+            </div>
+            <div class="card-b">
+              <span class="card-type">{{ getTypeMeta(fav.type).label }}</span>
+              <h3>{{ fav.name }}</h3>
+              <p v-if="fav.place_name" class="place">{{ fav.place_name }}</p>
+            </div>
+          </NuxtLink>
+        </div>
+        <div class="saved-cta">
+          <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-primary">📋 Tạo lịch trình từ danh sách đã lưu</NuxtLink>
+        </div>
+      </section>
+    </ClientOnly>
+
+    <!-- Region quick-picks -->
+    <section class="block">
+      <div class="section-head">
+        <h2>Chọn theo khu vực</h2>
+      </div>
+      <div class="quick-picks">
+        <button
+          v-for="(meta, key) in AREA_META" :key="key"
+          :class="['quick-pick', { active: areaFilter === key }]"
+          @click="areaFilter = areaFilter === key ? 'all' : (key as string)"
+        >
+          <span class="quick-pick-icon">{{ meta.emoji }}</span>
+          <span class="quick-pick-label">{{ meta.name }}</span>
+          <span class="quick-pick-count">{{ countByArea(key as string) }} lịch trình</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Divider -->
+    <div class="catalog-divider">
+      <span class="catalog-divider-text">Lịch trình gợi ý</span>
     </div>
 
-    <p v-if="fetchError" style="color: #D94F3D; text-align: center; padding: 20px">Không thể tải lịch trình. Vui lòng thử lại.</p>
-    <SkeletonGrid v-else-if="!itineraries" :count="4" />
-    <div v-else-if="filtered.length" class="grid itin">
-      <ItineraryCard v-for="it in filtered" :key="it.id" :itinerary="it" />
-    </div>
-    <EmptyState v-else message="Không có lịch trình nào cho khu vực này." />
+    <!-- Suggested itineraries -->
+    <section class="block reveal">
+      <div class="controls">
+        <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
+          <button :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả</button>
+          <button
+            v-for="(meta, key) in AREA_META" :key="key"
+            :class="['chip', { active: areaFilter === key }]"
+            :aria-pressed="areaFilter === key"
+            @click="areaFilter = key as string"
+          >{{ meta.emoji }} {{ meta.name }}</button>
+        </div>
+      </div>
 
-    <div style="margin-top: 28px; text-align: center">
+      <p class="result-meta" aria-live="polite">{{ filtered.length }} lịch trình</p>
+
+      <p v-if="fetchError" class="fetch-error">Không thể tải lịch trình. Vui lòng thử lại.</p>
+      <SkeletonGrid v-else-if="!itineraries" :count="4" />
+      <div v-else-if="filtered.length" class="grid itin">
+        <ItineraryCard v-for="it in filtered" :key="it.id" :itinerary="it" />
+      </div>
+      <EmptyState v-else icon="🗺️" title="Chưa có lịch trình" message="Chưa có lịch trình gợi ý cho khu vực này. Bạn có thể tự tạo lịch trình riêng!">
+        <template #actions>
+          <button class="btn btn-outline" @click="areaFilter = 'all'">Xem tất cả khu vực</button>
+          <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-outline">Tự tạo lịch trình</NuxtLink>
+        </template>
+      </EmptyState>
+
+      <div class="block-cta">
         <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-primary">+ Tự tạo lịch trình</NuxtLink>
-    </div>
-  </section>
+      </div>
+    </section>
+
+    <!-- Cross-links -->
+    <section class="block reveal catalog-cross">
+      <h2>Khám phá thêm</h2>
+      <div class="cross-links">
+        <NuxtLink to="/du-lich" class="cross-card">
+          <span class="cross-icon">🌿</span>
+          <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
+        </NuxtLink>
+        <NuxtLink to="/luu-tru" class="cross-card">
+          <span class="cross-icon">🏡</span>
+          <div><strong>Lưu trú</strong><p>Homestay, nhà vườn</p></div>
+        </NuxtLink>
+        <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
+          <span class="cross-icon">🗺️</span>
+          <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
+        </NuxtLink>
+        <NuxtLink to="/san-pham" class="cross-card">
+          <span class="cross-icon">🍊</span>
+          <div><strong>Đặc sản</strong><p>Mua quà miền Tây</p></div>
+        </NuxtLink>
+      </div>
+    </section>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { AREA_META } from '~/composables/useConstants'
+import { TYPE_META, AREA_META } from '~/composables/useConstants'
+
+useReveal()
+
+const { favorites, byType, count, clear } = useFavorites()
+const recentSaved = computed(() => favorites.value.slice(0, 8))
+
+function getTypeMeta(type: string) {
+  return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }
+}
+
+function clearAll() {
+  if (confirm('Xóa tất cả mục đã lưu?')) clear()
+}
 
 const areaFilter = ref('all')
+useFilterUrl({ vung: areaFilter }, { vung: 'all' })
 
 const { data: itineraries, error: fetchError } = await useAsyncData('itineraries', () =>
   $fetch<any[]>('/api/itineraries')
 )
+
+const areaCounts = computed(() => {
+  const counts: Record<string, number> = {}
+  for (const it of (itineraries.value || [])) {
+    const area = (it as any).area || ''
+    if (area) counts[area] = (counts[area] || 0) + 1
+  }
+  return Object.entries(AREA_META)
+    .filter(([key]) => counts[key])
+    .map(([key, meta]) => ({ key, name: meta.name, count: counts[key] }))
+})
+
+function countByArea(key: string) {
+  return (itineraries.value || []).filter((it: any) => it.area === key).length
+}
 
 const filtered = computed(() => {
   const list = itineraries.value || []
@@ -46,24 +181,37 @@ const filtered = computed(() => {
 })
 
 useSeoMeta({
-  title: 'Lịch trình gợi ý — vinhlong360',
+  title: 'Lịch trình — vinhlong360',
   description: 'Tuyến tham quan Vĩnh Long, Bến Tre, Trà Vinh được thiết kế sẵn — chỉ cần chọn và đi. Hoặc tự tạo lịch trình cá nhân theo sở thích.',
-  ogTitle: 'Lịch trình gợi ý — vinhlong360',
+  ogTitle: 'Lịch trình — vinhlong360',
   ogDescription: 'Tuyến tham quan miền Tây được thiết kế sẵn — chỉ cần chọn và đi.',
   ogImage: '/icons/icon-512.png',
 })
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl('/lich-trinh') }],
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'CollectionPage',
-      name: 'Lịch trình gợi ý',
-      description: 'Tuyến tham quan Vĩnh Long, Bến Tre, Trà Vinh được thiết kế sẵn.',
-      url: 'https://vinhlong360.vn/lich-trinh',
-    }),
-  }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: 'Lịch trình gợi ý',
+        description: 'Tuyến tham quan Vĩnh Long, Bến Tre, Trà Vinh được thiết kế sẵn.',
+        url: 'https://vinhlong360.vn/lich-trinh',
+      }),
+    },
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
+          { '@type': 'ListItem', position: 2, name: 'Lịch trình' },
+        ],
+      }),
+    },
+  ],
 })
 
 useHead(() => ({
@@ -78,3 +226,24 @@ useHead(() => ({
   }],
 }))
 </script>
+
+<style scoped>
+.saved-section { margin-bottom: var(--space-4); padding-bottom: var(--space-6); border-bottom: 1px solid var(--line); }
+.saved-count { font-weight: var(--weight-normal); color: var(--muted); font-size: var(--text-base); }
+.saved-cta { text-align: center; margin-top: var(--space-4); }
+.saved-cta .btn:active { transform: scale(.97); transition-duration: .08s; }
+.saved-row { margin-top: var(--space-3); }
+.saved-row .card { transition: transform var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-out); }
+.saved-row .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.saved-row .card:active { transform: translateY(-1px) scale(.98); transition-duration: .08s; }
+
+.journey-stats { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-3); }
+.js-item { display: flex; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-3); background: var(--bg-alt); border-radius: var(--radius-md); font-size: var(--text-sm); transition: background var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-spring); }
+.js-item:hover { background: var(--card); transform: translateY(-1px); }
+.js-emoji { font-size: var(--text-lg); }
+
+.fetch-error { color: var(--error); text-align: center; padding: var(--space-5); }
+.block-cta { margin-top: var(--space-6); text-align: center; }
+.block-cta .btn:active { transform: scale(.97); transition-duration: .08s; }
+.danger { color: var(--error); }
+</style>

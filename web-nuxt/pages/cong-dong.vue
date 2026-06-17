@@ -1,10 +1,17 @@
 <template>
   <section class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng' }]" />
-    <div class="page-head">
-      <h1>Cộng đồng</h1>
-      <p>Chia sẻ trải nghiệm, đánh giá và kết nối với những người yêu Vĩnh Long.</p>
-    </div>
+
+    <!-- Hero -->
+    <section class="catalog-hero cat-community">
+      <div class="catalog-hero-inner">
+        <span class="catalog-hero-icon">💬</span>
+        <div>
+          <h1>Cộng đồng</h1>
+          <p>Chia sẻ trải nghiệm, đánh giá địa điểm, hỏi đáp và kết nối với những người yêu du lịch miền Tây.</p>
+        </div>
+      </div>
+    </section>
 
     <div class="feed-layout">
       <div class="feed-main">
@@ -70,7 +77,7 @@
                 type="file"
                 accept="image/*"
                 multiple
-                style="display: none"
+                class="sr-only"
                 @change="onFileSelect"
               />
             </label>
@@ -81,7 +88,7 @@
         </div>
 
         <div v-else class="create-post create-post-guest">
-          <p style="margin: 0; color: var(--muted); text-align: center">Đăng nhập để chia sẻ trải nghiệm với cộng đồng.</p>
+          <p class="guest-cta">Đăng nhập để chia sẻ trải nghiệm với cộng đồng.</p>
         </div>
 
         <!-- Filter -->
@@ -105,16 +112,16 @@
           @report="reportPost"
         />
 
-        <p v-if="feedError && !posts.length" style="color: #D94F3D; text-align: center; padding: 20px">
-          Không thể tải bảng tin.
-          <button class="btn btn-outline btn-sm" style="margin-left: 8px" @click="fetchFeed(true)">Thử lại</button>
-        </p>
+        <div v-if="feedError && !posts.length" class="feed-error">
+          <p>Không thể tải bảng tin.</p>
+          <button class="btn btn-outline btn-sm" @click="fetchFeed(true)">Thử lại</button>
+        </div>
         <EmptyState v-else-if="!posts.length && !loading && !feedError" message="Chưa có bài viết nào. Hãy là người đầu tiên chia sẻ!" />
 
-        <button v-if="hasMore && !loading" class="btn btn-outline" style="width: 100%" @click="loadMore">
+        <button v-if="hasMore && !loading" class="btn btn-outline feed-load-more" @click="loadMore">
           Xem thêm
         </button>
-        <div v-if="loading && posts.length" style="text-align: center; padding: 20px"><div class="spinner" style="margin: 0 auto"></div></div>
+        <div v-if="loading && posts.length" class="feed-loading"><div class="spinner"></div></div>
       </div>
 
       <aside class="feed-sidebar">
@@ -137,14 +144,16 @@
 </template>
 
 <script setup lang="ts">
+useReveal()
+
 const { isLoggedIn, authHeaders } = useAuth()
 const route = useRoute()
 const router = useRouter()
 
 const { show: showToast } = useToast()
 const postTypes = [
-  { value: 'discussion', label: '💬 Thảo luận' },
   { value: 'share', label: '📸 Chia sẻ' },
+  { value: 'review', label: '⭐ Đánh giá' },
   { value: 'question', label: '❓ Hỏi đáp' },
   { value: 'recommend', label: '👍 Gợi ý' },
 ]
@@ -156,7 +165,7 @@ const hasMore = ref(false)
 const loading = ref(false)
 const feedError = ref(false)
 const newContent = ref('')
-const newType = ref('discussion')
+const newType = ref('share')
 const posting = ref(false)
 const imageFiles = ref<File[]>([])
 const previewImages = ref<string[]>([])
@@ -168,12 +177,12 @@ const reportReasons = ['Thiếu nguồn xác minh', 'Tọa độ chưa đúng', 
 
 const typePlaceholder = computed(() => {
   const map: Record<string, string> = {
-    discussion: 'Bạn muốn chia sẻ điều gì về Vĩnh Long?',
     share: 'Kể về trải nghiệm du lịch của bạn…',
+    review: 'Đánh giá một địa điểm, sản phẩm hoặc trải nghiệm…',
     question: 'Bạn muốn hỏi gì về Vĩnh Long?',
     recommend: 'Gợi ý một địa điểm, món ăn, sản phẩm…',
   }
-  return map[newType.value] || map.discussion
+  return map[newType.value] || map.share
 })
 
 const canSubmit = computed(() => newContent.value.trim().length > 0)
@@ -243,7 +252,7 @@ async function submitPost() {
       body,
     })
     newContent.value = ''
-    newType.value = 'discussion'
+    newType.value = 'share'
     imageFiles.value = []
     previewImages.value = []
     showToast('Đã đăng bài viết', 'success')
@@ -349,19 +358,70 @@ useHead({
 </script>
 
 <style scoped>
+.create-post {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg, 16px);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  transition: border-color var(--duration-fast), box-shadow var(--duration-normal);
+}
+.create-post:focus-within {
+  border-color: var(--primary-fg);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .08);
+}
+.create-post-header h3 { margin: 0 0 var(--space-3); font-size: var(--text-base); }
+.create-post-footer { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-3); gap: var(--space-3); }
+.create-img-btn { cursor: pointer; }
+.post-type-selector { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3); }
+.img-preview-item { position: relative; border-radius: var(--radius-sm); overflow: hidden; }
+.img-preview-item img { transition: transform var(--duration-fast); }
+.img-preview-item:hover img { transform: scale(1.05); }
+.img-preview-item .remove { transition: background var(--duration-fast), transform var(--duration-fast); }
+.img-preview-item .remove:hover { background: var(--error); transform: scale(1.1); }
+
+.sidebar-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg, 16px);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+  transition: transform var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal);
+}
+.sidebar-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.sidebar-card h3 { margin: 0 0 var(--space-2); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.sidebar-card p { margin: 0; font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
+.sidebar-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.sidebar-list li { font-size: var(--text-sm); color: var(--ink-secondary, var(--ink)); padding: 4px 0; }
+
+.feed-filters { margin-bottom: var(--space-4); }
+
+
 .report-entity-card {
   display: grid;
   gap: var(--space-3);
   margin-bottom: var(--space-4);
   padding: var(--space-4);
   border: 1px solid var(--clay-100);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg, 16px);
   background: var(--clay-50);
+  animation: slideDown .3s var(--ease-spring);
 }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } }
 .report-entity-card h2 { margin: 2px 0 var(--space-1); font-size: var(--text-base); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); }
 .report-entity-card p { margin: 0; color: var(--muted); font-size: var(--text-sm); }
 .report-kicker { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .04em; font-weight: var(--weight-extrabold); color: var(--accent-dark); }
 .report-form-inline { display: grid; gap: var(--space-3); }
 .report-reasons { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .report-form-inline .btn { justify-self: start; }
+
+.guest-cta { margin: 0; color: var(--muted); text-align: center; font-size: var(--text-sm); line-height: var(--leading-relaxed); }
+.feed-error { text-align: center; padding: var(--space-5); color: var(--error); }
+.feed-error p { margin: 0 0 var(--space-3); }
+.feed-load-more { width: 100%; min-height: 44px; transition: transform var(--duration-fast) var(--ease-spring); }
+.feed-load-more:active { transform: scale(.97); }
+.feed-loading { text-align: center; padding: var(--space-5); }
+.feed-loading .spinner { margin: 0 auto; }
+.img-preview-row { animation: fadeIn .25s var(--ease-out); }
+@keyframes fadeIn { from { opacity: 0; } }
 </style>

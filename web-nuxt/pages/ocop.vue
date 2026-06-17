@@ -1,62 +1,163 @@
 <template>
-  <section class="page">
-    <div class="ocop-hero">
-      <div class="ocop-hero-inner">
-        <span class="ocop-badge-lg">⭐ OCOP</span>
-        <h1>Sản phẩm OCOP</h1>
-        <p>Mỗi xã một sản phẩm — sản phẩm đạt chuẩn OCOP từ Vĩnh Long, Bến Tre và Trà Vinh.</p>
-      </div>
-    </div>
-
+  <div class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sản phẩm', to: '/san-pham' }, { label: 'OCOP' }]" />
 
-    <div class="controls">
-      <div class="search-row">
-        <input v-model="q" type="search" placeholder="Tìm sản phẩm OCOP…" />
+    <!-- Hero -->
+    <section class="catalog-hero cat-ocop">
+      <div class="catalog-hero-inner">
+        <span class="catalog-hero-icon">⭐</span>
+        <div>
+          <h1>Sản phẩm OCOP</h1>
+          <p>Mỗi xã một sản phẩm — sản phẩm đạt chuẩn OCOP từ Vĩnh Long, Bến Tre và Trà Vinh, chất lượng được chứng nhận.</p>
+        </div>
       </div>
-      <p class="control-label">Hạng sao</p>
-      <div class="chip-row">
-        <button :class="['chip', { active: starFilter === 0 }]" @click="starFilter = 0">Tất cả</button>
-        <button :class="['chip', { active: starFilter === 5 }]" @click="starFilter = 5">⭐⭐⭐⭐⭐ 5 sao</button>
-        <button :class="['chip', { active: starFilter === 4 }]" @click="starFilter = 4">⭐⭐⭐⭐ 4 sao</button>
-        <button :class="['chip', { active: starFilter === 3 }]" @click="starFilter = 3">⭐⭐⭐ 3 sao</button>
+      <div v-if="allOcop.length" class="catalog-stats">
+        <div class="stat-item">
+          <span class="stat-num">{{ allOcop.length }}</span>
+          <span class="stat-label">sản phẩm OCOP</span>
+        </div>
+        <div v-for="s in starStats" :key="s.stars" class="stat-item">
+          <span class="stat-num">{{ s.count }}</span>
+          <span class="stat-label">{{ s.stars }} sao</span>
+        </div>
       </div>
-      <p class="control-label">Khu vực</p>
-      <div class="chip-row">
-        <button :class="['chip', { active: areaFilter === 'all' }]" @click="areaFilter = 'all'">Tất cả</button>
+    </section>
+
+    <!-- Star breakdown quick-picks -->
+    <section v-if="starStats.length" class="block">
+      <div class="section-head">
+        <h2>Xếp hạng sao</h2>
+      </div>
+      <div class="quick-picks">
         <button
-          v-for="(meta, key) in AREA_META"
-          :key="key"
-          :class="['chip', { active: areaFilter === key }]"
-          @click="areaFilter = key as string"
-        >{{ meta.emoji }} {{ meta.name }}</button>
-      </div>
-      <p class="control-label">Theo tháng</p>
-      <div class="chip-row">
-        <button :class="['chip', 'season', { active: seasonFilter === 'all' }]" @click="seasonFilter = 'all'">Tất cả</button>
-        <button v-for="m in 12" :key="m" :class="['chip', 'season', { active: seasonFilter === String(m) }]" @click="seasonFilter = String(m)">
-          T{{ m }}
+          v-for="s in starStats" :key="s.stars"
+          :class="['quick-pick', { active: starFilter === s.stars }]"
+          @click="starFilter = starFilter === s.stars ? 0 : s.stars; scrollToGrid()"
+        >
+          <span class="quick-pick-icon">{{ '⭐'.repeat(s.stars) }}</span>
+          <span class="quick-pick-label">{{ s.stars }} sao</span>
+          <span class="quick-pick-count">{{ s.count }} sản phẩm</span>
         </button>
       </div>
+    </section>
+
+    <!-- Featured 5-star -->
+    <section v-if="fiveStarHighlights.length" class="block reveal">
+      <div class="section-head">
+        <h2>⭐ Nổi bật 5 sao</h2>
+        <button class="see-all" @click="starFilter = 5; scrollToGrid()">Xem tất cả →</button>
+      </div>
+      <p class="section-desc">Sản phẩm đạt chuẩn cao nhất — 5 sao OCOP, chất lượng vượt trội.</p>
+      <div class="scroll-row" role="region" aria-label="Sản phẩm OCOP 5 sao">
+        <EntityCard v-for="e in fiveStarHighlights" :key="e.id" :entity="e" />
+      </div>
+    </section>
+
+    <!-- Region quick-picks -->
+    <section class="block reveal">
+      <div class="section-head">
+        <h2>Chọn theo khu vực</h2>
+      </div>
+      <div class="quick-picks">
+        <button
+          v-for="(meta, key) in AREA_META" :key="key"
+          :class="['quick-pick', { active: areaFilter === key }]"
+          @click="areaFilter = areaFilter === key ? 'all' : (key as string); scrollToGrid()"
+        >
+          <span class="quick-pick-icon">{{ meta.emoji }}</span>
+          <span class="quick-pick-label">{{ meta.name }}</span>
+          <span class="quick-pick-count">{{ countByArea(key as string) }} sản phẩm</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Divider -->
+    <div class="catalog-divider">
+      <span class="catalog-divider-text">Duyệt tất cả</span>
     </div>
 
-    <p class="result-meta">{{ filtered.length }} sản phẩm OCOP</p>
-    <SkeletonGrid v-if="!data" :count="6" />
-    <div v-else-if="filtered.length" class="grid">
-      <EntityCard v-for="e in filtered" :key="e.id" :entity="e" :season-filter="seasonFilter" />
-    </div>
-    <EmptyState v-else message="Không tìm thấy sản phẩm OCOP phù hợp." />
-  </section>
+    <!-- Full filterable grid -->
+    <section ref="gridSection" class="block reveal">
+      <div class="controls">
+        <div class="search-row">
+          <input v-model="q" type="search" placeholder="Tìm sản phẩm OCOP…" aria-label="Tìm sản phẩm OCOP" />
+        </div>
+        <p class="control-label">Hạng sao</p>
+        <div class="chip-row" role="group" aria-label="Lọc theo hạng sao">
+          <button :class="['chip', { active: starFilter === 0 }]" :aria-pressed="starFilter === 0" @click="starFilter = 0">Tất cả</button>
+          <button :class="['chip', { active: starFilter === 5 }]" :aria-pressed="starFilter === 5" @click="starFilter = 5">⭐⭐⭐⭐⭐ 5 sao</button>
+          <button :class="['chip', { active: starFilter === 4 }]" :aria-pressed="starFilter === 4" @click="starFilter = 4">⭐⭐⭐⭐ 4 sao</button>
+          <button :class="['chip', { active: starFilter === 3 }]" :aria-pressed="starFilter === 3" @click="starFilter = 3">⭐⭐⭐ 3 sao</button>
+        </div>
+        <p class="control-label">Khu vực</p>
+        <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
+          <button :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả</button>
+          <button
+            v-for="(meta, key) in AREA_META" :key="key"
+            :class="['chip', { active: areaFilter === key }]"
+            :aria-pressed="areaFilter === key"
+            @click="areaFilter = key as string"
+          >{{ meta.emoji }} {{ meta.name }}</button>
+        </div>
+        <p class="control-label">Theo tháng</p>
+        <div class="chip-row" role="group" aria-label="Lọc theo tháng">
+          <button :class="['chip', 'season', { active: seasonFilter === 'all' }]" :aria-pressed="seasonFilter === 'all'" @click="seasonFilter = 'all'">Tất cả</button>
+          <button v-for="m in 12" :key="m" :class="['chip', 'season', { active: seasonFilter === String(m) }]" :aria-pressed="seasonFilter === String(m)" @click="seasonFilter = String(m)">
+            T{{ m }}
+          </button>
+        </div>
+      </div>
+
+      <p class="result-meta" aria-live="polite">{{ filtered.length }} sản phẩm OCOP</p>
+      <EmptyState v-if="fetchError" icon="⚠️" title="Không thể tải dữ liệu" message="Vui lòng thử lại sau." />
+      <SkeletonGrid v-else-if="!data" :count="6" />
+      <div v-else-if="filtered.length" class="grid">
+        <EntityCard v-for="e in filtered" :key="e.id" :entity="e" :season-filter="seasonFilter" />
+      </div>
+      <EmptyState v-else icon="⭐" title="Không tìm thấy sản phẩm OCOP" message="Thử thay đổi hạng sao, khu vực hoặc tháng mùa vụ.">
+        <template #actions>
+          <button class="btn btn-outline" @click="starFilter = 0; areaFilter = 'all'; seasonFilter = 'all'; q = ''">Xóa bộ lọc</button>
+          <NuxtLink to="/san-pham" class="btn btn-outline">Xem tất cả sản phẩm</NuxtLink>
+        </template>
+      </EmptyState>
+    </section>
+
+    <!-- Cross-links -->
+    <section class="block reveal catalog-cross">
+      <h2>Khám phá thêm</h2>
+      <div class="cross-links">
+        <NuxtLink to="/san-pham" class="cross-card">
+          <span class="cross-icon">🍊</span>
+          <div><strong>Đặc sản</strong><p>Tất cả sản phẩm</p></div>
+        </NuxtLink>
+        <NuxtLink to="/theo-mua" class="cross-card">
+          <span class="cross-icon">📅</span>
+          <div><strong>Theo mùa</strong><p>Lịch mùa vụ</p></div>
+        </NuxtLink>
+        <NuxtLink to="/du-lich" class="cross-card">
+          <span class="cross-icon">🌿</span>
+          <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
+        </NuxtLink>
+        <NuxtLink to="/kham-pha/am-thuc" class="cross-card">
+          <span class="cross-icon">🍲</span>
+          <div><strong>Ẩm thực</strong><p>Món ngon miền Tây</p></div>
+        </NuxtLink>
+      </div>
+    </section>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { AREA_META } from '~/composables/useConstants'
 import { inSeason, relevanceScore } from '~/composables/useSeason'
 
+useReveal()
+
 const q = ref('')
 const starFilter = ref(0)
 const areaFilter = ref('all')
 const seasonFilter = ref('all')
+const gridSection = ref<HTMLElement | null>(null)
 
 const starFilterStr = computed({
   get: () => String(starFilter.value),
@@ -64,7 +165,7 @@ const starFilterStr = computed({
 })
 useFilterUrl({ sao: starFilterStr, vung: areaFilter, mua: seasonFilter }, { sao: '0', vung: 'all', mua: 'all' })
 
-const { data } = await useAsyncData('catalog-ocop', () =>
+const { data, error: fetchError } = await useAsyncData('catalog-ocop', () =>
   $fetch<any>('/api/entities?type=product&limit=200')
 )
 
@@ -74,15 +175,36 @@ const allOcop = computed(() => {
   return (raw.entities || []).filter((e: any) => e.attributes?.ocop)
 })
 
+function getStars(e: any): number {
+  return parseInt(e.attributes?.ocop) || 0
+}
+
+const starStats = computed(() => {
+  const counts: Record<number, number> = {}
+  for (const e of allOcop.value) {
+    const s = getStars(e)
+    if (s >= 3) counts[s] = (counts[s] || 0) + 1
+  }
+  return [5, 4, 3].filter(s => counts[s]).map(s => ({ stars: s, count: counts[s] }))
+})
+
+const fiveStarHighlights = computed(() =>
+  allOcop.value.filter(e => getStars(e) >= 5).slice(0, 8)
+)
+
+function countByArea(key: string) {
+  return allOcop.value.filter((e: any) => (e.place_area || e.area) === key).length
+}
+
+function scrollToGrid() {
+  nextTick(() => gridSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+}
+
 const filtered = computed(() => {
   let list = allOcop.value
 
   if (starFilter.value > 0) {
-    list = list.filter((e: any) => {
-      const ocop = e.attributes?.ocop || ''
-      const stars = parseInt(ocop) || 0
-      return stars >= starFilter.value
-    })
+    list = list.filter((e: any) => getStars(e) >= starFilter.value)
   }
 
   if (areaFilter.value !== 'all') {
@@ -117,16 +239,30 @@ useSeoMeta({
 
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl('/ocop') }],
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'CollectionPage',
-      name: 'Sản phẩm OCOP Vĩnh Long',
-      description: 'Sản phẩm đạt chuẩn OCOP từ Vĩnh Long, Bến Tre, Trà Vinh.',
-      url: 'https://vinhlong360.vn/ocop',
-    }),
-  }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: 'Sản phẩm OCOP Vĩnh Long',
+        description: 'Sản phẩm đạt chuẩn OCOP từ Vĩnh Long, Bến Tre, Trà Vinh.',
+        url: 'https://vinhlong360.vn/ocop',
+      }),
+    },
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
+          { '@type': 'ListItem', position: 2, name: 'Sản phẩm', item: 'https://vinhlong360.vn/san-pham' },
+          { '@type': 'ListItem', position: 3, name: 'OCOP' },
+        ],
+      }),
+    },
+  ],
 })
 
 useHead(() => ({

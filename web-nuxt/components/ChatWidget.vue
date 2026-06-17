@@ -1,22 +1,25 @@
 <template>
   <ClientOnly>
     <div class="chat-widget">
-      <button class="chat-fab" :class="{ open }" @click="open = !open" aria-label="Chat AI">
+      <button class="chat-fab" :class="{ open }" @click="open = !open" :aria-expanded="open" aria-label="Chat AI">
         {{ open ? '✕' : '💬' }}
       </button>
 
-      <div class="chat-panel" :class="{ show: open }" role="dialog" aria-label="Chat hỏi đáp">
+      <div ref="panelEl" class="chat-panel" :class="{ show: open }" role="dialog" aria-label="Chat hỏi đáp" aria-modal="true" @keydown.escape="open = false" @keydown="onPanelKeydown">
         <div class="chat-panel-head">
           <h3>Hỏi về Vĩnh Long</h3>
           <button class="cp-close" aria-label="Đóng chat" @click="open = false">✕</button>
         </div>
 
-        <div ref="messagesEl" class="chat-panel-msgs">
+        <div ref="messagesEl" class="chat-panel-msgs" aria-live="polite">
           <div v-for="(msg, i) in messages" :key="i" :class="['cmsg', msg.role]">
             {{ msg.content }}
           </div>
-          <div v-if="streaming" class="cmsg assistant">
-            {{ streamText || '…' }}
+          <div v-if="streaming && streamText" class="cmsg assistant">
+            {{ streamText }}
+          </div>
+          <div v-else-if="streaming" class="c-typing" role="status" aria-label="Đang trả lời...">
+            <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
           </div>
           <div v-if="activeSuggestions.length" class="csuggestions">
             <button v-for="s in activeSuggestions" :key="s" @click="sendMessage(s)">{{ s }}</button>
@@ -37,15 +40,44 @@ const route = useRoute()
 const open = ref(false)
 const inputText = ref('')
 const messages = ref<{ role: string; content: string }[]>([])
+const panelEl = ref<HTMLElement | null>(null)
+
+watch(open, (isOpen) => {
+  if (typeof document === 'undefined') return
+  document.body.style.overflow = isOpen ? 'hidden' : ''
+  if (isOpen) {
+    nextTick(() => {
+      const input = panelEl.value?.querySelector<HTMLElement>('input')
+      input?.focus()
+    })
+  }
+})
+
+function onPanelKeydown(e: KeyboardEvent) {
+  if (e.key !== 'Tab' || !panelEl.value) return
+  const focusable = Array.from(
+    panelEl.value.querySelectorAll<HTMLElement>('input:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])')
+  ).filter(el => el.offsetParent !== null)
+  if (!focusable.length) return
+  const first = focusable[0], last = focusable[focusable.length - 1]
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+}
+
+onUnmounted(() => {
+  if (typeof document !== 'undefined') document.body.style.overflow = ''
+})
 
 const contextSuggestions = computed(() => {
   const p = route.path
-  if (p.startsWith('/dia-diem/')) return ['Địa điểm này có gì hay?', 'Nên đi vào mùa nào?', 'Gần đây có gì ăn?']
-  if (p === '/du-lich') return ['Nên đi đâu cuối tuần?', 'Trải nghiệm miệt vườn?', 'Mùa nước nổi có gì?']
-  if (p === '/luu-tru') return ['Homestay yên tĩnh ở đâu?', 'Chỗ ở gần cù lao?', 'Ngủ nhà vườn?']
-  if (p.startsWith('/lich-trinh') || p === '/tao-lich-trinh') return ['Gợi ý lịch trình 2 ngày', 'Đi Bến Tre nên ghé đâu?', 'Trà Vinh có gì ăn?']
-  if (p === '/ocop' || p === '/san-pham') return ['Đặc sản nổi tiếng?', 'Mua quà gì ở Vĩnh Long?', 'OCOP 5 sao có gì?']
-  return ['Du lịch Vĩnh Long có gì?', 'Đặc sản nổi tiếng?', 'Lịch trình 1 ngày']
+  if (p.startsWith('/dia-diem/')) return ['Nên đi vào mùa nào?', 'Gần đây có gì ăn?', 'Đi cùng gia đình được không?']
+  if (p === '/du-lich') return ['Nên đi đâu cuối tuần?', 'Trải nghiệm miệt vườn?', 'Lịch trình 1 ngày không cần đặt trước']
+  if (p === '/luu-tru') return ['Homestay yên tĩnh ở đâu?', 'Chỗ ở gần cù lao?', 'Chỗ nào phù hợp gia đình?']
+  if (p.startsWith('/lich-trinh') || p === '/tao-lich-trinh') return ['Gợi ý lịch trình cuối tuần 2N1Đ', 'Đi Bến Tre 1 ngày nên ghé đâu?', 'Lịch trình có trẻ em?']
+  if (p === '/ocop' || p === '/san-pham') return ['Quà OCOP dưới 200k?', 'Mua quà gì ở Vĩnh Long?', 'OCOP 5 sao có gì?']
+  if (p === '/ban-do') return ['Quán ăn ngon gần đây?', 'Đi thuyền ở đâu?', 'Đường đến cù lao An Bình']
+  if (p.startsWith('/khu-vuc/')) return ['Nên ở đâu ở vùng này?', 'Đặc sản vùng này?', 'Lịch trình 1 ngày ở đây']
+  return ['Lịch trình 1 ngày không cần đặt trước', 'Đặc sản nổi tiếng?', 'Đi đâu cuối tuần này?']
 })
 
 const suggestions = ref<string[]>([])

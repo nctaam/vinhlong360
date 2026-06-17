@@ -247,8 +247,8 @@ def test_upsert_accepts_coords_alias(db):
     assert e.get("coordinates") == [10.25, 105.97]
     # "coordinates" vẫn được ưu tiên nếu có cả hai
     db.upsert_entity({"id": "e-both", "type": "attraction", "name": "X",
-                      "coordinates": [1, 2], "coords": [9, 9]})
-    assert db.get_entity("e-both").get("coordinates") == [1, 2]
+                      "coordinates": [10.25, 105.97], "coords": [10.30, 106.00]})
+    assert db.get_entity("e-both").get("coordinates") == [10.25, 105.97]
 
 
 def test_entities_by_place(db):

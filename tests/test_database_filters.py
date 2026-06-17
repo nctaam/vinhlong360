@@ -28,6 +28,7 @@ def _make_db(tmp_path):
         "name": "Cake Vinh Long",
         "summary": "river cake",
         "placeId": "place-vl",
+        "area": "vinh-long",
     })
     db.upsert_entity({
         "id": "cake-bt",

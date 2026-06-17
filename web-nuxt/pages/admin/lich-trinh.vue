@@ -1,57 +1,65 @@
 <template>
   <div>
-    <h1>Quản lý Lịch trình</h1>
+    <div class="admin-head-row">
+      <h1>Quản lý Lịch trình</h1>
+      <button class="admin-refresh" :disabled="loading" @click="fetchItineraries">🔄 Làm mới</button>
+    </div>
 
     <div class="admin-toolbar">
       <button class="btn btn-primary" @click="openCreate">+ Tạo lịch trình</button>
     </div>
 
-    <div class="admin-table-wrap">
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Tên</th>
-            <th>Khu vực</th>
-            <th>Thời gian</th>
-            <th>Điểm dừng</th>
-            <th>Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="it in itineraries" :key="it.id">
-            <td style="font-size: .78rem; color: var(--muted)">{{ it.id }}</td>
-            <td><strong>{{ it.name }}</strong></td>
-            <td>{{ it.area || '—' }}</td>
-            <td>{{ it.duration || '—' }}</td>
-            <td>{{ it.stops?.length || 0 }}</td>
-            <td class="admin-actions">
-              <button class="btn-success" @click="openEdit(it)">Sửa</button>
-              <button class="btn-danger" @click="deleteItinerary(it.id)">Xóa</button>
-            </td>
-          </tr>
-          <tr v-if="!itineraries.length">
-            <td colspan="6" style="text-align: center; padding: 20px; color: var(--muted)">Chưa có lịch trình.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
+    <template v-else>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Tên</th>
+              <th>Khu vực</th>
+              <th>Thời gian</th>
+              <th>Điểm dừng</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="it in itineraries" :key="it.id">
+              <td class="admin-td-id">{{ it.id }}</td>
+              <td><strong>{{ it.name }}</strong></td>
+              <td>{{ it.area || '—' }}</td>
+              <td>{{ it.duration || '—' }}</td>
+              <td>{{ it.stops?.length || 0 }}</td>
+              <td class="admin-actions">
+                <button class="btn-success" @click="openEdit(it)">Sửa</button>
+                <button class="btn-danger" :disabled="acting === it.id" @click="deleteItinerary(it.id)">Xóa</button>
+              </td>
+            </tr>
+            <tr v-if="!itineraries.length">
+              <td colspan="6" class="admin-empty-row">Chưa có lịch trình.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </template>
 
     <div v-if="showModal" class="modal-overlay" role="dialog" aria-modal="true" :aria-label="editing ? 'Sửa Lịch trình' : 'Tạo Lịch trình'" @click.self="showModal = false" @keyup.escape="showModal = false">
-      <div class="modal" style="max-width: 600px">
+      <div class="modal admin-modal-md">
         <h2>{{ editing ? 'Sửa Lịch trình' : 'Tạo Lịch trình' }}</h2>
-        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px">
+        <div class="admin-form-col">
           <input v-model="form.id" class="input" placeholder="ID (slug)" aria-label="ID (slug)" :disabled="!!editing" />
           <input v-model="form.name" class="input" placeholder="Tên lịch trình" aria-label="Tên lịch trình" />
           <input v-model="form.area" class="input" placeholder="Khu vực (vinh-long / ben-tre / tra-vinh)" />
           <input v-model="form.duration" class="input" placeholder="Thời gian (VD: 1 ngày)" />
-          <textarea v-model="form.description" class="input" placeholder="Mô tả" rows="3" style="resize: vertical"></textarea>
-          <label style="font-weight: 600; font-size: .88rem">Stops (JSON)</label>
-          <textarea v-model="stopsJson" class="input" rows="6" style="resize: vertical; font-family: monospace; font-size: .82rem"></textarea>
+          <textarea v-model="form.description" class="input admin-textarea" placeholder="Mô tả" rows="3"></textarea>
+          <label class="admin-label">Stops (JSON)</label>
+          <textarea v-model="stopsJson" class="input admin-textarea" rows="6" style="font-family: monospace; font-size: .82rem"></textarea>
         </div>
-        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px">
+        <div class="admin-modal-actions">
           <button class="btn btn-outline" @click="showModal = false">Hủy</button>
-          <button class="btn btn-primary" @click="save">{{ editing ? 'Cập nhật' : 'Tạo' }}</button>
+          <button class="btn btn-primary" :disabled="saving" @click="save">
+            {{ saving ? 'Đang lưu…' : (editing ? 'Cập nhật' : 'Tạo') }}
+          </button>
         </div>
       </div>
     </div>
@@ -68,12 +76,19 @@ const showModal = ref(false)
 const editing = ref<any>(null)
 const form = ref<any>({})
 const stopsJson = ref('[]')
+const loading = ref(true)
+const acting = ref<string | null>(null)
+const saving = ref(false)
 
 async function fetchItineraries() {
+  loading.value = true
   try {
     const res = await $fetch<any>('/admin-api/itineraries', { headers: authHeaders() })
     itineraries.value = res.itineraries || res || []
-  } catch { /* ignore */ }
+  } catch {
+    showToast('Không thể tải danh sách lịch trình', 'error')
+  }
+  loading.value = false
 }
 
 function openCreate() {
@@ -96,6 +111,7 @@ async function save() {
   let stops: any[]
   try { stops = JSON.parse(stopsJson.value) } catch { showToast('JSON stops không hợp lệ', 'error'); return }
   const body = { ...form.value, stops }
+  saving.value = true
   try {
     if (editing.value) {
       await $fetch(`/admin-api/itineraries/${form.value.id}`, { method: 'PUT', headers: authHeaders(), body })
@@ -109,10 +125,12 @@ async function save() {
   } catch (e: any) {
     showToast(e.data?.detail || 'Lỗi khi lưu lịch trình', 'error')
   }
+  saving.value = false
 }
 
 async function deleteItinerary(id: string) {
   if (!confirm(`Xóa lịch trình "${id}"?`)) return
+  acting.value = id
   try {
     await $fetch(`/admin-api/itineraries/${id}`, { method: 'DELETE', headers: authHeaders() })
     showToast('Đã xóa lịch trình', 'success')
@@ -120,6 +138,7 @@ async function deleteItinerary(id: string) {
   } catch (e: any) {
     showToast(e.data?.detail || 'Lỗi khi xóa', 'error')
   }
+  acting.value = null
 }
 
 onMounted(() => fetchItineraries())

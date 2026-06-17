@@ -27,10 +27,9 @@
       </div>
       <textarea
         v-model="formContent"
-        class="input"
+        class="input review-textarea"
         rows="3"
         placeholder="Chia sẻ trải nghiệm của bạn (tối thiểu 10 ký tự)…"
-        style="resize: vertical"
       ></textarea>
       <button
         class="btn btn-primary"
@@ -65,11 +64,11 @@
         </div>
       </div>
     </div>
-    <p v-else-if="fetchFailed" class="empty" style="font-size: .9rem; color: #D94F3D">Không thể tải đánh giá. <button class="btn btn-outline btn-sm" style="margin-left: 8px" @click="fetchFailed = false; fetchReviews()">Thử lại</button></p>
-    <p v-else-if="!loading" class="empty" style="font-size: .9rem">Chưa có đánh giá nào. Hãy là người đầu tiên!</p>
+    <p v-else-if="fetchFailed" class="empty review-error">Không thể tải đánh giá. <button class="btn btn-outline btn-sm review-retry-btn" @click="fetchFailed = false; fetchReviews()">Thử lại</button></p>
+    <p v-else-if="!loading" class="empty review-empty">Chưa có đánh giá nào. Hãy là người đầu tiên!</p>
 
     <!-- Load more -->
-    <button v-if="hasMore" class="btn btn-outline" style="margin-top: 12px" @click="loadMore">
+    <button v-if="hasMore" class="btn btn-outline review-load-more" @click="loadMore">
       Xem thêm đánh giá
     </button>
   </div>
@@ -155,3 +154,11 @@ function timeAgo(dateStr: string) {
 
 onMounted(() => fetchReviews())
 </script>
+
+<style scoped>
+.review-textarea { resize: vertical; }
+.review-error { font-size: var(--text-sm); color: var(--error, #D94F3D); }
+.review-retry-btn { margin-left: var(--space-2); }
+.review-empty { font-size: var(--text-sm); }
+.review-load-more { margin-top: var(--space-3); }
+</style>

@@ -1,20 +1,23 @@
 <template>
   <div>
-    <h1>Chưa phân loại xã/phường</h1>
-    <p class="muted">Entity nội dung chưa gán xã. Gán đúng để xuất hiện ở trang xã/phường + danh mục khu vực.</p>
+    <div class="admin-head-row">
+      <h1>Chưa phân loại xã/phường</h1>
+      <button class="admin-refresh" :disabled="loading" @click="load">🔄 Làm mới</button>
+    </div>
+    <p class="admin-muted">Entity nội dung chưa gán xã. Gán đúng để xuất hiện ở trang xã/phường + danh mục khu vực.</p>
 
     <div class="bar">
       <input v-model="q" class="input" placeholder="Tìm theo tên…" @keyup.enter="load" />
       <button class="btn btn-secondary" @click="load">Tìm</button>
-      <span class="muted">{{ total }} chưa phân loại</span>
+      <span class="admin-muted">{{ total }} chưa phân loại</span>
     </div>
 
-    <div v-if="loading" class="muted">Đang tải…</div>
-    <table v-else-if="items.length" class="tbl">
+    <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
+    <table v-else-if="items.length" class="admin-simple-table">
       <thead><tr><th>Tên</th><th>Loại</th><th>Gán xã/phường</th><th></th></tr></thead>
       <tbody>
         <tr v-for="e in items" :key="e.id">
-          <td><strong>{{ e.name }}</strong><br><small class="muted">{{ e.summary }}</small></td>
+          <td><strong>{{ e.name }}</strong><br><small class="admin-muted">{{ e.summary }}</small></td>
           <td>{{ e.type }}</td>
           <td>
             <select v-model="pick[e.id]" class="input">
@@ -85,10 +88,7 @@ onMounted(load)
 </script>
 
 <style scoped>
-.muted { color: var(--muted, #888); }
 .bar { display: flex; gap: 8px; align-items: center; margin: 12px 0 16px; }
 .bar .input { max-width: 280px; }
-.tbl { width: 100%; border-collapse: collapse; }
-.tbl th, .tbl td { text-align: left; padding: 8px; border-bottom: 1px solid rgba(0,0,0,.08); vertical-align: top; }
-.tbl select.input { max-width: 220px; }
+.admin-simple-table select.input { max-width: 220px; }
 </style>

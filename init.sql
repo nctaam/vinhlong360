@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS entities (
     type        TEXT NOT NULL,
     name        TEXT NOT NULL,
     summary     TEXT DEFAULT '',
+    description TEXT DEFAULT '',
     "placeId"   TEXT,
     confidence  REAL DEFAULT 0.7,
     season      JSONB,
@@ -88,15 +89,16 @@ CREATE INDEX IF NOT EXISTS idx_query_log_created ON query_log(created_at);
 -- ──────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS users (
-    id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    phone        TEXT UNIQUE NOT NULL,
-    display_name TEXT,
-    avatar_url   TEXT,
-    bio          TEXT DEFAULT '',
-    role         TEXT DEFAULT 'user' CHECK (role IN ('user', 'moderator', 'admin')),
-    is_active    BOOLEAN DEFAULT TRUE,
-    created_at   TIMESTAMPTZ DEFAULT NOW(),
-    updated_at   TIMESTAMPTZ DEFAULT NOW()
+    id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    phone         TEXT UNIQUE NOT NULL,
+    password_hash TEXT,
+    display_name  TEXT,
+    avatar_url    TEXT,
+    bio           TEXT DEFAULT '',
+    role          TEXT DEFAULT 'user' CHECK (role IN ('user', 'moderator', 'admin')),
+    is_active     BOOLEAN DEFAULT TRUE,
+    created_at    TIMESTAMPTZ DEFAULT NOW(),
+    updated_at    TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_phone ON users(phone);

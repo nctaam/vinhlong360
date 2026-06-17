@@ -4,6 +4,7 @@ export interface User {
   display_name: string | null
   role: string
   created_at: string
+  has_password?: boolean
 }
 
 export function useAuth() {
@@ -36,7 +37,7 @@ export function useAuth() {
   }
 
   async function verifyOtp(phone: string, code: string) {
-    const res = await $fetch<{ token?: string; user?: User; error?: string }>('/auth/verify-otp', {
+    const res = await $fetch<{ token?: string; user?: User; has_password?: boolean; error?: string }>('/auth/verify-otp', {
       method: 'POST',
       body: { phone, code },
     })
@@ -46,6 +47,34 @@ export function useAuth() {
       if (!user.value) await fetchMe()
     }
     return res
+  }
+
+  async function checkPhone(phone: string) {
+    return await $fetch<{ has_password: boolean }>('/auth/check-phone', {
+      method: 'POST',
+      body: { phone },
+    })
+  }
+
+  async function login(phone: string, password: string) {
+    const res = await $fetch<{ token?: string; user?: User; error?: string }>('/auth/login', {
+      method: 'POST',
+      body: { phone, password },
+    })
+    if (res.token) {
+      token.value = res.token
+      user.value = res.user || null
+      if (!user.value) await fetchMe()
+    }
+    return res
+  }
+
+  async function setPassword(password: string) {
+    return await $fetch<{ success: boolean }>('/auth/set-password', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: { password },
+    })
   }
 
   async function logout() {
@@ -63,5 +92,5 @@ export function useAuth() {
     return token.value ? { Authorization: `Bearer ${token.value}` } : {}
   }
 
-  return { user, isLoggedIn, loading, token, fetchMe, requestOtp, verifyOtp, logout, authHeaders }
+  return { user, isLoggedIn, loading, token, fetchMe, requestOtp, verifyOtp, checkPhone, login, setPassword, logout, authHeaders }
 }

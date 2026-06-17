@@ -1,25 +1,32 @@
 <template>
   <section class="page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tạo lịch trình' }]" />
-    <div class="page-head">
-      <h1>Tạo lịch trình</h1>
-      <p>Lập kế hoạch chuyến đi của bạn — chọn điểm đến, sắp xếp thứ tự và lưu lại.</p>
-    </div>
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình', to: '/lich-trinh' }, { label: 'Tạo lịch trình' }]" />
+
+    <!-- Hero -->
+    <section class="catalog-hero cat-itinerary">
+      <div class="catalog-hero-inner">
+        <span class="catalog-hero-icon">📋</span>
+        <div>
+          <h1>Tạo lịch trình</h1>
+          <p>Lập kế hoạch chuyến đi của bạn — chọn điểm đến, sắp xếp thứ tự và lưu lại.</p>
+        </div>
+      </div>
+    </section>
 
     <div class="planner-layout">
       <!-- Left: Entity picker -->
       <div class="planner-picker">
         <!-- Source tabs: All vs Favorites -->
-        <div class="chip-row" style="margin-bottom: 10px">
+        <div class="chip-row chip-row-spaced">
           <button :class="['chip', { active: sourceTab === 'all' }]" @click="sourceTab = 'all'">Tất cả</button>
           <button :class="['chip', { active: sourceTab === 'saved' }]" @click="sourceTab = 'saved'">
             ❤️ Đã lưu ({{ favCount }})
           </button>
         </div>
-        <div class="search-row" style="margin-bottom: 12px">
+        <div class="search-row search-row-spaced">
           <input v-model="searchQ" type="search" placeholder="Tìm điểm đến, đặc sản, lưu trú…" />
         </div>
-        <div v-if="sourceTab === 'all'" class="chip-row" style="margin-bottom: 12px">
+        <div v-if="sourceTab === 'all'" class="chip-row chip-row-spaced">
           <button :class="['chip', { active: typeFilter === 'all' }]" @click="typeFilter = 'all'">Tất cả</button>
           <button v-for="t in typeChips" :key="t.value" :class="['chip', { active: typeFilter === t.value }]" @click="typeFilter = t.value">
             {{ t.label }}
@@ -39,7 +46,7 @@
             </div>
             <button class="btn btn-sm btn-ghost" title="Thêm vào lịch trình">+</button>
           </div>
-          <p v-if="!pickerResults.length" class="empty" style="font-size: .88rem; padding: 12px">Không tìm thấy kết quả.</p>
+          <p v-if="!pickerResults.length" class="empty picker-empty">Không tìm thấy kết quả.</p>
         </div>
       </div>
 
@@ -125,7 +132,7 @@
         <div v-if="savedPlans.length" class="saved-plans">
           <h3>Lịch trình đã lưu</h3>
           <div v-for="(plan, pi) in savedPlans" :key="pi" class="saved-plan-item">
-            <button type="button" class="saved-plan-info" style="background:none; border:none; padding:0; margin:0; font:inherit; color:inherit; text-align:left; cursor:pointer; display:block; width:100%;" @click="loadPlan(pi)">
+            <button type="button" class="saved-plan-info saved-plan-btn" @click="loadPlan(pi)">
               <strong>{{ plan.title || 'Lịch trình chưa đặt tên' }}</strong>
               <small>{{ plan.stops.length }} điểm · Lưu {{ formatDate(plan.savedAt) }}</small>
             </button>
@@ -141,6 +148,7 @@
 </template>
 
 <script setup lang="ts">
+useReveal()
 import { TYPE_META, CARD_TYPES } from '~/composables/useConstants'
 import { fetchRoute, formatDistance, formatDuration, type TransportMode, type RouteResult } from '~/composables/useRouting'
 
@@ -449,3 +457,47 @@ useHead({
   }],
 })
 </script>
+
+<style scoped>
+.picker-list { max-height: 50vh; overflow-y: auto; }
+.picker-item {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-3); border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--duration-fast), transform var(--duration-fast) var(--ease-spring);
+}
+.picker-item:hover { background: var(--bg-warm); transform: translateX(2px); }
+.picker-item:active { transform: scale(.98); transition-duration: .08s; }
+.picker-emoji { font-size: 1.3rem; flex-shrink: 0; }
+.picker-info { flex: 1; min-width: 0; }
+.picker-info strong { display: block; font-size: var(--text-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.picker-info small { color: var(--muted); font-size: var(--text-xs); }
+.picker-empty { text-align: center; padding: var(--space-5); color: var(--muted); font-size: var(--text-sm); }
+.builder-header { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin-bottom: var(--space-4); }
+.builder-actions { display: flex; gap: var(--space-2); }
+.stop-item { display: flex; gap: var(--space-3); position: relative; }
+.stop-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--primary); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: var(--text-sm); font-weight: var(--weight-bold);
+  flex-shrink: 0; z-index: 1;
+}
+.stop-connector { position: absolute; left: 13px; top: 28px; bottom: -12px; width: 2px; background: var(--primary); opacity: .25; }
+.stop-card {
+  flex: 1; background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--radius-lg, 16px); padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-3);
+  transition: border-color var(--duration-fast), box-shadow var(--duration-normal) var(--ease-out);
+}
+.stop-card:hover { border-color: var(--border); box-shadow: var(--shadow); }
+.stop-card-head { display: flex; align-items: center; gap: var(--space-3); }
+.stop-emoji { font-size: 1.2rem; }
+.stop-card-info { flex: 1; min-width: 0; }
+.stop-card-info strong { display: block; font-size: var(--text-sm); }
+.stop-card-info small { color: var(--muted); font-size: var(--text-xs); }
+.stop-card-actions { display: flex; gap: var(--space-1); }
+.stop-list { margin-bottom: var(--space-4); }
+.route-map { height: 300px; border-radius: var(--radius-lg, 16px); overflow: hidden; border: 1px solid var(--line); }
+
+</style>

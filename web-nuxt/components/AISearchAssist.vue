@@ -1,7 +1,7 @@
 <template>
   <div class="ai-search-assist">
     <button v-if="!aiReply && !loading" class="ai-toggle-btn" @click="load">✨ Gợi ý AI cho "{{ query }}"</button>
-    <div v-else-if="loading" class="ai-loading" style="padding: 12px"><div class="spinner" style="margin: 0 auto"></div></div>
+    <div v-else-if="loading" class="ai-loading ai-loading-padded"><div class="spinner spinner-center"></div></div>
     <template v-else>
       <div class="ai-search-header">
         <span>Gợi ý nhanh</span>
@@ -50,3 +50,10 @@ watch(() => props.query, () => {
   expanded.value = true
 })
 </script>
+
+<style scoped>
+.ai-loading-padded { padding: var(--space-4); }
+.spinner-center { margin: 0 auto; }
+.ai-search-body { animation: aiSlideIn .25s var(--ease-out); }
+@keyframes aiSlideIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+</style>

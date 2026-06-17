@@ -10,7 +10,7 @@
       <span v-else class="avatar avatar-sm">{{ authorInitial }}</span>
       <div class="post-header-text">
         <div class="post-author">
-          <NuxtLink v-if="post.user_id" :to="`/nguoi-dung/${post.user_id}`" style="font-weight: 600">
+          <NuxtLink v-if="post.user_id" :to="`/nguoi-dung/${post.user_id}`" class="post-author-link">
             {{ post.display_name || post.phone || 'Người dùng' }}
           </NuxtLink>
           <span v-if="postTypeBadge" :class="['post-type-badge', `ptb-${post.post_type}`]">{{ postTypeBadge }}</span>
@@ -139,3 +139,16 @@ function timeAgo(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('vi-VN')
 }
 </script>
+
+<style scoped>
+.post-author-link { font-weight: 600; transition: color var(--duration-fast); }
+.post-author-link:hover { color: var(--primary-fg); }
+.avatar-link { transition: transform var(--duration-fast) var(--ease-spring); display: inline-block; }
+.avatar-link:hover { transform: scale(1.08); }
+.post-type-badge { transition: transform var(--duration-fast) var(--ease-spring); }
+.post-type-badge:hover { transform: scale(1.05); }
+.star { transition: transform var(--duration-fast) var(--ease-spring); display: inline-block; }
+.star.active { color: var(--accent); }
+.star:hover { transform: scale(1.15); }
+.post-entity-link { transition: background var(--duration-fast), transform var(--duration-fast) var(--ease-spring); }
+</style>

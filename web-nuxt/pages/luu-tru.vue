@@ -1,43 +1,131 @@
 <template>
-  <section class="page">
+  <div class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lưu trú' }]" />
-    <div class="page-head">
-      <h1>🏡 Lưu trú</h1>
-      <p>Homestay, nhà vườn, khách sạn và chỗ ở khắp miền Tây — chọn nơi nghỉ phù hợp cho chuyến đi của bạn.</p>
-    </div>
 
-    <div class="controls">
-      <div class="search-row">
-        <input v-model="q" type="search" placeholder="Tìm nơi lưu trú…" />
+    <!-- Hero -->
+    <section class="catalog-hero cat-accommodation">
+      <div class="catalog-hero-inner">
+        <span class="catalog-hero-icon">🏡</span>
+        <div>
+          <h1>Lưu trú</h1>
+          <p>Homestay miệt vườn, nhà nghỉ ven sông, khách sạn phố — chọn nơi nghỉ phù hợp cho chuyến đi miền Tây.</p>
+        </div>
       </div>
-      <p class="control-label">Khu vực</p>
-      <div class="chip-row">
-        <button :class="['chip', { active: areaFilter === 'all' }]" @click="areaFilter = 'all'">Tất cả</button>
+      <div v-if="allEntities.length" class="catalog-stats">
+        <div class="stat-item">
+          <span class="stat-num">{{ allEntities.length }}</span>
+          <span class="stat-label">nơi lưu trú</span>
+        </div>
+        <div v-for="a in areaCounts" :key="a.key" class="stat-item">
+          <span class="stat-num">{{ a.count }}</span>
+          <span class="stat-label">{{ a.name }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick picks by region -->
+    <section class="block">
+      <div class="section-head">
+        <h2>Chọn theo khu vực</h2>
+      </div>
+      <div class="quick-picks">
         <button
           v-for="(meta, key) in AREA_META"
           :key="key"
-          :class="['chip', { active: areaFilter === key }]"
-          @click="areaFilter = key as string"
-        >{{ meta.emoji }} {{ meta.name }}</button>
+          :class="['quick-pick', { active: areaFilter === key }]"
+          @click="areaFilter = areaFilter === key ? 'all' : (key as string); scrollToGrid()"
+        >
+          <span class="quick-pick-icon">{{ meta.emoji }}</span>
+          <span class="quick-pick-label">{{ meta.name }}</span>
+          <span class="quick-pick-count">{{ countByArea(key as string) }} chỗ ở</span>
+        </button>
       </div>
+    </section>
+
+    <!-- Featured -->
+    <section v-if="featured.length" class="block reveal">
+      <div class="section-head">
+        <h2>Được gợi ý</h2>
+      </div>
+      <div class="scroll-row" role="region" aria-label="Lưu trú được gợi ý">
+        <EntityCard v-for="e in featured" :key="e.id" :entity="e" />
+      </div>
+    </section>
+
+    <!-- Divider -->
+    <div class="catalog-divider">
+      <span class="catalog-divider-text">Duyệt tất cả</span>
     </div>
 
-    <p class="result-meta">{{ filtered.length }} nơi lưu trú</p>
-    <SkeletonGrid v-if="!data" :count="6" />
-    <div v-else-if="filtered.length" class="grid">
-      <EntityCard v-for="e in filtered" :key="e.id" :entity="e" />
-    </div>
-    <EmptyState v-else message="Không tìm thấy nơi lưu trú phù hợp." />
-  </section>
+    <!-- Full filterable grid -->
+    <section ref="gridSection" class="block reveal">
+      <div class="controls">
+        <div class="search-row">
+          <input v-model="q" type="search" placeholder="Tìm nơi lưu trú…" aria-label="Tìm nơi lưu trú" />
+        </div>
+        <p class="control-label">Khu vực</p>
+        <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
+          <button :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả</button>
+          <button
+            v-for="(meta, key) in AREA_META"
+            :key="key"
+            :class="['chip', { active: areaFilter === key }]"
+            :aria-pressed="areaFilter === key"
+            @click="areaFilter = key as string"
+          >{{ meta.emoji }} {{ meta.name }}</button>
+        </div>
+      </div>
+
+      <p class="result-meta" aria-live="polite">{{ filtered.length }} nơi lưu trú</p>
+      <EmptyState v-if="fetchError" icon="⚠️" title="Không thể tải dữ liệu" message="Vui lòng thử lại sau." />
+      <SkeletonGrid v-else-if="!data" :count="6" />
+      <div v-else-if="filtered.length" class="grid">
+        <EntityCard v-for="e in filtered" :key="e.id" :entity="e" />
+      </div>
+      <EmptyState v-else icon="🏡" title="Không tìm thấy nơi lưu trú" message="Thử thay đổi khu vực hoặc từ khóa tìm kiếm.">
+        <template #actions>
+          <button class="btn btn-outline" @click="areaFilter = 'all'; q = ''">Xóa bộ lọc</button>
+          <NuxtLink to="/du-lich" class="btn btn-outline">Khám phá du lịch</NuxtLink>
+        </template>
+      </EmptyState>
+    </section>
+
+    <!-- Cross-links -->
+    <section class="block reveal catalog-cross">
+      <h2>Khám phá thêm</h2>
+      <div class="cross-links">
+        <NuxtLink to="/du-lich" class="cross-card">
+          <span class="cross-icon">🌿</span>
+          <div><strong>Du lịch</strong><p>Trải nghiệm bản địa</p></div>
+        </NuxtLink>
+        <NuxtLink to="/lich-trinh" class="cross-card">
+          <span class="cross-icon">🗓️</span>
+          <div><strong>Lịch trình</strong><p>Tuyến đi sẵn</p></div>
+        </NuxtLink>
+        <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
+          <span class="cross-icon">🗺️</span>
+          <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
+        </NuxtLink>
+        <NuxtLink to="/san-pham" class="cross-card">
+          <span class="cross-icon">🍊</span>
+          <div><strong>Đặc sản</strong><p>Mua quà miền Tây</p></div>
+        </NuxtLink>
+      </div>
+    </section>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { AREA_META } from '~/composables/useConstants'
 
+useReveal()
+
 const q = ref('')
 const areaFilter = ref('all')
+const gridSection = ref<HTMLElement | null>(null)
+useFilterUrl({ vung: areaFilter }, { vung: 'all' })
 
-const { data } = await useAsyncData('catalog-accommodation', () =>
+const { data, error: fetchError } = await useAsyncData('catalog-accommodation', () =>
   $fetch<any>('/api/entities?type=accommodation&limit=200')
 )
 
@@ -46,6 +134,31 @@ const allEntities = computed(() => {
   if (!raw) return []
   return raw.entities || []
 })
+
+const areaCounts = computed(() => {
+  const counts: Record<string, number> = {}
+  for (const e of allEntities.value) {
+    const area = e.place_area || e.area || ''
+    if (area) counts[area] = (counts[area] || 0) + 1
+  }
+  return Object.entries(AREA_META)
+    .filter(([key]) => counts[key])
+    .map(([key, meta]) => ({ key, name: meta.name, count: counts[key] }))
+})
+
+function countByArea(key: string) {
+  return allEntities.value.filter((e: any) => (e.place_area || e.area) === key).length
+}
+
+const featured = computed(() => {
+  return allEntities.value
+    .filter((e: any) => e.images?.length)
+    .slice(0, 6)
+})
+
+function scrollToGrid() {
+  nextTick(() => gridSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+}
 
 const filtered = computed(() => {
   let list = allEntities.value

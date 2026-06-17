@@ -12,7 +12,7 @@
 
     <!-- Cover + Hero Image -->
     <div :class="['detail-cover', `cat-${typeMeta.cat}`, { 'has-cover-img': coverImage }]">
-      <img v-if="coverImage" :src="coverImage" :alt="entity.name" class="dc-bg" @click="openCoverLightbox" />
+      <img v-if="coverImage" :src="coverImage" :alt="entity.name" class="dc-bg" loading="eager" fetchpriority="high" sizes="100vw" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="openCoverLightbox" />
       <div v-if="coverImage" class="dc-overlay"></div>
       <div class="dc-inner">
         <span class="dc-emoji">{{ typeMeta.emoji }}</span>
@@ -28,29 +28,37 @@
           </ClientOnly>
         </div>
       </div>
-      <button v-if="entity.images?.length" class="dc-photo-btn" @click="openCoverLightbox">
-        <span class="dc-photo-icon">&#128247;</span>
+      <button v-if="entity.images?.length" class="dc-photo-btn" :aria-label="entity.images.length === 1 ? 'Xem ảnh' : `Xem ${entity.images.length} ảnh`" @click="openCoverLightbox">
+        <span class="dc-photo-icon" aria-hidden="true">&#128247;</span>
         {{ entity.images.length === 1 ? 'Xem ảnh' : `${entity.images.length} ảnh` }}
       </button>
       <div v-if="entity.images?.length > 1" class="dc-thumbs">
         <img
           v-for="(src, i) in entity.images.slice(0, 4)"
-          :key="i"
+          :key="src"
           :src="src"
           :alt="`${entity.name} - ${i + 1}`"
           :class="['dc-thumb', { active: i === 0 }]"
+          loading="lazy"
+          width="56"
+          height="40"
+          decoding="async"
+          role="button"
+          tabindex="0"
           @click="openCoverLightbox(i)"
+          @keydown.enter="openCoverLightbox(i)"
+          @keydown.space.prevent="openCoverLightbox(i)"
         />
-        <span v-if="entity.images.length > 4" class="dc-thumb-more" @click="openCoverLightbox(4)">
+        <button v-if="entity.images.length > 4" class="dc-thumb-more" :aria-label="`Xem thêm ${entity.images.length - 4} ảnh`" @click="openCoverLightbox(4)">
           +{{ entity.images.length - 4 }}
-        </span>
+        </button>
       </div>
       <small v-if="imageCredit" class="dc-credit">{{ imageCredit }}</small>
     </div>
 
     <!-- Lightbox (replaces old ImageGallery) -->
     <Teleport to="body">
-      <div v-if="lightboxOpen" class="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh" @click.self="lightboxOpen = false">
+      <div v-if="lightboxOpen" class="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh" @click.self="lightboxOpen = false" @keydown.escape="lightboxOpen = false" @keydown.left="lbPrev" @keydown.right="lbNext" tabindex="-1" ref="lightboxEl">
         <button class="lb-close" aria-label="Đóng" @click="lightboxOpen = false">&times;</button>
         <button v-if="entity.images?.length > 1" class="lb-prev" aria-label="Ảnh trước" @click="lbPrev">&#8249;</button>
         <img :src="entity.images[lbIndex]" :alt="`${entity.name} - ${lbIndex + 1}`" class="lb-img" />
@@ -73,8 +81,30 @@
         </div>
         <p class="lead">{{ entity.summary }}</p>
 
+        <!-- Mô tả chi tiết -->
+        <div v-if="descriptionParagraphs.length" class="entity-description">
+          <p v-for="(para, i) in visibleParagraphs" :key="i">{{ para }}</p>
+          <button v-if="descriptionParagraphs.length > 3" class="desc-toggle" @click="descExpanded = !descExpanded">
+            {{ descExpanded ? 'Thu gọn ↑' : 'Đọc thêm ↓' }}
+          </button>
+        </div>
+
+        <!-- Lưu ý thực tế — Scenarios 2,3,6,9: practical tips for food/family/OCOP/delegation -->
+        <div v-if="practicalTips.length" class="practical-tips reveal">
+          <h2 class="section-subtitle">📋 Lưu ý thực tế</h2>
+          <ul class="pt-list">
+            <li v-for="tip in practicalTips" :key="tip.icon" class="pt-item">
+              <span class="pt-icon">{{ tip.icon }}</span>
+              <div class="pt-content">
+                <strong>{{ tip.label }}</strong>
+                <span>{{ tip.value }}</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
         <!-- Month strip -->
-        <div v-if="entity.season?.months" class="season-block">
+        <div v-if="entity.season?.months" class="season-block reveal">
           <h2 class="section-subtitle">Mùa vụ</h2>
           <div class="month-strip">
             <span
@@ -84,13 +114,13 @@
             >T{{ m }}</span>
           </div>
           <div class="ms-legend">
-            <span class="ms-cell on" style="width:16px;height:16px"></span> Có mùa
-            <span class="ms-cell on peak" style="width:16px;height:16px"></span> Rộ nhất
+            <span class="ms-cell on ms-legend-swatch"></span> Có mùa
+            <span class="ms-cell on peak ms-legend-swatch"></span> Rộ nhất
           </div>
         </div>
 
         <!-- Relationships -->
-        <div v-if="relationships.length" class="rel-block">
+        <div v-if="relationships.length" class="rel-block reveal">
           <h2>Liên kết</h2>
           <ul class="rel-list">
             <li v-for="rel in relationships" :key="`${rel.target_id}-${rel.rel_type}`">
@@ -113,22 +143,30 @@
         </div>
 
         <!-- Nearby entities (same area, different type) -->
-        <NearbyEntities v-if="entity.place_area" :entity-id="id" :entity-type="entity.type" :area="entity.place_area" />
+        <NuxtErrorBoundary>
+          <NearbyEntities v-if="entity.place_area" :entity-id="id" :entity-type="entity.type" :area="entity.place_area" />
+        </NuxtErrorBoundary>
 
         <!-- Community Reviews -->
-        <ClientOnly>
-          <EntityReviews :entity-id="id" :entity-name="entity.name" />
-        </ClientOnly>
+        <NuxtErrorBoundary>
+          <ClientOnly>
+            <EntityReviews :entity-id="id" :entity-name="entity.name" />
+          </ClientOnly>
+        </NuxtErrorBoundary>
 
         <!-- AI Travel Tips -->
-        <ClientOnly>
-          <AITravelTips v-if="entity" :entity-id="id" :entity-name="entity.name" />
-        </ClientOnly>
+        <NuxtErrorBoundary>
+          <ClientOnly>
+            <AITravelTips v-if="entity" :entity-id="id" :entity-name="entity.name" />
+          </ClientOnly>
+        </NuxtErrorBoundary>
 
         <!-- AI Recommendations -->
-        <ClientOnly>
-          <AIRecommendations :entity-id="id" title="Bạn cũng có thể thích" :limit="4" />
-        </ClientOnly>
+        <NuxtErrorBoundary>
+          <ClientOnly>
+            <AIRecommendations :entity-id="id" title="Bạn cũng có thể thích" :limit="4" />
+          </ClientOnly>
+        </NuxtErrorBoundary>
       </div>
 
       <!-- Sidebar -->
@@ -150,14 +188,14 @@
         <div v-if="entity.place_name" class="fact">
           <span class="k">Địa điểm</span>
           <span class="v">
-            <NuxtLink v-if="entity.placeId" :to="`/xa-phuong/${entity.placeId}`" style="color: var(--primary); font-weight: 600">{{ entity.place_name }}</NuxtLink>
+            <NuxtLink v-if="entity.placeId" :to="`/xa-phuong/${entity.placeId}`" class="fact-link">{{ entity.place_name }}</NuxtLink>
             <template v-else>{{ entity.place_name }}</template>
           </span>
         </div>
         <div v-if="entity.place_area" class="fact">
           <span class="k">Khu vực</span>
           <span class="v">
-            <NuxtLink :to="`/khu-vuc/${entity.place_area}`" style="color: var(--primary); font-weight: 600">{{ areaName }}</NuxtLink>
+            <NuxtLink :to="`/khu-vuc/${entity.place_area}`" class="fact-link">{{ areaName }}</NuxtLink>
           </span>
         </div>
         <div v-if="entity.season" class="fact">
@@ -176,7 +214,7 @@
         </div>
         <div v-if="entity.attributes?.phone" class="fact">
           <span class="k">Liên hệ</span>
-          <span class="v"><a :href="'tel:' + entity.attributes.phone" style="color: var(--primary)">{{ entity.attributes.phone }}</a></span>
+          <span class="v"><a :href="'tel:' + entity.attributes.phone" class="fact-link">{{ entity.attributes.phone }}</a></span>
         </div>
         <div v-if="entity.attributes?.address" class="fact">
           <span class="k">Địa chỉ</span>
@@ -184,7 +222,7 @@
         </div>
         <div v-if="entity.attributes?.website" class="fact">
           <span class="k">Website</span>
-          <span class="v"><a :href="entity.attributes.website" target="_blank" rel="noopener" style="color: var(--primary); word-break: break-all">{{ entity.attributes?.website?.replace(/^https?:\/\//, '') }}</a></span>
+          <span class="v"><a :href="entity.attributes.website" target="_blank" rel="noopener" class="fact-link website-link">{{ entity.attributes?.website?.replace(/^https?:\/\//, '') }}</a></span>
         </div>
         <div v-if="entity.attributes?.fee" class="fact">
           <span class="k">Phí vào cửa</span>
@@ -214,16 +252,18 @@
           <small v-if="entity.updatedAt">Cập nhật: {{ entity.updatedAt }}</small>
         </div>
 
-        <ClientOnly>
-          <AIBestTime :entity-id="id" :entity-name="entity.name" />
-        </ClientOnly>
+        <NuxtErrorBoundary>
+          <ClientOnly>
+            <AIBestTime :entity-id="id" :entity-name="entity.name" />
+          </ClientOnly>
+        </NuxtErrorBoundary>
 
         <!-- Contextual next steps -->
         <div class="next-steps">
           <h3 class="ns-title">Bước tiếp theo</h3>
           <ClientOnly>
             <button class="ns-action" @click="toggleAndSave">
-              {{ entitySaved ? '❤️ Đã lưu' : '🤍 Lưu vào hành trình' }}
+              {{ entitySaved ? '❤️ Đã lưu' : '🤍 Lưu vào lịch trình' }}
             </button>
           </ClientOnly>
         <NuxtLink to="/tao-lich-trinh" no-prefetch class="ns-action">📋 Thêm vào lịch trình</NuxtLink>
@@ -236,9 +276,9 @@
 
     <!-- Sticky mobile CTA bar (always visible, thumb zone) -->
     <div v-if="entity.attributes?.phone || zaloLink || hasCoords" class="sticky-cta-bar">
-      <a v-if="entity.attributes?.phone" class="scta-phone" :href="'tel:' + entity.attributes.phone">📞 Gọi</a>
-      <a v-if="zaloLink" class="scta-zalo" :href="zaloLink" target="_blank" rel="nofollow">💬 Zalo</a>
-      <NuxtLink v-if="hasCoords" class="scta-map" :to="mapUrl">🗺️ Bản đồ</NuxtLink>
+      <a v-if="entity.attributes?.phone" class="scta-phone" :href="'tel:' + entity.attributes.phone" aria-label="Gọi điện thoại">📞 Gọi</a>
+      <a v-if="zaloLink" class="scta-zalo" :href="zaloLink" target="_blank" rel="nofollow" aria-label="Nhắn Zalo">💬 Zalo</a>
+      <NuxtLink v-if="hasCoords" class="scta-map" :to="mapUrl" aria-label="Xem trên bản đồ">🗺️ Bản đồ</NuxtLink>
     </div>
   </div>
   <div v-else class="page">
@@ -250,6 +290,7 @@
 import { TYPE_META, AREA_META, REL_FWD, REL_BWD } from '~/composables/useConstants'
 import { seasonText } from '~/composables/useSeason'
 
+useReveal()
 const { isSaved, toggle: toggleFav } = useFavorites()
 
 const route = useRoute()
@@ -299,10 +340,14 @@ const imageCredit = computed(() => {
 
 const lightboxOpen = ref(false)
 const lbIndex = ref(0)
+const lightboxEl = ref<HTMLElement | null>(null)
+let lbTriggerEl: HTMLElement | null = null
 function openCoverLightbox(idx = 0) {
   if (!entity.value?.images?.length) return
+  lbTriggerEl = document.activeElement as HTMLElement
   lbIndex.value = typeof idx === 'number' ? idx : 0
   lightboxOpen.value = true
+  nextTick(() => lightboxEl.value?.focus())
 }
 function lbPrev() {
   const len = entity.value?.images?.length || 1
@@ -312,14 +357,11 @@ function lbNext() {
   const len = entity.value?.images?.length || 1
   lbIndex.value = (lbIndex.value + 1) % len
 }
-function onLbKey(e: KeyboardEvent) {
-  if (!lightboxOpen.value) return
-  if (e.key === 'Escape') lightboxOpen.value = false
-  if (e.key === 'ArrowLeft') lbPrev()
-  if (e.key === 'ArrowRight') lbNext()
-}
-onMounted(() => window.addEventListener('keydown', onLbKey))
-onUnmounted(() => window.removeEventListener('keydown', onLbKey))
+watch(lightboxOpen, (v) => {
+  if (!import.meta.client) return
+  document.body.style.overflow = v ? 'hidden' : ''
+  if (!v) nextTick(() => lbTriggerEl?.focus())
+})
 
 const TYPE_BREADCRUMB: Record<string, string> = {
   product: '/san-pham', experience: '/du-lich', attraction: '/du-lich',
@@ -329,6 +371,18 @@ const TYPE_BREADCRUMB: Record<string, string> = {
 const typeBreadcrumbUrl = computed(() => TYPE_BREADCRUMB[entity.value?.type] || '/du-lich')
 
 const seasonLabel = computed(() => seasonText(entity.value?.season))
+
+const descriptionParagraphs = computed(() => {
+  const desc = entity.value?.description
+  if (!desc || typeof desc !== 'string') return []
+  return desc.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 0)
+})
+const descExpanded = ref(false)
+const visibleParagraphs = computed(() =>
+  descExpanded.value || descriptionParagraphs.value.length <= 3
+    ? descriptionParagraphs.value
+    : descriptionParagraphs.value.slice(0, 3)
+)
 
 // GĐ13.2: link Zalo từ attributes.zalo (số hoặc URL). KHÔNG đặt hàng — chỉ liên hệ.
 const zaloLink = computed(() => {
@@ -359,6 +413,24 @@ const mapUrl = computed(() => {
   return c ? `${base}&lat=${c[0]}&lng=${c[1]}` : base
 })
 const hasHighlights = computed(() => !!(entity.value?.attributes?.phone || zaloLink.value || entity.value?.attributes?.hours || priceText.value || addressText.value || hasCoords.value))
+
+const practicalTips = computed(() => {
+  const a = entity.value?.attributes
+  if (!a) return []
+  const tips: { icon: string; label: string; value: string }[] = []
+  if (a.booking_note) tips.push({ icon: '📝', label: 'Đặt trước', value: a.booking_note })
+  if (a.best_time) tips.push({ icon: '⏰', label: 'Thời điểm tốt nhất', value: a.best_time })
+  if (a.transport) tips.push({ icon: '🚗', label: 'Di chuyển', value: a.transport })
+  if (a.fee) tips.push({ icon: '🎫', label: 'Phí vào cửa', value: a.fee })
+  if (a.amenities) {
+    const am = Array.isArray(a.amenities) ? a.amenities.join(', ') : a.amenities
+    tips.push({ icon: '✅', label: 'Tiện ích', value: am })
+  }
+  if (a.family_friendly || a.suitable_for?.includes('family'))
+    tips.push({ icon: '👨‍👩‍👧‍👦', label: 'Gia đình', value: 'Phù hợp cho gia đình có trẻ em' })
+  if (a.parking) tips.push({ icon: '🅿️', label: 'Đậu xe', value: a.parking })
+  return tips
+})
 
 const quality = computed(() => entity.value?.quality || {})
 const qualityMissingLabels = computed(() => {
@@ -420,12 +492,18 @@ function normalizeRelationship(r: any) {
   const isFwd = sourceId === id.value
   const otherId = r.other_id ?? (isFwd ? targetId : sourceId)
   const otherName = r.other_name ?? (isFwd ? (r.target_name ?? r.name) : (r.source_name ?? r.name))
+  const otherType = r.other_type ?? ''
+  let label = isFwd ? (REL_FWD[relType] || relType) : (REL_BWD[relType] || relType)
+  if ((relType === 'related_to' || relType === 'associated_with') && otherType) {
+    const meta = TYPE_META[otherType]
+    if (meta) label = meta.emoji + ' ' + meta.label
+  }
   return {
     target_id: otherId,
     target_name: otherName || otherId,
     rel_type: relType,
     distance_km: distance,
-    label: isFwd ? (REL_FWD[relType] || relType) : (REL_BWD[relType] || relType),
+    label,
   }
 }
 
@@ -466,11 +544,12 @@ if (entity.value && !entity.value.error) {
   const e = entity.value
   const ogImg = Array.isArray(e.images) && e.images.length ? e.images[0] : undefined
 
+  const seoDesc = e.description ? e.description.split(/\n\s*\n/)[0]?.trim() || e.summary : e.summary || ''
   useSeoMeta({
     title: `${e.name} — ${typeMeta.value.label} — vinhlong360`,
-    description: e.summary || '',
+    description: seoDesc,
     ogTitle: `${e.name} — vinhlong360`,
-    ogDescription: e.summary || '',
+    ogDescription: seoDesc,
     ...(ogImg ? { ogImage: ogImg } : {}),
   })
 
@@ -491,7 +570,7 @@ if (entity.value && !entity.value.error) {
     '@context': 'https://schema.org',
     '@type': ldType,
     name: e.name,
-    description: e.summary,
+    description: e.description || e.summary,
     inLanguage: 'vi-VN',
     url: `https://vinhlong360.vn/dia-diem/${e.id}`,
     address: {

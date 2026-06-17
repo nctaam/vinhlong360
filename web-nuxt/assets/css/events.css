@@ -13,12 +13,17 @@
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  transition: transform .12s var(--ease-out), box-shadow .18s ease;
+  transition: transform var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-out), border-color var(--duration-fast);
   color: var(--ink);
 }
 .event-row:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
+  border-color: var(--border);
+}
+.event-row:active {
+  transform: scale(.98);
+  transition-duration: .1s;
 }
 
 .event-date-badge {
@@ -54,8 +59,8 @@
   margin-bottom: var(--space-1);
 }
 .cat-mua {
-  background: rgba(76, 140, 50, .1);
-  color: #4c8c32;
+  background: rgba(46, 125, 91, .1);
+  color: var(--secondary);
 }
 
 .result-link {
@@ -100,7 +105,9 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform .5s var(--ease-out);
 }
+.event-row:hover .event-thumb img { transform: scale(1.04); }
 
 /* ── View toggle ── */
 .view-toggle {
@@ -117,8 +124,10 @@
   font-weight: var(--weight-semibold);
   color: var(--ink-secondary);
   cursor: pointer;
-  transition: all .12s ease;
+  min-height: 44px;
+  transition: background var(--duration-fast, .15s), color var(--duration-fast, .15s), border-color var(--duration-fast, .15s), transform var(--duration-fast, .15s);
 }
+.toggle-btn:active { transform: scale(.96); }
 .toggle-btn.active {
   background: var(--primary-fg);
   color: #fff;
@@ -145,8 +154,8 @@
   margin: 0;
 }
 .cal-nav {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -156,8 +165,10 @@
   font-size: var(--text-lg);
   cursor: pointer;
   color: var(--ink);
+  transition: background var(--duration-fast, .15s), transform var(--duration-fast, .15s);
 }
 .cal-nav:hover { background: var(--card-hover, var(--line)); }
+.cal-nav:active { transform: scale(.93); }
 
 .cal-grid {
   display: grid;
@@ -177,12 +188,15 @@
   padding: var(--space-1);
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
+  transition: background var(--duration-fast) ease, border-color var(--duration-fast);
 }
+.cal-cell:not(.cal-empty):hover { background: rgba(var(--primary-rgb), .04); }
 .cal-cell.cal-today {
   background: rgba(var(--primary-rgb, 200,80,40), .08);
   border-color: var(--primary-fg);
 }
 .cal-cell.cal-has-events { background: rgba(var(--primary-rgb, 200,80,40), .04); }
+.cal-cell:focus-visible { outline: 2px solid var(--primary-fg); outline-offset: -2px; border-radius: var(--radius-sm); }
 .cal-empty { visibility: hidden; }
 .cal-num {
   font-size: var(--text-xs);
@@ -207,7 +221,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.cal-event-dot { transition: opacity var(--duration-fast) var(--ease-out), transform var(--duration-fast); }
 .cal-event-dot:hover { opacity: .85; }
+.cal-event-dot:active { transform: scale(.93); }
 .cal-more {
   font-size: 10px;
   color: var(--ink-tertiary);
@@ -227,17 +243,33 @@
   opacity: .7;
 }
 .cal-lunar.lunar-first {
-  color: #c22;
+  color: var(--error);
   font-weight: var(--weight-semibold);
   opacity: 1;
 }
 .cal-lunar.lunar-mid {
-  color: #d4a017;
+  color: var(--accent-dark);
   font-weight: var(--weight-semibold);
   opacity: 1;
 }
 
-/* ── Responsive ── */
+/* ── Dark mode (events) ── */
+.dark .event-row { border-color: var(--line); }
+.dark .event-row:hover { box-shadow: 0 4px 16px rgba(0,0,0,.3); border-color: rgba(255,255,255,.1); }
+.dark .toggle-btn { background: var(--bg-alt); border-color: var(--line); }
+.dark .calendar { border-color: var(--line); }
+.dark .cal-nav { border-color: var(--line); background: var(--bg-alt); }
+.dark .cal-nav:hover { background: rgba(255,255,255,.08); }
+.dark .cat-mua { background: rgba(46, 125, 91, .16); }
+
+/* ── Responsive: tablet ── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .cal-grid { min-width: 480px; }
+  .cal-cell { min-height: 64px; }
+  .event-thumb { width: 100px; height: 72px; }
+}
+
+/* ── Responsive: mobile ── */
 @media (max-width: 640px) {
   .event-row { flex-wrap: wrap; }
   .event-thumb { width: 100%; height: 120px; order: -1; }

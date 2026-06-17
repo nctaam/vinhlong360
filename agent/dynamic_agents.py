@@ -377,6 +377,10 @@ class AgentFactory:
         changed = False
         for seed in seeds:
             if seed["name"] in seed_names:
+                for a in self._agents.values():
+                    if a.name == seed["name"] and not a.active:
+                        a.active = True
+                        changed = True
                 continue
             spec = AgentSpec(
                 agent_id=str(uuid.uuid4()),

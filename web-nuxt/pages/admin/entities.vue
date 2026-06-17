@@ -1,10 +1,13 @@
 <template>
   <div>
-    <h1>Quản lý Entities</h1>
+    <div class="admin-head-row">
+      <h1>Quản lý Entities</h1>
+      <button class="admin-refresh" :disabled="loading" @click="fetchEntities()">🔄 Làm mới</button>
+    </div>
 
     <div class="admin-toolbar">
       <input v-model="search" class="input" placeholder="Tìm entity…" @input="debounceFetch" />
-      <select v-model="typeFilter" class="input" style="flex: 0 0 160px" @change="fetchEntities(true)">
+      <select v-model="typeFilter" class="input admin-select-filter" @change="fetchEntities(true)">
         <option value="">Tất cả loại</option>
         <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
       </select>
@@ -13,73 +16,76 @@
 
     <div v-if="selected.size" class="bulk-bar">
       <span>Đã chọn {{ selected.size }}</span>
-      <button class="btn-danger" @click="bulkDelete">Xóa đã chọn</button>
-      <button class="btn-success" @click="bulkConfidence">Đặt confidence</button>
+      <button class="btn-danger" :disabled="bulkBusy" @click="bulkDelete">Xóa đã chọn</button>
+      <button class="btn-success" :disabled="bulkBusy" @click="bulkConfidence">Đặt confidence</button>
       <button class="btn btn-outline btn-sm" @click="selected = new Set()">Bỏ chọn</button>
     </div>
 
-    <div class="admin-table-wrap">
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th style="width:28px"><input type="checkbox" :checked="allSelected" @change="toggleAll" aria-label="Chọn tất cả" /></th>
-          <th>ID</th>
-          <th>Tên</th>
-          <th>Loại</th>
-          <th>Địa điểm</th>
-          <th>Confidence</th>
-          <th>Thao tác</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="e in entities" :key="e.id">
-          <td><input type="checkbox" :checked="selected.has(e.id)" @change="toggleSel(e.id)" :aria-label="`Chọn ${e.name}`" /></td>
-          <td style="font-size: .78rem; color: var(--muted); max-width: 120px; overflow: hidden; text-overflow: ellipsis">{{ e.id }}</td>
-          <td><strong>{{ e.name }}</strong></td>
-          <td>{{ e.type }}</td>
-          <td>{{ e.place_name || '—' }}</td>
-          <td>{{ (e.confidence * 100).toFixed(0) }}%</td>
-          <td class="admin-actions">
-            <button class="btn-success" @click="openEdit(e)">Sửa</button>
-            <button class="btn-danger" @click="deleteEntity(e.id)">Xóa</button>
-          </td>
-        </tr>
-        <tr v-if="!entities.length">
-          <td colspan="7" style="text-align: center; padding: 20px; color: var(--muted)">Không có entity nào.</td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
+    <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
+    <template v-else>
+      <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th style="width:28px"><input type="checkbox" :checked="allSelected" @change="toggleAll" aria-label="Chọn tất cả" /></th>
+            <th>ID</th>
+            <th>Tên</th>
+            <th>Loại</th>
+            <th>Địa điểm</th>
+            <th>Confidence</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="e in entities" :key="e.id">
+            <td><input type="checkbox" :checked="selected.has(e.id)" @change="toggleSel(e.id)" :aria-label="`Chọn ${e.name}`" /></td>
+            <td class="admin-td-id">{{ e.id }}</td>
+            <td><strong>{{ e.name }}</strong></td>
+            <td>{{ e.type }}</td>
+            <td>{{ e.place_name || '—' }}</td>
+            <td>{{ (e.confidence * 100).toFixed(0) }}%</td>
+            <td class="admin-actions">
+              <button class="btn-success" @click="openEdit(e)">Sửa</button>
+              <button class="btn-danger" :disabled="acting === e.id" @click="deleteEntity(e.id)">Xóa</button>
+            </td>
+          </tr>
+          <tr v-if="!entities.length">
+            <td colspan="7" class="admin-empty-row">Không có entity nào.</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
 
-    <div class="admin-pagination">
-      <button :disabled="page <= 1" @click="page--; fetchEntities()">← Trước</button>
-      <span style="padding: 6px 10px; font-size: .85rem">Trang {{ page }}</span>
-      <button :disabled="entities.length < limit" @click="page++; fetchEntities()">Sau →</button>
-    </div>
+      <div class="admin-pagination">
+        <button :disabled="page <= 1" @click="page--; fetchEntities()">← Trước</button>
+        <span class="admin-page-info">Trang {{ page }}</span>
+        <button :disabled="entities.length < limit" @click="page++; fetchEntities()">Sau →</button>
+      </div>
+    </template>
 
     <!-- Edit/Create Modal -->
     <div v-if="showModal" class="modal-overlay" role="dialog" aria-modal="true" :aria-label="editingEntity ? 'Sửa Entity' : 'Tạo Entity'" @click.self="showModal = false" @keyup.escape="showModal = false">
-      <div class="modal" style="max-width: 600px">
+      <div class="modal admin-modal-md">
         <h2>{{ editingEntity ? 'Sửa Entity' : 'Tạo Entity' }}</h2>
-        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px">
+        <div class="admin-form-col">
           <input v-model="form.id" class="input" placeholder="ID (slug)" aria-label="ID (slug)" :disabled="!!editingEntity" />
           <input v-model="form.name" class="input" placeholder="Tên" aria-label="Tên entity" />
           <select v-model="form.type" class="input">
             <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
           </select>
           <input v-model="form.placeId" class="input" placeholder="Place ID (xã/phường)" />
-          <textarea v-model="form.summary" class="input" placeholder="Tóm tắt" rows="3" style="resize: vertical"></textarea>
+          <textarea v-model="form.summary" class="input admin-textarea" placeholder="Tóm tắt" rows="3"></textarea>
           <input v-model.number="form.confidence" class="input" type="number" min="0" max="1" step="0.1" placeholder="Confidence (0-1)" />
 
           <!-- Quản lý ảnh (chỉ khi sửa) -->
           <div v-if="editingEntity" class="img-mgr">
-            <strong style="font-size:.9rem">Ảnh ({{ (form.images || []).length }}/10)</strong>
+            <strong class="admin-label">Ảnh ({{ (form.images || []).length }}/10)</strong>
             <div v-for="(img, i) in (form.images || [])" :key="i" class="img-row">
               <img :src="img" alt="" class="img-thumb" @error="(e) => ((e.target as HTMLImageElement).style.opacity = '.3')" />
               <span class="img-url">{{ img }}</span>
               <button class="btn-danger btn-sm" @click="removeImage(i)">Xóa</button>
             </div>
-            <div style="display:flex; gap:6px; margin-top:6px">
+            <div class="admin-inline-add">
               <input v-model="newImage" class="input" placeholder="https://… (chỉ nguồn cấp phép)" @keyup.enter="addImage" />
               <button class="btn btn-secondary btn-sm" :disabled="!newImage.trim()" @click="addImage">Thêm ảnh</button>
             </div>
@@ -87,12 +93,12 @@
 
           <!-- Quản lý quan hệ (chỉ khi sửa) -->
           <div v-if="editingEntity" class="img-mgr">
-            <strong style="font-size:.9rem">Quan hệ ({{ rels.length }})</strong>
+            <strong class="admin-label">Quan hệ ({{ rels.length }})</strong>
             <div v-for="(r, i) in rels" :key="i" class="img-row">
               <span class="img-url">{{ r.type }} → {{ r.target_name || r.source_name || r.to_id }}</span>
               <button class="btn-danger btn-sm" @click="removeRel(r)">Xóa</button>
             </div>
-            <div style="display:flex; gap:6px; margin-top:6px">
+            <div class="admin-inline-add">
               <select v-model="newRel.type" class="input" style="flex:0 0 130px">
                 <option v-for="t in relTypes" :key="t" :value="t">{{ t }}</option>
               </select>
@@ -101,9 +107,11 @@
             </div>
           </div>
         </div>
-        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px">
+        <div class="admin-modal-actions">
           <button class="btn btn-outline" @click="showModal = false">Hủy</button>
-          <button class="btn btn-primary" @click="saveEntity">{{ editingEntity ? 'Cập nhật' : 'Tạo' }}</button>
+          <button class="btn btn-primary" :disabled="saving" @click="saveEntity">
+            {{ saving ? 'Đang lưu…' : (editingEntity ? 'Cập nhật' : 'Tạo') }}
+          </button>
         </div>
       </div>
     </div>
@@ -117,7 +125,6 @@ definePageMeta({ layout: 'admin', middleware: 'admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 
-// Khớp VALID_TYPES backend (trước hardcode sai: 'festival'/'specialty' không tồn tại).
 const types = Object.keys(TYPE_META)
 const search = ref('')
 const typeFilter = ref('')
@@ -128,6 +135,10 @@ const showModal = ref(false)
 const editingEntity = ref<any>(null)
 const form = ref<any>({})
 const selected = ref<Set<string>>(new Set())
+const loading = ref(true)
+const acting = ref<string | null>(null)
+const saving = ref(false)
+const bulkBusy = ref(false)
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 function debounceFetch() {
@@ -138,13 +149,17 @@ onUnmounted(() => { if (debounceTimer) clearTimeout(debounceTimer) })
 
 async function fetchEntities(reset = false) {
   if (reset) page.value = 1
+  loading.value = true
   try {
     const params = new URLSearchParams({ limit: String(limit), offset: String((page.value - 1) * limit) })
     if (search.value) params.set('q', search.value)
     if (typeFilter.value) params.set('type', typeFilter.value)
     const res = await $fetch<any>(`/admin-api/entities?${params}`, { headers: authHeaders() })
     entities.value = res.entities || res || []
-  } catch { /* not admin */ }
+  } catch {
+    showToast('Không thể tải danh sách entity', 'error')
+  }
+  loading.value = false
 }
 
 function openCreate() {
@@ -196,6 +211,7 @@ async function removeRel(r: any) {
 async function saveEntity() {
   if (!form.value.name?.trim()) { showToast('Tên không được để trống', 'error'); return }
   if (!editingEntity.value && !form.value.id?.trim()) { showToast('ID không được để trống', 'error'); return }
+  saving.value = true
   try {
     if (editingEntity.value) {
       await $fetch(`/admin-api/entities/${form.value.id}`, { method: 'PUT', headers: authHeaders(), body: form.value })
@@ -209,6 +225,7 @@ async function saveEntity() {
   } catch (e: any) {
     showToast(e.data?.detail || 'Lỗi khi lưu entity', 'error')
   }
+  saving.value = false
 }
 
 // ── Quản lý ảnh entity (chỉ khi đang sửa) ──
@@ -245,12 +262,14 @@ function toggleAll() {
 async function bulkDelete() {
   const ids = [...selected.value]
   if (!ids.length || !confirm(`Xóa ${ids.length} entity đã chọn?`)) return
+  bulkBusy.value = true
   try {
     const r = await $fetch<any>('/admin-api/entities/bulk-delete', { method: 'POST', headers: authHeaders(), body: ids })
     showToast(`Đã xóa ${r.count}`, 'success')
     selected.value = new Set()
     await fetchEntities()
   } catch (e: any) { showToast(e?.data?.detail || 'Xóa hàng loạt lỗi', 'error') }
+  bulkBusy.value = false
 }
 async function bulkConfidence() {
   const ids = [...selected.value]
@@ -258,6 +277,7 @@ async function bulkConfidence() {
   const v = prompt('Đặt confidence (0–1) cho ' + ids.length + ' entity:')
   const c = Number(v)
   if (!v || isNaN(c) || c < 0 || c > 1) return
+  bulkBusy.value = true
   try {
     const r = await $fetch<any>(`/admin-api/entities/bulk-update-confidence?confidence=${c}`, {
       method: 'POST', headers: authHeaders(), body: ids })
@@ -265,10 +285,12 @@ async function bulkConfidence() {
     selected.value = new Set()
     await fetchEntities()
   } catch (e: any) { showToast(e?.data?.detail || 'Cập nhật hàng loạt lỗi', 'error') }
+  bulkBusy.value = false
 }
 
 async function deleteEntity(id: string) {
   if (!confirm(`Xóa entity "${id}"?`)) return
+  acting.value = id
   try {
     await $fetch(`/admin-api/entities/${id}`, { method: 'DELETE', headers: authHeaders() })
     showToast('Đã xóa entity', 'success')
@@ -276,6 +298,7 @@ async function deleteEntity(id: string) {
   } catch (e: any) {
     showToast(e.data?.detail || 'Lỗi khi xóa entity', 'error')
   }
+  acting.value = null
 }
 
 onMounted(() => fetchEntities())
@@ -283,8 +306,8 @@ onMounted(() => fetchEntities())
 
 <style scoped>
 .bulk-bar { display: flex; align-items: center; gap: 10px; margin: 10px 0; padding: 8px 12px;
-  background: var(--surface, #fff7ed); border: 1px solid #fed7aa; border-radius: 8px; font-size: .9rem; }
-.img-mgr { border-top: 1px solid rgba(0,0,0,.1); padding-top: 10px; margin-top: 4px; }
+  background: var(--warning-bg, #fff7ed); border: 1px solid var(--warning, #e67e22); border-radius: 8px; font-size: .9rem; }
+.img-mgr { border-top: 1px solid var(--line, #eee); padding-top: 10px; margin-top: 4px; }
 .img-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
 .img-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; flex: 0 0 40px; }
 .img-url { flex: 1; font-size: .78rem; color: var(--muted, #888); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

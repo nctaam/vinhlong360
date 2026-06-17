@@ -2,6 +2,7 @@
   <button
     :class="['save-btn', { saved: saved, 'save-btn-sm': size === 'sm' }]"
     :title="saved ? 'Bỏ lưu' : 'Lưu yêu thích'"
+    :aria-label="saved ? 'Bỏ lưu' : 'Lưu yêu thích'"
     :aria-pressed="saved"
     @click.prevent.stop="onToggle"
   >

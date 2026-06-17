@@ -1,41 +1,52 @@
 <template>
   <div>
-    <h1>Duyệt tự học & Tiện ích</h1>
+    <div class="admin-head-row">
+      <h1>Duyệt tự học & Tiện ích</h1>
+      <button class="admin-refresh" :disabled="loading" @click="loadProvisional">🔄 Làm mới</button>
+    </div>
 
     <!-- 1) Provisional review -->
-    <h2 style="font-size:1.1rem; margin:16px 0 8px">🧪 Entity tự học chờ duyệt ({{ provisional.length }})</h2>
-    <p v-if="!provisional.length" class="muted" style="font-size:.88rem">
-      Không có entity provisional. (Lưu ý: trạng thái provisional nằm trong data.json; DB là nguồn sự thật cho chat
-      nên entity tự học hiện đã live — quarantine chỉ còn ý nghĩa khi mô hình hoá cột status ở DB.)
-    </p>
-    <table v-else class="tbl">
-      <thead><tr><th>Tên</th><th>Loại</th><th>Conf</th><th>Nguồn</th><th></th></tr></thead>
-      <tbody>
-        <tr v-for="e in provisional" :key="e.id">
-          <td><strong>{{ e.name }}</strong><br><small class="muted">{{ e.summary }}</small></td>
-          <td>{{ e.type }}</td>
-          <td>{{ ((e.confidence || 0) * 100).toFixed(0) }}%</td>
-          <td><small class="muted">{{ e.source?.url || e.source?.title || '—' }}</small></td>
-          <td class="admin-actions">
-            <button class="btn-success" @click="approve(e)">Duyệt</button>
-            <button class="btn-danger" @click="reject(e)">Từ chối</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <h2 class="admin-section-title" style="margin-top:16px">🧪 Entity tự học chờ duyệt ({{ provisional.length }})</h2>
+
+    <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
+    <template v-else>
+      <p v-if="!provisional.length" class="admin-muted" style="font-size:.88rem">
+        Không có entity provisional. (Lưu ý: trạng thái provisional nằm trong data.json; DB là nguồn sự thật cho chat
+        nên entity tự học hiện đã live — quarantine chỉ còn ý nghĩa khi mô hình hoá cột status ở DB.)
+      </p>
+      <table v-else class="admin-simple-table">
+        <thead><tr><th>Tên</th><th>Loại</th><th>Conf</th><th>Nguồn</th><th></th></tr></thead>
+        <tbody>
+          <tr v-for="e in provisional" :key="e.id">
+            <td><strong>{{ e.name }}</strong><br><small class="admin-muted">{{ e.summary }}</small></td>
+            <td>{{ e.type }}</td>
+            <td>{{ ((e.confidence || 0) * 100).toFixed(0) }}%</td>
+            <td><small class="admin-muted">{{ e.source?.url || e.source?.title || '—' }}</small></td>
+            <td class="admin-actions">
+              <button class="btn-success" :disabled="acting === e.id" @click="approve(e)">
+                {{ acting === e.id ? '…' : 'Duyệt' }}
+              </button>
+              <button class="btn-danger" :disabled="acting === e.id" @click="reject(e)">Từ chối</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </template>
 
     <!-- 2) Tiện ích -->
-    <h2 style="font-size:1.1rem; margin:24px 0 8px">🧰 Tiện ích dữ liệu</h2>
-    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px">
+    <h2 class="admin-section-title" style="margin-top:24px">🧰 Tiện ích dữ liệu</h2>
+    <div class="admin-btn-group" style="margin-bottom:12px">
       <button class="btn btn-primary" :disabled="exporting" @click="exportJson">📤 {{ exporting ? 'Đang xuất…' : 'Export JSON (DB)' }}</button>
-      <button class="btn btn-secondary" @click="loadSources">📚 Xem nguồn dữ liệu</button>
+      <button class="btn btn-secondary" :disabled="loadingSources" @click="loadSources">
+        📚 {{ loadingSources ? 'Đang tải…' : 'Xem nguồn dữ liệu' }}
+      </button>
     </div>
-    <table v-if="sources.length" class="tbl">
+    <table v-if="sources.length" class="admin-simple-table">
       <thead><tr><th>Nguồn</th><th>Số entity</th><th>URL mẫu</th></tr></thead>
       <tbody>
         <tr v-for="s in sources" :key="s.title">
           <td>{{ s.title }}</td><td>{{ s.count }}</td>
-          <td><small class="muted">{{ s.sample_url || '—' }}</small></td>
+          <td><small class="admin-muted">{{ s.sample_url || '—' }}</small></td>
         </tr>
       </tbody>
     </table>
@@ -50,35 +61,48 @@ const { show: showToast } = useToast()
 const provisional = ref<any[]>([])
 const sources = ref<any[]>([])
 const exporting = ref(false)
+const loading = ref(true)
+const acting = ref<string | null>(null)
+const loadingSources = ref(false)
 
 async function loadProvisional() {
+  loading.value = true
   try {
     const r = await $fetch<any>('/admin-api/provisional', { headers: authHeaders() })
     provisional.value = r.provisional || []
-  } catch { /* ignore */ }
+  } catch {
+    showToast('Không thể tải danh sách entity tự học', 'error')
+  }
+  loading.value = false
 }
 async function approve(e: any) {
+  acting.value = e.id
   try {
     await $fetch(`/admin-api/provisional/${e.id}/approve`, { method: 'POST', headers: authHeaders() })
     provisional.value = provisional.value.filter(x => x.id !== e.id)
     showToast(`Đã duyệt ${e.name}`, 'success')
   } catch (err: any) { showToast(err?.data?.detail || 'Duyệt lỗi', 'error') }
+  acting.value = null
 }
 async function reject(e: any) {
   if (!confirm(`Từ chối + xóa "${e.name}"?`)) return
+  acting.value = e.id
   try {
     await $fetch(`/admin-api/provisional/${e.id}/reject`, { method: 'POST', headers: authHeaders() })
     provisional.value = provisional.value.filter(x => x.id !== e.id)
     showToast('Đã từ chối', 'success')
   } catch (err: any) { showToast(err?.data?.detail || 'Từ chối lỗi', 'error') }
+  acting.value = null
 }
 
 async function loadSources() {
+  loadingSources.value = true
   try {
     const r = await $fetch<any>('/admin-api/sources', { headers: authHeaders() })
     sources.value = Object.entries(r.sources || {}).map(([title, v]: any) => ({ title, ...v }))
       .sort((a, b) => b.count - a.count)
   } catch { showToast('Tải nguồn lỗi', 'error') }
+  loadingSources.value = false
 }
 
 async function exportJson() {
@@ -97,9 +121,3 @@ async function exportJson() {
 
 onMounted(loadProvisional)
 </script>
-
-<style scoped>
-.muted { color: var(--muted, #888); }
-.tbl { width: 100%; border-collapse: collapse; }
-.tbl th, .tbl td { text-align: left; padding: 8px; border-bottom: 1px solid rgba(0,0,0,.08); vertical-align: top; }
-</style>

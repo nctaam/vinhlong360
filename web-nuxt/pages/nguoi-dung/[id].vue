@@ -2,7 +2,7 @@
   <section class="page">
     <NuxtLink class="back" to="/cong-dong">← Cộng đồng</NuxtLink>
 
-    <div v-if="profile" class="user-profile">
+    <div v-if="profile" class="user-profile reveal">
       <div class="profile-cover">
         <UserCoverPlaceholder />
         <div class="profile-avatar-wrap">
@@ -48,7 +48,7 @@
           @report="reportPost"
         />
         <EmptyState v-if="!filteredPosts.length && !loading" :message="tab === 'reviews' ? 'Chưa có đánh giá nào.' : 'Chưa có bài viết nào.'" />
-        <div v-if="loading" style="text-align: center; padding: 20px"><div class="spinner" style="margin: 0 auto"></div></div>
+        <div v-if="loading" class="profile-loading"><div class="spinner"></div></div>
       </div>
     </div>
 
@@ -57,6 +57,7 @@
 </template>
 
 <script setup lang="ts">
+useReveal()
 const route = useRoute()
 const userId = route.params.id as string
 const { isLoggedIn, authHeaders } = useAuth()
@@ -137,3 +138,28 @@ if (profile.value) {
   })
 }
 </script>
+
+<style scoped>
+.profile-loading { text-align: center; padding: var(--space-5) 0; }
+.profile-loading .spinner { margin: 0 auto; }
+
+.profile-cover { position: relative; border-radius: var(--radius-xl, 20px); overflow: hidden; margin-bottom: calc(-1 * var(--space-8)); }
+.profile-avatar-wrap { position: absolute; bottom: calc(-1 * var(--space-6)); left: var(--space-5); }
+.profile-avatar-wrap .avatar { border: 3px solid var(--card); box-shadow: var(--shadow-md); transition: transform var(--duration-normal) var(--ease-spring); }
+.profile-avatar-wrap .avatar:hover { transform: scale(1.05); }
+
+.profile-info { padding-top: var(--space-10); }
+.profile-info h1 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); }
+.profile-bio { color: var(--ink-secondary); font-size: var(--text-sm); line-height: var(--leading-relaxed); margin-top: var(--space-2); }
+
+.profile-stats { display: flex; gap: var(--space-6); margin-top: var(--space-4); }
+.stat-item { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); cursor: default; transition: background var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-spring); }
+.stat-item:hover { background: var(--bg-alt); transform: translateY(-1px); }
+.stat-item strong { font-size: var(--text-lg); font-weight: var(--weight-bold); }
+.stat-item span { font-size: var(--text-xs); color: var(--muted); }
+
+.profile-tabs { display: flex; gap: var(--space-2); margin: var(--space-5) 0 var(--space-4); border-bottom: 1px solid var(--line); padding-bottom: var(--space-3); }
+.profile-tabs .chip { min-height: 44px; transition: all var(--duration-fast) var(--ease-out); }
+.profile-tabs .chip:active { transform: scale(.95); transition-duration: .08s; }
+
+</style>

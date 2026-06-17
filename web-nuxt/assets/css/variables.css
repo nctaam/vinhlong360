@@ -53,6 +53,8 @@
   --bg-alt: var(--sand-200);
   --ink: var(--ink-900);
   --muted: var(--ink-700);
+  --ink-secondary: var(--ink-700);
+  --ink-tertiary: #8A8A8E;
   --line: var(--sand-300);
   --border: var(--sand-400);
   --border-input: #8F8676; /* viền control (input/select) — WCAG 1.4.11 ≥3:1 trên nền trắng */
@@ -62,9 +64,22 @@
   --surface: var(--card);
   --text: var(--ink);
   --text-muted: var(--muted);
+  /* Status / feedback */
+  --warning: #e67e22;
+  --warning-bg: rgba(230, 126, 34, .08);
+  --error: #D94F3D;
+  --error-bg: rgba(217, 79, 61, .08);
+  --save-red: #dc2626;
+  --save-red-bg: rgba(220, 38, 38, .08);
+  --save-red-border: rgba(220, 38, 38, .25);
+  /* External brands */
+  --brand-zalo: #0068FF;
+  --brand-zalo-hover: #0052CC;
+  /* Map fallback bg */
+  --map-bg: var(--sand-300);
 
   --primary-rgb: 156, 61, 34;
-  --focus-ring: 0 0 0 4px rgba(156, 61, 34, .12);
+  --focus-ring: 0 0 0 4px rgba(var(--primary-rgb), .12);
   --shadow: 0 1px 3px rgba(0, 0, 0, .04), 0 6px 20px rgba(0, 0, 0, .06);
 
   /* ── Typography scale (Apple HIG-inspired, base 16px) ── */
@@ -164,12 +179,30 @@
   --card: #1c1c1e;
   --surface-translucent: rgba(28, 28, 30, .88);
   --shadow: 0 1px 3px rgba(0, 0, 0, .3), 0 8px 32px rgba(0, 0, 0, .35);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.2), 0 2px 8px rgba(0,0,0,.18);
+  --shadow-md: 0 2px 8px rgba(0,0,0,.28), 0 8px 24px rgba(0,0,0,.28);
+  --shadow-lg: 0 4px 12px rgba(0,0,0,.32), 0 20px 48px rgba(0,0,0,.4);
+  --ink-secondary: #98989d;
+  --ink-tertiary: #636366;
   --nav-hover: #2c2c2e;
   --badge-season-bg: #3d2a1e;
   --badge-ocop-bg: #1e3328;
   --badge-year-bg: #2a2d2a;
   --primary-rgb: 196, 105, 78;
   --focus-ring: 0 0 0 3px rgba(196, 105, 78, .25);
+  --warning: #f0a050;
+  --warning-bg: rgba(240, 160, 80, .12);
+  --error: #FF6961;
+  --error-bg: rgba(255, 105, 97, .12);
+  --save-red: #FF6961;
+  --save-red-bg: rgba(255, 105, 97, .12);
+  --save-red-border: rgba(255, 105, 97, .3);
+  --brand-zalo: #3d8bff;
+  --brand-zalo-hover: #5da0ff;
+  --map-bg: var(--bg-alt);
+  --surface: var(--card);
+  --text: var(--ink);
+  --text-muted: var(--muted);
   /* brand-foreground lighten (đạt ≥4.5:1 trên card tối) — nút nền brand vẫn dùng --primary đậm + chữ trắng */
   --primary-fg: #D98A6F;
   --primary-fg-strong: #E09980;

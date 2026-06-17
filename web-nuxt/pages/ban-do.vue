@@ -1,24 +1,31 @@
 <template>
   <section class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Bản đồ' }]" />
-    <div class="page-head">
-      <h1>Bản đồ</h1>
-      <p>Xem tất cả điểm đến trên bản đồ.</p>
-    </div>
+
+    <!-- Hero -->
+    <section class="catalog-hero cat-map">
+      <div class="catalog-hero-inner">
+        <span class="catalog-hero-icon">🗺️</span>
+        <div>
+          <h1>Bản đồ</h1>
+          <p>Khám phá trực quan hơn 500 điểm đến trên bản đồ tương tác — lọc theo loại hình để tìm nhanh.</p>
+        </div>
+      </div>
+    </section>
 
     <ClientOnly>
-      <div class="map-filters">
-        <button v-for="f in typeFilters" :key="f.value" :class="['chip', { active: activeTypes.has(f.value) }]" @click="toggleType(f.value)">
+      <div class="map-filters reveal" role="group" aria-label="Lọc theo loại địa điểm">
+        <button v-for="f in typeFilters" :key="f.value" :class="['chip', { active: activeTypes.has(f.value) }]" :aria-pressed="activeTypes.has(f.value)" @click="toggleType(f.value)">
           {{ f.label }}
         </button>
       </div>
     </ClientOnly>
 
-    <p v-if="fetchError" style="color: #D94F3D; text-align: center; padding: 20px">Không thể tải dữ liệu bản đồ. Vui lòng thử lại.</p>
+    <p v-if="fetchError" class="fetch-error">Không thể tải dữ liệu bản đồ. Vui lòng thử lại.</p>
     <ClientOnly>
       <div ref="mapEl" id="mapContainer"></div>
       <template #fallback>
-        <div id="mapContainer" style="display: flex; align-items: center; justify-content: center">
+        <div id="mapContainer" class="map-fallback">
           <div class="spinner"></div>
         </div>
       </template>
@@ -196,6 +203,8 @@ watch(mapEl, async (el) => {
   else map.on('load', addClusterLayers)
 })
 
+useReveal()
+
 useSeoMeta({
   title: 'Bản đồ du lịch Vĩnh Long — vinhlong360',
   description: 'Bản đồ tương tác hiển thị tất cả điểm du lịch, đặc sản, lưu trú, làng nghề tại Vĩnh Long, Bến Tre, Trà Vinh.',
@@ -217,3 +226,10 @@ useHead({
   }],
 })
 </script>
+
+<style scoped>
+#mapContainer { height: 65vh; min-height: 400px; border-radius: var(--radius-lg, 16px); overflow: hidden; box-shadow: var(--shadow-md); border: 1px solid var(--line); transition: box-shadow var(--duration-normal); }
+#mapContainer:hover { box-shadow: var(--shadow-lg); }
+.map-fallback { display: flex; align-items: center; justify-content: center; background: var(--bg-alt); }
+.map-filters { margin-bottom: var(--space-4); }
+</style>

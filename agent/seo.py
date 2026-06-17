@@ -69,9 +69,15 @@ CORE_PAGES = [
     ("/san-pham", "weekly", "0.9"),
     ("/ocop", "weekly", "0.8"),
     ("/luu-tru", "weekly", "0.8"),
+    ("/le-hoi", "weekly", "0.8"),
+    ("/su-kien", "weekly", "0.7"),
+    ("/theo-mua", "weekly", "0.8"),
     ("/ban-do", "weekly", "0.7"),
     ("/lich-trinh", "weekly", "0.8"),
     ("/tuyen-duong", "weekly", "0.7"),
+    ("/tao-lich-trinh", "monthly", "0.6"),
+    ("/danh-ba", "monthly", "0.7"),
+    ("/tim-kiem", "monthly", "0.5"),
     ("/cong-dong", "daily", "0.6"),
 ]
 
@@ -317,6 +323,16 @@ def sitemap():
         urls.append(_url_xml(f"{SITE}{path}", changefreq=changefreq, priority=priority, lastmod=now))
     for area in AREA_NAMES:
         urls.append(_url_xml(f"{SITE}/khu-vuc/{area}", changefreq="weekly", priority="0.8", lastmod=now))
+
+    for entity in data.get("entities", []):
+        if not isinstance(entity, dict) or entity.get("type") != "place" or not entity.get("id"):
+            continue
+        urls.append(_url_xml(
+            f"{SITE}/xa-phuong/{quote(str(entity['id']))}",
+            changefreq="monthly",
+            priority="0.6",
+            lastmod=now,
+        ))
 
     seen: set[str] = set()
     for entity in data.get("entities", []):

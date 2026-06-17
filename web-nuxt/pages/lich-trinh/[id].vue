@@ -1,11 +1,17 @@
 <template>
   <section v-if="itinerary" class="page">
-    <NuxtLink class="back" to="/lich-trinh">← Tất cả lịch trình</NuxtLink>
-    <div class="page-head" style="margin-bottom: 8px">
-      <h1>{{ itinerary.title || itinerary.name }}</h1>
-      <p>{{ areaMeta.emoji }} {{ areaMeta.name }} · {{ itinerary.duration }} · {{ itinerary.stops?.length || 0 }} điểm dừng</p>
-    </div>
-    <p class="lead" style="margin-top: 0">{{ itinerary.summary || itinerary.description || '' }}</p>
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình', to: '/lich-trinh' }, { label: itinerary.title || itinerary.name }]" />
+
+    <section class="catalog-hero cat-itinerary">
+      <div class="catalog-hero-inner">
+        <span class="catalog-hero-icon">🗓️</span>
+        <div>
+          <h1>{{ itinerary.title || itinerary.name }}</h1>
+          <p>{{ areaMeta.emoji }} {{ areaMeta.name }} · {{ itinerary.duration }} · {{ itinerary.stops?.length || 0 }} điểm dừng</p>
+        </div>
+      </div>
+    </section>
+    <p class="lead lead-flush">{{ itinerary.summary || itinerary.description || '' }}</p>
 
     <div class="itin-actions">
       <ClientOnly>
@@ -16,7 +22,7 @@
 
     <!-- Transport mode + total -->
     <ClientOnly>
-      <div v-if="stopsWithCoords.length >= 2" class="transport-mode" style="margin-bottom: 8px">
+      <div v-if="stopsWithCoords.length >= 2" class="transport-mode transport-mode-spaced">
         <span class="tm-label">Phương tiện:</span>
         <button v-for="m in transportModes" :key="m.value" :class="['chip', { active: transportMode === m.value }]" @click="switchMode(m.value)">
           {{ m.icon }} {{ m.label }}
@@ -36,7 +42,7 @@
             <span class="step-emoji">{{ typeEmoji(stop.type) }}</span>
             <div class="step-content">
               <h3>
-                <NuxtLink v-if="stop.id" :to="`/dia-diem/${stop.id}`" style="color: inherit">{{ stop.name || stop.id }}</NuxtLink>
+                <NuxtLink v-if="stop.id" :to="`/dia-diem/${stop.id}`" class="stop-link">{{ stop.name || stop.id }}</NuxtLink>
                 <span v-else>{{ stop.name || 'Điểm dừng' }}</span>
               </h3>
               <span v-if="stop.type" class="step-type-label">{{ typeLabel(stop.type) }}</span>
@@ -57,16 +63,20 @@
 
     <!-- Route map -->
     <ClientOnly>
-      <div v-if="stopsWithCoords.length >= 2" class="route-map-section">
+      <div v-if="stopsWithCoords.length >= 2" class="route-map-section reveal">
         <h3>Bản đồ lộ trình</h3>
         <div ref="routeMapEl" class="route-map"></div>
       </div>
     </ClientOnly>
 
     <!-- Related itineraries -->
-    <ClientOnly>
-      <AIRecommendations v-if="itinerary.area" title="Khám phá thêm" :limit="4" />
-    </ClientOnly>
+    <div class="reveal">
+      <NuxtErrorBoundary>
+        <ClientOnly>
+          <AIRecommendations v-if="itinerary.area" title="Khám phá thêm" :limit="4" />
+        </ClientOnly>
+      </NuxtErrorBoundary>
+    </div>
   </section>
   <div v-else class="page">
     <EmptyState message="Không tìm thấy lịch trình." />
@@ -76,6 +86,8 @@
 <script setup lang="ts">
 import { TYPE_META, AREA_META } from '~/composables/useConstants'
 import { fetchRoute, formatDistance, formatDuration, type TransportMode, type RouteResult, type RouteLeg } from '~/composables/useRouting'
+
+useReveal()
 
 const route = useRoute()
 const id = route.params.id as string
@@ -305,3 +317,32 @@ if (itinerary.value && !itinerary.value.error) {
   })
 }
 </script>
+
+<style scoped>
+.itin-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-4) 0; }
+.itin-actions .btn { transition: all var(--duration-fast) var(--ease-out); }
+.itin-actions .btn:active { transform: scale(.95); transition-duration: .08s; }
+
+.transport-mode-spaced { margin-bottom: var(--space-4); }
+.transport-mode .chip { transition: all var(--duration-fast) var(--ease-out); }
+.transport-mode .chip:active { transform: scale(.95); transition-duration: .08s; }
+
+.timeline { list-style: none; padding: 0; margin: 0; }
+.step { position: relative; }
+.step-card { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg); transition: transform var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-out), border-color var(--duration-fast); }
+.step-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); border-color: var(--border); }
+.step-emoji { font-size: var(--text-xl); transition: transform var(--duration-normal) var(--ease-spring); }
+.step-card:hover .step-emoji { transform: scale(1.1); }
+.stop-link { color: var(--ink); font-weight: var(--weight-semibold); transition: color var(--duration-fast); }
+.stop-link:hover { color: var(--primary-fg); }
+
+.route-leg { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) 0 var(--space-2) var(--space-6); }
+.route-leg-line { width: 2px; height: 20px; background: var(--line); border-radius: 1px; }
+.route-leg-info { font-size: var(--text-xs); color: var(--muted); }
+
+.route-map-section { margin-top: var(--space-6); }
+.route-map-section h3 { font-size: var(--text-lg); font-weight: var(--weight-semibold); margin-bottom: var(--space-3); }
+.route-map { height: 400px; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow); transition: box-shadow var(--duration-normal) var(--ease-out); }
+.route-map:hover { box-shadow: var(--shadow-md); }
+
+</style>

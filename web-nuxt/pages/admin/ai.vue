@@ -1,7 +1,12 @@
 <template>
   <div>
-    <h1>🤖 Knowledge Agent</h1>
+    <div class="admin-head-row">
+      <h1>🤖 Knowledge Agent</h1>
+      <button class="admin-refresh" :disabled="refreshing" @click="refreshAll">🔄 Làm mới</button>
+    </div>
 
+    <div v-if="!health" class="admin-loading"><div class="spinner"></div></div>
+    <template v-else>
     <!-- Health Status -->
     <div class="stat-grid">
       <div class="stat-card">
@@ -31,16 +36,16 @@
     </div>
 
     <!-- Model Info -->
-    <div v-if="health?.model" style="margin-bottom: 24px">
-      <h2 style="font-size: 1.1rem; margin-bottom: 10px">Model</h2>
+    <div v-if="health?.model" class="admin-section-block">
+      <h2 class="admin-section-title">Model</h2>
       <div class="stat-card" style="display: inline-block">
-        <code style="font-size: .9rem">{{ health.model }}</code>
+        <code>{{ health.model }}</code>
       </div>
     </div>
 
     <!-- Data Quality -->
-    <div v-if="health?.data_quality" style="margin-bottom: 24px">
-      <h2 style="font-size: 1.1rem; margin-bottom: 10px">Chất lượng dữ liệu</h2>
+    <div v-if="health?.data_quality" class="admin-section-block">
+      <h2 class="admin-section-title">Chất lượng dữ liệu</h2>
       <div class="stat-grid">
         <div class="stat-card">
           <div class="stat-value">{{ health.data_quality.coverage_pct }}%</div>
@@ -54,8 +59,8 @@
     </div>
 
     <!-- Cache Stats -->
-    <div v-if="health?.cache" style="margin-bottom: 24px">
-      <h2 style="font-size: 1.1rem; margin-bottom: 10px">Cache</h2>
+    <div v-if="health?.cache" class="admin-section-block">
+      <h2 class="admin-section-title">Cache</h2>
       <div class="stat-grid">
         <div class="stat-card">
           <div class="stat-value">{{ health.cache.size || 0 }}</div>
@@ -77,11 +82,11 @@
     </div>
 
     <!-- Subsystems -->
-    <div style="margin-bottom: 24px">
-      <h2 style="font-size: 1.1rem; margin-bottom: 10px">Subsystems</h2>
+    <div class="admin-section-block">
+      <h2 class="admin-section-title">Subsystems</h2>
       <div class="stat-grid">
         <div v-for="(val, key) in subsystems" :key="key" class="stat-card">
-          <div class="stat-value" style="font-size: 1rem" :style="{ color: val ? 'var(--primary)' : '#D94F3D' }">
+          <div class="stat-value admin-sub-value" :class="val ? 'status-active' : 'status-banned'">
             {{ val ? '✓' : '✗' }}
           </div>
           <div class="stat-label">{{ key }}</div>
@@ -90,9 +95,9 @@
     </div>
 
     <!-- Actions -->
-    <div style="margin-bottom: 24px">
-      <h2 style="font-size: 1.1rem; margin-bottom: 10px">Hành động</h2>
-      <div style="display: flex; gap: 12px; flex-wrap: wrap">
+    <div class="admin-section-block">
+      <h2 class="admin-section-title">Hành động</h2>
+      <div class="admin-btn-group">
         <button class="btn btn-primary" :disabled="triggerLoading" @click="triggerLearn">
           {{ triggerLoading ? 'Đang chạy…' : '🧠 Trigger Learn' }}
         </button>
@@ -102,32 +107,32 @@
           {{ triageLoading ? 'Đang phân tích…' : '🤖 Gợi ý ưu tiên xử lý' }}
         </button>
       </div>
-      <p v-if="triggerResult" style="margin-top: 10px; font-size: .88rem; color: var(--muted)">{{ triggerResult }}</p>
-      <div v-if="triageOut" style="margin-top: 12px; padding: 12px; border: 1px solid rgba(0,0,0,.1); border-radius: 8px; white-space: pre-wrap; font-size: .9rem">{{ triageOut }}</div>
+      <p v-if="triggerResult" class="admin-trigger-result">{{ triggerResult }}</p>
+      <div v-if="triageOut" class="admin-triage-box">{{ triageOut }}</div>
     </div>
 
     <!-- Chi phí & ngân sách -->
-    <div style="margin-bottom: 24px">
-      <h2 style="font-size: 1.1rem; margin-bottom: 10px">💰 Chi phí & ngân sách</h2>
+    <div class="admin-section-block">
+      <h2 class="admin-section-title">💰 Chi phí & ngân sách</h2>
       <div class="stat-grid" v-if="cost">
         <div class="stat-card">
           <div class="stat-value">{{ cost.llm?.available ? '$' + (cost.llm.total_cost_usd || 0).toFixed(4) : '—' }}</div>
           <div class="stat-label">LLM tích lũy</div>
         </div>
-        <div class="stat-card" :style="{ borderColor: agentNearCap ? '#e67e22' : '' }">
+        <div class="stat-card" :class="{ 'near-cap': agentNearCap }">
           <div class="stat-value">{{ cost.agent_budget?.enabled ? `${cost.agent_budget.used_today}/${cost.agent_budget.cap_per_day}` : 'TẮT' }}</div>
           <div class="stat-label">Agent LLM hôm nay {{ agentNearCap ? '⚠️' : '' }}</div>
         </div>
       </div>
-      <p class="muted" style="font-size:.82rem; margin-top:6px">
+      <p class="admin-muted admin-cost-note">
         Agent tự động: {{ cost?.agent_budget?.enabled ? 'BẬT' : 'TẮT (mặc định)' }} —
         đổi qua .env AUTONOMOUS_AGENT_ENABLED + AUTONOMOUS_AGENT_MAX_CALLS_PER_DAY.
       </p>
     </div>
 
     <!-- Response Times -->
-    <div v-if="health?.response_times" style="margin-bottom: 24px">
-      <h2 style="font-size: 1.1rem; margin-bottom: 10px">Response Times</h2>
+    <div v-if="health?.response_times" class="admin-section-block">
+      <h2 class="admin-section-title">Response Times</h2>
       <div class="stat-grid">
         <div class="stat-card">
           <div class="stat-value">{{ health.response_times.avg_ms || 0 }}ms</div>
@@ -145,11 +150,11 @@
     </div>
 
     <!-- Errors -->
-    <div v-if="health?.errors" style="margin-bottom: 24px">
-      <h2 style="font-size: 1.1rem; margin-bottom: 10px">Errors</h2>
+    <div v-if="health?.errors" class="admin-section-block">
+      <h2 class="admin-section-title">Errors</h2>
       <div class="stat-grid">
         <div class="stat-card">
-          <div class="stat-value" :style="{ color: (health.errors.total || 0) > 0 ? '#D94F3D' : 'var(--primary)' }">
+          <div class="stat-value" :class="(health.errors.total || 0) > 0 ? 'status-banned' : 'status-active'">
             {{ health.errors.total || 0 }}
           </div>
           <div class="stat-label">Tổng lỗi</div>
@@ -160,11 +165,18 @@
         </div>
       </div>
     </div>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+const refreshing = ref(false)
+async function refreshAll() {
+  refreshing.value = true
+  await Promise.all([fetchHealth(), fetchCost()])
+  refreshing.value = false
+}
 
 const { authHeaders } = useAuth()
 const health = ref<any>(null)
@@ -174,8 +186,8 @@ const triggerResult = ref('')
 const statusColor = computed(() => {
   if (!health.value) return 'var(--muted)'
   if (health.value.status === 'ok') return 'var(--primary)'
-  if (health.value.status === 'degraded') return '#e67e22'
-  return '#D94F3D'
+  if (health.value.status === 'degraded') return 'var(--warning, #e67e22)'
+  return 'var(--error, #D94F3D)'
 })
 
 const uptime = computed(() => {
@@ -255,3 +267,7 @@ async function reload() {
 
 onMounted(() => { fetchHealth(); fetchCost() })
 </script>
+
+<style scoped>
+.near-cap { border-color: var(--warning, #e67e22); }
+</style>

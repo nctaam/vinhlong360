@@ -1,11 +1,11 @@
 <template>
   <div>
-    <div class="admin-page-head">
+    <div class="admin-head-row">
       <div>
         <h1>Chất lượng dữ liệu</h1>
-        <p>Kiểm duyệt candidate GPT-5.5 theo chính sách evidence-only trước khi cập nhật dữ liệu public.</p>
+        <p class="admin-muted" style="margin-top:4px">Kiểm duyệt candidate GPT-5.5 theo chính sách evidence-only trước khi cập nhật dữ liệu public.</p>
       </div>
-      <button class="btn btn-outline" :disabled="loading" @click="refreshAll(true)">Làm mới</button>
+      <button class="admin-refresh" :disabled="loading" @click="refreshAll(true)">🔄 Làm mới</button>
     </div>
 
     <div v-if="summary" class="stat-grid dq-stats">
@@ -72,7 +72,7 @@
       <table class="admin-table dq-table">
         <thead>
           <tr>
-            <th style="width: 42px"></th>
+            <th class="dq-th-checkbox"></th>
             <th>Entity</th>
             <th>Field</th>
             <th>Confidence</th>
@@ -114,10 +114,10 @@
             <td>{{ c.reason || c.status || '—' }}</td>
           </tr>
           <tr v-if="!loading && !candidates.length">
-            <td colspan="7" style="text-align: center; color: var(--muted); padding: 22px">Không có candidate phù hợp.</td>
+            <td colspan="7" class="admin-empty-row">Không có candidate phù hợp.</td>
           </tr>
           <tr v-if="loading">
-            <td colspan="7" style="text-align: center; color: var(--muted); padding: 22px">Đang tải dữ liệu…</td>
+            <td colspan="7" class="admin-empty-row">Đang tải dữ liệu…</td>
           </tr>
         </tbody>
       </table>
@@ -341,14 +341,13 @@ onMounted(() => refreshAll())
 </script>
 
 <style scoped>
-.admin-page-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; margin-bottom: 18px; }
-.admin-page-head p { margin: 4px 0 0; color: var(--muted); max-width: 720px; }
-.dq-stats .stat-card.warn .stat-value { color: #d9822b; }
-.dq-stats .stat-card.ok .stat-value { color: #219653; }
+.dq-stats .stat-card.warn .stat-value { color: var(--warning, #e67e22); }
+.dq-stats .stat-card.ok .stat-value { color: var(--primary, #219653); }
+.dq-th-checkbox { width: 42px; }
 .dq-cache-info { margin: 12px 0 0; color: var(--muted); font-size: .88rem; }
 .dq-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 16px 0; }
 .dq-toolbar .input { flex: 0 0 170px; }
-.dq-apply-result { background: #f3fbf5; border: 1px solid #b9dbc6; padding: 10px 12px; border-radius: 8px; color: #1f6b3a; }
+.dq-apply-result { background: var(--bg, #f3fbf5); border: 1px solid var(--primary, #219653); padding: 10px 12px; border-radius: 8px; color: var(--primary, #219653); }
 .dq-apply-result span { display: block; margin-top: 3px; }
 .dq-table-wrap { margin-top: 12px; }
 .dq-table td { vertical-align: top; }
@@ -356,9 +355,9 @@ onMounted(() => refreshAll())
 .dq-table code { white-space: pre-wrap; word-break: break-word; font-size: .78rem; }
 .dq-table a { display: block; color: var(--primary); font-weight: 600; word-break: break-word; }
 .dq-confidence { display: inline-block; min-width: 48px; text-align: center; padding: 3px 7px; border-radius: 999px; font-size: .78rem; font-weight: 800; }
-.dq-confidence.high { background: #e7f6ec; color: #1f6b3a; }
-.dq-confidence.mid { background: #fff4e2; color: #9a5b00; }
-.dq-confidence.low { background: #fdeceb; color: #b42318; }
+.dq-confidence.high { background: rgba(33, 150, 83, .1); color: var(--primary, #219653); }
+.dq-confidence.mid { background: var(--warning-bg, rgba(230, 126, 34, .1)); color: var(--warning, #e67e22); }
+.dq-confidence.low { background: var(--error-bg, rgba(217, 79, 61, .1)); color: var(--error, #D94F3D); }
 .admin-pagination span { display: inline-flex; align-items: center; color: var(--muted); font-size: .88rem; }
 .dq-history { margin-top: 28px; }
 .dq-section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 12px; }
@@ -372,14 +371,15 @@ onMounted(() => refreshAll())
 .dq-history-card-head small, .dq-diff-item small, .dq-more { color: var(--muted); }
 .dq-history-meta { margin: 8px 0; color: var(--muted); font-size: .86rem; word-break: break-word; }
 .dq-diff-list { display: grid; gap: 8px; margin-top: 10px; }
-.dq-diff-item { display: grid; grid-template-columns: minmax(160px, 240px) 1fr; gap: 10px; align-items: start; padding: 8px; background: #f8faf9; border-radius: 6px; }
+.dq-diff-item { display: grid; grid-template-columns: minmax(160px, 240px) 1fr; gap: 10px; align-items: start; padding: 8px; background: var(--bg-alt, #f8faf9); border-radius: 6px; }
 .dq-diff-item code { white-space: pre-wrap; word-break: break-word; font-size: .76rem; }
-.dq-skipped-list { display: grid; gap: 6px; margin-top: 10px; padding: 10px; border: 1px solid #f1d0a8; border-radius: 6px; background: #fff8ef; }
-.dq-skipped-list > strong { font-size: .86rem; color: #9a5b00; }
+.dq-skipped-list { display: grid; gap: 6px; margin-top: 10px; padding: 10px; border: 1px solid var(--warning, #e67e22); border-radius: 6px; background: var(--warning-bg, rgba(230, 126, 34, .08)); }
+.dq-skipped-list > strong { font-size: .86rem; color: var(--warning, #e67e22); }
 .dq-skipped-item { display: grid; gap: 2px; }
 .dq-skipped-item span { font-weight: 700; word-break: break-word; }
 .dq-skipped-item small { color: var(--muted); word-break: break-word; }
-.btn.danger { color: #b42318; border-color: #f1b8b2; }
+.btn.danger { color: var(--error, #D94F3D); border-color: var(--error, #D94F3D); }
+
 @media (max-width: 780px) {
   .admin-page-head { flex-direction: column; }
   .dq-toolbar .input { flex: 1 1 150px; }

@@ -1,32 +1,100 @@
 <template>
-  <section class="page events-page">
+  <div class="page events-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lễ hội' }]" />
-    <div class="page-head">
-      <h1>Lễ hội truyền thống</h1>
-      <p>Lễ hội đình miếu, lễ Khmer, Nghinh Ông, giỗ danh nhân — truyền thống văn hóa ba vùng Vĩnh Long, Bến Tre, Trà Vinh.</p>
+
+    <!-- Hero -->
+    <section class="catalog-hero cat-festival">
+      <div class="catalog-hero-inner">
+        <span class="catalog-hero-icon">🎋</span>
+        <div>
+          <h1>Lễ hội truyền thống</h1>
+          <p>Lễ hội đình miếu, lễ Khmer, Nghinh Ông, giỗ danh nhân — truyền thống văn hóa ba vùng Vĩnh Long, Bến Tre, Trà Vinh.</p>
+        </div>
+      </div>
+      <div v-if="allEvents.length" class="catalog-stats">
+        <div class="stat-item">
+          <span class="stat-num">{{ allEvents.length }}</span>
+          <span class="stat-label">lễ hội</span>
+        </div>
+        <div v-for="a in areaCounts" :key="a.key" class="stat-item">
+          <span class="stat-num">{{ a.count }}</span>
+          <span class="stat-label">{{ a.name }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Upcoming / Featured -->
+    <section v-if="upcoming.length" class="block">
+      <div class="section-head">
+        <h2>Sắp diễn ra</h2>
+      </div>
+      <div class="scroll-row" role="region" aria-label="Lễ hội sắp diễn ra">
+        <NuxtLink
+          v-for="e in upcoming" :key="e.id"
+          :to="`/dia-diem/${e.id}`"
+          class="event-row"
+        >
+          <div class="event-date-badge lehoi-badge">
+            <span class="edb-month">{{ formatMonth(e) }}</span>
+            <span class="edb-day">{{ formatDay(e) }}</span>
+          </div>
+          <div class="event-info">
+            <h3>{{ e.name }}</h3>
+            <div class="event-meta">
+              <span v-if="e.place_name" class="event-place">📍 {{ e.place_name }}</span>
+              <span v-if="e.attributes?.lunar_date" class="event-lunar">🌙 {{ e.attributes.lunar_date }}</span>
+            </div>
+          </div>
+        </NuxtLink>
+      </div>
+    </section>
+
+    <!-- Region quick-picks -->
+    <section class="block reveal">
+      <div class="section-head">
+        <h2>Chọn theo khu vực</h2>
+      </div>
+      <div class="quick-picks">
+        <button
+          v-for="(meta, key) in AREA_META" :key="key"
+          :class="['quick-pick', { active: areaFilter === key }]"
+          @click="areaFilter = areaFilter === key ? 'all' : (key as string)"
+        >
+          <span class="quick-pick-icon">{{ meta.emoji }}</span>
+          <span class="quick-pick-label">{{ meta.name }}</span>
+          <span class="quick-pick-count">{{ countByArea(key as string) }} lễ hội</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Divider -->
+    <div class="catalog-divider">
+      <span class="catalog-divider-text">Duyệt tất cả</span>
     </div>
 
+    <!-- Controls -->
     <div class="controls">
       <div class="search-row">
-        <input v-model="q" type="search" placeholder="Tìm lễ hội…" />
+        <input v-model="q" type="search" placeholder="Tìm lễ hội…" aria-label="Tìm lễ hội" />
       </div>
-      <div class="chip-row">
-        <button :class="['chip', { active: areaFilter === 'all' }]" @click="areaFilter = 'all'">Tất cả vùng</button>
-        <button v-for="(meta, slug) in AREA_META" :key="slug" :class="['chip', { active: areaFilter === slug }]" @click="areaFilter = slug">
+      <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
+        <button :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả vùng</button>
+        <button v-for="(meta, slug) in AREA_META" :key="slug" :class="['chip', { active: areaFilter === slug }]" :aria-pressed="areaFilter === slug" @click="areaFilter = slug">
           {{ meta.emoji }} {{ meta.name }}
         </button>
       </div>
     </div>
 
-    <div class="view-toggle">
-      <button :class="['toggle-btn', { active: view === 'list' }]" @click="view = 'list'">📋 Danh sách</button>
-      <button :class="['toggle-btn', { active: view === 'calendar' }]" @click="view = 'calendar'">📅 Lịch</button>
+    <div class="view-toggle" role="group" aria-label="Chế độ hiển thị">
+      <button :class="['toggle-btn', { active: view === 'list' }]" :aria-pressed="view === 'list'" @click="view = 'list'">📋 Danh sách</button>
+      <button :class="['toggle-btn', { active: view === 'calendar' }]" :aria-pressed="view === 'calendar'" @click="view = 'calendar'">📅 Lịch</button>
     </div>
 
-    <SkeletonGrid v-if="!data" :count="4" />
+    <EmptyState v-if="fetchError" icon="⚠️" title="Không thể tải dữ liệu" message="Vui lòng thử lại sau." />
+    <SkeletonGrid v-else-if="!data" :count="4" />
 
     <template v-else-if="view === 'list'">
-      <p class="result-meta">{{ filtered.length }} lễ hội</p>
+      <p class="result-meta" aria-live="polite">{{ filtered.length }} lễ hội</p>
       <div v-if="filtered.length" class="event-list">
         <NuxtLink
           v-for="e in filtered" :key="e.id"
@@ -52,7 +120,12 @@
           </div>
         </NuxtLink>
       </div>
-      <EmptyState v-else message="Không có lễ hội nào phù hợp." />
+      <EmptyState v-else icon="🎋" title="Không tìm thấy lễ hội" message="Thử thay đổi khu vực hoặc từ khóa tìm kiếm.">
+        <template #actions>
+          <button class="btn btn-outline" @click="areaFilter = 'all'; q = ''">Xóa bộ lọc</button>
+          <button class="btn btn-outline" @click="view = 'calendar'">Xem lịch</button>
+        </template>
+      </EmptyState>
     </template>
 
     <template v-else>
@@ -62,12 +135,15 @@
           <h2>Tháng {{ displayMonth }} / {{ displayYear }}</h2>
           <button class="cal-nav" @click="calMonth++" aria-label="Tháng sau">›</button>
         </div>
-        <div class="cal-grid">
-          <div v-for="d in ['T2','T3','T4','T5','T6','T7','CN']" :key="d" class="cal-day-label">{{ d }}</div>
+        <div class="cal-grid" role="grid" aria-label="Lịch lễ hội">
+          <div v-for="d in ['T2','T3','T4','T5','T6','T7','CN']" :key="d" class="cal-day-label" role="columnheader">{{ d }}</div>
           <div
             v-for="(cell, i) in calendarCells" :key="i"
             class="cal-cell"
+            role="gridcell"
+            :tabindex="cell.events?.length ? 0 : -1"
             :class="{ 'cal-empty': !cell.day, 'cal-today': cell.isToday, 'cal-has-events': cell.events?.length }"
+            :aria-label="cell.day ? `Ngày ${cell.day}${cell.events?.length ? `, ${cell.events.length} lễ hội` : ''}` : undefined"
           >
             <div v-if="cell.day" class="cal-day-row">
               <span class="cal-num">{{ cell.day }}</span>
@@ -86,12 +162,37 @@
         </div>
       </div>
     </template>
-  </section>
+
+    <!-- Cross-links -->
+    <section class="block reveal catalog-cross">
+      <h2>Khám phá thêm</h2>
+      <div class="cross-links">
+        <NuxtLink to="/su-kien" class="cross-card">
+          <span class="cross-icon">🎪</span>
+          <div><strong>Sự kiện</strong><p>Festival, hội chợ</p></div>
+        </NuxtLink>
+        <NuxtLink to="/du-lich" class="cross-card">
+          <span class="cross-icon">🌿</span>
+          <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
+        </NuxtLink>
+        <NuxtLink to="/lich-trinh" class="cross-card">
+          <span class="cross-icon">🗓️</span>
+          <div><strong>Lịch trình</strong><p>Tuyến đi sẵn</p></div>
+        </NuxtLink>
+        <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
+          <span class="cross-icon">🗺️</span>
+          <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
+        </NuxtLink>
+      </div>
+    </section>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { AREA_META } from '~/composables/useConstants'
 import { lunarLabel, isLunarFirstDay, isLunarFull } from '~/composables/useLunar'
+
+useReveal()
 
 const q = ref('')
 const areaFilter = ref('all')
@@ -99,13 +200,39 @@ const view = ref('list')
 
 useFilterUrl({ vung: areaFilter }, { vung: 'all' })
 
-const { data } = await useAsyncData('festivals', () =>
+const { data, error: fetchError } = await useAsyncData('festivals', () =>
   $fetch<any>('/api/events?limit=200&include_past=true')
 )
 
 const allEvents = computed(() =>
   (data.value?.events || []).filter((e: any) => (e.attributes?.category) === 'le-hoi')
 )
+
+const areaCounts = computed(() => {
+  const counts: Record<string, number> = {}
+  for (const e of allEvents.value) {
+    const area = getArea(e)
+    if (area) counts[area] = (counts[area] || 0) + 1
+  }
+  return Object.entries(AREA_META)
+    .filter(([key]) => counts[key])
+    .map(([key, meta]) => ({ key, name: meta.name, count: counts[key] }))
+})
+
+function countByArea(key: string) {
+  return allEvents.value.filter((e: any) => getArea(e) === key).length
+}
+
+const upcoming = computed(() => {
+  const now = new Date().toISOString().slice(0, 10)
+  return allEvents.value
+    .filter((e: any) => {
+      const ds = e.attributes?.date_start
+      return ds && ds >= now
+    })
+    .sort((a: any, b: any) => (a.attributes?.date_start || '').localeCompare(b.attributes?.date_start || ''))
+    .slice(0, 6)
+})
 
 const filtered = computed(() => {
   let list = allEvents.value
@@ -222,6 +349,33 @@ useSeoMeta({
   ogTitle: 'Lễ hội truyền thống — vinhlong360',
   ogDescription: 'Lịch lễ hội truyền thống miền Tây: Kỳ Yên, Ok Om Bok, Nghinh Ông, giỗ danh nhân và hơn thế.',
 })
+
+useHead({
+  link: [{ rel: 'canonical', href: canonicalUrl('/le-hoi') }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: 'Lễ hội truyền thống',
+        description: 'Lễ hội đình miếu, lễ Khmer, Nghinh Ông, giỗ danh nhân — truyền thống văn hóa Vĩnh Long, Bến Tre, Trà Vinh.',
+        url: 'https://vinhlong360.vn/le-hoi',
+      }),
+    },
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
+          { '@type': 'ListItem', position: 2, name: 'Lễ hội' },
+        ],
+      }),
+    },
+  ],
+})
 </script>
 
 <style>
@@ -234,4 +388,6 @@ useSeoMeta({
 .event-lunar {
   font-style: italic;
 }
+.catalog-hero.cat-festival { background: linear-gradient(135deg, rgba(var(--primary-rgb), .06) 0%, rgba(183, 110, 60, .08) 100%); }
+.dark .catalog-hero.cat-festival { background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%); }
 </style>

@@ -166,6 +166,7 @@ class Database:
                         type TEXT NOT NULL,
                         name TEXT NOT NULL,
                         summary TEXT DEFAULT '',
+                        description TEXT DEFAULT '',
                         placeId TEXT,
                         confidence REAL DEFAULT 0.7,
                         season TEXT,
@@ -315,6 +316,13 @@ class Database:
                         (entity["id"], entity["name"], entity.get("summary", ""), entity["type"]))
                 except sqlite3.OperationalError:
                     pass
+
+    def update_description(self, entity_id: str, description: str):
+        """Update only the description field (won't be overwritten by upsert_entity)."""
+        self.initialize()
+        ph = self._ph
+        with self._conn() as conn:
+            self._execute(conn, f"UPDATE entities SET description = {ph} WHERE id = {ph}", (description, entity_id))
 
     def get_entity(self, entity_id: str) -> dict | None:
         """Get single entity by ID."""
@@ -556,18 +564,19 @@ class Database:
         val = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlng / 2) ** 2
         return 6371.0 * 2 * math.asin(math.sqrt(val))
 
-    def _relationship_sort_key(self, rel: dict, entity_id: str):
+    def _relationship_sort_key(self, rel: dict, entity_id: str, entity_area: str = ""):
         rel_type = rel.get("rel_type") or rel.get("type") or ""
         source_id = rel.get("source_id") or rel.get("from_id")
-        target_id = rel.get("target_id") or rel.get("to_id")
         other_name = rel.get("target_name") if source_id == entity_id else rel.get("source_name")
-        other_id = target_id if source_id == entity_id else source_id
+        other_area = rel.get("other_area") or ""
         distance = rel.get("distance_km") if isinstance(rel.get("distance_km"), (int, float)) else 999999
+        same_area = 0 if (entity_area and other_area and entity_area == other_area) else 1
         return (
+            same_area,
             1 if rel_type == "near" else 0,
             RELATIONSHIP_TYPE_PRIORITY.get(rel_type, 50),
             distance,
-            str(other_name or other_id or ""),
+            str(other_name or ""),
         )
 
     def get_relationships(
@@ -589,9 +598,11 @@ class Database:
                     r.type,
                     src.name AS source_name,
                     src.type AS source_type,
+                    src.area AS source_area,
+                    src.coordinates AS source_coordinates,
                     dst.name AS target_name,
                     dst.type AS target_type,
-                    src.coordinates AS source_coordinates,
+                    dst.area AS target_area,
                     dst.coordinates AS target_coordinates
                 FROM relationships r
                 JOIN entities src ON src.id = r.from_id
@@ -599,6 +610,7 @@ class Database:
                 WHERE r.from_id = {ph} OR r.to_id = {ph}
             """, (entity_id, entity_id))
 
+        entity_area = ""
         relationships = []
         for row in rows:
             rel = self._row_to_dict(row)
@@ -612,29 +624,36 @@ class Database:
 
             source_coords = self._parse_coordinates(rel.pop("source_coordinates", None))
             target_coords = self._parse_coordinates(rel.pop("target_coordinates", None))
-            distance = self._haversine_km(source_coords, target_coords) if kind == "near" else None
-            other_id = target_id if source_id == entity_id else source_id
-            other_name = rel.get("target_name") if source_id == entity_id else rel.get("source_name")
-            other_type = rel.get("target_type") if source_id == entity_id else rel.get("source_type")
+            distance = self._haversine_km(source_coords, target_coords)
+            is_source = source_id == entity_id
+            other_id = target_id if is_source else source_id
+            other_name = rel.get("target_name") if is_source else rel.get("source_name")
+            other_type = rel.get("target_type") if is_source else rel.get("source_type")
+            other_area = rel.get("target_area") if is_source else rel.get("source_area")
+            if not entity_area:
+                entity_area = rel.get("source_area") if is_source else rel.get("target_area")
 
             item = {
-                **rel,
                 "source_id": source_id,
                 "target_id": target_id,
                 "rel_type": kind,
                 "other_id": other_id,
                 "other_name": other_name,
                 "other_type": other_type,
-                # Legacy aliases kept during migration.
+                "other_area": other_area or "",
                 "from_id": source_id,
                 "to_id": target_id,
                 "type": kind,
+                "source_name": rel.get("source_name"),
+                "target_name": rel.get("target_name"),
+                "source_type": rel.get("source_type"),
+                "target_type": rel.get("target_type"),
             }
             if distance is not None:
-                item["distance_km"] = round(distance, 2)
+                item["distance_km"] = round(distance, 1)
             relationships.append(item)
 
-        relationships.sort(key=lambda rel: self._relationship_sort_key(rel, entity_id))
+        relationships.sort(key=lambda rel: self._relationship_sort_key(rel, entity_id, entity_area))
         offset = max(int(offset or 0), 0)
         if offset:
             relationships = relationships[offset:]
@@ -984,7 +1003,7 @@ class Database:
         sets = []
         params = []
         for k, v in fields.items():
-            if k in ("display_name", "avatar_url", "bio", "role", "is_active"):
+            if k in ("display_name", "avatar_url", "bio", "role", "is_active", "password_hash"):
                 sets.append(f"{k} = {ph}")
                 params.append(v)
         if not sets:
