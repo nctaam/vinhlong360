@@ -126,23 +126,25 @@ useHead({
 
 .contact-card {
   background: var(--card);
-  border: 1px solid var(--line);
+  border: .5px solid var(--line);
   border-radius: var(--radius-lg);
   padding: var(--space-6);
-  transition: transform var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-out), border-color var(--duration-fast);
+  box-shadow: var(--shadow-xs);
+  transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out);
 }
 .contact-card:hover {
   transform: translateY(-3px);
   box-shadow: var(--shadow-md);
   border-color: var(--border);
 }
+.contact-card:active { transform: translateY(0) scale(.98); transition-duration: .08s; }
 
 .card-icon {
   font-size: var(--text-2xl);
   margin-bottom: var(--space-2);
-  transition: transform var(--duration-normal) var(--ease-spring);
+  transition: transform .35s var(--ease-spring-gentle);
 }
-.contact-card:hover .card-icon { transform: scale(1.1); }
+.contact-card:hover .card-icon { transform: scale(1.1) rotate(-3deg); }
 
 .contact-card h2 {
   font-size: var(--text-lg);

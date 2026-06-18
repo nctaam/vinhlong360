@@ -14172,19 +14172,31 @@ var items = [
     "id": "dinh-an-hoi",
     "type": "history",
     "name": "Đình An Hội",
-    "summary": "Đình An Hội, sắc phong năm 1846 (đời Thiệu Trị), do Huỳnh Văn Sắc sáng lập. Diện tích 1.150m², hình chữ Nhất, gỗ quý không dùng đinh, mái ngói âm dương, 17 bệ thờ. Có rồng sứ và tượng Bát Tiên trên mái từ thế kỷ XIX. Di tích cấp tỉnh (2014). Tổ chức lễ Hùng Vương và lễ hội truyền thống.",
+    "summary": "Đình An Hội, sắc phong Thiệu Trị ngũ niên (1846), do Huỳnh Văn Sắc — quan chức triều Nguyễn — sáng lập. Khuôn viên 1.150m², xây dựng 121m², kiến trúc hình chữ Nhất, nhà xuyên trính 3 gian 2 chái, gỗ quý ghép mộng không dùng đinh, mái ngói âm dương bốn góc vươn cao như mũi thuyền. Bố cục: võ ca, sân tương, trung điện, chánh điện, hậu đình. Chạm khắc rồng phượng tinh xảo. Thờ 3 vị Thành hoàng Bổn cảnh từ 3 làng gốc (An Đức, Mỹ Hóa, Phú Khương — hợp nhất thành An Hội năm 1882). Di tích lịch sử - văn hóa cấp tỉnh (QĐ 2253/QĐ-UBND, 11/11/2014). Lễ Kỳ Yên 12-13/3 âm lịch có rước sắc thần, múa lân, hát bội.",
     "placeId": "p-an-hoi",
-    "confidence": 0.75,
+    "confidence": 0.9,
     "season": null,
     "attributes": {
-      "address": "Đường Nguyễn Đình Chiểu, Phường An Hội (cũ Phường 2), TP Bến Tre",
-      "area": "1.150m²",
-      "heritage_level": "Cấp tỉnh (2014)",
-      "travel_tip": "Ghé thăm vào buổi sáng sớm (7-9h) để gặp người dân địa phương làm lễ và nghe kể chuyện lịch sử từ người trông coi đình.",
-      "key_facts": "Sắc phong năm 1846 đời Thiệu Trị | Diện tích 1.150m² | Vào cửa miễn phí"
+      "address": "Đường Nguyễn Đình Chiểu, Phường 2 (phường An Hội), TP. Bến Tre",
+      "area": "1.150m² (xây dựng 121m²)",
+      "heritage_level": "Di tích lịch sử - văn hóa cấp tỉnh",
+      "heritage_decision": "QĐ 2253/QĐ-UBND, 11/11/2014",
+      "founder": "Huỳnh Văn Sắc — quan chức triều đình Nguyễn cử đến làng An Đức",
+      "royal_decree": "Sắc phong Thiệu Trị ngũ niên (1846)",
+      "architecture": "Hình chữ Nhất (一), nhà xuyên trính 3 gian 2 chái, gỗ quý ghép mộng không dùng đinh, mái ngói âm dương 4 góc vươn cao như mũi thuyền",
+      "layout": "Võ ca → sân tương → trung điện → chánh điện → hậu đình",
+      "worship": "3 vị Thành hoàng Bổn cảnh (từ 3 làng An Đức, Mỹ Hóa, Phú Khương) | Điện thờ Chủ tịch Hồ Chí Minh (xây 4/2014) | Bàn thờ Vua Hùng Vương | Bàn thờ anh hùng An Hội",
+      "decorations": "Chạm khắc rồng, phượng tinh xảo trên gỗ",
+      "history_note": "1882: ba làng An Đức, Mỹ Hóa, Phú Khương hợp nhất thành làng An Hội (tổng Bảo Hựu, hạt Bến Tre)",
+      "festivals": "Lễ Kỳ Yên 12-13/3 ÂL (rước sắc thần, múa lân, hát bội) | Giỗ Tổ Hùng Vương 10/3 ÂL | Lễ Lạp miếu 12-13/12 ÂL | Lễ Thượng/Trung/Hạ nguyên 15/1, 15/7, 15/10 ÂL | Ngày TBLS 27/7 DL",
+      "conservation": "Bảo tồn gần như nguyên vẹn suốt hơn 1 thế kỷ",
+      "travel_tip": "Ghé thăm buổi sáng sớm (7-9h) để gặp người dân làm lễ. Gần vòng xoay An Hội, đối diện công viên, dễ tìm. Vào cửa miễn phí.",
+      "key_facts": "Sắc phong 1846 đời Thiệu Trị | Khuôn viên 1.150m² | Kiến trúc chữ Nhất | Gỗ mộng không đinh | Miễn phí",
+      "research_sources": "mia.vn, mytour.vn, didodidays.com, bentretourism.vn, Báo Đồng Khởi, GPT-5.5 (cross-verified)",
+      "research_date": "2026-06-17"
     },
     "source": {
-      "title": "bentretourism.vn / mia.vn",
+      "title": "bentretourism.vn / mia.vn / Báo Đồng Khởi / didodidays.com",
       "url": "https://bentretourism.vn/vi/dinhanhoi",
       "maps": "https://maps.app.goo.gl/H79AmfqVEoX6bbw27"
     },
@@ -14197,7 +14209,7 @@ var items = [
     "level": null,
     "parentId": null,
     "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
+    "updatedAt": "2026-06-17T00:00:00Z",
     "created_at": "2026-06-13 04:00:38"
   },
   {

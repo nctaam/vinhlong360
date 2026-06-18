@@ -320,29 +320,31 @@ if (itinerary.value && !itinerary.value.error) {
 
 <style scoped>
 .itin-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-4) 0; }
-.itin-actions .btn { transition: all var(--duration-fast) var(--ease-out); }
+.itin-actions .btn { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
+.itin-actions .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .itin-actions .btn:active { transform: scale(.95); transition-duration: .08s; }
 
 .transport-mode-spaced { margin-bottom: var(--space-4); }
-.transport-mode .chip { transition: all var(--duration-fast) var(--ease-out); }
+.transport-mode .chip { transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), background .3s var(--ease-out), border-color .3s var(--ease-out); }
+.transport-mode .chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .transport-mode .chip:active { transform: scale(.95); transition-duration: .08s; }
 
 .timeline { list-style: none; padding: 0; margin: 0; }
 .step { position: relative; }
-.step-card { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg); transition: transform var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-out), border-color var(--duration-fast); }
-.step-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); border-color: var(--border); }
-.step-emoji { font-size: var(--text-xl); transition: transform var(--duration-normal) var(--ease-spring); }
-.step-card:hover .step-emoji { transform: scale(1.1); }
-.stop-link { color: var(--ink); font-weight: var(--weight-semibold); transition: color var(--duration-fast); }
+.step-card { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-xs); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
+.step-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); }
+.step-emoji { font-size: var(--text-xl); transition: transform .35s var(--ease-spring-gentle); }
+.step-card:hover .step-emoji { transform: scale(1.1) rotate(-3deg); }
+.stop-link { color: var(--ink); font-weight: var(--weight-semibold); transition: color .3s var(--ease-out); }
 .stop-link:hover { color: var(--primary-fg); }
 
 .route-leg { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) 0 var(--space-2) var(--space-6); }
-.route-leg-line { width: 2px; height: 20px; background: var(--line); border-radius: 1px; }
+.route-leg-line { width: 2px; height: 20px; background: var(--line); border-radius: 1px; transition: background .3s var(--ease-out); }
 .route-leg-info { font-size: var(--text-xs); color: var(--muted); }
 
 .route-map-section { margin-top: var(--space-6); }
 .route-map-section h3 { font-size: var(--text-lg); font-weight: var(--weight-semibold); margin-bottom: var(--space-3); }
-.route-map { height: 400px; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow); transition: box-shadow var(--duration-normal) var(--ease-out); }
+.route-map { height: 400px; border-radius: var(--radius-lg); overflow: hidden; border: .5px solid var(--line); box-shadow: var(--shadow-sm); transition: box-shadow .35s var(--ease-out-expo); }
 .route-map:hover { box-shadow: var(--shadow-md); }
 
 </style>

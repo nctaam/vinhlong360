@@ -54,6 +54,7 @@ watch(() => props.query, () => {
 <style scoped>
 .ai-loading-padded { padding: var(--space-4); }
 .spinner-center { margin: 0 auto; }
-.ai-search-body { animation: aiSlideIn .25s var(--ease-out); }
-@keyframes aiSlideIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+.ai-search-body { animation: aiSlideIn .35s var(--ease-out-expo); }
+@keyframes aiSlideIn { from { opacity: 0; transform: translateY(-8px) scale(.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .ai-search-body { animation: none; } }
 </style>

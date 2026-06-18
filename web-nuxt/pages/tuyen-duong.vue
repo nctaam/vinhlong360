@@ -233,7 +233,7 @@ useHead({
 
 <style scoped>
 .route-grid { display: flex; flex-direction: column; gap: var(--space-6); }
-.route-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: transform var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-out), border-color var(--duration-fast); }
+.route-card { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 .route-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .route-card:active { transform: translateY(0) scale(.99); transition-duration: .08s; }
 .route-header { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-5) var(--space-6); color: #fff; }
@@ -247,13 +247,16 @@ useHead({
 .route-body p { margin: 0 0 var(--space-3); line-height: var(--leading-relaxed); color: var(--ink); }
 .route-body h3 { font-size: var(--text-base); font-weight: var(--weight-semibold); margin: var(--space-4) 0 var(--space-2); }
 .route-stops { margin: 0 0 var(--space-3); padding-left: var(--space-5); }
-.route-stops li { margin-bottom: var(--space-2); line-height: var(--leading-normal); transition: transform var(--duration-fast) var(--ease-out); }
+.route-stops li { margin-bottom: var(--space-2); line-height: var(--leading-normal); transition: transform .3s var(--ease-out); }
 .route-stops li:hover { transform: translateX(2px); }
 .route-stops strong { color: var(--ink); }
 .route-stops span { color: var(--muted); font-size: var(--text-sm); }
 .route-tips { background: var(--badge-season-bg); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); font-size: var(--text-sm); margin-bottom: var(--space-3); line-height: var(--leading-normal); }
 .route-links { display: flex; gap: var(--space-2); flex-wrap: wrap; }
-.route-links .btn { transition: all var(--duration-fast) var(--ease-out); }
+.route-links .btn { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
 .route-links .btn:active { transform: scale(.95); transition-duration: .08s; }
+.dark .route-card { background: var(--card); border-color: var(--line); }
+.dark .route-card:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.1); }
+.dark .route-tips { background: rgba(var(--primary-rgb), .08); }
 
 </style>

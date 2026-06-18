@@ -79,16 +79,16 @@ onMounted(fetchData)
 
 <style scoped>
 .stat-num { font-size: 1.6rem; font-weight: 700; }
-.stat-lbl { font-size: .82rem; color: var(--muted, #888); margin-top: 4px; }
-.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-.panel { background: var(--bg, #fff); border: 1px solid var(--line, #eee); border-radius: 10px; padding: 16px; }
-.panel h2 { font-size: 1rem; margin-bottom: 10px; }
+.stat-lbl { font-size: .82rem; color: var(--muted); margin-top: var(--space-1); }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-4); }
+.panel { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sm); padding: var(--space-4); box-shadow: var(--shadow-xs); }
+.panel h2 { font-size: 1rem; margin-bottom: var(--space-3); }
 .rows { list-style: none; padding: 0; margin: 0; }
-.rows li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line, #eee); font-size: .9rem; }
+.rows li { display: flex; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: .5px solid var(--line); font-size: .9rem; }
 .rows li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rows li b { color: var(--primary); }
 
-.panel { transition: transform var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-out); }
+.panel { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
 .panel:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
 
 </style>

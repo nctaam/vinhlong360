@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS entities (
     summary     TEXT DEFAULT '',
     description TEXT DEFAULT '',
     "placeId"   TEXT,
-    confidence  REAL DEFAULT 0.7,
+    confidence  REAL DEFAULT 1.0,
     season      JSONB,
     attributes  JSONB DEFAULT '{}',
     source      JSONB DEFAULT '{}',
@@ -36,7 +36,6 @@ CREATE TABLE IF NOT EXISTS entities (
 
 CREATE INDEX IF NOT EXISTS idx_entities_type ON entities(type);
 CREATE INDEX IF NOT EXISTS idx_entities_placeid ON entities("placeId");
-CREATE INDEX IF NOT EXISTS idx_entities_confidence ON entities(confidence);
 CREATE INDEX IF NOT EXISTS idx_entities_name_trgm ON entities USING gin(name gin_trgm_ops);
 CREATE INDEX IF NOT EXISTS idx_entities_summary_trgm ON entities USING gin(summary gin_trgm_ops);
 

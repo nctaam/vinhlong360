@@ -179,10 +179,10 @@ useHead({
 .result-meta { font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-4); }
 
 .quick-picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--space-3); }
-.quick-pick { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg); text-align: center; transition: transform var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-out), border-color var(--duration-fast); }
+.quick-pick { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); text-align: center; box-shadow: var(--shadow-xs); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 .quick-pick:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--primary-fg); }
 .quick-pick:active { transform: scale(.97); transition-duration: .08s; }
-.quick-pick-icon { font-size: var(--text-2xl); transition: transform var(--duration-normal) var(--ease-spring); }
+.quick-pick-icon { font-size: var(--text-2xl); transition: transform .35s var(--ease-spring-gentle); }
 .quick-pick:hover .quick-pick-icon { transform: scale(1.15); }
 .quick-pick-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); }
 

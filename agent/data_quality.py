@@ -332,7 +332,6 @@ def apply_candidates(candidate_ids: list[str] | None = None, *, dry_run: bool = 
             "field": field,
             "before": _json_clone(before),
             "after": _json_clone(after),
-            "confidence": record.get("confidence"),
             "evidence_urls": record.get("evidence_urls") or [],
             "reason": record.get("reason"),
         }

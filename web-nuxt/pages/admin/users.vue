@@ -28,7 +28,7 @@
             <td><strong>{{ u.display_name || '—' }}</strong></td>
             <td>{{ u.phone }}</td>
             <td>
-              <select :value="u.role" class="input admin-select-inline" :disabled="acting === u.id" @change="changeRole(u.id, ($event.target as HTMLSelectElement).value)">
+              <select :value="u.role" class="input admin-select-inline" :disabled="acting === u.id" :aria-label="`Chọn role cho ${u.display_name || u.phone}`" @change="changeRole(u.id, ($event.target as HTMLSelectElement).value)">
                 <option value="user">user</option>
                 <option value="moderator">moderator</option>
                 <option value="admin">admin</option>
@@ -108,6 +108,7 @@ async function ban(id: string) {
 }
 
 async function unban(id: string) {
+  if (!confirm('Mở cấm user này?')) return
   acting.value = id
   try {
     await $fetch(`/admin-api/users/${id}/unban`, { method: 'POST', headers: authHeaders() })
@@ -142,7 +143,7 @@ onMounted(() => fetchUsers())
 <style scoped>
 .status-active { display: inline-block; padding: 2px 8px; border-radius: var(--radius-full, 999px); font-size: var(--text-xs); font-weight: var(--weight-semibold); background: rgba(46, 125, 91, .12); color: var(--secondary-fg); }
 .status-banned { display: inline-block; padding: 2px 8px; border-radius: var(--radius-full, 999px); font-size: var(--text-xs); font-weight: var(--weight-semibold); background: rgba(220, 38, 38, .1); color: var(--error); }
-.admin-select-inline { padding: var(--space-1) var(--space-2); font-size: var(--text-xs); min-height: 32px; border-radius: var(--radius-md); transition: border-color var(--duration-fast), box-shadow var(--duration-fast); }
+.admin-select-inline { padding: var(--space-1) var(--space-2); font-size: var(--text-xs); min-height: 36px; border-radius: var(--radius-md); transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo); }
 .admin-select-inline:focus { border-color: var(--primary-fg); box-shadow: 0 0 0 2px rgba(var(--primary-rgb), .1); }
 
 </style>

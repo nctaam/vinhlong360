@@ -74,14 +74,14 @@ def list_provisional() -> list:
     return [
         {
             "id": e["id"], "name": e.get("name", ""), "type": e.get("type", ""),
-            "confidence": e.get("confidence", 0), "summary": e.get("summary", "")[:160],
+            "summary": e.get("summary", "")[:160],
             "learned_at": e.get("learned_at", ""), "source": e.get("source", {}),
         }
         for e in kb.get("entities", []) if _is_provisional(e)
     ]
 
 
-def promote(entity_id: str, min_confidence: float = 0.7) -> dict:
+def promote(entity_id: str) -> dict:
     """Promote a provisional entity to verified (trusted)."""
     kb = _load_kb()
     for e in kb["entities"]:
@@ -90,7 +90,6 @@ def promote(entity_id: str, min_confidence: float = 0.7) -> dict:
                 return {"ok": False, "error": "already verified"}
             e["status"] = "verified"
             e["verified"] = True
-            e["confidence"] = max(e.get("confidence", 0), min_confidence)
             _save_kb(kb)
             _db_upsert(e)   # B1: ghi DB để chat thấy
             _reload()
@@ -218,8 +217,7 @@ def auto_promote_pass(min_hits: int = 3, dry_run: bool = False) -> dict:
             if not dry_run:
                 e["status"] = "verified"
                 e["verified"] = True
-                e["confidence"] = max(e.get("confidence", 0), 0.6)
-                _db_upsert(e)   # B1: ghi DB để chat thấy
+                _db_upsert(e)
             promoted.append(e["id"])
     if promoted and not dry_run:
         _save_kb(kb)

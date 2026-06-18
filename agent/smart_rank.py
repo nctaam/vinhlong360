@@ -56,20 +56,16 @@ def smart_score(entity: dict, month: int = None, q_match_level: str = "exact") -
     Tính tổng điểm xếp hạng thông minh.
 
     Factors:
-      1. Confidence (0-1) × 10
-      2. Season match bonus (+5 peak, +2 in-season)
-      3. Popularity bonus (0-3, log scale)
-      4. Content richness (+0-2)
-      5. Query match level (+3 exact, +1 fuzzy)
-      6. OCOP bonus (+1.5)
-      7. Type bonus (attraction/experience slightly higher)
+      1. Season match bonus (+5 peak, +2 in-season)
+      2. Popularity bonus (0-3, log scale)
+      3. Content richness (+0-2)
+      4. Query match level (+3 exact, +1 fuzzy)
+      5. OCOP bonus (+1.5)
+      6. Type bonus (attraction/experience slightly higher)
     """
     score = 0.0
 
-    # 1. Confidence
-    score += entity.get("confidence", 0.5) * 10
-
-    # 2. Season
+    # 1. Season
     if month:
         season = entity.get("season")
         if season:
@@ -80,10 +76,10 @@ def smart_score(entity: dict, month: int = None, q_match_level: str = "exact") -
             elif month in months:
                 score += 2
 
-    # 3. Popularity
+    # 2. Popularity
     score += popularity_score(entity["id"])
 
-    # 4. Content richness
+    # 3. Content richness
     summary_len = len(entity.get("summary", ""))
     if summary_len > 50:
         score += 0.5
@@ -95,17 +91,17 @@ def smart_score(entity: dict, month: int = None, q_match_level: str = "exact") -
     if len(attrs) > 2:
         score += 0.5
 
-    # 5. Query match
+    # 4. Query match
     if q_match_level == "exact":
         score += 3
     elif q_match_level == "fuzzy":
         score += 1
 
-    # 6. OCOP
+    # 5. OCOP
     if attrs.get("ocop"):
         score += 1.5
 
-    # 7. Type bonus (popular types slightly higher)
+    # 6. Type bonus (popular types slightly higher)
     type_bonus = {
         "attraction": 1.0,
         "experience": 1.0,
@@ -121,20 +117,13 @@ def smart_score(entity: dict, month: int = None, q_match_level: str = "exact") -
     }
     score += type_bonus.get(entity["type"], 0)
 
-    # 8. Verification bonus / provisional penalty (graduated by confidence)
-    conf = entity.get("confidence", 0.5)
+    # 7. Verification bonus
     if entity.get("verified") is True:
-        score += 2.0  # verified entities surface first
+        score += 2.0
     elif entity.get("status") == "provisional" or entity.get("verified") is False:
-        if conf < 0.6:
-            score -= 5.0   # likely hallucination — nearly hidden
-        elif conf < 0.7:
-            score -= 3.0   # low trust
-        elif conf < 0.8:
-            score -= 1.0   # decent provisional (ward crawl ~0.7)
-        # conf >= 0.8 provisional: no extra penalty (shown but below verified)
+        score -= 2.0
 
-    # 9. GPS completeness bonus
+    # 8. GPS completeness bonus
     if entity.get("coords") or entity.get("coordinates"):
         score += 0.5
 

@@ -24,10 +24,6 @@
         <div class="stat-value">{{ stats.total_itineraries || 0 }}</div>
         <div class="stat-label">Lịch trình</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-value">{{ stats.low_confidence || 0 }}</div>
-        <div class="stat-label">Cần xem lại</div>
-      </div>
       <div v-if="modStats.pending !== undefined" class="stat-card">
         <div class="stat-value">{{ modStats.pending }}</div>
         <div class="stat-label">Chờ duyệt</div>

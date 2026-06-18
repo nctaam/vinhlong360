@@ -47,6 +47,7 @@ async function toggle() {
 <style scoped>
 .spinner-center { margin: 0 auto; }
 :deep(.tip-bullet) { color: var(--primary); }
-.ai-tips-body { animation: tipsSlideIn .25s var(--ease-out); }
-@keyframes tipsSlideIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+.ai-tips-body { animation: tipsSlideIn .35s var(--ease-out-expo); }
+@keyframes tipsSlideIn { from { opacity: 0; transform: translateY(-8px) scale(.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .ai-tips-body { animation: none; } }
 </style>

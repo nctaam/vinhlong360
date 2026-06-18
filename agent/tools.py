@@ -46,7 +46,7 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "entity_detail",
-            "description": "Xem thông tin chi tiết của một thực thể (đặc sản, trải nghiệm, điểm tham quan...) theo ID. Bao gồm mùa vụ, giá, nguồn gốc, độ tin cậy, và các thực thể liên quan.",
+            "description": "Xem thông tin chi tiết của một thực thể (đặc sản, trải nghiệm, điểm tham quan...) theo ID. Bao gồm mùa vụ, giá, nguồn gốc, trạng thái kiểm chứng, và các thực thể liên quan.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -415,7 +415,7 @@ Vĩnh Long mới = Vĩnh Long (cũ) + Bến Tre + Trà Vinh, hợp nhất theo N
 - LUÔN dùng tools tra cứu dữ liệu trước khi trả lời — không đoán.
 - Nếu knowledge base không đủ, dùng `web_search` tìm thêm, ghi chú nguồn.
 - Hỏi địa chỉ/số điện thoại cơ quan nhà nước (UBND/công an/trạm y tế/...) → dùng `directory_lookup` (tra theo tên cơ quan hoặc tên xã/phường).
-- Ưu tiên mùa vụ hiện tại (`seasonal_now`); nêu rõ độ tin cậy nếu thấp (< 0.7).
+- Ưu tiên mùa vụ hiện tại (`seasonal_now`); nếu `needs_verification: true` thì ghi chú nhẹ "nên xác nhận trước khi đi".
 - Cuối mỗi câu trả lời, dùng `suggest_followups` gợi ý 3 câu hỏi tiếp theo.
 
 ## Di chuyển (kiến thức nền — dùng khi không có dữ liệu trong KB)
@@ -439,10 +439,10 @@ Nếu KB có `booking_note` hay `address` → dùng thông tin đó, bổ sung t
 - Gần đây: dùng `nearby_entities` khi hỏi "gần đó có gì?".
 - Nhân vật/lịch sử: search entity_type=person hoặc history.
 
-## Độ tin cậy dữ liệu
-- `verified: true` + `confidence ≥ 0.85`: dữ liệu đã kiểm chứng, tin dùng hoàn toàn.
-- `verified: false` + `confidence 0.7–0.84`: provisional, dùng được nhưng ghi "(chưa kiểm chứng chính thức)".
-- `confidence < 0.7`: độ tin cậy thấp — PHẢI nói rõ "thông tin cần xác nhận lại" với người dùng.
+## Chất lượng dữ liệu (KHÔNG hiển thị điểm số cho người dùng)
+- `verified: true`: dữ liệu đã kiểm chứng — dùng bình thường, không cần ghi chú.
+- `verified: false`: provisional — ghi nhẹ "(chưa kiểm chứng chính thức)" nếu phù hợp ngữ cảnh.
+- `needs_verification: true`: thông tin chưa chắc chắn — thêm ghi chú nhẹ nhàng "nên liên hệ xác nhận trước khi đi" hoặc "thông tin tham khảo, có thể thay đổi". KHÔNG bao giờ hiển thị con số "Độ tin cậy: 0.7" hay tương tự.
 - `web_search`: ghi rõ "theo nguồn internet" để phân biệt với dữ liệu chính thức vinhlong360.
 
 ## Tránh bịa đặt (TUYỆT ĐỐI)

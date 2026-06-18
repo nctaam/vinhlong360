@@ -17,7 +17,6 @@
     <div v-if="selected.size" class="bulk-bar">
       <span>Đã chọn {{ selected.size }}</span>
       <button class="btn-danger" :disabled="bulkBusy" @click="bulkDelete">Xóa đã chọn</button>
-      <button class="btn-success" :disabled="bulkBusy" @click="bulkConfidence">Đặt confidence</button>
       <button class="btn btn-outline btn-sm" @click="selected = new Set()">Bỏ chọn</button>
     </div>
 
@@ -32,7 +31,6 @@
             <th>Tên</th>
             <th>Loại</th>
             <th>Địa điểm</th>
-            <th>Confidence</th>
             <th>Thao tác</th>
           </tr>
         </thead>
@@ -43,14 +41,13 @@
             <td><strong>{{ e.name }}</strong></td>
             <td>{{ e.type }}</td>
             <td>{{ e.place_name || '—' }}</td>
-            <td>{{ (e.confidence * 100).toFixed(0) }}%</td>
             <td class="admin-actions">
               <button class="btn-success" @click="openEdit(e)">Sửa</button>
               <button class="btn-danger" :disabled="acting === e.id" @click="deleteEntity(e.id)">Xóa</button>
             </td>
           </tr>
           <tr v-if="!entities.length">
-            <td colspan="7" class="admin-empty-row">Không có entity nào.</td>
+            <td colspan="6" class="admin-empty-row">Không có entity nào.</td>
           </tr>
         </tbody>
       </table>
@@ -75,8 +72,6 @@
           </select>
           <input v-model="form.placeId" class="input" placeholder="Place ID (xã/phường)" />
           <textarea v-model="form.summary" class="input admin-textarea" placeholder="Tóm tắt" rows="3"></textarea>
-          <input v-model.number="form.confidence" class="input" type="number" min="0" max="1" step="0.1" placeholder="Confidence (0-1)" />
-
           <!-- Quản lý ảnh (chỉ khi sửa) -->
           <div v-if="editingEntity" class="img-mgr">
             <strong class="admin-label">Ảnh ({{ (form.images || []).length }}/10)</strong>
@@ -164,7 +159,7 @@ async function fetchEntities(reset = false) {
 
 function openCreate() {
   editingEntity.value = null
-  form.value = { id: '', name: '', type: 'experience', placeId: '', summary: '', confidence: 0.8, images: [] }
+  form.value = { id: '', name: '', type: 'experience', placeId: '', summary: '', images: [] }
   newImage.value = ''
   showModal.value = true
 }
@@ -172,7 +167,7 @@ function openCreate() {
 function openEdit(e: any) {
   editingEntity.value = e
   form.value = { id: e.id, name: e.name, type: e.type, placeId: e.placeId || '', summary: e.summary || '',
-                 confidence: e.confidence || 0.8, images: Array.isArray(e.images) ? [...e.images] : [] }
+                 images: Array.isArray(e.images) ? [...e.images] : [] }
   newImage.value = ''
   newRel.value = { to_id: '', type: 'related_to' }
   fetchRels(e.id)
@@ -188,7 +183,7 @@ async function fetchRels(id: string) {
   try {
     const r = await $fetch<any>(`/api/entities/${id}/relationships?limit=100`)
     rels.value = r.relationships || []
-  } catch { /* ignore */ }
+  } catch { showToast('Không tải được quan hệ', 'error') }
 }
 async function addRel() {
   const to = newRel.value.to_id.trim()
@@ -201,6 +196,7 @@ async function addRel() {
   } catch (e: any) { showToast(e?.data?.detail || 'Thêm quan hệ lỗi (id đích tồn tại?)', 'error') }
 }
 async function removeRel(r: any) {
+  if (!confirm(`Xóa quan hệ "${r.type}" → ${r.target_name || r.to_id}?`)) return
   const params = new URLSearchParams({ from_id: r.from_id, to_id: r.to_id, type: r.type })
   try {
     await $fetch(`/admin-api/relationships?${params}`, { method: 'DELETE', headers: authHeaders() })
@@ -242,6 +238,7 @@ async function addImage() {
 }
 async function removeImage(idx: number) {
   if (!editingEntity.value) return
+  if (!confirm('Xóa ảnh này?')) return
   try {
     const r = await $fetch<any>(`/admin-api/entities/${form.value.id}/images/${idx}`, {
       method: 'DELETE', headers: authHeaders() })
@@ -271,23 +268,6 @@ async function bulkDelete() {
   } catch (e: any) { showToast(e?.data?.detail || 'Xóa hàng loạt lỗi', 'error') }
   bulkBusy.value = false
 }
-async function bulkConfidence() {
-  const ids = [...selected.value]
-  if (!ids.length) return
-  const v = prompt('Đặt confidence (0–1) cho ' + ids.length + ' entity:')
-  const c = Number(v)
-  if (!v || isNaN(c) || c < 0 || c > 1) return
-  bulkBusy.value = true
-  try {
-    const r = await $fetch<any>(`/admin-api/entities/bulk-update-confidence?confidence=${c}`, {
-      method: 'POST', headers: authHeaders(), body: ids })
-    showToast(`Đã cập nhật ${r.count}`, 'success')
-    selected.value = new Set()
-    await fetchEntities()
-  } catch (e: any) { showToast(e?.data?.detail || 'Cập nhật hàng loạt lỗi', 'error') }
-  bulkBusy.value = false
-}
-
 async function deleteEntity(id: string) {
   if (!confirm(`Xóa entity "${id}"?`)) return
   acting.value = id
@@ -305,10 +285,10 @@ onMounted(() => fetchEntities())
 </script>
 
 <style scoped>
-.bulk-bar { display: flex; align-items: center; gap: 10px; margin: 10px 0; padding: 8px 12px;
-  background: var(--warning-bg, #fff7ed); border: 1px solid var(--warning, #e67e22); border-radius: 8px; font-size: .9rem; }
-.img-mgr { border-top: 1px solid var(--line, #eee); padding-top: 10px; margin-top: 4px; }
-.img-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
-.img-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; flex: 0 0 40px; }
-.img-url { flex: 1; font-size: .78rem; color: var(--muted, #888); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bulk-bar { display: flex; align-items: center; gap: var(--space-3); margin: var(--space-3) 0; padding: var(--space-2) var(--space-3);
+  background: var(--warning-bg, #fff7ed); border: .5px solid var(--warning, #e67e22); border-radius: var(--radius-sm); font-size: .9rem; }
+.img-mgr { border-top: .5px solid var(--line); padding-top: var(--space-3); margin-top: var(--space-1); }
+.img-row { display: flex; align-items: center; gap: var(--space-2); margin: var(--space-2) 0; }
+.img-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: var(--space-1); flex: 0 0 40px; }
+.img-url { flex: 1; font-size: .78rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 </style>

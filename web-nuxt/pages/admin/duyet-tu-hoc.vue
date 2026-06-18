@@ -15,12 +15,11 @@
         nên entity tự học hiện đã live — quarantine chỉ còn ý nghĩa khi mô hình hoá cột status ở DB.)
       </p>
       <table v-else class="admin-simple-table">
-        <thead><tr><th>Tên</th><th>Loại</th><th>Conf</th><th>Nguồn</th><th></th></tr></thead>
+        <thead><tr><th>Tên</th><th>Loại</th><th>Nguồn</th><th></th></tr></thead>
         <tbody>
           <tr v-for="e in provisional" :key="e.id">
             <td><strong>{{ e.name }}</strong><br><small class="admin-muted">{{ e.summary }}</small></td>
             <td>{{ e.type }}</td>
-            <td>{{ ((e.confidence || 0) * 100).toFixed(0) }}%</td>
             <td><small class="admin-muted">{{ e.source?.url || e.source?.title || '—' }}</small></td>
             <td class="admin-actions">
               <button class="btn-success" :disabled="acting === e.id" @click="approve(e)">
@@ -76,6 +75,7 @@ async function loadProvisional() {
   loading.value = false
 }
 async function approve(e: any) {
+  if (!confirm(`Duyệt "${e.name}" vào hệ thống?`)) return
   acting.value = e.id
   try {
     await $fetch(`/admin-api/provisional/${e.id}/approve`, { method: 'POST', headers: authHeaders() })

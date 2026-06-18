@@ -88,7 +88,7 @@ onMounted(load)
 </script>
 
 <style scoped>
-.bar { display: flex; gap: 8px; align-items: center; margin: 12px 0 16px; }
+.bar { display: flex; gap: var(--space-2); align-items: center; margin: var(--space-3) 0 var(--space-4); }
 .bar .input { max-width: 280px; }
 .admin-simple-table select.input { max-width: 220px; }
 </style>

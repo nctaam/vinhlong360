@@ -217,10 +217,10 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/theo-mua') }] })
 <style scoped>
 .month-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: var(--space-2); }
 .season-item { position: relative; display: flex; flex-direction: column; }
-.season-badge { position: absolute; top: 8px; left: 8px; z-index: 2; background: rgba(0,0,0,.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: #fff; font-size: .72rem; font-weight: var(--weight-semibold); padding: 3px 10px; border-radius: var(--radius-full); }
+.season-badge { position: absolute; top: var(--space-2); left: var(--space-2); z-index: 2; background: rgba(0,0,0,.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: #fff; font-size: .72rem; font-weight: var(--weight-semibold); padding: 3px var(--space-3); border-radius: var(--radius-full); }
 .season-badge.peak { background: var(--accent); color: var(--ink); font-weight: var(--weight-bold); }
 .season-when { color: var(--muted); margin-top: var(--space-1); font-size: var(--text-xs); }
-.b2b-note { background: rgba(46, 125, 91, .06); border: 1px solid rgba(46, 125, 91, .2); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); font-size: var(--text-sm); margin: 0 0 var(--space-5); line-height: var(--leading-relaxed); }
+.b2b-note { background: rgba(46, 125, 91, .06); border: .5px solid rgba(46, 125, 91, .2); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); font-size: var(--text-sm); margin: 0 0 var(--space-5); line-height: var(--leading-relaxed); }
 .b2b-note a { color: var(--primary-fg); font-weight: var(--weight-semibold); }
 .see-all-count { font-size: var(--text-sm); color: var(--muted); }
 </style>

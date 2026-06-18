@@ -32,21 +32,23 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: 1px solid var(--line);
-  background: var(--surface-translucent);
-  backdrop-filter: saturate(180%) blur(16px);
-  -webkit-backdrop-filter: saturate(180%) blur(16px);
-  box-shadow: var(--shadow);
+  border: .5px solid var(--line);
+  background: var(--glass-bg-heavy);
+  backdrop-filter: var(--glass);
+  -webkit-backdrop-filter: var(--glass);
+  box-shadow: var(--shadow-sm);
   color: var(--primary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform var(--duration-fast) var(--ease-spring), box-shadow var(--duration-fast);
+  transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo);
 }
-.scroll-top:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-.scroll-top:active { transform: scale(.92); transition-duration: .08s; }
+.scroll-top:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.scroll-top:active { transform: scale(.9); transition-duration: .08s; }
 .scroll-top:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.fade-enter-active, .fade-leave-active { transition: opacity var(--duration-normal) var(--ease-out); }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+.fade-enter-active, .fade-leave-active { transition: opacity .3s var(--ease-out-expo), transform .3s var(--ease-spring-gentle); }
+.fade-enter-from { opacity: 0; transform: translateY(8px) scale(.9); }
+.fade-leave-to { opacity: 0; transform: translateY(4px) scale(.95); }
+
 </style>

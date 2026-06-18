@@ -62,10 +62,10 @@ useSeoMeta({ title: `${props.error?.statusCode || 'Lỗi'} — vinhlong360` })
   justify-content: center;
   margin-top: var(--space-6);
 }
-.error-content { animation: errorIn .5s var(--ease-spring); }
-@keyframes errorIn { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.error-content { animation: errorIn .5s var(--ease-spring-gentle); }
+@keyframes errorIn { from { opacity: 0; transform: translateY(16px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
 .error-code { background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.error-actions .btn { transition: all var(--duration-fast) var(--ease-out); }
+.error-actions .btn { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
 .error-actions .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
 .error-actions .btn:active { transform: scale(.95); transition-duration: .08s; }
 </style>

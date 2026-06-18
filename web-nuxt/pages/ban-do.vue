@@ -228,7 +228,7 @@ useHead({
 </script>
 
 <style scoped>
-#mapContainer { height: 65vh; min-height: 400px; border-radius: var(--radius-lg, 16px); overflow: hidden; box-shadow: var(--shadow-md); border: 1px solid var(--line); transition: box-shadow var(--duration-normal); }
+#mapContainer { height: 65vh; min-height: 400px; border-radius: var(--radius-lg, 16px); overflow: hidden; box-shadow: var(--shadow-md); border: .5px solid var(--line); transition: box-shadow .35s var(--ease-out-expo); }
 #mapContainer:hover { box-shadow: var(--shadow-lg); }
 .map-fallback { display: flex; align-items: center; justify-content: center; background: var(--bg-alt); }
 .map-filters { margin-bottom: var(--space-4); }

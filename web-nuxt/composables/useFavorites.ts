@@ -19,8 +19,14 @@ export function useFavorites() {
     if (loaded || import.meta.server) return
     try {
       const raw = localStorage.getItem(STORAGE_KEY)
-      if (raw) favorites.value = JSON.parse(raw)
-    } catch { /* ignore */ }
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed)) favorites.value = parsed
+        else localStorage.removeItem(STORAGE_KEY)
+      }
+    } catch {
+      localStorage.removeItem(STORAGE_KEY)
+    }
     loaded = true
   }
 

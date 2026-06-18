@@ -68,5 +68,5 @@ defineProps<{ area: string }>()
 </script>
 
 <style scoped>
-.area-illust { width: 100%; height: auto; display: block; border-radius: 12px; }
+.area-illust { width: 100%; height: auto; display: block; border-radius: var(--radius-md); }
 </style>

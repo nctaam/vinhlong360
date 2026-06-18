@@ -21,7 +21,6 @@ def test_entity_create_valid():
         type="product",
         name="Bưởi Năm Roi",
         summary="Đặc sản Vĩnh Long",
-        confidence=0.8,
     )
     assert entity.id == "test-entity"
     assert entity.type == "product"
@@ -60,22 +59,10 @@ def test_entity_create_sanitize_name():
 # ── EntityUpdate ──
 
 def test_entity_update_valid():
-    update = EntityUpdate(name="Updated Name", confidence=0.9)
+    update = EntityUpdate(name="Updated Name")
     assert update.name == "Updated Name"
-    assert update.confidence == 0.9
-    # Unset fields should be None
     assert update.type is None
     assert update.summary is None
-
-
-def test_entity_update_invalid_confidence():
-    with pytest.raises(ValidationError):
-        EntityUpdate(confidence=2.0)
-
-
-def test_entity_update_invalid_confidence_negative():
-    with pytest.raises(ValidationError):
-        EntityUpdate(confidence=-0.5)
 
 
 # ── Season validation ──

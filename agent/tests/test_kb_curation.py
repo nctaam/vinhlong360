@@ -46,15 +46,14 @@ class TestDbWriteThrough:
         ids = ["prov-1", "prov-2"]
         try:
             db.upsert_entity({"id": "prov-1", "name": "Quán mới X", "type": "dish",
-                              "confidence": 0.4, "status": "provisional", "verified": False})
+                              "status": "provisional", "verified": False})
             db.upsert_entity({"id": "prov-2", "name": "Điểm Y", "type": "attraction",
-                              "confidence": 0.4, "status": "provisional", "verified": False})
+                              "status": "provisional", "verified": False})
 
-            # promote: DB phản ánh (confidence được nâng ≥0.7; DB không có cột verified)
-            r = kb_curation.promote("prov-1", min_confidence=0.7)
+            r = kb_curation.promote("prov-1")
             assert r["ok"] is True
             got = db.get_entity("prov-1")
-            assert got is not None and got.get("confidence", 0) >= 0.7
+            assert got is not None
 
             # reject: entity bị xoá khỏi DB (trước fix B1, reject chỉ sửa data.json → chat vẫn thấy)
             r2 = kb_curation.reject("prov-2")
@@ -80,7 +79,6 @@ class TestPromote:
         e = next(x for x in data["entities"] if x["id"] == "prov-1")
         assert e["verified"] is True
         assert e["status"] == "verified"
-        assert e["confidence"] >= 0.7
 
     def test_promote_already_verified(self, kb_with_provisional):
         result = kb_curation.promote("verified-1")

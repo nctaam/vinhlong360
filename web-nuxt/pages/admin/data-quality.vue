@@ -75,7 +75,6 @@
             <th class="dq-th-checkbox"></th>
             <th>Entity</th>
             <th>Field</th>
-            <th>Confidence</th>
             <th>Đề xuất</th>
             <th>Evidence</th>
             <th>Lý do</th>
@@ -97,9 +96,6 @@
               <small>{{ c.bucket }}</small>
             </td>
             <td>{{ c.field }}</td>
-            <td>
-              <span :class="['dq-confidence', confidenceClass(c.confidence)]">{{ pct(c.confidence) }}</span>
-            </td>
             <td><code>{{ preview(c.suggested_value) }}</code></td>
             <td>
               <a
@@ -163,7 +159,7 @@
             <div v-for="change in h.changes.slice(0, 4)" :key="change.candidate_id" class="dq-diff-item">
               <div>
                 <strong>{{ change.entity_name || change.entity_id }}</strong>
-                <small>{{ change.field }} · {{ pct(change.confidence) }}</small>
+                <small>{{ change.field }}</small>
               </div>
               <code>{{ preview(change.before) }} → {{ preview(change.after) }}</code>
             </div>
@@ -207,10 +203,14 @@ const rollingBack = ref('')
 const autoApplyIds = computed(() => selectedIds.value.filter((id) => candidates.value.some((c) => c.candidate_id === id && c.bucket === 'auto_apply')))
 
 async function fetchSummary(refresh = false) {
-  summary.value = await $fetch<any>('/admin-api/data-quality/summary', {
-    headers: authHeaders(),
-    query: refresh ? { refresh: true } : {},
-  })
+  try {
+    summary.value = await $fetch<any>('/admin-api/data-quality/summary', {
+      headers: authHeaders(),
+      query: refresh ? { refresh: true } : {},
+    })
+  } catch {
+    showToast('Không thể tải tổng quan chất lượng', 'error')
+  }
 }
 
 async function fetchCandidates(reset = false, refresh = false) {
@@ -317,18 +317,6 @@ function preview(value: any) {
   return text.length > 180 ? `${text.slice(0, 180)}…` : text
 }
 
-function pct(value: any) {
-  const num = Number(value || 0)
-  return `${Math.round(num * 100)}%`
-}
-
-function confidenceClass(value: any) {
-  const num = Number(value || 0)
-  if (num >= 0.9) return 'high'
-  if (num >= 0.7) return 'mid'
-  return 'low'
-}
-
 function host(url: string) {
   try {
     return new URL(url).hostname.replace(/^www\./, '')
@@ -344,36 +332,32 @@ onMounted(() => refreshAll())
 .dq-stats .stat-card.warn .stat-value { color: var(--warning, #e67e22); }
 .dq-stats .stat-card.ok .stat-value { color: var(--primary, #219653); }
 .dq-th-checkbox { width: 42px; }
-.dq-cache-info { margin: 12px 0 0; color: var(--muted); font-size: .88rem; }
-.dq-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 16px 0; }
+.dq-cache-info { margin: var(--space-3) 0 0; color: var(--muted); font-size: .88rem; }
+.dq-toolbar { display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; margin: var(--space-4) 0; }
 .dq-toolbar .input { flex: 0 0 170px; }
-.dq-apply-result { background: var(--bg, #f3fbf5); border: 1px solid var(--primary, #219653); padding: 10px 12px; border-radius: 8px; color: var(--primary, #219653); }
+.dq-apply-result { background: var(--bg, #f3fbf5); border: .5px solid var(--primary, #219653); padding: var(--space-3); border-radius: var(--radius-sm); color: var(--primary, #219653); }
 .dq-apply-result span { display: block; margin-top: 3px; }
-.dq-table-wrap { margin-top: 12px; }
+.dq-table-wrap { margin-top: var(--space-3); }
 .dq-table td { vertical-align: top; }
 .dq-table td small { display: block; color: var(--muted); margin-top: 3px; }
 .dq-table code { white-space: pre-wrap; word-break: break-word; font-size: .78rem; }
 .dq-table a { display: block; color: var(--primary); font-weight: 600; word-break: break-word; }
-.dq-confidence { display: inline-block; min-width: 48px; text-align: center; padding: 3px 7px; border-radius: 999px; font-size: .78rem; font-weight: 800; }
-.dq-confidence.high { background: rgba(33, 150, 83, .1); color: var(--primary, #219653); }
-.dq-confidence.mid { background: var(--warning-bg, rgba(230, 126, 34, .1)); color: var(--warning, #e67e22); }
-.dq-confidence.low { background: var(--error-bg, rgba(217, 79, 61, .1)); color: var(--error, #D94F3D); }
 .admin-pagination span { display: inline-flex; align-items: center; color: var(--muted); font-size: .88rem; }
-.dq-history { margin-top: 28px; }
-.dq-section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 12px; }
+.dq-history { margin-top: var(--space-8); }
+.dq-section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-3); }
 .dq-section-head h2 { margin: 0; font-size: 1.1rem; }
 .dq-section-head p { margin: 4px 0 0; color: var(--muted); }
-.dq-history-empty { padding: 16px; border: 1px dashed var(--line); border-radius: 8px; color: var(--muted); }
-.dq-history-list { display: grid; gap: 10px; }
-.dq-history-card { padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
-.dq-history-card-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.dq-history-empty { padding: var(--space-4); border: .5px dashed var(--line); border-radius: var(--radius-sm); color: var(--muted); }
+.dq-history-list { display: grid; gap: var(--space-3); }
+.dq-history-card { padding: var(--space-4); border: .5px solid var(--line); border-radius: var(--radius-sm); background: var(--card); box-shadow: var(--shadow-xs); }
+.dq-history-card-head { display: flex; justify-content: space-between; gap: var(--space-3); align-items: flex-start; }
 .dq-history-card-head strong { display: block; word-break: break-word; }
 .dq-history-card-head small, .dq-diff-item small, .dq-more { color: var(--muted); }
-.dq-history-meta { margin: 8px 0; color: var(--muted); font-size: .86rem; word-break: break-word; }
-.dq-diff-list { display: grid; gap: 8px; margin-top: 10px; }
-.dq-diff-item { display: grid; grid-template-columns: minmax(160px, 240px) 1fr; gap: 10px; align-items: start; padding: 8px; background: var(--bg-alt, #f8faf9); border-radius: 6px; }
+.dq-history-meta { margin: var(--space-2) 0; color: var(--muted); font-size: .86rem; word-break: break-word; }
+.dq-diff-list { display: grid; gap: var(--space-2); margin-top: var(--space-3); }
+.dq-diff-item { display: grid; grid-template-columns: minmax(160px, 240px) 1fr; gap: var(--space-3); align-items: start; padding: var(--space-2); background: var(--bg-alt, #f8faf9); border-radius: var(--radius-sm); }
 .dq-diff-item code { white-space: pre-wrap; word-break: break-word; font-size: .76rem; }
-.dq-skipped-list { display: grid; gap: 6px; margin-top: 10px; padding: 10px; border: 1px solid var(--warning, #e67e22); border-radius: 6px; background: var(--warning-bg, rgba(230, 126, 34, .08)); }
+.dq-skipped-list { display: grid; gap: var(--space-2); margin-top: var(--space-3); padding: var(--space-3); border: .5px solid var(--warning, #e67e22); border-radius: var(--radius-sm); background: var(--warning-bg, rgba(230, 126, 34, .08)); }
 .dq-skipped-list > strong { font-size: .86rem; color: var(--warning, #e67e22); }
 .dq-skipped-item { display: grid; gap: 2px; }
 .dq-skipped-item span { font-weight: 700; word-break: break-word; }

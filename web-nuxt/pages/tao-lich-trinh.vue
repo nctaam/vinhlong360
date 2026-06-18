@@ -436,6 +436,10 @@ onMounted(() => {
   } catch { /* ignore */ }
 })
 
+onBeforeUnmount(() => {
+  if (routeTimer) clearTimeout(routeTimer)
+})
+
 useSeoMeta({
   title: 'Tạo lịch trình — vinhlong360',
   description: 'Lập kế hoạch chuyến đi Vĩnh Long: chọn điểm đến, sắp xếp thứ tự và lưu lịch trình cá nhân.',
@@ -464,9 +468,9 @@ useHead({
   display: flex; align-items: center; gap: var(--space-3);
   padding: var(--space-3); border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: background var(--duration-fast), transform var(--duration-fast) var(--ease-spring);
+  transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle);
 }
-.picker-item:hover { background: var(--bg-warm); transform: translateX(2px); }
+.picker-item:hover { background: var(--bg-warm); transform: translateX(3px); }
 .picker-item:active { transform: scale(.98); transition-duration: .08s; }
 .picker-emoji { font-size: 1.3rem; flex-shrink: 0; }
 .picker-info { flex: 1; min-width: 0; }
@@ -485,12 +489,12 @@ useHead({
 }
 .stop-connector { position: absolute; left: 13px; top: 28px; bottom: -12px; width: 2px; background: var(--primary); opacity: .25; }
 .stop-card {
-  flex: 1; background: var(--card); border: 1px solid var(--line);
+  flex: 1; background: var(--card); border: .5px solid var(--line);
   border-radius: var(--radius-lg, 16px); padding: var(--space-3) var(--space-4);
   margin-bottom: var(--space-3);
-  transition: border-color var(--duration-fast), box-shadow var(--duration-normal) var(--ease-out);
+  transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo), transform .35s var(--ease-spring-gentle);
 }
-.stop-card:hover { border-color: var(--border); box-shadow: var(--shadow); }
+.stop-card:hover { border-color: var(--border); box-shadow: var(--shadow-sm); transform: translateY(-2px); }
 .stop-card-head { display: flex; align-items: center; gap: var(--space-3); }
 .stop-emoji { font-size: 1.2rem; }
 .stop-card-info { flex: 1; min-width: 0; }
@@ -498,6 +502,11 @@ useHead({
 .stop-card-info small { color: var(--muted); font-size: var(--text-xs); }
 .stop-card-actions { display: flex; gap: var(--space-1); }
 .stop-list { margin-bottom: var(--space-4); }
-.route-map { height: 300px; border-radius: var(--radius-lg, 16px); overflow: hidden; border: 1px solid var(--line); }
+.route-map { height: 300px; border-radius: var(--radius-lg, 16px); overflow: hidden; border: .5px solid var(--line); box-shadow: var(--shadow-sm); }
+.stop-card-actions button { min-height: 36px; min-width: 36px; display: inline-flex; align-items: center; justify-content: center; }
+.dark .picker-item:hover { background: rgba(255,255,255,.06); }
+.dark .stop-card { background: var(--card); border-color: var(--line); }
+.dark .stop-card:hover { border-color: rgba(255,255,255,.1); }
+.dark .stop-connector { background: var(--primary-fg); }
 
 </style>

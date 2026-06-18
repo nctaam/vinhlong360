@@ -168,7 +168,7 @@ class Database:
                         summary TEXT DEFAULT '',
                         description TEXT DEFAULT '',
                         placeId TEXT,
-                        confidence REAL DEFAULT 0.7,
+                        confidence REAL DEFAULT 1.0,
                         season TEXT,
                         attributes TEXT DEFAULT '{}',
                         source TEXT DEFAULT '{}',
@@ -220,8 +220,6 @@ class Database:
 
                     CREATE INDEX IF NOT EXISTS idx_entities_type ON entities(type);
                     CREATE INDEX IF NOT EXISTS idx_entities_placeId ON entities(placeId);
-                    CREATE INDEX IF NOT EXISTS idx_entities_confidence ON entities(confidence);
-                    CREATE INDEX IF NOT EXISTS idx_entities_type_conf ON entities(type, confidence DESC);
                     CREATE INDEX IF NOT EXISTS idx_entities_updated ON entities(updatedAt DESC);
                     CREATE INDEX IF NOT EXISTS idx_itineraries_area ON itineraries(area);
                     CREATE INDEX IF NOT EXISTS idx_relationships_from ON relationships(from_id);
@@ -281,7 +279,7 @@ class Database:
                 """, (
                     entity["id"], entity["type"], entity["name"],
                     entity.get("summary", ""), entity.get("placeId"),
-                    entity.get("confidence", 0.7),
+                    entity.get("confidence", 1.0),
                     json.dumps(season_val, ensure_ascii=False) if season_val else None,
                     json.dumps(attrs_val, ensure_ascii=False),
                     json.dumps(source_val, ensure_ascii=False),
@@ -300,7 +298,7 @@ class Database:
                 """, (
                     entity["id"], entity["type"], entity["name"],
                     entity.get("summary", ""), entity.get("placeId"),
-                    entity.get("confidence", 0.7),
+                    entity.get("confidence", 1.0),
                     json.dumps(season_val, ensure_ascii=False) if season_val else None,
                     json.dumps(attrs_val, ensure_ascii=False),
                     json.dumps(source_val, ensure_ascii=False),
@@ -853,7 +851,7 @@ class Database:
                     entity_rows.append((
                         entity["id"], entity["type"], entity["name"],
                         entity.get("summary", ""), entity.get("placeId"),
-                        entity.get("confidence", 0.7),
+                        entity.get("confidence", 1.0),
                         json.dumps(season_val, ensure_ascii=False) if season_val else None,
                         json.dumps(attrs_val, ensure_ascii=False),
                         json.dumps(source_val, ensure_ascii=False),

@@ -112,7 +112,7 @@ async function toggleLike(postId: string) {
       post.user_liked = !post.user_liked
       post.likes = (post.likes || 0) + (post.user_liked ? 1 : -1)
     }
-  } catch { /* ignore */ }
+  } catch { showToast('Không thể thích bài viết', 'error') }
 }
 
 async function toggleBookmark(postId: string) {
@@ -121,7 +121,7 @@ async function toggleBookmark(postId: string) {
     await $fetch(`/api/posts/${postId}/bookmark`, { method: 'POST', headers: authHeaders() })
     const post = posts.value.find(p => p.id === postId)
     if (post) post.user_bookmarked = !post.user_bookmarked
-  } catch { /* ignore */ }
+  } catch { showToast('Không thể lưu bài viết', 'error') }
 }
 
 onMounted(() => fetchPosts())
@@ -145,7 +145,7 @@ if (profile.value) {
 
 .profile-cover { position: relative; border-radius: var(--radius-xl, 20px); overflow: hidden; margin-bottom: calc(-1 * var(--space-8)); }
 .profile-avatar-wrap { position: absolute; bottom: calc(-1 * var(--space-6)); left: var(--space-5); }
-.profile-avatar-wrap .avatar { border: 3px solid var(--card); box-shadow: var(--shadow-md); transition: transform var(--duration-normal) var(--ease-spring); }
+.profile-avatar-wrap .avatar { border: 3px solid var(--card); box-shadow: var(--shadow-md); transition: transform .35s var(--ease-spring-gentle); }
 .profile-avatar-wrap .avatar:hover { transform: scale(1.05); }
 
 .profile-info { padding-top: var(--space-10); }
@@ -153,13 +153,13 @@ if (profile.value) {
 .profile-bio { color: var(--ink-secondary); font-size: var(--text-sm); line-height: var(--leading-relaxed); margin-top: var(--space-2); }
 
 .profile-stats { display: flex; gap: var(--space-6); margin-top: var(--space-4); }
-.stat-item { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); cursor: default; transition: background var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-spring); }
-.stat-item:hover { background: var(--bg-alt); transform: translateY(-1px); }
+.stat-item { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); cursor: default; transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
+.stat-item:hover { background: var(--bg-alt); transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .stat-item strong { font-size: var(--text-lg); font-weight: var(--weight-bold); }
 .stat-item span { font-size: var(--text-xs); color: var(--muted); }
 
-.profile-tabs { display: flex; gap: var(--space-2); margin: var(--space-5) 0 var(--space-4); border-bottom: 1px solid var(--line); padding-bottom: var(--space-3); }
-.profile-tabs .chip { min-height: 44px; transition: all var(--duration-fast) var(--ease-out); }
+.profile-tabs { display: flex; gap: var(--space-2); margin: var(--space-5) 0 var(--space-4); border-bottom: .5px solid var(--line); padding-bottom: var(--space-3); }
+.profile-tabs .chip { min-height: 44px; transition: transform .35s var(--ease-spring-gentle), background .3s var(--ease-out), color .3s var(--ease-out), border-color .3s var(--ease-out); }
 .profile-tabs .chip:active { transform: scale(.95); transition-duration: .08s; }
 
 </style>

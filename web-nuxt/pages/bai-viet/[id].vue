@@ -56,11 +56,13 @@ const { data: post } = await useAsyncData(`post-${postId}`, async () => {
   } catch { return null }
 })
 
+const { show: showToast } = useToast()
+
 async function fetchComments() {
   try {
     const res = await $fetch<any>(`/api/posts/${postId}/comments`)
     comments.value = res.comments || res || []
-  } catch { /* ignore */ }
+  } catch { /* silent — comments are non-critical */ }
 }
 
 async function submitComment() {
@@ -73,7 +75,7 @@ async function submitComment() {
     })
     commentText.value = ''
     await fetchComments()
-  } catch { /* ignore */ }
+  } catch { showToast('Gửi bình luận thất bại', 'error') }
 }
 
 async function toggleLike(id: string) {
@@ -82,7 +84,7 @@ async function toggleLike(id: string) {
     await $fetch(`/api/posts/${id}/like`, { method: 'POST', headers: authHeaders() })
     post.value.user_liked = !post.value.user_liked
     post.value.likes = (post.value.likes || 0) + (post.value.user_liked ? 1 : -1)
-  } catch { /* ignore */ }
+  } catch { showToast('Không thể thích bài viết', 'error') }
 }
 
 async function toggleBookmark(id: string) {
@@ -90,7 +92,7 @@ async function toggleBookmark(id: string) {
   try {
     await $fetch(`/api/posts/${id}/bookmark`, { method: 'POST', headers: authHeaders() })
     post.value.user_bookmarked = !post.value.user_bookmarked
-  } catch { /* ignore */ }
+  } catch { showToast('Không thể lưu bài viết', 'error') }
 }
 
 function timeAgo(dateStr: string): string {
@@ -163,13 +165,13 @@ if (post.value) {
 .comment-section { margin-top: var(--space-5); }
 .comment-title { font-size: var(--text-lg); font-weight: var(--weight-semibold); margin-bottom: var(--space-4); }
 
-.comment-form { display: flex; gap: var(--space-2); margin-bottom: var(--space-5); padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--bg-alt); transition: border-color var(--duration-normal) var(--ease-out), box-shadow var(--duration-normal) var(--ease-out); }
-.comment-form:focus-within { border-color: var(--primary-fg); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .1); }
+.comment-form { display: flex; gap: var(--space-2); margin-bottom: var(--space-5); padding: var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-lg); background: var(--bg-alt); transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo); }
+.comment-form:focus-within { border-color: var(--primary-fg); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .1), var(--shadow-xs); }
 .comment-form .input { flex: 1; border: none; background: transparent; outline: none; font-size: var(--text-sm); min-height: 44px; }
-.comment-form .btn { transition: transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast); }
+.comment-form .btn { transition: transform .35s var(--ease-spring-gentle), opacity .3s var(--ease-out); }
 .comment-form .btn:active { transform: scale(.95); }
 
-.comment-item { display: flex; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--line); transition: background var(--duration-fast) var(--ease-out); }
+.comment-item { display: flex; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: .5px solid var(--line); transition: background .3s var(--ease-out); }
 .comment-item:last-child { border-bottom: none; }
 .comment-item:hover { background: var(--bg-alt); }
 .comment-time { color: var(--muted); font-size: var(--text-xs); }

@@ -396,7 +396,7 @@ def call_tool(name: str, args: dict) -> str:
                 "summary": e.get("summary", ""),
                 "place": place_label,
                 "season": knowledge.season_text(e),
-                "confidence": e.get("confidence", 0),
+                "needs_verification": e.get("confidence", 1.0) < 0.7,
                 "verified": e.get("verified", True) is not False and e.get("status") != "provisional",
             }
             # Include coords when available (powers map display)
@@ -430,6 +430,8 @@ def call_tool(name: str, args: dict) -> str:
             pass
         if not detail:
             return json.dumps({"error": "Không tìm thấy: " + args["entity_id"]})
+        conf = detail.pop("confidence", 1.0)
+        detail["needs_verification"] = (conf or 1.0) < 0.7
         return json.dumps(detail, ensure_ascii=False, default=str)
 
     elif name == "seasonal_now":

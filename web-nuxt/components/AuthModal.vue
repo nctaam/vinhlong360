@@ -331,13 +331,17 @@ function onOtpBackspace(idx: number, e: KeyboardEvent) {
 </script>
 
 <style scoped>
-.consent-row { display: flex; gap: var(--space-3); align-items: flex-start; margin: var(--space-3) 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); cursor: pointer; padding: var(--space-3); border-radius: var(--radius-md); transition: background var(--duration-fast) var(--ease-out); }
+.consent-row { display: flex; gap: var(--space-3); align-items: flex-start; margin: var(--space-3) 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); cursor: pointer; padding: var(--space-3); border-radius: var(--radius-md); transition: background .3s var(--ease-out); }
 .consent-row:hover { background: var(--bg-alt); }
 .consent-checkbox { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--primary); flex-shrink: 0; }
 .btn-full { width: 100%; }
 .otp-done { text-align: center; }
-.otp-done h3 { animation: successPop .4s var(--ease-spring); }
-@keyframes successPop { 0% { transform: scale(.9); opacity: 0; } 60% { transform: scale(1.05); } 100% { transform: scale(1); opacity: 1; } }
-.otp-step { animation: stepSlideIn .3s var(--ease-out); }
-@keyframes stepSlideIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
+.otp-done h3 { animation: successPop .45s var(--ease-spring-gentle); }
+@keyframes successPop { 0% { transform: scale(.85); opacity: 0; } 60% { transform: scale(1.06); } 100% { transform: scale(1); opacity: 1; } }
+.otp-step { animation: stepSlideIn .35s var(--ease-out-expo); }
+@keyframes stepSlideIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: translateX(0); } }
+@media (prefers-reduced-motion: reduce) {
+  .otp-done h3 { animation: none; }
+  .otp-step { animation: none; }
+}
 </style>

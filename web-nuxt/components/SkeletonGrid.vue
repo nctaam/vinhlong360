@@ -19,10 +19,10 @@ defineProps<{ count?: number }>()
 <style scoped>
 .skeleton-card {
   background: var(--card);
-  border: 1px solid var(--line);
+  border: .5px solid var(--line);
   border-radius: var(--radius-lg, 16px);
   overflow: hidden;
-  animation: skFadeIn .4s var(--ease-out) both;
+  animation: skFadeIn .45s var(--ease-out-expo) both;
 }
 .skeleton-card:nth-child(1) { animation-delay: 0s; }
 .skeleton-card:nth-child(2) { animation-delay: .06s; }
@@ -42,5 +42,14 @@ defineProps<{ count?: number }>()
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+:root .dark .sk-cover,
+:root .dark .sk-line {
+  background: linear-gradient(90deg, var(--bg-alt) 25%, rgba(255,255,255,.06) 50%, var(--bg-alt) 75%);
+  background-size: 200% 100%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-card { animation: none; }
+  .sk-cover, .sk-line { animation: none; }
 }
 </style>

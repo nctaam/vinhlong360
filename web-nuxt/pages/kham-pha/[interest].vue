@@ -185,9 +185,10 @@ useHead(() => ({
 
 <style scoped>
 .interest-nav { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-5); }
-.interest-nav .chip { transition: all var(--duration-fast) var(--ease-out); }
+.interest-nav .chip { transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), background .3s var(--ease-out), border-color .3s var(--ease-out); }
+.interest-nav .chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .interest-nav .chip:active { transform: scale(.95); transition-duration: .08s; }
-.interest-nav .chip.active { box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+.interest-nav .chip.active { box-shadow: var(--shadow-sm); }
 
 @media (max-width: 840px) { .interest-nav { flex-wrap: wrap; overflow-x: visible; } }
 

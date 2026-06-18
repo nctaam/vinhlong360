@@ -315,7 +315,7 @@ useHead({
 
 /* Typography hierarchy: hero = Large Title tracking, sections = xl semibold */
 .home .hero h1 { letter-spacing: -1.05px; }
-.home .hero-sub { font-size: var(--text-lg); opacity: .92; max-width: 640px; margin: 14px 0 0; }
+.home .hero-sub { font-size: var(--text-lg); opacity: .92; max-width: 640px; margin: var(--space-4) 0 0; }
 
 /* Section headings — Apple HIG: xl semibold (not 2xl extrabold) */
 .home .section-head h2 {
@@ -345,12 +345,12 @@ useHead({
   background: rgba(255,255,255,.18);
   backdrop-filter: saturate(180%) blur(12px);
   -webkit-backdrop-filter: saturate(180%) blur(12px);
-  border: 1px solid rgba(255,255,255,.3);
+  border: .5px solid rgba(255,255,255,.3);
   border-radius: var(--radius-full);
   color: #fff;
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
-  transition: background var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-spring);
+  transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out);
   min-height: 44px;
 }
 .hero-pill:hover {
@@ -417,9 +417,10 @@ useHead({
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
   background: var(--card);
-  border: 1px solid var(--line);
+  border: .5px solid var(--line);
   border-radius: var(--radius);
-  transition: transform var(--duration-fast) var(--ease-spring), box-shadow var(--duration-fast) var(--ease-out);
+  box-shadow: var(--shadow-xs);
+  transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo);
 }
 .event-card:hover {
   transform: translateY(-3px);
@@ -472,14 +473,14 @@ useHead({
 .home .scroll-row .card {
   transition:
     transform .18s var(--ease-out),
-    box-shadow .25s ease;
+    box-shadow .25s var(--ease-out);
 }
 
 /* Region tile choreography */
 .home .region-tile {
   transition:
     transform .18s var(--ease-out),
-    box-shadow .25s ease;
+    box-shadow .25s var(--ease-out);
 }
 
 /* Quick links — capsule pills */
@@ -494,16 +495,16 @@ useHead({
   gap: var(--space-2);
   padding: var(--space-3) var(--space-5);
   background: var(--card);
-  border: 1px solid var(--line);
+  border: .5px solid var(--line);
   border-radius: var(--radius-full);
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
   color: var(--ink);
   min-height: 44px;
   transition:
-    transform var(--duration-fast) var(--ease-spring),
-    box-shadow var(--duration-fast) var(--ease-out),
-    border-color var(--duration-fast) var(--ease-out);
+    transform .35s var(--ease-spring-gentle),
+    box-shadow .35s var(--ease-out-expo),
+    border-color .3s var(--ease-out);
 }
 .quick-link:hover {
   transform: translateY(-2px);
@@ -529,7 +530,7 @@ useHead({
   margin-top: var(--space-5);
   padding: var(--space-4) var(--space-5);
   background: var(--bg-alt);
-  border: 1px solid var(--line);
+  border: .5px solid var(--line);
   border-radius: var(--radius);
 }
 .chatbot-cta-text {
@@ -547,7 +548,7 @@ useHead({
   font-weight: var(--weight-semibold);
   cursor: pointer;
   min-height: 44px;
-  transition: background var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-spring);
+  transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle);
 }
 .chatbot-cta-btn:hover {
   background: var(--primary-dark, var(--primary));

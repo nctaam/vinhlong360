@@ -82,6 +82,7 @@ async function fetchQueue() {
 }
 
 async function approve(id: string) {
+  if (!confirm('Duyệt bài viết này?')) return
   acting.value = id
   try {
     await $fetch(`/admin-api/moderation/${id}/approve`, { method: 'POST', headers: authHeaders() })

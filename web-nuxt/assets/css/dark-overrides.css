@@ -9,11 +9,11 @@
 /* ── Shared components ── */
 
 /* ScrollToTop */
-.dark .scroll-top { background: rgba(28, 28, 30, .85); border-color: var(--line); box-shadow: 0 2px 12px rgba(0,0,0,.3); }
-.dark .scroll-top:hover { box-shadow: 0 4px 16px rgba(0,0,0,.4); }
+.dark .scroll-top { background: var(--glass-bg-heavy); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); border-color: var(--line); box-shadow: var(--shadow-md); }
+.dark .scroll-top:hover { box-shadow: var(--shadow-lg); }
 
 /* ShareButton */
-.dark .share-btn { background: rgba(28, 28, 30, .88); border-color: var(--line); }
+.dark .share-btn { background: var(--glass-bg-heavy); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); border-color: var(--line); }
 .dark .share-btn:hover { background: rgba(255,255,255,.06); }
 
 /* PostCard */
@@ -38,12 +38,12 @@
 .dark .comment-item:hover { background: rgba(255,255,255,.03); }
 
 /* ── Map (ban-do) ── */
-.dark #mapContainer { border-color: rgba(255,255,255,.08); box-shadow: 0 4px 20px rgba(0,0,0,.3); }
-.dark #mapContainer:hover { box-shadow: 0 6px 28px rgba(0,0,0,.4); }
+.dark #mapContainer { border-color: rgba(255,255,255,.08); box-shadow: var(--shadow-md); }
+.dark #mapContainer:hover { box-shadow: var(--shadow-lg); }
 
 /* ── Ward hub (xa-phuong/[id]) ── */
 .dark .wp-card { border-color: rgba(255,255,255,.08); }
-.dark .wp-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+.dark .wp-card:hover { box-shadow: var(--shadow-lg); }
 .dark .wp-contact-item { border-color: rgba(255,255,255,.06); }
 .dark .wp-contact-main { background: rgba(255,255,255,.04); }
 .dark .wp-fac { border-color: rgba(255,255,255,.06); }
@@ -54,28 +54,28 @@
 
 /* ── Itinerary detail (lich-trinh/[id]) ── */
 .dark .step-card { border-color: rgba(255,255,255,.08); }
-.dark .step-card:hover { border-color: rgba(255,255,255,.15); box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+.dark .step-card:hover { border-color: rgba(255,255,255,.15); box-shadow: var(--shadow-md); }
 .dark .route-leg-line { background: rgba(255,255,255,.1); }
-.dark .route-map { border-color: rgba(255,255,255,.08); box-shadow: 0 4px 20px rgba(0,0,0,.3); }
+.dark .route-map { border-color: rgba(255,255,255,.08); box-shadow: var(--shadow-md); }
 
 /* ── Itinerary list (lich-trinh/index) ── */
 .dark .saved-section { border-bottom-color: rgba(255,255,255,.08); }
 .dark .js-item { border-color: rgba(255,255,255,.08); }
-.dark .js-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+.dark .js-item:hover { box-shadow: var(--shadow-sm); }
 
 /* ── Create itinerary (tao-lich-trinh) ── */
 .dark .picker-item:hover { background: rgba(255,255,255,.05); }
-.dark .stop-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,.3); }
+.dark .stop-card:hover { box-shadow: var(--shadow-md); }
 
 /* ── Routes (tuyen-duong) ── */
 .dark .route-card { border-color: rgba(255,255,255,.08); }
-.dark .route-card:hover { border-color: rgba(255,255,255,.15); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+.dark .route-card:hover { border-color: rgba(255,255,255,.15); box-shadow: var(--shadow-lg); }
 .dark .route-tips { background: rgba(255,255,255,.04); }
 .dark .route-stops li:hover { background: rgba(255,255,255,.03); }
 
 /* ── Search (tim-kiem) ── */
 .dark .quick-pick { border-color: rgba(255,255,255,.08); }
-.dark .quick-pick:hover { border-color: var(--primary-fg); box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+.dark .quick-pick:hover { border-color: var(--primary-fg); box-shadow: var(--shadow-md); }
 
 /* ── Seasonal (theo-mua) ── */
 .dark .b2b-note { background: rgba(46, 125, 91, .08); border-color: rgba(46, 125, 91, .25); }
@@ -83,17 +83,17 @@
 
 /* ── Community (cong-dong) ── */
 .dark .create-post:focus-within { box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .12); }
-.dark .sidebar-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+.dark .sidebar-card:hover { box-shadow: var(--shadow-md); }
 .dark .report-entity-card { background: rgba(255,255,255,.04); }
 
 /* ── Directory (danh-ba) ── */
 .dark .fac { border-color: rgba(255,255,255,.08); }
-.dark .fac:hover { border-color: rgba(255,255,255,.15); box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+.dark .fac:hover { border-color: rgba(255,255,255,.15); box-shadow: var(--shadow-md); }
 .dark .dir-disclaimer { background: rgba(234, 140, 30, .08); border-color: rgba(234, 140, 30, .25); }
 
 /* ── Contact (lien-he) ── */
 .dark .contact-card { border-color: rgba(255,255,255,.08); }
-.dark .contact-card:hover { border-color: rgba(255,255,255,.15); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+.dark .contact-card:hover { border-color: rgba(255,255,255,.15); box-shadow: var(--shadow-lg); }
 .dark .card-claim { background: color-mix(in srgb, var(--accent) 6%, var(--card)); border-color: rgba(255,255,255,.12); }
 .dark .card-note { color: rgba(255,255,255,.4) !important; }
 
@@ -104,7 +104,7 @@
 .dark .profile-tabs { border-color: rgba(255,255,255,.08); }
 
 /* ── Explore by interest (kham-pha/[interest]) ── */
-.dark .interest-nav .chip.active { box-shadow: 0 1px 6px rgba(0,0,0,.3); }
+.dark .interest-nav .chip.active { box-shadow: var(--shadow-sm); }
 
 /* ── Admin: users ── */
 .dark .status-active { background: rgba(46, 125, 91, .18); color: #34d399; }
@@ -113,7 +113,7 @@
 
 /* ── Admin: stats (thong-ke) ── */
 .dark .stat-panel { border-color: rgba(255,255,255,.08); }
-.dark .stat-panel:hover { box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+.dark .stat-panel:hover { box-shadow: var(--shadow-md); }
 
 /* ── Admin: reports (bao-cao) ── */
 .dark .status-pending { background: rgba(234, 140, 30, .18); color: #f59e0b; }

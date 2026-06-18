@@ -28,3 +28,16 @@ defineProps<{
   title?: string
 }>()
 </script>
+
+<style scoped>
+.empty-state { animation: emptyIn .5s var(--ease-spring-gentle); }
+@keyframes emptyIn { from { opacity: 0; transform: translateY(12px) scale(.96); } }
+.empty-icon { display: block; transition: transform .4s var(--ease-spring-gentle); }
+.empty-state:hover .empty-icon { transform: scale(1.1) rotate(-4deg); }
+.empty-illust { transition: transform .4s var(--ease-spring-gentle); }
+.empty-state:hover .empty-illust { transform: scale(1.04); }
+@media (prefers-reduced-motion: reduce) {
+  .empty-state { animation: none; }
+  .empty-icon, .empty-illust { transition: none; }
+}
+</style>

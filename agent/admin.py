@@ -96,7 +96,6 @@ class EntityUpdate(BaseModel):
     type: str | None = None
     summary: str | None = Field(None, max_length=2000)
     placeId: str | None = Field(None, max_length=100)
-    confidence: float | None = Field(None, ge=0, le=1)
     season: dict | None = None
     attributes: dict | None = None
     images: list[str] | None = None
@@ -152,7 +151,6 @@ class EntityCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
     placeId: str | None = Field(None, max_length=100)
     summary: str = Field("", max_length=2000)
-    confidence: float = Field(0.7, ge=0, le=1)
     season: dict | None = None
     attributes: dict = {}
     images: list[str] = []
@@ -213,7 +211,6 @@ async def list_entities(
     area: Optional[str] = None,
     q: Optional[str] = None,
     include_places: bool = False,
-    confidence_below: Optional[float] = None,
     limit: int = Query(50, le=500),
     offset: int = 0,
 ):
@@ -228,9 +225,6 @@ async def list_entities(
     if include_places:
         places = db.list_entities(entity_type=None, limit=1000, offset=0)
         results = [e for e in (results + [p for p in places if p["type"] == "place"])]
-
-    if confidence_below is not None:
-        results = [e for e in results if e.get("confidence", 1) < confidence_below]
 
     total = len(results)
     items = results[:limit] if q else results
@@ -465,41 +459,6 @@ async def bulk_delete(entity_ids: list[str]):
     return {"status": "deleted", "count": deleted}
 
 
-@router.post("/entities/bulk-update-confidence")
-async def bulk_update_confidence(entity_ids: list[str], confidence: float = Query(ge=0, le=1)):
-    """Cập nhật confidence cho nhiều entities."""
-    updated = 0
-    for eid in entity_ids:
-        entity = db.get_entity(eid)
-        if entity:
-            entity["confidence"] = confidence
-            entity["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
-            db.upsert_entity(entity)
-            updated += 1
-    return {"status": "updated", "count": updated}
-
-
-# ── Review queue ──
-
-@router.get("/review")
-async def review_queue(confidence_below: float = 0.7, limit: int = 50):
-    """Entities cần review (confidence thấp)."""
-    db.initialize()
-    ph = db._ph
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT id, type, name, summary, confidence, source, "updatedAt"
-            FROM entities WHERE type != 'place' AND confidence < {ph}
-            ORDER BY confidence ASC LIMIT {ph}
-        """, (confidence_below, limit))
-    results = []
-    for r in rows:
-        d = db._row_to_dict(r)
-        d["summary"] = (d.get("summary") or "")[:150]
-        results.append(d)
-    return {"total": len(results), "entities": results}
-
-
 # ── Image management ──
 
 @router.post("/entities/{entity_id}/images")
@@ -558,7 +517,6 @@ async def admin_stats():
         type_rows = db._fetchall(conn, "SELECT type, COUNT(*) as c FROM entities GROUP BY type", ())
         rel_count = db._fetchone(conn, "SELECT COUNT(*) as c FROM relationships", ())
         itin_count = db._fetchone(conn, "SELECT COUNT(*) as c FROM itineraries", ())
-        low_conf = db._fetchone(conn, "SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND confidence < 0.7", ())
 
     by_type = {}
     total_entities = 0
@@ -577,7 +535,6 @@ async def admin_stats():
         "total_relationships": rel_count["c"] if rel_count else 0,
         "total_itineraries": itin_count["c"] if itin_count else 0,
         "by_type": by_type,
-        "low_confidence": low_conf["c"] if low_conf else 0,
     }
 
 
@@ -894,13 +851,6 @@ async def ai_triage():
     Chỉ chạy KHI admin bấm (1 lần gọi LLM — KHÔNG vòng lặp nền, tôn trọng §B8).
     Trả context thô nếu LLM không khả dụng (degrade an toàn)."""
     ctx = []
-    try:
-        ph = db._ph
-        with db._conn() as conn:
-            lc = db._fetchone(conn, f"SELECT COUNT(*) AS c FROM entities WHERE type != {ph} AND confidence < 0.7", ("place",))
-            ctx.append(f"- Entity cần xem lại (confidence < 0.7): {lc['c'] if lc else 0}")
-    except Exception:
-        pass
     reports = []
     try:
         if _INFO_REPORTS_FILE.exists():

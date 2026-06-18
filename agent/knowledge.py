@@ -321,22 +321,20 @@ def search_entities(
                 continue
         results.append(e)
 
-    # Smart ranking: tích hợp popularity + season + confidence + content richness
+    # Smart ranking: popularity + season + content richness
     try:
         from smart_rank import smart_score
         results.sort(key=lambda e: smart_score(e, month=month), reverse=True)
     except ImportError:
-        # Fallback: basic ranking
         def score(e):
             s = e.get("season")
-            conf = e.get("confidence", 0)
             if not month or not s:
-                return (1, conf)
+                return 1
             if month in (s.get("peak") or []):
-                return (4, conf)
+                return 4
             if month in s.get("months", []):
-                return (3, conf)
-            return (1, conf)
+                return 3
+            return 1
         results.sort(key=score, reverse=True)
 
     return results[:limit]
@@ -354,7 +352,6 @@ def seasonal_now(month: int) -> list[dict]:
             continue
         if month in (s.get("peak") or []):
             results.append(e)
-    results.sort(key=lambda e: e.get("confidence", 0), reverse=True)
     return results[:10]
 
 
@@ -447,7 +444,6 @@ def compare_areas(area_1: str, area_2: str) -> dict:
     def area_stats(area: str) -> dict:
         by_type = {}
         total = 0
-        avg_confidence = []
         for e in _entities.values():
             if e["type"] not in CARD_TYPES:
                 continue
@@ -456,9 +452,6 @@ def compare_areas(area_1: str, area_2: str) -> dict:
                 continue
             by_type[e["type"]] = by_type.get(e["type"], 0) + 1
             total += 1
-            conf = e.get("confidence", 0)
-            if conf:
-                avg_confidence.append(conf)
 
         ps = places(area)
         return {
@@ -467,7 +460,6 @@ def compare_areas(area_1: str, area_2: str) -> dict:
             "total_content": total,
             "by_type": by_type,
             "places_count": len(ps),
-            "avg_confidence": round(sum(avg_confidence) / len(avg_confidence), 2) if avg_confidence else 0,
             "highlights": _top_entities(area, 5),
         }
 
@@ -478,7 +470,7 @@ def compare_areas(area_1: str, area_2: str) -> dict:
 
 
 def _top_entities(area: str, limit: int = 5) -> list[dict]:
-    """Top entities của 1 area theo confidence."""
+    """Top entities của 1 area."""
     _ensure()
     entries = []
     for e in _entities.values():
@@ -488,7 +480,7 @@ def _top_entities(area: str, limit: int = 5) -> list[dict]:
         if not p or p.get("area") != area:
             continue
         entries.append(e)
-    entries.sort(key=lambda e: e.get("confidence", 0), reverse=True)
+    entries.sort(key=lambda e: e.get("name", ""))
     return [{"id": e["id"], "name": e["name"], "type": e["type"], "summary": e.get("summary", "")[:100]} for e in entries[:limit]]
 
 

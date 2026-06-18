@@ -100,11 +100,12 @@ async function fetchInfoReports() {
     const res = await $fetch<any>('/admin-api/info-reports?limit=200', { headers: authHeaders() })
     infoReports.value = res.reports || []
     infoOpen.value = res.open ?? 0
-  } catch { /* ignore */ }
+  } catch { showToast('Không thể tải danh sách báo sai', 'error') }
 }
 
 async function infoAction(r: any, status: string) {
   if (status === 'dismissed' && !confirm('Bỏ qua báo sai này?')) return
+  if (status === 'resolved' && !confirm('Đánh dấu đã xử lý?')) return
   infoActing.value = r.ts
   try {
     await $fetch('/admin-api/info-reports/action', { method: 'POST', headers: authHeaders(), body: { ts: r.ts, status } })
@@ -185,6 +186,7 @@ onMounted(() => fetchAll())
 
 <style scoped>
 .status-pending { display: inline-block; padding: 2px 8px; border-radius: var(--radius-full, 999px); font-size: var(--text-xs); font-weight: var(--weight-semibold); background: rgba(234, 140, 30, .12); color: #b45309; }
+.dark .status-pending { color: #fbbf24; background: rgba(234, 140, 30, .08); }
 .status-resolved { display: inline-block; padding: 2px 8px; border-radius: var(--radius-full, 999px); font-size: var(--text-xs); font-weight: var(--weight-semibold); background: rgba(46, 125, 91, .12); color: var(--secondary-fg); }
 .status-dismissed { display: inline-block; padding: 2px 8px; border-radius: var(--radius-full, 999px); font-size: var(--text-xs); font-weight: var(--weight-semibold); background: rgba(0,0,0,.06); color: var(--muted); }
 

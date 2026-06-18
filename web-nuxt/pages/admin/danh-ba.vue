@@ -96,7 +96,9 @@ async function loadFacilities() {
 }
 
 async function create() {
-  if (!f.value.name || !f.value.office_kind || !f.value.placeId || !f.value.sourceUrl) return
+  if (!f.value.name || !f.value.office_kind || !f.value.placeId || !f.value.sourceUrl) {
+    showToast('Vui lòng điền đầy đủ các trường bắt buộc', 'error'); return
+  }
   busy.value = true
   try {
     const id = `${f.value.office_kind}-${slugify(f.value.name)}`.slice(0, 90)
@@ -133,8 +135,8 @@ onMounted(loadFacilities)
 </script>
 
 <style scoped>
-.card-form { border: 1px solid var(--line, #eee); border-radius: 10px; padding: 16px; margin-top: 12px; }
-.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-.grid2 label { display: flex; flex-direction: column; gap: 4px; font-size: .9rem; }
+.card-form { border: .5px solid var(--line); border-radius: var(--radius-sm); padding: var(--space-4); margin-top: var(--space-3); box-shadow: var(--shadow-xs); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-3); }
+.grid2 label { display: flex; flex-direction: column; gap: var(--space-1); font-size: .9rem; }
 @media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
 </style>

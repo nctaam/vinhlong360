@@ -228,18 +228,18 @@ useHead(() => ({
 </script>
 
 <style scoped>
-.saved-section { margin-bottom: var(--space-4); padding-bottom: var(--space-6); border-bottom: 1px solid var(--line); }
+.saved-section { margin-bottom: var(--space-4); padding-bottom: var(--space-6); border-bottom: .5px solid var(--line); }
 .saved-count { font-weight: var(--weight-normal); color: var(--muted); font-size: var(--text-base); }
 .saved-cta { text-align: center; margin-top: var(--space-4); }
 .saved-cta .btn:active { transform: scale(.97); transition-duration: .08s; }
 .saved-row { margin-top: var(--space-3); }
-.saved-row .card { transition: transform var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-out); }
-.saved-row .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.saved-row .card { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
+.saved-row .card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
 .saved-row .card:active { transform: translateY(-1px) scale(.98); transition-duration: .08s; }
 
 .journey-stats { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-3); }
-.js-item { display: flex; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-3); background: var(--bg-alt); border-radius: var(--radius-md); font-size: var(--text-sm); transition: background var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-spring); }
-.js-item:hover { background: var(--card); transform: translateY(-1px); }
+.js-item { display: flex; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-3); background: var(--bg-alt); border-radius: var(--radius-md); font-size: var(--text-sm); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
+.js-item:hover { background: var(--card); transform: translateY(-2px); box-shadow: var(--shadow-xs); }
 .js-emoji { font-size: var(--text-lg); }
 
 .fetch-error { color: var(--error); text-align: center; padding: var(--space-5); }

@@ -75,17 +75,18 @@ function onSearch() {
 .nf-search input {
   flex: 1;
   padding: var(--space-3) var(--space-4);
-  border: 1.5px solid var(--line);
+  border: .5px solid var(--line);
   border-radius: var(--radius-full, 100px);
   background: var(--card);
   font-size: var(--text-sm);
   min-height: 44px;
-  transition: border-color var(--ease-out, .2s);
+  transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo);
 }
 
 .nf-search input:focus {
   outline: none;
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .1);
 }
 
 .nf-search button {
@@ -98,7 +99,7 @@ function onSearch() {
   font-weight: var(--weight-semibold);
   cursor: pointer;
   min-height: 44px;
-  transition: background var(--ease-out, .2s);
+  transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out);
 }
 
 .nf-search button:hover { background: var(--accent-dark); }
@@ -119,7 +120,7 @@ function onSearch() {
   text-decoration: none;
   cursor: pointer;
   min-height: 44px;
-  transition: background var(--ease-out, .2s), transform var(--ease-out, .15s);
+  transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo);
 }
 
 .nf-btn:active { transform: scale(.97); }
@@ -140,11 +141,14 @@ function onSearch() {
 
 .nf-btn-outline:hover { background: var(--accent); color: #fff; }
 
-.nf-inner { animation: nfIn .5s var(--ease-spring); }
-@keyframes nfIn { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-.nf-emoji { transition: transform var(--duration-normal) var(--ease-spring); }
+.nf-inner { animation: nfIn .5s var(--ease-spring-gentle); }
+@keyframes nfIn { from { opacity: 0; transform: translateY(16px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.nf-emoji { transition: transform .35s var(--ease-spring-gentle); }
 .nf-inner:hover .nf-emoji { transform: scale(1.1) rotate(-5deg); }
 .nf-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
 .nf-search button:active { transform: scale(.95); transition-duration: .08s; }
-
+@media (prefers-reduced-motion: reduce) {
+  .nf-inner { animation: none; }
+  .nf-emoji { transition: none; }
+}
 </style>

@@ -217,7 +217,7 @@ const subsystems = computed(() => {
 })
 
 async function fetchHealth() {
-  try { health.value = await $fetch<any>('/health') } catch { /* ignore */ }
+  try { health.value = await $fetch<any>('/health') } catch { showToast('Không kết nối được agent', 'error') }
 }
 
 async function triggerLearn() {
@@ -238,7 +238,7 @@ const agentNearCap = computed(() => {
   return b?.enabled && b.remaining_today <= Math.max(1, Math.floor(b.cap_per_day / 5))
 })
 async function fetchCost() {
-  try { cost.value = await $fetch<any>('/admin-api/cost-overview', { headers: authHeaders() }) } catch { /* ignore */ }
+  try { cost.value = await $fetch<any>('/admin-api/cost-overview', { headers: authHeaders() }) } catch { showToast('Không tải được chi phí', 'error') }
 }
 
 const triageLoading = ref(false)

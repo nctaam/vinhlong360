@@ -66,7 +66,13 @@
       <p class="ward-hub-link">
         <NuxtLink :to="`/xa-phuong/${wardId}`">🏘️ Xem trang đầy đủ xã/phường này (du lịch · lưu trú · đặc sản) →</NuxtLink>
       </p>
-      <div v-if="loading" class="muted">Đang tải…</div>
+      <div v-if="loading" class="fac-skeleton" role="status" aria-label="Đang tải dữ liệu" aria-busy="true">
+        <div v-for="i in 3" :key="i" class="fac-sk-item">
+          <div class="sk-bar" style="width:35%"></div>
+          <div class="sk-bar sk-bar--lg" style="width:65%"></div>
+          <div class="sk-bar" style="width:50%"></div>
+        </div>
+      </div>
       <ul v-else-if="facilities.length" class="fac-list">
         <li v-for="f in facilities" :key="f.id" class="fac">
           <div class="fac-head">
@@ -118,6 +124,7 @@
 import { OFFICE_KIND, AREA_META } from '~/composables/useConstants'
 
 useReveal()
+const { show: showToast } = useToast()
 
 const ADMIN_LEVELS = ['phuong', 'xa', 'tinh']
 const route = useRoute()
@@ -158,13 +165,14 @@ const reported = ref<Record<string, boolean>>({})
 async function reportFacility(f: any) {
   if (reported.value[f.id]) return
   const detail = (globalThis.prompt?.('Thông tin nào sai? (địa chỉ / SĐT / giờ làm việc…)') || '').trim()
+  if (!detail) return
   try {
     await $fetch('/api/report', {
       method: 'POST',
       body: { target_id: f.id, target_type: 'facility', reason: 'Báo sai thông tin danh bạ', detail },
     })
     reported.value = { ...reported.value, [f.id]: true }
-  } catch { /* rate-limited / lỗi mạng */ }
+  } catch { showToast('Không thể gửi báo sai. Vui lòng thử lại.', 'error') }
 }
 
 watch(wardId, async (id) => {
@@ -174,7 +182,7 @@ watch(wardId, async (id) => {
   try {
     const res = await $fetch<any>(`/api/facilities?place=${encodeURIComponent(id)}`)
     facilities.value = res.facilities || []
-  } catch { /* empty */ }
+  } catch { showToast('Không thể tải danh bạ cơ quan', 'error') }
   loading.value = false
 })
 
@@ -207,23 +215,28 @@ useHead(() => ({
 .empty-hint p { margin: 0; font-size: var(--text-sm); }
 .muted { color: var(--muted); }
 .ward-pick { display: flex; flex-direction: column; gap: var(--space-2); max-width: 420px; }
-.ward-pick select { padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-md); font-size: 1rem; min-height: 44px; background: var(--bg-alt); transition: border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out); }
-.ward-pick select:focus { outline: none; border-color: var(--primary-fg); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .12); }
-.dir-disclaimer { background: rgba(234, 140, 30, .06); border: 1px solid rgba(234, 140, 30, .2); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); font-size: var(--text-sm); margin: var(--space-3) 0 var(--space-5); line-height: var(--leading-relaxed); }
+.ward-pick select { padding: var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-md); font-size: 1rem; min-height: 44px; background: var(--bg-alt); transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo); }
+.ward-pick select:focus { outline: none; border-color: var(--primary-fg); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .12), var(--shadow-xs); }
+.dir-disclaimer { background: rgba(234, 140, 30, .06); border: .5px solid rgba(234, 140, 30, .2); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); font-size: var(--text-sm); margin: var(--space-3) 0 var(--space-5); line-height: var(--leading-relaxed); }
 .fac-list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-3); }
-.fac { border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-4); background: var(--card); transition: transform var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-out), border-color var(--duration-fast); }
+.fac { border: .5px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-4); background: var(--card); box-shadow: var(--shadow-xs); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 .fac:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .fac-head { display: flex; flex-direction: column; gap: 2px; margin-bottom: var(--space-2); }
 .fac-kind { font-size: var(--text-xs); color: var(--primary-fg); font-weight: var(--weight-semibold); }
 .fac-row { font-size: var(--text-sm); margin: 2px 0; }
-.fac-row a { transition: color var(--duration-fast); }
+.fac-row a { transition: color .3s var(--ease-out); }
 .fac-row a:hover { color: var(--primary-fg); }
 .fac-src { color: var(--muted); display: block; margin-top: var(--space-2); font-size: var(--text-xs); }
 .ward-hub-link { margin: 0 0 var(--space-4); }
-.ward-hub-link a { color: var(--primary-fg); font-weight: var(--weight-semibold); transition: opacity var(--duration-fast); }
+.ward-hub-link a { color: var(--primary-fg); font-weight: var(--weight-semibold); transition: opacity .3s var(--ease-out); }
 .ward-hub-link a:active { opacity: .7; }
-.fac-report { margin-top: var(--space-2); background: none; border: none; padding: 4px 0; color: var(--muted); font-size: var(--text-xs); cursor: pointer; text-decoration: underline; transition: color var(--duration-fast); min-height: 44px; display: inline-flex; align-items: center; }
+.fac-report { margin-top: var(--space-2); background: none; border: none; padding: 4px 0; color: var(--muted); font-size: var(--text-xs); cursor: pointer; text-decoration: underline; transition: color .3s var(--ease-out); min-height: 44px; display: inline-flex; align-items: center; }
 .fac-report:hover:not(:disabled) { color: var(--primary-fg); }
 .fac-report:active:not(:disabled) { transform: scale(.97); }
 .fac-report:disabled { cursor: default; text-decoration: none; color: var(--success, #16a34a); }
+.fac-skeleton { display: grid; gap: var(--space-3); }
+.fac-sk-item { border: .5px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-4); background: var(--card); display: flex; flex-direction: column; gap: var(--space-2); }
+.sk-bar { height: 10px; border-radius: var(--radius-sm); background: linear-gradient(110deg, var(--bg-alt) 30%, var(--card) 50%, var(--bg-alt) 70%); background-size: 200% 100%; animation: shimmer 1.6s infinite linear; }
+.sk-bar--lg { height: 14px; }
+@media (prefers-reduced-motion: reduce) { .sk-bar { animation: none; } }
 </style>

@@ -141,14 +141,18 @@ function timeAgo(dateStr: string): string {
 </script>
 
 <style scoped>
-.post-author-link { font-weight: 600; transition: color var(--duration-fast); }
+.post-author-link { font-weight: 600; transition: color .3s var(--ease-out); }
 .post-author-link:hover { color: var(--primary-fg); }
-.avatar-link { transition: transform var(--duration-fast) var(--ease-spring); display: inline-block; }
-.avatar-link:hover { transform: scale(1.08); }
-.post-type-badge { transition: transform var(--duration-fast) var(--ease-spring); }
-.post-type-badge:hover { transform: scale(1.05); }
-.star { transition: transform var(--duration-fast) var(--ease-spring); display: inline-block; }
+.avatar-link { transition: transform .35s var(--ease-spring-gentle); display: inline-block; }
+.avatar-link:hover { transform: scale(1.1); }
+.post-type-badge { transition: transform .3s var(--ease-spring-gentle); }
+.post-type-badge:hover { transform: scale(1.06); }
+.star { transition: transform .3s var(--ease-spring-gentle); display: inline-block; }
 .star.active { color: var(--accent); }
-.star:hover { transform: scale(1.15); }
-.post-entity-link { transition: background var(--duration-fast), transform var(--duration-fast) var(--ease-spring); }
+.star:hover { transform: scale(1.2); }
+.post-entity-link { transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
+.post-entity-link:hover { box-shadow: var(--shadow-xs); }
+.avatar-link:active { transform: scale(.95); transition-duration: .08s; }
+.star:active { transform: scale(.9); transition-duration: .08s; }
+.post-type-badge:active { transform: scale(.95); transition-duration: .08s; }
 </style>

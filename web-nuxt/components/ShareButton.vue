@@ -38,7 +38,7 @@ async function share() {
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--line);
+  border: .5px solid var(--line);
   border-radius: var(--radius-full);
   background: var(--card);
   font-size: var(--text-sm);
@@ -46,11 +46,11 @@ async function share() {
   color: var(--primary);
   cursor: pointer;
   min-height: 44px;
-  transition: background var(--duration-fast) var(--ease-out), border-color var(--duration-fast), transform var(--duration-fast) var(--ease-spring);
+  transition: background .3s var(--ease-out), border-color .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out);
 }
-.share-btn:hover { background: var(--bg-warm); border-color: var(--primary-light); }
+.share-btn:hover { background: var(--bg-warm); border-color: var(--primary-light); transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .share-btn:active { transform: scale(.92); transition-duration: .08s; }
 .share-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.share-icon { flex-shrink: 0; transition: transform var(--duration-fast) var(--ease-spring); }
+.share-icon { flex-shrink: 0; transition: transform .35s var(--ease-spring-gentle); }
 .share-btn:hover .share-icon { transform: scale(1.08); }
 </style>
