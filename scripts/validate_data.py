@@ -140,6 +140,10 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     invalid_attributes = 0
     missing_place_id = 0
     missing_area_non_place = 0
+    source_not_list = 0
+    season_integrity_errors = 0
+    low_confidence_count = 0
+    empty_attrs_non_place = 0
 
     for index, entity in enumerate(entities):
         if not isinstance(entity, dict):
@@ -162,16 +166,57 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
                 missing_summary_place += 1
             else:
                 missing_summary_non_place += 1
-        if not entity.get("source"):
+        source = entity.get("source")
+        if not source or (isinstance(source, list) and len(source) == 0):
             missing_source += 1
             if is_place:
                 missing_source_place += 1
             else:
                 missing_source_non_place += 1
+        if source is not None and not isinstance(source, list):
+            source_not_list += 1
         if not is_place and not entity.get("placeId"):
             missing_place_id += 1
         if not is_place and not entity.get("area"):
             missing_area_non_place += 1
+
+        season = entity.get("season")
+        if isinstance(season, dict):
+            s_months = season.get("months", [])
+            s_peak = season.get("peak", [])
+            if isinstance(s_months, list) and isinstance(s_peak, list):
+                if not all(isinstance(m, int) and 1 <= m <= 12 for m in s_months):
+                    season_integrity_errors += 1
+                elif s_peak and not set(s_peak).issubset(set(s_months)):
+                    season_integrity_errors += 1
+        elif season is not None and season != "":
+            season_integrity_errors += 1
+
+        confidence = entity.get("confidence")
+        if isinstance(confidence, (int, float)) and confidence < 0.5:
+            low_confidence_count += 1
+
+        if not is_place:
+            attrs = entity.get("attributes")
+            if not attrs or (isinstance(attrs, dict) and len(attrs) == 0):
+                empty_attrs_non_place += 1
+
+        if is_place:
+            level = entity.get("level", "")
+            name = entity.get("name", "")
+            eid = str(entity_id or "")
+            if name.startswith("Phường ") and level == "xa":
+                issues.append(Issue("error", "level_name_mismatch",
+                    f"{eid}: name='{name}' but level='xa' (should be 'phuong')"))
+            if name.startswith("Xã ") and level == "phuong":
+                issues.append(Issue("error", "level_name_mismatch",
+                    f"{eid}: name='{name}' but level='phuong' (should be 'xa')"))
+            if eid.startswith("p-") and level == "xa":
+                issues.append(Issue("error", "level_id_mismatch",
+                    f"{eid}: id prefix 'p-' but level='xa' (should be 'phuong')"))
+            if eid.startswith("xa-") and level == "phuong":
+                issues.append(Issue("error", "level_id_mismatch",
+                    f"{eid}: id prefix 'xa-' but level='phuong' (should be 'xa')"))
 
         coords = entity.get("coordinates")
         legacy = entity.get("coords")
@@ -194,6 +239,17 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         attrs = entity.get("attributes")
         if attrs is not None and not isinstance(attrs, dict):
             invalid_attributes += 1
+
+    xa_phuong_count = sum(
+        1 for e in entities
+        if isinstance(e, dict) and e.get("type") == "place"
+        and e.get("level") in ("xa", "phuong")
+        and e.get("parentId")
+    )
+    EXPECTED_XA_PHUONG = 124
+    if xa_phuong_count != EXPECTED_XA_PHUONG:
+        issues.append(Issue("warning", "xa_phuong_count",
+            f"Expected {EXPECTED_XA_PHUONG} xã/phường, found {xa_phuong_count}"))
 
     id_counts = Counter(ids)
     duplicate_ids = {entity_id: count for entity_id, count in id_counts.items() if count > 1}
@@ -221,6 +277,27 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         issues.append(Issue("error", "invalid_attributes", f"{invalid_attributes} entities have non-object attributes"))
     if legacy_coords_only:
         issues.append(Issue("error", "legacy_coords_only", f"{legacy_coords_only} entities have coords but no canonical coordinates"))
+    if source_not_list:
+        issues.append(Issue("error", "source_not_list", f"{source_not_list} entities have source field that is not a list"))
+    if season_integrity_errors:
+        issues.append(Issue("error", "season_integrity", f"{season_integrity_errors} entities have invalid season data (bad months or peak not subset)"))
+    if low_confidence_count:
+        issues.append(Issue("warning", "low_confidence", f"{low_confidence_count} entities have confidence < 0.5"))
+    if empty_attrs_non_place:
+        issues.append(Issue("warning", "empty_attributes", f"{empty_attrs_non_place} non-place entities have empty attributes"))
+
+    place_with_coords = sum(
+        1 for e in entities
+        if isinstance(e, dict) and e.get("type") == "place"
+        and e.get("level") in ("xa", "phuong")
+        and normalized_coordinates(e.get("coordinates")) is not None
+    )
+    place_xa_phuong = sum(
+        1 for e in entities
+        if isinstance(e, dict) and e.get("type") == "place"
+        and e.get("level") in ("xa", "phuong")
+    )
+    place_coords_pct = round(100 * place_with_coords / max(place_xa_phuong, 1), 1)
 
     broken_relationships = 0
     missing_relationship_fields = 0
@@ -367,6 +444,11 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         "relationship_fanout_over_limit": high_fanout_count,
         "broken_relationships": broken_relationships,
         "duplicate_names": len(duplicate_names),
+        "source_not_list": source_not_list,
+        "season_integrity_errors": season_integrity_errors,
+        "low_confidence": low_confidence_count,
+        "empty_attributes_non_place": empty_attrs_non_place,
+        "place_coords_coverage_pct": place_coords_pct,
         "data_js_status": data_js_status,
     }
     return issues, stats
@@ -401,6 +483,11 @@ def print_report(issues: list[Issue], stats: dict[str, Any]) -> None:
         "produced_in_area_conflicts",
         "relationship_fanout_over_limit",
         "duplicate_names",
+        "source_not_list",
+        "season_integrity_errors",
+        "low_confidence",
+        "empty_attributes_non_place",
+        "place_coords_coverage_pct",
     ]:
         print(f"  {key}: {stats.get(key)}")
 

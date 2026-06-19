@@ -288,12 +288,13 @@ def test_data_quality_apply_and_rollback_db_native(db, tmp_path, monkeypatch):
     res = data_quality.apply_candidates(["c1"], dry_run=False)
     assert res["applied_count"] == 1
     # ghi THẲNG vào DB (không qua data.json)
-    assert db.get_entity("e1")["source"]["url"] == "https://new.example/page"
+    src = db.get_entity("e1")["source"]
+    assert (src[0]["url"] if isinstance(src, list) else src["url"]) == "https://new.example/page"
 
     rb = data_quality.rollback_apply(res["batch_id"])
     assert rb["restored_changes"] == 1
-    # đã revert về before
-    assert db.get_entity("e1")["source"] == {"title": "old", "url": "https://old.example/"}
+    src_after = db.get_entity("e1")["source"]
+    assert (src_after[0] if isinstance(src_after, list) else src_after) == {"title": "old", "url": "https://old.example/"}
 
 
 # ── GĐ3.1 (QUYẾT ĐỊNH): UGC/auth Postgres-only; SQLite KHÔNG có bảng users (by design) ──

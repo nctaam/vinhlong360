@@ -253,8 +253,9 @@ def _entity_summary(e: dict) -> dict:
         "type": e["type"],
         "summary": e.get("summary", "")[:120],
     }
-    if attrs.get("open_hours"):
-        d["open_hours"] = attrs["open_hours"]
+    hours = attrs.get("hours") or attrs.get("open_hours")
+    if hours:
+        d["hours"] = hours
     if attrs.get("admission_fee"):
         d["admission_fee"] = attrs["admission_fee"]
     if attrs.get("address"):
@@ -288,7 +289,7 @@ def _gen_note(e: dict, month: int) -> str:
     fee = attrs.get("admission_fee") or attrs.get("gia")
     if fee:
         notes.append(f"💰 {fee}")
-    hours = attrs.get("open_hours") or attrs.get("gio_mo_cua")
+    hours = attrs.get("hours") or attrs.get("open_hours")
     if hours:
         notes.append(f"🕐 {hours}")
     return " | ".join(notes) if notes else ""

@@ -89,7 +89,8 @@ def test_apply_candidates_records_history_and_rollback(tmp_path, monkeypatch):
     assert result["applied_count"] == 1
     assert result["changes"][0]["after"]["url"] == "https://example.com/evidence"
     # ghi THẲNG vào DB (không qua data.json)
-    assert tdb.get_entity("entity-1")["source"]["url"] == "https://example.com/evidence"
+    src = tdb.get_entity("entity-1")["source"]
+    assert (src[0]["url"] if isinstance(src, list) else src["url"]) == "https://example.com/evidence"
 
     history = data_quality.load_apply_history(output_dir=burst_dir)
     assert history["total"] == 1
@@ -97,8 +98,7 @@ def test_apply_candidates_records_history_and_rollback(tmp_path, monkeypatch):
 
     rollback = data_quality.rollback_apply(result["batch_id"], output_dir=burst_dir)
 
-    # rollback DB-native: source về before ({} hoặc None)
-    assert tdb.get_entity("entity-1").get("source") in ({}, None)
+    assert tdb.get_entity("entity-1").get("source") in ({}, None, [])
     assert rollback["status"] == "rolled_back"
     history_after = data_quality.load_apply_history(output_dir=burst_dir)
     assert history_after["total"] == 2

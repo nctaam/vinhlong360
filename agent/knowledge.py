@@ -305,17 +305,12 @@ def search_entities(
             ql_norm = _normalize_vn(q)
             place_info = get_place(e["id"]) or {}
             attrs = e.get("attributes") or {}
-            searchable = (
-                e.get("name", "") + " " +
-                e.get("summary", "") + " " +
-                place_info.get("alias", "") + " " +
-                place_info.get("legacyArea", "") + " " +
-                place_info.get("name", "") + " " +
-                attrs.get("ward", "") + " " +
-                attrs.get("district", "") + " " +
-                attrs.get("province_old", "") + " " +
-                attrs.get("address", "")
-            ).lower()
+            searchable = " ".join(filter(None, [
+                e.get("name"), e.get("summary"),
+                place_info.get("alias"), place_info.get("legacyArea"), place_info.get("name"),
+                attrs.get("ward"), attrs.get("district"),
+                attrs.get("province_old"), attrs.get("address"),
+            ])).lower()
             searchable_norm = _normalize_vn(searchable)
             if ql not in searchable and ql_norm not in searchable_norm:
                 continue

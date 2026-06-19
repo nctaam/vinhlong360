@@ -86,5 +86,5 @@ def test_apply_candidates_dry_run_only_evidence_auto_apply(tmp_path, monkeypatch
     assert result["backup"] is None
     assert {item["field"] for item in result["applied"]} == {"source", "coordinates"}
     # dry_run: DB KHÔNG bị thay đổi
-    assert tdb.get_entity("e1").get("source") in ({}, None)
+    assert tdb.get_entity("e1").get("source") in ({}, None, [])
     assert tdb.get_entity("e2")["coordinates"] == [10.25, 105.97]

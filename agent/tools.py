@@ -453,7 +453,7 @@ Nếu KB có `booking_note` hay `address` → dùng thông tin đó, bổ sung t
 
 ## Thông tin thực tế (LUÔN đưa vào câu trả lời nếu có)
 Khi kết quả tool trả về các field sau, BẮT BUỘC nêu ngay trong câu trả lời:
-- `open_hours`: **Giờ mở cửa: ...**
+- `hours`: **Giờ mở cửa: ...**
 - `admission_fee`: **Giá vé / phí: ...**
 - `best_time`: **Thời điểm lý tưởng: ...**
 - `address`: **Địa chỉ: ...**

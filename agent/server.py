@@ -404,8 +404,9 @@ def call_tool(name: str, args: dict) -> str:
             if coords:
                 card["coords"] = coords
             # Practical info — critical for trip planning queries
-            if attrs.get("open_hours"):
-                card["open_hours"] = attrs["open_hours"]
+            hours = attrs.get("hours") or attrs.get("open_hours")
+            if hours:
+                card["hours"] = hours
             if attrs.get("admission_fee"):
                 card["admission_fee"] = attrs["admission_fee"]
             if attrs.get("best_time"):
@@ -443,7 +444,8 @@ def call_tool(name: str, args: dict) -> str:
                 "summary": e.get("summary", ""),
                 "season": knowledge.season_text(e),
             }
-            if attrs.get("open_hours"):    card["open_hours"] = attrs["open_hours"]
+            hours = attrs.get("hours") or attrs.get("open_hours")
+            if hours:                      card["hours"] = hours
             if attrs.get("admission_fee"): card["admission_fee"] = attrs["admission_fee"]
             if attrs.get("best_time"):     card["best_time"] = attrs["best_time"]
             if attrs.get("ocop"):          card["ocop"] = attrs["ocop"]
@@ -503,7 +505,8 @@ def call_tool(name: str, args: dict) -> str:
             e = knowledge._entities.get(item["id"]) or {}
             attrs = e.get("attributes") or {}
             card = dict(item)
-            if attrs.get("open_hours"):    card["open_hours"] = attrs["open_hours"]
+            hours = attrs.get("hours") or attrs.get("open_hours")
+            if hours:                      card["hours"] = hours
             if attrs.get("admission_fee"): card["admission_fee"] = attrs["admission_fee"]
             if attrs.get("ocop"):          card["ocop"] = attrs["ocop"]
             if e.get("coords"):            card["coords"] = e["coords"]
@@ -609,7 +612,8 @@ def call_tool(name: str, args: dict) -> str:
             if attrs.get("admission_fee") or attrs.get("price_range"):
                 card["price"] = attrs.get("admission_fee") or attrs.get("price_range")
             if attrs.get("phone"):         card["phone"] = attrs["phone"]
-            if attrs.get("open_hours"):    card["check_in"] = attrs["open_hours"]
+            hours = attrs.get("hours") or attrs.get("open_hours")
+            if hours:                      card["check_in"] = hours
             if attrs.get("booking_note"):  card["booking_note"] = attrs["booking_note"]
             if e.get("coords"):            card["coords"] = e["coords"]
             results.append(card)

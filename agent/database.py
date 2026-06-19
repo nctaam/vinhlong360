@@ -50,6 +50,23 @@ if USE_PG:
 _REGION_BBOX = (9.2, 10.65, 105.6, 106.95)  # lat_min, lat_max, lng_min, lng_max
 
 
+def _validate_place_level(entity: dict):
+    """Auto-fix level khi name prefix mâu thuẫn — phòng lỗi sáp nhập 2026-06-15."""
+    if entity.get("type") != "place":
+        return
+    name = entity.get("name", "")
+    level = entity.get("level")
+    if name.startswith("Phường ") and level == "xa":
+        entity["level"] = "phuong"
+    elif name.startswith("Xã ") and level == "phuong":
+        entity["level"] = "xa"
+    eid = entity.get("id", "")
+    if eid.startswith("p-") and entity.get("level") == "xa":
+        entity["level"] = "phuong"
+    elif eid.startswith("xa-") and entity.get("level") == "phuong":
+        entity["level"] = "xa"
+
+
 def _coords_in_region(c) -> bool:
     """True nếu [lat, lng] nằm trong vùng 3 tỉnh. Toạ độ ngoài vùng = geocode sai → loại."""
     try:
@@ -247,9 +264,23 @@ class Database:
     def upsert_entity(self, entity: dict):
         """Insert or update an entity."""
         self.initialize()
+        _validate_place_level(entity)
         season_val = entity.get("season")
         attrs_val = entity.get("attributes", {})
         source_val = entity.get("source", {})
+        # Normalize attribute key aliases on write
+        if isinstance(attrs_val, dict):
+            _ATTR_ALIASES = {"open_hours": "hours", "opening_hours": "hours",
+                             "foodyRating": "rating", "foodyComments": "review_count",
+                             "bestTime": "best_time"}
+            attrs_val = {_ATTR_ALIASES.get(k, k): v for k, v in attrs_val.items()}
+        # Normalize source to list[dict] on write
+        if isinstance(source_val, str):
+            source_val = [{"url": source_val}] if source_val.startswith("http") else [{"name": source_val}] if source_val else []
+        elif isinstance(source_val, dict):
+            source_val = [source_val] if source_val else []
+        elif not isinstance(source_val, list):
+            source_val = []
         images_val = entity.get("images", [])
         # GĐ-audit: chấp nhận alias legacy "coords" để ETL/auto_learn không mất toạ độ
         # đã geocode (nhiều path ghi entity["coords"] thay vì "coordinates").
