@@ -665,6 +665,229 @@ CHỈ trả về JSON array, không giải thích."""
     return stats
 
 
+def phase4_enrich_attributes(db: sqlite3.Connection, *, dry_run: bool = False, batch_size: int = 20) -> dict:
+    """Phase 4.1: LLM enrichment for entities with empty attributes."""
+    stats = {"enriched": 0, "llm_calls": 0, "failed": 0}
+
+    rows = db.execute("""
+        SELECT id, name, type, summary, area
+        FROM entities
+        WHERE type != 'place'
+          AND (attributes IS NULL OR attributes = '{}' OR attributes = '' OR attributes = 'null')
+    """).fetchall()
+
+    if dry_run:
+        stats["candidates"] = len(rows)
+        return stats
+
+    SYSTEM = """Bạn là chuyên gia du lịch Đồng bằng sông Cửu Long (Vĩnh Long, Bến Tre, Trà Vinh).
+Cho danh sách entity, sinh thông tin attributes cơ bản phù hợp với loại entity.
+
+Trả về JSON array, mỗi phần tử:
+{"id": "entity-id", "attrs": {"key": "value", ...}}
+
+Quy tắc theo type:
+- dish: price (giá ước lượng VND), address (nếu biết)
+- product: price, weight/unit nếu biết
+- accommodation: price (giá phòng/đêm), address, phone nếu biết
+- attraction: hours (giờ mở cửa), admission_fee nếu có, address
+- craft_village: address, products (sản phẩm chính)
+- nature: hours nếu có, admission_fee nếu có
+- experience: duration (thời lượng), price nếu có
+- history: era (thời kỳ) nếu biết
+- event: schedule (lịch tổ chức) nếu biết
+
+Chỉ sinh thông tin bạn TỰ TIN biết. Không bịa địa chỉ cụ thể nếu không chắc.
+CHỈ trả về JSON array, không giải thích."""
+
+    total = len(rows)
+    for batch_start in range(0, total, batch_size):
+        batch = rows[batch_start:batch_start + batch_size]
+        entities_text = "\n".join(
+            f"- id: {eid}, name: {name}, type: {etype}, area: {area or '?'}, summary: {(summary or '')[:120]}"
+            for eid, name, etype, summary, area in batch
+        )
+
+        try:
+            response = _llm_call(
+                f"Sinh attributes cho {len(batch)} entity:\n{entities_text}",
+                system=SYSTEM, retries=3,
+            )
+            stats["llm_calls"] += 1
+            result = _parse_llm_json(response)
+            if not isinstance(result, list):
+                stats["failed"] += 1
+                continue
+
+            id_to_attrs = {item["id"]: item.get("attrs", {}) for item in result
+                           if isinstance(item, dict) and "id" in item}
+            batch_updates = []
+            for eid, name, etype, summary, area in batch:
+                attrs = id_to_attrs.get(eid)
+                if attrs and isinstance(attrs, dict) and len(attrs) > 0:
+                    batch_updates.append((json.dumps(attrs, ensure_ascii=False), eid))
+                    stats["enriched"] += 1
+
+            if batch_updates:
+                db.executemany("UPDATE entities SET attributes=? WHERE id=?", batch_updates)
+                db.commit()
+
+            done = min(batch_start + batch_size, total)
+            print(f"  [attrs] {done}/{total} processed, {stats['enriched']} enriched", flush=True)
+
+        except Exception as e:
+            stats["failed"] += 1
+            print(f"  [attrs] batch error: {e}", flush=True)
+
+    return stats
+
+
+def phase4_enrich_summary(db: sqlite3.Connection, *, dry_run: bool = False) -> dict:
+    """Phase 4.2: LLM enrichment for entities missing summary."""
+    stats = {"enriched": 0}
+
+    rows = db.execute("""
+        SELECT id, name, type, area FROM entities
+        WHERE summary IS NULL OR summary = ''
+    """).fetchall()
+
+    if dry_run:
+        stats["candidates"] = len(rows)
+        return stats
+
+    for eid, name, etype, area in rows:
+        try:
+            response = _llm_call(
+                f"Viết mô tả ngắn 1-2 câu tiếng Việt cho: {name} (loại: {etype}, vùng: {area or '?'}). "
+                "Chỉ trả về văn bản mô tả, không giải thích thêm.",
+                retries=2,
+            )
+            summary = response.strip().strip('"').strip("'")
+            if summary and len(summary) > 10:
+                db.execute("UPDATE entities SET summary=? WHERE id=?", (summary, eid))
+                db.commit()
+                stats["enriched"] += 1
+                print(f"  [summary] {eid}: {summary[:60]}...", flush=True)
+        except Exception as e:
+            print(f"  [summary] {eid} error: {e}", flush=True)
+
+    return stats
+
+
+def phase4_infer_placeid_llm(db: sqlite3.Connection, *, dry_run: bool = False, batch_size: int = 20) -> dict:
+    """Phase 4.3: LLM inference for missing placeId — match entity to xã/phường."""
+    stats = {"inferred": 0, "llm_calls": 0, "failed": 0, "no_match": 0}
+
+    # Get all place names for matching
+    places = db.execute("SELECT id, name FROM entities WHERE type='place'").fetchall()
+    place_list = "\n".join(f"- {pid}: {pname}" for pid, pname in places)
+
+    rows = db.execute("""
+        SELECT id, name, type, summary, area, attributes
+        FROM entities
+        WHERE type NOT IN ('place', 'itinerary')
+          AND (placeId IS NULL OR placeId = '')
+    """).fetchall()
+
+    if dry_run:
+        stats["candidates"] = len(rows)
+        return stats
+
+    SYSTEM = f"""Bạn là chuyên gia địa lý Đồng bằng sông Cửu Long.
+Cho danh sách entity và danh sách xã/phường, hãy xác định entity thuộc xã/phường nào.
+
+Danh sách xã/phường (id: tên):
+{place_list}
+
+Trả về JSON array:
+[{{"id": "entity-id", "placeId": "place-id"}}]
+
+Quy tắc:
+- Chỉ gán placeId khi BẠN CHẮC CHẮN entity thuộc xã/phường đó
+- Dựa vào tên, area, address, summary để suy luận
+- Nếu không chắc → placeId: null
+CHỈ trả về JSON array."""
+
+    total = len(rows)
+    for batch_start in range(0, total, batch_size):
+        batch = rows[batch_start:batch_start + batch_size]
+        entities_text = "\n".join(
+            f"- id: {eid}, name: {name}, type: {etype}, area: {area or '?'}, summary: {(summary or '')[:80]}"
+            for eid, name, etype, summary, area, _ in batch
+        )
+
+        try:
+            response = _llm_call(
+                f"Xác định placeId cho {len(batch)} entity:\n{entities_text}",
+                system=SYSTEM, retries=3,
+            )
+            stats["llm_calls"] += 1
+            result = _parse_llm_json(response)
+            if not isinstance(result, list):
+                stats["failed"] += 1
+                continue
+
+            place_ids = {p[0] for p in places}
+            batch_updates = []
+            for item in result:
+                if not isinstance(item, dict):
+                    continue
+                eid = item.get("id")
+                pid = item.get("placeId")
+                if eid and pid and pid in place_ids:
+                    batch_updates.append((pid, eid))
+                    stats["inferred"] += 1
+                elif eid and not pid:
+                    stats["no_match"] += 1
+
+            if batch_updates:
+                db.executemany("UPDATE entities SET placeId=? WHERE id=?", batch_updates)
+                db.commit()
+
+            done = min(batch_start + batch_size, total)
+            print(f"  [placeId] {done}/{total} processed, {stats['inferred']} inferred", flush=True)
+
+        except Exception as e:
+            stats["failed"] += 1
+            print(f"  [placeId] batch error: {e}", flush=True)
+
+    return stats
+
+
+def phase4_geocode_from_place_retry(db: sqlite3.Connection, *, dry_run: bool = False) -> dict:
+    """Phase 4.4: Retry geocoding from place for entities that now have placeId."""
+    stats = {"geocoded": 0}
+
+    rows = db.execute("""
+        SELECT e.id, e.placeId, p.coordinates
+        FROM entities e
+        JOIN entities p ON e.placeId = p.id
+        WHERE (e.coordinates IS NULL OR e.coordinates = '' OR e.coordinates = 'null')
+          AND p.coordinates IS NOT NULL AND p.coordinates != '' AND p.coordinates != 'null'
+          AND e.type != 'place'
+    """).fetchall()
+
+    if dry_run:
+        stats["candidates"] = len(rows)
+        return stats
+
+    updates = []
+    for eid, pid, pcoords_raw in rows:
+        try:
+            pcoords = json.loads(pcoords_raw) if isinstance(pcoords_raw, str) else pcoords_raw
+            if isinstance(pcoords, list) and len(pcoords) == 2:
+                updates.append((json.dumps(pcoords), eid))
+                stats["geocoded"] += 1
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+    if updates:
+        db.executemany("UPDATE entities SET coordinates=? WHERE id=?", updates)
+        db.commit()
+
+    return stats
+
+
 def phase3_geocode_osm(db: sqlite3.Connection, *, dry_run: bool = False) -> dict:
     """Phase 3.3b: Geocode entities with address text via OSM Nominatim."""
     stats = {"geocoded": 0, "cache_hit": 0, "miss": 0, "skipped": 0}
@@ -749,7 +972,7 @@ def main():
     _configure_output()
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--phase", default="2", help="Phase to run: 2, 3, all")
+    parser.add_argument("--phase", default="2", help="Phase to run: 2, 3, 3a, 3b, 3c, 4, all")
     parser.add_argument("--check", action="store_true", help="Dry-run, report only")
     parser.add_argument("--db", type=Path, default=DB_PATH, help="Path to SQLite DB")
     args = parser.parse_args()
@@ -793,6 +1016,25 @@ def main():
 
         stats = phase3_fix_produced_in_conflicts(db, dry_run=dry)
         print_stats("Phase 3.7: Fix Produced_in Conflicts", stats)
+
+    if phases in ("4", "all"):
+        stats = phase4_enrich_attributes(db, dry_run=dry)
+        print_stats("Phase 4.1: LLM Attribute Enrichment", stats)
+
+        stats = phase4_enrich_summary(db, dry_run=dry)
+        print_stats("Phase 4.2: LLM Summary Enrichment", stats)
+
+        stats = phase4_infer_placeid_llm(db, dry_run=dry)
+        print_stats("Phase 4.3: LLM PlaceId Inference", stats)
+
+        stats = phase4_geocode_from_place_retry(db, dry_run=dry)
+        print_stats("Phase 4.4: Geocode from Place (retry)", stats)
+
+        stats = phase3_fix_near_relationships(db, dry_run=dry)
+        print_stats("Phase 4.5: Fix Near Relationships (cleanup)", stats)
+
+        stats = phase3_fix_produced_in_conflicts(db, dry_run=dry)
+        print_stats("Phase 4.6: Fix Produced_in Conflicts (cleanup)", stats)
 
     db.close()
     print(f"\n[standardize] Done ({mode})")
