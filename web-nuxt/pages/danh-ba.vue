@@ -5,7 +5,7 @@
     <!-- Hero -->
     <section class="catalog-hero cat-directory">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon">🏛️</span>
+        <span class="catalog-hero-icon" aria-hidden="true">🏛️</span>
         <div>
           <h1>Danh bạ hành chính</h1>
           <p>Địa chỉ &amp; liên hệ UBND, công an và cơ quan công vụ theo từng xã/phường của tỉnh Vĩnh Long (sau hợp nhất: Vĩnh Long · Bến Tre · Trà Vinh).</p>
@@ -23,13 +23,18 @@
       </div>
     </section>
 
+    <!-- Error state -->
+    <EmptyState v-if="placesError && !places?.length" icon="⚠️" title="Không thể tải dữ liệu" message="Vui lòng thử lại sau.">
+      <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData('dir-places')">Thử lại</button>
+    </EmptyState>
+
     <!-- Region quick-picks -->
-    <section class="block">
+    <section v-if="!placesError" class="block">
       <div class="section-head">
         <h2>Chọn khu vực</h2>
       </div>
       <div class="quick-picks">
-        <button
+        <button type="button"
           v-for="g in wardGroups" :key="g.area"
           :class="['quick-pick', { active: selectedArea === g.area }]"
           @click="selectedArea = selectedArea === g.area ? '' : g.area"
@@ -68,9 +73,9 @@
       </p>
       <div v-if="loading" class="fac-skeleton" role="status" aria-label="Đang tải dữ liệu" aria-busy="true">
         <div v-for="i in 3" :key="i" class="fac-sk-item">
-          <div class="sk-bar" style="width:35%"></div>
-          <div class="sk-bar sk-bar--lg" style="width:65%"></div>
-          <div class="sk-bar" style="width:50%"></div>
+          <div class="sk-bar sk-bar--sm"></div>
+          <div class="sk-bar sk-bar--lg sk-bar--wide"></div>
+          <div class="sk-bar sk-bar--mid"></div>
         </div>
       </div>
       <ul v-else-if="facilities.length" class="fac-list">
@@ -83,11 +88,11 @@
           <div v-if="attr(f, 'phone')" class="fac-row">📞 <a :href="`tel:${attr(f, 'phone')}`">{{ attr(f, 'phone') }}</a></div>
           <div v-if="attr(f, 'hours')" class="fac-row">🕒 {{ attr(f, 'hours') }}</div>
           <small v-if="f.source?.url || f.updatedAt" class="fac-src">
-            Nguồn: <a v-if="f.source?.url" :href="f.source.url" target="_blank" rel="nofollow">{{ f.source?.title || 'nguồn' }}</a>
+            Nguồn: <a v-if="f.source?.url" :href="f.source.url" target="_blank" rel="nofollow noopener">{{ f.source?.title || 'nguồn' }}</a>
             <span v-else>{{ f.source?.title }}</span>
-            <span v-if="f.updatedAt"> · cập nhật {{ f.updatedAt }}</span>
+            <time v-if="f.updatedAt" :datetime="f.updatedAt"> · cập nhật {{ f.updatedAt }}</time>
           </small>
-          <button class="fac-report" :disabled="reported[f.id]" @click="reportFacility(f)">
+          <button type="button" class="fac-report" :disabled="reported[f.id]" @click="reportFacility(f)">
             {{ reported[f.id] ? '✓ Đã gửi báo sai' : '⚠️ Báo thông tin sai' }}
           </button>
         </li>
@@ -129,7 +134,7 @@ const { show: showToast } = useToast()
 const ADMIN_LEVELS = ['phuong', 'xa', 'tinh']
 const route = useRoute()
 
-const { data: places } = await useAsyncData('dir-places', () => $fetch<any>('/api/places'))
+const { data: places, error: placesError } = await useAsyncData('dir-places', () => $fetch<any>('/api/places'))
 
 const areaFromQuery = computed(() => {
   const a = route.query.area as string
@@ -211,13 +216,13 @@ useHead(() => ({
 <style scoped>
 .dir-page { max-width: 920px; }
 .empty-hint { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-8) var(--space-4); color: var(--muted); text-align: center; }
-.empty-hint-icon { font-size: 2.5rem; }
+.empty-hint-icon { font-size: var(--text-4xl, 2.5rem); }
 .empty-hint p { margin: 0; font-size: var(--text-sm); }
 .muted { color: var(--muted); }
 .ward-pick { display: flex; flex-direction: column; gap: var(--space-2); max-width: 420px; }
 .ward-pick select { padding: var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-md); font-size: 1rem; min-height: 44px; background: var(--bg-alt); transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo); }
-.ward-pick select:focus { outline: none; border-color: var(--primary-fg); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .12), var(--shadow-xs); }
-.dir-disclaimer { background: rgba(234, 140, 30, .06); border: .5px solid rgba(234, 140, 30, .2); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); font-size: var(--text-sm); margin: var(--space-3) 0 var(--space-5); line-height: var(--leading-relaxed); }
+.ward-pick select:focus-visible { outline: none; border-color: var(--primary-fg); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .12), var(--shadow-xs); }
+.dir-disclaimer { background: rgba(var(--accent-rgb), .06); border: .5px solid rgba(var(--accent-rgb), .2); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); font-size: var(--text-sm); margin: var(--space-3) 0 var(--space-5); line-height: var(--leading-relaxed); }
 .fac-list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-3); }
 .fac { border: .5px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-4); background: var(--card); box-shadow: var(--shadow-xs); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 .fac:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); }
@@ -226,6 +231,7 @@ useHead(() => ({
 .fac-row { font-size: var(--text-sm); margin: 2px 0; }
 .fac-row a { transition: color .3s var(--ease-out); }
 .fac-row a:hover { color: var(--primary-fg); }
+.fac-row a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .fac-src { color: var(--muted); display: block; margin-top: var(--space-2); font-size: var(--text-xs); }
 .ward-hub-link { margin: 0 0 var(--space-4); }
 .ward-hub-link a { color: var(--primary-fg); font-weight: var(--weight-semibold); transition: opacity .3s var(--ease-out); }
@@ -233,10 +239,30 @@ useHead(() => ({
 .fac-report { margin-top: var(--space-2); background: none; border: none; padding: 4px 0; color: var(--muted); font-size: var(--text-xs); cursor: pointer; text-decoration: underline; transition: color .3s var(--ease-out); min-height: 44px; display: inline-flex; align-items: center; }
 .fac-report:hover:not(:disabled) { color: var(--primary-fg); }
 .fac-report:active:not(:disabled) { transform: scale(.97); }
+.fac-report:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .fac-report:disabled { cursor: default; text-decoration: none; color: var(--success, #16a34a); }
 .fac-skeleton { display: grid; gap: var(--space-3); }
 .fac-sk-item { border: .5px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-4); background: var(--card); display: flex; flex-direction: column; gap: var(--space-2); }
 .sk-bar { height: 10px; border-radius: var(--radius-sm); background: linear-gradient(110deg, var(--bg-alt) 30%, var(--card) 50%, var(--bg-alt) 70%); background-size: 200% 100%; animation: shimmer 1.6s infinite linear; }
+.sk-bar--sm { width: 35%; }
 .sk-bar--lg { height: 14px; }
+.sk-bar--wide { width: 65%; }
+.sk-bar--mid { width: 50%; }
 @media (prefers-reduced-motion: reduce) { .sk-bar { animation: none; } }
+
+/* Dark mode */
+.dark .fac { background: var(--bg-alt); border-color: var(--line); }
+.dark .fac:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.1); }
+.dark .dir-disclaimer { background: rgba(var(--accent-rgb), .08); border-color: rgba(var(--accent-rgb), .15); }
+.dark .ward-pick select { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
+.dark .ward-pick select:focus-visible { border-color: var(--primary-fg); }
+.dark .empty-hint { color: var(--ink-tertiary); }
+.dark .fac-report:hover:not(:disabled) { color: var(--primary); }
+.dark .fac-sk-item { background: var(--bg-alt); border-color: var(--line); }
+
+/* Reduced motion — full */
+@media (prefers-reduced-motion: reduce) {
+  .fac:hover { transform: none; }
+  .fac-report:active:not(:disabled) { transform: none; }
+}
 </style>

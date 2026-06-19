@@ -29,7 +29,8 @@
       "name": "nuxt",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--prefix", "web-nuxt"],
-      "port": 3000
+      "port": 3000,
+      "autoPort": true
     },
     {
       "name": "nuxt-prod",

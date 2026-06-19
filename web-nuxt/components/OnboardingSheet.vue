@@ -3,7 +3,7 @@
     <Transition name="sheet">
       <div v-if="visible" class="onboarding-overlay" @click.self="dismiss">
         <div class="onboarding-sheet" role="dialog" aria-modal="true" aria-label="Chào mừng đến vinhlong360" ref="sheetEl">
-          <button class="sheet-close" aria-label="Đóng" @click="dismiss">&times;</button>
+          <button type="button" class="sheet-close" aria-label="Đóng" @click="dismiss">&times;</button>
           <div class="sheet-header">
             <span class="sheet-emoji">🌴</span>
             <h2>Chào mừng đến vinhlong360</h2>
@@ -20,7 +20,7 @@
           </div>
           <div class="sheet-actions">
             <NuxtLink to="/du-lich" class="btn btn-primary" @click="dismiss">Khám phá ngay</NuxtLink>
-            <button class="btn btn-ghost" @click="dismiss">Để sau</button>
+            <button type="button" class="btn btn-ghost" @click="dismiss">Để sau</button>
           </div>
         </div>
       </div>

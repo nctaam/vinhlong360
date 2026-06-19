@@ -5,7 +5,7 @@
     <!-- Hero -->
     <section class="catalog-hero cat-route">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon">🛤️</span>
+        <span class="catalog-hero-icon" aria-hidden="true">🛤️</span>
         <div>
           <h1>Tuyến đường gợi ý</h1>
           <p>Các vòng khám phá tự lái / xe máy qua miệt vườn, làng nghề và văn hóa bản địa — chọn vòng, lên xe và đi.</p>
@@ -25,12 +25,13 @@
 
     <div class="controls">
       <p class="control-label">Khu vực</p>
-      <div class="chip-row">
-        <button :class="['chip', { active: areaFilter === 'all' }]" @click="areaFilter = 'all'">Tất cả</button>
-        <button
+      <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
+        <button type="button" :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả</button>
+        <button type="button"
           v-for="(meta, key) in AREA_META"
           :key="key"
           :class="['chip', { active: areaFilter === key }]"
+          :aria-pressed="areaFilter === key"
           @click="areaFilter = key as string"
         >{{ meta.emoji }} {{ meta.name }}</button>
       </div>
@@ -236,7 +237,7 @@ useHead({
 .route-card { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 .route-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .route-card:active { transform: translateY(0) scale(.99); transition-duration: .08s; }
-.route-header { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-5) var(--space-6); color: #fff; }
+.route-header { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-5) var(--space-6); color: var(--text-on-dark, #fff); }
 .route-header h2 { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); }
 .route-meta { font-size: var(--text-sm); opacity: .9; }
 .route-emoji { font-size: var(--text-3xl); }
@@ -246,7 +247,7 @@ useHead({
 .route-body { padding: var(--space-5) var(--space-6); }
 .route-body p { margin: 0 0 var(--space-3); line-height: var(--leading-relaxed); color: var(--ink); }
 .route-body h3 { font-size: var(--text-base); font-weight: var(--weight-semibold); margin: var(--space-4) 0 var(--space-2); }
-.route-stops { margin: 0 0 var(--space-3); padding-left: var(--space-5); }
+.route-stops { margin: 0 0 var(--space-3); padding-inline-start: var(--space-5); }
 .route-stops li { margin-bottom: var(--space-2); line-height: var(--leading-normal); transition: transform .3s var(--ease-out); }
 .route-stops li:hover { transform: translateX(2px); }
 .route-stops strong { color: var(--ink); }
@@ -256,7 +257,16 @@ useHead({
 .route-links .btn { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
 .route-links .btn:active { transform: scale(.95); transition-duration: .08s; }
 .dark .route-card { background: var(--card); border-color: var(--line); }
-.dark .route-card:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.1); }
+.dark .route-card:hover { box-shadow: var(--shadow-lg); border-color: var(--border); }
 .dark .route-tips { background: rgba(var(--primary-rgb), .08); }
+.dark .route-body p { color: var(--ink); }
+.dark .route-stops span { color: var(--ink-tertiary); }
 
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .route-card:hover { transform: none; }
+  .route-card:active { transform: none; }
+  .route-stops li:hover { transform: none; }
+  .route-links .btn:active { transform: none; }
+}
 </style>

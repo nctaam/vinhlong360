@@ -5,7 +5,7 @@
     <!-- Hero -->
     <section class="catalog-hero cat-event">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon">🎪</span>
+        <span class="catalog-hero-icon" aria-hidden="true">🎪</span>
         <div>
           <h1>Sự kiện</h1>
           <p>Sự kiện văn hóa, hội chợ, festival và hoạt động sắp diễn ra tại Vĩnh Long, Bến Tre, Trà Vinh.</p>
@@ -58,7 +58,7 @@
         <h2>Chọn theo khu vực</h2>
       </div>
       <div class="quick-picks">
-        <button
+        <button type="button"
           v-for="(meta, key) in AREA_META" :key="key"
           :class="['quick-pick', { active: areaFilter === key }]"
           @click="areaFilter = areaFilter === key ? 'all' : (key as string)"
@@ -81,16 +81,16 @@
         <input v-model="q" type="search" placeholder="Tìm sự kiện…" aria-label="Tìm sự kiện" />
       </div>
       <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
-        <button :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả vùng</button>
-        <button v-for="(meta, slug) in AREA_META" :key="slug" :class="['chip', { active: areaFilter === slug }]" :aria-pressed="areaFilter === slug" @click="areaFilter = slug">
+        <button type="button" :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả vùng</button>
+        <button type="button" v-for="(meta, slug) in AREA_META" :key="slug" :class="['chip', { active: areaFilter === slug }]" :aria-pressed="areaFilter === slug" @click="areaFilter = slug">
           {{ meta.emoji }} {{ meta.name }}
         </button>
       </div>
     </div>
 
     <div class="view-toggle" role="group" aria-label="Chế độ hiển thị">
-      <button :class="['toggle-btn', { active: view === 'list' }]" :aria-pressed="view === 'list'" @click="view = 'list'">📋 Danh sách</button>
-      <button :class="['toggle-btn', { active: view === 'calendar' }]" :aria-pressed="view === 'calendar'" @click="view = 'calendar'">📅 Lịch</button>
+      <button type="button" :class="['toggle-btn', { active: view === 'list' }]" :aria-pressed="view === 'list'" @click="view = 'list'">📋 Danh sách</button>
+      <button type="button" :class="['toggle-btn', { active: view === 'calendar' }]" :aria-pressed="view === 'calendar'" @click="view = 'calendar'">📅 Lịch</button>
     </div>
 
     <EmptyState v-if="fetchError" icon="⚠️" title="Không thể tải dữ liệu" message="Vui lòng thử lại sau." />
@@ -119,7 +119,7 @@
             </div>
           </div>
           <div v-if="e.images?.length" class="event-thumb">
-            <img :src="e.images[0]" :alt="e.name" loading="lazy" />
+            <img :src="e.images[0]" :alt="e.name" loading="lazy" decoding="async" width="160" height="120" />
           </div>
         </NuxtLink>
       </div>
@@ -129,9 +129,9 @@
     <template v-else>
       <div class="calendar">
         <div class="cal-header">
-          <button class="cal-nav" @click="calMonth--" aria-label="Tháng trước">‹</button>
+          <button type="button" class="cal-nav" @click="calMonth--" aria-label="Tháng trước">‹</button>
           <h2>Tháng {{ displayMonth }} / {{ displayYear }}</h2>
-          <button class="cal-nav" @click="calMonth++" aria-label="Tháng sau">›</button>
+          <button type="button" class="cal-nav" @click="calMonth++" aria-label="Tháng sau">›</button>
         </div>
         <div class="cal-grid" role="grid" aria-label="Lịch sự kiện">
           <div v-for="d in ['T2','T3','T4','T5','T6','T7','CN']" :key="d" class="cal-day-label" role="columnheader">{{ d }}</div>

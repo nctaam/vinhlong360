@@ -1,17 +1,19 @@
 <template>
   <div class="dropdown">
-    <button class="auth-user" @click="open = !open" aria-haspopup="true" :aria-expanded="open">
+    <button type="button" class="auth-user" @click="open = !open" aria-haspopup="true" :aria-expanded="open">
       <span class="avatar avatar-sm">{{ initial }}</span>
       <span class="auth-user-name">{{ displayName }}</span>
     </button>
-    <div :class="['dropdown-menu', { show: open }]">
+    <Transition name="menu-pop">
+    <div v-if="open" class="dropdown-menu show">
       <NuxtLink v-if="user" :to="`/nguoi-dung/${user.id}`" class="dropdown-item" @click="open = false">
         👤 Trang cá nhân
       </NuxtLink>
       <div class="dropdown-divider"></div>
-      <button class="dropdown-item" @click="doLogout">🚪 Đăng xuất</button>
-      <button class="dropdown-item danger" @click="doDeleteAccount">🗑️ Xoá tài khoản</button>
+      <button type="button" class="dropdown-item" @click="doLogout">🚪 Đăng xuất</button>
+      <button type="button" class="dropdown-item danger" @click="doDeleteAccount">🗑️ Xoá tài khoản</button>
     </div>
+    </Transition>
   </div>
 </template>
 
@@ -48,7 +50,10 @@ function onClickOutside(e: MouseEvent) {
     open.value = false
   }
 }
+function onEsc(e: KeyboardEvent) {
+  if (e.key === 'Escape' && open.value) open.value = false
+}
 
-onMounted(() => document.addEventListener('click', onClickOutside))
-onUnmounted(() => document.removeEventListener('click', onClickOutside))
+onMounted(() => { document.addEventListener('click', onClickOutside); document.addEventListener('keydown', onEsc) })
+onUnmounted(() => { document.removeEventListener('click', onClickOutside); document.removeEventListener('keydown', onEsc) })
 </script>

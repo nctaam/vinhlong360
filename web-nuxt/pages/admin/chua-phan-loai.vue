@@ -2,13 +2,13 @@
   <div>
     <div class="admin-head-row">
       <h1>Chưa phân loại xã/phường</h1>
-      <button class="admin-refresh" :disabled="loading" @click="load">🔄 Làm mới</button>
+      <button type="button" class="admin-refresh" :disabled="loading" @click="load">🔄 Làm mới</button>
     </div>
     <p class="admin-muted">Entity nội dung chưa gán xã. Gán đúng để xuất hiện ở trang xã/phường + danh mục khu vực.</p>
 
     <div class="bar">
-      <input v-model="q" class="input" placeholder="Tìm theo tên…" @keyup.enter="load" />
-      <button class="btn btn-secondary" @click="load">Tìm</button>
+      <input v-model="q" class="input" placeholder="Tìm theo tên…" aria-label="Tìm theo tên" @keyup.enter="load" />
+      <button type="button" class="btn btn-secondary" @click="load">Tìm</button>
       <span class="admin-muted">{{ total }} chưa phân loại</span>
     </div>
 
@@ -20,14 +20,14 @@
           <td><strong>{{ e.name }}</strong><br><small class="admin-muted">{{ e.summary }}</small></td>
           <td>{{ e.type }}</td>
           <td>
-            <select v-model="pick[e.id]" class="input">
+            <select v-model="pick[e.id]" class="input" :aria-label="`Chọn xã/phường cho ${e.name}`">
               <option value="">— Chọn —</option>
               <optgroup v-for="g in wardGroups" :key="g.area" :label="g.label">
                 <option v-for="w in g.wards" :key="w.id" :value="w.id">{{ w.name }}</option>
               </optgroup>
             </select>
           </td>
-          <td><button class="btn btn-primary btn-sm" :disabled="!pick[e.id] || busy[e.id]" @click="assign(e)">Gán</button></td>
+          <td><button type="button" class="btn btn-primary btn-sm" :disabled="!pick[e.id] || busy[e.id]" @click="assign(e)">Gán</button></td>
         </tr>
       </tbody>
     </table>

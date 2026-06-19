@@ -2,22 +2,22 @@
   <div>
     <div class="admin-head-row">
       <h1>Quản lý Entities</h1>
-      <button class="admin-refresh" :disabled="loading" @click="fetchEntities()">🔄 Làm mới</button>
+      <button type="button" class="admin-refresh" :disabled="loading" @click="fetchEntities()">🔄 Làm mới</button>
     </div>
 
     <div class="admin-toolbar">
-      <input v-model="search" class="input" placeholder="Tìm entity…" @input="debounceFetch" />
+      <input v-model="search" class="input" placeholder="Tìm entity…" aria-label="Tìm entity" @input="debounceFetch" />
       <select v-model="typeFilter" class="input admin-select-filter" @change="fetchEntities(true)">
         <option value="">Tất cả loại</option>
         <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
       </select>
-      <button class="btn btn-primary" @click="openCreate">+ Tạo mới</button>
+      <button type="button" class="btn btn-primary" @click="openCreate">+ Tạo mới</button>
     </div>
 
     <div v-if="selected.size" class="bulk-bar">
       <span>Đã chọn {{ selected.size }}</span>
-      <button class="btn-danger" :disabled="bulkBusy" @click="bulkDelete">Xóa đã chọn</button>
-      <button class="btn btn-outline btn-sm" @click="selected = new Set()">Bỏ chọn</button>
+      <button type="button" class="btn-danger" :disabled="bulkBusy" @click="bulkDelete">Xóa đã chọn</button>
+      <button type="button" class="btn btn-outline btn-sm" @click="selected = new Set()">Bỏ chọn</button>
     </div>
 
     <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
@@ -26,7 +26,7 @@
       <table class="admin-table">
         <thead>
           <tr>
-            <th style="width:28px"><input type="checkbox" :checked="allSelected" @change="toggleAll" aria-label="Chọn tất cả" /></th>
+            <th class="admin-th-check"><input type="checkbox" :checked="allSelected" @change="toggleAll" aria-label="Chọn tất cả" /></th>
             <th>ID</th>
             <th>Tên</th>
             <th>Loại</th>
@@ -42,8 +42,8 @@
             <td>{{ e.type }}</td>
             <td>{{ e.place_name || '—' }}</td>
             <td class="admin-actions">
-              <button class="btn-success" @click="openEdit(e)">Sửa</button>
-              <button class="btn-danger" :disabled="acting === e.id" @click="deleteEntity(e.id)">Xóa</button>
+              <button type="button" class="btn-success" @click="openEdit(e)">Sửa</button>
+              <button type="button" class="btn-danger" :disabled="acting === e.id" @click="deleteEntity(e.id)">Xóa</button>
             </td>
           </tr>
           <tr v-if="!entities.length">
@@ -53,36 +53,37 @@
       </table>
       </div>
 
-      <div class="admin-pagination">
-        <button :disabled="page <= 1" @click="page--; fetchEntities()">← Trước</button>
+      <nav class="admin-pagination" role="navigation" aria-label="Phân trang">
+        <button type="button" :disabled="page <= 1" @click="page--; fetchEntities()">← Trước</button>
         <span class="admin-page-info">Trang {{ page }}</span>
-        <button :disabled="entities.length < limit" @click="page++; fetchEntities()">Sau →</button>
-      </div>
+        <button type="button" :disabled="entities.length < limit" @click="page++; fetchEntities()">Sau →</button>
+      </nav>
     </template>
 
     <!-- Edit/Create Modal -->
-    <div v-if="showModal" class="modal-overlay" role="dialog" aria-modal="true" :aria-label="editingEntity ? 'Sửa Entity' : 'Tạo Entity'" @click.self="showModal = false" @keyup.escape="showModal = false">
+    <Transition name="modal-fade">
+    <div v-if="showModal" class="modal-overlay show" role="dialog" aria-modal="true" :aria-label="editingEntity ? 'Sửa Entity' : 'Tạo Entity'" @click.self="showModal = false" @keyup.escape="showModal = false">
       <div class="modal admin-modal-md">
         <h2>{{ editingEntity ? 'Sửa Entity' : 'Tạo Entity' }}</h2>
         <div class="admin-form-col">
           <input v-model="form.id" class="input" placeholder="ID (slug)" aria-label="ID (slug)" :disabled="!!editingEntity" />
           <input v-model="form.name" class="input" placeholder="Tên" aria-label="Tên entity" />
-          <select v-model="form.type" class="input">
+          <select v-model="form.type" class="input" aria-label="Loại entity">
             <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
           </select>
-          <input v-model="form.placeId" class="input" placeholder="Place ID (xã/phường)" />
-          <textarea v-model="form.summary" class="input admin-textarea" placeholder="Tóm tắt" rows="3"></textarea>
+          <input v-model="form.placeId" class="input" placeholder="Place ID (xã/phường)" aria-label="Place ID" />
+          <textarea v-model="form.summary" class="input admin-textarea" placeholder="Tóm tắt" aria-label="Tóm tắt" rows="3"></textarea>
           <!-- Quản lý ảnh (chỉ khi sửa) -->
           <div v-if="editingEntity" class="img-mgr">
             <strong class="admin-label">Ảnh ({{ (form.images || []).length }}/10)</strong>
             <div v-for="(img, i) in (form.images || [])" :key="i" class="img-row">
-              <img :src="img" alt="" class="img-thumb" @error="(e) => ((e.target as HTMLImageElement).style.opacity = '.3')" />
+              <img :src="img" :alt="`Ảnh ${i + 1}`" class="img-thumb" width="48" height="48" loading="lazy" @error="(e) => ((e.target as HTMLImageElement).style.opacity = '.3')" />
               <span class="img-url">{{ img }}</span>
-              <button class="btn-danger btn-sm" @click="removeImage(i)">Xóa</button>
+              <button type="button" class="btn-danger btn-sm" @click="removeImage(i)">Xóa</button>
             </div>
             <div class="admin-inline-add">
-              <input v-model="newImage" class="input" placeholder="https://… (chỉ nguồn cấp phép)" @keyup.enter="addImage" />
-              <button class="btn btn-secondary btn-sm" :disabled="!newImage.trim()" @click="addImage">Thêm ảnh</button>
+              <input v-model="newImage" class="input" placeholder="https://… (chỉ nguồn cấp phép)" aria-label="URL ảnh mới" @keyup.enter="addImage" />
+              <button type="button" class="btn btn-secondary btn-sm" :disabled="!newImage.trim()" @click="addImage">Thêm ảnh</button>
             </div>
           </div>
 
@@ -91,25 +92,26 @@
             <strong class="admin-label">Quan hệ ({{ rels.length }})</strong>
             <div v-for="(r, i) in rels" :key="i" class="img-row">
               <span class="img-url">{{ r.type }} → {{ r.target_name || r.source_name || r.to_id }}</span>
-              <button class="btn-danger btn-sm" @click="removeRel(r)">Xóa</button>
+              <button type="button" class="btn-danger btn-sm" @click="removeRel(r)">Xóa</button>
             </div>
             <div class="admin-inline-add">
-              <select v-model="newRel.type" class="input" style="flex:0 0 130px">
+              <select v-model="newRel.type" class="input" aria-label="Loại quan hệ" style="flex:0 0 130px">
                 <option v-for="t in relTypes" :key="t" :value="t">{{ t }}</option>
               </select>
-              <input v-model="newRel.to_id" class="input" placeholder="ID entity đích" @keyup.enter="addRel" />
-              <button class="btn btn-secondary btn-sm" :disabled="!newRel.to_id.trim()" @click="addRel">Thêm</button>
+              <input v-model="newRel.to_id" class="input" placeholder="ID entity đích" aria-label="ID entity đích" @keyup.enter="addRel" />
+              <button type="button" class="btn btn-secondary btn-sm" :disabled="!newRel.to_id.trim()" @click="addRel">Thêm</button>
             </div>
           </div>
         </div>
         <div class="admin-modal-actions">
-          <button class="btn btn-outline" @click="showModal = false">Hủy</button>
-          <button class="btn btn-primary" :disabled="saving" @click="saveEntity">
+          <button type="button" class="btn btn-outline" @click="showModal = false">Hủy</button>
+          <button type="button" class="btn btn-primary" :disabled="saving" @click="saveEntity">
             {{ saving ? 'Đang lưu…' : (editingEntity ? 'Cập nhật' : 'Tạo') }}
           </button>
         </div>
       </div>
     </div>
+    </Transition>
   </div>
 </template>
 

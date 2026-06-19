@@ -2,7 +2,7 @@
   <div>
     <div class="admin-head-row">
       <h1>Dashboard</h1>
-      <button class="admin-refresh" :disabled="loading" @click="fetchDashboard">🔄 Làm mới</button>
+      <button type="button" class="admin-refresh" :disabled="loading" @click="fetchDashboard">🔄 Làm mới</button>
     </div>
 
     <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>

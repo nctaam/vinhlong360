@@ -5,7 +5,7 @@
     <!-- Hero -->
     <section class="catalog-hero cat-map">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon">🗺️</span>
+        <span class="catalog-hero-icon" aria-hidden="true">🗺️</span>
         <div>
           <h1>Bản đồ</h1>
           <p>Khám phá trực quan hơn 500 điểm đến trên bản đồ tương tác — lọc theo loại hình để tìm nhanh.</p>
@@ -15,17 +15,24 @@
 
     <ClientOnly>
       <div class="map-filters reveal" role="group" aria-label="Lọc theo loại địa điểm">
-        <button v-for="f in typeFilters" :key="f.value" :class="['chip', { active: activeTypes.has(f.value) }]" :aria-pressed="activeTypes.has(f.value)" @click="toggleType(f.value)">
+        <button type="button" v-for="f in typeFilters" :key="f.value" :class="['chip', { active: activeTypes.has(f.value) }]" :aria-pressed="activeTypes.has(f.value)" @click="toggleType(f.value)">
           {{ f.label }}
         </button>
       </div>
     </ClientOnly>
 
-    <p v-if="fetchError" class="fetch-error">Không thể tải dữ liệu bản đồ. Vui lòng thử lại.</p>
+    <div v-if="fetchError" class="fetch-error">
+      <EmptyState message="Không thể tải dữ liệu bản đồ." icon="🗺️">
+        <template #actions>
+          <button type="button" class="btn btn-outline btn-sm" @click="$router.go(0)">Tải lại trang</button>
+          <NuxtLink to="/" class="btn btn-ghost btn-sm">Về trang chủ</NuxtLink>
+        </template>
+      </EmptyState>
+    </div>
     <ClientOnly>
       <div ref="mapEl" id="mapContainer"></div>
       <template #fallback>
-        <div id="mapContainer" class="map-fallback">
+        <div id="mapContainer" class="map-fallback" role="status" aria-label="Đang tải bản đồ">
           <div class="spinner"></div>
         </div>
       </template>
@@ -232,4 +239,7 @@ useHead({
 #mapContainer:hover { box-shadow: var(--shadow-lg); }
 .map-fallback { display: flex; align-items: center; justify-content: center; background: var(--bg-alt); }
 .map-filters { margin-bottom: var(--space-4); }
+
+/* Dark mode */
+.dark #mapContainer { border-color: var(--line); box-shadow: var(--shadow-lg); }
 </style>

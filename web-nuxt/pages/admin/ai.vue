@@ -2,7 +2,7 @@
   <div>
     <div class="admin-head-row">
       <h1>🤖 Knowledge Agent</h1>
-      <button class="admin-refresh" :disabled="refreshing" @click="refreshAll">🔄 Làm mới</button>
+      <button type="button" class="admin-refresh" :disabled="refreshing" @click="refreshAll">🔄 Làm mới</button>
     </div>
 
     <div v-if="!health" class="admin-loading"><div class="spinner"></div></div>
@@ -98,12 +98,12 @@
     <div class="admin-section-block">
       <h2 class="admin-section-title">Hành động</h2>
       <div class="admin-btn-group">
-        <button class="btn btn-primary" :disabled="triggerLoading" @click="triggerLearn">
+        <button type="button" class="btn btn-primary" :disabled="triggerLoading" @click="triggerLearn">
           {{ triggerLoading ? 'Đang chạy…' : '🧠 Trigger Learn' }}
         </button>
-        <button class="btn btn-accent" @click="reload">🔄 Reload KB</button>
-        <button class="btn btn-secondary" @click="fetchHealth">📊 Refresh</button>
-        <button class="btn btn-outline" :disabled="triageLoading" @click="triage">
+        <button type="button" class="btn btn-accent" @click="reload">🔄 Reload KB</button>
+        <button type="button" class="btn btn-secondary" @click="fetchHealth">📊 Refresh</button>
+        <button type="button" class="btn btn-outline" :disabled="triageLoading" @click="triage">
           {{ triageLoading ? 'Đang phân tích…' : '🤖 Gợi ý ưu tiên xử lý' }}
         </button>
       </div>

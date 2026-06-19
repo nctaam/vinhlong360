@@ -12,11 +12,13 @@ export function useToast() {
     const id = nextId++
     toasts.value.push({ id, message, type })
     if (duration > 0) {
-      setTimeout(() => {
-        toasts.value = toasts.value.filter(t => t.id !== id)
-      }, duration)
+      setTimeout(() => dismiss(id), duration)
     }
   }
 
-  return { toasts, show }
+  function dismiss(id: number) {
+    toasts.value = toasts.value.filter(t => t.id !== id)
+  }
+
+  return { toasts, show, dismiss }
 }

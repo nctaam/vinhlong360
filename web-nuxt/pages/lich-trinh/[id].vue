@@ -4,7 +4,7 @@
 
     <section class="catalog-hero cat-itinerary">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon">🗓️</span>
+        <span class="catalog-hero-icon" aria-hidden="true">🗓️</span>
         <div>
           <h1>{{ itinerary.title || itinerary.name }}</h1>
           <p>{{ areaMeta.emoji }} {{ areaMeta.name }} · {{ itinerary.duration }} · {{ itinerary.stops?.length || 0 }} điểm dừng</p>
@@ -24,7 +24,7 @@
     <ClientOnly>
       <div v-if="stopsWithCoords.length >= 2" class="transport-mode transport-mode-spaced">
         <span class="tm-label">Phương tiện:</span>
-        <button v-for="m in transportModes" :key="m.value" :class="['chip', { active: transportMode === m.value }]" @click="switchMode(m.value)">
+        <button type="button" v-for="m in transportModes" :key="m.value" :class="['chip', { active: transportMode === m.value }]" @click="switchMode(m.value)">
           {{ m.icon }} {{ m.label }}
         </button>
         <div v-if="routeResult" class="route-total">
@@ -333,10 +333,13 @@ if (itinerary.value && !itinerary.value.error) {
 .step { position: relative; }
 .step-card { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-xs); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 .step-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); }
+.step-card:active { transform: scale(.97); transition-duration: .08s; }
 .step-emoji { font-size: var(--text-xl); transition: transform .35s var(--ease-spring-gentle); }
 .step-card:hover .step-emoji { transform: scale(1.1) rotate(-3deg); }
-.stop-link { color: var(--ink); font-weight: var(--weight-semibold); transition: color .3s var(--ease-out); }
+.stop-link { color: var(--ink); font-weight: var(--weight-semibold); transition: color .3s var(--ease-out); border-radius: var(--radius-sm); }
 .stop-link:hover { color: var(--primary-fg); }
+.stop-link:active { opacity: .7; }
+.stop-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 .route-leg { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) 0 var(--space-2) var(--space-6); }
 .route-leg-line { width: 2px; height: 20px; background: var(--line); border-radius: 1px; transition: background .3s var(--ease-out); }
@@ -347,4 +350,32 @@ if (itinerary.value && !itinerary.value.error) {
 .route-map { height: 400px; border-radius: var(--radius-lg); overflow: hidden; border: .5px solid var(--line); box-shadow: var(--shadow-sm); transition: box-shadow .35s var(--ease-out-expo); }
 .route-map:hover { box-shadow: var(--shadow-md); }
 
+/* Route leg pill */
+.route-leg-info { background: var(--bg-alt); padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); transition: background .3s var(--ease-out); }
+
+/* Route loading shimmer */
+.route-loading { opacity: .6; animation: routePulse 1.5s ease-in-out infinite; }
+@keyframes routePulse { 0%, 100% { opacity: .6; } 50% { opacity: 1; } }
+.route-total { font-size: var(--text-sm); color: var(--ink-secondary); font-weight: var(--weight-semibold); padding: var(--space-1) var(--space-3); background: var(--bg-alt); border-radius: var(--radius-full); transition: background .3s var(--ease-out); }
+
+/* Dark mode */
+.dark .step-card { border-color: var(--line); }
+.dark .step-card:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.1); }
+.dark .route-leg-line { background: rgba(255,255,255,.1); }
+.dark .route-leg-info { background: rgba(255,255,255,.04); }
+.dark .route-total { background: rgba(255,255,255,.04); }
+.dark .route-map { border-color: var(--line); }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .step-card:hover { transform: none; }
+  .step-card:active { transform: none; }
+  .step-card:hover .step-emoji { transform: none; }
+  .step:hover::before { transform: none; }
+  .itin-actions .btn:hover { transform: none; }
+  .itin-actions .btn:active { transform: none; }
+  .transport-mode .chip:hover { transform: none; }
+  .transport-mode .chip:active { transform: none; }
+  .route-loading { animation: none; }
+}
 </style>

@@ -78,9 +78,35 @@
   /* Map fallback bg */
   --map-bg: var(--sand-300);
 
+  /* ── RGB channels (for rgba() usage without inline fallbacks) ── */
   --primary-rgb: 156, 61, 34;
+  --accent-rgb: 232, 163, 61;
+  --secondary-rgb: 46, 125, 91;
+  --river-rgb: 91, 108, 196;
+  --ink-rgb: 43, 38, 34;
   --focus-ring: 0 0 0 4px rgba(var(--primary-rgb), .12);
   --shadow: 0 1px 3px rgba(0, 0, 0, .04), 0 6px 20px rgba(0, 0, 0, .06);
+
+  /* ── Overlay / scrim tokens ── */
+  --overlay-dark: rgba(0,0,0,.72);
+  --overlay-dark-heavy: rgba(0,0,0,.86);
+  --overlay-light: rgba(255,255,255,.15);
+  --overlay-subtle: rgba(128,128,128,.04);
+
+  /* ── Text on dark backgrounds (hero, overlays) ── */
+  --text-on-dark: #fff;
+
+  /* ── Text shadows (on cover images) ── */
+  --shadow-text: 0 1px 4px rgba(0,0,0,.4);
+  --shadow-text-heavy: 0 2px 12px rgba(0,0,0,.5), 0 1px 3px rgba(0,0,0,.3);
+
+  /* ── Standardized values ── */
+  --opacity-disabled: .4;
+  --tracking-caps: .06em;
+
+  /* ── Computed shades (color-mix) ── */
+  --primary-hover: color-mix(in oklab, var(--primary) 85%, black);
+  --primary-focus: color-mix(in oklab, var(--primary) 92%, transparent);
 
   /* ── Typography scale (Apple HIG-inspired, base 16px) ── */
   --font-sans: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -201,7 +227,22 @@
   --badge-ocop-bg: #1e3328;
   --badge-year-bg: #2a2d2a;
   --primary-rgb: 196, 105, 78;
+  --accent-rgb: 240, 160, 80;
+  --secondary-rgb: 75, 169, 125;
+  --river-rgb: 123, 140, 224;
+  --ink-rgb: 245, 245, 247;
   --focus-ring: 0 0 0 3px rgba(196, 105, 78, .25);
+  --overlay-dark: rgba(0,0,0,.82);
+  --overlay-dark-heavy: rgba(0,0,0,.92);
+  --overlay-light: rgba(255,255,255,.08);
+  --overlay-subtle: rgba(255,255,255,.03);
+  --shadow-text: 0 1px 4px rgba(0,0,0,.6);
+  --shadow-text-heavy: 0 2px 12px rgba(0,0,0,.7), 0 1px 3px rgba(0,0,0,.5);
+  --primary-hover: color-mix(in oklab, var(--primary-fg) 85%, white);
+  --primary-focus: color-mix(in oklab, var(--primary-fg) 92%, transparent);
+  --glass-subtle: rgba(255, 255, 255, .03);
+  --glass-light: rgba(255, 255, 255, .06);
+  --glass-medium: rgba(255, 255, 255, .12);
   --warning: #f0a050;
   --warning-bg: rgba(240, 160, 80, .12);
   --error: #FF6961;

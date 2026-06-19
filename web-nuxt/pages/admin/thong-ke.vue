@@ -2,7 +2,7 @@
   <div>
     <div class="admin-head-row">
       <h1>Thống kê & Phân tích</h1>
-      <button class="admin-refresh" :disabled="loading" @click="fetchData">🔄 Làm mới</button>
+      <button type="button" class="admin-refresh" :disabled="loading" @click="fetchData">🔄 Làm mới</button>
     </div>
     <p class="admin-muted">User hỏi gì · bot bí ở đâu (backlog nội dung) · chi phí LLM.</p>
 
@@ -78,13 +78,13 @@ onMounted(fetchData)
 </script>
 
 <style scoped>
-.stat-num { font-size: 1.6rem; font-weight: 700; }
-.stat-lbl { font-size: .82rem; color: var(--muted); margin-top: var(--space-1); }
+.stat-num { font-size: var(--text-xl); font-weight: var(--weight-bold); }
+.stat-lbl { font-size: var(--text-xs); color: var(--muted); margin-top: var(--space-1); }
 .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-4); }
 .panel { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sm); padding: var(--space-4); box-shadow: var(--shadow-xs); }
-.panel h2 { font-size: 1rem; margin-bottom: var(--space-3); }
+.panel h2 { font-size: var(--text-base); margin-bottom: var(--space-3); }
 .rows { list-style: none; padding: 0; margin: 0; }
-.rows li { display: flex; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: .5px solid var(--line); font-size: .9rem; }
+.rows li { display: flex; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: .5px solid var(--line); font-size: var(--text-sm); }
 .rows li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rows li b { color: var(--primary); }
 

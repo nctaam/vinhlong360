@@ -3,7 +3,7 @@
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title" ref="modalEl">
       <div class="modal-head">
         <h2 id="auth-modal-title">{{ modalTitle }}</h2>
-        <button class="modal-close" aria-label="Đóng" @click="close">✕</button>
+        <button type="button" class="modal-close" aria-label="Đóng" @click="close">✕</button>
       </div>
       <div class="modal-body">
         <!-- Step 1: Phone -->
@@ -14,7 +14,11 @@
             <input
               v-model="phone"
               class="input"
+              :class="{ error: error && step === 'phone' }"
+              :aria-invalid="!!(error && step === 'phone')"
               type="tel"
+              inputmode="tel"
+              autocomplete="tel"
               aria-label="Số điện thoại"
               placeholder="0901234567"
               maxlength="11"
@@ -25,11 +29,11 @@
           <label class="consent-row">
             <input v-model="consent" type="checkbox" class="consent-checkbox" />
             <span>Tôi đồng ý với
-              <NuxtLink to="/dieu-khoan-su-dung" target="_blank" @click="close">Điều khoản sử dụng</NuxtLink> và
-              <NuxtLink to="/chinh-sach-bao-mat" target="_blank" @click="close">Chính sách bảo mật</NuxtLink>.
+              <NuxtLink to="/dieu-khoan-su-dung" @click="close">Điều khoản sử dụng</NuxtLink> và
+              <NuxtLink to="/chinh-sach-bao-mat" @click="close">Chính sách bảo mật</NuxtLink>.
             </span>
           </label>
-          <button class="btn btn-primary btn-full" :disabled="sending || !consent" @click="handlePhone">
+          <button type="button" class="btn btn-primary btn-full" :disabled="sending || !consent" @click="handlePhone">
             {{ sending ? 'Đang kiểm tra…' : 'Tiếp tục' }}
           </button>
         </div>
@@ -42,6 +46,8 @@
             <input
               v-model="password"
               class="input"
+              :class="{ error: error && step === 'password' }"
+              :aria-invalid="!!(error && step === 'password')"
               type="password"
               aria-label="Mật khẩu"
               placeholder="Mật khẩu"
@@ -49,11 +55,11 @@
             />
           </div>
           <p v-if="error" class="form-error">{{ error }}</p>
-          <button class="btn btn-primary btn-full" :disabled="sending" @click="handleLogin">
+          <button type="button" class="btn btn-primary btn-full" :disabled="sending" @click="handleLogin">
             {{ sending ? 'Đang đăng nhập…' : 'Đăng nhập' }}
           </button>
-          <button class="otp-resend" @click="forgotPassword">Quên mật khẩu?</button>
-          <button class="otp-resend" @click="step = 'phone'">Đổi số điện thoại</button>
+          <button type="button" class="otp-resend" @click="forgotPassword">Quên mật khẩu?</button>
+          <button type="button" class="otp-resend" @click="step = 'phone'">Đổi số điện thoại</button>
         </div>
 
         <!-- Step: OTP input -->
@@ -75,11 +81,11 @@
             />
           </div>
           <p v-if="error" class="form-error">{{ error }}</p>
-          <button class="btn btn-primary btn-full" :disabled="sending" @click="verifyCode">
+          <button type="button" class="btn btn-primary btn-full" :disabled="sending" @click="verifyCode">
             {{ sending ? 'Đang xác minh…' : 'Xác nhận' }}
           </button>
           <div class="otp-timer">
-            <button class="otp-resend" :disabled="countdown > 0" @click="sendOtp">
+            <button type="button" class="otp-resend" :disabled="countdown > 0" @click="sendOtp">
               {{ countdown > 0 ? `Gửi lại sau ${countdown}s` : 'Gửi lại mã' }}
             </button>
           </div>
@@ -93,6 +99,8 @@
             <input
               v-model="newPassword"
               class="input"
+              :class="{ error: error && step === 'set-password' }"
+              :aria-invalid="!!(error && step === 'set-password')"
               type="password"
               aria-label="Mật khẩu mới"
               placeholder="Mật khẩu (tối thiểu 6 ký tự)"
@@ -110,17 +118,17 @@
             />
           </div>
           <p v-if="error" class="form-error">{{ error }}</p>
-          <button class="btn btn-primary btn-full" :disabled="sending" @click="handleSetPassword">
+          <button type="button" class="btn btn-primary btn-full" :disabled="sending" @click="handleSetPassword">
             {{ sending ? 'Đang lưu…' : 'Đặt mật khẩu' }}
           </button>
-          <button class="otp-resend" @click="step = 'done'">Bỏ qua, để sau</button>
+          <button type="button" class="otp-resend" @click="step = 'done'">Bỏ qua, để sau</button>
         </div>
 
         <!-- Step: Done -->
         <div v-else class="otp-step otp-done">
           <h3>Đăng nhập thành công!</h3>
           <p>Chào mừng bạn đến với vinhlong360.</p>
-          <button class="btn btn-primary btn-full" @click="close">Đóng</button>
+          <button type="button" class="btn btn-primary btn-full" @click="close">Đóng</button>
         </div>
       </div>
     </div>

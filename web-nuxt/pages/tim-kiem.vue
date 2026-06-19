@@ -5,7 +5,7 @@
     <!-- Hero -->
     <section class="catalog-hero cat-search">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon">🔍</span>
+        <span class="catalog-hero-icon" aria-hidden="true">🔍</span>
         <div>
           <h1>Tìm kiếm</h1>
           <p>Tìm đặc sản, trải nghiệm, lưu trú, lễ hội — mọi thứ về Vĩnh Long, Bến Tre, Trà Vinh.</p>
@@ -14,8 +14,8 @@
     </section>
 
     <div class="search-row search-row-spaced">
-      <input v-model="searchInput" type="search" placeholder="Tìm đặc sản, trải nghiệm…" @keyup.enter="doSearch" />
-      <button class="btn btn-primary" @click="doSearch">Tìm</button>
+      <input v-model="searchInput" type="search" placeholder="Tìm đặc sản, trải nghiệm…" aria-label="Tìm kiếm" autocomplete="off" @keyup.enter="doSearch" />
+      <button type="button" class="btn btn-primary" @click="doSearch">Tìm</button>
     </div>
 
     <NuxtErrorBoundary>
@@ -24,7 +24,10 @@
       </ClientOnly>
     </NuxtErrorBoundary>
 
-    <p v-if="hasError" class="fetch-error">Lỗi tìm kiếm. Vui lòng thử lại.</p>
+    <SkeletonGrid v-if="searching" :count="6" />
+    <EmptyState v-else-if="hasError" icon="⚠️" title="Lỗi tìm kiếm" message="Không thể tải kết quả. Vui lòng thử lại.">
+      <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData('search-results')">Thử lại</button>
+    </EmptyState>
     <template v-else-if="results.length">
       <p class="result-meta" aria-live="polite">{{ results.length }} kết quả cho "{{ q }}"</p>
       <div class="grid">
@@ -131,11 +134,12 @@ const route = useRoute()
 const q = computed(() => (route.query.q as string) || '')
 const searchInput = ref(q.value)
 
-const { data, error: searchError } = await useAsyncData(
+const { data, error: searchError, status } = await useAsyncData(
   'search-results',
   () => q.value ? $fetch<any>(`/api/entities?q=${encodeURIComponent(q.value)}&limit=100`) : Promise.resolve({ entities: [] }),
   { watch: [q] }
 )
+const searching = computed(() => status.value === 'pending' && !!q.value)
 
 const results = computed(() => data.value?.entities || [])
 const hasError = computed(() => !!searchError.value)
@@ -182,8 +186,35 @@ useHead({
 .quick-pick { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); text-align: center; box-shadow: var(--shadow-xs); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 .quick-pick:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--primary-fg); }
 .quick-pick:active { transform: scale(.97); transition-duration: .08s; }
+.quick-pick:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .quick-pick-icon { font-size: var(--text-2xl); transition: transform .35s var(--ease-spring-gentle); }
 .quick-pick:hover .quick-pick-icon { transform: scale(1.15); }
 .quick-pick-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); }
 
+/* Search input polish */
+.search-row-spaced input {
+  transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo);
+}
+.search-row-spaced input:focus-visible {
+  border-color: var(--primary-fg);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .12);
+}
+
+/* Grid results stagger */
+.grid { animation: fadeInGrid .4s var(--ease-out) both; }
+@keyframes fadeInGrid { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Dark mode */
+.dark .quick-pick { background: var(--bg-alt); border-color: var(--line); }
+.dark .quick-pick:hover { border-color: rgba(255,255,255,.15); box-shadow: var(--shadow-md); }
+.dark .result-meta { color: var(--ink-tertiary); }
+.dark .fetch-error { color: var(--error); }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .quick-pick:hover { transform: none; }
+  .quick-pick:active { transform: none; }
+  .quick-pick:hover .quick-pick-icon { transform: none; }
+  .grid { animation: none; }
+}
 </style>

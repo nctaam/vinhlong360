@@ -1,37 +1,76 @@
 <template>
-  <section class="page">
-    <NuxtLink class="back" to="/cong-dong">← Cộng đồng</NuxtLink>
+  <section class="page thread-detail-page">
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng', to: '/cong-dong' }, { label: 'Bài viết' }]" />
+    <h1 class="sr-only">{{ post?.display_name ? `Bài viết của ${post.display_name}` : 'Bài viết' }}</h1>
 
-    <div v-if="post" class="post-detail-wrap reveal">
-      <PostCard :post="post" @like="toggleLike" @bookmark="toggleBookmark" @report="reportPost" />
+    <div v-if="post" class="thread-detail reveal">
+      <PostCard :post="post" :has-replies="comments.length > 0" @like="toggleLike" @comment="scrollToCompose" @bookmark="toggleBookmark" @report="reportPost" />
 
-      <div class="comment-section">
-        <h3 class="comment-title">Bình luận ({{ comments.length }})</h3>
-
-        <div v-if="isLoggedIn" class="comment-form">
-          <input
-            v-model="commentText"
-            class="input"
-            placeholder="Viết bình luận…"
-            @keyup.enter="submitComment"
-          />
-          <button class="btn btn-primary btn-sm" :disabled="!commentText.trim()" @click="submitComment">Gửi</button>
+      <!-- Comment thread -->
+      <div class="thread-comments">
+        <div class="replies-header">
+          <span class="replies-label">Trả lời</span>
+          <span v-if="comments.length" class="replies-count">{{ comments.length }}</span>
         </div>
 
-        <div v-for="c in comments" :key="c.id" class="comment-item">
-          <span class="avatar avatar-sm">{{ (c.display_name || c.phone || '?').charAt(0).toUpperCase() }}</span>
-          <div>
-            <strong>{{ c.display_name || c.phone || 'Người dùng' }}</strong>
-            <span class="comment-time"> · {{ timeAgo(c.created_at) }}</span>
-            <p class="comment-text">{{ c.content }}</p>
+        <!-- Comment form (Threads style) -->
+        <div v-if="isLoggedIn" ref="composeRef" class="thread-comment-compose">
+          <div class="compose-left">
+            <span class="avatar thread-avatar avatar-sm">{{ userInitial }}</span>
+          </div>
+          <div class="compose-right">
+            <input
+              v-model="commentText"
+              class="compose-input-sm"
+              :placeholder="`Trả lời ${post.display_name || 'bài viết'}…`"
+              @keyup.enter="submitComment"
+            />
+            <button type="button" class="btn btn-primary btn-sm compose-send" :disabled="!commentText.trim() || submitting" @click="submitComment">
+              <svg v-if="!submitting" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4z"/></svg>
+              <span v-else class="spinner spinner-sm"></span>
+            </button>
+          </div>
+        </div>
+        <div v-else class="thread-comment-guest">
+          <NuxtLink to="/dang-nhap" class="guest-reply-link">Đăng nhập để trả lời</NuxtLink>
+        </div>
+
+        <!-- Comment items as thread replies -->
+        <div v-for="(c, idx) in comments" :key="c.id" class="thread-reply">
+          <div class="thread-left">
+            <NuxtLink v-if="c.user_id" :to="`/nguoi-dung/${c.user_id}`" class="thread-avatar-link">
+              <span class="avatar thread-avatar avatar-sm">{{ (c.display_name || c.phone || '?').charAt(0).toUpperCase() }}</span>
+            </NuxtLink>
+            <span v-else class="avatar thread-avatar avatar-sm">{{ (c.display_name || c.phone || '?').charAt(0).toUpperCase() }}</span>
+            <div v-if="idx < comments.length - 1" class="thread-line"></div>
+          </div>
+          <div class="thread-right">
+            <div class="thread-head">
+              <NuxtLink v-if="c.user_id" :to="`/nguoi-dung/${c.user_id}`" class="thread-author">
+                {{ c.display_name || c.phone || 'Người dùng' }}
+              </NuxtLink>
+              <span v-else class="thread-author">{{ c.display_name || 'Người dùng' }}</span>
+              <time class="thread-time" :datetime="c.created_at">{{ timeAgo(c.created_at) }}</time>
+            </div>
+            <p class="thread-content reply-text">{{ c.content }}</p>
           </div>
         </div>
 
-        <p v-if="!comments.length" class="comment-empty">Chưa có bình luận nào. Hãy là người đầu tiên!</p>
+        <div v-if="!comments.length && !loading" class="comment-empty">
+          <span class="comment-empty-icon">💬</span>
+          <p>Chưa có bình luận nào.</p>
+          <p class="comment-empty-hint">{{ isLoggedIn ? 'Hãy là người đầu tiên trả lời!' : 'Đăng nhập để bình luận.' }}</p>
+        </div>
+        <div v-if="loading" class="feed-loading" role="status" aria-label="Đang tải bình luận"><div class="spinner"></div></div>
       </div>
     </div>
 
-    <p v-else class="empty">Không tìm thấy bài viết.</p>
+    <div v-else-if="!pending" class="empty-state-wrap">
+      <EmptyState v-if="postFetchFailed" icon="⚠️" title="Không thể tải bài viết" message="Lỗi kết nối. Vui lòng thử lại.">
+        <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData(`post-${postId}`)">Thử lại</button>
+      </EmptyState>
+      <EmptyState v-else message="Không tìm thấy bài viết." />
+    </div>
   </section>
 </template>
 
@@ -39,34 +78,52 @@
 useReveal()
 const route = useRoute()
 const postId = route.params.id as string
-const { isLoggedIn, authHeaders } = useAuth()
+const { isLoggedIn, authHeaders, user } = useAuth()
 const { reportPost } = useReport()
-
-useHead({
-  link: [{ rel: 'canonical', href: canonicalUrl(`/bai-viet/${postId}`) }],
-  meta: [{ name: 'robots', content: 'noindex,follow' }],
-})
+const { show: showToast } = useToast()
 
 const commentText = ref('')
 const comments = ref<any[]>([])
+const submitting = ref(false)
+const loading = ref(false)
+const composeRef = ref<HTMLElement>()
 
-const { data: post } = await useAsyncData(`post-${postId}`, async () => {
-  try {
-    return await $fetch<any>(`/api/posts/${postId}`, { headers: authHeaders() })
-  } catch { return null }
+function scrollToCompose() {
+  composeRef.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  nextTick(() => {
+    const input = composeRef.value?.querySelector('input')
+    input?.focus()
+  })
+}
+
+const userInitial = computed(() => {
+  const name = user.value?.display_name || user.value?.phone || '?'
+  return name.charAt(0).toUpperCase()
 })
 
-const { show: showToast } = useToast()
+const postFetchFailed = ref(false)
+const { data: post, pending } = await useAsyncData(`post-${postId}`, async () => {
+  try {
+    postFetchFailed.value = false
+    return await $fetch<any>(`/api/posts/${postId}`, { headers: authHeaders() })
+  } catch {
+    postFetchFailed.value = true
+    return null
+  }
+})
 
 async function fetchComments() {
+  loading.value = true
   try {
     const res = await $fetch<any>(`/api/posts/${postId}/comments`)
     comments.value = res.comments || res || []
-  } catch { /* silent — comments are non-critical */ }
+  } catch { /* comments are non-critical */ }
+  loading.value = false
 }
 
 async function submitComment() {
-  if (!commentText.value.trim()) return
+  if (!commentText.value.trim() || submitting.value) return
+  submitting.value = true
   try {
     await $fetch(`/api/posts/${postId}/comments`, {
       method: 'POST',
@@ -74,38 +131,47 @@ async function submitComment() {
       body: { content: commentText.value.trim() },
     })
     commentText.value = ''
+    showToast('Đã gửi bình luận', 'success')
+    if (post.value) post.value.comments_count = (post.value.comments_count || 0) + 1
     await fetchComments()
   } catch { showToast('Gửi bình luận thất bại', 'error') }
+  submitting.value = false
 }
 
 async function toggleLike(id: string) {
-  if (!isLoggedIn.value || !post.value) return
+  if (!isLoggedIn.value) { showToast('Đăng nhập để thích bài viết', 'info'); return }
+  if (!post.value) return
+  post.value.user_liked = !post.value.user_liked
+  post.value.likes = (post.value.likes || 0) + (post.value.user_liked ? 1 : -1)
   try {
     await $fetch(`/api/posts/${id}/like`, { method: 'POST', headers: authHeaders() })
+  } catch {
     post.value.user_liked = !post.value.user_liked
     post.value.likes = (post.value.likes || 0) + (post.value.user_liked ? 1 : -1)
-  } catch { showToast('Không thể thích bài viết', 'error') }
+    showToast('Không thể thích bài viết', 'error')
+  }
 }
 
 async function toggleBookmark(id: string) {
-  if (!isLoggedIn.value || !post.value) return
+  if (!isLoggedIn.value) { showToast('Đăng nhập để lưu bài viết', 'info'); return }
+  if (!post.value) return
+  post.value.user_bookmarked = !post.value.user_bookmarked
   try {
     await $fetch(`/api/posts/${id}/bookmark`, { method: 'POST', headers: authHeaders() })
+  } catch {
     post.value.user_bookmarked = !post.value.user_bookmarked
-  } catch { showToast('Không thể lưu bài viết', 'error') }
+    showToast('Không thể lưu bài viết', 'error')
+  }
 }
 
-function timeAgo(dateStr: string): string {
-  if (!dateStr) return ''
-  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
-  if (diff < 60) return 'Vừa xong'
-  if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`
-  if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`
-  if (diff < 604800) return `${Math.floor(diff / 86400)} ngày trước`
-  return new Date(dateStr).toLocaleDateString('vi-VN')
-}
+const { timeAgo } = useTimeAgo()
 
 onMounted(() => fetchComments())
+
+useHead({
+  link: [{ rel: 'canonical', href: canonicalUrl(`/bai-viet/${postId}`) }],
+  meta: [{ name: 'robots', content: 'noindex,follow' }],
+})
 
 if (post.value) {
   const p = post.value
@@ -160,23 +226,78 @@ if (post.value) {
 </script>
 
 <style scoped>
-.post-detail-wrap { max-width: 720px; }
+.thread-detail-page { max-width: 680px; margin: 0 auto; }
+.thread-detail { display: flex; flex-direction: column; }
 
-.comment-section { margin-top: var(--space-5); }
-.comment-title { font-size: var(--text-lg); font-weight: var(--weight-semibold); margin-bottom: var(--space-4); }
+/* ── Replies header ── */
+.replies-header {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-4) 0 var(--space-2);
+  border-top: .5px solid var(--line);
+}
+.replies-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); }
+.replies-count {
+  font-size: var(--text-xs); font-weight: var(--weight-semibold);
+  background: var(--bg-alt); color: var(--muted); border-radius: var(--radius-full);
+  padding: 2px 8px; min-width: 20px; text-align: center;
+}
 
-.comment-form { display: flex; gap: var(--space-2); margin-bottom: var(--space-5); padding: var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-lg); background: var(--bg-alt); transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo); }
-.comment-form:focus-within { border-color: var(--primary-fg); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .1), var(--shadow-xs); }
-.comment-form .input { flex: 1; border: none; background: transparent; outline: none; font-size: var(--text-sm); min-height: 44px; }
-.comment-form .btn { transition: transform .35s var(--ease-spring-gentle), opacity .3s var(--ease-out); }
-.comment-form .btn:active { transform: scale(.95); }
+/* ── Comment compose (Threads style) ── */
+.thread-comment-compose {
+  display: flex; gap: var(--space-3); padding: var(--space-3) 0 var(--space-4);
+  border-bottom: .5px solid var(--line);
+  transition: border-color .2s;
+}
+.thread-comment-compose:focus-within { border-bottom-color: var(--ink); }
+.thread-comment-compose .compose-left { width: 32px; flex-shrink: 0; display: flex; justify-content: center; }
+.thread-comment-compose .compose-right { flex: 1; display: flex; gap: var(--space-2); align-items: center; }
+.compose-input-sm {
+  flex: 1; border: none; background: transparent; color: var(--ink);
+  font-size: var(--text-sm); line-height: var(--leading-relaxed);
+  outline: none; font-family: inherit; min-height: 44px; padding: 0;
+}
+.compose-input-sm::placeholder { color: var(--muted); }
+.compose-send {
+  width: 36px; height: 36px; min-height: 36px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-full);
+}
+.compose-send .spinner-sm { width: 14px; height: 14px; }
 
-.comment-item { display: flex; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: .5px solid var(--line); transition: background .3s var(--ease-out); }
-.comment-item:last-child { border-bottom: none; }
-.comment-item:hover { background: var(--bg-alt); }
-.comment-time { color: var(--muted); font-size: var(--text-xs); }
-.comment-text { margin-top: var(--space-1); font-size: var(--text-sm); line-height: var(--leading-relaxed); }
+.thread-comment-guest { padding: var(--space-3) 0 var(--space-4); border-bottom: .5px solid var(--line); }
+.guest-reply-link { font-size: var(--text-sm); color: var(--primary-fg); text-decoration: none; font-weight: var(--weight-medium); border-radius: var(--radius-sm); }
+.guest-reply-link:hover { text-decoration: underline; }
+.guest-reply-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
-.comment-empty { color: var(--muted); font-size: var(--text-sm); padding: var(--space-6) 0; text-align: center; }
+/* ── Thread replies ── */
+.thread-comments { display: flex; flex-direction: column; }
 
+.thread-reply {
+  display: flex; gap: var(--space-3); padding: var(--space-3) 0;
+  border-bottom: .5px solid var(--line);
+  animation: replyIn .3s var(--ease-out) both;
+}
+.thread-reply:last-child { border-bottom: none; }
+
+.thread-reply .thread-left { width: 32px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
+.thread-reply .thread-line { flex: 1; width: 2px; background: var(--line); border-radius: 1px; min-height: 16px; }
+.thread-reply .thread-right { flex: 1; min-width: 0; }
+
+.reply-text { margin: var(--space-1) 0 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); color: var(--ink); }
+
+@keyframes replyIn { from { opacity: 0; transform: translateY(4px); } }
+
+.comment-empty { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-8) 0 var(--space-6); text-align: center; }
+.comment-empty-icon { font-size: var(--text-2xl, 1.75rem); opacity: .6; }
+.comment-empty p { margin: 0; color: var(--ink); font-size: var(--text-sm); font-weight: var(--weight-medium); }
+.comment-empty-hint { color: var(--muted); font-size: var(--text-xs); font-weight: var(--weight-normal); }
+.empty-state-wrap { padding: var(--space-8) 0; text-align: center; }
+
+.feed-loading { text-align: center; padding: var(--space-5); }
+.feed-loading .spinner { margin: 0 auto; }
+
+.avatar-sm { width: 32px; height: 32px; font-size: var(--text-xs); }
+
+@media (prefers-reduced-motion: reduce) {
+  .thread-reply { animation: none; }
+}
 </style>

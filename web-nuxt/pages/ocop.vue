@@ -5,7 +5,7 @@
     <!-- Hero -->
     <section class="catalog-hero cat-ocop">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon">⭐</span>
+        <span class="catalog-hero-icon" aria-hidden="true">⭐</span>
         <div>
           <h1>Sản phẩm OCOP</h1>
           <p>Mỗi xã một sản phẩm — sản phẩm đạt chuẩn OCOP từ Vĩnh Long, Bến Tre và Trà Vinh, chất lượng được chứng nhận.</p>
@@ -29,7 +29,7 @@
         <h2>Xếp hạng sao</h2>
       </div>
       <div class="quick-picks">
-        <button
+        <button type="button"
           v-for="s in starStats" :key="s.stars"
           :class="['quick-pick', { active: starFilter === s.stars }]"
           @click="starFilter = starFilter === s.stars ? 0 : s.stars; scrollToGrid()"
@@ -45,7 +45,7 @@
     <section v-if="fiveStarHighlights.length" class="block reveal">
       <div class="section-head">
         <h2>⭐ Nổi bật 5 sao</h2>
-        <button class="see-all" @click="starFilter = 5; scrollToGrid()">Xem tất cả →</button>
+        <button type="button" class="see-all" @click="starFilter = 5; scrollToGrid()">Xem tất cả →</button>
       </div>
       <p class="section-desc">Sản phẩm đạt chuẩn cao nhất — 5 sao OCOP, chất lượng vượt trội.</p>
       <div class="scroll-row" role="region" aria-label="Sản phẩm OCOP 5 sao">
@@ -59,7 +59,7 @@
         <h2>Chọn theo khu vực</h2>
       </div>
       <div class="quick-picks">
-        <button
+        <button type="button"
           v-for="(meta, key) in AREA_META" :key="key"
           :class="['quick-pick', { active: areaFilter === key }]"
           @click="areaFilter = areaFilter === key ? 'all' : (key as string); scrollToGrid()"
@@ -84,15 +84,15 @@
         </div>
         <p class="control-label">Hạng sao</p>
         <div class="chip-row" role="group" aria-label="Lọc theo hạng sao">
-          <button :class="['chip', { active: starFilter === 0 }]" :aria-pressed="starFilter === 0" @click="starFilter = 0">Tất cả</button>
-          <button :class="['chip', { active: starFilter === 5 }]" :aria-pressed="starFilter === 5" @click="starFilter = 5">⭐⭐⭐⭐⭐ 5 sao</button>
-          <button :class="['chip', { active: starFilter === 4 }]" :aria-pressed="starFilter === 4" @click="starFilter = 4">⭐⭐⭐⭐ 4 sao</button>
-          <button :class="['chip', { active: starFilter === 3 }]" :aria-pressed="starFilter === 3" @click="starFilter = 3">⭐⭐⭐ 3 sao</button>
+          <button type="button" :class="['chip', { active: starFilter === 0 }]" :aria-pressed="starFilter === 0" @click="starFilter = 0">Tất cả</button>
+          <button type="button" :class="['chip', { active: starFilter === 5 }]" :aria-pressed="starFilter === 5" @click="starFilter = 5">⭐⭐⭐⭐⭐ 5 sao</button>
+          <button type="button" :class="['chip', { active: starFilter === 4 }]" :aria-pressed="starFilter === 4" @click="starFilter = 4">⭐⭐⭐⭐ 4 sao</button>
+          <button type="button" :class="['chip', { active: starFilter === 3 }]" :aria-pressed="starFilter === 3" @click="starFilter = 3">⭐⭐⭐ 3 sao</button>
         </div>
         <p class="control-label">Khu vực</p>
         <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
-          <button :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả</button>
-          <button
+          <button type="button" :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả</button>
+          <button type="button"
             v-for="(meta, key) in AREA_META" :key="key"
             :class="['chip', { active: areaFilter === key }]"
             :aria-pressed="areaFilter === key"
@@ -101,8 +101,8 @@
         </div>
         <p class="control-label">Theo tháng</p>
         <div class="chip-row" role="group" aria-label="Lọc theo tháng">
-          <button :class="['chip', 'season', { active: seasonFilter === 'all' }]" :aria-pressed="seasonFilter === 'all'" @click="seasonFilter = 'all'">Tất cả</button>
-          <button v-for="m in 12" :key="m" :class="['chip', 'season', { active: seasonFilter === String(m) }]" :aria-pressed="seasonFilter === String(m)" @click="seasonFilter = String(m)">
+          <button type="button" :class="['chip', 'season', { active: seasonFilter === 'all' }]" :aria-pressed="seasonFilter === 'all'" @click="seasonFilter = 'all'">Tất cả</button>
+          <button type="button" v-for="m in 12" :key="m" :class="['chip', 'season', { active: seasonFilter === String(m) }]" :aria-pressed="seasonFilter === String(m)" @click="seasonFilter = String(m)">
             T{{ m }}
           </button>
         </div>
@@ -116,7 +116,7 @@
       </div>
       <EmptyState v-else icon="⭐" title="Không tìm thấy sản phẩm OCOP" message="Thử thay đổi hạng sao, khu vực hoặc tháng mùa vụ.">
         <template #actions>
-          <button class="btn btn-outline" @click="starFilter = 0; areaFilter = 'all'; seasonFilter = 'all'; q = ''">Xóa bộ lọc</button>
+          <button type="button" class="btn btn-outline" @click="starFilter = 0; areaFilter = 'all'; seasonFilter = 'all'; q = ''">Xóa bộ lọc</button>
           <NuxtLink to="/san-pham" class="btn btn-outline">Xem tất cả sản phẩm</NuxtLink>
         </template>
       </EmptyState>

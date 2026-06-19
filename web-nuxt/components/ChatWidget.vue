@@ -1,14 +1,14 @@
 <template>
   <ClientOnly>
     <div class="chat-widget">
-      <button class="chat-fab" :class="{ open }" @click="open = !open" :aria-expanded="open" aria-label="Chat AI">
+      <button type="button" class="chat-fab" :class="{ open }" @click="open = !open" :aria-expanded="open" aria-label="Chat AI">
         {{ open ? '✕' : '💬' }}
       </button>
 
       <div ref="panelEl" class="chat-panel" :class="{ show: open }" role="dialog" aria-label="Chat hỏi đáp" aria-modal="true" @keydown.escape="open = false" @keydown="onPanelKeydown">
         <div class="chat-panel-head">
           <h3>Hỏi về Vĩnh Long</h3>
-          <button class="cp-close" aria-label="Đóng chat" @click="open = false">✕</button>
+          <button type="button" class="cp-close" aria-label="Đóng chat" @click="open = false">✕</button>
         </div>
 
         <div ref="messagesEl" class="chat-panel-msgs" aria-live="polite">
@@ -22,13 +22,13 @@
             <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
           </div>
           <div v-if="activeSuggestions.length" class="csuggestions">
-            <button v-for="s in activeSuggestions" :key="s" @click="sendMessage(s)">{{ s }}</button>
+            <button type="button" v-for="s in activeSuggestions" :key="s" @click="sendMessage(s)">{{ s }}</button>
           </div>
         </div>
 
         <div class="chat-panel-input">
           <input v-model="inputText" placeholder="Hỏi gì đó về Vĩnh Long…" aria-label="Nhập câu hỏi" :disabled="streaming" @keyup.enter="sendMessage(inputText)" />
-          <button aria-label="Gửi tin nhắn" :disabled="!inputText.trim() || streaming" @click="sendMessage(inputText)">Gửi</button>
+          <button type="button" aria-label="Gửi tin nhắn" :disabled="!inputText.trim() || streaming" @click="sendMessage(inputText)">Gửi</button>
         </div>
       </div>
     </div>

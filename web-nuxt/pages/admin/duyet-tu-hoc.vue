@@ -2,15 +2,15 @@
   <div>
     <div class="admin-head-row">
       <h1>Duyệt tự học & Tiện ích</h1>
-      <button class="admin-refresh" :disabled="loading" @click="loadProvisional">🔄 Làm mới</button>
+      <button type="button" class="admin-refresh" :disabled="loading" @click="loadProvisional">🔄 Làm mới</button>
     </div>
 
     <!-- 1) Provisional review -->
-    <h2 class="admin-section-title" style="margin-top:16px">🧪 Entity tự học chờ duyệt ({{ provisional.length }})</h2>
+    <h2 class="admin-section-title" style="margin-top: var(--space-4)">🧪 Entity tự học chờ duyệt ({{ provisional.length }})</h2>
 
     <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
     <template v-else>
-      <p v-if="!provisional.length" class="admin-muted" style="font-size:.88rem">
+      <p v-if="!provisional.length" class="admin-muted" style="font-size: var(--text-sm)">
         Không có entity provisional. (Lưu ý: trạng thái provisional nằm trong data.json; DB là nguồn sự thật cho chat
         nên entity tự học hiện đã live — quarantine chỉ còn ý nghĩa khi mô hình hoá cột status ở DB.)
       </p>
@@ -22,10 +22,10 @@
             <td>{{ e.type }}</td>
             <td><small class="admin-muted">{{ e.source?.url || e.source?.title || '—' }}</small></td>
             <td class="admin-actions">
-              <button class="btn-success" :disabled="acting === e.id" @click="approve(e)">
+              <button type="button" class="btn-success" :disabled="acting === e.id" @click="approve(e)">
                 {{ acting === e.id ? '…' : 'Duyệt' }}
               </button>
-              <button class="btn-danger" :disabled="acting === e.id" @click="reject(e)">Từ chối</button>
+              <button type="button" class="btn-danger" :disabled="acting === e.id" @click="reject(e)">Từ chối</button>
             </td>
           </tr>
         </tbody>
@@ -33,10 +33,10 @@
     </template>
 
     <!-- 2) Tiện ích -->
-    <h2 class="admin-section-title" style="margin-top:24px">🧰 Tiện ích dữ liệu</h2>
-    <div class="admin-btn-group" style="margin-bottom:12px">
-      <button class="btn btn-primary" :disabled="exporting" @click="exportJson">📤 {{ exporting ? 'Đang xuất…' : 'Export JSON (DB)' }}</button>
-      <button class="btn btn-secondary" :disabled="loadingSources" @click="loadSources">
+    <h2 class="admin-section-title" style="margin-top: var(--space-6)">🧰 Tiện ích dữ liệu</h2>
+    <div class="admin-btn-group" style="margin-bottom: var(--space-3)">
+      <button type="button" class="btn btn-primary" :disabled="exporting" @click="exportJson">📤 {{ exporting ? 'Đang xuất…' : 'Export JSON (DB)' }}</button>
+      <button type="button" class="btn btn-secondary" :disabled="loadingSources" @click="loadSources">
         📚 {{ loadingSources ? 'Đang tải…' : 'Xem nguồn dữ liệu' }}
       </button>
     </div>

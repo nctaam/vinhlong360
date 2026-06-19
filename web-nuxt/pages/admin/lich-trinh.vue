@@ -2,11 +2,11 @@
   <div>
     <div class="admin-head-row">
       <h1>Quản lý Lịch trình</h1>
-      <button class="admin-refresh" :disabled="loading" @click="fetchItineraries">🔄 Làm mới</button>
+      <button type="button" class="admin-refresh" :disabled="loading" @click="fetchItineraries">🔄 Làm mới</button>
     </div>
 
     <div class="admin-toolbar">
-      <button class="btn btn-primary" @click="openCreate">+ Tạo lịch trình</button>
+      <button type="button" class="btn btn-primary" @click="openCreate">+ Tạo lịch trình</button>
     </div>
 
     <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
@@ -31,8 +31,8 @@
               <td>{{ it.duration || '—' }}</td>
               <td>{{ it.stops?.length || 0 }}</td>
               <td class="admin-actions">
-                <button class="btn-success" @click="openEdit(it)">Sửa</button>
-                <button class="btn-danger" :disabled="acting === it.id" @click="deleteItinerary(it.id)">Xóa</button>
+                <button type="button" class="btn-success" @click="openEdit(it)">Sửa</button>
+                <button type="button" class="btn-danger" :disabled="acting === it.id" @click="deleteItinerary(it.id)">Xóa</button>
               </td>
             </tr>
             <tr v-if="!itineraries.length">
@@ -43,26 +43,28 @@
       </div>
     </template>
 
-    <div v-if="showModal" class="modal-overlay" role="dialog" aria-modal="true" :aria-label="editing ? 'Sửa Lịch trình' : 'Tạo Lịch trình'" @click.self="showModal = false" @keyup.escape="showModal = false">
+    <Transition name="modal-fade">
+    <div v-if="showModal" class="modal-overlay show" role="dialog" aria-modal="true" :aria-label="editing ? 'Sửa Lịch trình' : 'Tạo Lịch trình'" @click.self="showModal = false" @keyup.escape="showModal = false">
       <div class="modal admin-modal-md">
         <h2>{{ editing ? 'Sửa Lịch trình' : 'Tạo Lịch trình' }}</h2>
         <div class="admin-form-col">
           <input v-model="form.id" class="input" placeholder="ID (slug)" aria-label="ID (slug)" :disabled="!!editing" />
           <input v-model="form.name" class="input" placeholder="Tên lịch trình" aria-label="Tên lịch trình" />
-          <input v-model="form.area" class="input" placeholder="Khu vực (vinh-long / ben-tre / tra-vinh)" />
-          <input v-model="form.duration" class="input" placeholder="Thời gian (VD: 1 ngày)" />
+          <input v-model="form.area" class="input" placeholder="Khu vực (vinh-long / ben-tre / tra-vinh)" aria-label="Khu vực" />
+          <input v-model="form.duration" class="input" placeholder="Thời gian (VD: 1 ngày)" aria-label="Thời gian" />
           <textarea v-model="form.description" class="input admin-textarea" placeholder="Mô tả" rows="3"></textarea>
           <label class="admin-label">Stops (JSON)</label>
-          <textarea v-model="stopsJson" class="input admin-textarea" rows="6" style="font-family: monospace; font-size: .82rem"></textarea>
+          <textarea v-model="stopsJson" class="input admin-textarea admin-code" rows="6"></textarea>
         </div>
         <div class="admin-modal-actions">
-          <button class="btn btn-outline" @click="showModal = false">Hủy</button>
-          <button class="btn btn-primary" :disabled="saving" @click="save">
+          <button type="button" class="btn btn-outline" @click="showModal = false">Hủy</button>
+          <button type="button" class="btn btn-primary" :disabled="saving" @click="save">
             {{ saving ? 'Đang lưu…' : (editing ? 'Cập nhật' : 'Tạo') }}
           </button>
         </div>
       </div>
     </div>
+    </Transition>
   </div>
 </template>
 

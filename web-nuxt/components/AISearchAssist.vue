@@ -1,11 +1,11 @@
 <template>
   <div class="ai-search-assist">
-    <button v-if="!aiReply && !loading" class="ai-toggle-btn" @click="load">✨ Gợi ý AI cho "{{ query }}"</button>
+    <button type="button" v-if="!aiReply && !loading" class="ai-toggle-btn" @click="load">✨ Gợi ý AI cho "{{ query }}"</button>
     <div v-else-if="loading" class="ai-loading ai-loading-padded"><div class="spinner spinner-center"></div></div>
     <template v-else>
       <div class="ai-search-header">
         <span>Gợi ý nhanh</span>
-        <button class="ai-toggle-btn" @click="expanded = !expanded">{{ expanded ? 'Thu gọn' : 'Xem thêm' }}</button>
+        <button type="button" class="ai-toggle-btn" @click="expanded = !expanded">{{ expanded ? 'Thu gọn' : 'Xem thêm' }}</button>
       </div>
       <div v-if="expanded" class="ai-search-body" v-html="formatReply(aiReply)"></div>
       <div v-if="suggestions.length && expanded" class="ai-search-suggestions">

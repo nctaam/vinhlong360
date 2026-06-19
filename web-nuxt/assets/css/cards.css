@@ -1,21 +1,27 @@
 /* ── Grid + cards (Apple HIG) ── */
-.grid { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.grid { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); container-type: inline-size; }
+@container (max-width: 480px) {
+  .grid { grid-template-columns: 1fr; }
+}
+@container (min-width: 481px) and (max-width: 720px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
 .card { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); display: flex; flex-direction: column; will-change: transform; }
 .card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--border); }
 .card:active { transform: translateY(-1px) scale(.97); transition-duration: .1s; }
 .card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; transform: translateY(-6px); }
-.cover { height: 96px; display: flex; align-items: center; justify-content: center; position: relative; }
-.cover span:not(.cover-tag) { font-size: 2.6rem; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .2)); }
+.cover { height: 96px; display: flex; align-items: center; justify-content: center; position: relative; color: var(--text-on-dark, #fff); }
+.cover span:not(.cover-tag) { font-size: 2.6rem; filter: drop-shadow(var(--shadow-text)); }
 .cover-img { position: relative; height: 160px; overflow: hidden; background: linear-gradient(110deg, var(--bg-alt) 30%, var(--card) 50%, var(--bg-alt) 70%); background-size: 200% 100%; animation: shimmer 1.6s infinite linear; aspect-ratio: 5/2; }
 .cover-img:has(img.loaded), .cover-img:has(img:not([loading="lazy"])) { animation: none; background: var(--bg-alt); }
-.cover-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s var(--ease-out-expo), opacity .45s var(--ease-out-expo); will-change: transform; }
-.cover-img img[loading="lazy"] { opacity: 0; transform: scale(1.02); }
-.cover-img img.loaded, .cover-img img:not([loading="lazy"]) { opacity: 1; transform: scale(1); }
-.card:hover .cover-img img { transform: scale(1.04); }
-.cover-tag { position: absolute; bottom: var(--space-2); left: var(--space-2); font-size: .7rem; font-weight: var(--weight-semibold); padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); color: #fff; background: rgba(0,0,0,.45); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); letter-spacing: .02em; border: .5px solid rgba(255,255,255,.15); }
+.cover-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s var(--ease-out-expo), opacity .5s var(--ease-out-expo), filter .5s var(--ease-out-expo); will-change: transform; }
+.cover-img img[loading="lazy"] { opacity: 0; transform: scale(1.03); filter: blur(4px); }
+.cover-img img.loaded, .cover-img img:not([loading="lazy"]) { opacity: 1; transform: scale(1); filter: blur(0); }
+.card:hover .cover-img img.loaded { transform: scale(1.04); }
+.cover-tag { position: absolute; bottom: var(--space-2); left: var(--space-2); font-size: .7rem; font-weight: var(--weight-semibold); padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); color: var(--text-on-dark, #fff); background: var(--overlay-dark, rgba(0,0,0,.45)); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); letter-spacing: .02em; border: .5px solid rgba(255,255,255,.15); }
 .card-save { position: absolute; top: var(--space-3); right: var(--space-3); z-index: 2; }
 .card-b { padding: var(--space-4) var(--space-4) var(--space-5); display: flex; flex-direction: column; gap: var(--space-2); flex: 1; }
-.card-type { font-size: .7rem; font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: .05em; color: var(--primary-fg); }
+.card-type { font-size: .7rem; font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--primary-fg); }
 .card h3 { margin: 0; font-size: 1.06rem; font-weight: var(--weight-semibold); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; letter-spacing: var(--tracking-tight); }
 .card .summary { margin: 0; color: var(--muted); font-size: var(--text-sm); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: var(--leading-relaxed); }
 .card .place { margin: 0; font-size: .84rem; opacity: .7; }
@@ -42,7 +48,10 @@
 .cover.cat-place { background: var(--cat-place); }
 
 /* ── Region cards ── */
-.region-grid { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.region-grid { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); container-type: inline-size; }
+@container (max-width: 600px) {
+  .region-grid { grid-template-columns: 1fr; }
+}
 .region-card { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); display: flex; flex-direction: column; will-change: transform; }
 .region-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); border-color: var(--border); }
 .region-card:active { transform: translateY(0) scale(.97); transition-duration: .1s; }
@@ -52,17 +61,17 @@
 .region-card p { margin: 0; color: var(--muted); font-size: .9rem; }
 .region-card .rc-count { color: var(--primary-fg); font-weight: var(--weight-bold); font-size: var(--text-sm); margin-top: var(--space-1); }
 
-.region-head { display: flex; gap: var(--space-4); align-items: center; color: #fff; border-radius: var(--radius); padding: var(--space-6); margin-bottom: var(--space-2); background: var(--cat-attraction); }
+.region-head { display: flex; gap: var(--space-4); align-items: center; color: var(--text-on-dark, #fff); border-radius: var(--radius); padding: var(--space-6); margin-bottom: var(--space-2); background: var(--cat-attraction); }
 .region-head .rc-emoji { font-size: 2.8rem; }
 .region-head h1 { margin: 0; }
 .region-head p { margin: var(--space-1) 0 0; opacity: .92; }
 
 /* ── Place list (area page) ── */
 .place-list { margin: var(--space-3) 0 var(--space-5); }
-.place-list h3 { font-size: var(--text-sm); font-weight: var(--weight-extrabold); color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin: var(--space-4) 0 var(--space-2); }
+.place-list h3 { font-size: var(--text-sm); font-weight: var(--weight-extrabold); color: var(--muted); text-transform: uppercase; letter-spacing: var(--tracking-caps); margin: var(--space-4) 0 var(--space-2); }
 .place-chips { gap: var(--space-1); }
-.place-chip { font-size: .82rem; padding: var(--space-1) var(--space-3); background: var(--bg-alt); border-color: transparent; cursor: default; }
-.place-chip.has-content { background: var(--card); border-color: var(--primary-fg); color: var(--primary-fg); font-weight: 600; transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
+.place-chip { font-size: var(--text-sm); padding: var(--space-1) var(--space-3); background: var(--bg-alt); border-color: transparent; cursor: default; }
+.place-chip.has-content { background: var(--card); border-color: var(--primary-fg); color: var(--primary-fg); font-weight: var(--weight-semibold); transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
 .place-chip.has-content:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .legacy-note { color: var(--muted); font-size: .82em; font-style: italic; }
 
@@ -85,3 +94,17 @@
 .dark .region-card:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.08); }
 .dark .place-chip { background: var(--bg-alt); }
 .dark .place-chip.has-content { background: rgba(var(--primary-rgb), .1); }
+
+/* ── Reduced motion (cards) ── */
+@media (prefers-reduced-motion: reduce) {
+  .card:hover { transform: none; }
+  .card:active { transform: none; }
+  .card:focus-visible { transform: none; }
+  .card:hover .cover-img img.loaded { transform: none; }
+  .card:hover .badge { transform: none; }
+  .cover-img { animation: none; }
+  .cover-img img[loading="lazy"] { opacity: 1; transform: none; filter: none; }
+  .region-card:hover { transform: none; }
+  .region-card:active { transform: none; }
+  .place-chip.has-content:hover { transform: none; }
+}

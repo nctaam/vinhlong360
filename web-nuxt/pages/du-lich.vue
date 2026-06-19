@@ -5,7 +5,7 @@
     <!-- Hero -->
     <section class="catalog-hero cat-experience">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon">🌿</span>
+        <span class="catalog-hero-icon" aria-hidden="true">🌿</span>
         <div>
           <h1>Du lịch &amp; trải nghiệm</h1>
           <p>Miệt vườn sông nước, cù lao xanh mát, làng nghề trăm năm — khám phá miền Tây theo cách của người bản địa.</p>
@@ -33,7 +33,7 @@
     <section v-for="cat in categories" :key="cat.type" class="block reveal">
       <div class="section-head">
         <h2>{{ cat.emoji }} {{ cat.label }}</h2>
-        <button class="see-all" @click="typeFilter = cat.type; scrollToGrid()">{{ cat.items.length }} kết quả →</button>
+        <button type="button" class="see-all" @click="typeFilter = cat.type; scrollToGrid()">{{ cat.items.length }} kết quả →</button>
       </div>
       <p class="section-desc">{{ cat.desc }}</p>
       <div class="scroll-row" role="region" :aria-label="cat.label">
@@ -54,18 +54,18 @@
         </div>
         <p class="control-label">Loại</p>
         <div class="chip-row" role="group" aria-label="Lọc theo loại">
-          <button :class="['chip', { active: typeFilter === 'all' }]" :aria-pressed="typeFilter === 'all'" @click="typeFilter = 'all'">Tất cả</button>
-          <button v-for="t in typeChips" :key="t.value" :class="['chip', { active: typeFilter === t.value }]" :aria-pressed="typeFilter === t.value" @click="typeFilter = t.value">
+          <button type="button" :class="['chip', { active: typeFilter === 'all' }]" :aria-pressed="typeFilter === 'all'" @click="typeFilter = 'all'">Tất cả</button>
+          <button type="button" v-for="t in typeChips" :key="t.value" :class="['chip', { active: typeFilter === t.value }]" :aria-pressed="typeFilter === t.value" @click="typeFilter = t.value">
             {{ t.label }}
           </button>
         </div>
         <p class="control-label">Theo tháng</p>
         <div class="chip-row" role="group" aria-label="Lọc theo tháng">
-          <button :class="['chip', 'season', { active: seasonFilter === 'all' }]" :aria-pressed="seasonFilter === 'all'" @click="seasonFilter = 'all'">Tất cả</button>
-          <button v-for="m in 12" :key="m" :class="['chip', 'season', { active: seasonFilter === String(m) }]" :aria-pressed="seasonFilter === String(m)" @click="seasonFilter = String(m)">
+          <button type="button" :class="['chip', 'season', { active: seasonFilter === 'all' }]" :aria-pressed="seasonFilter === 'all'" @click="seasonFilter = 'all'">Tất cả</button>
+          <button type="button" v-for="m in 12" :key="m" :class="['chip', 'season', { active: seasonFilter === String(m) }]" :aria-pressed="seasonFilter === String(m)" @click="seasonFilter = String(m)">
             T{{ m }}
           </button>
-          <button :class="['chip', 'season', { active: seasonFilter === 'flood' }]" :aria-pressed="seasonFilter === 'flood'" @click="seasonFilter = 'flood'">🌊 Mùa nước nổi</button>
+          <button type="button" :class="['chip', 'season', { active: seasonFilter === 'flood' }]" :aria-pressed="seasonFilter === 'flood'" @click="seasonFilter = 'flood'">🌊 Mùa nước nổi</button>
         </div>
       </div>
       <p class="result-meta" aria-live="polite">{{ filtered.length }} kết quả</p>
@@ -76,7 +76,7 @@
       </div>
       <EmptyState v-else icon="🌿" title="Không tìm thấy kết quả" message="Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.">
         <template #actions>
-          <button class="btn btn-outline" @click="typeFilter = 'all'; seasonFilter = 'all'; q = ''">Xóa bộ lọc</button>
+          <button type="button" class="btn btn-outline" @click="typeFilter = 'all'; seasonFilter = 'all'; q = ''">Xóa bộ lọc</button>
           <NuxtLink to="/theo-mua" class="btn btn-outline">Xem theo mùa</NuxtLink>
         </template>
       </EmptyState>

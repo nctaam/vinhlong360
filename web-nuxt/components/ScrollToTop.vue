@@ -1,6 +1,6 @@
 <template>
   <Transition name="fade">
-    <button v-show="visible" class="scroll-top" aria-label="Lên đầu trang" @click="scrollUp">
+    <button type="button" v-show="visible" class="scroll-top" aria-label="Lên đầu trang" @click="scrollUp">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M18 15l-6-6-6 6"/>
       </svg>
@@ -51,4 +51,14 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 .fade-enter-from { opacity: 0; transform: translateY(8px) scale(.9); }
 .fade-leave-to { opacity: 0; transform: translateY(4px) scale(.95); }
 
+/* Dark mode */
+.dark .scroll-top { background: var(--glass-bg-heavy); border-color: var(--line); color: var(--primary-fg); }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-top:hover { transform: none; }
+  .scroll-top:active { transform: none; }
+  .fade-enter-active, .fade-leave-active { transition: opacity .15s; }
+  .fade-enter-from, .fade-leave-to { transform: none; }
+}
 </style>

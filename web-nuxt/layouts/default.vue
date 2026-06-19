@@ -7,19 +7,19 @@
           <span class="logo">vinhlong<span class="dot">360</span></span>
           <span class="tld">.vn</span>
         </NuxtLink>
-        <button class="nav-toggle" :aria-expanded="mobileNav" aria-haspopup="true" aria-controls="main-nav" aria-label="Menu" @click="mobileNav = !mobileNav">
+        <button type="button" class="nav-toggle" :aria-expanded="mobileNav" aria-haspopup="true" aria-controls="main-nav" aria-label="Menu" @click="mobileNav = !mobileNav">
           <span></span><span></span><span></span>
         </button>
         <div class="nav-backdrop" :class="{ show: mobileNav }" aria-hidden="true" @click="mobileNav = false"></div>
         <nav id="main-nav" class="main-nav" :class="{ open: mobileNav }" @keydown="onNavKeydown">
           <template v-for="(g, i) in navGroups" :key="g.label">
-            <NuxtLink v-if="g.to" :to="g.to" :class="{ active: isActive(g) }" @click="closeAll">{{ g.label }}</NuxtLink>
+            <NuxtLink v-if="g.to" :to="g.to" :class="{ active: isActive(g) }" :aria-current="isActive(g) ? 'page' : undefined" @click="closeAll">{{ g.label }}</NuxtLink>
             <div v-else class="nav-group" :class="{ open: openGroup === i }">
               <button type="button" class="nav-group-btn" :class="{ active: isActive(g) }" :aria-expanded="openGroup === i" @click="toggleGroup(i)">
                 {{ g.label }}<span class="caret" aria-hidden="true">▾</span>
               </button>
               <div class="nav-panel" :class="{ open: openGroup === i }">
-                <NuxtLink v-for="c in g.children" :key="c.to" :to="c.to" :class="{ active: route.path === c.to }" @click="closeAll">{{ c.label }}</NuxtLink>
+                <NuxtLink v-for="c in g.children" :key="c.to" :to="c.to" :class="{ active: route.path === c.to }" :aria-current="route.path === c.to ? 'page' : undefined" @click="closeAll">{{ c.label }}</NuxtLink>
               </div>
             </div>
           </template>
@@ -27,19 +27,19 @@
         <SearchAutocomplete class="topbar-search" />
         <div class="auth-area">
           <ClientOnly>
-            <button class="theme-toggle" :aria-label="colorMode.value === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'" :title="colorMode.value === 'dark' ? 'Giao diện sáng' : 'Giao diện tối'" @click="toggleColorMode">
+            <button type="button" class="theme-toggle" :aria-label="colorMode.value === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'" :title="colorMode.value === 'dark' ? 'Giao diện sáng' : 'Giao diện tối'" @click="toggleColorMode">
               <span v-if="colorMode.value === 'dark'">☀️</span>
               <span v-else>🌙</span>
             </button>
             <template #fallback>
-              <button class="theme-toggle" aria-label="Đổi giao diện sáng/tối">🌙</button>
+              <button type="button" class="theme-toggle" aria-label="Đổi giao diện sáng/tối">🌙</button>
             </template>
           </ClientOnly>
           <template v-if="isLoggedIn">
             <NotificationBell />
             <UserMenu />
           </template>
-          <button v-else class="auth-btn" @click="showAuth = true">Đăng nhập</button>
+          <button type="button" v-else class="auth-btn" @click="showAuth = true">Đăng nhập</button>
         </div>
       </div>
     </header>
@@ -48,7 +48,7 @@
       <div class="beta-inner">
         <span class="beta-icon">🚧</span>
         <p><strong>Trang đang trong giai đoạn xây dựng.</strong> Một số tính năng có thể chưa hoàn thiện hoặc thay đổi. Cảm ơn bạn đã ghé thăm!</p>
-        <button class="beta-close" aria-label="Đóng thông báo" @click="dismissBeta">&times;</button>
+        <button type="button" class="beta-close" aria-label="Đóng thông báo" @click="dismissBeta">&times;</button>
       </div>
     </div>
 
@@ -79,7 +79,7 @@
           <div class="footer-nav">
             <div class="footer-col">
               <h4>Khám phá</h4>
-              <nav>
+              <nav aria-label="Khám phá">
                 <NuxtLink to="/du-lich">Du lịch & trải nghiệm</NuxtLink>
                 <NuxtLink to="/san-pham">Sản phẩm địa phương</NuxtLink>
                 <NuxtLink to="/ocop">Sản phẩm OCOP</NuxtLink>
@@ -91,7 +91,7 @@
             </div>
             <div class="footer-col">
               <h4>Công cụ</h4>
-              <nav>
+              <nav aria-label="Công cụ">
                 <NuxtLink to="/ban-do" no-prefetch>Bản đồ</NuxtLink>
                 <NuxtLink to="/lich-trinh">Lịch trình gợi ý</NuxtLink>
                 <NuxtLink to="/tao-lich-trinh" no-prefetch>Tạo lịch trình</NuxtLink>
@@ -101,7 +101,7 @@
             </div>
             <div class="footer-col">
               <h4>3 vùng</h4>
-              <nav>
+              <nav aria-label="3 vùng">
                 <NuxtLink to="/khu-vuc/vinh-long">🍊 Vĩnh Long</NuxtLink>
                 <NuxtLink to="/khu-vuc/ben-tre">🥥 Bến Tre</NuxtLink>
                 <NuxtLink to="/khu-vuc/tra-vinh">🛕 Trà Vinh</NuxtLink>
@@ -109,7 +109,7 @@
             </div>
             <div class="footer-col">
               <h4>Dành cho cơ sở</h4>
-              <nav>
+              <nav aria-label="Dành cho cơ sở">
                 <NuxtLink to="/lien-he?ref=claim">🏷️ Đăng ký quản lý trang</NuxtLink>
                 <NuxtLink to="/lien-he">🤝 Hợp tác quảng bá</NuxtLink>
               </nav>

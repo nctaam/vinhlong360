@@ -2,7 +2,7 @@
   <div>
     <div class="admin-head-row">
       <h1>Kiểm duyệt</h1>
-      <button class="admin-refresh" :disabled="loading" @click="fetchQueue">🔄 Làm mới</button>
+      <button type="button" class="admin-refresh" :disabled="loading" @click="fetchQueue">🔄 Làm mới</button>
     </div>
 
     <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
@@ -38,12 +38,12 @@
             <td>{{ p.display_name || p.phone || '—' }}</td>
             <td class="admin-td-truncate">{{ p.content }}</td>
             <td>{{ p.post_type }}</td>
-            <td class="admin-td-muted">{{ formatDate(p.created_at) }}</td>
+            <td class="admin-td-muted"><time :datetime="p.created_at">{{ formatDate(p.created_at) }}</time></td>
             <td class="admin-actions">
-              <button class="btn-success" :disabled="acting === p.id" @click="approve(p.id)">
+              <button type="button" class="btn-success" :disabled="acting === p.id" @click="approve(p.id)">
                 {{ acting === p.id ? '…' : 'Duyệt' }}
               </button>
-              <button class="btn-danger" :disabled="acting === p.id" @click="reject(p.id)">Từ chối</button>
+              <button type="button" class="btn-danger" :disabled="acting === p.id" @click="reject(p.id)">Từ chối</button>
             </td>
           </tr>
           <tr v-if="!queue.length">

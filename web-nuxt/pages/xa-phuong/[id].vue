@@ -1,6 +1,12 @@
 <template>
-  <div v-if="!data?.place" class="page">
-    <p class="empty">Không tìm thấy xã/phường này.</p>
+  <div v-if="fetchFailed" class="page">
+    <EmptyState icon="⚠️" title="Không thể tải trang" message="Lỗi kết nối. Vui lòng thử lại.">
+      <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData(`ward-${id}`)">Thử lại</button>
+    </EmptyState>
+  </div>
+
+  <div v-else-if="!data?.place" class="page">
+    <EmptyState message="Không tìm thấy xã/phường này." />
   </div>
 
   <div v-else class="wp">
@@ -88,7 +94,7 @@
           <div class="wp-contact">
             <div class="wp-contact-item wp-contact-main">
               <span class="wp-contact-label">👮 Công an {{ data.place.name }}</span>
-              <a v-if="attrs.police_phone" :href="`tel:${attrs.police_phone.replace(/\\./g, '')}`" class="wp-phone">{{ attrs.police_phone }}</a>
+              <a v-if="attrs.police_phone" :href="`tel:${attrs.police_phone.replace(/\\./g, '')}`" class="wp-phone" :aria-label="`Gọi công an ${data.place.name}`">{{ attrs.police_phone }}</a>
               <span v-else class="wp-phone-na">Đang cập nhật</span>
             </div>
           </div>
@@ -102,7 +108,7 @@
               <span class="wp-fac-kind">{{ kindMeta(f).emoji }} {{ kindMeta(f).label }}</span>
               <strong>{{ f.name }}</strong>
               <div v-if="attr(f,'address')" class="wp-fac-row">📍 {{ attr(f,'address') }}</div>
-              <div v-if="attr(f,'phone')" class="wp-fac-row">📞 <a :href="`tel:${attr(f,'phone')}`">{{ attr(f,'phone') }}</a></div>
+              <div v-if="attr(f,'phone')" class="wp-fac-row">📞 <a :href="`tel:${attr(f,'phone')}`" :aria-label="`Gọi ${f.name}`">{{ attr(f,'phone') }}</a></div>
             </li>
           </ul>
         </div>
@@ -124,12 +130,16 @@ useReveal()
 const route = useRoute()
 const id = computed(() => route.params.id as string)
 
-const { data } = await useAsyncData(`ward-${id.value}`, () =>
-  $fetch<any>(`/api/places/${id.value}/overview`).catch(() => null))
-
-if (!data.value?.place) {
-  throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy xã/phường', fatal: true })
-}
+const fetchFailed = ref(false)
+const { data } = await useAsyncData(`ward-${id.value}`, async () => {
+  try {
+    fetchFailed.value = false
+    return await $fetch<any>(`/api/places/${id.value}/overview`)
+  } catch {
+    fetchFailed.value = true
+    return null
+  }
+})
 
 const areaMeta = computed(() => AREA_META[data.value?.place?.area] || { name: '', emoji: '📍', blurb: '' })
 const attrs = computed(() => data.value?.place?.attributes || {})
@@ -231,7 +241,7 @@ watch(mapEl, async (el) => {
 .wp { max-width: var(--maxw, 1100px); margin: 0 auto; padding: 0 var(--space-4) var(--space-16); }
 
 /* Hero */
-.wp-hero { border-radius: var(--radius-lg, 16px); padding: var(--space-8) var(--space-6); margin-top: var(--space-2); color: #fff; position: relative; overflow: hidden; }
+.wp-hero { border-radius: var(--radius-lg, 16px); padding: var(--space-8) var(--space-6); margin-top: var(--space-2); color: var(--text-on-dark, #fff); position: relative; overflow: hidden; }
 .wp-hero.area-vinh-long { background: linear-gradient(135deg, #9C3D22 0%, #c0542e 50%, #d4764a 100%); }
 .wp-hero.area-ben-tre { background: linear-gradient(135deg, #1b7a3d 0%, #27944e 50%, #4bae6a 100%); }
 .wp-hero.area-tra-vinh { background: linear-gradient(135deg, #6b3fa0 0%, #8354b8 50%, #a070d0 100%); }
@@ -242,8 +252,9 @@ watch(mapEl, async (el) => {
 .wp-level { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .06em; opacity: .85; font-weight: var(--weight-bold); }
 .wp-hero h1 { margin: var(--space-1) 0 var(--space-1); font-size: clamp(1.5rem, 4vw, 1.8rem); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); }
 .wp-region { margin: 0; opacity: .9; font-size: var(--text-sm); }
-.wp-region a { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
-.wp-region-emoji { margin-right: var(--space-1); }
+.wp-region a { color: var(--text-on-dark, #fff); text-decoration: underline; text-underline-offset: 3px; border-radius: var(--radius-sm); }
+.wp-region a:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 2px; }
+.wp-region-emoji { margin-inline-end: var(--space-1); }
 
 .wp-stats { display: flex; gap: var(--space-6); margin-top: var(--space-5); padding-top: var(--space-4); border-top: .5px solid rgba(255,255,255,.25); }
 .wp-stat { text-align: center; }
@@ -264,8 +275,8 @@ watch(mapEl, async (el) => {
 
 /* Sections */
 .wp-sec { margin-bottom: var(--space-6); }
-.wp-sec h2 { font-size: var(--text-base); font-weight: var(--weight-semibold); margin: 0 0 var(--space-4); display: flex; align-items: center; gap: var(--space-2); }
-.sec-icon { font-size: 1.2rem; }
+.wp-sec h2 { font-size: var(--text-base); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); margin: 0 0 var(--space-4); display: flex; align-items: center; gap: var(--space-2); }
+.sec-icon { font-size: var(--text-lg); }
 .cnt { color: var(--muted); font-weight: var(--weight-normal); font-size: var(--text-sm); }
 .wp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: var(--space-4); }
 .wp-empty { color: var(--muted); font-size: var(--text-sm); padding: var(--space-5) 0; }
@@ -281,24 +292,27 @@ watch(mapEl, async (el) => {
 .wp-contact-item { display: flex; flex-direction: column; gap: 2px; padding: var(--space-2) 0; border-bottom: .5px solid var(--line); }
 .wp-contact-item:last-child { border-bottom: none; padding-bottom: 0; }
 .wp-contact-main { background: var(--bg-warm, #faf6f2); border-radius: var(--radius-sm); padding: var(--space-3); border-bottom: none; margin-bottom: 2px; }
-.wp-contact-label { font-size: .82rem; color: var(--muted); }
-.wp-phone { font-size: 1.05rem; font-weight: 700; color: var(--primary); }
+.wp-contact-label { font-size: var(--text-xs); color: var(--muted); }
+.wp-phone { font-size: var(--text-base); font-weight: var(--weight-bold); color: var(--primary); min-height: 44px; display: inline-flex; align-items: center; }
 .wp-phone:hover { text-decoration: underline; }
-.wp-phone-na { font-size: .88rem; color: var(--muted); font-style: italic; }
+.wp-phone:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.wp-phone-na { font-size: var(--text-sm); color: var(--muted); font-style: italic; }
 
 /* Facilities */
 .wp-fac-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
 .wp-fac { padding: var(--space-2) 0; border-bottom: .5px solid var(--line); transition: background .3s var(--ease-out); border-radius: var(--radius-sm); }
 .wp-fac:hover { background: var(--bg-warm); }
 .wp-fac:last-child { border-bottom: none; }
-.wp-fac-kind { font-size: .75rem; color: var(--primary); display: block; margin-bottom: 2px; }
-.wp-fac-row { font-size: .85rem; color: var(--muted); margin-top: 2px; }
+.wp-fac-kind { font-size: var(--text-xs); color: var(--primary); display: block; margin-bottom: 2px; }
+.wp-fac-row { font-size: var(--text-sm); color: var(--muted); margin-top: 2px; }
 .wp-fac-row a { color: var(--primary); }
+.wp-fac-row a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* Map button */
 .wp-map-btn { display: flex; align-items: center; justify-content: center; gap: var(--space-2); padding: var(--space-3); border-radius: var(--radius-lg, 16px); background: var(--bg-warm, #faf6f2); border: .5px solid var(--line); font-weight: var(--weight-bold); font-size: var(--text-sm); color: var(--ink); min-height: 44px; transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
 .wp-map-btn:hover { background: var(--line); transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .wp-map-btn:active { transform: scale(.97); transition-duration: .08s; }
+.wp-map-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* Responsive */
 @media (max-width: 840px) {
@@ -313,4 +327,21 @@ watch(mapEl, async (el) => {
   .wp-map-container { height: 260px; border-radius: var(--radius-sm); }
 }
 
+/* Dark mode */
+.dark .wp-card { background: var(--card); border-color: var(--line); }
+.dark .wp-card:hover { box-shadow: var(--shadow-lg); }
+.dark .wp-contact-main { background: var(--glass-subtle); }
+.dark .wp-phone { color: var(--primary-fg); }
+.dark .wp-fac:hover { background: var(--glass-subtle); }
+.dark .wp-fac-row a { color: var(--primary-fg); }
+.dark .wp-map-btn { background: var(--glass-subtle); border-color: var(--line); color: var(--ink); }
+.dark .wp-map-btn:hover { background: var(--glass-light); }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .wp-card:hover { transform: none; }
+  .wp-map-btn:hover { transform: none; }
+  .wp-map-btn:active { transform: none; }
+  :deep(.wp-marker:hover) { transform: none; }
+}
 </style>

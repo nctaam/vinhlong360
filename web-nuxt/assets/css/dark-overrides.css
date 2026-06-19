@@ -25,7 +25,7 @@
 
 /* ── 404 catch-all ([...slug]) ── */
 .dark .nf-search input { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); color: var(--ink); }
-.dark .nf-search input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(232, 163, 61, .15); }
+.dark .nf-search input:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(232, 163, 61, .15); }
 .dark .nf-search input::placeholder { color: rgba(255,255,255,.35); }
 .dark .nf-btn-outline { border-color: var(--accent); color: var(--accent); }
 
@@ -78,7 +78,7 @@
 .dark .quick-pick:hover { border-color: var(--primary-fg); box-shadow: var(--shadow-md); }
 
 /* ── Seasonal (theo-mua) ── */
-.dark .b2b-note { background: rgba(46, 125, 91, .08); border-color: rgba(46, 125, 91, .25); }
+.dark .b2b-note { background: rgba(var(--secondary-rgb), .08); border-color: rgba(var(--secondary-rgb), .25); }
 .dark .season-badge { background: rgba(0,0,0,.7); }
 
 /* ── Community (cong-dong) ── */
@@ -89,7 +89,7 @@
 /* ── Directory (danh-ba) ── */
 .dark .fac { border-color: rgba(255,255,255,.08); }
 .dark .fac:hover { border-color: rgba(255,255,255,.15); box-shadow: var(--shadow-md); }
-.dark .dir-disclaimer { background: rgba(234, 140, 30, .08); border-color: rgba(234, 140, 30, .25); }
+.dark .dir-disclaimer { background: rgba(var(--accent-rgb), .08); border-color: rgba(var(--accent-rgb), .25); }
 
 /* ── Contact (lien-he) ── */
 .dark .contact-card { border-color: rgba(255,255,255,.08); }
@@ -107,8 +107,8 @@
 .dark .interest-nav .chip.active { box-shadow: var(--shadow-sm); }
 
 /* ── Admin: users ── */
-.dark .status-active { background: rgba(46, 125, 91, .18); color: #34d399; }
-.dark .status-banned { background: rgba(220, 38, 38, .16); color: #f87171; }
+.dark .status-active { background: rgba(var(--secondary-rgb), .18); color: var(--secondary-fg-strong, #34d399); }
+.dark .status-banned { background: rgba(var(--error-rgb, 220, 38, 38), .16); color: var(--error-light, #f87171); }
 .dark .admin-select-inline { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); color: var(--ink); }
 
 /* ── Admin: stats (thong-ke) ── */
@@ -116,8 +116,8 @@
 .dark .stat-panel:hover { box-shadow: var(--shadow-md); }
 
 /* ── Admin: reports (bao-cao) ── */
-.dark .status-pending { background: rgba(234, 140, 30, .18); color: #f59e0b; }
-.dark .status-resolved { background: rgba(46, 125, 91, .18); color: #34d399; }
+.dark .status-pending { background: rgba(var(--accent-rgb), .18); color: var(--accent-light, #f59e0b); }
+.dark .status-resolved { background: rgba(var(--secondary-rgb), .18); color: var(--secondary-fg-strong, #34d399); }
 .dark .status-dismissed { background: rgba(255,255,255,.06); color: rgba(255,255,255,.4); }
 
 /* ── Admin: data quality ── */

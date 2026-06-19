@@ -5,7 +5,7 @@
     <!-- Hero -->
     <section class="catalog-hero cat-contact">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon">📬</span>
+        <span class="catalog-hero-icon" aria-hidden="true">📬</span>
         <div>
           <h1>Liên hệ</h1>
           <p>vinhlong360.vn — Mạng xã hội du lịch & đặc sản Vĩnh Long · Bến Tre · Trà Vinh</p>
@@ -184,4 +184,25 @@ useHead({
   .card-claim, .card-general { grid-column: span 2; }
 }
 
+/* Focus & accessibility */
+.contact-card a:focus-visible, .card-action .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; border-radius: var(--radius-sm); }
+.card-action .btn { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), background .3s var(--ease-out); }
+.card-action .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.card-action .btn:active { transform: scale(.96); transition-duration: .08s; }
+
+/* Dark mode */
+.dark .contact-card { background: var(--bg-alt); border-color: var(--line); }
+.dark .contact-card:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.1); }
+.dark .card-claim { background: color-mix(in srgb, var(--accent) 6%, var(--bg-alt)); border-color: rgba(var(--accent-rgb, 234,140,30), .25); }
+.dark .contact-card p { color: var(--ink-secondary); }
+.dark .contact-card h2 { color: var(--ink); }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .contact-card:hover { transform: none; }
+  .contact-card:active { transform: none; }
+  .contact-card:hover .card-icon { transform: none; }
+  .card-action .btn:hover { transform: none; }
+  .card-action .btn:active { transform: none; }
+}
 </style>

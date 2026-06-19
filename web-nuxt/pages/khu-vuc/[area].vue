@@ -5,7 +5,7 @@
     <!-- Hero -->
     <section v-if="areaMeta" class="catalog-hero" :class="'cat-area-' + areaKey">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon">{{ areaMeta.emoji }}</span>
+        <span class="catalog-hero-icon" aria-hidden="true">{{ areaMeta.emoji }}</span>
         <div>
           <h1>{{ areaMeta.name }}</h1>
           <p>{{ areaMeta.blurb }}</p>
@@ -22,6 +22,11 @@
         </div>
       </div>
     </section>
+
+    <!-- Error state -->
+    <EmptyState v-if="fetchError && !entities.length" icon="⚠️" title="Không thể tải dữ liệu" message="Vui lòng thử lại sau.">
+      <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData(`area-${areaKey}`)">Thử lại</button>
+    </EmptyState>
 
     <!-- Featured -->
     <section v-if="featured.length" class="block reveal">
@@ -106,7 +111,7 @@ const route = useRoute()
 const areaKey = route.params.area as string
 const areaMeta = AREA_META[areaKey]
 
-const { data } = await useAsyncData(`area-${areaKey}`, () =>
+const { data, error: fetchError } = await useAsyncData(`area-${areaKey}`, () =>
   $fetch<any>(`/api/entities?area=${areaKey}&limit=200`)
 )
 

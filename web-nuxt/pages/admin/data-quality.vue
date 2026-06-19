@@ -3,9 +3,9 @@
     <div class="admin-head-row">
       <div>
         <h1>Chất lượng dữ liệu</h1>
-        <p class="admin-muted" style="margin-top:4px">Kiểm duyệt candidate GPT-5.5 theo chính sách evidence-only trước khi cập nhật dữ liệu public.</p>
+        <p class="admin-muted" style="margin-top: var(--space-1)">Kiểm duyệt candidate GPT-5.5 theo chính sách evidence-only trước khi cập nhật dữ liệu public.</p>
       </div>
-      <button class="admin-refresh" :disabled="loading" @click="refreshAll(true)">🔄 Làm mới</button>
+      <button type="button" class="admin-refresh" :disabled="loading" @click="refreshAll(true)">🔄 Làm mới</button>
     </div>
 
     <div v-if="summary" class="stat-grid dq-stats">
@@ -40,7 +40,7 @@
     </p>
 
     <div class="dq-toolbar">
-      <select v-model="kind" class="input" @change="fetchCandidates(true)">
+      <select v-model="kind" class="input" aria-label="Lọc theo loại" @change="fetchCandidates(true)">
         <option value="">Tất cả loại</option>
         <option value="source">Nguồn</option>
         <option value="location">Tọa độ</option>
@@ -48,16 +48,16 @@
         <option value="accuracy">Accuracy</option>
         <option value="relationship">Relationship</option>
       </select>
-      <select v-model="bucket" class="input" @change="fetchCandidates(true)">
+      <select v-model="bucket" class="input" aria-label="Lọc theo trạng thái" @change="fetchCandidates(true)">
         <option value="needs_review">Cần duyệt</option>
         <option value="auto_apply">Auto-apply</option>
         <option value="reject">Reject</option>
         <option value="">Tất cả bucket</option>
       </select>
-      <button class="btn btn-outline" :disabled="!autoApplyIds.length || applying" @click="dryRunSelected">
+      <button type="button" class="btn btn-outline" :disabled="!autoApplyIds.length || applying" @click="dryRunSelected">
         Dry-run selected
       </button>
-      <button class="btn btn-primary" :disabled="!autoApplyIds.length || applying" @click="applySelected">
+      <button type="button" class="btn btn-primary" :disabled="!autoApplyIds.length || applying" @click="applySelected">
         Apply selected
       </button>
     </div>
@@ -92,7 +92,7 @@
               />
             </td>
             <td>
-              <NuxtLink :to="`/dia-diem/${c.entity_id}`" target="_blank">{{ c.entity_id }}</NuxtLink>
+              <NuxtLink :to="`/dia-diem/${c.entity_id}`" target="_blank" rel="noopener">{{ c.entity_id }}</NuxtLink>
               <small>{{ c.bucket }}</small>
             </td>
             <td>{{ c.field }}</td>
@@ -119,11 +119,11 @@
       </table>
     </div>
 
-    <div class="admin-pagination">
-      <button :disabled="offset === 0 || loading" @click="prevPage">Trước</button>
+    <nav class="admin-pagination" role="navigation" aria-label="Phân trang">
+      <button type="button" :disabled="offset === 0 || loading" @click="prevPage">Trước</button>
       <span>{{ offset + 1 }} - {{ Math.min(offset + limit, total) }} / {{ total }}</span>
-      <button :disabled="offset + limit >= total || loading" @click="nextPage">Sau</button>
-    </div>
+      <button type="button" :disabled="offset + limit >= total || loading" @click="nextPage">Sau</button>
+    </nav>
 
     <section class="dq-history">
       <div class="dq-section-head">
@@ -131,7 +131,7 @@
           <h2>Lịch sử apply</h2>
           <p>Batch đã ghi vào dữ liệu public, kèm diff và backup để rollback khi cần.</p>
         </div>
-        <button class="btn btn-outline btn-sm" :disabled="historyLoading" @click="fetchHistory">Tải lại</button>
+        <button type="button" class="btn btn-outline btn-sm" :disabled="historyLoading" @click="fetchHistory">Tải lại</button>
       </div>
       <div v-if="historyLoading" class="dq-history-empty">Đang tải lịch sử…</div>
       <div v-else-if="!history.length" class="dq-history-empty">Chưa có batch nào được apply.</div>
@@ -140,9 +140,9 @@
           <div class="dq-history-card-head">
             <div>
               <strong>{{ h.record_type === 'rollback' ? 'Rollback' : 'Apply' }} {{ h.batch_id }}</strong>
-              <small>{{ h.applied_at || h.rolled_back_at || 'unknown time' }}</small>
+              <time v-if="h.applied_at || h.rolled_back_at" :datetime="h.applied_at || h.rolled_back_at"><small>{{ h.applied_at || h.rolled_back_at }}</small></time><small v-else>unknown time</small>
             </div>
-            <button
+            <button type="button"
               v-if="h.record_type === 'apply'"
               class="btn btn-outline btn-sm danger"
               :disabled="!!rollingBack"

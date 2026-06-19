@@ -5,7 +5,7 @@
     <!-- Hero -->
     <section class="catalog-hero cat-itinerary">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon">📋</span>
+        <span class="catalog-hero-icon" aria-hidden="true">📋</span>
         <div>
           <h1>Tạo lịch trình</h1>
           <p>Lập kế hoạch chuyến đi của bạn — chọn điểm đến, sắp xếp thứ tự và lưu lại.</p>
@@ -18,17 +18,17 @@
       <div class="planner-picker">
         <!-- Source tabs: All vs Favorites -->
         <div class="chip-row chip-row-spaced">
-          <button :class="['chip', { active: sourceTab === 'all' }]" @click="sourceTab = 'all'">Tất cả</button>
-          <button :class="['chip', { active: sourceTab === 'saved' }]" @click="sourceTab = 'saved'">
+          <button type="button" :class="['chip', { active: sourceTab === 'all' }]" @click="sourceTab = 'all'">Tất cả</button>
+          <button type="button" :class="['chip', { active: sourceTab === 'saved' }]" @click="sourceTab = 'saved'">
             ❤️ Đã lưu ({{ favCount }})
           </button>
         </div>
         <div class="search-row search-row-spaced">
-          <input v-model="searchQ" type="search" placeholder="Tìm điểm đến, đặc sản, lưu trú…" />
+          <input v-model="searchQ" type="search" aria-label="Tìm điểm đến" placeholder="Tìm điểm đến, đặc sản, lưu trú…" />
         </div>
         <div v-if="sourceTab === 'all'" class="chip-row chip-row-spaced">
-          <button :class="['chip', { active: typeFilter === 'all' }]" @click="typeFilter = 'all'">Tất cả</button>
-          <button v-for="t in typeChips" :key="t.value" :class="['chip', { active: typeFilter === t.value }]" @click="typeFilter = t.value">
+          <button type="button" :class="['chip', { active: typeFilter === 'all' }]" @click="typeFilter = 'all'">Tất cả</button>
+          <button type="button" v-for="t in typeChips" :key="t.value" :class="['chip', { active: typeFilter === t.value }]" @click="typeFilter = t.value">
             {{ t.label }}
           </button>
         </div>
@@ -37,33 +37,38 @@
             v-for="e in pickerResults"
             :key="e.id"
             class="picker-item"
+            role="button"
+            tabindex="0"
             @click="addStop(e)"
+            @keydown.enter="addStop(e)"
+            @keydown.space.prevent="addStop(e)"
           >
             <span class="picker-emoji">{{ getTypeMeta(e.type).emoji }}</span>
             <div class="picker-info">
-              <strong>{{ e.name }}</strong>
+              <strong :title="e.name">{{ e.name }}</strong>
               <small>{{ e.place_name || '' }} · {{ getTypeMeta(e.type).label }}</small>
             </div>
-            <button class="btn btn-sm btn-ghost" title="Thêm vào lịch trình">+</button>
+            <button type="button" class="btn btn-sm btn-ghost" title="Thêm vào lịch trình">+</button>
           </div>
-          <p v-if="!pickerResults.length" class="empty picker-empty">Không tìm thấy kết quả.</p>
+          <p v-if="fetchError" class="empty picker-empty">⚠️ Không thể tải danh sách. <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData('planner-entities')">Thử lại</button></p>
+          <p v-else-if="!pickerResults.length" class="empty picker-empty">Không tìm thấy kết quả.</p>
         </div>
       </div>
 
       <!-- Right: Itinerary builder -->
       <div class="planner-builder">
         <div class="builder-header">
-          <input v-model="planTitle" class="input builder-title" placeholder="Tên lịch trình (VD: 2 ngày khám phá Vĩnh Long)" />
+          <input v-model="planTitle" class="input builder-title" placeholder="Tên lịch trình (VD: 2 ngày khám phá Vĩnh Long)" aria-label="Tên lịch trình" />
           <div class="builder-actions">
-            <button class="btn btn-sm btn-ghost" @click="clearPlan" :disabled="!stops.length">Xóa tất cả</button>
-            <button class="btn btn-sm btn-primary" @click="savePlan" :disabled="!stops.length">Lưu lịch trình</button>
+            <button type="button" class="btn btn-sm btn-ghost" @click="clearPlan" :disabled="!stops.length">Xóa tất cả</button>
+            <button type="button" class="btn btn-sm btn-primary" @click="savePlan" :disabled="!stops.length">Lưu lịch trình</button>
           </div>
         </div>
 
         <!-- Transport mode selector -->
         <div v-if="stops.length >= 2" class="transport-mode">
           <span class="tm-label">Phương tiện:</span>
-          <button v-for="m in transportModes" :key="m.value" :class="['chip', { active: transportMode === m.value }]" @click="transportMode = m.value">
+          <button type="button" v-for="m in transportModes" :key="m.value" :class="['chip', { active: transportMode === m.value }]" @click="transportMode = m.value">
             {{ m.icon }} {{ m.label }}
           </button>
           <div v-if="routeResult" class="route-total">
@@ -89,9 +94,9 @@
                     <small>{{ stop.place_name || '' }} · {{ getTypeMeta(stop.type).label }}</small>
                   </div>
                   <div class="stop-card-actions">
-                    <button v-if="idx > 0" class="btn-icon-sm" title="Lên" @click="moveStop(idx, -1)">↑</button>
-                    <button v-if="idx < stops.length - 1" class="btn-icon-sm" title="Xuống" @click="moveStop(idx, 1)">↓</button>
-                    <button class="btn-icon-sm danger" title="Xóa" @click="removeStop(idx)">✕</button>
+                    <button type="button" v-if="idx > 0" class="btn-icon-sm" title="Lên" aria-label="Di chuyển lên" @click="moveStop(idx, -1)">↑</button>
+                    <button type="button" v-if="idx < stops.length - 1" class="btn-icon-sm" title="Xuống" aria-label="Di chuyển xuống" @click="moveStop(idx, 1)">↓</button>
+                    <button type="button" class="btn-icon-sm danger" title="Xóa" aria-label="Xóa điểm dừng" @click="removeStop(idx)">✕</button>
                   </div>
                 </div>
                 <div class="stop-card-fields">
@@ -99,12 +104,14 @@
                     v-model="stop.time"
                     class="input stop-time-input"
                     type="text"
+                    aria-label="Thời gian dừng"
                     placeholder="VD: 8:00 - 10:00"
                   />
                   <input
                     v-model="stop.notes"
                     class="input stop-note-input"
                     type="text"
+                    aria-label="Ghi chú điểm dừng"
                     placeholder="Ghi chú (tùy chọn)"
                   />
                 </div>
@@ -137,8 +144,8 @@
               <small>{{ plan.stops.length }} điểm · Lưu {{ formatDate(plan.savedAt) }}</small>
             </button>
             <div class="saved-plan-actions">
-              <button class="btn btn-sm btn-ghost" @click="sharePlan(pi)">Chia sẻ</button>
-              <button class="btn btn-sm btn-ghost danger" @click="deletePlan(pi)">Xóa</button>
+              <button type="button" class="btn btn-sm btn-ghost" @click="sharePlan(pi)">Chia sẻ</button>
+              <button type="button" class="btn btn-sm btn-ghost danger" @click="deletePlan(pi)">Xóa</button>
             </div>
           </div>
         </div>
@@ -198,7 +205,7 @@ let mapInstance: any = null
 let maplibre: any = null
 let markers: any[] = []
 
-const { data } = await useAsyncData('planner-entities', () =>
+const { data, error: fetchError } = await useAsyncData('planner-entities', () =>
   $fetch<any>('/api/entities?limit=700')
 )
 
@@ -463,7 +470,11 @@ useHead({
 </script>
 
 <style scoped>
-.picker-list { max-height: 50vh; overflow-y: auto; }
+.picker-list { max-height: 50vh; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+.picker-list::-webkit-scrollbar { width: 6px; }
+.picker-list::-webkit-scrollbar-track { background: transparent; }
+.picker-list::-webkit-scrollbar-thumb { background: var(--line); border-radius: var(--radius-sm); }
+.picker-list::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 .picker-item {
   display: flex; align-items: center; gap: var(--space-3);
   padding: var(--space-3); border-radius: var(--radius-sm);
@@ -472,17 +483,19 @@ useHead({
 }
 .picker-item:hover { background: var(--bg-warm); transform: translateX(3px); }
 .picker-item:active { transform: scale(.98); transition-duration: .08s; }
-.picker-emoji { font-size: 1.3rem; flex-shrink: 0; }
+.picker-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-md); }
+.picker-emoji { font-size: var(--text-lg); flex-shrink: 0; }
 .picker-info { flex: 1; min-width: 0; }
 .picker-info strong { display: block; font-size: var(--text-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .picker-info small { color: var(--muted); font-size: var(--text-xs); }
 .picker-empty { text-align: center; padding: var(--space-5); color: var(--muted); font-size: var(--text-sm); }
 .builder-header { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin-bottom: var(--space-4); }
 .builder-actions { display: flex; gap: var(--space-2); }
-.stop-item { display: flex; gap: var(--space-3); position: relative; }
+.stop-item { display: flex; gap: var(--space-3); position: relative; animation: stopIn .3s var(--ease-out) both; }
+@keyframes stopIn { from { opacity: 0; transform: translateY(6px); } }
 .stop-num {
   width: 28px; height: 28px; border-radius: 50%;
-  background: var(--primary); color: #fff;
+  background: var(--primary); color: var(--text-on-dark, #fff);
   display: flex; align-items: center; justify-content: center;
   font-size: var(--text-sm); font-weight: var(--weight-bold);
   flex-shrink: 0; z-index: 1;
@@ -496,7 +509,7 @@ useHead({
 }
 .stop-card:hover { border-color: var(--border); box-shadow: var(--shadow-sm); transform: translateY(-2px); }
 .stop-card-head { display: flex; align-items: center; gap: var(--space-3); }
-.stop-emoji { font-size: 1.2rem; }
+.stop-emoji { font-size: var(--text-lg); }
 .stop-card-info { flex: 1; min-width: 0; }
 .stop-card-info strong { display: block; font-size: var(--text-sm); }
 .stop-card-info small { color: var(--muted); font-size: var(--text-xs); }
@@ -504,9 +517,25 @@ useHead({
 .stop-list { margin-bottom: var(--space-4); }
 .route-map { height: 300px; border-radius: var(--radius-lg, 16px); overflow: hidden; border: .5px solid var(--line); box-shadow: var(--shadow-sm); }
 .stop-card-actions button { min-height: 36px; min-width: 36px; display: inline-flex; align-items: center; justify-content: center; }
-.dark .picker-item:hover { background: rgba(255,255,255,.06); }
+.dark .picker-item:hover { background: var(--glass-light); }
 .dark .stop-card { background: var(--card); border-color: var(--line); }
-.dark .stop-card:hover { border-color: rgba(255,255,255,.1); }
+.dark .stop-card:hover { border-color: var(--border); }
 .dark .stop-connector { background: var(--primary-fg); }
+.dark .picker-list::-webkit-scrollbar-thumb { background: var(--glass-medium); }
+.dark .picker-list::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.2); }
+.dark .saved-plan-item { background: var(--bg-alt); border-color: var(--line); }
+.dark .saved-plan-item:hover { border-color: rgba(255,255,255,.1); }
+.dark .route-map { border-color: var(--line); }
+.dark .route-leg-info { background: rgba(255,255,255,.04); }
+.dark .route-total { background: rgba(255,255,255,.04); }
+.dark .builder-title { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
+.dark .stop-time-input, .dark .stop-note-input { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
 
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .picker-item:hover { transform: none; }
+  .picker-item:active { transform: none; }
+  .stop-card:hover { transform: none; }
+  .stop-item { animation: none; }
+}
 </style>

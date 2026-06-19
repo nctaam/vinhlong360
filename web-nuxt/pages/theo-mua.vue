@@ -5,7 +5,7 @@
     <!-- Hero -->
     <section class="catalog-hero cat-season">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon">📅</span>
+        <span class="catalog-hero-icon" aria-hidden="true">📅</span>
         <div>
           <h1>Tháng {{ month }} — đi đâu, ăn gì?</h1>
           <p>Trải nghiệm, đặc sản &amp; món ăn đang vào mùa ở Vĩnh Long, Bến Tre, Trà Vinh.</p>
@@ -33,7 +33,7 @@
         <h2>Chọn tháng</h2>
       </div>
       <div class="month-grid">
-        <button
+        <button type="button"
           v-for="m in 12" :key="m"
           :class="['quick-pick', { active: m === month }]"
           @click="month = m"
@@ -217,10 +217,17 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/theo-mua') }] })
 <style scoped>
 .month-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: var(--space-2); }
 .season-item { position: relative; display: flex; flex-direction: column; }
-.season-badge { position: absolute; top: var(--space-2); left: var(--space-2); z-index: 2; background: rgba(0,0,0,.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: #fff; font-size: .72rem; font-weight: var(--weight-semibold); padding: 3px var(--space-3); border-radius: var(--radius-full); }
+.season-badge { position: absolute; top: var(--space-2); left: var(--space-2); z-index: 2; background: var(--overlay-dark); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: var(--text-on-dark, #fff); font-size: .72rem; font-weight: var(--weight-semibold); padding: 3px var(--space-3); border-radius: var(--radius-full); }
 .season-badge.peak { background: var(--accent); color: var(--ink); font-weight: var(--weight-bold); }
 .season-when { color: var(--muted); margin-top: var(--space-1); font-size: var(--text-xs); }
 .b2b-note { background: rgba(46, 125, 91, .06); border: .5px solid rgba(46, 125, 91, .2); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); font-size: var(--text-sm); margin: 0 0 var(--space-5); line-height: var(--leading-relaxed); }
 .b2b-note a { color: var(--primary-fg); font-weight: var(--weight-semibold); }
 .see-all-count { font-size: var(--text-sm); color: var(--muted); }
+
+/* Dark mode */
+.dark .season-badge { background: rgba(255,255,255,.12); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.dark .season-badge.peak { background: var(--accent); color: var(--ink); }
+.dark .b2b-note { background: rgba(46, 125, 91, .08); border-color: rgba(46, 125, 91, .15); }
+.dark .month-grid .quick-pick { background: var(--bg-alt); border-color: var(--line); }
+.dark .month-grid .quick-pick:hover { border-color: rgba(255,255,255,.15); }
 </style>

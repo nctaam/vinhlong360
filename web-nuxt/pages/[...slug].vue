@@ -5,12 +5,12 @@
       <h1 class="nf-code">404</h1>
       <p class="nf-msg">Trang bạn tìm không tồn tại hoặc đã bị xóa.</p>
       <form class="nf-search" @submit.prevent="onSearch">
-        <input v-model="q" type="search" placeholder="Tìm đặc sản, trải nghiệm…" />
+        <input v-model="q" type="search" placeholder="Tìm đặc sản, trải nghiệm…" aria-label="Tìm kiếm" autocomplete="off" />
         <button type="submit">Tìm</button>
       </form>
       <div class="nf-actions">
         <NuxtLink to="/" class="nf-btn nf-btn-primary">Về trang chủ</NuxtLink>
-        <button class="nf-btn nf-btn-outline" @click="$router.back()">Quay lại</button>
+        <button type="button" class="nf-btn nf-btn-outline" @click="$router.back()">Quay lại</button>
       </div>
     </div>
   </section>
@@ -83,7 +83,7 @@ function onSearch() {
   transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo);
 }
 
-.nf-search input:focus {
+.nf-search input:focus-visible {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .1);
@@ -92,7 +92,7 @@ function onSearch() {
 .nf-search button {
   padding: var(--space-3) var(--space-5);
   background: var(--accent);
-  color: #fff;
+  color: var(--text-on-dark, #fff);
   border: none;
   border-radius: var(--radius-full, 100px);
   font-size: var(--text-sm);
@@ -103,6 +103,8 @@ function onSearch() {
 }
 
 .nf-search button:hover { background: var(--accent-dark); }
+.nf-search button:active { transform: scale(.95); transition-duration: .08s; }
+.nf-search button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .nf-actions {
   display: flex;
@@ -124,10 +126,11 @@ function onSearch() {
 }
 
 .nf-btn:active { transform: scale(.97); }
+.nf-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .nf-btn-primary {
   background: var(--accent);
-  color: #fff;
+  color: var(--text-on-dark, #fff);
   border: none;
 }
 
@@ -139,7 +142,7 @@ function onSearch() {
   border: 1.5px solid var(--accent);
 }
 
-.nf-btn-outline:hover { background: var(--accent); color: #fff; }
+.nf-btn-outline:hover { background: var(--accent); color: var(--text-on-dark, #fff); }
 
 .nf-inner { animation: nfIn .5s var(--ease-spring-gentle); }
 @keyframes nfIn { from { opacity: 0; transform: translateY(16px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }

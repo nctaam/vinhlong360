@@ -205,6 +205,19 @@ def learn_from_gaps(max_gaps: int = 5, dry_run: bool = False) -> dict:
     existing_ids = {e["id"] for e in kb["entities"]}
     existing_names = {_norm_name(e["name"]) for e in kb["entities"]}
 
+    # Also check DB names to prevent duplicates missed by data.json-only dedup
+    try:
+        from database import db as _db
+        for row in _db.search_entities("", limit=5000):
+            eid = row.get("id", "")
+            ename = row.get("name", "")
+            if eid:
+                existing_ids.add(eid)
+            if ename:
+                existing_names.add(_norm_name(ename))
+    except Exception as exc:
+        _logger.debug(f"DB dedup check unavailable: {exc}")
+
     new_entities = []
     processed = 0
 

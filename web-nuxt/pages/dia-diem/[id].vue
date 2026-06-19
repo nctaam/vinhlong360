@@ -28,7 +28,7 @@
           </ClientOnly>
         </div>
       </div>
-      <button v-if="entity.images?.length" class="dc-photo-btn" :aria-label="entity.images.length === 1 ? 'Xem ảnh' : `Xem ${entity.images.length} ảnh`" @click="openCoverLightbox">
+      <button type="button" v-if="entity.images?.length" class="dc-photo-btn" :aria-label="entity.images.length === 1 ? 'Xem ảnh' : `Xem ${entity.images.length} ảnh`" @click="openCoverLightbox">
         <span class="dc-photo-icon" aria-hidden="true">&#128247;</span>
         {{ entity.images.length === 1 ? 'Xem ảnh' : `${entity.images.length} ảnh` }}
       </button>
@@ -49,7 +49,7 @@
           @keydown.enter="openCoverLightbox(i)"
           @keydown.space.prevent="openCoverLightbox(i)"
         />
-        <button v-if="entity.images.length > 4" class="dc-thumb-more" :aria-label="`Xem thêm ${entity.images.length - 4} ảnh`" @click="openCoverLightbox(4)">
+        <button type="button" v-if="entity.images.length > 4" class="dc-thumb-more" :aria-label="`Xem thêm ${entity.images.length - 4} ảnh`" @click="openCoverLightbox(4)">
           +{{ entity.images.length - 4 }}
         </button>
       </div>
@@ -58,11 +58,12 @@
 
     <!-- Lightbox (replaces old ImageGallery) -->
     <Teleport to="body">
-      <div v-if="lightboxOpen" class="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh" @click.self="lightboxOpen = false" @keydown.escape="lightboxOpen = false" @keydown.left="lbPrev" @keydown.right="lbNext" tabindex="-1" ref="lightboxEl">
-        <button class="lb-close" aria-label="Đóng" @click="lightboxOpen = false">&times;</button>
-        <button v-if="entity.images?.length > 1" class="lb-prev" aria-label="Ảnh trước" @click="lbPrev">&#8249;</button>
-        <img :src="entity.images[lbIndex]" :alt="`${entity.name} - ${lbIndex + 1}`" class="lb-img" />
-        <button v-if="entity.images?.length > 1" class="lb-next" aria-label="Ảnh tiếp" @click="lbNext">&#8250;</button>
+      <div v-if="lightboxOpen" class="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh" @click.self="lightboxOpen = false" @keydown.escape="lightboxOpen = false" @keydown.left="lbPrev" @keydown.right="lbNext" tabindex="-1" ref="lightboxEl"
+        @touchstart.passive="lbTouchStart" @touchmove.passive="lbTouchMove" @touchend="lbTouchEnd">
+        <button type="button" class="lb-close" aria-label="Đóng" @click="lightboxOpen = false">&times;</button>
+        <button type="button" v-if="entity.images?.length > 1" class="lb-prev" aria-label="Ảnh trước" @click="lbPrev">&#8249;</button>
+        <img :src="entity.images[lbIndex]" :alt="`${entity.name} - ${lbIndex + 1}`" class="lb-img" :style="lbDragStyle" :key="lbIndex" />
+        <button type="button" v-if="entity.images?.length > 1" class="lb-next" aria-label="Ảnh tiếp" @click="lbNext">&#8250;</button>
         <div class="lb-counter" aria-live="polite">{{ lbIndex + 1 }} / {{ entity.images.length }}</div>
       </div>
     </Teleport>
@@ -72,9 +73,9 @@
       <div class="detail-main">
         <!-- Highlights quét nhanh (Baymard: 78% site thiếu; chống info bị chôn dưới fold) -->
         <div v-if="hasHighlights" class="highlights">
-          <a v-if="entity.attributes?.phone" class="hl hl-action" :href="'tel:' + entity.attributes.phone">📞 Gọi</a>
-          <a v-if="zaloLink" class="hl hl-action" :href="zaloLink" target="_blank" rel="nofollow">💬 Zalo</a>
-          <NuxtLink v-if="hasCoords" class="hl hl-action" :to="mapUrl">🗺️ Bản đồ</NuxtLink>
+          <a v-if="entity.attributes?.phone" class="hl hl-action" :href="'tel:' + entity.attributes.phone" :aria-label="`Gọi ${entity.name}`">📞 Gọi</a>
+          <a v-if="zaloLink" class="hl hl-action" :href="zaloLink" target="_blank" rel="nofollow noopener" :aria-label="`Nhắn Zalo ${entity.name}`">💬 Zalo</a>
+          <NuxtLink v-if="hasCoords" class="hl hl-action" :to="mapUrl" :aria-label="`Xem ${entity.name} trên bản đồ`">🗺️ Bản đồ</NuxtLink>
           <span v-if="entity.attributes?.hours" class="hl">🕒 {{ entity.attributes.hours }}</span>
           <span v-if="priceText" class="hl">💰 {{ priceText }}</span>
           <span v-if="addressText" class="hl">📍 {{ addressText }}</span>
@@ -83,9 +84,14 @@
 
         <!-- Mô tả chi tiết -->
         <div v-if="descriptionParagraphs.length" class="entity-description">
-          <p v-for="(para, i) in visibleParagraphs" :key="i">{{ para }}</p>
-          <button v-if="descriptionParagraphs.length > 3" class="desc-toggle" @click="descExpanded = !descExpanded">
-            {{ descExpanded ? 'Thu gọn ↑' : 'Đọc thêm ↓' }}
+          <div ref="descContentRef" class="desc-content" :class="{ expanded: descExpanded || descriptionParagraphs.length <= 3 }">
+            <p v-for="(para, i) in descriptionParagraphs" :key="i">{{ para }}</p>
+          </div>
+          <button type="button" v-if="descriptionParagraphs.length > 3" class="desc-toggle" @click="descExpanded = !descExpanded">
+            <span class="desc-toggle-icon" :class="{ rotated: descExpanded }">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+            {{ descExpanded ? 'Thu gọn' : 'Đọc thêm' }}
           </button>
         </div>
 
@@ -239,9 +245,9 @@
 
         <!-- Liên hệ trực tiếp (showcase — KHÔNG đặt hàng/giỏ hàng/thanh toán on-site) -->
         <div v-if="entity.attributes?.phone || zaloLink || buyContactUrl" class="contact-row">
-          <a v-if="entity.attributes?.phone" class="ns-action contact-cta" :href="'tel:' + entity.attributes.phone">📞 Gọi</a>
-          <a v-if="zaloLink" class="ns-action contact-cta" :href="zaloLink" target="_blank" rel="nofollow">💬 Zalo</a>
-          <a v-if="buyContactUrl" class="ns-action contact-cta" :href="buyContactUrl" target="_blank" rel="nofollow">🛒 Hỏi mua trực tiếp</a>
+          <a v-if="entity.attributes?.phone" class="ns-action contact-cta" :href="'tel:' + entity.attributes.phone" :aria-label="`Gọi ${entity.name}`">📞 Gọi</a>
+          <a v-if="zaloLink" class="ns-action contact-cta" :href="zaloLink" target="_blank" rel="nofollow noopener" :aria-label="`Nhắn Zalo ${entity.name}`">💬 Zalo</a>
+          <a v-if="buyContactUrl" class="ns-action contact-cta" :href="buyContactUrl" target="_blank" rel="nofollow noopener" :aria-label="`Hỏi mua ${entity.name}`">🛒 Hỏi mua trực tiếp</a>
         </div>
         <NuxtLink :to="claimUrl" class="ns-action claim-cta">🏷️ Đây là cơ sở của tôi — đăng ký quản lý</NuxtLink>
         <NuxtLink class="quality-report" :to="reportUrl">Báo sai dữ liệu</NuxtLink>
@@ -262,7 +268,7 @@
         <div class="next-steps">
           <h3 class="ns-title">Bước tiếp theo</h3>
           <ClientOnly>
-            <button class="ns-action" @click="toggleAndSave">
+            <button type="button" class="ns-action" @click="toggleAndSave">
               {{ entitySaved ? '❤️ Đã lưu' : '🤍 Lưu vào lịch trình' }}
             </button>
           </ClientOnly>
@@ -277,7 +283,7 @@
     <!-- Sticky mobile CTA bar (always visible, thumb zone) -->
     <div v-if="entity.attributes?.phone || zaloLink || hasCoords" class="sticky-cta-bar">
       <a v-if="entity.attributes?.phone" class="scta-phone" :href="'tel:' + entity.attributes.phone" aria-label="Gọi điện thoại">📞 Gọi</a>
-      <a v-if="zaloLink" class="scta-zalo" :href="zaloLink" target="_blank" rel="nofollow" aria-label="Nhắn Zalo">💬 Zalo</a>
+      <a v-if="zaloLink" class="scta-zalo" :href="zaloLink" target="_blank" rel="nofollow noopener" aria-label="Nhắn Zalo">💬 Zalo</a>
       <NuxtLink v-if="hasCoords" class="scta-map" :to="mapUrl" aria-label="Xem trên bản đồ">🗺️ Bản đồ</NuxtLink>
     </div>
   </div>
@@ -357,10 +363,43 @@ function lbNext() {
   const len = entity.value?.images?.length || 1
   lbIndex.value = (lbIndex.value + 1) % len
 }
+// Lightbox swipe gestures (mobile)
+const lbTouchX = ref(0)
+const lbTouchDX = ref(0)
+const lbSwiping = ref(false)
+const lbDragStyle = computed(() => {
+  if (!lbSwiping.value || !lbTouchDX.value) return {}
+  const dx = lbTouchDX.value
+  const opacity = Math.max(0.4, 1 - Math.abs(dx) / 400)
+  return { transform: `translateX(${dx}px) scale(${opacity > 0.7 ? 1 : 0.95})`, opacity, transition: 'none' }
+})
+function lbTouchStart(e: TouchEvent) {
+  if (!e.touches.length) return
+  lbTouchX.value = e.touches[0].clientX
+  lbTouchDX.value = 0
+  lbSwiping.value = true
+}
+function lbTouchMove(e: TouchEvent) {
+  if (!lbSwiping.value || !e.touches.length) return
+  lbTouchDX.value = e.touches[0].clientX - lbTouchX.value
+}
+function lbTouchEnd() {
+  if (!lbSwiping.value) return
+  const threshold = 60
+  if (lbTouchDX.value < -threshold) lbNext()
+  else if (lbTouchDX.value > threshold) lbPrev()
+  lbSwiping.value = false
+  lbTouchDX.value = 0
+}
+
 watch(lightboxOpen, (v) => {
   if (!import.meta.client) return
   document.body.style.overflow = v ? 'hidden' : ''
-  if (!v) nextTick(() => lbTriggerEl?.focus())
+  if (!v) {
+    lbSwiping.value = false
+    lbTouchDX.value = 0
+    nextTick(() => lbTriggerEl?.focus())
+  }
 })
 
 const TYPE_BREADCRUMB: Record<string, string> = {
@@ -378,11 +417,7 @@ const descriptionParagraphs = computed(() => {
   return desc.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 0)
 })
 const descExpanded = ref(false)
-const visibleParagraphs = computed(() =>
-  descExpanded.value || descriptionParagraphs.value.length <= 3
-    ? descriptionParagraphs.value
-    : descriptionParagraphs.value.slice(0, 3)
-)
+const descContentRef = ref<HTMLElement | null>(null)
 
 // GĐ13.2: link Zalo từ attributes.zalo (số hoặc URL). KHÔNG đặt hàng — chỉ liên hệ.
 const zaloLink = computed(() => {

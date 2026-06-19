@@ -5,7 +5,7 @@
     <!-- Hero -->
     <section class="catalog-hero cat-accommodation">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon">🏡</span>
+        <span class="catalog-hero-icon" aria-hidden="true">🏡</span>
         <div>
           <h1>Lưu trú</h1>
           <p>Homestay miệt vườn, nhà nghỉ ven sông, khách sạn phố — chọn nơi nghỉ phù hợp cho chuyến đi miền Tây.</p>
@@ -29,7 +29,7 @@
         <h2>Chọn theo khu vực</h2>
       </div>
       <div class="quick-picks">
-        <button
+        <button type="button"
           v-for="(meta, key) in AREA_META"
           :key="key"
           :class="['quick-pick', { active: areaFilter === key }]"
@@ -65,8 +65,8 @@
         </div>
         <p class="control-label">Khu vực</p>
         <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
-          <button :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả</button>
-          <button
+          <button type="button" :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả</button>
+          <button type="button"
             v-for="(meta, key) in AREA_META"
             :key="key"
             :class="['chip', { active: areaFilter === key }]"
@@ -84,7 +84,7 @@
       </div>
       <EmptyState v-else icon="🏡" title="Không tìm thấy nơi lưu trú" message="Thử thay đổi khu vực hoặc từ khóa tìm kiếm.">
         <template #actions>
-          <button class="btn btn-outline" @click="areaFilter = 'all'; q = ''">Xóa bộ lọc</button>
+          <button type="button" class="btn btn-outline" @click="areaFilter = 'all'; q = ''">Xóa bộ lọc</button>
           <NuxtLink to="/du-lich" class="btn btn-outline">Khám phá du lịch</NuxtLink>
         </template>
       </EmptyState>

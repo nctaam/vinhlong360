@@ -32,7 +32,7 @@
   width: 56px;
   text-align: center;
   background: var(--primary-fg);
-  color: #fff;
+  color: var(--text-on-dark, #fff);
   border-radius: var(--radius-md);
   padding: var(--space-1) var(--space-2);
   line-height: 1.2;
@@ -60,7 +60,7 @@
   margin-bottom: var(--space-1);
 }
 .cat-mua {
-  background: rgba(46, 125, 91, .1);
+  background: rgba(var(--secondary-rgb), .1);
   color: var(--secondary);
 }
 
@@ -130,9 +130,10 @@
 }
 .toggle-btn:hover:not(.active) { box-shadow: var(--shadow-xs); transform: translateY(-1px); }
 .toggle-btn:active { transform: scale(.96); }
+.toggle-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .toggle-btn.active {
   background: var(--primary-fg);
-  color: #fff;
+  color: var(--text-on-dark, #fff);
   border-color: var(--primary-fg);
 }
 
@@ -143,6 +144,7 @@
   border-radius: var(--radius-lg);
   padding: var(--space-5);
   overflow-x: auto;
+  overscroll-behavior-x: contain;
   box-shadow: var(--shadow-sm);
 }
 .cal-header {
@@ -172,6 +174,7 @@
 }
 .cal-nav:hover { background: var(--card-hover, var(--line)); transform: scale(1.06); box-shadow: var(--shadow-xs); }
 .cal-nav:active { transform: scale(.93); }
+.cal-nav:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 .cal-grid {
   display: grid;
@@ -195,10 +198,10 @@
 }
 .cal-cell:not(.cal-empty):hover { background: rgba(var(--primary-rgb), .04); }
 .cal-cell.cal-today {
-  background: rgba(var(--primary-rgb, 200,80,40), .08);
+  background: rgba(var(--primary-rgb), .08);
   border-color: var(--primary-fg);
 }
-.cal-cell.cal-has-events { background: rgba(var(--primary-rgb, 200,80,40), .04); }
+.cal-cell.cal-has-events { background: rgba(var(--primary-rgb), .04); }
 .cal-cell:focus-visible { outline: 2px solid var(--primary-fg); outline-offset: -2px; border-radius: var(--radius-sm); }
 .cal-empty { visibility: hidden; }
 .cal-num {
@@ -210,15 +213,15 @@
 .cal-events {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-1);
 }
 .cal-event-dot {
   display: block;
   font-size: 10px;
   line-height: 1.3;
-  padding: 1px 4px;
+  padding: var(--space-1);
   background: var(--primary-fg);
-  color: #fff;
+  color: var(--text-on-dark, #fff);
   border-radius: 3px;
   white-space: nowrap;
   overflow: hidden;
@@ -230,7 +233,7 @@
 .cal-more {
   font-size: 10px;
   color: var(--ink-tertiary);
-  padding-left: 4px;
+  padding-inline-start: var(--space-1);
 }
 
 /* ── Lunar date ── */
@@ -263,13 +266,23 @@
 .dark .calendar { border-color: var(--line); }
 .dark .cal-nav { border-color: var(--line); background: var(--bg-alt); }
 .dark .cal-nav:hover { background: rgba(255,255,255,.08); }
-.dark .cat-mua { background: rgba(46, 125, 91, .16); }
+.dark .cat-mua { background: rgba(var(--secondary-rgb), .16); }
 
 /* ── Responsive: tablet ── */
 @media (min-width: 769px) and (max-width: 1024px) {
   .cal-grid { min-width: 480px; }
   .cal-cell { min-height: 64px; }
   .event-thumb { width: 100px; height: 72px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .event-row:hover { transform: none; }
+  .event-row:active { transform: none; }
+  .event-thumb img { transition: none; }
+  .cal-event-dot:hover { transform: none; }
+  .cal-nav:hover { transform: none; }
+  .toggle-btn:hover:not(.active) { transform: none; }
+  .toggle-btn:active { transform: none; }
 }
 
 /* ── Responsive: mobile ── */

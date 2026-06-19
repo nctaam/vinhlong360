@@ -5,7 +5,7 @@
     <!-- Hero -->
     <section class="catalog-hero cat-product">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon">🍊</span>
+        <span class="catalog-hero-icon" aria-hidden="true">🍊</span>
         <div>
           <h1>Đặc sản địa phương</h1>
           <p>Trái cây theo mùa, đặc sản làm quà, sản phẩm OCOP — biết mùa nào ngon, mua ở đâu, ai sản xuất.</p>
@@ -45,7 +45,7 @@
     <section v-if="ocopHighlights.length" class="block reveal">
       <div class="section-head">
         <h2>⭐ Sản phẩm OCOP</h2>
-        <button class="see-all" @click="ocopOnly = true; scrollToGrid()">Xem tất cả →</button>
+        <button type="button" class="see-all" @click="ocopOnly = true; scrollToGrid()">Xem tất cả →</button>
       </div>
       <p class="section-desc">Sản phẩm đạt chuẩn OCOP — Mỗi xã một sản phẩm, chất lượng được chứng nhận.</p>
       <div class="scroll-row" role="region" aria-label="Sản phẩm OCOP nổi bật">
@@ -66,14 +66,14 @@
         </div>
         <p class="control-label">Theo tháng</p>
         <div class="chip-row" role="group" aria-label="Lọc theo tháng">
-          <button :class="['chip', 'season', { active: seasonFilter === 'all' }]" :aria-pressed="seasonFilter === 'all'" @click="seasonFilter = 'all'">Tất cả</button>
-          <button v-for="m in 12" :key="m" :class="['chip', 'season', { active: seasonFilter === String(m) }]" :aria-pressed="seasonFilter === String(m)" @click="seasonFilter = String(m)">
+          <button type="button" :class="['chip', 'season', { active: seasonFilter === 'all' }]" :aria-pressed="seasonFilter === 'all'" @click="seasonFilter = 'all'">Tất cả</button>
+          <button type="button" v-for="m in 12" :key="m" :class="['chip', 'season', { active: seasonFilter === String(m) }]" :aria-pressed="seasonFilter === String(m)" @click="seasonFilter = String(m)">
             T{{ m }}
           </button>
-          <button :class="['chip', 'season', { active: seasonFilter === 'flood' }]" :aria-pressed="seasonFilter === 'flood'" @click="seasonFilter = 'flood'">🌊 Mùa nước nổi</button>
+          <button type="button" :class="['chip', 'season', { active: seasonFilter === 'flood' }]" :aria-pressed="seasonFilter === 'flood'" @click="seasonFilter = 'flood'">🌊 Mùa nước nổi</button>
         </div>
         <div class="chip-row chip-row-extra">
-          <button :class="['chip', { active: ocopOnly }]" :aria-pressed="ocopOnly" @click="ocopOnly = !ocopOnly">⭐ Chỉ sản phẩm OCOP</button>
+          <button type="button" :class="['chip', { active: ocopOnly }]" :aria-pressed="ocopOnly" @click="ocopOnly = !ocopOnly">⭐ Chỉ sản phẩm OCOP</button>
         </div>
       </div>
       <p class="result-meta" aria-live="polite">{{ filtered.length }} kết quả</p>
@@ -84,7 +84,7 @@
       </div>
       <EmptyState v-else icon="🍊" title="Không tìm thấy sản phẩm" message="Thử chọn tháng khác hoặc bỏ bộ lọc OCOP.">
         <template #actions>
-          <button class="btn btn-outline" @click="seasonFilter = 'all'; ocopOnly = false; q = ''">Xóa bộ lọc</button>
+          <button type="button" class="btn btn-outline" @click="seasonFilter = 'all'; ocopOnly = false; q = ''">Xóa bộ lọc</button>
           <NuxtLink to="/ocop" class="btn btn-outline">Xem sản phẩm OCOP</NuxtLink>
         </template>
       </EmptyState>

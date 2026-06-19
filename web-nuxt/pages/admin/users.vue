@@ -2,11 +2,11 @@
   <div>
     <div class="admin-head-row">
       <h1>Quản lý Users</h1>
-      <button class="admin-refresh" :disabled="loading" @click="fetchUsers()">🔄 Làm mới</button>
+      <button type="button" class="admin-refresh" :disabled="loading" @click="fetchUsers()">🔄 Làm mới</button>
     </div>
 
     <div class="admin-toolbar">
-      <input v-model="search" class="input" placeholder="Tìm user (SĐT, tên)…" @input="debounceFetch" />
+      <input v-model="search" class="input" placeholder="Tìm user (SĐT, tên)…" aria-label="Tìm user" @input="debounceFetch" />
     </div>
 
     <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
@@ -39,10 +39,10 @@
                 {{ u.is_banned ? 'Bị cấm' : 'Hoạt động' }}
               </span>
             </td>
-            <td class="admin-td-muted">{{ formatDate(u.created_at) }}</td>
+            <td class="admin-td-muted"><time :datetime="u.created_at">{{ formatDate(u.created_at) }}</time></td>
             <td class="admin-actions">
-              <button v-if="u.is_banned" class="btn-success" :disabled="acting === u.id" @click="unban(u.id)">Mở cấm</button>
-              <button v-else class="btn-danger" :disabled="acting === u.id" @click="ban(u.id)">Cấm</button>
+              <button type="button" v-if="u.is_banned" class="btn-success" :disabled="acting === u.id" @click="unban(u.id)">Mở cấm</button>
+              <button type="button" v-else class="btn-danger" :disabled="acting === u.id" @click="ban(u.id)">Cấm</button>
             </td>
           </tr>
           <tr v-if="!users.length">
@@ -52,11 +52,11 @@
       </table>
       </div>
 
-      <div class="admin-pagination">
-        <button :disabled="page <= 1" @click="page--; fetchUsers()">← Trước</button>
+      <nav class="admin-pagination" role="navigation" aria-label="Phân trang">
+        <button type="button" :disabled="page <= 1" @click="page--; fetchUsers()">← Trước</button>
         <span class="admin-page-info">Trang {{ page }}</span>
-        <button :disabled="users.length < limit" @click="page++; fetchUsers()">Sau →</button>
-      </div>
+        <button type="button" :disabled="users.length < limit" @click="page++; fetchUsers()">Sau →</button>
+      </nav>
     </template>
   </div>
 </template>
@@ -144,6 +144,6 @@ onMounted(() => fetchUsers())
 .status-active { display: inline-block; padding: 2px 8px; border-radius: var(--radius-full, 999px); font-size: var(--text-xs); font-weight: var(--weight-semibold); background: rgba(46, 125, 91, .12); color: var(--secondary-fg); }
 .status-banned { display: inline-block; padding: 2px 8px; border-radius: var(--radius-full, 999px); font-size: var(--text-xs); font-weight: var(--weight-semibold); background: rgba(220, 38, 38, .1); color: var(--error); }
 .admin-select-inline { padding: var(--space-1) var(--space-2); font-size: var(--text-xs); min-height: 36px; border-radius: var(--radius-md); transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo); }
-.admin-select-inline:focus { border-color: var(--primary-fg); box-shadow: 0 0 0 2px rgba(var(--primary-rgb), .1); }
+.admin-select-inline:focus-visible { border-color: var(--primary-fg); box-shadow: 0 0 0 2px rgba(var(--primary-rgb), .1); }
 
 </style>

@@ -51,4 +51,29 @@
   height: 100%;
   pointer-events: none;
 }
+/* Boat float */
+.hero-illustration :deep(g[transform*="translate(80, 240)"]) {
+  animation: boat-float 6s ease-in-out infinite;
+}
+@keyframes boat-float {
+  0%, 100% { transform: translate(80px, 240px); }
+  50% { transform: translate(84px, 237px); }
+}
+/* Waves shimmer */
+.hero-illustration :deep(path[d*="M50 310"]) {
+  animation: wave-drift 8s ease-in-out infinite;
+}
+.hero-illustration :deep(path[d*="M200 320"]) {
+  animation: wave-drift 8s ease-in-out infinite 2s;
+}
+.hero-illustration :deep(path[d*="M350 305"]) {
+  animation: wave-drift 8s ease-in-out infinite 4s;
+}
+@keyframes wave-drift {
+  0%, 100% { opacity: 1; transform: translateX(0); }
+  50% { opacity: .6; transform: translateX(8px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-illustration :deep(g), .hero-illustration :deep(path) { animation: none !important; }
+}
 </style>

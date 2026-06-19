@@ -1,6 +1,6 @@
 <template>
   <div class="ai-tips">
-    <button class="ai-tips-header" @click="toggle" :aria-expanded="expanded">
+    <button type="button" class="ai-tips-header" @click="toggle" :aria-expanded="expanded">
       <h3>Gợi ý cho bạn</h3>
       <span class="ai-toggle">{{ expanded ? '▲' : '▼' }}</span>
     </button>

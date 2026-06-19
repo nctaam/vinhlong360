@@ -14,13 +14,15 @@
     />
     <!-- Lightbox -->
     <Teleport to="body">
-      <div v-if="lightboxIndex >= 0" class="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh" @click.self="lightboxIndex = -1">
-        <button class="lb-close" aria-label="Đóng" @click="lightboxIndex = -1">&times;</button>
-        <button v-if="images.length > 1" class="lb-prev" aria-label="Ảnh trước" @click="prev">&#8249;</button>
-        <img :src="images[lightboxIndex]" :alt="`${alt} - ảnh ${lightboxIndex + 1}`" class="lb-img" />
-        <button v-if="images.length > 1" class="lb-next" aria-label="Ảnh tiếp" @click="next">&#8250;</button>
-        <div class="lb-counter" aria-live="polite">{{ lightboxIndex + 1 }} / {{ images.length }}</div>
-      </div>
+      <Transition name="lb-fade">
+        <div v-if="lightboxIndex >= 0" class="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh" @click.self="closeLightbox">
+          <button type="button" class="lb-close" aria-label="Đóng" @click="closeLightbox">&times;</button>
+          <button type="button" v-if="images.length > 1" class="lb-prev" aria-label="Ảnh trước" @click="prev">&#8249;</button>
+          <img :src="images[lightboxIndex]" :alt="`${alt} - ảnh ${lightboxIndex + 1}`" class="lb-img" decoding="async" loading="lazy" />
+          <button type="button" v-if="images.length > 1" class="lb-next" aria-label="Ảnh tiếp" @click="next">&#8250;</button>
+          <div class="lb-counter" aria-live="polite">{{ lightboxIndex + 1 }} / {{ images.length }}</div>
+        </div>
+      </Transition>
     </Teleport>
   </div>
 </template>
@@ -32,9 +34,16 @@ const props = defineProps<{
 }>()
 
 const lightboxIndex = ref(-1)
+let triggerEl: HTMLElement | null = null
 
 function openLightbox(i: number) {
+  triggerEl = document.activeElement as HTMLElement
   lightboxIndex.value = i
+}
+
+function closeLightbox() {
+  lightboxIndex.value = -1
+  nextTick(() => triggerEl?.focus())
 }
 
 function prev() {
@@ -47,7 +56,7 @@ function next() {
 
 function onKeydown(e: KeyboardEvent) {
   if (lightboxIndex.value < 0) return
-  if (e.key === 'Escape') lightboxIndex.value = -1
+  if (e.key === 'Escape') closeLightbox()
   if (e.key === 'ArrowLeft') prev()
   if (e.key === 'ArrowRight') next()
 }

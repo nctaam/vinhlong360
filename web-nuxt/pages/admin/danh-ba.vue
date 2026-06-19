@@ -2,7 +2,7 @@
   <div>
     <div class="admin-head-row">
       <h1>Danh bạ hành chính</h1>
-      <button class="admin-refresh" :disabled="loadingList" @click="loadFacilities">🔄 Làm mới</button>
+      <button type="button" class="admin-refresh" :disabled="loadingList" @click="loadFacilities">🔄 Làm mới</button>
     </div>
     <p class="admin-muted">Nhập cơ quan công vụ (UBND/công an/...) theo xã/phường. <strong>Bắt buộc khai nguồn chính thống</strong> — không tự bịa địa chỉ/SĐT.</p>
 
@@ -28,10 +28,10 @@
         <label>Giờ làm việc<input v-model="f.hours" class="input" placeholder="7:30–17:00, T2–T6" /></label>
         <label>Nguồn (URL chính thống)*<input v-model="f.sourceUrl" class="input" required placeholder="https://...gov.vn/..." /></label>
       </div>
-      <button class="btn btn-primary" :disabled="busy">{{ busy ? 'Đang lưu…' : '➕ Thêm cơ quan' }}</button>
+      <button type="submit" class="btn btn-primary" :disabled="busy">{{ busy ? 'Đang lưu…' : '➕ Thêm cơ quan' }}</button>
     </form>
 
-    <h2 class="admin-section-title" style="margin-top:20px">Đã có ({{ facilities.length }})</h2>
+    <h2 class="admin-section-title" style="margin-top: var(--space-5)">Đã có ({{ facilities.length }})</h2>
 
     <div v-if="loadingList" class="admin-loading"><div class="spinner"></div></div>
     <template v-else>
@@ -42,7 +42,7 @@
             <td><strong>{{ e.name }}</strong><br><small class="admin-muted">{{ kindLabel(e) }} · {{ placeName(e) }}</small></td>
             <td><small>{{ attr(e,'phone') }}<br>{{ attr(e,'address') }}</small></td>
             <td><small class="admin-muted">{{ e.source?.url || e.source?.title || '—' }}</small></td>
-            <td><button class="btn btn-sm btn-ghost danger" :disabled="deleting === e.id" @click="del(e)">Xóa</button></td>
+            <td><button type="button" class="btn btn-sm btn-ghost danger" :disabled="deleting === e.id" @click="del(e)">Xóa</button></td>
           </tr>
         </tbody>
       </table>

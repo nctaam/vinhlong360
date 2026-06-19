@@ -276,6 +276,10 @@ def _event_is_past(e: dict) -> bool:
         return False
 
 
+_GENERIC_NAMES = {"tắm sông", "đi ghe", "đi đò", "tham quan", "du lịch",
+                   "ăn uống", "mua sắm", "chụp ảnh", "câu cá", "dạo phố"}
+
+
 def _homepage_score(e: dict, month: int) -> float:
     from smart_rank import smart_score
     s = smart_score(e, month=month, q_match_level="none")
@@ -283,24 +287,70 @@ def _homepage_score(e: dict, month: int) -> float:
         s += 2.0
     if len(e.get("summary", "") or "") > 80:
         s += 1.0
+    if e["name"].lower().strip() in _GENERIC_NAMES:
+        s -= 5.0
     return s
 
 
+def _name_key(name: str) -> str:
+    """Normalize name for dedup: lowercase, strip common prefixes/suffixes."""
+    import re
+    n = name.lower().strip()
+    n = re.sub(r"^(hái|mùa|tham quan|khu du lịch|làng nghề)\s+", "", n)
+    n = re.sub(r"\s+(tại|ở|cù lao|cồn)\s+.*$", "", n)
+    return n
+
+
+def _dedup_by_name(entities: list[dict], limit: int) -> list[dict]:
+    """Pick top entities, skipping near-duplicate names and same placeId."""
+    result = []
+    seen_keys: set[str] = set()
+    seen_place_ids: set[str] = set()
+    for e in entities:
+        nk = _name_key(e["name"])
+        pid = e.get("placeId") or ""
+        if any(nk in sk or sk in nk for sk in seen_keys if len(nk) > 3 and len(sk) > 3):
+            continue
+        if pid and pid in seen_place_ids:
+            continue
+        result.append(e)
+        seen_keys.add(nk)
+        if pid:
+            seen_place_ids.add(pid)
+        if len(result) >= limit:
+            break
+    return result
+
+
 def _diverse_pick(entities: list[dict], max_per_type: int = 2,
-                  max_per_area: int = 4, limit: int = 8) -> list[dict]:
+                  max_per_area: int = 4, limit: int = 8,
+                  exclude_ids: set | None = None) -> list[dict]:
     result = []
     type_counts: dict[str, int] = {}
     area_counts: dict[str, int] = {}
+    seen_keys: set[str] = set()
+    seen_place_ids: set[str] = set()
     for e in entities:
+        if exclude_ids and e["id"] in exclude_ids:
+            continue
         t = e["type"]
         a = e.get("place_area") or "unknown"
         if type_counts.get(t, 0) >= max_per_type:
             continue
         if area_counts.get(a, 0) >= max_per_area:
             continue
+        nk = _name_key(e["name"])
+        pid = e.get("placeId") or ""
+        if any(nk in sk or sk in nk for sk in seen_keys if len(nk) > 3 and len(sk) > 3):
+            continue
+        if pid and pid in seen_place_ids:
+            continue
         result.append(e)
         type_counts[t] = type_counts.get(t, 0) + 1
         area_counts[a] = area_counts.get(a, 0) + 1
+        seen_keys.add(nk)
+        if pid:
+            seen_place_ids.add(pid)
         if len(result) >= limit:
             break
     return result
@@ -308,7 +358,7 @@ def _diverse_pick(entities: list[dict], max_per_type: int = 2,
 
 @router.get("/homepage")
 async def homepage_curated():
-    """Curated homepage: smart-scored, type/area diverse, seasonal-aware."""
+    """Curated homepage: smart-scored, type/area diverse, seasonal-aware, deduped."""
     month = datetime.now().month
 
     all_ents = db.list_entities(limit=100000, offset=0)
@@ -321,7 +371,7 @@ async def homepage_curated():
     # Seasonal: entities actually in season this month (not year-round)
     def _in_season(e):
         s = e.get("season")
-        if not s:
+        if not s or not isinstance(s, dict):
             return False
         months = s.get("months") or []
         if len(months) >= 11:
@@ -329,25 +379,101 @@ async def homepage_curated():
         return month in months or month in (s.get("peak") or [])
 
     seasonal_pool = [e for e in public
-                     if e["type"] in ("product", "experience", "dish", "event")
+                     if e["type"] in ("product", "experience", "dish")
                      and _in_season(e)]
     seasonal_pool.sort(key=lambda e: e["_score"], reverse=True)
-    seasonal = seasonal_pool[:4]
+    seasonal = _dedup_by_name(seasonal_pool, limit=4)
 
     seasonal_ids = {e["id"] for e in seasonal}
 
-    # Experiences: tourism types, diverse, excluding seasonal duplicates
-    tourism = [e for e in public
-               if e["type"] in _TOURISM_TYPES and e["id"] not in seasonal_ids]
-    tourism.sort(key=lambda e: e["_score"], reverse=True)
-    experiences = _diverse_pick(tourism, max_per_type=2, max_per_area=4, limit=8)
+    # Upcoming events (next 30 days, sorted by date_start)
+    # Only show events with reliable dates: must have lunar_date OR
+    # consistent month field. Exclude cat=mua (seasonal, not event).
+    today = datetime.now().date()
+    from datetime import timedelta
+    cutoff = today + timedelta(days=30)
+    upcoming_pool = []
+    for e in public:
+        if e["type"] != "event":
+            continue
+        attrs = e.get("attributes") or {}
+        cat = attrs.get("category", "")
+        if cat == "mua":
+            continue
+        ds = attrs.get("date_start")
+        if not ds:
+            continue
+        try:
+            d = datetime.strptime(ds, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            continue
+        # Skip if month field set but conflicts with date_start (fabricated date)
+        attr_month = attrs.get("month")
+        if attr_month and isinstance(attr_month, (int, float)) and int(attr_month) != d.month:
+            continue
+        if today <= d <= cutoff:
+            e["_days_until"] = (d - today).days
+            upcoming_pool.append(e)
+    upcoming_pool.sort(key=lambda x: x.get("_days_until", 999))
+    upcoming_events = upcoming_pool[:3]
+
+    upcoming_ids = {e["id"] for e in upcoming_events}
+    exclude_from_exp = seasonal_ids | upcoming_ids
+
+    # Experiences: tourism types, diverse, excluding seasonal + upcoming event dupes
+    tourism = [e for e in public if e["type"] in _TOURISM_TYPES]
+    tourism.sort(key=lambda e: e.get("_score", 0), reverse=True)
+    experiences = _diverse_pick(tourism, max_per_type=2, max_per_area=4, limit=8,
+                                exclude_ids=exclude_from_exp)
 
     # Products fallback (when seasonal is empty)
     products_pool = [e for e in public if e["type"] == "product"]
-    products_pool.sort(key=lambda e: e["_score"], reverse=True)
-    products = products_pool[:8]
+    products_pool.sort(key=lambda e: e.get("_score", 0), reverse=True)
+    products = _dedup_by_name(products_pool, limit=8)
 
-    itineraries = db.list_itineraries()[:4]
+    # Itineraries: score by seasonal relevance + area diversity
+    all_itineraries = db.list_itineraries()
+    for it in all_itineraries:
+        it_score = 0.0
+        stops = it.get("stops") or []
+        for stop in stops:
+            if isinstance(stop, str):
+                eid = stop
+            else:
+                eid = stop.get("entity_id") or stop.get("id", "")
+            matched = next((e for e in public if e["id"] == eid), None)
+            if matched:
+                if _in_season(matched):
+                    it_score += 2.0
+                if matched.get("images"):
+                    it_score += 0.5
+        dur = it.get("duration") or ""
+        if dur:
+            import re
+            m = re.search(r"(\d+)", str(dur))
+            if m:
+                try:
+                    d = int(m.group(1))
+                    if 1 <= d <= 3:
+                        it_score += 1.0
+                except (ValueError, TypeError):
+                    pass
+        it["_score"] = it_score
+    all_itineraries.sort(key=lambda x: x.get("_score", 0), reverse=True)
+    seen_areas: set[str] = set()
+    itineraries = []
+    for it in all_itineraries:
+        a = it.get("area", "")
+        if a and a in seen_areas and len(itineraries) < 3:
+            continue
+        itineraries.append(it)
+        if a:
+            seen_areas.add(a)
+        if len(itineraries) >= 4:
+            break
+    for it in itineraries:
+        it.pop("_score", None)
+
     stats = db.stats()
 
     # Area counts for region tiles
@@ -358,31 +484,6 @@ async def homepage_curated():
         a = e.get("place_area") or e.get("area")
         if e["type"] in card_types and a:
             area_counts[a] = area_counts.get(a, 0) + 1
-
-    # Upcoming events (next 30 days, sorted by date_start)
-    today = datetime.now().date()
-    from datetime import timedelta
-    cutoff = today + timedelta(days=30)
-    upcoming_pool = []
-    for e in public:
-        if e["type"] != "event":
-            continue
-        attrs = e.get("attributes") or {}
-        ds = attrs.get("date_start")
-        if not ds:
-            continue
-        try:
-            d = datetime.strptime(ds, "%Y-%m-%d").date()
-        except (ValueError, TypeError):
-            continue
-        if today <= d <= cutoff:
-            e["_days_until"] = (d - today).days
-            upcoming_pool.append(e)
-    upcoming_pool.sort(key=lambda x: x.get("_days_until", 999))
-    upcoming_events = upcoming_pool[:3]
-    for e in upcoming_events:
-        e.pop("_score", None)
-        e["days_until"] = e.pop("_days_until", None)
 
     # Seasonal tagline
     _TAGLINES = {
@@ -404,6 +505,10 @@ async def homepage_curated():
     for section in [seasonal, experiences, products]:
         for e in section:
             e.pop("_score", None)
+
+    for e in upcoming_events:
+        e.pop("_score", None)
+        e["days_until"] = e.pop("_days_until", None)
 
     return {
         "seasonal": seasonal,
@@ -436,6 +541,24 @@ async def list_events(
 
     if not include_past:
         events = [e for e in events if not _event_is_past(e)]
+
+    # Exclude seasonal items (cat=mua) and events with unreliable dates
+    def _date_reliable(e):
+        attrs = e.get("attributes") or {}
+        if attrs.get("category") == "mua":
+            return False
+        ds = attrs.get("date_start")
+        attr_month = attrs.get("month")
+        if ds and attr_month and isinstance(attr_month, (int, float)):
+            try:
+                d = datetime.strptime(ds, "%Y-%m-%d").date()
+                if int(attr_month) != d.month:
+                    return False
+            except (ValueError, TypeError):
+                pass
+        return True
+
+    events = [e for e in events if _date_reliable(e)]
 
     def _sort_key(e):
         attrs = e.get("attributes") or {}

@@ -5,7 +5,7 @@
     <!-- Hero -->
     <section class="catalog-hero cat-interest">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon">{{ interestMeta.emoji }}</span>
+        <span class="catalog-hero-icon" aria-hidden="true">{{ interestMeta.emoji }}</span>
         <div>
           <h1>{{ interestMeta.label }}</h1>
           <p>{{ interestMeta.description }}</p>
@@ -31,8 +31,8 @@
     <div class="controls">
       <p class="control-label">Khu vực</p>
       <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
-        <button :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả</button>
-        <button
+        <button type="button" :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả</button>
+        <button type="button"
           v-for="(meta, key) in AREA_META"
           :key="key"
           :class="['chip', { active: areaFilter === key }]"
@@ -194,4 +194,15 @@ useHead(() => ({
 
 .result-meta { color: var(--muted); font-size: var(--text-sm); margin-bottom: var(--space-3); }
 
+/* Dark mode */
+.dark .interest-nav .chip { background: var(--bg-alt); border-color: var(--line); }
+.dark .interest-nav .chip:hover { border-color: rgba(255,255,255,.15); }
+.dark .interest-nav .chip.active { background: rgba(var(--primary-rgb), .12); border-color: var(--primary-fg); }
+.dark .result-meta { color: var(--ink-tertiary); }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .interest-nav .chip:hover { transform: none; }
+  .interest-nav .chip:active { transform: none; }
+}
 </style>

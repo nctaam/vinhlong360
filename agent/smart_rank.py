@@ -68,7 +68,7 @@ def smart_score(entity: dict, month: int = None, q_match_level: str = "exact") -
     # 1. Season
     if month:
         season = entity.get("season")
-        if season:
+        if season and isinstance(season, dict):
             peak = season.get("peak", [])
             months = season.get("months", [])
             if month in peak:
