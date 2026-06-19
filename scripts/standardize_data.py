@@ -1251,6 +1251,214 @@ def phase3_geocode_osm(db: sqlite3.Connection, *, dry_run: bool = False) -> dict
     return stats
 
 
+AREA_CENTROIDS = {
+    "vinh-long": [10.2399, 106.0862],
+    "ben-tre": [10.2468, 106.4204],
+    "tra-vinh": [10.0007, 106.3124],
+}
+
+VALID_TYPES = {
+    "dish", "product", "accommodation", "attraction", "experience",
+    "nature", "craft_village", "event", "history", "person",
+    "organization", "drink", "economy", "facility",
+}
+
+
+def phase6_reclassify_places(db: sqlite3.Connection, *, dry_run: bool = False, batch_size: int = 25) -> dict:
+    """Phase 6.1: Reclassify mistyped 'place' entities (restaurants, ATMs, etc.)."""
+    stats = {"reclassified": 0, "area_set": 0, "llm_calls": 0, "failed": 0, "kept_place": 0}
+
+    rows = db.execute("""
+        SELECT id, name, summary, attributes FROM entities
+        WHERE type = 'place'
+          AND (coordinates IS NULL OR coordinates = '' OR coordinates = '[]' OR coordinates = 'null')
+    """).fetchall()
+
+    if dry_run:
+        stats["candidates"] = len(rows)
+        return stats
+
+    if not rows:
+        return stats
+
+    SYSTEM = """Phân loại lại entity du lịch/OCOP ở Đồng bằng sông Cửu Long.
+Các entity này đang bị gán type='place' nhầm — chúng KHÔNG phải xã/phường/thị trấn.
+Xác định type đúng và area cho mỗi entity.
+
+Type hợp lệ: dish, product, accommodation, attraction, experience, nature, craft_village, event, history, person, organization, facility
+Area hợp lệ: vinh-long, ben-tre, tra-vinh
+
+Trả về JSON array: [{"id": "...", "type": "dish|product|...", "area": "vinh-long|ben-tre|tra-vinh"}]
+
+Quy tắc:
+- Quán ăn, nhà hàng, quán nước, tiệm = accommodation (nếu có phòng ngủ) hoặc attraction (quán ăn)
+- ATM, ngân hàng, bến xe, bến phà, bưu điện = facility
+- Đặc sản, bánh, mứt, kẹo = dish hoặc product
+- Suy luận area từ tên/summary (TP Bến Tre → ben-tre, Vĩnh Long → vinh-long, Trà Vinh → tra-vinh)
+- Nếu entity thực sự là xã/phường → type: "place" (giữ nguyên)
+- Nếu không đủ thông tin area → area: null
+CHỈ trả về JSON array."""
+
+    total = len(rows)
+    for batch_start in range(0, total, batch_size):
+        batch = rows[batch_start:batch_start + batch_size]
+        text = "\n".join(
+            f"- id: {eid}, name: {name}, summary: {(summ or '')[:120]}"
+            for eid, name, summ, _ in batch
+        )
+        try:
+            response = _llm_call(
+                f"Phân loại lại {len(batch)} entity (đang bị type='place' nhầm):\n{text}",
+                system=SYSTEM, retries=3
+            )
+            stats["llm_calls"] += 1
+            result = _parse_llm_json(response)
+            if not isinstance(result, list):
+                stats["failed"] += 1
+                continue
+
+            VALID_AREAS = {"vinh-long", "ben-tre", "tra-vinh"}
+            type_updates = []
+            area_updates = []
+            for item in result:
+                if not isinstance(item, dict):
+                    continue
+                eid = item.get("id")
+                new_type = item.get("type")
+                new_area = item.get("area")
+                if not eid:
+                    continue
+
+                if new_type and new_type != "place" and new_type in VALID_TYPES:
+                    type_updates.append((new_type, eid))
+                    stats["reclassified"] += 1
+                elif new_type == "place":
+                    stats["kept_place"] += 1
+
+                if new_area and new_area in VALID_AREAS:
+                    area_updates.append((new_area, eid))
+                    stats["area_set"] += 1
+
+            if type_updates:
+                db.executemany("UPDATE entities SET type=? WHERE id=?", type_updates)
+            if area_updates:
+                db.executemany("UPDATE entities SET area=? WHERE id=?", area_updates)
+            if type_updates or area_updates:
+                db.commit()
+
+            done = min(batch_start + batch_size, total)
+            print(f"  [reclassify] {done}/{total} processed, {stats['reclassified']} reclassified", flush=True)
+        except Exception as e:
+            stats["failed"] += 1
+            print(f"  [reclassify] batch error: {e}", flush=True)
+
+    return stats
+
+
+def phase6_assign_centroids(db: sqlite3.Connection, *, dry_run: bool = False) -> dict:
+    """Phase 6.2: Assign area centroid coords to entities with area but no coordinates."""
+    stats = {"assigned": 0}
+
+    rows = db.execute("""
+        SELECT id, area FROM entities
+        WHERE type != 'place'
+          AND area IS NOT NULL AND area != ''
+          AND (coordinates IS NULL OR coordinates = '' OR coordinates = '[]' OR coordinates = 'null')
+    """).fetchall()
+
+    if dry_run:
+        stats["candidates"] = len(rows)
+        return stats
+
+    updates = []
+    for eid, area in rows:
+        centroid = AREA_CENTROIDS.get(area)
+        if centroid:
+            updates.append((json.dumps(centroid), eid))
+            stats["assigned"] += 1
+
+    if updates:
+        db.executemany("UPDATE entities SET coordinates=? WHERE id=?", updates)
+        db.commit()
+
+    return stats
+
+
+def phase6_nearest_place(db: sqlite3.Connection, *, dry_run: bool = False) -> dict:
+    """Phase 6.3: Assign placeId by matching coords to nearest place entity."""
+    import math
+    stats = {"matched": 0, "no_match": 0}
+
+    places = db.execute("""
+        SELECT id, name, area, coordinates FROM entities
+        WHERE type = 'place'
+          AND coordinates IS NOT NULL AND coordinates != '' AND coordinates != '[]' AND coordinates != 'null'
+    """).fetchall()
+
+    place_list = []
+    for pid, pname, parea, pcoords in places:
+        try:
+            c = json.loads(pcoords) if isinstance(pcoords, str) else pcoords
+            if isinstance(c, list) and len(c) == 2:
+                place_list.append((pid, pname, parea, c[0], c[1]))
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+    if not place_list:
+        return stats
+
+    rows = db.execute("""
+        SELECT id, name, area, coordinates FROM entities
+        WHERE type != 'place'
+          AND coordinates IS NOT NULL AND coordinates != '' AND coordinates != '[]' AND coordinates != 'null'
+          AND (placeId IS NULL OR placeId = '')
+    """).fetchall()
+
+    if dry_run:
+        stats["candidates"] = len(rows)
+        return stats
+
+    MAX_DIST_KM = 15
+
+    def haversine(lat1, lon1, lat2, lon2):
+        R = 6371
+        dlat = math.radians(lat2 - lat1)
+        dlon = math.radians(lon2 - lon1)
+        a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
+        return R * 2 * math.asin(math.sqrt(a))
+
+    updates = []
+    for eid, ename, earea, ecoords in rows:
+        try:
+            c = json.loads(ecoords) if isinstance(ecoords, str) else ecoords
+            if not isinstance(c, list) or len(c) != 2:
+                continue
+            lat, lng = c[0], c[1]
+        except (json.JSONDecodeError, TypeError):
+            continue
+
+        best_pid, best_dist = None, float("inf")
+        for pid, pname, parea, plat, plng in place_list:
+            if earea and parea and earea != parea:
+                continue
+            d = haversine(lat, lng, plat, plng)
+            if d < best_dist:
+                best_dist = d
+                best_pid = pid
+
+        if best_pid and best_dist <= MAX_DIST_KM:
+            updates.append((best_pid, eid))
+            stats["matched"] += 1
+        else:
+            stats["no_match"] += 1
+
+    if updates:
+        db.executemany("UPDATE entities SET placeId=? WHERE id=?", updates)
+        db.commit()
+
+    return stats
+
+
 def print_stats(phase: str, stats: dict):
     print(f"\n{'='*50}")
     print(f"  {phase}")
@@ -1268,7 +1476,7 @@ def main():
     _configure_output()
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--phase", default="2", help="Phase to run: 2, 3, 3a, 3b, 3c, 4, 5, all")
+    parser.add_argument("--phase", default="2", help="Phase to run: 2, 3, 3a, 3b, 3c, 4, 5, 6, all")
     parser.add_argument("--check", action="store_true", help="Dry-run, report only")
     parser.add_argument("--db", type=Path, default=DB_PATH, help="Path to SQLite DB")
     args = parser.parse_args()
@@ -1359,6 +1567,22 @@ def main():
 
         stats = phase3_fix_produced_in_conflicts(db, dry_run=dry)
         print_stats("Phase 5.9: Fix Produced_in Conflicts (final)", stats)
+
+    if phases in ("6", "all"):
+        stats = phase6_reclassify_places(db, dry_run=dry)
+        print_stats("Phase 6.1: Reclassify Mistyped Places", stats)
+
+        stats = phase6_assign_centroids(db, dry_run=dry)
+        print_stats("Phase 6.2: Assign Area Centroids", stats)
+
+        stats = phase6_nearest_place(db, dry_run=dry)
+        print_stats("Phase 6.3: Nearest-Place PlaceId Match", stats)
+
+        stats = phase3_fix_near_relationships(db, dry_run=dry)
+        print_stats("Phase 6.4: Fix Near Relationships (final)", stats)
+
+        stats = phase3_fix_produced_in_conflicts(db, dry_run=dry)
+        print_stats("Phase 6.5: Fix Produced_in Conflicts (final)", stats)
 
     db.close()
     print(f"\n[standardize] Done ({mode})")
