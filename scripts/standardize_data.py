@@ -888,6 +888,302 @@ def phase4_geocode_from_place_retry(db: sqlite3.Connection, *, dry_run: bool = F
     return stats
 
 
+def phase5_fix_area_from_place(db: sqlite3.Connection, *, dry_run: bool = False) -> dict:
+    """Phase 5.1: Set area from placeId's place entity area."""
+    stats = {"fixed": 0}
+    rows = db.execute("""
+        SELECT e.id, p.area
+        FROM entities e
+        JOIN entities p ON e.placeId = p.id
+        WHERE e.type != 'place'
+          AND (e.area IS NULL OR e.area = '')
+          AND p.area IS NOT NULL AND p.area != ''
+    """).fetchall()
+
+    if dry_run:
+        stats["candidates"] = len(rows)
+        return stats
+
+    if rows:
+        db.executemany("UPDATE entities SET area=? WHERE id=?",
+                       [(area, eid) for eid, area in rows])
+        db.commit()
+        stats["fixed"] = len(rows)
+    return stats
+
+
+def phase5_infer_area_llm(db: sqlite3.Connection, *, dry_run: bool = False, batch_size: int = 25) -> dict:
+    """Phase 5.2: LLM inference for missing area."""
+    stats = {"inferred": 0, "llm_calls": 0, "failed": 0}
+
+    rows = db.execute("""
+        SELECT id, name, type, summary FROM entities
+        WHERE type != 'place'
+          AND (area IS NULL OR area = '')
+    """).fetchall()
+
+    if dry_run:
+        stats["candidates"] = len(rows)
+        return stats
+
+    SYSTEM = """Xác định vùng cho các entity du lịch/OCOP ở Đồng bằng sông Cửu Long.
+Mỗi entity thuộc 1 trong 3 vùng: vinh-long, ben-tre, tra-vinh.
+
+Trả về JSON array: [{"id": "...", "area": "vinh-long|ben-tre|tra-vinh"}]
+
+Quy tắc:
+- Dựa vào tên, summary, đặc sản vùng miền để suy luận
+- Nếu không đủ thông tin → area: null
+CHỈ trả về JSON array."""
+
+    total = len(rows)
+    for batch_start in range(0, total, batch_size):
+        batch = rows[batch_start:batch_start + batch_size]
+        text = "\n".join(
+            f"- id: {eid}, name: {name}, type: {t}, summary: {(s or '')[:100]}"
+            for eid, name, t, s in batch
+        )
+        try:
+            response = _llm_call(f"Xác định vùng cho {len(batch)} entity:\n{text}",
+                                 system=SYSTEM, retries=3)
+            stats["llm_calls"] += 1
+            result = _parse_llm_json(response)
+            if not isinstance(result, list):
+                stats["failed"] += 1
+                continue
+
+            VALID = {"vinh-long", "ben-tre", "tra-vinh"}
+            batch_updates = []
+            for item in result:
+                if not isinstance(item, dict):
+                    continue
+                eid, area = item.get("id"), item.get("area")
+                if eid and area and area in VALID:
+                    batch_updates.append((area, eid))
+                    stats["inferred"] += 1
+
+            if batch_updates:
+                db.executemany("UPDATE entities SET area=? WHERE id=?", batch_updates)
+                db.commit()
+
+            done = min(batch_start + batch_size, total)
+            print(f"  [area] {done}/{total} processed, {stats['inferred']} inferred", flush=True)
+        except Exception as e:
+            stats["failed"] += 1
+            print(f"  [area] batch error: {e}", flush=True)
+
+    return stats
+
+
+def phase5_geocode_places(db: sqlite3.Connection, *, dry_run: bool = False) -> dict:
+    """Phase 5.3: Geocode place entities (xã/phường) via OSM Nominatim."""
+    stats = {"geocoded": 0, "miss": 0}
+
+    sys.path.insert(0, str(ROOT / "agent"))
+    from geocode import geocode
+
+    rows = db.execute("""
+        SELECT id, name, area FROM entities
+        WHERE type = 'place'
+          AND (coordinates IS NULL OR coordinates = '' OR coordinates = 'null')
+    """).fetchall()
+
+    if dry_run:
+        stats["candidates"] = len(rows)
+        return stats
+
+    AREA_TO_PROVINCE = {
+        "vinh-long": "Vĩnh Long",
+        "ben-tre": "Bến Tre",
+        "tra-vinh": "Trà Vinh",
+    }
+    import time
+    updates = []
+    total = len(rows)
+    for i, (eid, name, area) in enumerate(rows):
+        province = AREA_TO_PROVINCE.get(area, "")
+        query = f"{name}, {province}" if province else name
+        try:
+            coords = geocode(query)
+            if coords:
+                lat, lng = coords
+                if 9.0 <= lat <= 11.0 and 105.0 <= lng <= 107.0:
+                    updates.append((json.dumps([lat, lng]), eid))
+                    stats["geocoded"] += 1
+                else:
+                    stats["miss"] += 1
+            else:
+                stats["miss"] += 1
+        except Exception:
+            stats["miss"] += 1
+
+        if (i + 1) % 25 == 0 or i == total - 1:
+            print(f"  [geo-place] {i+1}/{total}, {stats['geocoded']} geocoded", flush=True)
+        time.sleep(1.1)
+
+    if updates:
+        db.executemany("UPDATE entities SET coordinates=? WHERE id=?", updates)
+        db.commit()
+
+    return stats
+
+
+def phase5_geocode_address(db: sqlite3.Connection, *, dry_run: bool = False) -> dict:
+    """Phase 5.4: Geocode non-place entities that have address attribute."""
+    stats = {"geocoded": 0, "miss": 0}
+
+    sys.path.insert(0, str(ROOT / "agent"))
+    from geocode import geocode
+
+    AREA_TO_PROVINCE = {
+        "vinh-long": "Vĩnh Long",
+        "ben-tre": "Bến Tre",
+        "tra-vinh": "Trà Vinh",
+    }
+
+    rows = db.execute("""
+        SELECT id, name, attributes, area FROM entities
+        WHERE type != 'place'
+          AND (coordinates IS NULL OR coordinates = '' OR coordinates = 'null' OR coordinates = '[]')
+    """).fetchall()
+
+    candidates = []
+    for eid, name, attrs_raw, area in rows:
+        try:
+            attrs = json.loads(attrs_raw) if isinstance(attrs_raw, str) else (attrs_raw or {})
+        except (json.JSONDecodeError, TypeError):
+            attrs = {}
+        addr = attrs.get("address", "")
+        if addr and len(addr) > 5:
+            candidates.append((eid, name, addr, area))
+
+    if dry_run:
+        stats["candidates"] = len(candidates)
+        return stats
+
+    import time
+    total = len(candidates)
+    updates = []
+    for i, (eid, name, addr, area) in enumerate(candidates):
+        province = AREA_TO_PROVINCE.get(area, "")
+        query = f"{addr}, {province}" if province else addr
+        try:
+            coords = geocode(query)
+            if coords:
+                lat, lng = coords
+                if 9.0 <= lat <= 11.0 and 105.0 <= lng <= 107.0:
+                    updates.append((json.dumps([lat, lng]), eid))
+                    stats["geocoded"] += 1
+                else:
+                    stats["miss"] += 1
+            else:
+                stats["miss"] += 1
+        except Exception:
+            stats["miss"] += 1
+
+        if (i + 1) % 25 == 0 or i == total - 1:
+            print(f"  [geo-addr] {i+1}/{total}, {stats['geocoded']} geocoded", flush=True)
+        time.sleep(1.1)
+
+    if updates:
+        db.executemany("UPDATE entities SET coordinates=? WHERE id=?", updates)
+        db.commit()
+
+    return stats
+
+
+def phase5_review_confidence(db: sqlite3.Connection, *, dry_run: bool = False, batch_size: int = 20) -> dict:
+    """Phase 5.5: LLM review low-confidence entities — validate or flag."""
+    stats = {"reviewed": 0, "upgraded": 0, "llm_calls": 0, "failed": 0}
+
+    rows = db.execute("""
+        SELECT id, name, type, summary, area, confidence FROM entities
+        WHERE confidence < 0.5
+    """).fetchall()
+
+    if dry_run:
+        stats["candidates"] = len(rows)
+        return stats
+
+    SYSTEM = """Đánh giá chất lượng các entity du lịch/OCOP Đồng bằng sông Cửu Long.
+Mỗi entity có confidence thấp (<0.5). Hãy đánh giá:
+- Entity có thật (tên hợp lệ, không phải rác/trùng lặp)?
+- Summary có ý nghĩa?
+- Nên giữ hay loại?
+
+Trả về JSON array: [{"id": "...", "valid": true/false, "confidence": 0.0-1.0, "reason": "..."}]
+- valid=true + confidence>=0.6: entity hợp lệ, nâng confidence
+- valid=true + confidence<0.6: giữ nguyên
+- valid=false: entity rác/trùng/vô nghĩa
+CHỈ trả về JSON array."""
+
+    total = len(rows)
+    for batch_start in range(0, total, batch_size):
+        batch = rows[batch_start:batch_start + batch_size]
+        text = "\n".join(
+            f"- id: {eid}, name: {name}, type: {t}, area: {a or '?'}, confidence: {c}, summary: {(s or '')[:100]}"
+            for eid, name, t, s, a, c in batch
+        )
+        try:
+            response = _llm_call(f"Đánh giá {len(batch)} entity:\n{text}",
+                                 system=SYSTEM, retries=3)
+            stats["llm_calls"] += 1
+            result = _parse_llm_json(response)
+            if not isinstance(result, list):
+                stats["failed"] += 1
+                continue
+
+            batch_updates = []
+            for item in result:
+                if not isinstance(item, dict):
+                    continue
+                eid = item.get("id")
+                valid = item.get("valid")
+                new_conf = item.get("confidence")
+                if eid and valid and isinstance(new_conf, (int, float)) and new_conf >= 0.6:
+                    batch_updates.append((min(new_conf, 1.0), eid))
+                    stats["upgraded"] += 1
+                stats["reviewed"] += 1
+
+            if batch_updates:
+                db.executemany("UPDATE entities SET confidence=? WHERE id=?", batch_updates)
+                db.commit()
+
+            done = min(batch_start + batch_size, total)
+            print(f"  [conf] {done}/{total} reviewed, {stats['upgraded']} upgraded", flush=True)
+        except Exception as e:
+            stats["failed"] += 1
+            print(f"  [conf] batch error: {e}", flush=True)
+
+    return stats
+
+
+def phase5_tag_source(db: sqlite3.Connection, *, dry_run: bool = False) -> dict:
+    """Phase 5.6: Tag entities with missing source as auto-generated."""
+    stats = {"tagged": 0}
+
+    rows = db.execute("""
+        SELECT id, type FROM entities
+        WHERE source IS NULL OR source = '' OR source = 'null' OR source = '[]' OR source = '{}'
+    """).fetchall()
+
+    if dry_run:
+        stats["candidates"] = len(rows)
+        return stats
+
+    updates = []
+    for eid, etype in rows:
+        src = [{"name": "vinhlong360 auto-learn", "type": "internal"}]
+        updates.append((json.dumps(src, ensure_ascii=False), eid))
+        stats["tagged"] += 1
+
+    if updates:
+        db.executemany("UPDATE entities SET source=? WHERE id=?", updates)
+        db.commit()
+
+    return stats
+
+
 def phase3_geocode_osm(db: sqlite3.Connection, *, dry_run: bool = False) -> dict:
     """Phase 3.3b: Geocode entities with address text via OSM Nominatim."""
     stats = {"geocoded": 0, "cache_hit": 0, "miss": 0, "skipped": 0}
@@ -972,7 +1268,7 @@ def main():
     _configure_output()
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--phase", default="2", help="Phase to run: 2, 3, 3a, 3b, 3c, 4, all")
+    parser.add_argument("--phase", default="2", help="Phase to run: 2, 3, 3a, 3b, 3c, 4, 5, all")
     parser.add_argument("--check", action="store_true", help="Dry-run, report only")
     parser.add_argument("--db", type=Path, default=DB_PATH, help="Path to SQLite DB")
     args = parser.parse_args()
@@ -1035,6 +1331,34 @@ def main():
 
         stats = phase3_fix_produced_in_conflicts(db, dry_run=dry)
         print_stats("Phase 4.6: Fix Produced_in Conflicts (cleanup)", stats)
+
+    if phases in ("5", "all"):
+        stats = phase5_fix_area_from_place(db, dry_run=dry)
+        print_stats("Phase 5.1: Fix Area from PlaceId", stats)
+
+        stats = phase5_infer_area_llm(db, dry_run=dry)
+        print_stats("Phase 5.2: LLM Area Inference", stats)
+
+        stats = phase5_geocode_places(db, dry_run=dry)
+        print_stats("Phase 5.3: Geocode Places (OSM)", stats)
+
+        stats = phase5_geocode_address(db, dry_run=dry)
+        print_stats("Phase 5.4: Geocode by Address (OSM)", stats)
+
+        stats = phase4_geocode_from_place_retry(db, dry_run=dry)
+        print_stats("Phase 5.5: Geocode from Place (retry)", stats)
+
+        stats = phase5_review_confidence(db, dry_run=dry)
+        print_stats("Phase 5.6: LLM Confidence Review", stats)
+
+        stats = phase5_tag_source(db, dry_run=dry)
+        print_stats("Phase 5.7: Tag Missing Source", stats)
+
+        stats = phase3_fix_near_relationships(db, dry_run=dry)
+        print_stats("Phase 5.8: Fix Near Relationships (final)", stats)
+
+        stats = phase3_fix_produced_in_conflicts(db, dry_run=dry)
+        print_stats("Phase 5.9: Fix Produced_in Conflicts (final)", stats)
 
     db.close()
     print(f"\n[standardize] Done ({mode})")
