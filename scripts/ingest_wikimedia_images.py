@@ -10,9 +10,14 @@ landmarks, and cultural sites. Category fallback images in /img/cat/
 cover entities without specific images.
 
 Usage:
-    python scripts/ingest_wikimedia_images.py           # all types
-    python scripts/ingest_wikimedia_images.py dish       # specific type
+    python scripts/ingest_wikimedia_images.py --mode=queue          # RECOMMENDED: queue candidates for admin review at /admin/duyet-anh (NO publish — B6)
+    python scripts/ingest_wikimedia_images.py --mode=queue dish     # queue, specific type only
+    python scripts/ingest_wikimedia_images.py --mode=queue --dry-run  # collect + preview, don't post
+    python scripts/ingest_wikimedia_images.py           # direct-publish (legacy, bypasses review)
+    python scripts/ingest_wikimedia_images.py dish       # direct-publish, specific type
     python scripts/ingest_wikimedia_images.py --dry-run  # preview only
+
+Queue mode needs: ADMIN_API_KEY env (X-Admin-Key) + optionally VL_API_BASE (default http://127.0.0.1:8360).
 """
 
 import json
@@ -133,8 +138,49 @@ def search_wikipedia_image(name: str, entity: dict) -> dict | None:
     return None
 
 
+API_BASE = os.environ.get("VL_API_BASE", "http://127.0.0.1:8360")
+ADMIN_KEY = os.environ.get("ADMIN_API_KEY", "")
+
+
+def _match_confidence(entity: dict, title: str) -> float:
+    """Heuristic 0..1 that `title` matches the entity — a hint for the human reviewer.
+    Name-match is the only reliable signal (Wikipedia fuzzy hits are ~50% wrong)."""
+    nw = set(entity["name"].lower().split())
+    tw = set(title.lower().split())
+    overlap = len(nw & tw)
+    if overlap >= 2:
+        return 0.85
+    if overlap == 1:
+        return 0.6
+    return 0.45
+
+
+def post_suggestions(suggestions: list[dict]) -> None:
+    """POST candidates to the admin review queue. NO publish — items sit pending at
+    /admin/duyet-anh until a human approves (B6 + accuracy: Wikipedia name-match is
+    ~50% wrong on fuzzy hits, so a review gate is mandatory)."""
+    if not ADMIN_KEY:
+        print("ERROR: set ADMIN_API_KEY (and optionally VL_API_BASE) to queue suggestions.")
+        sys.exit(1)
+    url = f"{API_BASE}/admin/image-suggestions/create-batch"
+    headers = {**HEADERS, "X-Admin-Key": ADMIN_KEY, "Content-Type": "application/json"}
+    sent = 0
+    for i in range(0, len(suggestions), 100):
+        chunk = suggestions[i:i + 100]
+        try:
+            r = httpx.post(url, json={"suggestions": chunk}, headers=headers, timeout=30)
+            r.raise_for_status()
+            res = r.json()
+            sent += int(res.get("created", res.get("inserted", len(chunk))) or 0)
+            print(f"  queued batch {i // 100 + 1}: {res}")
+        except Exception as e:
+            print(f"  batch POST failed: {e}")
+    print(f"\nQueued {sent} suggestion(s) -> review/approve at /admin/duyet-anh (NOT published).")
+
+
 def main():
     dry_run = "--dry-run" in sys.argv
+    queue_mode = "--mode=queue" in sys.argv or "--queue" in sys.argv
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     target_type = args[0] if args else None
 
@@ -157,6 +203,40 @@ def main():
     if dry_run:
         print("  [DRY RUN — no changes will be saved]")
 
+    # ── Review-queue mode (B6-safe): collect candidates → POST to admin queue, NO publish ──
+    if queue_mode:
+        suggestions = []
+        skipped = 0
+        for i, entity in enumerate(need_images):
+            print(f"[{i+1}/{len(need_images)}] {entity['id']}: {entity['name']}")
+            result = search_wikipedia_image(entity["name"], entity)
+            if not result:
+                skipped += 1
+                print("  (no relevant image)")
+                continue
+            conf = _match_confidence(entity, result["title"])
+            suggestions.append({
+                "entity_id": entity["id"],
+                "candidate_url": result["url"],
+                "wp_title": result["title"],
+                "license": result.get("license", ""),
+                "author": result.get("author", ""),
+                "source": "wikipedia-vi",
+                "match_confidence": conf,
+            })
+            print(f"  candidate: {result['title']} (conf {conf})")
+            time.sleep(0.3)
+        print(f"\nCollected {len(suggestions)} candidate(s) ({skipped} no-match).")
+        if not suggestions or dry_run:
+            if dry_run:
+                print("[DRY RUN] not posting to queue.")
+            return
+        post_suggestions(suggestions)
+        return
+
+    # ── Direct-publish mode (legacy): writes entity.images immediately. ──
+    # WARNING: bypasses human review. Prefer --mode=queue (B6 + ~50% fuzzy-match error).
+    print("  [direct-publish mode — bypasses review; use --mode=queue for the B6-safe path]")
     updated = 0
     skipped = 0
 
