@@ -3,7 +3,8 @@
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: areaMeta?.name || 'Khu vực' }]" />
 
     <!-- Hero -->
-    <section v-if="areaMeta" class="catalog-hero" :class="'cat-area-' + areaKey">
+    <section v-if="areaMeta" class="catalog-hero area-hero" :class="'cat-area-' + areaKey" :style="areaTint">
+      <span class="area-hero-bloom" aria-hidden="true"></span>
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true">{{ areaMeta.emoji }}</span>
         <div>
@@ -11,7 +12,7 @@
           <p>{{ areaMeta.blurb }}</p>
         </div>
       </div>
-      <div v-if="entities.length" class="catalog-stats">
+      <div v-if="entities.length" class="catalog-stats area-stats">
         <div class="stat-item">
           <span class="stat-num">{{ entities.length }}</span>
           <span class="stat-label">địa điểm</span>
@@ -30,24 +31,42 @@
       </template>
     </EmptyState>
 
+    <!-- Loading skeleton (first paint, before data) -->
+    <ClientOnly>
+      <div v-if="!data && !fetchError" class="block">
+        <div class="section-head"><h2 class="sk-heading">Đang tải…</h2></div>
+        <SkeletonGrid :count="8" />
+      </div>
+    </ClientOnly>
+
     <!-- Featured -->
     <section v-if="featured.length" class="block reveal">
       <div class="section-head">
         <h2>Nổi bật {{ areaMeta?.name }}</h2>
       </div>
-      <div class="scroll-row" role="region" :aria-label="'Nổi bật ' + areaMeta?.name">
+      <p class="section-desc">Những địa điểm nổi bật nhất vùng — chọn lọc theo hình ảnh và mức độ quan tâm.</p>
+      <div class="scroll-row honor-roll" role="region" :aria-label="'Nổi bật ' + areaMeta?.name">
         <EntityCard v-for="e in featured" :key="e.id" :entity="e" />
       </div>
     </section>
 
     <!-- Type sections -->
-    <section v-for="cat in typeSections" :key="cat.type" class="block reveal">
+    <section v-for="cat in typeSections" :key="cat.type" class="block reveal area-type-block">
       <div class="section-head">
         <h2>{{ cat.emoji }} {{ cat.label }}</h2>
-        <span class="see-all-count">{{ cat.items.length }} mục</span>
+        <button
+          v-if="cat.items.length > 8"
+          type="button"
+          class="see-all-toggle"
+          :aria-expanded="expanded[cat.type] ? 'true' : 'false'"
+          @click="toggleExpand(cat.type)"
+        >
+          {{ expanded[cat.type] ? 'Thu gọn' : `Xem tất cả (${cat.items.length})` }}
+        </button>
+        <span v-else class="see-all-count">{{ cat.items.length }} mục</span>
       </div>
       <div class="scroll-row" role="region" :aria-label="cat.label">
-        <EntityCard v-for="e in cat.items.slice(0, 8)" :key="e.id" :entity="e" />
+        <EntityCard v-for="e in (expanded[cat.type] ? cat.items : cat.items.slice(0, 8))" :key="e.id" :entity="e" />
       </div>
     </section>
 
@@ -57,7 +76,7 @@
         <h2>Xã / phường ({{ wards.length }})</h2>
       </div>
       <p class="section-desc">Mỗi xã/phường có trang riêng: du lịch · lưu trú · đặc sản · danh bạ hành chính.</p>
-      <div class="chip-row wrap-mobile">
+      <div class="chip-row wrap-mobile area-wards">
         <NuxtLink v-for="w in wards" :key="w.id" :to="`/xa-phuong/${w.id}`" class="chip">{{ w.name }}</NuxtLink>
       </div>
     </section>
@@ -68,12 +87,12 @@
     </div>
 
     <!-- Full grid -->
-    <section v-if="entities.length" class="block">
+    <section v-if="entities.length" class="block reveal">
       <div class="grid">
         <EntityCard v-for="e in entities" :key="e.id" :entity="e" />
       </div>
     </section>
-    <EmptyState v-else icon="📍" title="Chưa có dữ liệu" message="Chưa có dữ liệu cho khu vực này. Dữ liệu đang được cập nhật.">
+    <EmptyState v-else-if="data && !fetchError" icon="📍" title="Chưa có dữ liệu" message="Chưa có dữ liệu cho khu vực này. Dữ liệu đang được cập nhật.">
       <template #actions>
         <NuxtLink to="/du-lich" class="btn btn-outline">Khám phá du lịch</NuxtLink>
         <NuxtLink to="/" class="btn btn-outline">Về trang chủ</NuxtLink>
@@ -114,6 +133,15 @@ const route = useRoute()
 const areaKey = route.params.area as string
 const areaMeta = AREA_META[areaKey]
 if (!areaMeta) throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy khu vực', fatal: true })
+
+// Per-region accent binding — feeds the scoped hero bloom + stat tint so each
+// area "owns" its colour. Falls back to brand primary for unknown areas.
+const AREA_RGB: Record<string, string> = {
+  'vinh-long': 'var(--primary-rgb)',
+  'ben-tre': 'var(--secondary-rgb)',
+  'tra-vinh': 'var(--river-rgb)',
+}
+const areaTint = computed(() => ({ '--AREA-rgb': AREA_RGB[areaKey] || 'var(--primary-rgb)' }))
 
 const { data, error: fetchError } = await useAsyncData(`area-${areaKey}`, () =>
   $fetch<any>(`/api/entities?area=${areaKey}&limit=200`)
@@ -159,6 +187,12 @@ const typeSections = computed(() =>
     .filter(c => c.items.length > 0)
 )
 
+// Per-type "see all" expansion (truncated scroll-rows expand in place).
+const expanded = reactive<Record<string, boolean>>({})
+function toggleExpand(type: string) {
+  expanded[type] = !expanded[type]
+}
+
 if (areaMeta) {
   useSeoMeta({
     title: `Khu vực ${areaMeta.name} — vinhlong360`,
@@ -199,4 +233,119 @@ if (areaMeta) {
 
 <style scoped>
 .see-all-count { font-size: var(--text-sm); color: var(--muted); }
+
+/* ── SIGNATURE: Regional identity hero bloom ──────────────────────────────
+   A radial wash keyed to the region's own colour (--AREA-rgb, set inline per
+   area) layered over the shared catalog-hero gradient/motif so each region
+   feels "owned" by its colour without overwriting the global motif layer.
+   Sits below the text/stats (catalog-hero-inner / catalog-stats are z-index 1
+   per catalog.css). Decorative only. */
+.area-hero { --AREA-rgb: var(--primary-rgb); }
+.area-hero-bloom {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 80% at 6% -10%, rgba(var(--AREA-rgb), .12), transparent 60%),
+    linear-gradient(to bottom, transparent 55%, rgba(0, 0, 0, .05) 100%);
+}
+.dark .area-hero-bloom {
+  background:
+    radial-gradient(120% 80% at 6% -10%, rgba(var(--AREA-rgb), .18), transparent 60%),
+    linear-gradient(to bottom, transparent 55%, rgba(0, 0, 0, .18) 100%);
+}
+/* a touch more breathing room around the regional emoji + text on phones */
+@media (max-width: 640px) {
+  .area-hero { padding-bottom: var(--space-6); }
+}
+
+/* ── SIGNATURE: Stat pills as "proof badges" ──────────────────────────────
+   Region-tinted surface + hairline so each stat reads as a credential, not
+   loose text. Hover lifts the number in the region colour. Scoped to this
+   page only. */
+.area-stats .stat-item {
+  background: rgba(var(--AREA-rgb), .06);
+  border: .5px solid var(--line);
+  border-radius: var(--radius-md);
+}
+.area-stats .stat-item:hover {
+  background: rgba(var(--AREA-rgb), .1);
+}
+.area-stats .stat-item:hover .stat-num {
+  color: var(--primary-fg-strong, var(--primary-fg));
+  transform: scale(1.08);
+}
+.area-stats .stat-num {
+  display: inline-block;
+  transition: color .3s var(--ease-out), transform .25s var(--ease-spring-gentle);
+}
+/* mobile: stats become a tidy 2-up grid so they never orphan on a line */
+@media (max-width: 640px) {
+  .area-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+  }
+  .area-stats .stat-item {
+    align-items: center;
+    text-align: center;
+    min-height: 44px;
+    justify-content: center;
+  }
+}
+
+/* ── SIGNATURE: Type-section "see all" toggle ─────────────────────────────
+   Truncated scroll-rows (>8 items) get an inline expand control instead of a
+   silent cut. Matches the muted count typography when collapsed. */
+.see-all-toggle {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--primary-fg);
+  background: transparent;
+  border: .5px solid transparent;
+  border-radius: var(--radius-full);
+  padding: var(--space-2) var(--space-3);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  transition: background .25s var(--ease-out), color .25s var(--ease-out), transform .15s var(--ease-spring);
+}
+.see-all-toggle:hover {
+  background: rgba(var(--primary-rgb), .08);
+  border-color: rgba(var(--primary-rgb), .2);
+}
+.see-all-toggle:active { transform: scale(.96); transition-duration: .08s; }
+.see-all-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+
+/* ── POLISH: Ward chips wrap to a tap-friendly grid on mobile ─────────────
+   On phones the shared .chip-row.wrap-mobile already wraps; here we lock the
+   ward chips to a 2-column grid with comfortable 48px tap targets so no ward
+   name gets cut and neighbours don't crowd. */
+@media (max-width: 640px) {
+  .area-wards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-2);
+  }
+  .area-wards .chip {
+    min-height: 48px;
+    justify-content: center;
+    text-align: center;
+    font-size: var(--text-sm);
+    min-width: 0;
+    white-space: normal;
+    line-height: 1.25;
+  }
+}
+
+/* loading heading mirrors a section title without drawing attention */
+.sk-heading { color: var(--muted); font-weight: var(--weight-semibold); }
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .area-stats .stat-item:hover .stat-num { transform: none; }
+  .see-all-toggle:active { transform: none; }
+}
 </style>
