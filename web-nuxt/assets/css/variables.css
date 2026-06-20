@@ -169,11 +169,19 @@
   --glass-heavy: saturate(200%) blur(40px);
   --glass-bg: rgba(255, 255, 255, .72);
   --glass-bg-heavy: rgba(255, 255, 255, .88);
+  /* ── Z-index scale (coherent layering — bottom→top) ── */
+  --z-base: 0;
+  --z-rel: 1;
   --z-dropdown: 50;
+  --z-floating: 75;
   --z-sticky: 100;
+  --z-mobile-nav: 101;
   --z-overlay: 200;
   --z-modal: 500;
   --z-toast: 600;
+  --z-modal-high: 900;
+  --z-lightbox: 9999;
+  --z-skip-link: 10000;
 
   /* ── Badge colors ── */
   --badge-season-bg: #fbe7da;

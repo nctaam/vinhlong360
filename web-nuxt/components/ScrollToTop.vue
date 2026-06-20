@@ -26,9 +26,9 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 <style scoped>
 .scroll-top {
   position: fixed;
-  bottom: 90px;
+  bottom: calc(90px + env(safe-area-inset-bottom));
   right: var(--space-5);
-  z-index: var(--z-dropdown);
+  z-index: var(--z-floating);
   width: 44px;
   height: 44px;
   border-radius: 50%;

@@ -6,9 +6,8 @@
       <span class="cover-tag" :class="`cat-${typeMeta.cat}`">{{ typeMeta.emoji }} {{ typeMeta.label }}</span>
       <ClientOnly><SaveButton class="card-save" :entity="entity" size="sm" /></ClientOnly>
     </div>
-    <div v-else class="cover cover-img" :class="`cat-${typeMeta.cat}`">
-      <img v-if="!catImgError" :src="`/img/cat/${typeMeta.cat}.jpg`" :alt="typeMeta.label" loading="lazy" width="400" height="240" decoding="async" @error="catImgError = true" />
-      <CategoryIcon v-else :cat="typeMeta.cat" />
+    <div v-else class="cover cover-img cover-generated" :class="`cat-${typeMeta.cat}`" :style="{ backgroundImage: placeholderBg }">
+      <span class="cover-svg-icon" v-html="placeholderSvg" />
       <span class="cover-tag" :class="`cat-${typeMeta.cat}`">{{ typeMeta.emoji }} {{ typeMeta.label }}</span>
       <ClientOnly><SaveButton class="card-save" :entity="entity" size="sm" /></ClientOnly>
     </div>
@@ -34,6 +33,7 @@
 <script setup lang="ts">
 import { TYPE_META } from '~/composables/useConstants'
 import { isYearRound, seasonText, relevanceScore } from '~/composables/useSeason'
+import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 
 const props = defineProps<{
   entity: Record<string, any>
@@ -41,8 +41,10 @@ const props = defineProps<{
 }>()
 
 const imgError = ref(false)
-const catImgError = ref(false)
 const typeMeta = computed(() => TYPE_META[props.entity.type] || { emoji: '•', label: props.entity.type, cat: 'place' })
+// Deterministic per-entity placeholder (no real photos exist yet) — seeded by id.
+const placeholderBg = computed(() => generateCategoryPlaceholder(props.entity.id, typeMeta.value.cat))
+const placeholderSvg = computed(() => generateCategoryIcon(typeMeta.value.cat))
 const coverImage = computed(() => {
   const imgs = props.entity.images
   if (Array.isArray(imgs) && imgs.length > 0) return imgs[0]

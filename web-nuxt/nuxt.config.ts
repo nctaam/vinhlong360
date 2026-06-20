@@ -73,6 +73,10 @@ export default defineNuxtConfig({
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
       ],
       script: [
+        // Add `js` to <html> BEFORE first paint so the JS-gated .reveal rule
+        // (html.js .reveal { opacity:0 }) only ever hides content when JS is
+        // present — no flash-of-hidden, and full visibility when JS is off/slow.
+        { children: "document.documentElement.classList.add('js')", tagPosition: 'head' },
         { innerHTML: "if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js')})}", type: 'text/javascript' },
       ],
     },
@@ -104,6 +108,7 @@ export default defineNuxtConfig({
     '/': { swr: 300 },
     '/ban-do': { swr: 1800 },
     '/admin/**': { ssr: false },
+    '/api/site-settings': { proxy: `${apiBase}/api/site-settings`, swr: 60 },
     '/api/stats': { proxy: `${apiBase}/api/stats`, swr: 300 },
     '/api/places': { proxy: `${apiBase}/api/places`, swr: 600 },
     '/api/entities': { proxy: `${apiBase}/api/entities`, swr: 120 },
@@ -141,6 +146,12 @@ export default defineNuxtConfig({
 
   nitro: {
     compressPublicAssets: true,
+    prerender: {
+      routes: ['/', '/du-lich', '/san-pham', '/ocop', '/le-hoi', '/luu-tru',
+               '/lich-trinh', '/su-kien', '/theo-mua', '/ban-do', '/danh-ba',
+               '/lien-he', '/cong-dong'],
+      crawlLinks: false,
+    },
     routeRules: {
       '/_nuxt/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
       '/**': {

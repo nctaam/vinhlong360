@@ -18,6 +18,10 @@
 .cover-img img[loading="lazy"] { opacity: 0; transform: scale(1.03); filter: blur(4px); }
 .cover-img img.loaded, .cover-img img:not([loading="lazy"]) { opacity: 1; transform: scale(1); filter: blur(0); }
 .card:hover .cover-img img.loaded { transform: scale(1.04); }
+/* Deterministic per-entity gradient placeholder (no real photos yet) */
+.cover-generated { background-size: cover; background-position: center; background-repeat: no-repeat; animation: none; }
+.cover-svg-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 64px; height: 64px; opacity: .6; color: var(--text-on-dark, #fff); pointer-events: none; }
+.cover-svg-icon :deep(svg), .cover-svg-icon svg { width: 100%; height: 100%; display: block; }
 .cover-tag { position: absolute; bottom: var(--space-2); left: var(--space-2); font-size: .7rem; font-weight: var(--weight-semibold); padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); color: var(--text-on-dark, #fff); background: var(--overlay-dark, rgba(0,0,0,.45)); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); letter-spacing: .02em; border: .5px solid rgba(255,255,255,.15); }
 .card-save { position: absolute; top: var(--space-3); right: var(--space-3); z-index: 2; }
 .card-b { padding: var(--space-4) var(--space-4) var(--space-5); display: flex; flex-direction: column; gap: var(--space-2); flex: 1; }

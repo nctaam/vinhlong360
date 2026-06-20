@@ -1,11 +1,11 @@
 <template>
   <div>
     <a href="#main-content" class="skip-link">Bỏ qua điều hướng</a>
-    <header class="topbar">
+    <header class="topbar" :class="{ scrolled: topbarScrolled }">
       <div class="topbar-inner">
         <NuxtLink class="brand" to="/">
-          <span class="logo">vinhlong<span class="dot">360</span></span>
-          <span class="tld">.vn</span>
+          <span class="logo">{{ ss('branding.site_name', 'vinhlong360').replace('360', '') }}<span class="dot">360</span></span>
+          <span class="tld">{{ ss('branding.logo_suffix', '.vn') }}</span>
         </NuxtLink>
         <button type="button" class="nav-toggle" :aria-expanded="mobileNav" aria-haspopup="true" aria-controls="main-nav" aria-label="Menu" @click="mobileNav = !mobileNav">
           <span></span><span></span><span></span>
@@ -44,13 +44,15 @@
       </div>
     </header>
 
-    <div v-if="showBeta" class="beta-banner">
-      <div class="beta-inner">
-        <span class="beta-icon">🚧</span>
-        <p><strong>Trang đang trong giai đoạn xây dựng.</strong> Một số tính năng có thể chưa hoàn thiện hoặc thay đổi. Cảm ơn bạn đã ghé thăm!</p>
-        <button type="button" class="beta-close" aria-label="Đóng thông báo" @click="dismissBeta">&times;</button>
+    <Transition name="banner-slide">
+      <div v-if="showBeta" class="beta-banner">
+        <div class="beta-inner">
+          <span class="beta-icon">{{ ss('announcements.icon', '🚧') }}</span>
+          <p><strong>{{ ss('announcements.text', 'Trang đang trong giai đoạn xây dựng.') }}</strong> {{ ss('announcements.subtext', 'Một số tính năng có thể chưa hoàn thiện hoặc thay đổi. Cảm ơn bạn đã ghé thăm!') }}</p>
+          <button type="button" class="beta-close" aria-label="Đóng thông báo" @click="dismissBeta">&times;</button>
+        </div>
       </div>
-    </div>
+    </Transition>
 
     <main id="main-content">
       <slot />
@@ -64,6 +66,7 @@
     <ClientOnly>
       <OnboardingSheet />
       <JourneyBar />
+      <ReportModal />
       <ToastContainer />
     </ClientOnly>
 
@@ -72,59 +75,31 @@
         <div class="footer-top">
           <div class="footer-brand">
             <NuxtLink to="/" class="footer-logo">
-              <span class="logo">vinhlong<span class="dot">360</span></span><span class="tld">.vn</span>
+              <span class="logo">{{ ss('branding.site_name', 'vinhlong360').replace('360', '') }}<span class="dot">360</span></span><span class="tld">{{ ss('branding.logo_suffix', '.vn') }}</span>
             </NuxtLink>
-            <p>Khám phá Vĩnh Long, Bến Tre, Trà Vinh<br>theo cách của người bản địa.</p>
+            <p>{{ ss('footer.tagline', 'Khám phá Vĩnh Long, Bến Tre, Trà Vinh\ntheo cách của người bản địa.') }}</p>
+            <nav v-if="socialLinks.length" class="footer-social" aria-label="Mạng xã hội">
+              <a v-for="s in socialLinks" :key="s.url" :href="s.url" target="_blank" rel="noopener noreferrer" :aria-label="s.label" :title="s.label">
+                <span class="fs-icon" aria-hidden="true">{{ s.icon }}</span>
+                <span class="fs-label">{{ s.label }}</span>
+              </a>
+            </nav>
           </div>
           <div class="footer-nav">
-            <div class="footer-col">
-              <h4>Khám phá</h4>
-              <nav aria-label="Khám phá">
-                <NuxtLink to="/du-lich">Du lịch & trải nghiệm</NuxtLink>
-                <NuxtLink to="/san-pham">Sản phẩm địa phương</NuxtLink>
-                <NuxtLink to="/ocop">Sản phẩm OCOP</NuxtLink>
-                <NuxtLink to="/theo-mua">Đặc sản theo mùa</NuxtLink>
-                <NuxtLink to="/luu-tru">Lưu trú</NuxtLink>
-                <NuxtLink to="/le-hoi">Lễ hội truyền thống</NuxtLink>
-                <NuxtLink to="/su-kien">Sự kiện</NuxtLink>
-              </nav>
-            </div>
-            <div class="footer-col">
-              <h4>Công cụ</h4>
-              <nav aria-label="Công cụ">
-                <NuxtLink to="/ban-do" no-prefetch>Bản đồ</NuxtLink>
-                <NuxtLink to="/lich-trinh">Lịch trình gợi ý</NuxtLink>
-                <NuxtLink to="/tao-lich-trinh" no-prefetch>Tạo lịch trình</NuxtLink>
-                <NuxtLink to="/danh-ba">Danh bạ hành chính</NuxtLink>
-                <NuxtLink to="/cong-dong">Cộng đồng</NuxtLink>
-              </nav>
-            </div>
-            <div class="footer-col">
-              <h4>3 vùng</h4>
-              <nav aria-label="3 vùng">
-                <NuxtLink to="/khu-vuc/vinh-long">🍊 Vĩnh Long</NuxtLink>
-                <NuxtLink to="/khu-vuc/ben-tre">🥥 Bến Tre</NuxtLink>
-                <NuxtLink to="/khu-vuc/tra-vinh">🛕 Trà Vinh</NuxtLink>
-              </nav>
-            </div>
-            <div class="footer-col">
-              <h4>Dành cho cơ sở</h4>
-              <nav aria-label="Dành cho cơ sở">
-                <NuxtLink to="/lien-he?ref=claim">🏷️ Đăng ký quản lý trang</NuxtLink>
-                <NuxtLink to="/lien-he">🤝 Hợp tác quảng bá</NuxtLink>
+            <div v-for="col in footerColumns" :key="col.title" class="footer-col">
+              <h4>{{ col.title }}</h4>
+              <nav :aria-label="col.title">
+                <NuxtLink v-for="link in col.links" :key="link.to" :to="link.to">{{ link.label }}</NuxtLink>
               </nav>
             </div>
           </div>
         </div>
         <div class="footer-bottom">
-          <p class="disclaimer">Thông tin mùa vụ, giá &amp; địa điểm mang tính tham khảo — vui lòng xác nhận với địa phương trước khi sử dụng.</p>
+          <p class="disclaimer">{{ ss('footer.disclaimer', 'Thông tin mùa vụ, giá & địa điểm mang tính tham khảo — vui lòng xác nhận với địa phương trước khi sử dụng.') }}</p>
           <div class="footer-bottom-row">
-            <p>&copy; 2024–2026 vinhlong360</p>
+            <p>{{ ss('footer.copyright', '© 2024–2026 vinhlong360') }}</p>
             <nav class="footer-legal">
-              <NuxtLink to="/chinh-sach-bao-mat">Bảo mật</NuxtLink>
-              <NuxtLink to="/dieu-khoan-su-dung">Điều khoản</NuxtLink>
-              <NuxtLink to="/lien-he">Liên hệ</NuxtLink>
-              <NuxtLink to="/admin">Admin</NuxtLink>
+              <NuxtLink v-for="link in footerLegalLinks" :key="link.to" :to="link.to">{{ link.label }}</NuxtLink>
             </nav>
           </div>
         </div>
@@ -137,19 +112,20 @@
 const route = useRoute()
 const { isLoggedIn } = useAuth()
 const colorMode = useColorMode()
+const { get: ss } = useSiteSettings()
 function toggleColorMode() {
   colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
 }
 const showAuth = ref(false)
 const mobileNav = ref(false)
+const bannerEnabled = computed(() => ss('announcements.enabled', true))
 const showBeta = ref(false)
 onMounted(() => {
-  if (localStorage.getItem('vl360_beta_dismissed') !== '1') showBeta.value = true
+  if (bannerEnabled.value && localStorage.getItem('vl360_beta_dismissed') !== '1') showBeta.value = true
 })
 function dismissBeta() { showBeta.value = false; localStorage.setItem('vl360_beta_dismissed', '1') }
 
-// Nav theo intent + region-first (deep-research: NN/g mega-menu, Visit California)
-const navGroups: Array<{ label: string; to?: string; children?: { to: string; label: string }[] }> = [
+const DEFAULT_NAV_GROUPS: Array<{ label: string; to?: string; children?: { to: string; label: string }[] }> = [
   { label: 'Khám phá', children: [
     { to: '/du-lich', label: 'Du lịch & trải nghiệm' },
     { to: '/luu-tru', label: 'Lưu trú' },
@@ -171,6 +147,69 @@ const navGroups: Array<{ label: string; to?: string; children?: { to: string; la
   ] },
   { label: 'Cộng đồng', to: '/cong-dong' },
 ]
+const navGroups = computed(() => ss('navigation.nav_groups', DEFAULT_NAV_GROUPS) as typeof DEFAULT_NAV_GROUPS)
+
+const DEFAULT_FOOTER_COLUMNS = [
+  { title: 'Khám phá', links: [
+    { to: '/du-lich', label: 'Du lịch & trải nghiệm' },
+    { to: '/san-pham', label: 'Sản phẩm địa phương' },
+    { to: '/ocop', label: 'Sản phẩm OCOP' },
+    { to: '/theo-mua', label: 'Đặc sản theo mùa' },
+    { to: '/luu-tru', label: 'Lưu trú' },
+    { to: '/le-hoi', label: 'Lễ hội truyền thống' },
+    { to: '/su-kien', label: 'Sự kiện' },
+  ] },
+  { title: 'Công cụ', links: [
+    { to: '/ban-do', label: 'Bản đồ' },
+    { to: '/lich-trinh', label: 'Lịch trình gợi ý' },
+    { to: '/tao-lich-trinh', label: 'Tạo lịch trình' },
+    { to: '/danh-ba', label: 'Danh bạ hành chính' },
+    { to: '/cong-dong', label: 'Cộng đồng' },
+  ] },
+  { title: '3 vùng', links: [
+    { to: '/khu-vuc/vinh-long', label: '🍊 Vĩnh Long' },
+    { to: '/khu-vuc/ben-tre', label: '🥥 Bến Tre' },
+    { to: '/khu-vuc/tra-vinh', label: '🛕 Trà Vinh' },
+  ] },
+  { title: 'Dành cho cơ sở', links: [
+    { to: '/lien-he?ref=claim', label: '🏷️ Đăng ký quản lý trang' },
+    { to: '/lien-he', label: '🤝 Hợp tác quảng bá' },
+  ] },
+]
+const footerColumns = computed(() => ss('footer.columns', DEFAULT_FOOTER_COLUMNS) as typeof DEFAULT_FOOTER_COLUMNS)
+
+const DEFAULT_FOOTER_LEGAL = [
+  { to: '/gioi-thieu', label: 'Về chúng tôi' },
+  { to: '/chinh-sach-bao-mat', label: 'Bảo mật' },
+  { to: '/dieu-khoan-su-dung', label: 'Điều khoản' },
+  { to: '/lien-he', label: 'Liên hệ' },
+  { to: '/admin', label: 'Admin' },
+]
+const footerLegalLinks = computed(() => ss('footer.legal_links', DEFAULT_FOOTER_LEGAL) as typeof DEFAULT_FOOTER_LEGAL)
+
+// Social links — empty by default (no row shown until an admin adds links).
+const socialLinks = computed(() => ss('social.links', [] as { icon: string; label: string; url: string }[]))
+
+const themeOverrideCss = computed(() => {
+  const vars: string[] = []
+  const primary = ss('theme.primary_color', '') as string
+  const accent = ss('theme.accent_color', '') as string
+  const secondary = ss('theme.secondary_color', '') as string
+  const radius = ss('theme.radius', '') as string
+  const fontScale = ss('theme.font_scale', '') as string
+  if (primary) vars.push(`--primary: ${primary}`)
+  if (accent) vars.push(`--accent: ${accent}`)
+  if (secondary) vars.push(`--secondary: ${secondary}`)
+  // Validate radius is a plain CSS length (blocks any CSS injection via the setting).
+  if (/^\d{1,3}(\.\d+)?(px|rem|em|%)$/.test(radius)) vars.push(`--radius: ${radius}`)
+  let css = vars.length ? `:root { ${vars.join('; ')} }` : ''
+  // Font scale: a bounded multiplier (0.8–1.3) applied to the root font size.
+  const fs = parseFloat(fontScale)
+  if (!Number.isNaN(fs) && fs >= 0.8 && fs <= 1.3) css += ` html { font-size: calc(100% * ${fs}); }`
+  return css
+})
+useHead({ style: [{ innerHTML: themeOverrideCss }] })
+
 const openGroup = ref<number | null>(null)
 function toggleGroup(i: number) { openGroup.value = openGroup.value === i ? null : i }
 function closeAll() { openGroup.value = null; mobileNav.value = false }
@@ -208,14 +247,22 @@ function onNavKeydown(e: KeyboardEvent) {
   else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
 }
 
+useScrollFade()
+
+const topbarScrolled = ref(false)
+function onPageScroll() { topbarScrolled.value = window.scrollY > 8 }
+
 onMounted(() => {
   const onDoc = (e: MouseEvent) => { if (!(e.target as HTMLElement)?.closest('.main-nav')) openGroup.value = null }
   const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') { openGroup.value = null; mobileNav.value = false } }
   document.addEventListener('click', onDoc)
   document.addEventListener('keydown', onEsc)
+  window.addEventListener('scroll', onPageScroll, { passive: true })
+  onPageScroll()
   onUnmounted(() => {
     document.removeEventListener('click', onDoc)
     document.removeEventListener('keydown', onEsc)
+    window.removeEventListener('scroll', onPageScroll)
     document.body.style.overflow = ''
   })
 })

@@ -253,6 +253,25 @@
           <a v-if="buyContactUrl" class="ns-action contact-cta" :href="buyContactUrl" target="_blank" rel="nofollow noopener" :aria-label="`Hỏi mua ${entity.name}`">🛒 {{ ss('labels.detail.cta_buy_contact', 'Hỏi mua trực tiếp') }}</a>
         </div>
         <NuxtLink :to="claimUrl" class="ns-action claim-cta">🏷️ {{ ss('labels.detail.cta_claim', 'Đây là cơ sở của tôi — đăng ký quản lý') }}</NuxtLink>
+
+        <!-- P1: Provenance — civic trust signal (Nguồn · Cập nhật · Báo sai) -->
+        <div v-if="sourceUrl || entity.updatedAt" class="provenance-block">
+          <div v-if="sourceUrl" class="pb-row">
+            <span class="pb-label">{{ ss('labels.detail.provenance_source', 'Nguồn') }}</span>
+            <a class="pb-value pb-link" :href="sourceUrl" target="_blank" rel="noopener nofollow" :title="sourceUrl">{{ sourceHost }}</a>
+          </div>
+          <div v-if="entity.updatedAt" class="pb-row">
+            <span class="pb-label">{{ ss('labels.detail.provenance_updated', 'Cập nhật') }}</span>
+            <time class="pb-value" :datetime="entity.updatedAt">{{ formatDate(entity.updatedAt) }}</time>
+          </div>
+          <ClientOnly>
+            <button type="button" class="pb-row pb-report" @click="reportEntity">
+              <span class="pb-icon" aria-hidden="true">⚠️</span>
+              <span class="pb-text">{{ ss('labels.detail.provenance_report', 'Báo sai thông tin') }}</span>
+            </button>
+          </ClientOnly>
+        </div>
+
         <NuxtLink class="quality-report" :to="reportUrl">{{ ss('labels.detail.cta_report', 'Báo sai dữ liệu') }}</NuxtLink>
         <!-- Truy xuất nguồn gốc (sản phẩm) -->
         <div v-if="entity.type === 'product'" class="traceability">
@@ -501,6 +520,26 @@ const sourceHost = computed(() => {
     return url
   }
 })
+// P1: provenance — external source URL, suppress self-references to vinhlong360.vn
+// (we don't cite ourselves as a "source"). Phase 0 fix populates quality.source_url.
+const sourceUrl = computed(() => {
+  const url = quality.value.source_url
+  if (!url || typeof url !== 'string') return ''
+  if (url.includes('vinhlong360.vn')) return ''
+  return url
+})
+// vi-VN long-form date for the "Cập nhật" row; falls back to raw string if unparsable.
+function formatDate(dateStr?: string) {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  if (Number.isNaN(d.getTime())) return dateStr
+  return d.toLocaleDateString('vi-VN', { year: 'numeric', month: 'long', day: 'numeric' })
+}
+// P1: in-place report modal (JS path). The SSR/no-JS fallback is the quality-report link below.
+const { openReport } = useReport()
+function reportEntity() {
+  openReport('entity', id.value)
+}
 const reportUrl = computed(() => `/cong-dong?report=${encodeURIComponent(id.value)}`)
 
 const entitySaved = computed(() => entity.value ? isSaved(entity.value.id) : false)

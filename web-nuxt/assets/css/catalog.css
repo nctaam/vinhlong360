@@ -25,12 +25,69 @@
 
 /* ── Catalog Hero (editorial page headers) ── */
 .catalog-hero {
+  position: relative;            /* anchor for ::before motif layer */
+  overflow: hidden;             /* clip motif to rounded corners */
   border-radius: var(--radius-xl);
   padding: var(--space-8) var(--space-6);
   margin-bottom: var(--space-6);
   background: linear-gradient(135deg, var(--primary-light) 0%, var(--bg-warm) 100%);
   border: .5px solid var(--line);
 }
+
+/* ── Hero motif (P1: region-themed SVG behind text, CSS-only, zero page edits) ──
+   Decorative line-art (waves / fruit / palm / lotus) keyed off the cat-* variant
+   already present on every .catalog-hero. Sits BEHIND text (z-index 0); text/stats
+   get z-index 1 below. aria-hidden by nature (CSS background, not in a11y tree).
+   Light mode uses muted ink strokes; .dark uses white strokes (see dark block). */
+.catalog-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-position: right -30px center;
+  background-size: auto 92%;
+  opacity: .1;
+  /* default motif = Mekong river waves (also covers heroes with no specific cat-*) */
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22240%22%20viewBox%3D%220%200%20640%20240%22%20fill%3D%22none%22%20stroke%3D%22%23586860%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%3E%20%3Cpath%20d%3D%22M-20%2070%20Q80%2050%20180%2070%20T380%2070%20T580%2070%20T780%2070%22%2F%3E%20%3Cpath%20d%3D%22M-20%20110%20Q80%2090%20180%20110%20T380%20110%20T580%20110%20T780%20110%22%2F%3E%20%3Cpath%20d%3D%22M-20%20150%20Q80%20130%20180%20150%20T380%20150%20T580%20150%20T780%20150%22%2F%3E%20%3Cpath%20d%3D%22M-20%20190%20Q80%20170%20180%20190%20T380%20190%20T580%20190%20T780%20190%22%2F%3E%20%3C%2Fsvg%3E");
+  animation: hero-motif-sway 8s var(--ease-out, ease-in-out) infinite;
+  will-change: transform;
+}
+@keyframes hero-motif-sway {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(-10px, 4px, 0); }
+}
+/* keep h1/subtitle/stats above the motif */
+.catalog-hero-inner,
+.catalog-hero > .catalog-stats { position: relative; z-index: 1; }
+
+/* ── Per-category motif variants (matches existing cat-* classes on each page) ── */
+/* Fruit / produce — product, OCOP */
+.catalog-hero.cat-product::before,
+.catalog-hero.cat-ocop::before {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22320%22%20height%3D%22240%22%20viewBox%3D%220%200%20320%20240%22%20fill%3D%22none%22%20stroke%3D%22%23586860%22%20stroke-width%3D%222%22%3E%20%3Ccircle%20cx%3D%22210%22%20cy%3D%22110%22%20r%3D%2234%22%2F%3E%20%3Ccircle%20cx%3D%22262%22%20cy%3D%22135%22%20r%3D%2227%22%2F%3E%20%3Ccircle%20cx%3D%22225%22%20cy%3D%22168%22%20r%3D%2230%22%2F%3E%20%3Cpath%20d%3D%22M196%2078%20Q205%2056%20226%2064%22%20stroke-linecap%3D%22round%22%2F%3E%20%3Cpath%20d%3D%22M210%2076%20Q224%2060%20240%2066%22%20stroke-linecap%3D%22round%22%2F%3E%20%3Cpath%20d%3D%22M210%20110%20v0%22%20stroke-linecap%3D%22round%22%2F%3E%20%3C%2Fsvg%3E");
+  background-position: right 16px center;
+  background-size: auto 78%;
+}
+/* Coconut palm — accommodation */
+.catalog-hero.cat-accommodation::before {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22320%22%20height%3D%22260%22%20viewBox%3D%220%200%20320%20260%22%20fill%3D%22none%22%20stroke%3D%22%23586860%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%3E%20%3Cpath%20d%3D%22M230%20250%20Q236%20160%20232%2092%22%2F%3E%20%3Cpath%20d%3D%22M232%2092%20Q196%2070%20158%2086%22%2F%3E%20%3Cpath%20d%3D%22M232%2092%20Q268%2066%20304%2080%22%2F%3E%20%3Cpath%20d%3D%22M232%2092%20Q220%2056%20200%2044%22%2F%3E%20%3Cpath%20d%3D%22M232%2092%20Q248%2054%20272%2044%22%2F%3E%20%3Cpath%20d%3D%22M232%20100%20Q198%2096%20174%20112%22%2F%3E%20%3Cpath%20d%3D%22M232%20100%20Q266%2092%20292%20106%22%2F%3E%20%3C%2Fsvg%3E");
+  background-position: right 8px bottom -10px;
+  background-size: auto 96%;
+}
+/* Lotus / lantern — festival, event */
+.catalog-hero.cat-festival::before,
+.catalog-hero.cat-event::before {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22240%22%20viewBox%3D%220%200%20300%20240%22%20fill%3D%22none%22%20stroke%3D%22%23586860%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%3E%20%3Cpath%20d%3D%22M170%20200%20Q170%20140%20170%20110%22%2F%3E%20%3Cpath%20d%3D%22M170%20110%20Q140%20130%20138%20184%20Q166%20168%20170%20110%22%2F%3E%20%3Cpath%20d%3D%22M170%20110%20Q200%20130%20202%20184%20Q174%20168%20170%20110%22%2F%3E%20%3Cpath%20d%3D%22M170%20116%20Q120%20132%20110%20178%20Q150%20170%20170%20116%22%2F%3E%20%3Cpath%20d%3D%22M170%20116%20Q220%20132%20230%20178%20Q190%20170%20170%20116%22%2F%3E%20%3Cpath%20d%3D%22M170%20122%20Q170%2092%20170%2084%22%2F%3E%20%3C%2Fsvg%3E");
+  background-position: right 24px bottom;
+  background-size: auto 88%;
+}
+/* respect reduced motion — keep motif, drop the sway */
+@media (prefers-reduced-motion: reduce) {
+  .catalog-hero::before { animation: none; }
+}
+
 .catalog-hero-inner {
   display: flex; align-items: flex-start; gap: var(--space-5);
 }
@@ -179,6 +236,22 @@
 
 /* ── Dark mode (catalog) ── */
 .dark .catalog-hero { background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%); border-color: var(--line); }
+/* Hero motifs in dark mode: swap muted-ink strokes for white (low opacity keeps them subtle) */
+.dark .catalog-hero::before {
+  opacity: .08;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22240%22%20viewBox%3D%220%200%20640%20240%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%3E%20%3Cpath%20d%3D%22M-20%2070%20Q80%2050%20180%2070%20T380%2070%20T580%2070%20T780%2070%22%2F%3E%20%3Cpath%20d%3D%22M-20%20110%20Q80%2090%20180%20110%20T380%20110%20T580%20110%20T780%20110%22%2F%3E%20%3Cpath%20d%3D%22M-20%20150%20Q80%20130%20180%20150%20T380%20150%20T580%20150%20T780%20150%22%2F%3E%20%3Cpath%20d%3D%22M-20%20190%20Q80%20170%20180%20190%20T380%20190%20T580%20190%20T780%20190%22%2F%3E%20%3C%2Fsvg%3E");
+}
+.dark .catalog-hero.cat-product::before,
+.dark .catalog-hero.cat-ocop::before {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22320%22%20height%3D%22240%22%20viewBox%3D%220%200%20320%20240%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%3E%20%3Ccircle%20cx%3D%22210%22%20cy%3D%22110%22%20r%3D%2234%22%2F%3E%20%3Ccircle%20cx%3D%22262%22%20cy%3D%22135%22%20r%3D%2227%22%2F%3E%20%3Ccircle%20cx%3D%22225%22%20cy%3D%22168%22%20r%3D%2230%22%2F%3E%20%3Cpath%20d%3D%22M196%2078%20Q205%2056%20226%2064%22%20stroke-linecap%3D%22round%22%2F%3E%20%3Cpath%20d%3D%22M210%2076%20Q224%2060%20240%2066%22%20stroke-linecap%3D%22round%22%2F%3E%20%3Cpath%20d%3D%22M210%20110%20v0%22%20stroke-linecap%3D%22round%22%2F%3E%20%3C%2Fsvg%3E");
+}
+.dark .catalog-hero.cat-accommodation::before {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22320%22%20height%3D%22260%22%20viewBox%3D%220%200%20320%20260%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%3E%20%3Cpath%20d%3D%22M230%20250%20Q236%20160%20232%2092%22%2F%3E%20%3Cpath%20d%3D%22M232%2092%20Q196%2070%20158%2086%22%2F%3E%20%3Cpath%20d%3D%22M232%2092%20Q268%2066%20304%2080%22%2F%3E%20%3Cpath%20d%3D%22M232%2092%20Q220%2056%20200%2044%22%2F%3E%20%3Cpath%20d%3D%22M232%2092%20Q248%2054%20272%2044%22%2F%3E%20%3Cpath%20d%3D%22M232%20100%20Q198%2096%20174%20112%22%2F%3E%20%3Cpath%20d%3D%22M232%20100%20Q266%2092%20292%20106%22%2F%3E%20%3C%2Fsvg%3E");
+}
+.dark .catalog-hero.cat-festival::before,
+.dark .catalog-hero.cat-event::before {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22240%22%20viewBox%3D%220%200%20300%20240%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%3E%20%3Cpath%20d%3D%22M170%20200%20Q170%20140%20170%20110%22%2F%3E%20%3Cpath%20d%3D%22M170%20110%20Q140%20130%20138%20184%20Q166%20168%20170%20110%22%2F%3E%20%3Cpath%20d%3D%22M170%20110%20Q200%20130%20202%20184%20Q174%20168%20170%20110%22%2F%3E%20%3Cpath%20d%3D%22M170%20116%20Q120%20132%20110%20178%20Q150%20170%20170%20116%22%2F%3E%20%3Cpath%20d%3D%22M170%20116%20Q220%20132%20230%20178%20Q190%20170%20170%20116%22%2F%3E%20%3Cpath%20d%3D%22M170%20122%20Q170%2092%20170%2084%22%2F%3E%20%3C%2Fsvg%3E");
+}
 .dark .cross-card { background: var(--card); border-color: var(--line); }
 .dark .cross-card:hover { box-shadow: var(--shadow-md); border-color: rgba(255,255,255,.08); }
 .dark .quick-pick { background: var(--card); }

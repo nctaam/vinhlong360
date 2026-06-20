@@ -1,12 +1,12 @@
 <template>
   <Teleport to="body">
-    <div v-if="toasts.length" class="toast-container" aria-live="polite">
+    <div v-if="toasts.length" class="toast-container">
       <TransitionGroup name="toast">
-        <div v-for="t in toasts" :key="t.id" :class="['toast', t.type]" role="status">
+        <div v-for="t in toasts" :key="t.id" :class="['toast', t.type]" :role="t.type === 'error' || t.type === 'warning' ? 'alert' : 'status'" :aria-live="t.type === 'error' || t.type === 'warning' ? 'assertive' : 'polite'">
           <span class="toast-icon" aria-hidden="true">{{ iconFor(t.type) }}</span>
           <span class="toast-msg">{{ t.message }}</span>
           <button type="button" class="toast-dismiss" aria-label="Đóng" @click="dismiss(t.id)">&times;</button>
-          <span class="toast-progress" :style="{ animationDuration: '3s' }" />
+          <span v-if="(t.duration ?? 3000) > 0" class="toast-progress" :style="{ animationDuration: (t.duration ?? 3000) / 1000 + 's' }" />
         </div>
       </TransitionGroup>
     </div>
@@ -26,7 +26,7 @@ function iconFor(type?: string) {
 
 <style scoped>
 .toast-container {
-  position: fixed; top: var(--space-4); right: var(--space-4); z-index: 10000;
+  position: fixed; top: var(--space-4); right: var(--space-4); z-index: var(--z-toast);
   display: flex; flex-direction: column; gap: var(--space-2);
   max-width: 380px; width: calc(100vw - var(--space-8));
   pointer-events: none;

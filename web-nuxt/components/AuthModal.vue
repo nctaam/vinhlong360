@@ -25,7 +25,7 @@
               @keyup.enter="handlePhone"
             />
           </div>
-          <p v-if="error" class="form-error">{{ error }}</p>
+          <p v-if="error" class="form-error" role="alert">{{ error }}</p>
           <label class="consent-row">
             <input v-model="consent" type="checkbox" class="consent-checkbox" />
             <span>Tôi đồng ý với
@@ -49,12 +49,13 @@
               :class="{ error: error && step === 'password' }"
               :aria-invalid="!!(error && step === 'password')"
               type="password"
+              autocomplete="current-password"
               aria-label="Mật khẩu"
               placeholder="Mật khẩu"
               @keyup.enter="handleLogin"
             />
           </div>
-          <p v-if="error" class="form-error">{{ error }}</p>
+          <p v-if="error" class="form-error" role="alert">{{ error }}</p>
           <button type="button" class="btn btn-primary btn-full" :disabled="sending" @click="handleLogin">
             {{ sending ? 'Đang đăng nhập…' : 'Đăng nhập' }}
           </button>
@@ -75,12 +76,14 @@
               type="text"
               maxlength="1"
               inputmode="numeric"
+              autocomplete="one-time-code"
               :aria-label="`Ô mã OTP số ${i}`"
               @input="onOtpInput(i - 1)"
               @keydown.backspace="onOtpBackspace(i - 1, $event)"
+              @paste="onOtpPaste"
             />
           </div>
-          <p v-if="error" class="form-error">{{ error }}</p>
+          <p v-if="error" class="form-error" role="alert">{{ error }}</p>
           <button type="button" class="btn btn-primary btn-full" :disabled="sending" @click="verifyCode">
             {{ sending ? 'Đang xác minh…' : 'Xác nhận' }}
           </button>
@@ -102,6 +105,7 @@
               :class="{ error: error && step === 'set-password' }"
               :aria-invalid="!!(error && step === 'set-password')"
               type="password"
+              autocomplete="new-password"
               aria-label="Mật khẩu mới"
               placeholder="Mật khẩu (tối thiểu 6 ký tự)"
               @keyup.enter="handleSetPassword"
@@ -112,12 +116,13 @@
               v-model="confirmPassword"
               class="input"
               type="password"
+              autocomplete="new-password"
               aria-label="Xác nhận mật khẩu"
               placeholder="Nhập lại mật khẩu"
               @keyup.enter="handleSetPassword"
             />
           </div>
-          <p v-if="error" class="form-error">{{ error }}</p>
+          <p v-if="error" class="form-error" role="alert">{{ error }}</p>
           <button type="button" class="btn btn-primary btn-full" :disabled="sending" @click="handleSetPassword">
             {{ sending ? 'Đang lưu…' : 'Đặt mật khẩu' }}
           </button>
@@ -155,7 +160,6 @@ const countdown = ref(0)
 const modalEl = ref<HTMLElement | null>(null)
 const isResetFlow = ref(false)
 let countdownTimer: ReturnType<typeof setInterval> | null = null
-let triggerEl: HTMLElement | null = null
 
 const modalTitle = computed(() => {
   if (step.value === 'set-password') return 'Đặt mật khẩu'
@@ -165,9 +169,7 @@ const modalTitle = computed(() => {
 
 function close() {
   emit('close')
-  document.body.style.overflow = ''
   if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null }
-  nextTick(() => triggerEl?.focus())
   setTimeout(() => {
     step.value = 'phone'
     error.value = ''
@@ -180,34 +182,12 @@ function close() {
   }, 300)
 }
 
-function onModalKeydown(e: KeyboardEvent) {
-  if (e.key === 'Escape') { close(); return }
-  if (e.key !== 'Tab' || !modalEl.value) return
-  const list = Array.from(
-    modalEl.value.querySelectorAll<HTMLElement>('button, [href], input, [tabindex]:not([tabindex="-1"])')
-  ).filter(el => !el.hasAttribute('disabled') && el.offsetParent !== null)
-  if (!list.length) return
-  const first = list[0], last = list[list.length - 1]
-  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
-  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
-}
-
-watch(() => props.visible, (v) => {
-  if (v) {
-    triggerEl = document.activeElement as HTMLElement
-    document.body.style.overflow = 'hidden'
-    document.addEventListener('keydown', onModalKeydown)
-    nextTick(() => modalEl.value?.querySelector<HTMLElement>('input:not([disabled]), button:not([disabled])')?.focus())
-  } else {
-    document.body.style.overflow = ''
-    document.removeEventListener('keydown', onModalKeydown)
-  }
-})
+// Body-scroll lock, focus trap, Escape-to-close + focus restore (SSR-safe).
+const visibleRef = computed(() => props.visible)
+useModalA11y(visibleRef, modalEl, { onClose: close })
 
 onUnmounted(() => {
   if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null }
-  document.removeEventListener('keydown', onModalKeydown)
-  document.body.style.overflow = ''
 })
 
 async function handlePhone() {
@@ -224,7 +204,7 @@ async function handlePhone() {
     } else {
       await sendOtp()
     }
-  } catch (e: any) {
+  } catch (e: unknown) {
     error.value = e.data?.detail || 'Lỗi kiểm tra số điện thoại'
   } finally {
     sending.value = false
@@ -241,7 +221,7 @@ async function handleLogin() {
   try {
     await login(phone.value, password.value)
     step.value = 'done'
-  } catch (e: any) {
+  } catch (e: unknown) {
     error.value = e.data?.detail || 'Số điện thoại hoặc mật khẩu không đúng'
   } finally {
     sending.value = false
@@ -267,7 +247,7 @@ async function sendOtp() {
       if (countdown.value <= 0 && countdownTimer) clearInterval(countdownTimer)
     }, 1000)
     nextTick(() => otpRefs.value[0]?.focus())
-  } catch (e: any) {
+  } catch (e: unknown) {
     error.value = e.data?.detail || 'Lỗi gửi OTP. Thử lại sau.'
   } finally {
     sending.value = false
@@ -293,8 +273,10 @@ async function verifyCode() {
         step.value = 'set-password'
       }
     }
-  } catch (e: any) {
+  } catch (e: unknown) {
     error.value = e.data?.detail || 'Mã OTP không đúng.'
+    otpDigits.value = ['', '', '', '', '', '']
+    nextTick(() => otpRefs.value[0]?.focus())
   } finally {
     sending.value = false
   }
@@ -314,7 +296,7 @@ async function handleSetPassword() {
   try {
     await setPassword(newPassword.value)
     step.value = 'done'
-  } catch (e: any) {
+  } catch (e: unknown) {
     error.value = e.data?.detail || 'Lỗi đặt mật khẩu'
   } finally {
     sending.value = false
@@ -335,6 +317,17 @@ function onOtpBackspace(idx: number, e: KeyboardEvent) {
   if (!otpDigits.value[idx] && idx > 0) {
     otpRefs.value[idx - 1]?.focus()
   }
+}
+
+function onOtpPaste(e: ClipboardEvent) {
+  const text = (e.clipboardData?.getData('text') || '').replace(/\D/g, '').slice(0, 6)
+  if (!text) return
+  e.preventDefault()
+  const digits = text.split('')
+  for (let i = 0; i < 6; i++) otpDigits.value[i] = digits[i] || ''
+  const last = Math.max(0, Math.min(text.length, 6) - 1)
+  nextTick(() => otpRefs.value[last]?.focus())
+  if (text.length === 6) verifyCode()
 }
 </script>
 
