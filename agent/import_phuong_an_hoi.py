@@ -166,7 +166,7 @@ def main():
                 "type": entity_type,
                 "name": name,
                 "placeId": guess_place_id(addr, province_old),
-                "summary": item.get("desc", ""),
+                "summary": (item.get("desc", "") or "")[:200],
                 "source": {"title": "mytour.vn / baodongkhoi.vn / mia.vn", "url": source_url},
                 "status": "provisional",
                 "verified": False,

@@ -3,15 +3,16 @@ let pollTimer: ReturnType<typeof setInterval> | null = null
 export function useNotifications() {
   const notifications = useState<any[]>('notifications', () => [])
   const unreadCount = useState('unread-count', () => 0)
+  const loading = useState('notif-loading', () => true)
   const { isLoggedIn, authHeaders } = useAuth()
 
   async function fetchNotifications() {
     if (!isLoggedIn.value) return
     try {
-      const res = await $fetch<any>('/api/notifications?limit=20', { headers: authHeaders() })
+      const res = await $fetch<{ notifications: Notification[] }>('/api/notifications?limit=20', { headers: authHeaders() })
       notifications.value = res.notifications || []
       unreadCount.value = res.unread_count || 0
-    } catch { /* ignore */ }
+    } catch { /* ignore */ } finally { loading.value = false }
   }
 
   async function markAllRead() {
@@ -21,6 +22,18 @@ export function useNotifications() {
       unreadCount.value = 0
       notifications.value.forEach(n => n.is_read = true)
     } catch { /* ignore */ }
+  }
+
+  async function markRead(id: string) {
+    if (!isLoggedIn.value) return
+    const n = notifications.value.find(x => x.id === id)
+    if (!n || n.is_read) return
+    // Optimistic — update UI immediately, fire request in background.
+    n.is_read = true
+    unreadCount.value = Math.max(0, unreadCount.value - 1)
+    try {
+      await $fetch(`/api/notifications/${id}/read`, { method: 'POST', headers: authHeaders() })
+    } catch { /* keep optimistic state; next poll reconciles */ }
   }
 
   function startPolling() {
@@ -33,5 +46,5 @@ export function useNotifications() {
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null }
   }
 
-  return { notifications, unreadCount, fetchNotifications, markAllRead, startPolling, stopPolling }
+  return { notifications, unreadCount, loading, fetchNotifications, markAllRead, markRead, startPolling, stopPolling }
 }

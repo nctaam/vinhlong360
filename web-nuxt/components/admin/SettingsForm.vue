@@ -74,7 +74,7 @@
       <button type="submit" class="btn-primary sf-save" :disabled="saving">
         {{ saving ? 'Đang lưu...' : 'Lưu thay đổi' }}
       </button>
-      <button type="button" class="btn-outline sf-reset" :disabled="saving" @click="onReset">
+      <button type="button" v-if="!hideReset" class="btn-outline sf-reset" :disabled="saving" @click="onReset">
         Đặt lại mặc định
       </button>
     </div>
@@ -118,6 +118,9 @@ const props = defineProps<{
   // JSON setting key; values come from `objectValue` and save as one object.
   objectKey?: string
   objectValue?: Record<string, any>
+  // Hide the "reset" button (e.g. single-key editors where a category-wide
+  // reset would be too broad).
+  hideReset?: boolean
 }>()
 
 const emit = defineEmits<{

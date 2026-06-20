@@ -23,6 +23,7 @@ export default defineNuxtPlugin(async () => {
       typeOverrides: s['categories.type_overrides'],
       areaOverrides: s['categories.area_overrides'],
       officeKind: s['metadata.office_kind'],
+      interests: s['metadata.interests'],
     })
   } catch {
     // ignore — defaults remain in effect

@@ -1,31 +1,33 @@
 /**
- * useReport — báo cáo bài viết vi phạm → POST /api/report (GĐ5.4 / GĐ13.6f).
+ * useReport — báo cáo nội dung vi phạm → mở ReportModal (POST /api/report).
  *
  * Endpoint lưu reports.jsonl cho admin xử lý (gỡ trong 24/48h theo NĐ147).
  * KHÔNG đăng/khoá tự động. Yêu cầu đăng nhập (client-gated) để giảm spam.
+ *
+ * Trước đây dùng window.prompt() — hỏng trên mobile & screen-reader; nay mở
+ * một modal có chips lý do + ô mô tả (ReportModal.vue, gắn ở layout).
  */
-export function useReport() {
-  const { isLoggedIn, authHeaders } = useAuth()
-  const { show: showToast } = useToast()
+export interface ReportModalState {
+  open: boolean
+  targetType: 'post' | 'entity' | 'comment' | 'user'
+  targetId: string
+}
 
-  async function reportPost(postId: string) {
+export function useReport() {
+  const { isLoggedIn } = useAuth()
+  const { show: showToast } = useToast()
+  const modal = useState<ReportModalState>('report-modal', () => ({ open: false, targetType: 'post', targetId: '' }))
+
+  function open(targetType: ReportModalState['targetType'], targetId: string) {
     if (!isLoggedIn.value) {
       showToast('Vui lòng đăng nhập để báo cáo', 'error')
       return
     }
-    const reason = window.prompt('Lý do báo cáo bài viết này?')
-    if (!reason || reason.trim().length < 5) return
-    try {
-      await $fetch('/api/report', {
-        method: 'POST',
-        headers: authHeaders(),
-        body: { target_type: 'post', target_id: postId, reason: reason.trim() },
-      })
-      showToast('Đã gửi báo cáo. Cảm ơn bạn!', 'success')
-    } catch (e: any) {
-      showToast(e?.data?.detail || e?.data?.message || 'Không thể gửi báo cáo', 'error')
-    }
+    modal.value = { open: true, targetType, targetId }
   }
 
-  return { reportPost }
+  // Back-compat: existing callers use reportPost(postId).
+  function reportPost(postId: string) { open('post', postId) }
+
+  return { reportPost, openReport: open, reportModal: modal }
 }

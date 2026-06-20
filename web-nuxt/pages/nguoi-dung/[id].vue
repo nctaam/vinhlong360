@@ -51,8 +51,8 @@
       </div>
 
       <div class="profile-tabs">
-        <button type="button" :class="['chip', { active: tab === 'posts' }]" @click="tab = 'posts'">Bài viết</button>
-        <button type="button" :class="['chip', { active: tab === 'reviews' }]" @click="tab = 'reviews'">Đánh giá</button>
+        <button type="button" :class="['chip', { active: tab === 'posts' }]" :aria-pressed="tab === 'posts'" @click="tab = 'posts'">Bài viết</button>
+        <button type="button" :class="['chip', { active: tab === 'reviews' }]" :aria-pressed="tab === 'reviews'" @click="tab = 'reviews'">Đánh giá</button>
       </div>
 
       <div class="feed-main">
@@ -82,6 +82,7 @@
 </template>
 
 <script setup lang="ts">
+import type { Entity } from '~/types'
 useReveal()
 const route = useRoute()
 const userId = route.params.id as string
@@ -95,8 +96,8 @@ useHead({
 })
 
 const tab = ref('posts')
-const posts = ref<any[]>([])
-const loading = ref(false)
+const posts = ref<Entity[]>([])
+const loading = ref(true)
 const isFollowing = ref(false)
 const followLoading = ref(false)
 const followerCount = ref(0)
@@ -109,7 +110,7 @@ const profileFetchFailed = ref(false)
 const { data: profile } = await useAsyncData(`user-${userId}`, async () => {
   try {
     profileFetchFailed.value = false
-    return await $fetch<any>(`/api/users/${userId}`, { headers: authHeaders() })
+    return await $fetch<Record<string, unknown>>(`/api/users/${userId}`, { headers: authHeaders() })
   } catch {
     profileFetchFailed.value = true
     return null
@@ -134,7 +135,7 @@ const filteredPosts = computed(() => {
 async function fetchPosts() {
   loading.value = true
   try {
-    const res = await $fetch<any>(`/api/users/${userId}/posts?limit=50`, { headers: authHeaders() })
+    const res = await $fetch<Record<string, unknown>>(`/api/users/${userId}/posts?limit=50`, { headers: authHeaders() })
     posts.value = res.posts || res || []
   } catch { showToast('Không thể tải bài viết', 'error') }
   loading.value = false
@@ -171,9 +172,9 @@ async function fetchFollowerCount() {
 async function checkFollowing() {
   if (!isLoggedIn.value) return
   try {
-    const res = await $fetch<any>('/api/following?target_type=user', { headers: authHeaders() })
+    const res = await $fetch<Record<string, unknown>[]>('/api/following?target_type=user', { headers: authHeaders() })
     const following = res.following || res || []
-    isFollowing.value = following.some((f: any) => f.target_id === userId)
+    isFollowing.value = following.some((f: Entity) => f.target_id === userId)
   } catch { /* non-critical */ }
 }
 

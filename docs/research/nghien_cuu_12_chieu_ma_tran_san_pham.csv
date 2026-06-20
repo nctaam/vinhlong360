@@ -1,0 +1,13 @@
+﻿product_id,product,itinerary,segments,geography,readiness,note
+"P01","Tuyến 1 ngày: Xứ Dừa - Cồn Phụng","TP.HCM/Mỹ Tho - Cồn Phụng - kẹo dừa - xuồng - đờn ca tài tử - An Hội/Lan Vương","SEG01;SEG02;SEG04","Bến Tre","Market-ready","Tuyến đã có thị trường; cần nâng cấp tránh đại trà"
+"P02","Tuyến 2N1Đ: An Bình - Mang Thít - Chợ Lách","Vĩnh Long - An Bình homestay - Mang Thít - Chợ Lách/Cái Mơn","SEG02;SEG03;SEG05;SEG08","Vĩnh Long; Bến Tre","Pilot","Cần đóng gói workshop và lưu trú"
+"P03","Tuyến 2N1Đ: Khmer Trà Vinh - Dừa sáp - Ba Động","Ao Bà Om - Chùa Hang - Bảo tàng Khmer - Cầu Kè - Ba Động","SEG03;SEG04;SEG05;SEG07","Trà Vinh","Pilot","Cần lịch trình mềm và thuyết minh văn hóa"
+"P04","Tuyến 3N2Đ: Tam giác từ sông ra biển","Bến Tre - Vĩnh Long - Trà Vinh hoặc chiều ngược lại","SEG04;SEG05;SEG08;SEG10","Liên vùng","Strategic","Sản phẩm chiến lược; cần điều phối liên vùng"
+"P05","Mùa Ok Om Bok","Ao Bà Om - lễ hội - ẩm thực Khmer - chùa/bảo tàng","SEG06;SEG10;SEG05","Trà Vinh","Seasonal","Bán trước 60-90 ngày, quy tắc ứng xử"
+"P06","Mùa Tết: Chợ Lách - Lăng Ông - An Bình","Hoa Tết, lễ đầu năm, vườn/sông nước","SEG01;SEG02;SEG06;SEG05","Bến Tre; Vĩnh Long","Seasonal","Rất mạnh về ảnh; cần quản lý đông khách"
+"P07","Food tour 3 vùng","Bánh tét/miệt vườn - Khmer/dừa sáp - xứ Dừa/bánh dân gian","SEG07;SEG04;SEG01","Liên vùng","Pilot","Cần chuẩn vệ sinh và câu chuyện món ăn"
+"P08","Tour học đường di sản - nghề - Khmer","Văn Thánh Miếu - Mang Thít - Bảo tàng Khmer/Ao Bà Om - Cồn Phụng","SEG03","Liên vùng","Pilot","Cần giáo án, worksheet, hướng dẫn viên giáo dục"
+"P09","Phototrip: Gốm đỏ - Ao Bà Om - Ba Động","Hoàng hôn gốm, cổ thụ Ao Bà Om, bình minh Ba Động","SEG05","Vĩnh Long; Trà Vinh","Pilot","Cần điểm ngắm, lịch giờ đẹp, dịch vụ sớm/tối"
+"P10","MICE nhỏ/team building xứ Dừa","Lan Vương/Cồn Phụng - workshop - food - trò chơi","SEG09","Bến Tre","Market-ready","Cần gói doanh nghiệp, an toàn, phòng họp"
+"P11","Du lịch xanh cộng đồng","An Bình - Hòa Minh/Phú Túc - Cồn Chim/Hô","SEG08;SEG10","Liên vùng","Development","Cần tiêu chí xanh và chia sẻ lợi ích"
+"P12","Tuyến tâm linh - lễ hội Nam Bộ","Lăng Ông - Kỳ Yên - Nguyên Tiêu - chùa Khmer","SEG06;SEG10","Liên vùng","Seasonal","Cần lịch lễ chính xác và ứng xử nghi lễ"

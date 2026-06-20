@@ -1,0 +1,870 @@
+{
+  "type": "FeatureCollection",
+  "name": "vinhlong_travinh_bentre_tourism_research_12_dimensions",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "place",
+        "key": "vinh_long_center",
+        "name": "Trung tâm Vĩnh Long",
+        "coord_note": "nominatim"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.9410019,
+          10.2526939
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "place",
+        "key": "cu_lao_an_binh",
+        "name": "Cù lao An Bình",
+        "coord_note": "manual_adjusted"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.945,
+          10.253
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "place",
+        "key": "mang_thit_pottery",
+        "name": "Làng gạch gốm Mang Thít",
+        "coord_note": "manual_adjusted"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.106,
+          10.179
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "place",
+        "key": "van_thanh_mieu",
+        "name": "Văn Thánh Miếu Vĩnh Long",
+        "coord_note": "manual_adjusted"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.972,
+          10.249
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "place",
+        "key": "lang_ong_tra_on",
+        "name": "Lăng Ông Trà Ôn",
+        "coord_note": "manual_adjusted"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.926,
+          9.965
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "place",
+        "key": "tra_vinh_center",
+        "name": "Trung tâm Trà Vinh",
+        "coord_note": "nominatim"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.339978,
+          9.9377176
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "place",
+        "key": "ao_ba_om",
+        "name": "Ao Bà Om",
+        "coord_note": "manual_adjusted"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.342,
+          9.923
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "place",
+        "key": "chua_hang",
+        "name": "Chùa Hang Trà Vinh",
+        "coord_note": "manual_adjusted"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.357,
+          9.898
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "place",
+        "key": "bien_ba_dong",
+        "name": "Biển Ba Động",
+        "coord_note": "manual_adjusted"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.566,
+          9.64
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "place",
+        "key": "cau_ke_dua_sap",
+        "name": "Cầu Kè - Dừa sáp",
+        "coord_note": "manual_adjusted"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.079,
+          9.867
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "place",
+        "key": "ben_tre_center",
+        "name": "Trung tâm Bến Tre",
+        "coord_note": "nominatim"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.3763684,
+          10.2361217
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "place",
+        "key": "con_phung",
+        "name": "Cồn Phụng",
+        "coord_note": "manual_adjusted"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.332,
+          10.335
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "place",
+        "key": "lan_vuong",
+        "name": "Lan Vương",
+        "coord_note": "manual_adjusted"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.337,
+          10.238
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "place",
+        "key": "cho_lach",
+        "name": "Chợ Lách - Cái Mơn",
+        "coord_note": "manual_adjusted"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.118,
+          10.257
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "place",
+        "key": "binh_dai",
+        "name": "Bình Đại",
+        "coord_note": "manual_adjusted"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.679,
+          10.192
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "place",
+        "key": "ba_tri",
+        "name": "Ba Tri",
+        "coord_note": "manual_adjusted"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.591,
+          10.045
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "place",
+        "key": "tphcm",
+        "name": "TP.HCM",
+        "coord_note": "nominatim"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.6518346,
+          10.8186965
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "place",
+        "key": "can_tho",
+        "name": "Cần Thơ",
+        "coord_note": "nominatim"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.7872656,
+          10.0362046
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "TP.HCM",
+        "to": "Trung tâm Bến Tre",
+        "distance_km": "84.3",
+        "duration_min": "70",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            106.6518346,
+            10.8186965
+          ],
+          [
+            106.3763684,
+            10.2361217
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "TP.HCM",
+        "to": "Trung tâm Vĩnh Long",
+        "distance_km": "132.5",
+        "duration_min": "107",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            106.6518346,
+            10.8186965
+          ],
+          [
+            105.9410019,
+            10.2526939
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "TP.HCM",
+        "to": "Trung tâm Trà Vinh",
+        "distance_km": "125.8",
+        "duration_min": "103",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            106.6518346,
+            10.8186965
+          ],
+          [
+            106.339978,
+            9.9377176
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "Cần Thơ",
+        "to": "Trung tâm Vĩnh Long",
+        "distance_km": "40.6",
+        "duration_min": "36",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            105.7872656,
+            10.0362046
+          ],
+          [
+            105.9410019,
+            10.2526939
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "Trung tâm Vĩnh Long",
+        "to": "Cù lao An Bình",
+        "distance_km": "0.6",
+        "duration_min": "1",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            105.9410019,
+            10.2526939
+          ],
+          [
+            105.945,
+            10.253
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "Trung tâm Vĩnh Long",
+        "to": "Làng gạch gốm Mang Thít",
+        "distance_km": "25.2",
+        "duration_min": "23",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            105.9410019,
+            10.2526939
+          ],
+          [
+            106.106,
+            10.179
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "Trung tâm Vĩnh Long",
+        "to": "Lăng Ông Trà Ôn",
+        "distance_km": "46.5",
+        "duration_min": "36",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            105.9410019,
+            10.2526939
+          ],
+          [
+            105.926,
+            9.965
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "Trung tâm Vĩnh Long",
+        "to": "Trung tâm Trà Vinh",
+        "distance_km": "68.7",
+        "duration_min": "50",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            105.9410019,
+            10.2526939
+          ],
+          [
+            106.339978,
+            9.9377176
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "Trung tâm Vĩnh Long",
+        "to": "Trung tâm Bến Tre",
+        "distance_km": "64.9",
+        "duration_min": "62",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            105.9410019,
+            10.2526939
+          ],
+          [
+            106.3763684,
+            10.2361217
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "Trung tâm Vĩnh Long",
+        "to": "Chợ Lách - Cái Mơn",
+        "distance_km": "25",
+        "duration_min": "31",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            105.9410019,
+            10.2526939
+          ],
+          [
+            106.118,
+            10.257
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "Trung tâm Trà Vinh",
+        "to": "Ao Bà Om",
+        "distance_km": "2.2",
+        "duration_min": "3",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            106.339978,
+            9.9377176
+          ],
+          [
+            106.342,
+            9.923
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "Trung tâm Trà Vinh",
+        "to": "Chùa Hang Trà Vinh",
+        "distance_km": "6",
+        "duration_min": "9",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            106.339978,
+            9.9377176
+          ],
+          [
+            106.357,
+            9.898
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "Trung tâm Trà Vinh",
+        "to": "Biển Ba Động",
+        "distance_km": "51.4",
+        "duration_min": "42",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            106.339978,
+            9.9377176
+          ],
+          [
+            106.566,
+            9.64
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "Trung tâm Trà Vinh",
+        "to": "Cầu Kè - Dừa sáp",
+        "distance_km": "40.4",
+        "duration_min": "31",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            106.339978,
+            9.9377176
+          ],
+          [
+            106.079,
+            9.867
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "Trung tâm Bến Tre",
+        "to": "Cồn Phụng",
+        "distance_km": "13.7",
+        "duration_min": "12",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            106.3763684,
+            10.2361217
+          ],
+          [
+            106.332,
+            10.335
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "Trung tâm Bến Tre",
+        "to": "Lan Vương",
+        "distance_km": "5.5",
+        "duration_min": "6",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            106.3763684,
+            10.2361217
+          ],
+          [
+            106.337,
+            10.238
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "Trung tâm Bến Tre",
+        "to": "Chợ Lách - Cái Mơn",
+        "distance_km": "40.5",
+        "duration_min": "37",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            106.3763684,
+            10.2361217
+          ],
+          [
+            106.118,
+            10.257
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "Trung tâm Bến Tre",
+        "to": "Bình Đại",
+        "distance_km": "42.4",
+        "duration_min": "44",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            106.3763684,
+            10.2361217
+          ],
+          [
+            106.679,
+            10.192
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "Trung tâm Bến Tre",
+        "to": "Ba Tri",
+        "distance_km": "35",
+        "duration_min": "26",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            106.3763684,
+            10.2361217
+          ],
+          [
+            106.591,
+            10.045
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "Chợ Lách - Cái Mơn",
+        "to": "Làng gạch gốm Mang Thít",
+        "distance_km": "36.6",
+        "duration_min": "43",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            106.118,
+            10.257
+          ],
+          [
+            106.106,
+            10.179
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "Cầu Kè - Dừa sáp",
+        "to": "Trung tâm Trà Vinh",
+        "distance_km": "40.3",
+        "duration_min": "31",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            106.079,
+            9.867
+          ],
+          [
+            106.339978,
+            9.9377176
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "Cầu Kè - Dừa sáp",
+        "to": "Trung tâm Vĩnh Long",
+        "distance_km": "59.3",
+        "duration_min": "50",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            106.079,
+            9.867
+          ],
+          [
+            105.9410019,
+            10.2526939
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "Cồn Phụng",
+        "to": "Trung tâm Vĩnh Long",
+        "distance_km": "73.1",
+        "duration_min": "57",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            106.332,
+            10.335
+          ],
+          [
+            105.9410019,
+            10.2526939
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route_approx",
+        "from": "Ao Bà Om",
+        "to": "Biển Ba Động",
+        "distance_km": "50.5",
+        "duration_min": "41",
+        "note": "Straight line for visualization; route distance from OSRM CSV"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            106.342,
+            9.923
+          ],
+          [
+            106.566,
+            9.64
+          ]
+        ]
+      }
+    }
+  ]
+}

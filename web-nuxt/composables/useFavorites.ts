@@ -11,9 +11,11 @@ interface FavoriteItem {
 
 const STORAGE_KEY = 'vl360_favorites'
 let loaded = false
+let syncSetup = false
 
 export function useFavorites() {
   const favorites = useState<FavoriteItem[]>('favorites', () => [])
+  const { isLoggedIn, authHeaders } = useAuth()
 
   function load() {
     if (loaded || import.meta.server) return
@@ -37,6 +39,34 @@ export function useFavorites() {
 
   load()
 
+  // ── Account sync (P1) ──────────────────────────────────────────────
+  // localStorage is the offline cache + UI source of truth; the server is the
+  // cross-device store. On login we merge local→account (union, nothing lost)
+  // and adopt the merged list; toggles write through fire-and-forget.
+  async function mergeToServer() {
+    if (!isLoggedIn.value || import.meta.server) return
+    try {
+      const res = await $fetch<{ items?: FavoriteItem[] }>('/api/saved/merge', {
+        method: 'POST', headers: authHeaders(), body: { items: favorites.value },
+      })
+      if (Array.isArray(res?.items)) { favorites.value = res.items; persist() }
+    } catch { /* offline / not available — keep local */ }
+  }
+  async function pushAdd(item: FavoriteItem) {
+    if (!isLoggedIn.value || import.meta.server) return
+    try { await $fetch('/api/saved', { method: 'POST', headers: authHeaders(), body: item }) } catch { /* keep local */ }
+  }
+  async function pushRemove(id: string) {
+    if (!isLoggedIn.value || import.meta.server) return
+    try { await $fetch(`/api/saved/${encodeURIComponent(id)}`, { method: 'DELETE', headers: authHeaders() }) } catch { /* keep local */ }
+  }
+
+  if (!syncSetup && import.meta.client) {
+    syncSetup = true
+    if (isLoggedIn.value) mergeToServer()
+    watch(isLoggedIn, (v, old) => { if (v && !old) mergeToServer() })
+  }
+
   function isSaved(id: string) {
     return favorites.value.some(f => f.id === id)
   }
@@ -45,8 +75,10 @@ export function useFavorites() {
     const idx = favorites.value.findIndex(f => f.id === entity.id)
     if (idx >= 0) {
       favorites.value.splice(idx, 1)
+      persist()
+      pushRemove(entity.id)
     } else {
-      favorites.value.unshift({
+      const item: FavoriteItem = {
         id: entity.id,
         name: entity.name,
         type: entity.type,
@@ -55,9 +87,11 @@ export function useFavorites() {
         summary: entity.summary,
         image: Array.isArray(entity.images) ? entity.images[0] : undefined,
         savedAt: new Date().toISOString(),
-      })
+      }
+      favorites.value.unshift(item)
+      persist()
+      pushAdd(item)
     }
-    persist()
   }
 
   function remove(id: string) {
@@ -65,12 +99,15 @@ export function useFavorites() {
     if (idx >= 0) {
       favorites.value.splice(idx, 1)
       persist()
+      pushRemove(id)
     }
   }
 
   function clear() {
+    const ids = favorites.value.map(f => f.id)
     favorites.value = []
     persist()
+    if (isLoggedIn.value) ids.forEach(pushRemove)
   }
 
   const count = computed(() => favorites.value.length)

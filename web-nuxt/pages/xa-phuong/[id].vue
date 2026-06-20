@@ -51,7 +51,8 @@
     <!-- Map -->
     <ClientOnly>
       <section v-if="data.place.coordinates" class="wp-map-sec">
-        <div ref="mapEl" class="wp-map-container"></div>
+        <EmptyState v-if="mapLoadError" tone="error" icon="🗺️" message="Không tải được bản đồ. Kiểm tra kết nối và thử lại." />
+        <div v-show="!mapLoadError" ref="mapEl" class="wp-map-container"></div>
       </section>
     </ClientOnly>
 
@@ -123,6 +124,7 @@
 </template>
 
 <script setup lang="ts">
+import type { Entity } from '~/types'
 import { AREA_META, OFFICE_KIND, TYPE_META } from '~/composables/useConstants'
 
 useReveal()
@@ -134,7 +136,7 @@ const fetchFailed = ref(false)
 const { data } = await useAsyncData(`ward-${id.value}`, async () => {
   try {
     fetchFailed.value = false
-    return await $fetch<any>(`/api/places/${id.value}/overview`)
+    return await $fetch<Record<string, unknown>>(`/api/places/${id.value}/overview`)
   } catch {
     fetchFailed.value = true
     return null
@@ -159,8 +161,8 @@ function formatPop(n: number) {
   return n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : String(n)
 }
 
-function attr(f: any, k: string) { return (f.attributes || {})[k] }
-function kindMeta(f: any) { return OFFICE_KIND[attr(f, 'office_kind')] || OFFICE_KIND.khac }
+function attr(f: Entity, k: string) { return (f.attributes || {})[k] }
+function kindMeta(f: Entity) { return OFFICE_KIND[attr(f, 'office_kind')] || OFFICE_KIND.khac }
 
 const placeName = computed(() => data.value?.place?.name || 'Xã/Phường')
 useSeoMeta({
@@ -190,13 +192,21 @@ function allEntities() {
   return [...(d.tourism || []), ...(d.lodging || []), ...(d.products || [])]
 }
 
+const mapLoadError = ref(false)
 watch(mapEl, async (el) => {
   if (!el || !data.value?.place?.coordinates) return
   const coords = data.value.place.coordinates
-  const { map, maplibregl } = await createMap(el, {
-    center: [coords[1], coords[0]],
-    zoom: 14,
-  })
+  let map: any, maplibregl: any
+  try {
+    const r = await createMap(el, { center: [coords[1], coords[0]], zoom: 14 })
+    map = r.map
+    maplibregl = r.maplibregl
+  } catch {
+    mapLoadError.value = true
+    return
+  }
+  const loadTimer = setTimeout(() => { if (!map.isStyleLoaded()) mapLoadError.value = true }, 15000)
+  map.on('load', () => { clearTimeout(loadTimer); mapLoadError.value = false })
 
   map.addControl(new maplibregl.FullscreenControl(), 'top-right')
 
@@ -300,8 +310,8 @@ watch(mapEl, async (el) => {
 
 /* Facilities */
 .wp-fac-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
-.wp-fac { padding: var(--space-2) 0; border-bottom: .5px solid var(--line); transition: background .3s var(--ease-out); border-radius: var(--radius-sm); }
-.wp-fac:hover { background: var(--bg-warm); }
+.wp-fac { padding: var(--space-2) var(--space-2); border-bottom: .5px solid var(--line); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle); border-radius: var(--radius-sm); margin: 0 calc(var(--space-2) * -1); }
+.wp-fac:hover { background: var(--bg-warm); transform: translateX(2px); }
 .wp-fac:last-child { border-bottom: none; }
 .wp-fac-kind { font-size: var(--text-xs); color: var(--primary); display: block; margin-bottom: 2px; }
 .wp-fac-row { font-size: var(--text-sm); color: var(--muted); margin-top: 2px; }
@@ -342,6 +352,7 @@ watch(mapEl, async (el) => {
   .wp-card:hover { transform: none; }
   .wp-map-btn:hover { transform: none; }
   .wp-map-btn:active { transform: none; }
+  .wp-fac:hover { transform: none; }
   :deep(.wp-marker:hover) { transform: none; }
 }
 </style>

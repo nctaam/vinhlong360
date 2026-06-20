@@ -18,12 +18,12 @@
         </NuxtLink>
         <span v-else class="thread-author">{{ post.display_name || 'Người dùng' }}</span>
         <time class="thread-time" :datetime="post.created_at">{{ timeAgo(post.created_at) }}</time>
-        <button type="button" class="thread-more" title="Tùy chọn" @click="showMenu = !showMenu">
+        <button type="button" class="thread-more" aria-label="Tùy chọn bài viết" aria-haspopup="true" :aria-expanded="showMenu" @click="showMenu = !showMenu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
         </button>
         <Transition name="menu-pop">
-          <div v-if="showMenu" class="thread-menu">
-            <button type="button" @click="$emit('report', post.id); showMenu = false">Báo cáo</button>
+          <div v-if="showMenu" class="thread-menu" role="menu">
+            <button type="button" role="menuitem" @click="$emit('report', post.id); showMenu = false">Báo cáo</button>
           </div>
         </Transition>
       </div>
@@ -81,7 +81,7 @@
     </div>
 
     <Teleport to="body">
-      <div v-if="lbOpen" class="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh" @click.self="closeLightbox">
+      <div v-if="lbOpen" ref="lbEl" class="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh" @click.self="closeLightbox">
         <button type="button" class="lb-close" aria-label="Đóng" @click="closeLightbox">&times;</button>
         <button type="button" v-if="allImages.length > 1" class="lb-prev" aria-label="Ảnh trước" @click="lbPrev">&#8249;</button>
         <img
@@ -166,6 +166,7 @@ const imgLayoutClass = computed(() => {
 
 const lbOpen = ref(false)
 const lbIdx = ref(0)
+const lbEl = ref<HTMLElement>()
 
 let lbTriggerEl: HTMLElement | null = null
 function openLightbox(i: number) {
@@ -181,6 +182,10 @@ function closeLightbox() {
   lbOpen.value = false
   nextTick(() => lbTriggerEl?.focus())
 }
+watch(lbOpen, (v) => {
+  if (import.meta.client) document.body.style.overflow = v ? 'hidden' : ''
+})
+onUnmounted(() => { if (import.meta.client) document.body.style.overflow = '' })
 function lbPrev() { lbIdx.value = (lbIdx.value - 1 + allImages.value.length) % allImages.value.length }
 function lbNext() { lbIdx.value = (lbIdx.value + 1) % allImages.value.length }
 
@@ -216,8 +221,17 @@ function onLbTouchEnd() {
 function onKey(e: KeyboardEvent) {
   if (!lbOpen.value) return
   if (e.key === 'Escape') closeLightbox()
-  if (e.key === 'ArrowLeft') lbPrev()
-  if (e.key === 'ArrowRight') lbNext()
+  else if (e.key === 'ArrowLeft') lbPrev()
+  else if (e.key === 'ArrowRight') lbNext()
+  else if (e.key === 'Tab') {
+    const btns = lbEl.value ? Array.from(lbEl.value.querySelectorAll<HTMLElement>('button')) : []
+    if (!btns.length) return
+    const first = btns[0]!, last = btns[btns.length - 1]!
+    const active = document.activeElement as HTMLElement
+    if (e.shiftKey && active === first) { e.preventDefault(); last.focus() }
+    else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus() }
+    else if (!btns.includes(active)) { e.preventDefault(); first.focus() }
+  }
 }
 onMounted(() => window.addEventListener('keydown', onKey))
 onUnmounted(() => window.removeEventListener('keydown', onKey))

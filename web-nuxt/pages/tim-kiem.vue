@@ -7,14 +7,14 @@
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true">🔍</span>
         <div>
-          <h1>Tìm kiếm</h1>
-          <p>Tìm đặc sản, trải nghiệm, lưu trú, lễ hội — mọi thứ về Vĩnh Long, Bến Tre, Trà Vinh.</p>
+          <h1>{{ pc('hero_title') }}</h1>
+          <p>{{ pc('hero_subtitle') }}</p>
         </div>
       </div>
     </section>
 
     <div class="search-row search-row-spaced">
-      <input v-model="searchInput" type="search" placeholder="Tìm đặc sản, trải nghiệm…" aria-label="Tìm kiếm" autocomplete="off" @keyup.enter="doSearch" />
+      <input v-model="searchInput" type="search" enterkeyhint="search" placeholder="Tìm đặc sản, trải nghiệm…" aria-label="Tìm kiếm" autocomplete="off" @keyup.enter="doSearch" />
       <button type="button" class="btn btn-primary" @click="doSearch">Tìm</button>
     </div>
 
@@ -130,6 +130,7 @@
 
 <script setup lang="ts">
 useReveal()
+const { f: pc } = usePageContent('tim_kiem')
 const route = useRoute()
 const q = computed(() => (route.query.q as string) || '')
 const searchInput = ref(q.value)
@@ -153,9 +154,10 @@ function doSearch() {
 watch(q, (v) => { searchInput.value = v })
 
 useSeoMeta({
-  title: q.value ? `"${q.value}" — Tìm kiếm — vinhlong360` : 'Tìm kiếm — vinhlong360',
-  description: q.value ? `Kết quả tìm kiếm cho "${q.value}" trên vinhlong360.` : 'Tìm kiếm đặc sản, trải nghiệm, lưu trú tại Vĩnh Long.',
-  ogTitle: q.value ? `"${q.value}" — vinhlong360` : 'Tìm kiếm — vinhlong360',
+  title: () => q.value.trim() ? `"${q.value.trim()}" — Tìm kiếm — vinhlong360` : pc('seo_title'),
+  description: () => q.value.trim() ? `Kết quả tìm kiếm cho "${q.value.trim()}" trên vinhlong360.` : pc('seo_description'),
+  ogTitle: () => q.value.trim() ? `"${q.value.trim()}" — vinhlong360` : pc('og_title'),
+  ogDescription: () => pc('og_description'),
 })
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl('/tim-kiem') }],

@@ -9,7 +9,7 @@
           :to="`/dia-diem/${e.id}`"
           class="nearby-item"
         >
-          <NuxtImg v-if="getThumb(e)" :src="getThumb(e)" :alt="e.name" class="nearby-thumb" width="56" height="56" loading="lazy" />
+          <NuxtImg v-if="getThumb(e) && !failedThumbs.has(e.id)" :src="getThumb(e)" :alt="e.name" class="nearby-thumb" width="56" height="56" loading="lazy" @error="failedThumbs.add(e.id)" />
           <span v-else class="nearby-emoji">{{ getTypeMeta(e.type).emoji }}</span>
           <div class="nearby-info">
             <strong>{{ e.name }}</strong>
@@ -27,7 +27,7 @@
           :to="`/dia-diem/${e.id}`"
           class="nearby-item"
         >
-          <NuxtImg v-if="getThumb(e)" :src="getThumb(e)" :alt="e.name" class="nearby-thumb" width="56" height="56" loading="lazy" />
+          <NuxtImg v-if="getThumb(e) && !failedThumbs.has(e.id)" :src="getThumb(e)" :alt="e.name" class="nearby-thumb" width="56" height="56" loading="lazy" @error="failedThumbs.add(e.id)" />
           <span v-else class="nearby-emoji">{{ getTypeMeta(e.type).emoji }}</span>
           <div class="nearby-info">
             <strong>{{ e.name }}</strong>
@@ -40,6 +40,7 @@
 </template>
 
 <script setup lang="ts">
+import type { Entity } from '~/types'
 import { TYPE_META, AREA_META } from '~/composables/useConstants'
 
 const props = defineProps<{
@@ -58,7 +59,7 @@ const { data } = await useAsyncData(`nearby-${props.area}`, () =>
 const nearby = computed(() => {
   if (!data.value) return []
   const list = (data.value.entities || [])
-    .filter((e: any) =>
+    .filter((e: Entity) =>
       (e.place_area || e.area) === props.area &&
       e.id !== props.entityId &&
       e.type !== props.entityType
@@ -87,7 +88,7 @@ const nearby = computed(() => {
 const sameType = computed(() => {
   if (!data.value) return []
   return (data.value.entities || [])
-    .filter((e: any) =>
+    .filter((e: Entity) =>
       (e.place_area || e.area) === props.area &&
       e.id !== props.entityId &&
       e.type === props.entityType
@@ -95,11 +96,13 @@ const sameType = computed(() => {
     .slice(0, 4)
 })
 
+const failedThumbs = reactive(new Set<string>())
+
 function getTypeMeta(type: string) {
   return TYPE_META[type] || { emoji: '📍', label: type }
 }
 
-function getThumb(e: any): string | null {
+function getThumb(e: Entity): string | null {
   const imgs = e.images || e.image_urls
   if (Array.isArray(imgs) && imgs.length > 0) return imgs[0]
   if (typeof e.image === 'string' && e.image) return e.image

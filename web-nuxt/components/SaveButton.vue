@@ -1,8 +1,8 @@
 <template>
   <button type="button"
     :class="['save-btn', { saved: saved, 'save-btn-sm': size === 'sm' }]"
-    :title="saved ? 'Bỏ lưu' : 'Lưu yêu thích'"
-    :aria-label="saved ? 'Bỏ lưu' : 'Lưu yêu thích'"
+    :title="actionLabel"
+    :aria-label="actionLabel"
     :aria-pressed="saved"
     @click.prevent.stop="onToggle"
   >
@@ -31,6 +31,7 @@ const { isSaved, toggle } = useFavorites()
 const { show: showToast } = useToast()
 
 const saved = computed(() => isSaved(props.entity.id))
+const actionLabel = computed(() => saved.value ? `Bỏ lưu ${props.entity.name}` : `Lưu ${props.entity.name}`)
 const heartPath = 'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'
 
 function onToggle() {

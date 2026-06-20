@@ -1,10 +1,12 @@
+import type { ChatMessage, ChatResponse, ChatToolCall, Entity } from '~/types'
+
 export function useAI() {
   const aiSessionId = useState('ai-session-id', () => '')
   const { authHeaders } = useAuth()
 
-  async function aiChat(message: string, history: any[] = []): Promise<{ reply: string; suggestions: string[]; tool_calls: any[] }> {
+  async function aiChat(message: string, history: ChatMessage[] = []): Promise<ChatResponse> {
     try {
-      const res = await $fetch<any>('/chat', {
+      const res = await $fetch<ChatResponse & { session_id?: string }>('/chat', {
         method: 'POST',
         body: { message, history, session_id: aiSessionId.value },
       })
@@ -15,7 +17,7 @@ export function useAI() {
     }
   }
 
-  async function aiStream(message: string, onChunk: (text: string) => void, onDone?: (data: any) => void) {
+  async function aiStream(message: string, onChunk: (text: string) => void, onDone?: (data: Record<string, unknown>) => void) {
     try {
       const res = await fetch('/chat/stream', {
         method: 'POST',
@@ -57,10 +59,10 @@ export function useAI() {
   }
 
   async function aiHealth() {
-    try { return await $fetch<any>('/health') } catch { return null }
+    try { return await $fetch<Record<string, unknown>>('/health') } catch { return null }
   }
 
-  async function aiSmartSearch(query: string): Promise<{ reply: string; entities: any[]; suggestions: string[] }> {
+  async function aiSmartSearch(query: string): Promise<{ reply: string; entities: Entity[]; suggestions: string[] }> {
     const prompt = `Tìm kiếm: "${query}". Hãy liệt kê các entity phù hợp nhất (tên, loại, mô tả ngắn) và gợi ý tìm kiếm liên quan.`
     const res = await aiChat(prompt)
     return { reply: res.reply, entities: [], suggestions: res.suggestions }

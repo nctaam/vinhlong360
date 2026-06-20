@@ -7,8 +7,8 @@
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true">🎋</span>
         <div>
-          <h1>Lễ hội truyền thống</h1>
-          <p>Lễ hội đình miếu, lễ Khmer, Nghinh Ông, giỗ danh nhân — truyền thống văn hóa ba vùng Vĩnh Long, Bến Tre, Trà Vinh.</p>
+          <h1>{{ pc('hero_title') }}</h1>
+          <p>{{ pc('hero_subtitle') }}</p>
         </div>
       </div>
       <div v-if="allEvents.length" class="catalog-stats">
@@ -75,7 +75,7 @@
     <!-- Controls -->
     <div class="controls">
       <div class="search-row">
-        <input v-model="q" type="search" placeholder="Tìm lễ hội…" aria-label="Tìm lễ hội" />
+        <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm lễ hội…" aria-label="Tìm lễ hội" />
       </div>
       <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
         <button type="button" :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả vùng</button>
@@ -90,7 +90,11 @@
       <button type="button" :class="['toggle-btn', { active: view === 'calendar' }]" :aria-pressed="view === 'calendar'" @click="view = 'calendar'">📅 Lịch</button>
     </div>
 
-    <EmptyState v-if="fetchError" icon="⚠️" title="Không thể tải dữ liệu" message="Vui lòng thử lại sau." />
+    <EmptyState v-if="fetchError" icon="⚠️" title="Không tải được lễ hội" message="Có thể mạng đang chập chờn. Thử lại nhé.">
+      <template #actions>
+        <button type="button" class="btn btn-outline" @click="refreshNuxtData('festivals')">Thử lại</button>
+      </template>
+    </EmptyState>
     <SkeletonGrid v-else-if="!data" :count="4" />
 
     <template v-else-if="view === 'list'">
@@ -189,10 +193,12 @@
 </template>
 
 <script setup lang="ts">
+import type { Entity } from '~/types'
 import { AREA_META } from '~/composables/useConstants'
 import { lunarLabel, isLunarFirstDay, isLunarFull } from '~/composables/useLunar'
 
 useReveal()
+const { f: pc } = usePageContent('le_hoi')
 
 const q = ref('')
 const areaFilter = ref('all')
@@ -201,11 +207,11 @@ const view = ref('list')
 useFilterUrl({ vung: areaFilter }, { vung: 'all' })
 
 const { data, error: fetchError } = await useAsyncData('festivals', () =>
-  $fetch<any>('/api/events?limit=200&include_past=true')
+  $fetch<{ events: Entity[] }>('/api/events?limit=200&include_past=true')
 )
 
 const allEvents = computed(() =>
-  (data.value?.events || []).filter((e: any) => (e.attributes?.category) === 'le-hoi')
+  (data.value?.events || []).filter((e: Entity) => (e.attributes?.category) === 'le-hoi')
 )
 
 const areaCounts = computed(() => {
@@ -220,44 +226,44 @@ const areaCounts = computed(() => {
 })
 
 function countByArea(key: string) {
-  return allEvents.value.filter((e: any) => getArea(e) === key).length
+  return allEvents.value.filter((e: Entity) => getArea(e) === key).length
 }
 
 const upcoming = computed(() => {
   const now = new Date().toISOString().slice(0, 10)
   return allEvents.value
-    .filter((e: any) => {
+    .filter((e: Entity) => {
       const ds = e.attributes?.date_start
       return ds && ds >= now
     })
-    .sort((a: any, b: any) => (a.attributes?.date_start || '').localeCompare(b.attributes?.date_start || ''))
+    .sort((a: Entity, b: Entity) => (a.attributes?.date_start || '').localeCompare(b.attributes?.date_start || ''))
     .slice(0, 6)
 })
 
 const filtered = computed(() => {
   let list = allEvents.value
   if (areaFilter.value !== 'all') {
-    list = list.filter((e: any) => getArea(e) === areaFilter.value)
+    list = list.filter((e: Entity) => getArea(e) === areaFilter.value)
   }
   if (q.value.trim()) {
     const kw = q.value.toLowerCase()
-    list = list.filter((e: any) => e.name.toLowerCase().includes(kw) || (e.summary || '').toLowerCase().includes(kw))
+    list = list.filter((e: Entity) => e.name.toLowerCase().includes(kw) || (e.summary || '').toLowerCase().includes(kw))
   }
   return list
 })
 
-function getArea(e: any): string {
+function getArea(e: Entity): string {
   return e.place_area || e.area || ''
 }
 
-function getDateStart(e: any): Date | null {
+function getDateStart(e: Entity): Date | null {
   const ds = e.attributes?.date_start
   if (!ds) return null
   const d = new Date(ds + 'T00:00:00')
   return isNaN(d.getTime()) ? null : d
 }
 
-function formatMonth(e: any): string {
+function formatMonth(e: Entity): string {
   const d = getDateStart(e)
   if (!d) {
     const months = e.season?.months
@@ -267,13 +273,13 @@ function formatMonth(e: any): string {
   return `Tg ${d.getMonth() + 1}`
 }
 
-function formatDay(e: any): string {
+function formatDay(e: Entity): string {
   const d = getDateStart(e)
   if (!d) return '—'
   return String(d.getDate())
 }
 
-function dateRange(e: any): string {
+function dateRange(e: Entity): string {
   const attrs = e.attributes || {}
   const ds = attrs.date_start
   const de = attrs.date_end
@@ -320,13 +326,13 @@ const calendarCells = computed(() => {
   if (startDow === 0) startDow = 7
   startDow--
 
-  const cells: any[] = []
+  const cells: { day: number; isToday?: boolean; events?: Entity[]; lunar?: string; lunarFirst?: boolean; lunarMid?: boolean }[] = []
   for (let i = 0; i < startDow; i++) cells.push({ day: 0 })
 
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
     const isToday = y === today.getFullYear() && m === today.getMonth() && d === today.getDate()
-    const events = allEvents.value.filter((e: any) => {
+    const events = allEvents.value.filter((e: Entity) => {
       const attrs = e.attributes || {}
       const ds = attrs.date_start
       const de = attrs.date_end || ds
@@ -344,10 +350,10 @@ const calendarCells = computed(() => {
 })
 
 useSeoMeta({
-  title: 'Lễ hội truyền thống — vinhlong360',
-  description: 'Lễ hội đình miếu, lễ Khmer, Nghinh Ông, giỗ danh nhân — truyền thống văn hóa Vĩnh Long, Bến Tre, Trà Vinh.',
-  ogTitle: 'Lễ hội truyền thống — vinhlong360',
-  ogDescription: 'Lịch lễ hội truyền thống miền Tây: Kỳ Yên, Ok Om Bok, Nghinh Ông, giỗ danh nhân và hơn thế.',
+  title: () => pc('seo_title'),
+  description: () => pc('seo_description'),
+  ogTitle: () => pc('og_title'),
+  ogDescription: () => pc('og_description'),
 })
 
 useHead({

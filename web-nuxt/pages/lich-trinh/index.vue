@@ -94,7 +94,10 @@
 
       <p class="result-meta" aria-live="polite">{{ filtered.length }} lịch trình</p>
 
-      <p v-if="fetchError" class="fetch-error">Không thể tải lịch trình. Vui lòng thử lại.</p>
+      <div v-if="fetchError" class="fetch-error" role="alert">
+        <p>Không tải được lịch trình. Có thể mạng đang chập chờn.</p>
+        <button type="button" class="btn btn-outline" @click="refreshNuxtData('itineraries')">Thử lại</button>
+      </div>
       <SkeletonGrid v-else-if="!itineraries" :count="4" />
       <div v-else-if="filtered.length" class="grid itin">
         <ItineraryCard v-for="it in filtered" :key="it.id" :itinerary="it" />
@@ -137,6 +140,7 @@
 </template>
 
 <script setup lang="ts">
+import type { Itinerary } from '~/types'
 import { TYPE_META, AREA_META } from '~/composables/useConstants'
 
 useReveal()
@@ -171,13 +175,13 @@ const areaCounts = computed(() => {
 })
 
 function countByArea(key: string) {
-  return (itineraries.value || []).filter((it: any) => it.area === key).length
+  return (itineraries.value || []).filter((it: Itinerary) => it.area === key).length
 }
 
 const filtered = computed(() => {
   const list = itineraries.value || []
   if (areaFilter.value === 'all') return list
-  return list.filter((it: any) => it.area === areaFilter.value)
+  return list.filter((it: Itinerary) => it.area === areaFilter.value)
 })
 
 useSeoMeta({
@@ -243,7 +247,7 @@ useHead(() => ({
 .js-item:active { transform: scale(.97); transition-duration: .08s; }
 .js-emoji { font-size: var(--text-lg); }
 
-.fetch-error { color: var(--error); text-align: center; padding: var(--space-5); }
+.fetch-error { color: var(--error); text-align: center; padding: var(--space-5); display: flex; flex-direction: column; align-items: center; gap: var(--space-3); }
 .block-cta { margin-top: var(--space-6); text-align: center; }
 .block-cta .btn:active { transform: scale(.97); transition-duration: .08s; }
 .danger { color: var(--error); }

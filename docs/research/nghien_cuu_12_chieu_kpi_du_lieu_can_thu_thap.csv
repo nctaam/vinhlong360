@@ -1,0 +1,11 @@
+﻿kpi_id,metric,unit,purpose,data_source
+"KPI01","Thời gian lưu trú trung bình","ngày/khách","Tăng từ tour ngày sang 2N1Đ/3N2Đ","Doanh nghiệp lưu trú/tour"
+"KPI02","Chi tiêu bình quân","VND/khách","Đo hiệu quả food/workshop/lưu trú","Khảo sát khách + doanh nghiệp"
+"KPI03","Tỷ lệ khách đi tuyến liên vùng","%","Đo thành công liên kết 3 vùng","Bán tour/QR tracking"
+"KPI04","Tỷ lệ hài lòng/NPS","điểm","Đo chất lượng trải nghiệm","Form sau chuyến"
+"KPI05","Tỷ lệ phàn nàn về vệ sinh/an toàn","% review","Cảnh báo rủi ro vận hành","Google/OTA/social listening"
+"KPI06","Số nghệ nhân/cộng đồng tham gia","người/hộ","Đo chia sẻ lợi ích","Chi hội/hợp tác xã"
+"KPI07","Doanh thu workshop/sản phẩm địa phương","VND","Đo giá trị làng nghề","Điểm bán/làng nghề"
+"KPI08","Rác thải sự kiện thu gom đúng chuẩn","kg/%","Đo du lịch xanh","Ban tổ chức/môi trường"
+"KPI09","Số nội dung số đạt chuẩn mỗi tháng","bài/video","Đo năng lực truyền thông","CMS/social"
+"KPI10","Tỷ lệ nguồn dữ liệu điểm đến được cập nhật","%","Đo chất lượng dữ liệu số","CSDL điểm đến"

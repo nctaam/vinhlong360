@@ -131,6 +131,22 @@ DEFAULTS: dict[str, dict] = {
         "category": "footer", "label": "Tuyên bố miễn trừ", "input_type": "textarea",
         "description": "Dòng disclaimer cuối trang",
     },
+    "footer.legal_links": {
+        "value": [
+            {"to": "/chinh-sach-bao-mat", "label": "Bảo mật"},
+            {"to": "/dieu-khoan-su-dung", "label": "Điều khoản"},
+            {"to": "/lien-he", "label": "Liên hệ"},
+            {"to": "/admin", "label": "Admin"},
+        ],
+        "category": "footer", "label": "Liên kết pháp lý (đáy trang)", "input_type": "json",
+        "description": "Hàng liên kết nhỏ ở đáy footer (mảng JSON gồm to + label)",
+    },
+    # B8: social links (empty = không hiện hàng MXH ở footer).
+    "social.links": {
+        "value": [],
+        "category": "footer", "label": "Mạng xã hội", "input_type": "json",
+        "description": 'Liên kết MXH ở footer (mảng JSON gồm icon emoji, label, url). VD: [{"icon":"📘","label":"Facebook","url":"https://facebook.com/..."}]',
+    },
 
     # ── Homepage ──
     "homepage.hero_subtitle": {
@@ -237,6 +253,22 @@ DEFAULTS: dict[str, dict] = {
         "category": "chat", "label": "Placeholder chat", "input_type": "text",
         "description": "Placeholder cho ô nhập tin nhắn chat",
     },
+    # B6: chat/AI config (frontend reads with inline fallback; empty = dùng mặc định).
+    "chat.disclaimer": {
+        "value": "Nội dung do AI tạo, có thể chưa chính xác — vui lòng kiểm chứng.",
+        "category": "chat", "label": "Dòng minh bạch AI (chat)", "input_type": "text",
+        "description": "Dòng nhỏ dưới ô chat nhắc nội dung do AI tạo. Để trống = ẩn.",
+    },
+    "chat.suggestions_by_route": {
+        "value": {},
+        "category": "chat", "label": "Gợi ý câu hỏi theo trang", "input_type": "json",
+        "description": 'JSON {"/du-lich": ["..."], "default": ["..."]} — câu hỏi gợi ý theo route. Để trống {} = dùng bộ mặc định.',
+    },
+    "ai.disclaimer_text": {
+        "value": "Gợi ý do AI tạo — mang tính tham khảo.",
+        "category": "ai", "label": "Dòng minh bạch AI (khối gợi ý)", "input_type": "text",
+        "description": "Hiển thị dưới các khối gợi ý AI (mẹo, thời điểm, tìm kiếm). Để trống = ẩn.",
+    },
 
     # ── Theme ──
     "theme.primary_color": {
@@ -253,6 +285,17 @@ DEFAULTS: dict[str, dict] = {
         "value": "",
         "category": "theme", "label": "Màu phụ (secondary)", "input_type": "color",
         "description": "Ghi đè CSS --secondary (để trống = dùng mặc định)",
+    },
+    # B8: theme depth (validated client-side; để trống = dùng mặc định).
+    "theme.radius": {
+        "value": "",
+        "category": "theme", "label": "Độ bo góc", "input_type": "text",
+        "description": "Độ bo góc giao diện, vd 14px / 8px / 1rem (để trống = mặc định)",
+    },
+    "theme.font_scale": {
+        "value": "",
+        "category": "theme", "label": "Tỉ lệ cỡ chữ", "input_type": "text",
+        "description": "Hệ số cỡ chữ toàn trang 0.8–1.3, vd 1.05 (để trống = 1.0)",
     },
 
     # ── Features (A4) ──
@@ -275,6 +318,32 @@ DEFAULTS: dict[str, dict] = {
         "category": "page", "label": "Trang: Du lịch", "input_type": "json",
         "description": "Hero & SEO trang Du lịch (sửa qua /admin/cai-dat/trang)",
     },
+    "page.ocop": {"value": {}, "category": "page", "label": "Trang: OCOP", "input_type": "json", "description": "Hero & SEO trang OCOP"},
+    "page.san_pham": {"value": {}, "category": "page", "label": "Trang: Đặc sản", "input_type": "json", "description": "Hero & SEO trang Đặc sản"},
+    "page.luu_tru": {"value": {}, "category": "page", "label": "Trang: Lưu trú", "input_type": "json", "description": "Hero & SEO trang Lưu trú"},
+    "page.le_hoi": {"value": {}, "category": "page", "label": "Trang: Lễ hội", "input_type": "json", "description": "Hero & SEO trang Lễ hội"},
+    "page.su_kien": {"value": {}, "category": "page", "label": "Trang: Sự kiện", "input_type": "json", "description": "Hero & SEO trang Sự kiện"},
+    "page.theo_mua": {"value": {}, "category": "page", "label": "Trang: Theo mùa", "input_type": "json", "description": "Hero & SEO trang Theo mùa (để trống = tự điền tháng)"},
+    "page.danh_ba": {"value": {}, "category": "page", "label": "Trang: Danh bạ", "input_type": "json", "description": "Hero & SEO trang Danh bạ hành chính"},
+    "page.tuyen_duong": {"value": {}, "category": "page", "label": "Trang: Tuyến đường", "input_type": "json", "description": "Hero & SEO trang Tuyến đường gợi ý"},
+    "page.cong_dong": {"value": {}, "category": "page", "label": "Trang: Cộng đồng", "input_type": "json", "description": "Tiêu đề & SEO trang Cộng đồng"},
+    "page.tim_kiem": {"value": {}, "category": "page", "label": "Trang: Tìm kiếm", "input_type": "json", "description": "Hero & SEO trang Tìm kiếm (SEO động theo từ khoá)"},
+    "page.lien_he": {"value": {}, "category": "page", "label": "Trang: Liên hệ", "input_type": "json", "description": "Hero & SEO trang Liên hệ"},
+    # B2: route data for /tuyen-duong. Empty = use defaults in web-nuxt/utils/routesContent.ts
+    # (admin editor pre-fills from those). Edited as JSON (nested stops[] per route).
+    "tuyen_duong.routes": {"value": [], "category": "page", "label": "Tuyến đường (dữ liệu)", "input_type": "json", "description": "Danh sách tuyến đường gợi ý (JSON; mỗi tuyến có stops[] lồng nhau). Sửa qua /admin/cai-dat/tuyen-duong"},
+
+    # ── Legal (B5) ──
+    # {title, updated_date, seo_title, seo_description, intro, sections:[{heading,body}]}.
+    # Empty = use the legally-reviewed defaults in web-nuxt/utils/legalContent.ts.
+    # Bodies are markdown-lite (rendered XSS-safe via utils/mdLite).
+    "legal.privacy": {"value": {}, "category": "legal", "label": "Chính sách bảo mật", "input_type": "json", "description": "Nội dung trang /chinh-sach-bao-mat (sửa qua /admin/cai-dat/phap-ly)"},
+    "legal.terms": {"value": {}, "category": "legal", "label": "Điều khoản sử dụng", "input_type": "json", "description": "Nội dung trang /dieu-khoan-su-dung (sửa qua /admin/cai-dat/phap-ly)"},
+
+    # ── Onboarding (B7) ──
+    # {emoji,title,intro,features:[{icon,title,desc}],cta_*}. Empty = defaults in
+    # web-nuxt/utils/onboardingContent.ts. Gated by features.flags.onboarding.
+    "onboarding": {"value": {}, "category": "onboarding", "label": "Bảng chào mừng", "input_type": "json", "description": "Nội dung onboarding khách lần đầu (sửa qua /admin/cai-dat/chao-mung)"},
 
     # ── Categories ──
     "categories.type_overrides": {
@@ -286,6 +355,17 @@ DEFAULTS: dict[str, dict] = {
         "value": {},
         "category": "categories", "label": "Ghi đè khu vực", "input_type": "json",
         "description": "JSON object ghi đè emoji/label cho từng area",
+    },
+    # B4: metadata maps (merged in useConstants via site-overrides plugin).
+    "metadata.office_kind": {
+        "value": {},
+        "category": "categories", "label": "Ghi đè loại cơ quan (danh bạ)", "input_type": "json",
+        "description": 'Ghi đè emoji/label loại cơ quan công vụ. VD: {"ubnd": {"label": "UBND phường"}}',
+    },
+    "metadata.interests": {
+        "value": {},
+        "category": "categories", "label": "Ghi đè chủ đề khám phá", "input_type": "json",
+        "description": 'Ghi đè/thêm chủ đề /kham-pha. VD: {"am-thuc": {"label": "Ẩm thực miền Tây"}}. Thêm mới cần đủ emoji, label, description, types[].',
     },
 }
 

@@ -7,8 +7,8 @@
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true">🏛️</span>
         <div>
-          <h1>Danh bạ hành chính</h1>
-          <p>Địa chỉ &amp; liên hệ UBND, công an và cơ quan công vụ theo từng xã/phường của tỉnh Vĩnh Long (sau hợp nhất: Vĩnh Long · Bến Tre · Trà Vinh).</p>
+          <h1>{{ pc('hero_title') }}</h1>
+          <p>{{ pc('hero_subtitle') }}</p>
         </div>
       </div>
       <div v-if="totalWards" class="catalog-stats">
@@ -37,6 +37,7 @@
         <button type="button"
           v-for="g in wardGroups" :key="g.area"
           :class="['quick-pick', { active: selectedArea === g.area }]"
+          :aria-pressed="selectedArea === g.area"
           @click="selectedArea = selectedArea === g.area ? '' : g.area"
         >
           <span class="quick-pick-icon">{{ AREA_META[g.area]?.emoji }}</span>
@@ -92,9 +93,16 @@
             <span v-else>{{ f.source?.title }}</span>
             <time v-if="f.updatedAt" :datetime="f.updatedAt"> · cập nhật {{ f.updatedAt }}</time>
           </small>
-          <button type="button" class="fac-report" :disabled="reported[f.id]" @click="reportFacility(f)">
+          <button type="button" class="fac-report" :disabled="reported[f.id]" :aria-expanded="reportingId === f.id" @click="openReport(f)">
             {{ reported[f.id] ? '✓ Đã gửi báo sai' : '⚠️ Báo thông tin sai' }}
           </button>
+          <div v-if="reportingId === f.id" class="fac-report-form">
+            <textarea v-model="reportDetail" class="textarea" rows="2" placeholder="Thông tin nào sai? (địa chỉ / SĐT / giờ làm việc…)" aria-label="Mô tả thông tin sai"></textarea>
+            <div class="fac-report-actions">
+              <button type="button" class="btn btn-primary btn-sm" :disabled="reportSending || reportDetail.trim().length < 3" @click="submitReport(f)">{{ reportSending ? 'Đang gửi…' : 'Gửi' }}</button>
+              <button type="button" class="btn btn-ghost btn-sm" @click="reportingId = ''">Hủy</button>
+            </div>
+          </div>
         </li>
       </ul>
       <EmptyState v-else message="Chưa có dữ liệu danh bạ cho xã/phường này. Dữ liệu đang được bổ sung từ nguồn chính thống." />
@@ -126,15 +134,17 @@
 </template>
 
 <script setup lang="ts">
+import type { Place, Entity} from '~/types'
 import { OFFICE_KIND, AREA_META } from '~/composables/useConstants'
 
 useReveal()
+const { f: pc } = usePageContent('danh_ba')
 const { show: showToast } = useToast()
 
 const ADMIN_LEVELS = ['phuong', 'xa', 'tinh']
 const route = useRoute()
 
-const { data: places, error: placesError } = await useAsyncData('dir-places', () => $fetch<any>('/api/places'))
+const { data: places, error: placesError } = await useAsyncData('dir-places', () => $fetch<Place[]>('/api/places'))
 
 const areaFromQuery = computed(() => {
   const a = route.query.area as string
@@ -144,11 +154,11 @@ const areaFromQuery = computed(() => {
 const selectedArea = ref(areaFromQuery.value)
 
 const wardGroups = computed(() => {
-  const wards = (places.value || []).filter((p: any) => ADMIN_LEVELS.includes(p.level))
+  const wards = (places.value || []).filter((p: Entity) => ADMIN_LEVELS.includes(p.level))
   return Object.keys(AREA_META).map(area => ({
     area,
     label: AREA_META[area].name,
-    wards: wards.filter((w: any) => w.area === area).sort((a: any, b: any) => a.name.localeCompare(b.name, 'vi')),
+    wards: wards.filter((w: Entity) => w.area === area).sort((a: Entity, b: Entity) => a.name.localeCompare(b.name, 'vi')),
   })).filter(g => g.wards.length)
 })
 
@@ -160,24 +170,37 @@ const filteredGroups = computed(() => {
 const totalWards = computed(() => wardGroups.value.reduce((sum, g) => sum + g.wards.length, 0))
 
 const wardId = ref('')
-const facilities = ref<any[]>([])
+const facilities = ref<Entity[]>([])
 const loading = ref(false)
 
-function attr(f: any, k: string) { return (f.attributes || {})[k] }
-function kindMeta(f: any) { return OFFICE_KIND[attr(f, 'office_kind')] || OFFICE_KIND.khac }
+function attr(f: Entity, k: string) { return (f.attributes || {})[k] }
+function kindMeta(f: Entity) { return OFFICE_KIND[attr(f, 'office_kind')] || OFFICE_KIND.khac }
 
 const reported = ref<Record<string, boolean>>({})
-async function reportFacility(f: any) {
+const reportingId = ref('')
+const reportDetail = ref('')
+const reportSending = ref(false)
+
+function openReport(f: Entity) {
   if (reported.value[f.id]) return
-  const detail = (globalThis.prompt?.('Thông tin nào sai? (địa chỉ / SĐT / giờ làm việc…)') || '').trim()
+  reportingId.value = reportingId.value === f.id ? '' : f.id
+  reportDetail.value = ''
+}
+
+async function submitReport(f: Entity) {
+  const detail = reportDetail.value.trim()
   if (!detail) return
+  reportSending.value = true
   try {
     await $fetch('/api/report', {
       method: 'POST',
       body: { target_id: f.id, target_type: 'facility', reason: 'Báo sai thông tin danh bạ', detail },
     })
     reported.value = { ...reported.value, [f.id]: true }
+    reportingId.value = ''
+    showToast('Đã gửi báo sai. Cảm ơn bạn!', 'success')
   } catch { showToast('Không thể gửi báo sai. Vui lòng thử lại.', 'error') }
+  reportSending.value = false
 }
 
 watch(wardId, async (id) => {
@@ -185,15 +208,15 @@ watch(wardId, async (id) => {
   if (!id) return
   loading.value = true
   try {
-    const res = await $fetch<any>(`/api/facilities?place=${encodeURIComponent(id)}`)
+    const res = await $fetch<{ facilities: Entity[] }>(`/api/facilities?place=${encodeURIComponent(id)}`)
     facilities.value = res.facilities || []
   } catch { showToast('Không thể tải danh bạ cơ quan', 'error') }
   loading.value = false
 })
 
 const jsonLd = computed(() => facilities.value
-  .filter((f: any) => attr(f, 'address') || attr(f, 'phone'))
-  .map((f: any) => ({
+  .filter((f: Entity) => attr(f, 'address') || attr(f, 'phone'))
+  .map((f: Entity) => ({
     '@context': 'https://schema.org', '@type': 'GovernmentOffice',
     name: f.name,
     ...(attr(f, 'address') ? { address: attr(f, 'address') } : {}),
@@ -202,8 +225,10 @@ const jsonLd = computed(() => facilities.value
   })))
 
 useSeoMeta({
-  title: 'Danh bạ hành chính xã/phường — vinhlong360',
-  description: 'Địa chỉ, số điện thoại UBND, công an và cơ quan công vụ theo xã/phường tỉnh Vĩnh Long (Vĩnh Long, Bến Tre, Trà Vinh).',
+  title: () => pc('seo_title'),
+  description: () => pc('seo_description'),
+  ogTitle: () => pc('og_title'),
+  ogDescription: () => pc('og_description'),
 })
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/danh-ba') }],
@@ -241,6 +266,8 @@ useHead(() => ({
 .fac-report:active:not(:disabled) { transform: scale(.97); }
 .fac-report:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .fac-report:disabled { cursor: default; text-decoration: none; color: var(--success, #16a34a); }
+.fac-report-form { margin-top: var(--space-2); display: flex; flex-direction: column; gap: var(--space-2); }
+.fac-report-actions { display: flex; gap: var(--space-2); }
 .fac-skeleton { display: grid; gap: var(--space-3); }
 .fac-sk-item { border: .5px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-4); background: var(--card); display: flex; flex-direction: column; gap: var(--space-2); }
 .sk-bar { height: 10px; border-radius: var(--radius-sm); background: linear-gradient(110deg, var(--bg-alt) 30%, var(--card) 50%, var(--bg-alt) 70%); background-size: 200% 100%; animation: shimmer 1.6s infinite linear; }

@@ -7,8 +7,8 @@
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true">🌿</span>
         <div>
-          <h1>Du lịch &amp; trải nghiệm</h1>
-          <p>Miệt vườn sông nước, cù lao xanh mát, làng nghề trăm năm — khám phá miền Tây theo cách của người bản địa.</p>
+          <h1>{{ pc('hero_title') }}</h1>
+          <p>{{ pc('hero_subtitle') }}</p>
         </div>
       </div>
       <div v-if="allEntities.length" class="catalog-stats">
@@ -50,7 +50,7 @@
     <section ref="gridSection" class="block">
       <div class="controls">
         <div class="search-row">
-          <input v-model="q" type="search" placeholder="Tìm trong du lịch…" aria-label="Tìm kiếm" />
+          <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm trong du lịch…" aria-label="Tìm kiếm" />
         </div>
         <p class="control-label">Loại</p>
         <div class="chip-row" role="group" aria-label="Lọc theo loại">
@@ -69,7 +69,11 @@
         </div>
       </div>
       <p class="result-meta" aria-live="polite">{{ filtered.length }} kết quả</p>
-      <EmptyState v-if="fetchError" icon="⚠️" title="Không thể tải dữ liệu" message="Vui lòng thử lại sau." />
+      <EmptyState v-if="fetchError" icon="⚠️" title="Không thể tải dữ liệu" message="Mạng có thể đang chập chờn. Thử tải lại nhé.">
+        <template #actions>
+          <button type="button" class="btn btn-outline" @click="refreshNuxtData('catalog-tourism')">Thử lại</button>
+        </template>
+      </EmptyState>
       <SkeletonGrid v-else-if="!data" :count="6" />
       <div v-else-if="filtered.length" class="grid">
         <EntityCard v-for="e in filtered" :key="e.id" :entity="e" :season-filter="seasonFilter" />
@@ -108,10 +112,12 @@
 </template>
 
 <script setup lang="ts">
+import type { Entity } from '~/types'
 import { TYPE_META, TOURISM_TYPES } from '~/composables/useConstants'
 import { inSeason, relevanceScore } from '~/composables/useSeason'
 
 useReveal()
+const { f: pc } = usePageContent('du_lich')
 const TYPES = TOURISM_TYPES as readonly string[]
 
 const typeChips = TYPES.map(t => ({
@@ -127,13 +133,13 @@ const gridSection = ref<HTMLElement | null>(null)
 useFilterUrl({ type: typeFilter, mua: seasonFilter }, { type: 'all', mua: 'all' })
 
 const { data, error: fetchError } = await useAsyncData('catalog-tourism', () =>
-  $fetch<any>('/api/entities?limit=200')
+  $fetch<{ entities: Entity[] }>('/api/entities?limit=200')
 )
 
 const allEntities = computed(() => {
   const raw = data.value
   if (!raw) return []
-  return (raw.entities || []).filter((e: any) => TYPES.includes(e.type))
+  return (raw.entities || []).filter((e: Entity) => TYPES.includes(e.type))
 })
 
 const stats = computed(() => {
@@ -146,7 +152,7 @@ const stats = computed(() => {
 
 const featured = computed(() => {
   return allEntities.value
-    .filter((e: any) => e.images?.length)
+    .filter((e: Entity) => e.images?.length)
     .slice(0, 6)
 })
 
@@ -165,7 +171,7 @@ const categories = computed(() => {
       emoji: TYPE_META[t].emoji,
       label: TYPE_META[t].label,
       desc: CATEGORY_DESC[t] || '',
-      items: allEntities.value.filter((e: any) => e.type === t),
+      items: allEntities.value.filter((e: Entity) => e.type === t),
     }))
     .filter(c => c.items.length > 0)
 })
@@ -178,30 +184,30 @@ const filtered = computed(() => {
   let list = allEntities.value
 
   if (typeFilter.value !== 'all') {
-    list = list.filter((e: any) => e.type === typeFilter.value)
+    list = list.filter((e: Entity) => e.type === typeFilter.value)
   }
 
   if (seasonFilter.value !== 'all') {
-    list = list.filter((e: any) => inSeason(e, seasonFilter.value))
+    list = list.filter((e: Entity) => inSeason(e, seasonFilter.value))
   }
 
   if (q.value.trim()) {
     const query = q.value.toLowerCase()
-    list = list.filter((e: any) =>
+    list = list.filter((e: Entity) =>
       (e.name || '').toLowerCase().includes(query) ||
       (e.summary || '').toLowerCase().includes(query)
     )
   }
 
-  list.sort((a: any, b: any) => relevanceScore(b, seasonFilter.value) - relevanceScore(a, seasonFilter.value))
+  list.sort((a: Entity, b: Entity) => relevanceScore(b, seasonFilter.value) - relevanceScore(a, seasonFilter.value))
   return list
 })
 
 useSeoMeta({
-  title: 'Du lịch Vĩnh Long, Bến Tre, Trà Vinh — vinhlong360',
-  description: 'Trải nghiệm bản địa, điểm tham quan, lưu trú, làng nghề và ẩm thực khắp Vĩnh Long, Bến Tre, Trà Vinh. Lọc theo loại hình, mùa vụ và khu vực.',
-  ogTitle: 'Du lịch miền Tây — vinhlong360',
-  ogDescription: 'Trải nghiệm miệt vườn, điểm tham quan, làng nghề và ẩm thực khắp Vĩnh Long.',
+  title: () => pc('seo_title'),
+  description: () => pc('seo_description'),
+  ogTitle: () => pc('og_title'),
+  ogDescription: () => pc('og_description'),
 })
 
 useHead({

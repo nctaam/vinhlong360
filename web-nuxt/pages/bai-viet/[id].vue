@@ -69,12 +69,15 @@
       <EmptyState v-if="postFetchFailed" icon="⚠️" title="Không thể tải bài viết" message="Lỗi kết nối. Vui lòng thử lại.">
         <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData(`post-${postId}`)">Thử lại</button>
       </EmptyState>
-      <EmptyState v-else message="Không tìm thấy bài viết." />
+      <EmptyState v-else icon="🔍" title="Không tìm thấy bài viết" message="Bài viết có thể đã bị xoá hoặc đường dẫn không đúng.">
+        <NuxtLink to="/cong-dong" class="btn btn-outline btn-sm">Về Cộng đồng</NuxtLink>
+      </EmptyState>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
+import type { Post, Entity} from '~/types'
 useReveal()
 const route = useRoute()
 const postId = route.params.id as string
@@ -83,9 +86,9 @@ const { reportPost } = useReport()
 const { show: showToast } = useToast()
 
 const commentText = ref('')
-const comments = ref<any[]>([])
+const comments = ref<Entity[]>([])
 const submitting = ref(false)
-const loading = ref(false)
+const loading = ref(true)
 const composeRef = ref<HTMLElement>()
 
 function scrollToCompose() {
@@ -105,7 +108,8 @@ const postFetchFailed = ref(false)
 const { data: post, pending } = await useAsyncData(`post-${postId}`, async () => {
   try {
     postFetchFailed.value = false
-    return await $fetch<any>(`/api/posts/${postId}`, { headers: authHeaders() })
+    const res = await $fetch<Post>(`/api/posts/${postId}`, { headers: authHeaders() })
+    return res?.post || res
   } catch {
     postFetchFailed.value = true
     return null
@@ -115,7 +119,7 @@ const { data: post, pending } = await useAsyncData(`post-${postId}`, async () =>
 async function fetchComments() {
   loading.value = true
   try {
-    const res = await $fetch<any>(`/api/posts/${postId}/comments`)
+    const res = await $fetch<Post>(`/api/posts/${postId}/comments`)
     comments.value = res.comments || res || []
   } catch { /* comments are non-critical */ }
   loading.value = false
@@ -258,7 +262,7 @@ if (post.value) {
 }
 .compose-input-sm::placeholder { color: var(--muted); }
 .compose-send {
-  width: 36px; height: 36px; min-height: 36px; padding: 0;
+  width: 44px; height: 44px; min-height: 44px; padding: 0;
   display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-full);
 }
 .compose-send .spinner-sm { width: 14px; height: 14px; }
@@ -272,14 +276,18 @@ if (post.value) {
 .thread-comments { display: flex; flex-direction: column; }
 
 .thread-reply {
-  display: flex; gap: var(--space-3); padding: var(--space-3) 0;
+  display: flex; gap: var(--space-3); padding: var(--space-3) var(--space-2);
   border-bottom: .5px solid var(--line);
   animation: replyIn .3s var(--ease-out) both;
+  border-radius: var(--radius-sm); margin: 0 calc(var(--space-2) * -1);
+  transition: background .3s var(--ease-out);
 }
+.thread-reply:hover { background: var(--overlay-subtle); }
 .thread-reply:last-child { border-bottom: none; }
 
 .thread-reply .thread-left { width: 32px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
-.thread-reply .thread-line { flex: 1; width: 2px; background: var(--line); border-radius: 1px; min-height: 16px; }
+.thread-reply .thread-line { flex: 1; width: 2px; background: var(--line); border-radius: 1px; min-height: 16px; transition: background .3s var(--ease-out); }
+.thread-reply:hover .thread-line { background: var(--primary-fg); }
 .thread-reply .thread-right { flex: 1; min-width: 0; }
 
 .reply-text { margin: var(--space-1) 0 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); color: var(--ink); }

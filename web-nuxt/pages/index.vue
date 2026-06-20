@@ -5,21 +5,16 @@
       <HeroIllustration />
       <div class="hero-inner">
         <h1>{{ seasonalTagline }}</h1>
-        <p class="hero-sub">Trải nghiệm miệt vườn, đặc sản theo mùa, lễ hội truyền thống — tất cả trong một bản đồ.</p>
+        <p class="hero-sub">{{ ss('homepage.hero_subtitle', 'Trải nghiệm miệt vườn, đặc sản theo mùa, lễ hội truyền thống — tất cả trong một bản đồ.') }}</p>
         <form class="hero-search" role="search" aria-label="Tìm kiếm trang chủ" @submit.prevent="onHeroSearch">
           <div class="hero-search-field">
             <svg class="hero-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input v-model="heroQ" type="search" placeholder="Tìm: chôm chôm, kẹo dừa, cù lao An Bình…" aria-label="Tìm kiếm điểm đến, đặc sản" />
+            <input v-model="heroQ" type="search" enterkeyhint="search" :placeholder="ss('homepage.search_placeholder', 'Tìm: chôm chôm, kẹo dừa, cù lao An Bình…')" aria-label="Tìm kiếm điểm đến, đặc sản" />
           </div>
           <button type="submit">Tìm</button>
         </form>
         <div class="hero-pills">
-          <NuxtLink to="/lich-trinh" class="hero-pill">🗓️ Cuối tuần 2N1Đ</NuxtLink>
-          <NuxtLink to="/kham-pha/am-thuc" class="hero-pill">🍲 Ẩm thực</NuxtLink>
-          <NuxtLink to="/ocop" class="hero-pill">🎁 Quà OCOP</NuxtLink>
-          <NuxtLink to="/du-lich" class="hero-pill">🌿 Miệt vườn</NuxtLink>
-          <NuxtLink to="/le-hoi" class="hero-pill">🎭 Lễ hội</NuxtLink>
-          <NuxtLink to="/ban-do" class="hero-pill" no-prefetch>🗺️ Bản đồ</NuxtLink>
+          <NuxtLink v-for="pill in heroPills" :key="pill.to" :to="pill.to" class="hero-pill">{{ pill.emoji }} {{ pill.label }}</NuxtLink>
         </div>
       </div>
     </section>
@@ -29,7 +24,7 @@
       <section v-if="!hasChosen" class="region-picker reveal">
         <p class="rp-question">Bạn muốn khám phá vùng nào?</p>
         <div class="rp-options">
-          <button type="button" v-for="slug in Object.keys(AREA_META)" :key="slug" class="rp-btn" :class="`rp-${slug}`" @click="setRegion(slug as any)">
+          <button type="button" v-for="slug in Object.keys(AREA_META)" :key="slug" class="rp-btn" :class="`rp-${slug}`" @click="setRegion(slug as keyof typeof AREA_META)">
             <span class="rp-emoji">{{ AREA_META[slug].emoji }}</span>
             <span class="rp-name">{{ AREA_META[slug].name }}</span>
           </button>
@@ -51,6 +46,15 @@
         <span class="stat-num">{{ s.value }}</span>
         <span class="stat-label">{{ s.label }}</span>
       </div>
+    </section>
+
+    <!-- Degraded/empty fallback — never leave the page silently blank -->
+    <section v-if="homeError || !hasHomeContent" class="block reveal">
+      <EmptyState icon="🌾" :tone="homeError ? 'error' : 'empty'" title="Đang cập nhật nội dung" :message="homeError ? 'Mạng chậm một chút rồi. Bạn thử tải lại giúp tụi mình nhé!' : 'Tụi mình đang bổ sung điểm đến và đặc sản cho khu vực này. Quay lại sau nhé!'">
+        <template #actions>
+          <button v-if="homeError" type="button" class="btn btn-outline" @click="refreshHome()">Tải lại</button>
+        </template>
+      </EmptyState>
     </section>
 
     <!-- 2. "Đang diễn ra" — upcoming events + seasonal merged -->
@@ -193,7 +197,7 @@
           :key="slug"
           class="rmb-btn"
           :class="{ active: region === slug }"
-          @click="setRegion(slug as any)"
+          @click="setRegion(slug as keyof typeof AREA_META)"
         >{{ AREA_META[slug].emoji }} {{ AREA_META[slug].name }}</button>
         <button type="button" class="rmb-btn" :class="{ active: region === 'all' }" @click="setRegion('all')">🌏 Tất cả</button>
       </div>
@@ -205,21 +209,14 @@
         <h2>Khám phá thêm</h2>
       </div>
       <div class="quick-grid">
-        <NuxtLink to="/kham-pha/am-thuc" class="quick-link"><span class="ql-icon">🍲</span><span class="ql-text">Ẩm thực</span></NuxtLink>
-        <NuxtLink to="/kham-pha/thien-nhien" class="quick-link"><span class="ql-icon">🌿</span><span class="ql-text">Thiên nhiên</span></NuxtLink>
-        <NuxtLink to="/kham-pha/van-hoa" class="quick-link"><span class="ql-icon">🛕</span><span class="ql-text">Văn hóa</span></NuxtLink>
-        <NuxtLink to="/kham-pha/lang-nghe" class="quick-link"><span class="ql-icon">🏺</span><span class="ql-text">Làng nghề</span></NuxtLink>
-        <NuxtLink to="/kham-pha/mua-sam" class="quick-link"><span class="ql-icon">🛍️</span><span class="ql-text">Mua sắm</span></NuxtLink>
-        <NuxtLink to="/tuyen-duong?vung=vinh-long" class="quick-link"><span class="ql-icon">🍊</span><span class="ql-text">Vòng trái cây VL</span></NuxtLink>
-        <NuxtLink to="/tuyen-duong?vung=ben-tre" class="quick-link"><span class="ql-icon">🥥</span><span class="ql-text">Vòng dừa BT</span></NuxtLink>
-        <NuxtLink to="/tuyen-duong?vung=tra-vinh" class="quick-link"><span class="ql-icon">🛕</span><span class="ql-text">Chùa Khmer TV</span></NuxtLink>
+        <NuxtLink v-for="ql in quickLinks" :key="ql.to" :to="ql.to" class="quick-link"><span class="ql-icon">{{ ql.emoji }}</span><span class="ql-text">{{ ql.label }}</span></NuxtLink>
       </div>
 
       <!-- Chatbot CTA -->
       <div class="chatbot-cta">
         <div class="chatbot-cta-inner">
-          <p class="chatbot-cta-text">Chưa biết đi đâu?</p>
-          <p class="chatbot-cta-sub">Trợ lý AI sẵn sàng gợi ý lịch trình, món ăn, điểm đến phù hợp với bạn.</p>
+          <p class="chatbot-cta-text">{{ ss('homepage.chatbot_cta_title', 'Chưa biết đi đâu?') }}</p>
+          <p class="chatbot-cta-sub">{{ ss('homepage.chatbot_cta_text', 'Trợ lý AI sẵn sàng gợi ý lịch trình, món ăn, điểm đến phù hợp với bạn.') }}</p>
         </div>
         <button type="button" class="chatbot-cta-btn" @click="openChat">💬 Hỏi ngay</button>
       </div>
@@ -228,9 +225,34 @@
 </template>
 
 <script setup lang="ts">
+import type { Itinerary, Entity} from '~/types'
 import { TYPE_META, AREA_META } from '~/composables/useConstants'
 
 useReveal()
+const { get: ss } = useSiteSettings()
+
+const DEFAULT_HERO_PILLS = [
+  { emoji: '🗓️', label: 'Cuối tuần 2N1Đ', to: '/lich-trinh' },
+  { emoji: '🍲', label: 'Ẩm thực', to: '/kham-pha/am-thuc' },
+  { emoji: '🎁', label: 'Quà OCOP', to: '/ocop' },
+  { emoji: '🌿', label: 'Miệt vườn', to: '/du-lich' },
+  { emoji: '🎭', label: 'Lễ hội', to: '/le-hoi' },
+  { emoji: '🗺️', label: 'Bản đồ', to: '/ban-do' },
+]
+const heroPills = computed(() => ss('homepage.hero_pills', DEFAULT_HERO_PILLS) as typeof DEFAULT_HERO_PILLS)
+
+const DEFAULT_QUICK_LINKS = [
+  { emoji: '🍲', label: 'Ẩm thực', to: '/kham-pha/am-thuc' },
+  { emoji: '🌿', label: 'Thiên nhiên', to: '/kham-pha/thien-nhien' },
+  { emoji: '🛕', label: 'Văn hóa', to: '/kham-pha/van-hoa' },
+  { emoji: '🏺', label: 'Làng nghề', to: '/kham-pha/lang-nghe' },
+  { emoji: '🛍️', label: 'Mua sắm', to: '/kham-pha/mua-sam' },
+  { emoji: '🍊', label: 'Vòng trái cây VL', to: '/tuyen-duong?vung=vinh-long' },
+  { emoji: '🥥', label: 'Vòng dừa BT', to: '/tuyen-duong?vung=ben-tre' },
+  { emoji: '🛕', label: 'Chùa Khmer TV', to: '/tuyen-duong?vung=tra-vinh' },
+]
+const quickLinks = computed(() => ss('homepage.quick_links', DEFAULT_QUICK_LINKS) as typeof DEFAULT_QUICK_LINKS)
+
 const { region, isReturning, hasChosen, setRegion, sortByRegion, orderedAreaKeys } = useRegionPref()
 const { favorites } = useFavorites()
 const recentSaved = computed(() => favorites.value.slice(0, 4))
@@ -240,7 +262,7 @@ function getFavTypeMeta(type: string) {
 
 const heroQ = ref('')
 
-const { data: homeData } = await useAsyncData('homepage', () => $fetch<any>('/api/homepage'))
+const { data: homeData, error: homeError, refresh: refreshHome } = await useAsyncData('homepage', () => $fetch<Record<string, unknown>>('/api/homepage'))
 
 const currentMonth = computed(() => homeData.value?.month || (new Date().getMonth() + 1))
 const seasonal = computed(() => homeData.value?.seasonal || [])
@@ -250,6 +272,7 @@ const products = computed(() => sortByRegion(homeData.value?.products || []))
 const itineraries = computed(() => sortByRegion(homeData.value?.itineraries || []))
 const upcomingEvents = computed(() => homeData.value?.upcoming_events || [])
 const seasonalTagline = computed(() => homeData.value?.seasonal_tagline || 'Khám phá Vĩnh Long theo cách của người bản địa')
+const hasHomeContent = computed(() => !!(upcomingEvents.value.length || seasonal.value.length || itineraries.value.length || topExperiences.value.length || products.value.length))
 
 const areaKeys = computed(() => orderedAreaKeys(Object.keys(AREA_META)))
 const REGION_IMG: Record<string, string> = { 'vinh-long': 'attraction', 'ben-tre': 'nature', 'tra-vinh': 'history' }
@@ -263,7 +286,7 @@ const statsItems = computed(() => {
   if (s.entities) items.push({ value: s.entities + '+', label: 'Điểm đến & Đặc sản' })
   if (s.places) items.push({ value: s.places, label: 'Xã phường' })
   if (s.itineraries) items.push({ value: s.itineraries, label: 'Lịch trình' })
-  const totalAreas = Object.values(areaCounts.value).reduce((a: number, b: any) => a + (Number(b) || 0), 0)
+  const totalAreas = Object.values(areaCounts.value).reduce((a: number, b: unknown) => a + (Number(b) || 0), 0)
   if (totalAreas) items.push({ value: '3', label: 'Vùng đất' })
   return items
 })
@@ -294,11 +317,11 @@ function openChat() {
 }
 
 useSeoMeta({
-  title: 'vinhlong360 — Du lịch & Sản phẩm địa phương',
-  description: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long: trải nghiệm miệt vườn, đặc sản theo mùa, OCOP, làng nghề và lịch trình gợi ý.',
-  ogTitle: 'vinhlong360 — Du lịch & Sản phẩm địa phương',
-  ogDescription: 'Khám phá Vĩnh Long theo cách của người bản địa.',
-  ogImage: 'https://vinhlong360.vn/img/og-default.jpg',
+  title: ss('seo.default_title', 'vinhlong360 — Du lịch & Sản phẩm địa phương'),
+  description: ss('seo.default_description', 'Cổng du lịch và sản phẩm địa phương Vĩnh Long: trải nghiệm miệt vườn, đặc sản theo mùa, OCOP, làng nghề và lịch trình gợi ý.'),
+  ogTitle: ss('seo.default_title', 'vinhlong360 — Du lịch & Sản phẩm địa phương'),
+  ogDescription: ss('branding.tagline', 'Khám phá Vĩnh Long theo cách của người bản địa.'),
+  ogImage: ss('branding.og_image', 'https://vinhlong360.vn/img/og-default.jpg'),
 })
 const itemListSchema = computed(() => {
   const items = topExperiences.value.map((e: any, i: number) => ({
@@ -317,7 +340,7 @@ const itemListSchema = computed(() => {
 })
 
 const eventListSchema = computed(() => {
-  const events = upcomingEvents.value.map((ev: any) => ({
+  const events = upcomingEvents.value.map((ev: { features?: { properties: Record<string, unknown> }[] }) => ({
     '@type': 'Event',
     name: ev.name,
     startDate: ev.attributes?.date_start,
@@ -410,6 +433,14 @@ useHead({
   flex-direction: column;
   align-items: center;
   gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle);
+  cursor: default;
+}
+.stats-bar .stat-item:hover {
+  background: var(--overlay-subtle);
+  transform: translateY(-1px);
 }
 .stats-bar .stat-num {
   font-size: var(--text-xl);
@@ -507,10 +538,14 @@ useHead({
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
   padding-bottom: var(--space-2);
   scrollbar-width: none;
+  mask-image: linear-gradient(to right, #000 0%, #000 calc(100% - 40px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, #000 0%, #000 calc(100% - 40px), transparent 100%);
 }
 .happening-scroll::-webkit-scrollbar { display: none; }
+.happening-scroll:hover, .happening-scroll:focus-within { mask-image: none; -webkit-mask-image: none; }
 
 .event-card {
   flex: 0 0 300px;
@@ -522,11 +557,12 @@ useHead({
   border: .5px solid var(--line);
   border-radius: var(--radius);
   box-shadow: var(--shadow-xs);
-  transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo);
+  transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out);
 }
 .event-card:hover {
   transform: translateY(-3px);
   box-shadow: var(--shadow-md);
+  border-color: var(--border);
 }
 .event-card:active {
   transform: scale(.97);
@@ -559,10 +595,10 @@ useHead({
   gap: 4px;
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
-  color: var(--accent-dark);
+  color: #9a6d1e;
 }
 .ec-today {
-  color: var(--error);
+  color: #b93a2a;
 }
 .ec-live-dot {
   width: 6px;
@@ -679,6 +715,12 @@ useHead({
   background: linear-gradient(135deg, var(--bg-alt) 0%, var(--bg-warm) 100%);
   border: .5px solid var(--line);
   border-radius: var(--radius);
+  transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo), transform .35s var(--ease-spring-gentle);
+}
+.chatbot-cta:hover {
+  border-color: var(--border);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
 .chatbot-cta-inner { flex: 1; }
 .chatbot-cta-text {
@@ -791,15 +833,20 @@ useHead({
   background: none;
   border: 1px solid var(--line);
   border-radius: var(--radius-full);
-  padding: var(--space-1) var(--space-3);
+  padding: var(--space-2) var(--space-3);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
   color: var(--muted);
   cursor: pointer;
   white-space: nowrap;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   transition: border-color .3s var(--ease-out), color .3s var(--ease-out);
 }
 .wb-change:hover { border-color: var(--primary-fg); color: var(--primary-fg); }
+.wb-change:active { transform: scale(.95); transition-duration: .08s; }
+.wb-change:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 @media (max-width: 480px) {
   .welcome-back { flex-direction: column; text-align: center; }
 }
@@ -828,7 +875,7 @@ useHead({
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  padding: var(--space-1) var(--space-3);
+  padding: var(--space-2) var(--space-3);
   background: var(--bg-alt);
   border: 1px solid var(--line);
   border-radius: var(--radius-full);
@@ -836,7 +883,7 @@ useHead({
   font-weight: var(--weight-semibold);
   color: var(--muted);
   cursor: pointer;
-  min-height: 32px;
+  min-height: 44px;
   transition: background .3s var(--ease-out), border-color .3s var(--ease-out), color .3s var(--ease-out), transform .35s var(--ease-spring-gentle);
 }
 .rmb-btn:hover {
@@ -869,8 +916,13 @@ useHead({
 }
 
 /* Dark mode */
-.dark .event-card { background: var(--card); }
-.dark .chatbot-cta { background: linear-gradient(135deg, var(--card) 0%, rgba(255,255,255,.03) 100%); }
+.dark .event-card { background: var(--card); border-color: var(--line); }
+.dark .ec-countdown { color: #e0b366; }
+.dark .ec-today { color: #f0846f; }
+.dark .event-card:hover { border-color: rgba(255,255,255,.1); }
+.dark .chatbot-cta { background: linear-gradient(135deg, var(--card) 0%, rgba(255,255,255,.03) 100%); border-color: var(--line); }
+.dark .chatbot-cta:hover { border-color: rgba(255,255,255,.1); }
+.dark .stats-bar .stat-item:hover { background: rgba(255,255,255,.03); }
 .dark .hero-pill { background: var(--glass-medium); border-color: var(--border); }
 .dark .quick-link { background: var(--card); }
 .dark .stat-num { color: var(--primary-fg-strong); }
@@ -894,6 +946,7 @@ useHead({
   .event-card:active { transform: none; }
   .quick-link:hover { transform: none; }
   .quick-link:active { transform: none; }
+  .chatbot-cta:hover { transform: none; }
   .chatbot-cta-btn:hover { transform: none; }
   .chatbot-cta-btn:active { transform: none; }
   .home .region-tile:hover { transform: none; }
@@ -903,5 +956,6 @@ useHead({
   .rp-btn:active { transform: none; }
   .rmb-btn:hover { transform: none; }
   .rmb-btn:active { transform: none; }
+  .stats-bar .stat-item:hover { transform: none; }
 }
 </style>

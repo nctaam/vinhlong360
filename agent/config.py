@@ -1,0 +1,108 @@
+"""Centralized configuration with validation.
+
+Usage:
+    from config import settings
+    settings.LLM_API_KEY      # str (required in production)
+    settings.LLM_MODEL        # str with default
+    settings.is_production     # bool
+"""
+
+import os
+from pathlib import Path
+from typing import Optional
+
+from dotenv import load_dotenv
+from pydantic import Field, model_validator
+from pydantic_settings import BaseSettings
+
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
+
+class Settings(BaseSettings):
+    # ── LLM ──
+    LLM_API_KEY: str = ""
+    LLM_BASE_URL: str = ""
+    LLM_MODEL: str = "cx/gpt-5.4"
+    LLM_MODEL_MINI: str = "cx/gpt-5.4-mini"
+    LLM_TIMEOUT: int = 30
+
+    # ── Database ──
+    DATABASE_URL: str = ""
+    REDIS_URL: str = ""
+
+    # ── Security ──
+    ADMIN_API_KEY: str = ""
+    CORS_ORIGINS: str = "http://localhost:8360,http://localhost:3000,https://vinhlong360.vn"
+    JWT_SECRET: str = ""
+
+    # ── SMS (eSMS) ──
+    ESMS_API_KEY: str = ""
+    ESMS_SECRET: str = ""
+    ESMS_BRANDNAME: str = "VinhLong360"
+
+    # ── Bots ──
+    TELEGRAM_BOT_TOKEN: str = ""
+    ZALO_OA_ACCESS_TOKEN: str = ""
+    ZALO_OA_SECRET: str = ""
+    ADMIN_TELEGRAM_IDS: str = ""
+
+    # ── Storage ──
+    S3_ENDPOINT: str = ""
+    S3_ACCESS_KEY: str = ""
+    S3_SECRET_KEY: str = ""
+    S3_BUCKET: str = ""
+    S3_PUBLIC_URL: str = ""
+
+    # ── Server behavior ──
+    ENVIRONMENT: str = "development"
+    LOG_LEVEL: str = "INFO"
+    BUILD_SEARCH_INDEXES: bool = True
+    BACKGROUND_INDEX_BUILD: bool = True
+    SCHEDULER_ENABLED: bool = True
+    LLM_JUDGE_ENABLED: bool = False
+    DESTRUCTIVE_OPS_LOCKED: str = "1"
+
+    # ── Autonomous agent ──
+    AUTONOMOUS_AGENT_ENABLED: bool = False
+    AUTONOMOUS_AGENT_MAX_CALLS_PER_DAY: int = 20
+    SCHEDULER_ENABLE_AUTONOMOUS_TASKS: bool = False
+
+    # ── Cost limits ──
+    COST_DAILY_LIMIT: float = 10.0
+    COST_MONTHLY_LIMIT: float = 200.0
+
+    # ── Misc ──
+    DYNAMIC_AGENT_MAX: int = 10
+    KB_CONTEXT_MODE: str = "index"
+    GUARDRAIL_SESSION_BUDGET: str = ""
+
+    @property
+    def is_production(self) -> bool:
+        return self.ENVIRONMENT.strip().lower() == "production"
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
+
+    @property
+    def admin_telegram_ids_set(self) -> set[str]:
+        return {x.strip() for x in self.ADMIN_TELEGRAM_IDS.split(",") if x.strip()}
+
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
+
+    @model_validator(mode="after")
+    def validate_production_keys(self):
+        if self.is_production:
+            missing = []
+            if not self.LLM_API_KEY:
+                missing.append("LLM_API_KEY")
+            if not self.LLM_BASE_URL:
+                missing.append("LLM_BASE_URL")
+            if not self.ADMIN_API_KEY:
+                missing.append("ADMIN_API_KEY")
+            if missing:
+                raise ValueError(f"Production requires: {', '.join(missing)}")
+        return self
+
+
+settings = Settings()

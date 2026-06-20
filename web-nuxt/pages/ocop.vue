@@ -7,8 +7,8 @@
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true">⭐</span>
         <div>
-          <h1>Sản phẩm OCOP</h1>
-          <p>Mỗi xã một sản phẩm — sản phẩm đạt chuẩn OCOP từ Vĩnh Long, Bến Tre và Trà Vinh, chất lượng được chứng nhận.</p>
+          <h1>{{ pc('hero_title') }}</h1>
+          <p>{{ pc('hero_subtitle') }}</p>
         </div>
       </div>
       <div v-if="allOcop.length" class="catalog-stats">
@@ -32,6 +32,7 @@
         <button type="button"
           v-for="s in starStats" :key="s.stars"
           :class="['quick-pick', { active: starFilter === s.stars }]"
+          :aria-pressed="starFilter === s.stars"
           @click="starFilter = starFilter === s.stars ? 0 : s.stars; scrollToGrid()"
         >
           <span class="quick-pick-icon">{{ '⭐'.repeat(s.stars) }}</span>
@@ -62,6 +63,7 @@
         <button type="button"
           v-for="(meta, key) in AREA_META" :key="key"
           :class="['quick-pick', { active: areaFilter === key }]"
+          :aria-pressed="areaFilter === key"
           @click="areaFilter = areaFilter === key ? 'all' : (key as string); scrollToGrid()"
         >
           <span class="quick-pick-icon">{{ meta.emoji }}</span>
@@ -80,7 +82,7 @@
     <section ref="gridSection" class="block reveal">
       <div class="controls">
         <div class="search-row">
-          <input v-model="q" type="search" placeholder="Tìm sản phẩm OCOP…" aria-label="Tìm sản phẩm OCOP" />
+          <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm sản phẩm OCOP…" aria-label="Tìm sản phẩm OCOP" />
         </div>
         <p class="control-label">Hạng sao</p>
         <div class="chip-row" role="group" aria-label="Lọc theo hạng sao">
@@ -109,7 +111,11 @@
       </div>
 
       <p class="result-meta" aria-live="polite">{{ filtered.length }} sản phẩm OCOP</p>
-      <EmptyState v-if="fetchError" icon="⚠️" title="Không thể tải dữ liệu" message="Vui lòng thử lại sau." />
+      <EmptyState v-if="fetchError" icon="⚠️" title="Không thể tải sản phẩm OCOP" message="Mạng có thể đang chập chờn. Thử lại giúp mình nhé.">
+        <template #actions>
+          <button type="button" class="btn btn-outline" @click="refreshNuxtData('catalog-ocop')">Thử lại</button>
+        </template>
+      </EmptyState>
       <SkeletonGrid v-else-if="!data" :count="6" />
       <div v-else-if="filtered.length" class="grid">
         <EntityCard v-for="e in filtered" :key="e.id" :entity="e" :season-filter="seasonFilter" />
@@ -148,10 +154,12 @@
 </template>
 
 <script setup lang="ts">
+import type { Entity } from '~/types'
 import { AREA_META } from '~/composables/useConstants'
 import { inSeason, relevanceScore } from '~/composables/useSeason'
 
 useReveal()
+const { f: pc } = usePageContent('ocop')
 
 const q = ref('')
 const starFilter = ref(0)
@@ -166,16 +174,16 @@ const starFilterStr = computed({
 useFilterUrl({ sao: starFilterStr, vung: areaFilter, mua: seasonFilter }, { sao: '0', vung: 'all', mua: 'all' })
 
 const { data, error: fetchError } = await useAsyncData('catalog-ocop', () =>
-  $fetch<any>('/api/entities?type=product&limit=200')
+  $fetch<{ entities: Entity[] }>('/api/entities?type=product&limit=200')
 )
 
 const allOcop = computed(() => {
   const raw = data.value
   if (!raw) return []
-  return (raw.entities || []).filter((e: any) => e.attributes?.ocop)
+  return (raw.entities || []).filter((e: Entity) => e.attributes?.ocop)
 })
 
-function getStars(e: any): number {
+function getStars(e: Entity): number {
   return parseInt(e.attributes?.ocop) || 0
 }
 
@@ -193,7 +201,7 @@ const fiveStarHighlights = computed(() =>
 )
 
 function countByArea(key: string) {
-  return allOcop.value.filter((e: any) => (e.place_area || e.area) === key).length
+  return allOcop.value.filter((e: Entity) => (e.place_area || e.area) === key).length
 }
 
 function scrollToGrid() {
@@ -204,37 +212,37 @@ const filtered = computed(() => {
   let list = allOcop.value
 
   if (starFilter.value > 0) {
-    list = list.filter((e: any) => getStars(e) >= starFilter.value)
+    list = list.filter((e: Entity) => getStars(e) >= starFilter.value)
   }
 
   if (areaFilter.value !== 'all') {
-    list = list.filter((e: any) => (e.place_area || e.area) === areaFilter.value)
+    list = list.filter((e: Entity) => (e.place_area || e.area) === areaFilter.value)
   }
 
   if (seasonFilter.value !== 'all') {
-    list = list.filter((e: any) => inSeason(e, seasonFilter.value))
+    list = list.filter((e: Entity) => inSeason(e, seasonFilter.value))
   }
 
   if (q.value.trim()) {
     const query = q.value.toLowerCase()
-    list = list.filter((e: any) =>
+    list = list.filter((e: Entity) =>
       (e.name || '').toLowerCase().includes(query) ||
       (e.summary || '').toLowerCase().includes(query)
     )
   }
 
   if (seasonFilter.value !== 'all') {
-    list.sort((a: any, b: any) => relevanceScore(b, seasonFilter.value) - relevanceScore(a, seasonFilter.value))
+    list.sort((a: Entity, b: Entity) => relevanceScore(b, seasonFilter.value) - relevanceScore(a, seasonFilter.value))
   }
 
   return list
 })
 
 useSeoMeta({
-  title: 'Sản phẩm OCOP Vĩnh Long — Mỗi xã một sản phẩm — vinhlong360',
-  description: 'Sản phẩm đạt chuẩn OCOP (Mỗi xã một sản phẩm) từ Vĩnh Long, Bến Tre, Trà Vinh — đặc sản theo mùa, xếp hạng sao. Lọc theo số sao, khu vực và mùa vụ.',
-  ogTitle: 'Sản phẩm OCOP miền Tây — vinhlong360',
-  ogDescription: 'Sản phẩm đạt chuẩn OCOP 3-5 sao từ Vĩnh Long, Bến Tre, Trà Vinh.',
+  title: () => pc('seo_title'),
+  description: () => pc('seo_description'),
+  ogTitle: () => pc('og_title'),
+  ogDescription: () => pc('og_description'),
 })
 
 useHead({

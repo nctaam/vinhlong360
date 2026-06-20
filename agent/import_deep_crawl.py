@@ -166,7 +166,7 @@ def main():
                 "type": entity_type,
                 "name": name,
                 "placeId": pid,
-                "summary": item.get("desc", ""),
+                "summary": (item.get("desc", "") or "")[:200],
                 "source": {
                     "title": f"mytour.vn / mia.vn ({prov_old})",
                     "url": "https://mytour.vn/",

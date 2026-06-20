@@ -7,8 +7,8 @@
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true">📬</span>
         <div>
-          <h1>Liên hệ</h1>
-          <p>vinhlong360.vn — Mạng xã hội du lịch & đặc sản Vĩnh Long · Bến Tre · Trà Vinh</p>
+          <h1>{{ pc('hero_title') }}</h1>
+          <p>{{ pc('hero_subtitle') }}</p>
         </div>
       </div>
     </section>
@@ -19,9 +19,9 @@
         <h2>Đăng ký quản lý trang</h2>
         <p>Bạn là chủ cơ sở kinh doanh, homestay, nhà vườn, hoặc điểm du lịch? Đăng ký để cập nhật thông tin, ảnh, giờ mở cửa và nhận đánh giá từ khách.</p>
         <div class="card-action">
-          <a href="mailto:lienhe@vinhlong360.vn?subject=Đăng ký quản lý trang" class="btn btn-primary">📧 Gửi email đăng ký</a>
+          <a :href="`mailto:${claimEmail}?subject=Đăng ký quản lý trang`" class="btn btn-primary">📧 Gửi email đăng ký</a>
         </div>
-        <p class="card-note">Hoặc nhắn Zalo: <strong>vinhlong360</strong></p>
+        <p class="card-note">Hoặc nhắn Zalo: <strong>{{ zaloName }}</strong></p>
       </section>
 
       <section class="contact-card card-general">
@@ -29,7 +29,7 @@
         <h2>Gửi yêu cầu</h2>
         <p>Mọi yêu cầu về nội dung, dữ liệu cá nhân, báo cáo vi phạm hoặc khiếu nại bản quyền.</p>
         <div class="card-action">
-          <a href="mailto:lienhe@vinhlong360.vn" class="btn btn-primary">📧 lienhe@vinhlong360.vn</a>
+          <a :href="`mailto:${contactEmail}`" class="btn btn-primary">📧 {{ contactEmail }}</a>
         </div>
       </section>
 
@@ -38,7 +38,7 @@
         <h2>Hợp tác quảng bá</h2>
         <p>Đối tác du lịch, OCOP, cơ quan địa phương muốn giới thiệu sản phẩm, điểm đến trên vinhlong360.</p>
         <div class="card-action">
-          <a href="mailto:lienhe@vinhlong360.vn?subject=Hợp tác quảng bá" class="btn btn-outline">📧 Liên hệ hợp tác</a>
+          <a :href="`mailto:${contactEmail}?subject=Hợp tác quảng bá`" class="btn btn-outline">📧 Liên hệ hợp tác</a>
         </div>
       </section>
 
@@ -82,13 +82,20 @@
 
 <script setup lang="ts">
 useReveal()
+const { get: ss } = useSiteSettings()
+const { f: pc } = usePageContent('lien_he')
+const contactEmail = computed(() => ss('contact.email', 'lienhe@vinhlong360.vn'))
+const claimEmail = computed(() => ss('contact.claim_email', 'lienhe@vinhlong360.vn'))
+const zaloName = computed(() => ss('contact.zalo', 'vinhlong360'))
 
 const route = useRoute()
 const isClaim = computed(() => route.query.ref === 'claim')
 
 useSeoMeta({
-  title: 'Liên hệ — vinhlong360',
-  description: 'Liên hệ vinhlong360.vn: yêu cầu dữ liệu cá nhân, báo cáo vi phạm, khiếu nại bản quyền, đăng ký quản lý trang.',
+  title: () => pc('seo_title'),
+  description: () => pc('seo_description'),
+  ogTitle: () => pc('og_title'),
+  ogDescription: () => pc('og_description'),
 })
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl('/lien-he') }],
@@ -138,6 +145,8 @@ useHead({
   border-color: var(--border);
 }
 .contact-card:active { transform: translateY(0) scale(.98); transition-duration: .08s; }
+/* Inert info cards (no CTA) should not signal tappability */
+.card-report:active, .card-privacy:active { transform: none; }
 
 .card-icon {
   font-size: var(--text-2xl);
@@ -145,6 +154,7 @@ useHead({
   transition: transform .35s var(--ease-spring-gentle);
 }
 .contact-card:hover .card-icon { transform: scale(1.1) rotate(-3deg); }
+.card-report:hover, .card-report:hover .card-icon, .card-privacy:hover, .card-privacy:hover .card-icon { transform: none; }
 
 .contact-card h2 {
   font-size: var(--text-lg);

@@ -21,11 +21,23 @@
       </div>
     </ClientOnly>
 
+    <ClientOnly>
+      <p v-if="!activeTypes.has('all') && visibleCount === 0 && !mapLoadError && !fetchError" class="map-empty-notice" role="status" style="text-align:center; padding:var(--space-3); color:var(--muted); font-size:var(--text-sm)">
+        Chưa có địa điểm nào thuộc loại này trên bản đồ. Thử bỏ bớt bộ lọc nhé.
+      </p>
+    </ClientOnly>
     <div v-if="fetchError" class="fetch-error">
       <EmptyState message="Không thể tải dữ liệu bản đồ." icon="🗺️">
         <template #actions>
           <button type="button" class="btn btn-outline btn-sm" @click="$router.go(0)">Tải lại trang</button>
           <NuxtLink to="/" class="btn btn-ghost btn-sm">Về trang chủ</NuxtLink>
+        </template>
+      </EmptyState>
+    </div>
+    <div v-if="mapLoadError" class="fetch-error">
+      <EmptyState message="Không tải được bản đồ. Vui lòng kiểm tra kết nối và thử lại." icon="🗺️" tone="error">
+        <template #actions>
+          <button type="button" class="btn btn-outline btn-sm" @click="$router.go(0)">Tải lại trang</button>
         </template>
       </EmptyState>
     </div>
@@ -41,6 +53,7 @@
 </template>
 
 <script setup lang="ts">
+import type { Entity } from '~/types'
 import { TYPE_META } from '~/composables/useConstants'
 
 const MARKER_COLORS: Record<string, string> = {
@@ -89,11 +102,11 @@ const mapEl = ref<HTMLElement | null>(null)
 const { createMap } = useNDAMap()
 
 const { data, error: fetchError } = await useAsyncData('map-entities', () =>
-  $fetch<any>('/api/entities?limit=700')
+  $fetch<{ entities: Entity[] }>('/api/entities?limit=700')
 )
 
 let mapInited = false
-let mapRef: any = null  // GĐ10.2: tham chiếu map để cập nhật source khi lọc
+let mapRef: unknown = null  // GĐ10.2: tham chiếu map để cập nhật source khi lọc
 
 function esc(s: string) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -102,12 +115,13 @@ function esc(s: string) {
 // GĐ10.4: normalizeCoords gom vào composables/useCoords.ts (Nuxt auto-import).
 
 // GĐ10.2: dựng GeoJSON từ entity đã lọc (thay 700 DOM marker bằng nguồn GeoJSON + clustering).
+const visibleCount = ref(0)
 function buildGeoJSON() {
   const show = activeTypes.value
-  const features: any[] = []
+  const features: Record<string, unknown>[] = []
   for (const e of (data.value?.entities || [])) {
     if (!(show.has('all') || show.has(e.type))) continue
-    const coords = normalizeCoords(e.coordinates ?? e.coords)
+    const coords = normalizeCoords(e.coordinates)
     if (!coords) continue
     const [lat, lng] = coords
     const meta = TYPE_META[e.type] || { emoji: '📍' }
@@ -121,6 +135,7 @@ function buildGeoJSON() {
       },
     })
   }
+  visibleCount.value = features.length
   return { type: 'FeatureCollection', features }
 }
 
@@ -129,12 +144,25 @@ function updateMarkers() {
   mapRef?.getSource?.('entities')?.setData(buildGeoJSON())
 }
 
+const mapLoadError = ref(false)
 watch(mapEl, async (el) => {
   if (!el || mapInited) return
   mapInited = true
 
-  const { map, maplibregl } = await createMap(el)
+  let map: any, maplibregl: any
+  try {
+    const r = await createMap(el)
+    map = r.map
+    maplibregl = r.maplibregl
+  } catch {
+    mapLoadError.value = true
+    return
+  }
   mapRef = map
+  // Fallback if the style/tiles never load (bad key, host down, offline). Generous
+  // timeout for slow rural connections; self-clears the moment the map loads.
+  const loadTimer = setTimeout(() => { if (!map.isStyleLoaded()) mapLoadError.value = true }, 15000)
+  map.on('load', () => { clearTimeout(loadTimer); mapLoadError.value = false })
 
   function addClusterLayers() {
     if (map.getSource('entities')) return
@@ -168,15 +196,15 @@ watch(mapEl, async (el) => {
       },
     })
 
-    map.on('click', 'clusters', (ev: any) => {
+    map.on('click', 'clusters', (ev: { features?: { properties: Record<string, unknown> }[] }) => {
       const f = map.queryRenderedFeatures(ev.point, { layers: ['clusters'] })[0]
       if (!f) return
-      ;(map.getSource('entities') as any).getClusterExpansionZoom(f.properties.cluster_id, (err: any, zoom: number) => {
+      ;(map.getSource('entities') as { getClusterExpansionZoom: Function }).getClusterExpansionZoom(f.properties.cluster_id, (err: Error | null, zoom: number) => {
         if (err) return
         map.easeTo({ center: f.geometry.coordinates, zoom })
       })
     })
-    map.on('click', 'unclustered', (ev: any) => {
+    map.on('click', 'unclustered', (ev: { features?: { properties: Record<string, unknown> }[] }) => {
       const f = ev.features?.[0]
       if (!f) return
       const p = f.properties
@@ -194,7 +222,7 @@ watch(mapEl, async (el) => {
     const fid = route.query.id as string | undefined
     let flat = parseFloat(route.query.lat as string)
     let flng = parseFloat(route.query.lng as string)
-    const fent = fid ? (data.value?.entities || []).find((e: any) => e.id === fid) : null
+    const fent = fid ? (data.value?.entities || []).find((e: Entity) => e.id === fid) : null
     if (fent) { const c = normalizeCoords(fent.coordinates ?? fent.coords); if (c) { flat = c[0]; flng = c[1] } }
     if (isFinite(flat) && isFinite(flng)) {
       map.flyTo({ center: [flng, flat], zoom: 15 })

@@ -24,8 +24,10 @@
     </section>
 
     <!-- Error state -->
-    <EmptyState v-if="fetchError && !entities.length" icon="⚠️" title="Không thể tải dữ liệu" message="Vui lòng thử lại sau.">
-      <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData(`area-${areaKey}`)">Thử lại</button>
+    <EmptyState v-if="fetchError && !entities.length" tone="error" icon="⚠️" title="Không thể tải dữ liệu" message="Lỗi kết nối. Vui lòng thử lại.">
+      <template #actions>
+        <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData(`area-${areaKey}`)">Thử lại</button>
+      </template>
     </EmptyState>
 
     <!-- Featured -->
@@ -104,12 +106,14 @@
 </template>
 
 <script setup lang="ts">
+import type { Place, Entity} from '~/types'
 import { AREA_META, CARD_TYPES, TYPE_META } from '~/composables/useConstants'
 
 useReveal()
 const route = useRoute()
 const areaKey = route.params.area as string
 const areaMeta = AREA_META[areaKey]
+if (!areaMeta) throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy khu vực', fatal: true })
 
 const { data, error: fetchError } = await useAsyncData(`area-${areaKey}`, () =>
   $fetch<any>(`/api/entities?area=${areaKey}&limit=200`)
@@ -117,19 +121,19 @@ const { data, error: fetchError } = await useAsyncData(`area-${areaKey}`, () =>
 
 const ADMIN_LEVELS = ['phuong', 'xa', 'tinh']
 const { data: placesData } = await useAsyncData(`area-wards-${areaKey}`, () =>
-  $fetch<any>('/api/places').catch(() => [])
+  $fetch<Place[]>('/api/places').catch(() => [])
 )
 const wards = computed(() =>
   (placesData.value || [])
-    .filter((p: any) => p.area === areaKey && ADMIN_LEVELS.includes(p.level))
-    .sort((a: any, b: any) => a.name.localeCompare(b.name, 'vi'))
+    .filter((p: Entity) => p.area === areaKey && ADMIN_LEVELS.includes(p.level))
+    .sort((a: Entity, b: Entity) => a.name.localeCompare(b.name, 'vi'))
 )
 
 const entities = computed(() => {
   const raw = data.value
   if (!raw) return []
   const types = CARD_TYPES as readonly string[]
-  return (raw.entities || []).filter((e: any) => types.includes(e.type))
+  return (raw.entities || []).filter((e: Entity) => types.includes(e.type))
 })
 
 const typeStats = computed(() => {
@@ -141,7 +145,7 @@ const typeStats = computed(() => {
 })
 
 const featured = computed(() =>
-  entities.value.filter((e: any) => e.images?.length).slice(0, 6)
+  entities.value.filter((e: Entity) => e.images?.length).slice(0, 6)
 )
 
 const typeSections = computed(() =>
@@ -150,7 +154,7 @@ const typeSections = computed(() =>
       type: t,
       emoji: TYPE_META[t]?.emoji || '📍',
       label: TYPE_META[t]?.label || t,
-      items: entities.value.filter((e: any) => e.type === t),
+      items: entities.value.filter((e: Entity) => e.type === t),
     }))
     .filter(c => c.items.length > 0)
 )

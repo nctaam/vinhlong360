@@ -7,8 +7,8 @@
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true">🏡</span>
         <div>
-          <h1>Lưu trú</h1>
-          <p>Homestay miệt vườn, nhà nghỉ ven sông, khách sạn phố — chọn nơi nghỉ phù hợp cho chuyến đi miền Tây.</p>
+          <h1>{{ pc('hero_title') }}</h1>
+          <p>{{ pc('hero_subtitle') }}</p>
         </div>
       </div>
       <div v-if="allEntities.length" class="catalog-stats">
@@ -61,7 +61,7 @@
     <section ref="gridSection" class="block reveal">
       <div class="controls">
         <div class="search-row">
-          <input v-model="q" type="search" placeholder="Tìm nơi lưu trú…" aria-label="Tìm nơi lưu trú" />
+          <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm nơi lưu trú…" aria-label="Tìm nơi lưu trú" />
         </div>
         <p class="control-label">Khu vực</p>
         <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
@@ -77,7 +77,11 @@
       </div>
 
       <p class="result-meta" aria-live="polite">{{ filtered.length }} nơi lưu trú</p>
-      <EmptyState v-if="fetchError" icon="⚠️" title="Không thể tải dữ liệu" message="Vui lòng thử lại sau." />
+      <EmptyState v-if="fetchError" icon="⚠️" title="Chưa tải được nơi lưu trú" message="Có thể do kết nối mạng. Bạn thử tải lại nhé.">
+        <template #actions>
+          <button type="button" class="btn btn-outline" @click="refreshNuxtData('catalog-accommodation')">Thử lại</button>
+        </template>
+      </EmptyState>
       <SkeletonGrid v-else-if="!data" :count="6" />
       <div v-else-if="filtered.length" class="grid">
         <EntityCard v-for="e in filtered" :key="e.id" :entity="e" />
@@ -116,9 +120,11 @@
 </template>
 
 <script setup lang="ts">
+import type { Entity } from '~/types'
 import { AREA_META } from '~/composables/useConstants'
 
 useReveal()
+const { f: pc } = usePageContent('luu_tru')
 
 const q = ref('')
 const areaFilter = ref('all')
@@ -126,7 +132,7 @@ const gridSection = ref<HTMLElement | null>(null)
 useFilterUrl({ vung: areaFilter }, { vung: 'all' })
 
 const { data, error: fetchError } = await useAsyncData('catalog-accommodation', () =>
-  $fetch<any>('/api/entities?type=accommodation&limit=200')
+  $fetch<{ entities: Entity[] }>('/api/entities?type=accommodation&limit=200')
 )
 
 const allEntities = computed(() => {
@@ -147,12 +153,12 @@ const areaCounts = computed(() => {
 })
 
 function countByArea(key: string) {
-  return allEntities.value.filter((e: any) => (e.place_area || e.area) === key).length
+  return allEntities.value.filter((e: Entity) => (e.place_area || e.area) === key).length
 }
 
 const featured = computed(() => {
   return allEntities.value
-    .filter((e: any) => e.images?.length)
+    .filter((e: Entity) => e.images?.length)
     .slice(0, 6)
 })
 
@@ -164,12 +170,12 @@ const filtered = computed(() => {
   let list = allEntities.value
 
   if (areaFilter.value !== 'all') {
-    list = list.filter((e: any) => (e.place_area || e.area) === areaFilter.value)
+    list = list.filter((e: Entity) => (e.place_area || e.area) === areaFilter.value)
   }
 
   if (q.value.trim()) {
     const query = q.value.toLowerCase()
-    list = list.filter((e: any) =>
+    list = list.filter((e: Entity) =>
       (e.name || '').toLowerCase().includes(query) ||
       (e.summary || '').toLowerCase().includes(query) ||
       (e.place_name || '').toLowerCase().includes(query)
@@ -180,10 +186,10 @@ const filtered = computed(() => {
 })
 
 useSeoMeta({
-  title: 'Lưu trú Vĩnh Long — Homestay, nhà vườn, khách sạn — vinhlong360',
-  description: 'Homestay, nhà vườn, khách sạn và nơi nghỉ ở Vĩnh Long, Bến Tre, Trà Vinh — chọn chỗ ở phù hợp cho chuyến đi.',
-  ogTitle: 'Lưu trú miền Tây — vinhlong360',
-  ogDescription: 'Homestay, nhà vườn, khách sạn và nơi nghỉ ở Vĩnh Long, Bến Tre, Trà Vinh.',
+  title: () => pc('seo_title'),
+  description: () => pc('seo_description'),
+  ogTitle: () => pc('og_title'),
+  ogDescription: () => pc('og_description'),
 })
 
 useHead({

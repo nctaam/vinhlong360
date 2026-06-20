@@ -1,0 +1,13 @@
+﻿risk_id,risk,scope,severity,impact,mitigation
+"R01","Thương mại hóa lễ hội","Ok Om Bok, Nguyên Tiêu, Lăng Ông, Kỳ Yên","Cao","Mất tính thiêng/chủ thể cộng đồng","Tách phần lễ-phần hội; quy tắc ứng xử; tham vấn ban tổ chức/cộng đồng"
+"R02","Quá tải và rác thải lễ hội","Ao Bà Om, An Hội, Lăng Ông, Chợ Lách mùa Tết","Cao","Trải nghiệm xấu, tổn hại môi trường","Sức chứa, phân luồng, nhà vệ sinh, thu gom rác, truyền thông trước sự kiện"
+"R03","An toàn đường thủy","An Bình, Cồn Phụng, tuyến Cổ Chiên","Cao","Tai nạn, mất niềm tin","Áo phao, bảo hiểm, chuẩn tàu/ghe, lịch thời tiết, huấn luyện lái tàu"
+"R04","Hư hại công trình/lò gạch cũ","Mang Thít","Cao","Nguy hiểm, mất di sản","Khoanh vùng an toàn, lối đi, biển cảnh báo, bảo tồn có kiểm soát"
+"R05","Xâm nhập mặn/sạt lở","Cù lao, sông, ven biển","Trung bình-cao","Ảnh hưởng tuyến và cộng đồng","Theo dõi mùa, backup route, hạ tầng bền vững, không xây lấn sông"
+"R06","Tác động sinh cảnh chim/cò","Chùa Hang, Vàm Hồ","Trung bình","Suy giảm sinh thái, phản cảm du khách","Khoảng cách quan sát, hạn chế tiếng ồn/drone, hướng dẫn sinh thái"
+"R07","Đại trà hóa Cồn Phụng/miệt vườn","Cồn Phụng, An Bình","Cao","Khách quay lại thấp, cạnh tranh giá rẻ","Nâng cấp storytelling, workshop thật, nhóm nhỏ, sản phẩm premium"
+"R08","Dữ liệu số thiếu/không đồng bộ","Toàn vùng","Cao","Khách khó tự lên kế hoạch, tour khó bán","Chuẩn hóa giờ mở cửa, giá, tọa độ, ảnh, booking/contact"
+"R09","Thiếu nhân lực thuyết minh văn hóa","Khmer, gốm, lễ hội, di tích","Cao","Kể sai, hời hợt, giảm giá trị","Tập huấn hướng dẫn viên, script song ngữ, trả công nghệ nhân"
+"R10","Lợi ích cộng đồng không rõ","Làng nghề, homestay, lễ hội","Cao","Phản ứng xã hội, không bền vững","Cơ chế chia sẻ doanh thu, hợp tác xã/chi hội, tham vấn định kỳ"
+"R11","Biển Ba Động bị kỳ vọng sai","Ba Động","Trung bình","Khách thất vọng nếu so với biển đảo","Định vị biển phù sa/bình minh/làng chài, không quảng bá như resort beach"
+"R12","Mùa vụ mạnh gây khoảng trống thấp điểm","Chợ Lách, lễ hội, Ba Động","Trung bình","Doanh thu không đều","Sản phẩm quanh năm: workshop, food, học đường, phototrip"

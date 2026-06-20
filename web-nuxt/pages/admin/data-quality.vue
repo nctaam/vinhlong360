@@ -5,33 +5,53 @@
         <h1>Chất lượng dữ liệu</h1>
         <p class="admin-muted" style="margin-top: var(--space-1)">Kiểm duyệt candidate GPT-5.5 theo chính sách evidence-only trước khi cập nhật dữ liệu public.</p>
       </div>
-      <button type="button" class="admin-refresh" :disabled="loading" @click="refreshAll(true)">🔄 Làm mới</button>
+      <button type="button" class="admin-refresh" :disabled="loading" @click="refreshAll(true)">
+        <span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới
+      </button>
     </div>
 
     <div v-if="summary" class="stat-grid dq-stats">
       <div class="stat-card">
-        <div class="stat-value">{{ summary.data?.public_entities || 0 }}</div>
-        <div class="stat-label">Entity public</div>
+        <div class="dq-icon" style="background: rgba(52,120,246,.1); color: #3478F6;">&#127760;</div>
+        <div>
+          <div class="stat-value">{{ summary.data?.public_entities || 0 }}</div>
+          <div class="stat-label">Entity public</div>
+        </div>
       </div>
       <div class="stat-card warn">
-        <div class="stat-value">{{ summary.data?.missing_source || 0 }}</div>
-        <div class="stat-label">Thiếu nguồn</div>
+        <div class="dq-icon" style="background: rgba(255,159,10,.1); color: #FF9F0A;">&#128218;</div>
+        <div>
+          <div class="stat-value">{{ summary.data?.missing_source || 0 }}</div>
+          <div class="stat-label">Thiếu nguồn</div>
+        </div>
       </div>
       <div class="stat-card warn">
-        <div class="stat-value">{{ summary.data?.missing_location || 0 }}</div>
-        <div class="stat-label">Thiếu tọa độ</div>
+        <div class="dq-icon" style="background: rgba(255,159,10,.1); color: #FF9F0A;">&#128205;</div>
+        <div>
+          <div class="stat-value">{{ summary.data?.missing_location || 0 }}</div>
+          <div class="stat-label">Thiếu tọa độ</div>
+        </div>
       </div>
       <div class="stat-card warn">
-        <div class="stat-value">{{ summary.data?.missing_place_id_non_place || 0 }}</div>
-        <div class="stat-label">Thiếu placeId</div>
+        <div class="dq-icon" style="background: rgba(255,159,10,.1); color: #FF9F0A;">&#127963;</div>
+        <div>
+          <div class="stat-value">{{ summary.data?.missing_place_id_non_place || 0 }}</div>
+          <div class="stat-label">Thiếu placeId</div>
+        </div>
       </div>
       <div class="stat-card ok">
-        <div class="stat-value">{{ summary.candidates?.auto_apply || 0 }}</div>
-        <div class="stat-label">Có thể auto-apply</div>
+        <div class="dq-icon" style="background: rgba(33,150,83,.1); color: #219653;">&#9989;</div>
+        <div>
+          <div class="stat-value">{{ summary.candidates?.auto_apply || 0 }}</div>
+          <div class="stat-label">Có thể auto-apply</div>
+        </div>
       </div>
       <div class="stat-card">
-        <div class="stat-value">{{ summary.candidates?.needs_review || 0 }}</div>
-        <div class="stat-label">Cần duyệt</div>
+        <div class="dq-icon" style="background: rgba(175,82,222,.1); color: #AF52DE;">&#128065;</div>
+        <div>
+          <div class="stat-value">{{ summary.candidates?.needs_review || 0 }}</div>
+          <div class="stat-label">Cần duyệt</div>
+        </div>
       </div>
     </div>
 
@@ -180,15 +200,16 @@
 </template>
 
 <script setup lang="ts">
+import type { Entity } from '~/types'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 
-const summary = ref<any>(null)
-const candidates = ref<any[]>([])
+const summary = ref<Record<string, unknown> | null>(null)
+const candidates = ref<Entity[]>([])
 const selectedIds = ref<string[]>([])
-const applyResult = ref<any>(null)
+const applyResult = ref<Record<string, unknown> | null>(null)
 const kind = ref('')
 const bucket = ref('needs_review')
 const total = ref(0)
@@ -196,7 +217,7 @@ const offset = ref(0)
 const limit = 100
 const loading = ref(false)
 const applying = ref(false)
-const history = ref<any[]>([])
+const history = ref<Entity[]>([])
 const historyLoading = ref(false)
 const rollingBack = ref('')
 
@@ -204,7 +225,7 @@ const autoApplyIds = computed(() => selectedIds.value.filter((id) => candidates.
 
 async function fetchSummary(refresh = false) {
   try {
-    summary.value = await $fetch<any>('/admin-api/data-quality/summary', {
+    summary.value = await $fetch<Record<string, unknown>>('/admin-api/data-quality/summary', {
       headers: authHeaders(),
       query: refresh ? { refresh: true } : {},
     })
@@ -218,7 +239,7 @@ async function fetchCandidates(reset = false, refresh = false) {
   loading.value = true
   applyResult.value = null
   try {
-    const res = await $fetch<any>('/admin-api/data-quality/review', {
+    const res = await $fetch<Record<string, unknown>>('/admin-api/data-quality/review', {
       headers: authHeaders(),
       query: {
         kind: kind.value || undefined,
@@ -231,7 +252,7 @@ async function fetchCandidates(reset = false, refresh = false) {
     candidates.value = res.candidates || []
     total.value = res.total || 0
     selectedIds.value = selectedIds.value.filter((id) => candidates.value.some((c) => c.candidate_id === id))
-  } catch (e: any) {
+  } catch (e: unknown) {
     showToast(e.data?.detail || 'Không thể tải review queue', 'error')
   }
   loading.value = false
@@ -240,7 +261,7 @@ async function fetchCandidates(reset = false, refresh = false) {
 async function refreshAll(refresh = false) {
   try {
     await Promise.all([fetchSummary(refresh), fetchCandidates(false, refresh), fetchHistory()])
-  } catch (e: any) {
+  } catch (e: unknown) {
     showToast(e.data?.detail || 'Không thể làm mới dữ liệu', 'error')
   }
 }
@@ -248,12 +269,12 @@ async function refreshAll(refresh = false) {
 async function fetchHistory() {
   historyLoading.value = true
   try {
-    const res = await $fetch<any>('/admin-api/data-quality/history', {
+    const res = await $fetch<Record<string, unknown>>('/admin-api/data-quality/history', {
       headers: authHeaders(),
       query: { limit: 20 },
     })
     history.value = res.history || []
-  } catch (e: any) {
+  } catch (e: unknown) {
     showToast(e.data?.detail || 'Không thể tải lịch sử apply', 'error')
   }
   historyLoading.value = false
@@ -263,14 +284,14 @@ async function runApply(dryRun: boolean) {
   if (!autoApplyIds.value.length) return
   applying.value = true
   try {
-    applyResult.value = await $fetch<any>('/admin-api/data-quality/apply', {
+    applyResult.value = await $fetch<Record<string, unknown>>('/admin-api/data-quality/apply', {
       method: 'POST',
       headers: authHeaders(),
       body: { candidate_ids: autoApplyIds.value, dry_run: dryRun },
     })
     showToast(dryRun ? 'Dry-run hoàn tất' : 'Đã apply candidate được chọn', 'success')
     if (!dryRun) await refreshAll(true)
-  } catch (e: any) {
+  } catch (e: unknown) {
     showToast(e.data?.detail || 'Không thể apply candidate', 'error')
   }
   applying.value = false
@@ -295,7 +316,7 @@ async function rollbackBatch(batchId: string) {
     })
     showToast('Đã rollback batch', 'success')
     await refreshAll(true)
-  } catch (e: any) {
+  } catch (e: unknown) {
     showToast(e.data?.detail || 'Không thể rollback batch', 'error')
   }
   rollingBack.value = ''
@@ -311,7 +332,7 @@ function nextPage() {
   fetchCandidates(false)
 }
 
-function preview(value: any) {
+function preview(value: unknown) {
   const text = typeof value === 'string' ? value : JSON.stringify(value ?? null)
   if (!text) return '—'
   return text.length > 180 ? `${text.slice(0, 180)}…` : text
@@ -329,8 +350,14 @@ onMounted(() => refreshAll())
 </script>
 
 <style scoped>
+.dq-stats .stat-card { display: flex; align-items: center; gap: var(--space-4); }
 .dq-stats .stat-card.warn .stat-value { color: var(--warning, #e67e22); }
 .dq-stats .stat-card.ok .stat-value { color: var(--primary, #219653); }
+.dq-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; flex-shrink: 0;
+}
 .dq-th-checkbox { width: 42px; }
 .dq-cache-info { margin: var(--space-3) 0 0; color: var(--muted); font-size: .88rem; }
 .dq-toolbar { display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; margin: var(--space-4) 0; }
@@ -349,13 +376,19 @@ onMounted(() => refreshAll())
 .dq-section-head p { margin: 4px 0 0; color: var(--muted); }
 .dq-history-empty { padding: var(--space-4); border: .5px dashed var(--line); border-radius: var(--radius-sm); color: var(--muted); }
 .dq-history-list { display: grid; gap: var(--space-3); }
-.dq-history-card { padding: var(--space-4); border: .5px solid var(--line); border-radius: var(--radius-sm); background: var(--card); box-shadow: var(--shadow-xs); }
+.dq-history-card {
+  padding: var(--space-4); border: .5px solid var(--line); border-radius: 14px;
+  background: var(--card); box-shadow: var(--shadow-xs);
+  transition: transform .25s cubic-bezier(.2,1,.4,1), box-shadow .25s, border-color .25s;
+}
+.dq-history-card:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,.06); }
 .dq-history-card-head { display: flex; justify-content: space-between; gap: var(--space-3); align-items: flex-start; }
 .dq-history-card-head strong { display: block; word-break: break-word; }
 .dq-history-card-head small, .dq-diff-item small, .dq-more { color: var(--muted); }
 .dq-history-meta { margin: var(--space-2) 0; color: var(--muted); font-size: .86rem; word-break: break-word; }
 .dq-diff-list { display: grid; gap: var(--space-2); margin-top: var(--space-3); }
-.dq-diff-item { display: grid; grid-template-columns: minmax(160px, 240px) 1fr; gap: var(--space-3); align-items: start; padding: var(--space-2); background: var(--bg-alt, #f8faf9); border-radius: var(--radius-sm); }
+.dq-diff-item { display: grid; grid-template-columns: minmax(160px, 240px) 1fr; gap: var(--space-3); align-items: start; padding: var(--space-2); background: var(--bg-alt, #f8faf9); border-radius: 8px; transition: background .15s; }
+.dq-diff-item:hover { background: rgba(52,120,246,.04); }
 .dq-diff-item code { white-space: pre-wrap; word-break: break-word; font-size: .76rem; }
 .dq-skipped-list { display: grid; gap: var(--space-2); margin-top: var(--space-3); padding: var(--space-3); border: .5px solid var(--warning, #e67e22); border-radius: var(--radius-sm); background: var(--warning-bg, rgba(230, 126, 34, .08)); }
 .dq-skipped-list > strong { font-size: .86rem; color: var(--warning, #e67e22); }
@@ -363,6 +396,14 @@ onMounted(() => refreshAll())
 .dq-skipped-item span { font-weight: 700; word-break: break-word; }
 .dq-skipped-item small { color: var(--muted); word-break: break-word; }
 .btn.danger { color: var(--error, #D94F3D); border-color: var(--error, #D94F3D); }
+
+@media (prefers-reduced-motion: reduce) {
+  .dq-history-card:hover { transform: none; }
+}
+
+.dark .dq-history-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+.dark .dq-diff-item { background: rgba(255,255,255,.03); }
+.dark .dq-diff-item:hover { background: rgba(52,120,246,.08); }
 
 @media (max-width: 780px) {
   .admin-page-head { flex-direction: column; }

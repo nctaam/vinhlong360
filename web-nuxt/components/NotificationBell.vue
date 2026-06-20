@@ -26,7 +26,10 @@
             </div>
             <span v-if="!n.is_read" class="notif-unread-dot"></span>
           </button>
-          <div v-if="!notifications.length" class="notif-empty">
+          <div v-if="loading && !notifications.length" class="notif-loading" role="status" aria-label="Đang tải thông báo">
+            <div class="spinner spinner-sm"></div>
+          </div>
+          <div v-else-if="!notifications.length" class="notif-empty">
             <span class="notif-empty-icon">🔔</span>
             <p>Chưa có thông báo</p>
           </div>
@@ -37,8 +40,9 @@
 </template>
 
 <script setup lang="ts">
+import type { Entity } from '~/types'
 const { isLoggedIn } = useAuth()
-const { notifications, unreadCount, markAllRead, startPolling, stopPolling } = useNotifications()
+const { notifications, unreadCount, loading, markAllRead, markRead, startPolling, stopPolling } = useNotifications()
 
 const open = ref(false)
 
@@ -50,15 +54,16 @@ function doMarkRead() {
   markAllRead()
 }
 
-function notifIcon(n: any): string {
+function notifIcon(n: Notification): string {
   if (n.type === 'like') return '❤️'
   if (n.type === 'comment') return '💬'
   if (n.type === 'follow') return '👤'
   return '🔔'
 }
 
-function goToNotif(n: any) {
+function goToNotif(n: Notification) {
   open.value = false
+  if (!n.is_read) markRead(n.id)
   if (n.ref_type === 'post' && n.ref_id) navigateTo(`/bai-viet/${n.ref_id}`)
   else if (n.ref_type === 'entity' && n.ref_id) navigateTo(`/dia-diem/${n.ref_id}`)
   else if (n.ref_type === 'user' && n.ref_id) navigateTo(`/nguoi-dung/${n.ref_id}`)

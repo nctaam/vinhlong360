@@ -18,17 +18,17 @@
       <div class="planner-picker">
         <!-- Source tabs: All vs Favorites -->
         <div class="chip-row chip-row-spaced">
-          <button type="button" :class="['chip', { active: sourceTab === 'all' }]" @click="sourceTab = 'all'">Tất cả</button>
-          <button type="button" :class="['chip', { active: sourceTab === 'saved' }]" @click="sourceTab = 'saved'">
+          <button type="button" :class="['chip', { active: sourceTab === 'all' }]" :aria-pressed="sourceTab === 'all'" @click="sourceTab = 'all'">Tất cả</button>
+          <button type="button" :class="['chip', { active: sourceTab === 'saved' }]" :aria-pressed="sourceTab === 'saved'" @click="sourceTab = 'saved'">
             ❤️ Đã lưu ({{ favCount }})
           </button>
         </div>
         <div class="search-row search-row-spaced">
-          <input v-model="searchQ" type="search" aria-label="Tìm điểm đến" placeholder="Tìm điểm đến, đặc sản, lưu trú…" />
+          <input v-model="searchQ" type="search" enterkeyhint="search" aria-label="Tìm điểm đến" placeholder="Tìm điểm đến, đặc sản, lưu trú…" />
         </div>
         <div v-if="sourceTab === 'all'" class="chip-row chip-row-spaced">
-          <button type="button" :class="['chip', { active: typeFilter === 'all' }]" @click="typeFilter = 'all'">Tất cả</button>
-          <button type="button" v-for="t in typeChips" :key="t.value" :class="['chip', { active: typeFilter === t.value }]" @click="typeFilter = t.value">
+          <button type="button" :class="['chip', { active: typeFilter === 'all' }]" :aria-pressed="typeFilter === 'all'" @click="typeFilter = 'all'">Tất cả</button>
+          <button type="button" v-for="t in typeChips" :key="t.value" :class="['chip', { active: typeFilter === t.value }]" :aria-pressed="typeFilter === t.value" @click="typeFilter = t.value">
             {{ t.label }}
           </button>
         </div>
@@ -51,7 +51,8 @@
             <button type="button" class="btn btn-sm btn-ghost" title="Thêm vào lịch trình">+</button>
           </div>
           <p v-if="fetchError" class="empty picker-empty">⚠️ Không thể tải danh sách. <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData('planner-entities')">Thử lại</button></p>
-          <p v-else-if="!pickerResults.length" class="empty picker-empty">Không tìm thấy kết quả.</p>
+          <EmptyState v-else-if="sourceTab === 'saved' && !favCount" icon="❤️" title="Chưa có điểm đã lưu" message="Nhấn hình trái tim ở các điểm đến để lưu lại, rồi quay lại đây thêm vào lịch trình." />
+          <EmptyState v-else-if="!pickerResults.length" icon="🔎" title="Không tìm thấy" message="Thử từ khóa khác hoặc bỏ bộ lọc loại nhé." />
         </div>
       </div>
 
@@ -68,7 +69,7 @@
         <!-- Transport mode selector -->
         <div v-if="stops.length >= 2" class="transport-mode">
           <span class="tm-label">Phương tiện:</span>
-          <button type="button" v-for="m in transportModes" :key="m.value" :class="['chip', { active: transportMode === m.value }]" @click="transportMode = m.value">
+          <button type="button" v-for="m in transportModes" :key="m.value" :class="['chip', { active: transportMode === m.value }]" :aria-pressed="transportMode === m.value" @click="transportMode = m.value">
             {{ m.icon }} {{ m.label }}
           </button>
           <div v-if="routeResult" class="route-total">
@@ -155,6 +156,7 @@
 </template>
 
 <script setup lang="ts">
+import type { Itinerary, Entity} from '~/types'
 useReveal()
 import { TYPE_META, CARD_TYPES } from '~/composables/useConstants'
 import { fetchRoute, formatDistance, formatDuration, type TransportMode, type RouteResult } from '~/composables/useRouting'
@@ -201,35 +203,35 @@ const routeLoading = ref(false)
 const routeMapEl = ref<HTMLElement | null>(null)
 
 const { createMap: createNDAMap } = useNDAMap()
-let mapInstance: any = null
-let maplibre: any = null
-let markers: any[] = []
+let mapInstance: unknown = null
+let maplibre: unknown = null
+let markers: unknown[] = []
 
 const { data, error: fetchError } = await useAsyncData('planner-entities', () =>
-  $fetch<any>('/api/entities?limit=700')
+  $fetch<{ entities: Entity[] }>('/api/entities?limit=700')
 )
 
 const allEntities = computed(() => {
   const raw = data.value
   if (!raw) return []
-  return (raw.entities || []).filter((e: any) => TYPES.includes(e.type))
+  return (raw.entities || []).filter((e: Entity) => TYPES.includes(e.type))
 })
 
 const pickerResults = computed(() => {
-  let list: any[]
+  let list: Entity[]
 
   if (sourceTab.value === 'saved') {
     list = favList.value.map(f => ({ id: f.id, name: f.name, type: f.type, place_name: f.place_name, summary: f.summary, coordinates: f.coordinates }))
   } else {
     list = allEntities.value
     if (typeFilter.value !== 'all') {
-      list = list.filter((e: any) => e.type === typeFilter.value)
+      list = list.filter((e: Entity) => e.type === typeFilter.value)
     }
   }
 
   if (searchQ.value.trim()) {
     const query = searchQ.value.toLowerCase()
-    list = list.filter((e: any) =>
+    list = list.filter((e: Entity) =>
       (e.name || '').toLowerCase().includes(query) ||
       (e.summary || '').toLowerCase().includes(query) ||
       (e.place_name || '').toLowerCase().includes(query)
@@ -243,7 +245,7 @@ function getTypeMeta(type: string) {
   return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }
 }
 
-function extractCoords(entity: any): [number, number] | undefined {
+function extractCoords(entity: Entity): [number, number] | undefined {
   let c = entity.coordinates
   if (!c) return undefined
   if (typeof c === 'string') {
@@ -254,7 +256,7 @@ function extractCoords(entity: any): [number, number] | undefined {
   return undefined
 }
 
-function addStop(entity: any) {
+function addStop(entity: Entity) {
   stops.value.push({
     id: entity.id,
     name: entity.name,
@@ -279,6 +281,7 @@ function moveStop(idx: number, dir: number) {
 }
 
 function clearPlan() {
+  if (stops.value.length && !confirm('Xóa toàn bộ điểm trong lịch trình đang tạo?')) return
   stops.value = []
   planTitle.value = ''
   routeResult.value = null
@@ -303,8 +306,11 @@ function loadPlan(idx: number) {
 }
 
 function deletePlan(idx: number) {
+  const plan = savedPlans.value[idx]
+  if (!confirm(`Xóa lịch trình "${plan?.title || 'chưa đặt tên'}"?`)) return
   savedPlans.value.splice(idx, 1)
   localStorage.setItem('vl360_plans', JSON.stringify(savedPlans.value))
+  showToast('Đã xóa lịch trình', 'success')
 }
 
 const { show: showToast } = useToast()
@@ -413,14 +419,14 @@ async function updateMap(result: RouteResult | null) {
       paint: { 'line-color': '#2563eb', 'line-width': 4, 'line-opacity': 0.8 },
     })
     const bounds = coords.reduce(
-      (b: any, c: number[]) => b.extend(c),
+      (b: { extend: (c: number[]) => typeof b }, c: number[]) => b.extend(c),
       new maplibre.LngLatBounds(coords[0], coords[0])
     )
     mapInstance.fitBounds(bounds, { padding: 40 })
   } else {
     const coords = stopsWithCoords.map(s => [s.coords![1], s.coords![0]])
     const bounds = coords.reduce(
-      (b: any, c: number[]) => b.extend(c),
+      (b: { extend: (c: number[]) => typeof b }, c: number[]) => b.extend(c),
       new maplibre.LngLatBounds(coords[0], coords[0])
     )
     mapInstance.fitBounds(bounds, { padding: 40 })
@@ -516,9 +522,12 @@ useHead({
 .stop-card-actions { display: flex; gap: var(--space-1); }
 .stop-list { margin-bottom: var(--space-4); }
 .route-map { height: 300px; border-radius: var(--radius-lg, 16px); overflow: hidden; border: .5px solid var(--line); box-shadow: var(--shadow-sm); }
-.stop-card-actions button { min-height: 36px; min-width: 36px; display: inline-flex; align-items: center; justify-content: center; }
+.stop-card-actions button { min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle); }
+.stop-card-actions button:hover { background: var(--bg-warm); }
+.stop-card-actions button:active { transform: scale(.88); transition-duration: .08s; }
 .dark .picker-item:hover { background: var(--glass-light); }
 .dark .stop-card { background: var(--card); border-color: var(--line); }
+.dark .stop-card-actions button:hover { background: rgba(255,255,255,.06); }
 .dark .stop-card:hover { border-color: var(--border); }
 .dark .stop-connector { background: var(--primary-fg); }
 .dark .picker-list::-webkit-scrollbar-thumb { background: var(--glass-medium); }

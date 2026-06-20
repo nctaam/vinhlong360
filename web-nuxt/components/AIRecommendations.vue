@@ -1,15 +1,19 @@
 <template>
-  <div v-if="items.length" class="ai-recommend">
+  <div v-if="ff('ai_recommendations') && (loading || items.length)" class="ai-recommend">
     <div class="section-head">
       <h2>{{ title }}</h2>
     </div>
-    <div class="grid">
+    <div v-if="loading" class="grid" aria-hidden="true">
+      <div v-for="i in skelCount" :key="i" class="ai-rec-skel"></div>
+    </div>
+    <div v-else class="grid">
       <EntityCard v-for="e in items" :key="e.id" :entity="e" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import type { Entity } from '~/types'
 const props = defineProps<{
   entityId?: string
   month?: number
@@ -17,17 +21,45 @@ const props = defineProps<{
   title?: string
 }>()
 
-const items = ref<any[]>([])
+const items = ref<Entity[]>([])
+const loading = ref(true)
+const { enabled: ff } = useFeature()
+const skelCount = computed(() => Math.min(props.limit || 4, 4))
 
 onMounted(async () => {
-  const { aiRecommend } = useAI()
-  const res = await aiRecommend({
-    entityId: props.entityId,
-    month: props.month || new Date().getMonth() + 1,
-    limit: props.limit || 6,
-  })
-  if (res?.recommendations) items.value = res.recommendations
-  else if (res?.entities) items.value = res.entities
-  else if (Array.isArray(res)) items.value = res
+  if (!ff('ai_recommendations')) { loading.value = false; return }
+  const month = props.month || new Date().getMonth() + 1
+  const cacheKey = `airec:${props.entityId || 'home'}:${month}:${props.limit || 6}`
+
+  // Session cache: AI recommendations are stable within a visit — avoid a fresh
+  // LLM call on every mount/navigation (cost control, B8).
+  try {
+    const cached = sessionStorage.getItem(cacheKey)
+    if (cached) {
+      const list = JSON.parse(cached)
+      if (Array.isArray(list)) { items.value = list; loading.value = false; return }
+    }
+  } catch { /* ignore cache read errors */ }
+
+  try {
+    const { aiRecommend } = useAI()
+    const res: any = await aiRecommend({ entityId: props.entityId, month, limit: props.limit || 6 })
+    const list = res?.recommendations || res?.entities || (Array.isArray(res) ? res : [])
+    items.value = Array.isArray(list) ? list : []
+    try { sessionStorage.setItem(cacheKey, JSON.stringify(items.value)) } catch { /* quota — skip */ }
+  } catch {
+    items.value = []
+  } finally {
+    loading.value = false
+  }
 })
 </script>
+
+<style scoped>
+.ai-rec-skel {
+  height: 260px; border-radius: var(--radius); background: var(--bg-warm);
+  animation: aiRecPulse 1.5s ease-in-out infinite;
+}
+@keyframes aiRecPulse { 0%, 100% { opacity: .5; } 50% { opacity: .85; } }
+@media (prefers-reduced-motion: reduce) { .ai-rec-skel { animation: none; } }
+</style>

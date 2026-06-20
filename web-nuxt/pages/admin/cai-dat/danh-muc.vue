@@ -11,8 +11,10 @@
     <div class="cs-help">
       <p>Chỉ điền những mục muốn đổi. Bỏ trống = giữ mặc định. Ví dụ ghi đè emoji món ăn:</p>
       <pre>{ "dish": { "emoji": "🍜" } }</pre>
-      <p class="cs-help-keys"><strong>Loại:</strong> experience, product, dish, craft_village, attraction, accommodation, nature, history, event, drink — mỗi loại có <code>emoji</code>, <code>label</code>.</p>
+      <p class="cs-help-keys"><strong>Loại entity:</strong> experience, product, dish, craft_village, attraction, accommodation, nature, history, event, drink — mỗi loại có <code>emoji</code>, <code>label</code>.</p>
       <p class="cs-help-keys"><strong>Khu vực:</strong> vinh-long, ben-tre, tra-vinh — mỗi vùng có <code>name</code>, <code>emoji</code>, <code>blurb</code>.</p>
+      <p class="cs-help-keys"><strong>Loại cơ quan (danh bạ):</strong> ubnd, cong_an, y_te, truong_hoc, buu_dien, tu_phap, khac — mỗi loại có <code>emoji</code>, <code>label</code>.</p>
+      <p class="cs-help-keys"><strong>Chủ đề khám phá:</strong> am-thuc, thien-nhien, van-hoa, lang-nghe, mua-sam — mỗi chủ đề có <code>emoji</code>, <code>label</code>, <code>description</code>, <code>types[]</code>.</p>
     </div>
 
     <div v-if="loading" class="cs-skeleton">

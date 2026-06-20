@@ -40,6 +40,52 @@
             </button>
           </div>
         </div>
+
+        <div class="cs-section">
+          <h3 class="cs-section-title">Liên kết pháp lý (đáy trang)</h3>
+          <p class="cs-hint">Hàng liên kết nhỏ ở đáy footer (Bảo mật, Điều khoản, Liên hệ…).</p>
+          <AdminSortableList
+            :items="legalLinks"
+            label-field="label"
+            :editable-fields="['label', 'to']"
+            add-label="Thêm liên kết"
+            :new-item-template="{ label: 'Liên kết mới', to: '/' }"
+            @update:items="legalLinks = $event"
+          >
+            <template #display="{ item }">
+              <span class="sl-item-label">{{ item.label }}</span>
+              <span class="sl-item-sub">{{ item.to }}</span>
+            </template>
+          </AdminSortableList>
+          <div class="cs-save-row">
+            <button type="button" class="btn-primary sf-save" :disabled="saving" @click="saveLegalLinks">
+              {{ saving ? 'Đang lưu...' : 'Lưu liên kết pháp lý' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="cs-section">
+          <h3 class="cs-section-title">Mạng xã hội</h3>
+          <p class="cs-hint">Hiện ở footer dưới slogan. Mỗi liên kết có emoji + tên + URL. Để trống = không hiện.</p>
+          <AdminSortableList
+            :items="socialLinks"
+            label-field="label"
+            :editable-fields="['icon', 'label', 'url']"
+            add-label="Thêm mạng xã hội"
+            :new-item-template="{ icon: '🔗', label: 'Mạng xã hội', url: 'https://' }"
+            @update:items="socialLinks = $event"
+          >
+            <template #display="{ item }">
+              <span class="sl-item-label">{{ item.icon }} {{ item.label }}</span>
+              <span class="sl-item-sub">{{ item.url }}</span>
+            </template>
+          </AdminSortableList>
+          <div class="cs-save-row">
+            <button type="button" class="btn-primary sf-save" :disabled="saving" @click="saveSocial">
+              {{ saving ? 'Đang lưu...' : 'Lưu mạng xã hội' }}
+            </button>
+          </div>
+        </div>
       </div>
     </Transition>
   </div>
@@ -52,6 +98,8 @@ const { show: showToast } = useToast()
 
 const textFields = ref<any[]>([])
 const footerColumns = ref<any[]>([])
+const legalLinks = ref<any[]>([])
+const socialLinks = ref<any[]>([])
 const loading = ref(true)
 const saving = ref(false)
 
@@ -61,10 +109,37 @@ async function reload() {
     const r = await $fetch<any>('/admin-api/site-settings/footer', { headers: authHeaders() })
     const settings = r.settings || []
     textFields.value = settings.filter((s: any) => s.input_type !== 'json')
-    const colSetting = settings.find((s: any) => s.key === 'footer.columns')
-    footerColumns.value = colSetting?.value || []
+    footerColumns.value = settings.find((s: any) => s.key === 'footer.columns')?.value || []
+    legalLinks.value = settings.find((s: any) => s.key === 'footer.legal_links')?.value || []
+    socialLinks.value = settings.find((s: any) => s.key === 'social.links')?.value || []
   } catch { showToast('Không thể tải cài đặt', 'error') }
   loading.value = false
+}
+
+async function saveSocial() {
+  saving.value = true
+  try {
+    await $fetch('/admin-api/site-settings/social.links', {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: { value: socialLinks.value },
+    })
+    showToast('Đã lưu mạng xã hội', 'success')
+  } catch (e: any) { showToast(e?.data?.detail || 'Lỗi khi lưu', 'error') }
+  saving.value = false
+}
+
+async function saveLegalLinks() {
+  saving.value = true
+  try {
+    await $fetch('/admin-api/site-settings/footer.legal_links', {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: { value: legalLinks.value },
+    })
+    showToast('Đã lưu liên kết pháp lý', 'success')
+  } catch (e: any) { showToast(e?.data?.detail || 'Lỗi khi lưu', 'error') }
+  saving.value = false
 }
 
 async function saveColumns() {

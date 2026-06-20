@@ -30,3 +30,9 @@ top200_output.json
 final_structured.json
 final_entities.json
 final_output.json
+
+# Local dev DB stub + scratch (regenerable)
+*.db
+*.sqlite
+*.sqlite3
+temp_analysis.txt

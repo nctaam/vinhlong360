@@ -35,6 +35,10 @@ const categories = [
   { slug: 'danh-muc', icon: '🏷️', title: 'Danh mục', desc: 'Emoji & nhãn loại, khu vực' },
   { slug: 'trang', icon: '📄', title: 'Nội dung trang', desc: 'Hero & SEO từng trang' },
   { slug: 'tinh-nang', icon: '🎚️', title: 'Tính năng', desc: 'Bật/tắt khối nội dung' },
+  { slug: 'phap-ly', icon: '⚖️', title: 'Trang pháp lý', desc: 'Chính sách bảo mật, điều khoản' },
+  { slug: 'chao-mung', icon: '👋', title: 'Bảng chào mừng', desc: 'Onboarding khách lần đầu' },
+  { slug: 'tuyen-duong', icon: '🛣️', title: 'Tuyến đường', desc: 'Dữ liệu tuyến gợi ý' },
+  { slug: 'chat-ai', icon: '💬', title: 'Chat & AI', desc: 'Tiêu đề, gợi ý, minh bạch AI' },
 ]
 </script>
 

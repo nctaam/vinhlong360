@@ -51,7 +51,7 @@ export async function fetchRoute(
     const route = res.routes[0]
     const speed = AVG_SPEED[mode]
 
-    const legs: RouteLeg[] = route.legs.map((leg: any) => ({
+    const legs: RouteLeg[] = route.legs.map((leg: { distance: number }) => ({
       distance: leg.distance,
       duration: (leg.distance / 1000 / speed) * 3600,
     }))

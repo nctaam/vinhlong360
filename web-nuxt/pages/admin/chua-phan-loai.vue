@@ -1,94 +1,339 @@
 <template>
   <div>
     <div class="admin-head-row">
-      <h1>Chưa phân loại xã/phường</h1>
-      <button type="button" class="admin-refresh" :disabled="loading" @click="load">🔄 Làm mới</button>
+      <div>
+        <h1>Chưa phân loại xã/phường</h1>
+        <p class="cpl-subtitle">Entity nội dung chưa gán xã. Gán đúng để xuất hiện ở trang xã/phường + danh mục khu vực.</p>
+      </div>
+      <button type="button" class="admin-refresh" :disabled="loading" @click="load"><span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới</button>
     </div>
-    <p class="admin-muted">Entity nội dung chưa gán xã. Gán đúng để xuất hiện ở trang xã/phường + danh mục khu vực.</p>
 
-    <div class="bar">
-      <input v-model="q" class="input" placeholder="Tìm theo tên…" aria-label="Tìm theo tên" @keyup.enter="load" />
-      <button type="button" class="btn btn-secondary" @click="load">Tìm</button>
-      <span class="admin-muted">{{ total }} chưa phân loại</span>
+    <div class="cpl-toolbar">
+      <input v-model="q" class="input" placeholder="Tìm theo tên..." aria-label="Tìm theo tên" @keyup.enter="load" />
+      <button type="button" class="btn btn-secondary btn-sm" @click="load">Tìm</button>
+      <select v-model="typeFilter" class="cpl-type-filter input" aria-label="Lọc theo loại">
+        <option value="">Tất cả loại ({{ items.length }})</option>
+        <option v-for="t in typeOptions" :key="t.type" :value="t.type">{{ t.type }} ({{ t.count }})</option>
+      </select>
+      <span v-if="total" class="cpl-total-badge">{{ total }} chưa phân loại</span>
+      <span v-if="typeFilter || q" class="cpl-total-badge cpl-filter-badge">{{ filtered.length }} khớp bộ lọc</span>
     </div>
 
     <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
-    <table v-else-if="items.length" class="admin-simple-table">
-      <thead><tr><th>Tên</th><th>Loại</th><th>Gán xã/phường</th><th></th></tr></thead>
-      <tbody>
-        <tr v-for="e in items" :key="e.id">
-          <td><strong>{{ e.name }}</strong><br><small class="admin-muted">{{ e.summary }}</small></td>
-          <td>{{ e.type }}</td>
-          <td>
-            <select v-model="pick[e.id]" class="input" :aria-label="`Chọn xã/phường cho ${e.name}`">
-              <option value="">— Chọn —</option>
-              <optgroup v-for="g in wardGroups" :key="g.area" :label="g.label">
-                <option v-for="w in g.wards" :key="w.id" :value="w.id">{{ w.name }}</option>
-              </optgroup>
-            </select>
-          </td>
-          <td><button type="button" class="btn btn-primary btn-sm" :disabled="!pick[e.id] || busy[e.id]" @click="assign(e)">Gán</button></td>
-        </tr>
-      </tbody>
-    </table>
-    <EmptyState v-else message="Không có entity nào chưa phân loại 🎉" />
+    <template v-else>
+      <!-- Bulk action bar -->
+      <div v-if="selectedIds.length" class="cpl-bulk-bar" role="region" aria-label="Gán hàng loạt">
+        <span class="cpl-bulk-count">{{ selectedIds.length }} đã chọn</span>
+        <select v-model="bulkPick" class="cpl-place-select" aria-label="Chọn xã/phường để gán hàng loạt" :disabled="bulkBusy">
+          <option value="">— Chọn xã/phường —</option>
+          <optgroup v-for="g in wardGroups" :key="g.area" :label="g.label">
+            <option v-for="w in g.wards" :key="w.id" :value="w.id">{{ w.name }}</option>
+          </optgroup>
+        </select>
+        <button type="button" class="btn btn-primary btn-sm" :disabled="!bulkPick || bulkBusy" @click="assignBulk">
+          {{ bulkBusy ? `Đang gán ${bulkProgress.done}/${bulkProgress.total}...` : `Gán ${selectedIds.length} entity` }}
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" :disabled="bulkBusy" @click="clearSelection">Bỏ chọn</button>
+      </div>
+
+      <div v-if="items.length" class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th class="cpl-check-col">
+                <input
+                  type="checkbox"
+                  class="cpl-checkbox"
+                  :checked="allPageSelected"
+                  :indeterminate.prop="somePageSelected && !allPageSelected"
+                  :aria-label="allPageSelected ? 'Bỏ chọn tất cả trên trang' : 'Chọn tất cả trên trang'"
+                  @change="togglePage"
+                />
+              </th>
+              <th>Entity</th>
+              <th>Loại</th>
+              <th>Gán xã/phường</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="e in pageItems" :key="e.id" :class="{ 'cpl-row-selected': selected[e.id] }">
+              <td class="cpl-check-col">
+                <input
+                  type="checkbox"
+                  class="cpl-checkbox"
+                  :checked="!!selected[e.id]"
+                  :disabled="bulkBusy"
+                  :aria-label="`Chọn ${e.name}`"
+                  @change="toggleOne(e.id)"
+                />
+              </td>
+              <td>
+                <strong>{{ e.name }}</strong>
+                <small v-if="e.summary" class="cpl-summary">{{ e.summary }}</small>
+              </td>
+              <td><span class="cpl-type-badge">{{ e.type }}</span></td>
+              <td>
+                <select v-model="pick[e.id]" class="cpl-place-select" :aria-label="`Chọn xã/phường cho ${e.name}`">
+                  <option value="">— Chọn —</option>
+                  <optgroup v-for="g in wardGroups" :key="g.area" :label="g.label">
+                    <option v-for="w in g.wards" :key="w.id" :value="w.id">{{ w.name }}</option>
+                  </optgroup>
+                </select>
+              </td>
+              <td>
+                <button type="button" class="btn btn-primary btn-sm" :disabled="!pick[e.id] || busy[e.id]" @click="assign(e)">
+                  {{ busy[e.id] ? '...' : 'Gán' }}
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div v-if="filtered.length > pageItems.length" class="cpl-loadmore">
+          <span class="cpl-loadmore-info">Hiển thị {{ pageItems.length }} / {{ filtered.length }}</span>
+          <button type="button" class="btn btn-secondary btn-sm" @click="showMore">Tải thêm</button>
+        </div>
+      </div>
+
+      <div v-else class="cpl-empty">
+        <span class="cpl-empty-icon">&#127881;</span>
+        <p>Không có entity nào chưa phân loại.</p>
+      </div>
+
+      <div v-if="items.length && !filtered.length" class="cpl-empty">
+        <span class="cpl-empty-icon">&#128269;</span>
+        <p>Không có entity nào khớp bộ lọc.</p>
+      </div>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
+import type { Place, Entity } from '~/types'
 import { AREA_META } from '~/composables/useConstants'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const ADMIN_LEVELS = ['phuong', 'xa', 'tinh']
+const PAGE_SIZE = 50
 
 const q = ref('')
-const items = ref<any[]>([])
+const items = ref<Entity[]>([])
 const total = ref(0)
 const loading = ref(true)
 const pick = ref<Record<string, string>>({})
 const busy = ref<Record<string, boolean>>({})
 
-const { data: places } = await useAsyncData('cpl-places', () => $fetch<any>('/api/places').catch(() => []))
+// Filter / pagination state
+const typeFilter = ref('')
+const visibleCount = ref(PAGE_SIZE)
+
+// Bulk-assign state
+const selected = ref<Record<string, boolean>>({})
+const bulkPick = ref('')
+const bulkBusy = ref(false)
+const bulkProgress = ref({ done: 0, total: 0 })
+
+const { data: places } = await useAsyncData('cpl-places', () => $fetch<Place[]>('/api/places').catch(() => []))
 const wardGroups = computed(() => {
-  const wards = (places.value || []).filter((p: any) => ADMIN_LEVELS.includes(p.level))
+  const wards = (places.value || []).filter((p: Entity) => ADMIN_LEVELS.includes(p.level))
   return Object.keys(AREA_META).map(area => ({
     area, label: AREA_META[area].name,
-    wards: wards.filter((w: any) => w.area === area).sort((a: any, b: any) => a.name.localeCompare(b.name, 'vi')),
+    wards: wards.filter((w: Entity) => w.area === area).sort((a: Entity, b: Entity) => a.name.localeCompare(b.name, 'vi')),
   })).filter(g => g.wards.length)
 })
+
+// Distinct entity types over the loaded list, with counts
+const typeOptions = computed(() => {
+  const counts: Record<string, number> = {}
+  for (const e of items.value) {
+    const t = e.type || '—'
+    counts[t] = (counts[t] || 0) + 1
+  }
+  return Object.keys(counts).sort((a, b) => a.localeCompare(b, 'vi')).map(type => ({ type, count: counts[type] }))
+})
+
+// Client-side filter (over the already-loaded list)
+const filtered = computed(() => {
+  if (!typeFilter.value) return items.value
+  return items.value.filter(e => (e.type || '—') === typeFilter.value)
+})
+
+// Client-side pagination ("load more")
+const pageItems = computed(() => filtered.value.slice(0, visibleCount.value))
+
+// Selection helpers (selection is tracked by id, survives pagination)
+const selectedIds = computed(() => Object.keys(selected.value).filter(id => selected.value[id]))
+const allPageSelected = computed(() => pageItems.value.length > 0 && pageItems.value.every(e => selected.value[e.id]))
+const somePageSelected = computed(() => pageItems.value.some(e => selected.value[e.id]))
+
+watch([typeFilter, q], () => { visibleCount.value = PAGE_SIZE })
+
+function showMore() {
+  visibleCount.value += PAGE_SIZE
+}
+
+function toggleOne(id: string) {
+  selected.value = { ...selected.value, [id]: !selected.value[id] }
+}
+function togglePage() {
+  const next = { ...selected.value }
+  const target = !allPageSelected.value
+  for (const e of pageItems.value) next[e.id] = target
+  selected.value = next
+}
+function clearSelection() {
+  selected.value = {}
+}
 
 async function load() {
   loading.value = true
   try {
-    const r = await $fetch<any>(`/admin-api/unclassified?limit=200&q=${encodeURIComponent(q.value)}`, { headers: authHeaders() })
-    items.value = r.entities || []
-    total.value = r.total || 0
+    const r = await $fetch<Record<string, unknown>>(`/admin-api/unclassified?limit=200&q=${encodeURIComponent(q.value)}`, { headers: authHeaders() })
+    items.value = (r.entities || []) as Entity[]
+    total.value = (r.total || 0) as number
+    // Reset transient view state on reload
+    selected.value = {}
+    bulkPick.value = ''
+    visibleCount.value = PAGE_SIZE
+    // Drop type filter if it no longer matches anything
+    if (typeFilter.value && !items.value.some(e => (e.type || '—') === typeFilter.value)) typeFilter.value = ''
   } catch { showToast('Không tải được danh sách', 'error') }
   loading.value = false
 }
 
-async function assign(e: any) {
+async function assign(e: Entity) {
   const pid = pick.value[e.id]
   if (!pid) return
   busy.value = { ...busy.value, [e.id]: true }
   try {
     await $fetch(`/admin-api/entities/${e.id}/place`, { method: 'POST', headers: authHeaders(), body: { place_id: pid } })
-    items.value = items.value.filter(x => x.id !== e.id)  // bỏ khỏi danh sách chưa phân loại
-    total.value = Math.max(0, total.value - 1)
+    removeItem(e.id)
     showToast(`Đã gán ${e.name}`, 'success')
-  } catch (err: any) {
-    showToast(err?.data?.detail || 'Gán thất bại', 'error')
+  } catch (err: unknown) {
+    showToast((err as any)?.data?.detail || 'Gán thất bại', 'error')
   }
   busy.value = { ...busy.value, [e.id]: false }
+}
+
+// Bulk assign: loop the existing single-item endpoint (no bulk endpoint exists yet).
+async function assignBulk() {
+  const pid = bulkPick.value
+  const ids = selectedIds.value
+  if (!pid || !ids.length) return
+  bulkBusy.value = true
+  bulkProgress.value = { done: 0, total: ids.length }
+  let ok = 0
+  let fail = 0
+  for (const id of ids) {
+    const e = items.value.find(x => x.id === id)
+    if (!e) { bulkProgress.value = { ...bulkProgress.value, done: bulkProgress.value.done + 1 }; continue }
+    try {
+      await $fetch(`/admin-api/entities/${id}/place`, { method: 'POST', headers: authHeaders(), body: { place_id: pid } })
+      removeItem(id)
+      ok++
+    } catch {
+      fail++
+    }
+    bulkProgress.value = { ...bulkProgress.value, done: bulkProgress.value.done + 1 }
+  }
+  bulkBusy.value = false
+  bulkPick.value = ''
+  bulkProgress.value = { done: 0, total: 0 }
+  if (fail === 0) showToast(`Đã gán ${ok} entity`, 'success')
+  else if (ok === 0) showToast(`Gán thất bại (${fail})`, 'error')
+  else showToast(`Đã gán ${ok}, thất bại ${fail}`, 'warning')
+}
+
+// Remove an assigned item from the list + all transient state.
+function removeItem(id: string) {
+  items.value = items.value.filter(x => x.id !== id)
+  total.value = Math.max(0, total.value - 1)
+  if (selected.value[id]) {
+    const next = { ...selected.value }
+    delete next[id]
+    selected.value = next
+  }
 }
 
 onMounted(load)
 </script>
 
 <style scoped>
-.bar { display: flex; gap: var(--space-2); align-items: center; margin: var(--space-3) 0 var(--space-4); }
-.bar .input { max-width: 280px; }
-.admin-simple-table select.input { max-width: 220px; }
+.cpl-subtitle { font-size: .82rem; color: var(--muted); margin-top: 2px; max-width: 500px; }
+
+.cpl-toolbar {
+  display: flex; gap: var(--space-3); align-items: center;
+  margin-bottom: var(--space-4); flex-wrap: wrap;
+}
+.cpl-toolbar .input { max-width: 280px; }
+.cpl-type-filter { max-width: 220px; min-height: 36px; cursor: pointer; }
+
+.cpl-total-badge {
+  display: inline-flex; align-items: center; padding: 2px 10px;
+  border-radius: 100px; font-size: .75rem; font-weight: 600;
+  background: rgba(255,159,10,.08); color: #c67a00;
+}
+.cpl-filter-badge { background: rgba(33,150,83,.08); color: #1a7a44; }
+
+.cpl-summary { display: block; color: var(--muted); margin-top: 2px; font-size: .78rem; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.cpl-type-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 100px;
+  font-size: .72rem; font-weight: 600;
+  background: rgba(142,142,147,.08); color: var(--muted);
+}
+
+.cpl-place-select {
+  max-width: 220px; padding: 4px 8px; min-height: 36px;
+  font-size: .82rem; border: .5px solid var(--line); border-radius: 8px;
+  background: var(--bg); color: var(--ink); cursor: pointer;
+  transition: border-color .2s cubic-bezier(.2,1,.4,1), box-shadow .2s;
+}
+.cpl-place-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(33,150,83,.1); }
+.cpl-place-select:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; box-shadow: none; }
+
+/* ── Bulk bar ── */
+.cpl-bulk-bar {
+  display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap;
+  margin-bottom: var(--space-3); padding: var(--space-2) var(--space-3);
+  background: rgba(33,150,83,.06); border: .5px solid rgba(33,150,83,.2);
+  border-radius: 12px;
+}
+.cpl-bulk-count { font-size: .82rem; font-weight: 600; color: #1a7a44; }
+
+/* ── Checkboxes ── */
+.cpl-check-col { width: 36px; text-align: center; }
+.cpl-checkbox {
+  width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary, #219653);
+}
+.cpl-checkbox:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
+.cpl-row-selected { background: rgba(33,150,83,.05); }
+
+/* ── Load more ── */
+.cpl-loadmore {
+  display: flex; align-items: center; justify-content: center; gap: var(--space-3);
+  padding: var(--space-3); margin-top: var(--space-2);
+}
+.cpl-loadmore-info { font-size: .8rem; color: var(--muted); }
+
+.cpl-empty {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+  padding: var(--space-8); text-align: center;
+  background: var(--bg); border: .5px solid var(--line); border-radius: 14px;
+}
+.cpl-empty-icon { font-size: 2.5rem; }
+.cpl-empty p { margin: 0; font-weight: 500; color: #219653; }
+
+/* ── Dark ── */
+.dark .cpl-total-badge { background: rgba(255,159,10,.12); color: #ffb340; }
+.dark .cpl-filter-badge { background: rgba(33,150,83,.14); color: #4ade80; }
+.dark .cpl-type-badge { background: rgba(255,255,255,.06); }
+.dark .cpl-place-select { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
+.dark .cpl-bulk-bar { background: rgba(33,150,83,.1); border-color: rgba(33,150,83,.25); }
+.dark .cpl-bulk-count { color: #4ade80; }
+.dark .cpl-row-selected { background: rgba(33,150,83,.08); }
+.dark .cpl-empty { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 </style>

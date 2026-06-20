@@ -1,7 +1,7 @@
 <template>
   <section class="page threads-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng' }]" />
-    <h1 class="sr-only">Cộng đồng vinhlong360</h1>
+    <h1 class="sr-only">{{ pc('hero_title') }}</h1>
 
     <div class="threads-layout">
       <div class="threads-feed">
@@ -19,6 +19,7 @@
                 v-for="reason in reportReasons"
                 :key="reason"
                 :class="['chip', { active: reportReason === reason }]"
+                :aria-pressed="reportReason === reason"
                 @click="reportReason = reason"
               >{{ reason }}</button>
             </div>
@@ -46,6 +47,7 @@
                 v-for="pt in postTypes"
                 :key="pt.value"
                 :class="['chip chip-sm', { active: newType === pt.value }]"
+                :aria-pressed="newType === pt.value"
                 @click="newType = pt.value"
               >{{ pt.label }}</button>
             </div>
@@ -76,6 +78,7 @@
                     accept="image/*"
                     multiple
                     class="sr-only"
+                    aria-label="Thêm ảnh"
                     @change="onFileSelect"
                   />
                 </label>
@@ -102,9 +105,9 @@
 
         <!-- Main tabs -->
         <div class="threads-filter">
-          <button type="button" :class="['threads-tab', { active: activeTab === 'latest' }]" @click="setTab('latest')">Mới nhất</button>
-          <button type="button" :class="['threads-tab', { active: activeTab === 'trending' }]" @click="setTab('trending')">Nổi bật</button>
-          <button type="button" v-if="isLoggedIn" :class="['threads-tab', { active: activeTab === 'bookmarks' }]" @click="setTab('bookmarks')">
+          <button type="button" :class="['threads-tab', { active: activeTab === 'latest' }]" :aria-pressed="activeTab === 'latest'" @click="setTab('latest')">Mới nhất</button>
+          <button type="button" :class="['threads-tab', { active: activeTab === 'trending' }]" :aria-pressed="activeTab === 'trending'" @click="setTab('trending')">Nổi bật</button>
+          <button type="button" v-if="isLoggedIn" :class="['threads-tab', { active: activeTab === 'bookmarks' }]" :aria-pressed="activeTab === 'bookmarks'" @click="setTab('bookmarks')">
             <svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>Đã lưu
           </button>
         </div>
@@ -113,18 +116,20 @@
         <div v-if="activeTab !== 'bookmarks'" class="type-filter-row" role="region" aria-label="Lọc loại bài viết">
           <button type="button"
             :class="['chip chip-filter', { active: filterType === '' }]"
+            :aria-pressed="filterType === ''"
             @click="filterType = ''"
           >Tất cả</button>
           <button type="button"
             v-for="pt in postTypes"
             :key="pt.value"
             :class="['chip chip-filter', { active: filterType === pt.value }]"
+            :aria-pressed="filterType === pt.value"
             @click="filterType = pt.value"
           >{{ pt.label }}</button>
         </div>
 
         <!-- Posts -->
-        <SkeletonGrid v-if="loading && !displayPosts.length" :count="3" />
+        <SkeletonGrid v-if="(loading || bookmarksLoading) && !displayPosts.length" :count="3" />
 
         <TransitionGroup name="post-list" tag="div" class="post-list-container">
           <PostCard
@@ -227,7 +232,9 @@
 </template>
 
 <script setup lang="ts">
+import type { Post, Entity} from '~/types'
 useReveal()
+const { f: pc } = usePageContent('cong_dong')
 
 const MAX_CHARS = 500
 
@@ -253,7 +260,7 @@ const activeTab = ref<'latest' | 'trending' | 'bookmarks'>('latest')
 const sort = computed(() => activeTab.value === 'trending' ? 'trending' : 'latest')
 const filterType = ref('')
 const page = ref(1)
-const posts = ref<any[]>([])
+const posts = ref<Entity[]>([])
 const hasMore = ref(false)
 const loading = ref(false)
 const feedError = ref(false)
@@ -265,7 +272,7 @@ const previewImages = ref<string[]>([])
 const charRatio = computed(() => newContent.value.length / MAX_CHARS)
 
 // ── Bookmarks ──
-const bookmarks = ref<any[]>([])
+const bookmarks = ref<Entity[]>([])
 const bookmarksLoading = ref(false)
 const bookmarksPage = ref(1)
 const bookmarksHasMore = ref(false)
@@ -293,7 +300,7 @@ const canLoadMore = computed(() => {
 
 // ── Report entity ──
 const reportEntityId = computed(() => String(route.query.report || ''))
-const reportEntity = ref<any>(null)
+const reportEntity = ref<Record<string, unknown> | null>(null)
 const reportReason = ref('')
 const reportSubmitting = ref(false)
 const reportReasons = ['Thiếu nguồn xác minh', 'Tọa độ chưa đúng', 'Sai địa chỉ/khu vực', 'Nội dung cần cập nhật']
@@ -366,7 +373,7 @@ async function fetchFeed(reset = false) {
       sort: sort.value,
     })
     if (filterType.value) params.set('post_type', filterType.value)
-    const res = await $fetch<any>(`/api/feed?${params}`, {
+    const res = await $fetch<{ posts: Post[] }>(`/api/feed?${params}`, {
       headers: authHeaders(),
     })
     const newPosts = res.posts || res || []
@@ -387,7 +394,7 @@ async function fetchBookmarks(reset = false) {
   if (reset) { bookmarksPage.value = 1; bookmarks.value = [] }
   bookmarksLoading.value = true
   try {
-    const res = await $fetch<any>(`/api/me/bookmarks?page=${bookmarksPage.value}&limit=20`, {
+    const res = await $fetch<{ bookmarks: Post[] }>(`/api/me/bookmarks?page=${bookmarksPage.value}&limit=20`, {
       headers: authHeaders(),
     })
     const newPosts = res.posts || res || []
@@ -440,7 +447,7 @@ async function submitPost() {
     showToast('Đã đăng bài viết', 'success')
     activeTab.value = 'latest'
     await fetchFeed(true)
-  } catch (e: any) {
+  } catch (e: unknown) {
     showToast(e.data?.detail || 'Gửi bài thất bại', 'error')
   }
   posting.value = false
@@ -450,7 +457,7 @@ async function fetchReportEntity() {
   reportEntity.value = null
   if (!reportEntityId.value) return
   try {
-    reportEntity.value = await $fetch<any>(`/api/entities/${reportEntityId.value}`)
+    reportEntity.value = await $fetch<Entity>(`/api/entities/${reportEntityId.value}`)
     if (!reportReason.value) {
       reportReason.value = reportEntity.value?.quality?.has_source ? 'Nội dung cần cập nhật' : 'Thiếu nguồn xác minh'
     }
@@ -477,7 +484,7 @@ async function submitEntityReport() {
     const nextQuery = { ...route.query }
     delete nextQuery.report
     router.replace({ query: nextQuery })
-  } catch (e: any) {
+  } catch (e: unknown) {
     showToast(e.data?.detail || 'Không thể gửi báo cáo', 'error')
   }
   reportSubmitting.value = false
@@ -538,10 +545,10 @@ onUnmounted(() => {
 })
 
 useSeoMeta({
-  title: 'Cộng đồng du lịch Vĩnh Long — vinhlong360',
-  description: 'Chia sẻ trải nghiệm, đánh giá và kết nối với cộng đồng yêu du lịch Vĩnh Long, Bến Tre, Trà Vinh.',
-  ogTitle: 'Cộng đồng — vinhlong360',
-  ogDescription: 'Chia sẻ trải nghiệm, đánh giá và kết nối với cộng đồng yêu du lịch miền Tây.',
+  title: () => pc('seo_title'),
+  description: () => pc('seo_description'),
+  ogTitle: () => pc('og_title'),
+  ogDescription: () => pc('og_description'),
 })
 
 useHead({
@@ -575,20 +582,22 @@ useHead({
   min-height: 44px; padding: 0;
 }
 .compose-input::placeholder { color: var(--muted); }
-.threads-compose:focus-within { border-bottom-color: var(--ink); }
+.threads-compose { transition: background .3s var(--ease-out), border-color .3s var(--ease-out); border-radius: var(--radius-sm); margin: 0 calc(var(--space-2) * -1); padding: var(--space-4) var(--space-2); }
+.threads-compose:focus-within { background: var(--overlay-subtle); border-bottom-color: var(--ink); }
 .compose-footer { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); padding-top: var(--space-1); }
 .compose-footer-left { display: flex; align-items: center; gap: var(--space-3); }
 .compose-attach {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 36px; height: 36px; border-radius: var(--radius-full);
-  cursor: pointer; color: var(--muted); transition: background .2s, color .2s;
+  width: 44px; height: 44px; min-width: 44px; min-height: 44px; border-radius: var(--radius-full);
+  cursor: pointer; color: var(--muted); transition: background .3s var(--ease-out), color .3s var(--ease-out), transform .35s var(--ease-spring-gentle);
 }
-.compose-attach:hover { background: var(--bg-alt); color: var(--ink); }
+.compose-attach:hover { background: var(--bg-alt); color: var(--ink); transform: scale(1.08); }
+.compose-attach:active { transform: scale(.88); transition-duration: .08s; }
 .compose-attach:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .char-count { font-size: var(--text-xs); color: var(--muted); font-variant-numeric: tabular-nums; transition: color .2s; }
 .char-count.warn { color: var(--accent-dark); }
 .char-count.full { color: var(--error); font-weight: var(--weight-semibold); }
-.chip-sm { font-size: var(--text-xs); padding: 4px 10px; min-height: 32px; }
+.chip-sm { font-size: var(--text-xs); padding: var(--space-2) 10px; min-height: 44px; display: inline-flex; align-items: center; }
 
 .threads-compose-guest {
   display: flex; gap: var(--space-3); padding: var(--space-4) 0;
@@ -606,12 +615,20 @@ useHead({
   background: none; border: none; border-bottom: 2px solid transparent;
   font-size: var(--text-sm); font-weight: var(--weight-semibold);
   color: var(--muted); cursor: pointer; min-height: 44px;
-  transition: color .2s, border-color .2s;
+  transition: color .25s var(--ease-out);
+  position: relative;
+}
+.threads-tab::after {
+  content: ''; position: absolute; bottom: -1px; left: 20%; right: 20%;
+  height: 2px; background: var(--ink); border-radius: 1px;
+  transform: scaleX(0); transition: transform .3s var(--ease-spring-gentle);
 }
 .threads-tab:hover { color: var(--ink); }
+.threads-tab:hover::after { transform: scaleX(.5); }
 .threads-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.threads-tab.active { color: var(--ink); border-bottom-color: var(--ink); }
-.dark .threads-tab.active { border-bottom-color: var(--ink); }
+.threads-tab.active { color: var(--ink); border-bottom-color: transparent; }
+.threads-tab.active::after { transform: scaleX(1); }
+.dark .threads-tab.active { color: var(--ink); }
 
 /* ── Type filter ── */
 .type-filter-row {
@@ -621,10 +638,10 @@ useHead({
 }
 .type-filter-row::-webkit-scrollbar { display: none; }
 .chip-filter {
-  font-size: var(--text-xs); padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs); padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-full); border: .5px solid var(--line);
   background: var(--card); color: var(--muted); cursor: pointer;
-  white-space: nowrap; min-height: 32px;
+  white-space: nowrap; min-height: 44px; display: inline-flex; align-items: center;
   transition: background .2s, color .2s, border-color .2s, transform .25s var(--ease-spring-gentle);
 }
 .chip-filter:hover { border-color: var(--ink); color: var(--ink); }
@@ -649,17 +666,22 @@ useHead({
   background: var(--card); border: .5px solid var(--line);
   border-radius: var(--radius-lg); padding: var(--space-4);
   box-shadow: var(--shadow-xs);
+  transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo);
 }
+.sidebar-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
 .sidebar-card h3 { margin: 0 0 var(--space-3); font-size: var(--text-sm); font-weight: var(--weight-bold); }
 .sidebar-card p { margin: 0; font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
 
 .sidebar-stats { display: flex; gap: var(--space-4); margin-top: var(--space-3); padding-top: var(--space-3); border-top: .5px solid var(--line); }
-.sidebar-stat { display: flex; flex-direction: column; gap: 2px; }
-.stat-num { font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--ink); font-variant-numeric: tabular-nums; }
+.sidebar-stat { display: flex; flex-direction: column; gap: 2px; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); transition: background .3s var(--ease-out); cursor: default; }
+.sidebar-stat:hover { background: var(--overlay-subtle); }
+.stat-num { font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--ink); font-variant-numeric: tabular-nums; transition: color .3s var(--ease-out); }
+.sidebar-stat:hover .stat-num { color: var(--primary-fg); }
 .stat-label { font-size: var(--text-xs); color: var(--muted); }
 
-.sidebar-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
-.sidebar-list li { display: flex; gap: var(--space-3); align-items: flex-start; font-size: var(--text-sm); line-height: var(--leading-snug); }
+.sidebar-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.sidebar-list li { display: flex; gap: var(--space-3); align-items: flex-start; font-size: var(--text-sm); line-height: var(--leading-snug); padding: var(--space-2); border-radius: var(--radius-sm); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle); }
+.sidebar-list li:hover { background: var(--overlay-subtle); transform: translateX(2px); }
 .sl-icon { font-size: var(--text-lg); flex-shrink: 0; width: 24px; text-align: center; }
 .sl-desc { font-size: var(--text-xs); color: var(--muted); }
 .sidebar-list strong { font-weight: var(--weight-semibold); }
@@ -677,7 +699,9 @@ useHead({
   border: .5px solid var(--clay-100); border-radius: var(--radius-lg);
   background: var(--clay-50); box-shadow: var(--shadow-xs);
   animation: slideDown .35s var(--ease-spring-gentle);
+  transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo);
 }
+.report-entity-card:focus-within { border-color: var(--accent-dark); box-shadow: 0 0 0 4px rgba(var(--accent-rgb), .1), var(--shadow-sm); }
 @keyframes slideDown { from { opacity: 0; transform: translateY(-8px) scale(.99); } }
 .report-entity-card h2 { margin: 2px 0 var(--space-1); font-size: var(--text-base); font-weight: var(--weight-semibold); }
 .report-entity-card p { margin: 0; color: var(--muted); font-size: var(--text-sm); }
@@ -687,7 +711,8 @@ useHead({
 .report-form-inline .btn { justify-self: start; }
 
 .img-preview-row { display: flex; gap: var(--space-2); flex-wrap: wrap; animation: fadeIn .25s var(--ease-out); }
-.img-preview-item { position: relative; width: 64px; height: 64px; border-radius: var(--radius-sm); overflow: hidden; }
+.img-preview-item { position: relative; width: 64px; height: 64px; border-radius: var(--radius-sm); overflow: hidden; transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
+.img-preview-item:hover { transform: scale(1.08); box-shadow: var(--shadow-sm); }
 .img-preview-item img { width: 100%; height: 100%; object-fit: cover; }
 .img-preview-item .remove { position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; border-radius: 50%; background: var(--overlay-dark); color: var(--text-on-dark, #fff); border: none; cursor: pointer; font-size: .7rem; display: flex; align-items: center; justify-content: center; transition: background .2s, transform .25s var(--ease-spring-gentle); }
 .img-preview-item .remove:hover { background: var(--error); transform: scale(1.1); }
@@ -721,6 +746,10 @@ useHead({
 .dark .chip-filter { background: var(--bg-alt); border-color: var(--line); }
 .dark .chip-filter.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .dark .scroll-top-fab { background: var(--card); border-color: rgba(255,255,255,.1); box-shadow: 0 8px 32px rgba(0,0,0,.5); }
+.dark .sidebar-stat:hover { background: rgba(255,255,255,.03); }
+.dark .sidebar-list li:hover { background: rgba(255,255,255,.03); }
+.dark .report-entity-card { background: rgba(232,163,61,.06); border-color: rgba(232,163,61,.15); }
+.dark .compose-attach:hover { background: rgba(255,255,255,.08); }
 
 @media (max-width: 820px) {
   .threads-layout { grid-template-columns: 1fr; }
@@ -737,5 +766,11 @@ useHead({
   .post-list-move,
   .fab-fade-enter-active,
   .fab-fade-leave-active { transition: none; }
+  .sidebar-card { transition: none; }
+  .sidebar-card:hover { transform: none; }
+  .sidebar-list li:hover { transform: none; }
+  .img-preview-item:hover { transform: none; }
+  .compose-attach:hover { transform: none; }
+  .threads-tab::after { transition: none; }
 }
 </style>

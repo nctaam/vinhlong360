@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{ count?: number }>()
+withDefaults(defineProps<{ count?: number }>(), { count: 6 })
 </script>
 
 <style scoped>

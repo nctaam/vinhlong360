@@ -7,8 +7,8 @@
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true">🍊</span>
         <div>
-          <h1>Đặc sản địa phương</h1>
-          <p>Trái cây theo mùa, đặc sản làm quà, sản phẩm OCOP — biết mùa nào ngon, mua ở đâu, ai sản xuất.</p>
+          <h1>{{ pc('hero_title') }}</h1>
+          <p>{{ pc('hero_subtitle') }}</p>
         </div>
       </div>
       <div v-if="allEntities.length" class="catalog-stats">
@@ -62,7 +62,7 @@
     <section ref="gridSection" class="block">
       <div class="controls">
         <div class="search-row">
-          <input v-model="q" type="search" placeholder="Tìm trong sản phẩm…" aria-label="Tìm sản phẩm" />
+          <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm trong sản phẩm…" aria-label="Tìm sản phẩm" />
         </div>
         <p class="control-label">Theo tháng</p>
         <div class="chip-row" role="group" aria-label="Lọc theo tháng">
@@ -77,7 +77,11 @@
         </div>
       </div>
       <p class="result-meta" aria-live="polite">{{ filtered.length }} kết quả</p>
-      <EmptyState v-if="fetchError" icon="⚠️" title="Không thể tải dữ liệu" message="Vui lòng thử lại sau." />
+      <EmptyState v-if="fetchError" icon="⚠️" title="Không thể tải dữ liệu" message="Lỗi kết nối. Thử tải lại nhé.">
+        <template #actions>
+          <button type="button" class="btn btn-outline" @click="refreshNuxtData('catalog-products')">Thử lại</button>
+        </template>
+      </EmptyState>
       <SkeletonGrid v-else-if="!data" :count="6" />
       <div v-else-if="filtered.length" class="grid">
         <EntityCard v-for="e in filtered" :key="e.id" :entity="e" :season-filter="seasonFilter" />
@@ -116,9 +120,11 @@
 </template>
 
 <script setup lang="ts">
+import type { Entity } from '~/types'
 import { inSeason, relevanceScore } from '~/composables/useSeason'
 
 useReveal()
+const { f: pc } = usePageContent('san_pham')
 const currentMonth = new Date().getMonth() + 1
 
 const q = ref('')
@@ -129,7 +135,7 @@ const gridSection = ref<HTMLElement | null>(null)
 useFilterUrl({ mua: seasonFilter }, { mua: String(currentMonth) })
 
 const { data, error: fetchError } = await useAsyncData('catalog-products', () =>
-  $fetch<any>('/api/entities?type=product&limit=200')
+  $fetch<{ entities: Entity[] }>('/api/entities?type=product&limit=200')
 )
 
 const allEntities = computed(() => {
@@ -138,19 +144,19 @@ const allEntities = computed(() => {
   return raw.entities || []
 })
 
-const ocopCount = computed(() => allEntities.value.filter((e: any) => e.attributes?.ocop).length)
-const inSeasonCount = computed(() => allEntities.value.filter((e: any) => inSeason(e, String(currentMonth))).length)
+const ocopCount = computed(() => allEntities.value.filter((e: Entity) => e.attributes?.ocop).length)
+const inSeasonCount = computed(() => allEntities.value.filter((e: Entity) => inSeason(e, String(currentMonth))).length)
 
 const seasonalHighlights = computed(() => {
   return allEntities.value
-    .filter((e: any) => inSeason(e, String(currentMonth)))
-    .sort((a: any, b: any) => relevanceScore(b, String(currentMonth)) - relevanceScore(a, String(currentMonth)))
+    .filter((e: Entity) => inSeason(e, String(currentMonth)))
+    .sort((a: Entity, b: Entity) => relevanceScore(b, String(currentMonth)) - relevanceScore(a, String(currentMonth)))
     .slice(0, 8)
 })
 
 const ocopHighlights = computed(() => {
   return allEntities.value
-    .filter((e: any) => e.attributes?.ocop)
+    .filter((e: Entity) => e.attributes?.ocop)
     .slice(0, 8)
 })
 
@@ -162,30 +168,30 @@ const filtered = computed(() => {
   let list = allEntities.value
 
   if (seasonFilter.value !== 'all') {
-    list = list.filter((e: any) => inSeason(e, seasonFilter.value))
+    list = list.filter((e: Entity) => inSeason(e, seasonFilter.value))
   }
 
   if (ocopOnly.value) {
-    list = list.filter((e: any) => e.attributes?.ocop)
+    list = list.filter((e: Entity) => e.attributes?.ocop)
   }
 
   if (q.value.trim()) {
     const query = q.value.toLowerCase()
-    list = list.filter((e: any) =>
+    list = list.filter((e: Entity) =>
       (e.name || '').toLowerCase().includes(query) ||
       (e.summary || '').toLowerCase().includes(query)
     )
   }
 
-  list.sort((a: any, b: any) => relevanceScore(b, seasonFilter.value) - relevanceScore(a, seasonFilter.value))
+  list.sort((a: Entity, b: Entity) => relevanceScore(b, seasonFilter.value) - relevanceScore(a, seasonFilter.value))
   return list
 })
 
 useSeoMeta({
-  title: 'Đặc sản & sản phẩm OCOP Vĩnh Long — vinhlong360',
-  description: 'Đặc sản & sản phẩm OCOP Vĩnh Long theo mùa — biết mùa nào ngon, mua ở đâu, ai sản xuất. Lọc theo mùa vụ, sao OCOP và khu vực miền Tây.',
-  ogTitle: 'Đặc sản Vĩnh Long theo mùa — vinhlong360',
-  ogDescription: 'Sản phẩm OCOP, trái cây, đặc sản miệt vườn theo mùa vụ.',
+  title: () => pc('seo_title'),
+  description: () => pc('seo_description'),
+  ogTitle: () => pc('og_title'),
+  ogDescription: () => pc('og_description'),
 })
 
 useHead({

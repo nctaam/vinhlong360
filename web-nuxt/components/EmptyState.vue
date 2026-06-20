@@ -1,6 +1,6 @@
 <template>
-  <div class="empty-state" role="status">
-    <span v-if="icon" class="empty-icon">{{ icon }}</span>
+  <div class="empty-state" :role="tone === 'error' ? 'alert' : 'status'">
+    <span v-if="icon" class="empty-icon" aria-hidden="true">{{ icon }}</span>
     <svg v-else viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="empty-illust">
       <circle cx="100" cy="70" r="50" fill="var(--bg-warm)" />
       <circle cx="100" cy="70" r="35" fill="var(--bg)" />
@@ -26,6 +26,7 @@ defineProps<{
   message?: string
   icon?: string
   title?: string
+  tone?: 'empty' | 'error'
 }>()
 </script>
 

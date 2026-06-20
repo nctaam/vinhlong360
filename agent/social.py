@@ -229,12 +229,21 @@ async def get_feed(
         """)
         params.append(area)
 
+    if user:
+        conditions.append(f"""
+            p.user_id NOT IN (
+                SELECT blocked_id FROM blocks WHERE blocker_id = {ph}::uuid
+            )
+        """)
+        params.append(str(user["id"]))
+
     where = " AND ".join(conditions)
+    where_params = list(params)
 
     month = datetime.now().month
     month_str = str(month)
 
-    params.extend([month_str, month_str, limit, offset])
+    query_params = where_params + [month_str, month_str, limit, offset]
 
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
@@ -252,13 +261,13 @@ async def get_feed(
                 DESC,
                 p.created_at DESC
             LIMIT {ph} OFFSET {ph}
-        """, params)
+        """, query_params)
 
         total = db._fetchone(conn, f"""
             SELECT COUNT(*) as c FROM posts p
             LEFT JOIN entities e ON e.id = p.entity_id
             WHERE {where}
-        """, params[:len(params) - 4])  # without month, limit, offset
+        """, where_params)
 
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
 
@@ -600,16 +609,27 @@ def _format_post(row: dict) -> dict:
 
     return {
         "id": str(row["id"]),
+        "user_id": str(row.get("user_id", "")),
         "content": row["content"],
         "post_type": row.get("post_type", "share"),
         "post_type_label": POST_TYPE_LABELS.get(row.get("post_type", "share"), "Chia sẻ"),
         "rating": row.get("rating"),
         "images": images,
         "like_count": row.get("like_count", 0),
+        "likes": row.get("like_count", 0),
         "comment_count": row.get("comment_count", 0),
+        "comments_count": row.get("comment_count", 0),
         "is_liked": row.get("is_liked", False),
+        "user_liked": row.get("is_liked", False),
         "is_bookmarked": row.get("is_bookmarked", False),
+        "user_bookmarked": row.get("is_bookmarked", False),
         "created_at": str(row.get("created_at", "")),
+        "display_name": row.get("display_name", ""),
+        "avatar": row.get("avatar_url"),
+        "phone": row.get("phone", ""),
+        "entity_id": row.get("entity_id"),
+        "entity_name": row.get("entity_name"),
+        "entity_type": row.get("entity_type"),
         "author": {
             "id": str(row.get("user_id", "")),
             "display_name": row.get("display_name", ""),

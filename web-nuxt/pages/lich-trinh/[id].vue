@@ -24,13 +24,14 @@
     <ClientOnly>
       <div v-if="stopsWithCoords.length >= 2" class="transport-mode transport-mode-spaced">
         <span class="tm-label">Phương tiện:</span>
-        <button type="button" v-for="m in transportModes" :key="m.value" :class="['chip', { active: transportMode === m.value }]" @click="switchMode(m.value)">
+        <button type="button" v-for="m in transportModes" :key="m.value" :class="['chip', { active: transportMode === m.value }]" :aria-pressed="transportMode === m.value" @click="switchMode(m.value)">
           {{ m.icon }} {{ m.label }}
         </button>
         <div v-if="routeResult" class="route-total">
           {{ formatDistance(routeResult.totalDistance) }} · {{ formatDuration(routeResult.totalDuration) }}
         </div>
         <div v-if="routeLoading" class="route-total route-loading">Đang tính...</div>
+        <div v-if="routeError && !routeLoading" class="route-total" role="status">Chưa tính được lộ trình. <button type="button" class="chip" @click="computeRoute">Thử lại</button></div>
       </div>
     </ClientOnly>
 
@@ -65,7 +66,10 @@
     <ClientOnly>
       <div v-if="stopsWithCoords.length >= 2" class="route-map-section reveal">
         <h3>Bản đồ lộ trình</h3>
-        <div ref="routeMapEl" class="route-map"></div>
+        <div class="route-map-wrap">
+          <div v-if="routeLoading" class="route-map-loading" role="status">🗺️ Đang vẽ lộ trình…</div>
+          <div ref="routeMapEl" class="route-map"></div>
+        </div>
       </div>
     </ClientOnly>
 
@@ -84,6 +88,7 @@
 </template>
 
 <script setup lang="ts">
+import type { Itinerary, Entity} from '~/types'
 import { TYPE_META, AREA_META } from '~/composables/useConstants'
 import { fetchRoute, formatDistance, formatDuration, type TransportMode, type RouteResult, type RouteLeg } from '~/composables/useRouting'
 
@@ -93,7 +98,7 @@ const route = useRoute()
 const id = route.params.id as string
 
 const { data: itinerary, error: fetchError } = await useAsyncData(`itinerary-${id}`, () =>
-  $fetch<any>(`/api/itineraries/${id}`)
+  $fetch<Itinerary>(`/api/itineraries/${id}`)
 )
 
 if (fetchError.value) {
@@ -148,9 +153,9 @@ interface StopCoord {
 const stopsWithCoords = ref<StopCoord[]>([])
 
 const { createMap: createNDAMap } = useNDAMap()
-let mapInstance: any = null
-let maplibre: any = null
-let markers: any[] = []
+let mapInstance: unknown = null
+let maplibre: unknown = null
+let markers: unknown[] = []
 
 function extractCoords(raw: any): [number, number] | undefined {
   let c = raw
@@ -177,12 +182,14 @@ function loadCoords() {
   stopsWithCoords.value = results
 }
 
+const routeError = ref(false)
 async function computeRoute() {
   const coords = stopsWithCoords.value.map(s => s.coords)
-  if (coords.length < 2) { routeResult.value = null; return }
+  if (coords.length < 2) { routeResult.value = null; routeError.value = false; return }
 
   routeLoading.value = true
   routeResult.value = await fetchRoute(coords, transportMode.value)
+  routeError.value = !routeResult.value
   routeLoading.value = false
   renderMap(routeResult.value)
 }
@@ -237,14 +244,14 @@ async function renderMap(result: RouteResult | null) {
         paint: { 'line-color': '#2563eb', 'line-width': 4, 'line-opacity': 0.8 },
       })
       const bounds = coords.reduce(
-        (b: any, c: number[]) => b.extend(c),
+        (b: { extend: (c: number[]) => typeof b }, c: number[]) => b.extend(c),
         new maplibre.LngLatBounds(coords[0], coords[0])
       )
       mapInstance.fitBounds(bounds, { padding: 40 })
     } else {
       const coords = stops.map(s => [s.coords[1], s.coords[0]])
       const bounds = coords.reduce(
-        (b: any, c: number[]) => b.extend(c),
+        (b: { extend: (c: number[]) => typeof b }, c: number[]) => b.extend(c),
         new maplibre.LngLatBounds(coords[0], coords[0])
       )
       mapInstance.fitBounds(bounds, { padding: 40 })
@@ -291,7 +298,7 @@ if (itinerary.value && !itinerary.value.error) {
   if (it.stops?.length) {
     ld.itinerary = {
       '@type': 'ItemList',
-      itemListElement: it.stops.map((s: any, i: number) => ({
+      itemListElement: it.stops.map((s: Record<string, unknown>, i: number) => ({
         '@type': 'ListItem',
         position: i + 1,
         name: s.name || s.id,
@@ -348,6 +355,8 @@ if (itinerary.value && !itinerary.value.error) {
 .route-map-section { margin-top: var(--space-6); }
 .route-map-section h3 { font-size: var(--text-lg); font-weight: var(--weight-semibold); margin-bottom: var(--space-3); }
 .route-map { height: 400px; border-radius: var(--radius-lg); overflow: hidden; border: .5px solid var(--line); box-shadow: var(--shadow-sm); transition: box-shadow .35s var(--ease-out-expo); }
+.route-map-wrap { position: relative; }
+.route-map-loading { position: absolute; inset: 0; z-index: 1; display: flex; align-items: center; justify-content: center; gap: var(--space-2); background: var(--bg-alt); color: var(--muted); border-radius: var(--radius-lg); font-size: var(--text-sm); }
 .route-map:hover { box-shadow: var(--shadow-md); }
 
 /* Route leg pill */

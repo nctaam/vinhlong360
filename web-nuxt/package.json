@@ -8,7 +8,8 @@
     "build": "nuxt build",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "test": "vitest run"
   },
   "dependencies": {
     "maplibre-gl": "^5.24.0",
@@ -19,6 +20,9 @@
   "devDependencies": {
     "@nuxt/fonts": "^0.14.0",
     "@nuxt/image": "^2.0.0",
-    "@nuxtjs/color-mode": "^4.0.1"
+    "@nuxt/test-utils": "^4.0.3",
+    "@nuxtjs/color-mode": "^4.0.1",
+    "happy-dom": "^20.10.6",
+    "vitest": "^4.1.9"
   }
 }

@@ -42,6 +42,14 @@ def invalidate_place_cache():
 REPORTS_FILE = Path(__file__).resolve().parent / "data" / "reports.jsonl"
 _VALID_TARGET_TYPES = {"facility", "entity", "post", "comment", "other"}
 
+import site_settings
+
+
+@router.get("/site-settings")
+async def get_site_settings():
+    """Public flat {key: value} dict of all site settings (cached 60s)."""
+    return site_settings.get_all_public()
+
 def _get_place(place_id: str) -> dict | None:
     if place_id in _place_cache:
         return _place_cache[place_id]
@@ -500,7 +508,17 @@ async def homepage_curated():
         11: "Cuối năm — khám phá làng nghề và đặc sản Tết",
         12: "Mùa Tết đang đến — đặc sản và quà tặng miệt vườn",
     }
-    seasonal_tagline = _TAGLINES.get(month, "Khám phá miệt vườn theo cách của người bản địa")
+    # A7: admin can override taglines via site_settings (homepage.seasonal_taglines:
+    # a {"<month>": "<text>"} object). Falls back to defaults; {} on SQLite.
+    seasonal_tagline = ""
+    try:
+        _ov = site_settings.get_all_public().get("homepage.seasonal_taglines")
+        if isinstance(_ov, dict):
+            seasonal_tagline = _ov.get(str(month)) or _ov.get(month) or ""
+    except Exception:
+        seasonal_tagline = ""
+    if not seasonal_tagline:
+        seasonal_tagline = _TAGLINES.get(month, "Khám phá miệt vườn theo cách của người bản địa")
 
     for section in [seasonal, experiences, products]:
         for e in section:

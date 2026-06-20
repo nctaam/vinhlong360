@@ -128,8 +128,14 @@ def fetch_page(path: str) -> str:
 
 
 def extract_with_llm(page_text: str, url: str) -> dict | None:
-    """Dùng LLM mini trích xuất thông tin có cấu trúc."""
+    """Dùng LLM mini trích xuất thông tin có cấu trúc.
+
+    B6 compliance: chỉ trích xuất tiêu đề + loại + địa chỉ + thông tin liên hệ.
+    summary giới hạn 200 ký tự, KHÔNG sao chép nguyên văn nội dung gốc.
+    """
     prompt = f"""Trích xuất thông tin du lịch từ nội dung trang web sau thành JSON.
+QUAN TRỌNG: Chỉ trích xuất dữ kiện (tên, loại, địa chỉ, SĐT, giờ, giá).
+KHÔNG sao chép nguyên văn nội dung. Summary phải tự viết lại, tối đa 200 ký tự.
 
 URL: {BASE_URL}{url}
 
@@ -141,7 +147,7 @@ Trả về JSON duy nhất (không markdown, không giải thích) với cấu t
   "name": "Tên địa điểm/dịch vụ",
   "type": "attraction|accommodation|experience|craft_village|product|dish",
   "address": "Địa chỉ đầy đủ (xã, huyện, tỉnh)",
-  "summary": "Mô tả ngắn 1-2 câu (tiếng Việt)",
+  "summary": "Mô tả ngắn tự viết lại, tối đa 200 ký tự (tiếng Việt)",
   "services": ["dịch vụ 1", "dịch vụ 2"],
   "price": "Giá tham khảo nếu có, null nếu không",
   "hours": "Giờ mở cửa nếu có, null nếu không",
@@ -184,12 +190,15 @@ def to_entity(extracted: dict, url: str) -> dict:
     if extracted.get("services"):
         attrs["dich_vu"] = ", ".join(extracted["services"][:5])
 
+    # B6: truncate summary to 200 chars, never store full article text
+    summary = (extracted.get("summary", "") or "")[:200]
+
     return {
         "id": slug,
         "type": entity_type,
         "name": name,
         "placeId": place_id,
-        "summary": extracted.get("summary", ""),
+        "summary": summary,
         "season": None,
         "attributes": attrs,
         "source": {

@@ -14,7 +14,13 @@ export function itineraryUrl(id: string) {
   return canonicalUrl(`/lich-trinh/${encodeURIComponent(id)}`)
 }
 
-export function itemListJsonLd(name: string, description: string, path: string, items: any[] = []) {
+interface ListableItem {
+  id?: string
+  name?: string
+  title?: string
+}
+
+export function itemListJsonLd(name: string, description: string, path: string, items: ListableItem[] = []) {
   return {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
@@ -23,17 +29,17 @@ export function itemListJsonLd(name: string, description: string, path: string, 
     url: canonicalUrl(path),
     mainEntity: {
       '@type': 'ItemList',
-      itemListElement: items.slice(0, 24).map((item: any, index: number) => ({
+      itemListElement: items.slice(0, 24).map((item, index) => ({
         '@type': 'ListItem',
         position: index + 1,
         name: item.name || item.title || item.id,
         url: item.id ? entityDetailUrl(String(item.id)) : undefined,
-      })).map((item: Record<string, any>) => Object.fromEntries(Object.entries(item).filter(([, value]) => value !== undefined))),
+      })).map((item) => Object.fromEntries(Object.entries(item).filter(([, value]) => value !== undefined))),
     },
   }
 }
 
-export function itineraryItemListJsonLd(name: string, description: string, path: string, items: any[] = []) {
+export function itineraryItemListJsonLd(name: string, description: string, path: string, items: ListableItem[] = []) {
   return {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
@@ -42,12 +48,12 @@ export function itineraryItemListJsonLd(name: string, description: string, path:
     url: canonicalUrl(path),
     mainEntity: {
       '@type': 'ItemList',
-      itemListElement: items.slice(0, 24).map((item: any, index: number) => ({
+      itemListElement: items.slice(0, 24).map((item, index) => ({
         '@type': 'ListItem',
         position: index + 1,
         name: item.title || item.name || item.id,
         url: item.id ? itineraryUrl(String(item.id)) : undefined,
-      })).map((item: Record<string, any>) => Object.fromEntries(Object.entries(item).filter(([, value]) => value !== undefined))),
+      })).map((item) => Object.fromEntries(Object.entries(item).filter(([, value]) => value !== undefined))),
     },
   }
 }

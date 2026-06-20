@@ -91,6 +91,17 @@ async def mark_all_read(user=Depends(require_user)):
     return {"success": True}
 
 
+@router.post("/notifications/{notif_id}/read")
+async def mark_notification_read(notif_id: str, user=Depends(require_user)):
+    ph = db._ph
+    with db._conn() as conn:
+        db._execute(conn, f"""
+            UPDATE notifications SET is_read = TRUE
+            WHERE id::text = {ph} AND user_id = {ph}::uuid
+        """, (notif_id, str(user["id"])))
+    return {"success": True}
+
+
 def create_notification(user_id: str, notif_type: str, title: str,
                         body: str = None, ref_type: str = None, ref_id: str = None):
     """Create a notification (called internally by other modules)."""

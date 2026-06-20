@@ -7,8 +7,8 @@
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true">📅</span>
         <div>
-          <h1>Tháng {{ month }} — đi đâu, ăn gì?</h1>
-          <p>Trải nghiệm, đặc sản &amp; món ăn đang vào mùa ở Vĩnh Long, Bến Tre, Trà Vinh.</p>
+          <h1>{{ pc('hero_title', 'Tháng ' + month + ' — đi đâu, ăn gì?') }}</h1>
+          <p>{{ pc('hero_subtitle') }}</p>
         </div>
       </div>
       <div v-if="inSeasonItems.length" class="catalog-stats">
@@ -36,6 +36,7 @@
         <button type="button"
           v-for="m in 12" :key="m"
           :class="['quick-pick', { active: m === month }]"
+          :aria-pressed="m === month"
           @click="month = m"
         >
           <span class="quick-pick-label">Tháng {{ m }}</span>
@@ -141,9 +142,11 @@
 </template>
 
 <script setup lang="ts">
+import type { Entity } from '~/types'
 import { TYPE_META } from '~/composables/useConstants'
 
 useReveal()
+const { f: pc } = usePageContent('theo_mua')
 const { relevanceScore, seasonText } = useSeason()
 
 const month = ref(new Date().getMonth() + 1)
@@ -157,26 +160,26 @@ const TYPE_DESC: Record<string, string> = {
 }
 
 const { data, error: fetchError } = await useAsyncData('season-entities', () =>
-  $fetch<any>('/api/entities?limit=300'),
+  $fetch<{ entities: Entity[] }>('/api/entities?limit=300'),
 )
 
 const wedge = computed(() =>
-  (data.value?.entities || []).filter((e: any) => WEDGE_TYPES.includes(e.type)),
+  (data.value?.entities || []).filter((e: Entity) => WEDGE_TYPES.includes(e.type)),
 )
 
-function score(e: any) { return relevanceScore(e, String(month.value)) }
-function isInSeason(e: any) { return (e.season?.months || []).includes(month.value) }
-function isPeak(e: any) { return (e.season?.peak || []).includes(month.value) }
+function score(e: Entity) { return relevanceScore(e, String(month.value)) }
+function isInSeason(e: Entity) { return (e.season?.months || []).includes(month.value) }
+function isPeak(e: Entity) { return (e.season?.peak || []).includes(month.value) }
 
 const ranked = computed(() =>
   wedge.value
-    .filter((e: any) => score(e) >= 2)
-    .sort((a: any, b: any) => score(b) - score(a)),
+    .filter((e: Entity) => score(e) >= 2)
+    .sort((a: Entity, b: Entity) => score(b) - score(a)),
 )
-const inSeasonItems = computed(() => wedge.value.filter((e: any) => isInSeason(e)))
-const peakCount = computed(() => wedge.value.filter((e: any) => isPeak(e)).length)
+const inSeasonItems = computed(() => wedge.value.filter((e: Entity) => isInSeason(e)))
+const peakCount = computed(() => wedge.value.filter((e: Entity) => isPeak(e)).length)
 const peakItems = computed(() =>
-  wedge.value.filter((e: any) => isPeak(e)).slice(0, 8)
+  wedge.value.filter((e: Entity) => isPeak(e)).slice(0, 8)
 )
 
 const typeStats = computed(() =>
@@ -184,7 +187,7 @@ const typeStats = computed(() =>
     .map(t => ({
       type: t,
       label: TYPE_META[t]?.label || t,
-      count: inSeasonItems.value.filter((e: any) => e.type === t).length,
+      count: inSeasonItems.value.filter((e: Entity) => e.type === t).length,
     }))
     .filter(s => s.count > 0)
 )
@@ -196,20 +199,20 @@ const typeSections = computed(() =>
       emoji: TYPE_META[t]?.emoji || '',
       label: TYPE_META[t]?.label || t,
       desc: TYPE_DESC[t] || '',
-      items: ranked.value.filter((e: any) => e.type === t),
+      items: ranked.value.filter((e: Entity) => e.type === t),
     }))
     .filter(c => c.items.length > 0)
 )
 
 function countByMonth(m: number) {
-  return wedge.value.filter((e: any) => (e.season?.months || []).includes(m)).length
+  return wedge.value.filter((e: Entity) => (e.season?.months || []).includes(m)).length
 }
 
 useSeoMeta({
-  title: () => `Tháng ${month.value}: đi đâu, ăn gì ở Vĩnh Long — vinhlong360`,
-  description: 'Trải nghiệm, đặc sản và món ăn đang vào mùa theo từng tháng tại Vĩnh Long, Bến Tre, Trà Vinh.',
-  ogTitle: 'Bản đồ trải nghiệm theo mùa — vinhlong360',
-  ogDescription: 'Tháng này miền Tây có gì? Khám phá đặc sản & trải nghiệm đúng mùa.',
+  title: () => pc('seo_title', `Tháng ${month.value}: đi đâu, ăn gì ở Vĩnh Long — vinhlong360`),
+  description: () => pc('seo_description'),
+  ogTitle: () => pc('og_title'),
+  ogDescription: () => pc('og_description'),
 })
 useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/theo-mua') }] })
 </script>

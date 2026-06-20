@@ -183,7 +183,7 @@ def main():
                 "type": entity_type,
                 "name": name,
                 "placeId": guess_place_id(addr, province_old),
-                "summary": item.get("desc", ""),
+                "summary": (item.get("desc", "") or "")[:200],
                 "source": {"title": "baovinhlong.com.vn", "url": SOURCE_URL},
                 "status": "provisional",
                 "verified": False,

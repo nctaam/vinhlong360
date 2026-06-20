@@ -43,7 +43,11 @@
     </div>
 
     <p class="result-meta" aria-live="polite">{{ filtered.length }} kết quả</p>
-    <EmptyState v-if="fetchError" icon="⚠️" title="Không thể tải dữ liệu" message="Vui lòng thử lại sau." />
+    <EmptyState v-if="fetchError" tone="error" icon="⚠️" title="Không thể tải dữ liệu" message="Lỗi kết nối. Vui lòng thử lại.">
+      <template #actions>
+        <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData(`interest-${interest}`)">Thử lại</button>
+      </template>
+    </EmptyState>
     <SkeletonGrid v-else-if="!data" :count="6" />
     <div v-else-if="filtered.length" class="grid">
       <EntityCard v-for="e in filtered" :key="e.id" :entity="e" />
@@ -76,54 +80,10 @@
 </template>
 
 <script setup lang="ts">
-import { AREA_META } from '~/composables/useConstants'
+import type { Entity } from '~/types'
+import { AREA_META, INTEREST_META } from '~/composables/useConstants'
 
 useReveal()
-
-interface InterestDef {
-  emoji: string
-  label: string
-  description: string
-  types: string[]
-  relatedRoutes?: string[]
-}
-
-const INTEREST_META: Record<string, InterestDef> = {
-  'am-thuc': {
-    emoji: '🍲',
-    label: 'Ẩm thực',
-    description: 'Món ngon miền Tây — từ bún nước lèo, bánh xèo đến đặc sản trái cây theo mùa.',
-    types: ['dish', 'product'],
-    relatedRoutes: ['vong-am-thuc-mien-tay'],
-  },
-  'thien-nhien': {
-    emoji: '🌿',
-    label: 'Thiên nhiên',
-    description: 'Miệt vườn sông nước, cù lao xanh mát, vườn trái cây và đồng lúa bát ngàn.',
-    types: ['experience', 'attraction'],
-    relatedRoutes: ['vong-trai-cay-vinh-long', 'vong-mua-nuoc-noi'],
-  },
-  'van-hoa': {
-    emoji: '🛕',
-    label: 'Văn hóa',
-    description: 'Di tích lịch sử, chùa Khmer cổ, lễ hội truyền thống và đời sống bản địa.',
-    types: ['attraction', 'craft_village'],
-    relatedRoutes: ['vong-chua-khmer-tra-vinh'],
-  },
-  'lang-nghe': {
-    emoji: '🏺',
-    label: 'Làng nghề',
-    description: 'Gốm Mang Thít, kẹo dừa, chiếu lác, bánh tráng — nghề truyền thống hàng trăm năm.',
-    types: ['craft_village', 'organization'],
-    relatedRoutes: ['vong-lang-nghe-mang-thit'],
-  },
-  'mua-sam': {
-    emoji: '🛍️',
-    label: 'Mua sắm & OCOP',
-    description: 'Sản phẩm OCOP, đặc sản làm quà, trái cây tươi và hàng thủ công mỹ nghệ.',
-    types: ['product'],
-  },
-}
 
 const route = useRoute()
 const interest = route.params.interest as string
@@ -144,16 +104,16 @@ const areaFilter = ref('all')
 useFilterUrl({ vung: areaFilter }, { vung: 'all' })
 
 const { data, error: fetchError } = await useAsyncData(`interest-${interest}`, () =>
-  $fetch<any>('/api/entities?limit=200')
+  $fetch<{ entities: Entity[] }>('/api/entities?limit=200')
 )
 
 const filtered = computed(() => {
   const raw = data.value
   if (!raw) return []
-  let list = (raw.entities || []).filter((e: any) => interestMeta.value.types.includes(e.type))
+  let list = (raw.entities || []).filter((e: Entity) => interestMeta.value.types.includes(e.type))
 
   if (areaFilter.value !== 'all') {
-    list = list.filter((e: any) => (e.place_area || e.area) === areaFilter.value)
+    list = list.filter((e: Entity) => (e.place_area || e.area) === areaFilter.value)
   }
 
   return list

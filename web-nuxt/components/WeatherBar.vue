@@ -11,10 +11,11 @@
 </template>
 
 <script setup lang="ts">
-const weather = ref<any>(null)
+const weather = ref<Record<string, any> | null>(null)
+let timer: ReturnType<typeof setInterval> | null = null
 
 const tempC = computed(() => weather.value?.temp_c ?? weather.value?.temp ?? weather.value?.temperature ?? null)
-const desc = computed(() => weather.value?.description || weather.value?.condition || '')
+const desc = computed(() => (weather.value?.description || weather.value?.condition || '') as string)
 const areaName = computed(() => weather.value?.area_name || 'Vĩnh Long')
 
 const weatherIcon = computed(() => {
@@ -25,12 +26,19 @@ const weatherIcon = computed(() => {
   return '🌤️'
 })
 
-onMounted(async () => {
+async function fetchWeather() {
   try {
-    const res = await $fetch<any>('/weather?area=vinh-long')
+    const res = await $fetch<Record<string, any>>('/weather?area=vinh-long')
     if (res && !res.error) weather.value = res
-  } catch { /* weather not available */ }
+  } catch { /* weather unavailable — keep last value or stay hidden */ }
+}
+
+onMounted(() => {
+  fetchWeather()
+  // Refresh every 30 min so the bar doesn't go stale if the page stays open.
+  timer = setInterval(fetchWeather, 30 * 60 * 1000)
 })
+onUnmounted(() => { if (timer) clearInterval(timer) })
 </script>
 
 <style scoped>

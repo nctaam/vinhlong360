@@ -96,6 +96,8 @@ CREATE TABLE IF NOT EXISTS users (
     bio           TEXT DEFAULT '',
     role          TEXT DEFAULT 'user' CHECK (role IN ('user', 'moderator', 'admin')),
     is_active     BOOLEAN DEFAULT TRUE,
+    consent_at    TIMESTAMPTZ,
+    consent_version TEXT,
     created_at    TIMESTAMPTZ DEFAULT NOW(),
     updated_at    TIMESTAMPTZ DEFAULT NOW()
 );
@@ -137,7 +139,7 @@ CREATE TABLE IF NOT EXISTS posts (
     entity_id         TEXT REFERENCES entities(id) ON DELETE SET NULL,
     content           TEXT NOT NULL,
     images            JSONB DEFAULT '[]',
-    post_type         TEXT DEFAULT 'post' CHECK (post_type IN ('post', 'review')),
+    post_type         TEXT DEFAULT 'share' CHECK (post_type IN ('share', 'review', 'recommend', 'question')),
     rating            SMALLINT CHECK (rating IS NULL OR (rating >= 1 AND rating <= 5)),
     moderation_status TEXT DEFAULT 'pending' CHECK (moderation_status IN ('pending', 'approved', 'rejected', 'flagged')),
     like_count        INTEGER DEFAULT 0,
@@ -184,6 +186,18 @@ CREATE TABLE IF NOT EXISTS entity_ratings (
     rating_count INTEGER DEFAULT 0,
     updated_at   TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Saved entities (favorites) synced to user account (P1). entity_id is TEXT
+-- (entity ids are slugs). `snapshot` keeps a lightweight copy (name/type/image)
+-- so a new device can render saved cards without N detail fetches.
+CREATE TABLE IF NOT EXISTS saved_entities (
+    user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    entity_id  TEXT NOT NULL,
+    snapshot   JSONB DEFAULT '{}',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (user_id, entity_id)
+);
+CREATE INDEX IF NOT EXISTS idx_saved_entities_user ON saved_entities(user_id, created_at DESC);
 
 -- ──────────────────────────────────────────────────────────
 -- PHASE 2: Community — Follows, Notifications, Reports
@@ -333,3 +347,19 @@ CREATE OR REPLACE TRIGGER trg_comment_count
 -- Cleanup expired OTP sessions (run via pg_cron or app-level)
 -- DELETE FROM otp_sessions WHERE expires_at < NOW() - INTERVAL '1 hour';
 -- DELETE FROM user_sessions WHERE expires_at < NOW();
+
+-- ──────────────────────────────────────────────────────────
+-- PHASE CMS: Site Settings (admin-configurable website elements)
+-- ──────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS site_settings (
+    key         TEXT PRIMARY KEY,
+    value       JSONB NOT NULL,
+    category    TEXT NOT NULL,
+    label       TEXT NOT NULL DEFAULT '',
+    description TEXT DEFAULT '',
+    input_type  TEXT DEFAULT 'text',
+    updated_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_site_settings_cat ON site_settings(category);

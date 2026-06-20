@@ -5,7 +5,7 @@
       <h1 class="nf-code">404</h1>
       <p class="nf-msg">Trang bạn tìm không tồn tại hoặc đã bị xóa.</p>
       <form class="nf-search" @submit.prevent="onSearch">
-        <input v-model="q" type="search" placeholder="Tìm đặc sản, trải nghiệm…" aria-label="Tìm kiếm" autocomplete="off" />
+        <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm đặc sản, trải nghiệm…" aria-label="Tìm kiếm" autocomplete="off" />
         <button type="submit">Tìm</button>
       </form>
       <div class="nf-actions">

@@ -5,12 +5,14 @@
         ref="inputEl"
         v-model="query"
         type="search"
+        enterkeyhint="search"
         placeholder="Tìm đặc sản, trải nghiệm…"
         aria-label="Tìm kiếm"
         role="combobox"
         aria-autocomplete="list"
         aria-controls="ac-listbox"
         :aria-expanded="showDropdown"
+        :aria-activedescendant="highlightIndex >= 0 ? 'ac-opt-' + highlightIndex : undefined"
         autocomplete="off"
         @input="onInput"
         @focus="onFocus"
@@ -31,10 +33,11 @@
           <span class="ac-section-title">Gần đây</span>
           <button type="button" class="ac-section-clear" @click="clearRecents">Xóa</button>
         </div>
-        <button type="button"
+        <div
           v-for="(term, i) in recentSearches"
           :key="'r-' + i"
           class="ac-item ac-recent"
+          :id="'ac-opt-' + i"
           :class="{ highlighted: i === highlightIndex }"
           role="option"
           :aria-selected="i === highlightIndex"
@@ -42,10 +45,10 @@
         >
           <span class="ac-emoji">🕐</span>
           <span class="ac-info"><span class="ac-name">{{ term }}</span></span>
-          <button type="button" class="ac-remove-recent" @mousedown.stop.prevent="removeRecent(i)" aria-label="Xóa">
+          <button type="button" class="ac-remove-recent" @mousedown.stop.prevent="removeRecent(i)" aria-label="Xóa khỏi lịch sử">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
-        </button>
+        </div>
       </div>
 
       <!-- Suggestions -->
@@ -54,6 +57,7 @@
         :key="item.id"
         :to="`/dia-diem/${item.id}`"
         class="ac-item"
+        :id="'ac-opt-' + (recentOffset + i)"
         :class="{ highlighted: recentOffset + i === highlightIndex }"
         role="option"
         :aria-selected="recentOffset + i === highlightIndex"
@@ -62,7 +66,10 @@
         <span class="ac-emoji">{{ typeEmoji(item.type) }}</span>
         <span class="ac-info">
           <span class="ac-name" v-html="highlightMatch(item.name)"></span>
-          <span v-if="item.place_name" class="ac-place">{{ item.place_name }}</span>
+          <span class="ac-meta">
+            <span v-if="typeLabel(item.type)" class="ac-type">{{ typeLabel(item.type) }}</span>
+            <span v-if="item.place_name" class="ac-place">{{ item.place_name }}</span>
+          </span>
         </span>
       </NuxtLink>
 
@@ -71,6 +78,7 @@
         v-if="query.trim()"
         :to="`/tim-kiem?q=${encodeURIComponent(query.trim())}`"
         class="ac-item ac-all"
+        :id="'ac-opt-' + (totalItems - 1)"
         :class="{ highlighted: highlightIndex === totalItems - 1 }"
         role="option"
         @mousedown.prevent="onSubmit"
@@ -80,7 +88,7 @@
 
       <!-- Empty state -->
       <div v-if="query.trim() && !suggestions.length && !loading" class="ac-empty">
-        Không tìm thấy kết quả
+        <span aria-hidden="true">🔍</span> Chưa tìm thấy nơi nào khớp. Thử từ khóa khác hoặc xem tất cả kết quả bên dưới.
       </div>
 
       <!-- Loading -->
@@ -93,6 +101,7 @@
 </template>
 
 <script setup lang="ts">
+import type { Entity } from '~/types'
 import { TYPE_META } from '~/composables/useConstants'
 
 const RECENT_KEY = 'vl360_recent_searches'
@@ -100,7 +109,7 @@ const MAX_RECENTS = 5
 
 const router = useRouter()
 const query = ref('')
-const suggestions = ref<any[]>([])
+const suggestions = ref<Entity[]>([])
 const highlightIndex = ref(-1)
 const showDropdown = ref(false)
 const loading = ref(false)
@@ -145,6 +154,10 @@ function useRecent(term: string) {
 
 function typeEmoji(type: string) {
   return TYPE_META[type]?.emoji || '📍'
+}
+
+function typeLabel(type: string) {
+  return TYPE_META[type]?.label || ''
 }
 
 function highlightMatch(name: string): string {
@@ -212,7 +225,7 @@ function moveUp() {
   highlightIndex.value = highlightIndex.value > 0 ? highlightIndex.value - 1 : max
 }
 
-function goTo(item: any) {
+function goTo(item: Entity) {
   saveRecent(item.name)
   close()
   query.value = ''
