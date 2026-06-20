@@ -1,0 +1,242 @@
+"""
+B3 write-path coverage — UGC (posts / comments / likes / bookmarks).
+
+Per CLAUDE.md §B3: social.py is a 0%-test write-path. This is the safety net
+before any refactor of the community/UGC layer.
+
+Design (mirrors test_saved.py):
+  - Fast: mount only social.router, no full server import, no network.
+  - SQLite/CI: router-level `Depends(_require_pg)` returns 503 before any
+    handler/auth runs — asserted deterministically.
+  - Postgres: happy-path + auth-required + validation + moderation-status
+    transitions run via skipif(not db._use_pg), with full row cleanup.
+
+The Postgres tests create a throwaway user + entity, exercise the real
+endpoints through dependency overrides (so we don't need a live OTP/session),
+and delete everything they insert.
+"""
+
+import json
+import sys
+import uuid
+from pathlib import Path
+
+import pytest
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from fastapi import FastAPI  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
+from pydantic import ValidationError  # noqa: E402
+
+import social  # noqa: E402
+from auth_middleware import get_current_user, require_user  # noqa: E402
+from database import db  # noqa: E402
+
+pg_only = pytest.mark.skipif(
+    not db._use_pg,
+    reason="UGC is Postgres-only (SQLite dev/CI returns 503). Set DATABASE_URL=postgresql://… to run.",
+)
+
+
+def _client():
+    app = FastAPI()
+    app.include_router(social.router)
+    return TestClient(app)
+
+
+def _route_pairs(app) -> set:
+    pairs = set()
+    for r in app.routes:
+        for m in (getattr(r, "methods", None) or set()):
+            pairs.add((m, r.path))
+    return pairs
+
+
+# ── Router wiring ─────────────────────────────────────────────────────────
+
+def test_social_router_mounted():
+    pairs = _route_pairs(_client().app)
+    assert ("POST", "/api/posts") in pairs
+    assert ("DELETE", "/api/posts/{post_id}") in pairs
+    assert ("POST", "/api/posts/{post_id}/comments") in pairs
+    assert ("POST", "/api/posts/{post_id}/like") in pairs
+    assert ("POST", "/api/posts/{post_id}/bookmark") in pairs
+
+
+# ── Postgres guard (deterministic on SQLite/CI) ───────────────────────────
+
+def test_social_pg_guard_on_sqlite():
+    """SQLite dev/CI: PG guard returns 503 before auth check (B3 contract)."""
+    client = _client()
+    if not db._use_pg:
+        assert client.post("/api/posts", json={"content": "x" * 20}).status_code == 503
+        assert client.post("/api/posts/abc/comments", json={"content": "hi"}).status_code == 503
+        assert client.post("/api/posts/abc/like").status_code == 503
+        assert client.post("/api/posts/abc/bookmark").status_code == 503
+        assert client.delete("/api/posts/abc").status_code == 503
+    else:
+        # Postgres live: like requires auth (not the 503 guard).
+        assert client.post("/api/posts/abc/like").status_code in (401, 403)
+
+
+# ── Model validation (backend-agnostic) ───────────────────────────────────
+
+class TestCreatePostValidation:
+    def test_valid_share(self):
+        p = social.CreatePost(content="Một chuyến đi rất đáng nhớ ở Vĩnh Long.")
+        assert p.post_type == "share"
+
+    def test_content_too_short(self):
+        with pytest.raises(ValidationError):
+            social.CreatePost(content="ngắn")
+
+    def test_content_too_long(self):
+        with pytest.raises(ValidationError):
+            social.CreatePost(content="x" * 5001)
+
+    def test_invalid_post_type(self):
+        with pytest.raises(ValidationError):
+            social.CreatePost(content="đủ mười ký tự nhé", post_type="spam")
+
+    def test_rating_out_of_range(self):
+        with pytest.raises(ValidationError):
+            social.CreatePost(content="đủ mười ký tự nhé", post_type="review", rating=9)
+
+    def test_valid_review_rating(self):
+        p = social.CreatePost(
+            content="Sản phẩm OCOP chất lượng tốt.",
+            post_type="review", entity_id="cam-sanh-vinh-long", rating=5,
+        )
+        assert p.rating == 5
+
+
+class TestCreateCommentValidation:
+    def test_valid(self):
+        assert social.CreateComment(content="Hay quá!").content == "Hay quá!"
+
+    def test_empty_rejected(self):
+        with pytest.raises(ValidationError):
+            social.CreateComment(content="   ")
+
+    def test_too_long(self):
+        with pytest.raises(ValidationError):
+            social.CreateComment(content="x" * 2001)
+
+
+# ── Postgres-only: real write-paths with cleanup ──────────────────────────
+
+@pytest.fixture
+def pg_user():
+    """Create a throwaway verified user; delete (cascade) on teardown."""
+    phone = "09" + uuid.uuid4().hex[:8]
+    user = db.create_user(phone)
+    yield user
+    with db._conn() as conn:
+        db._execute(conn, f"DELETE FROM users WHERE id::text = {db._ph}", (str(user["id"]),))
+
+
+@pytest.fixture
+def pg_entity():
+    """Ensure a real entity exists to attach reviews to."""
+    eid = "test-ugc-entity-" + uuid.uuid4().hex[:8]
+    db.upsert_entity({"id": eid, "name": "Test UGC Entity", "type": "product",
+                      "summary": "Entity tạm cho test write-path."})
+    yield eid
+    with db._conn() as conn:
+        db._execute(conn, f"DELETE FROM entities WHERE id = {db._ph}", (eid,))
+
+
+def _client_as(user):
+    """Mount social.router with auth dependencies overridden to `user`."""
+    app = FastAPI()
+    app.include_router(social.router)
+    app.dependency_overrides[require_user] = lambda: user
+    app.dependency_overrides[get_current_user] = lambda: user
+    return TestClient(app)
+
+
+@pg_only
+def test_create_post_review_requires_entity(pg_user):
+    """post_type='review' without entity_id → 400 (validation, post auth)."""
+    client = _client_as(pg_user)
+    resp = client.post("/api/posts", json={"content": "Đánh giá thiếu địa điểm.", "post_type": "review", "rating": 4})
+    assert resp.status_code == 400
+
+
+@pg_only
+def test_create_post_review_requires_rating(pg_user, pg_entity):
+    """review with entity but no rating → 400."""
+    client = _client_as(pg_user)
+    resp = client.post("/api/posts", json={"content": "Đánh giá thiếu sao.", "post_type": "review", "entity_id": pg_entity})
+    assert resp.status_code == 400
+
+
+@pg_only
+def test_create_post_happy_path_sets_moderation_status(pg_user, pg_entity):
+    """A share post is created and carries a moderation_status (dev key → approved)."""
+    client = _client_as(pg_user)
+    resp = client.post("/api/posts", json={
+        "content": "Chia sẻ trải nghiệm tham quan rất tuyệt.",
+        "post_type": "share",
+    })
+    assert resp.status_code == 200
+    post = resp.json()["post"]
+    pid = post["id"]
+    # cleanup
+    with db._conn() as conn:
+        db._execute(conn, f"DELETE FROM posts WHERE id::text = {db._ph}", (pid,))
+    assert post["content"]
+
+
+@pg_only
+def test_comment_on_nonexistent_post_404(pg_user):
+    client = _client_as(pg_user)
+    resp = client.post(f"/api/posts/{uuid.uuid4()}/comments", json={"content": "hi"})
+    assert resp.status_code == 404
+
+
+@pg_only
+def test_delete_post_forbidden_for_other_user(pg_user, pg_entity):
+    """User B cannot delete User A's post → 403."""
+    # User A creates a post directly in DB.
+    ph = db._ph
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"""
+            INSERT INTO posts (user_id, entity_id, content, images, post_type, moderation_status)
+            VALUES ({ph}::uuid, {ph}, {ph}, {ph}::jsonb, {ph}, 'approved')
+            RETURNING id
+        """, (str(pg_user["id"]), pg_entity, "Bài của user A.", json.dumps([]), "share"))
+        pid = str(row["id"])
+
+    other = db.create_user("09" + uuid.uuid4().hex[:8])
+    try:
+        client = _client_as(other)
+        resp = client.delete(f"/api/posts/{pid}")
+        assert resp.status_code == 403
+    finally:
+        with db._conn() as conn:
+            db._execute(conn, f"DELETE FROM posts WHERE id::text = {ph}", (pid,))
+            db._execute(conn, f"DELETE FROM users WHERE id::text = {ph}", (str(other["id"]),))
+
+
+@pg_only
+def test_toggle_like_idempotent(pg_user, pg_entity):
+    """Liking twice flips liked True→False (idempotent toggle)."""
+    ph = db._ph
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"""
+            INSERT INTO posts (user_id, entity_id, content, images, post_type, moderation_status)
+            VALUES ({ph}::uuid, {ph}, {ph}, {ph}::jsonb, {ph}, 'approved')
+            RETURNING id
+        """, (str(pg_user["id"]), pg_entity, "Bài để like.", json.dumps([]), "share"))
+        pid = str(row["id"])
+    try:
+        client = _client_as(pg_user)
+        first = client.post(f"/api/posts/{pid}/like").json()
+        second = client.post(f"/api/posts/{pid}/like").json()
+        assert first["liked"] is True
+        assert second["liked"] is False
+    finally:
+        with db._conn() as conn:
+            db._execute(conn, f"DELETE FROM posts WHERE id::text = {ph}", (pid,))

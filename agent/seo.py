@@ -48,6 +48,81 @@ TYPE_SCHEMA = {
     "product": "Product",
 }
 
+# Maps entity type -> existing catalog/list route used as the breadcrumb's
+# "type" tier. Kept in sync with web-nuxt/pages/dia-diem/[id].vue TYPE_BREADCRUMB
+# so on-page and JSON-LD breadcrumbs point to the same real routes.
+TYPE_BREADCRUMB_PATH = {
+    "product": "/san-pham",
+    "experience": "/du-lich",
+    "attraction": "/du-lich",
+    "nature": "/du-lich",
+    "history": "/du-lich",
+    "dish": "/du-lich",
+    "drink": "/san-pham",
+    "craft_village": "/du-lich",
+    "accommodation": "/luu-tru",
+    "event": "/le-hoi",
+    "organization": "/danh-ba",
+    "place": "/xa-phuong",
+}
+
+TYPE_BREADCRUMB_LABEL = {
+    "product": "Sản phẩm",
+    "experience": "Du lịch",
+    "attraction": "Du lịch",
+    "nature": "Du lịch",
+    "history": "Du lịch",
+    "dish": "Du lịch",
+    "drink": "Sản phẩm",
+    "craft_village": "Du lịch",
+    "accommodation": "Lưu trú",
+    "event": "Lễ hội",
+    "organization": "Danh bạ",
+    "place": "Xã phường",
+}
+
+# Catalog collections served as ItemList JSON-LD. Each maps a public route to
+# the set of entity types it lists, plus SEO/GEO name + description. Pages exist
+# at web-nuxt/pages/{du-lich,ocop,san-pham,luu-tru,le-hoi}.vue.
+COLLECTIONS: dict[str, dict[str, Any]] = {
+    "du-lich": {
+        "types": {"experience", "attraction", "nature", "craft_village", "history", "dish"},
+        "name": "Du lịch — Trải nghiệm miền Tây",
+        "description": (
+            "Khám phá điểm tham quan, trải nghiệm, vườn cây trái, làng nghề và "
+            "di tích ở Vĩnh Long, Bến Tre, Trà Vinh."
+        ),
+    },
+    "ocop": {
+        "types": {"product", "dish"},
+        "name": "Sản phẩm OCOP — Mỗi xã một sản phẩm",
+        "description": (
+            "Sản phẩm OCOP chất lượng cao từ 3 vùng: đặc sản, thủ công mỹ nghệ, "
+            "ẩm thực địa phương."
+        ),
+        # OCOP only lists products/dishes carrying an OCOP rating.
+        "require_attr": "ocop",
+    },
+    "san-pham": {
+        "types": {"product", "dish", "drink"},
+        "name": "Đặc sản & Sản phẩm địa phương",
+        "description": (
+            "Các sản phẩm đặc trưng của vùng đất miền Tây: đặc sản, thủ công mỹ "
+            "nghệ, ẩm thực và đồ uống địa phương."
+        ),
+    },
+    "luu-tru": {
+        "types": {"accommodation"},
+        "name": "Lưu trú & Nơi ở",
+        "description": "Khách sạn, homestay, resort, nhà vườn lưu trú ở Vĩnh Long, Bến Tre, Trà Vinh.",
+    },
+    "le-hoi": {
+        "types": {"event"},
+        "name": "Lễ hội & Sự kiện",
+        "description": "Lễ hội truyền thống, sự kiện cộng đồng, ngày hội đặc sắc quanh năm.",
+    },
+}
+
 DETAIL_PRIORITY = {
     "attraction": "0.9",
     "experience": "0.8",
@@ -222,6 +297,83 @@ def _same_as_values(entity: dict[str, Any]) -> list[str]:
     return values
 
 
+def _build_image_objects(
+    images: Any, entity_name: str, attrs: dict[str, Any]
+) -> list[dict[str, Any]]:
+    """Build a schema.org ImageObject[] from real image URLs only.
+
+    B6: never fabricate attribution. We only attach ``author``/``license``/
+    ``copyrightHolder`` when those values are actually present on the entity's
+    attributes (image_author / image_license / image_credit). Entities with no
+    real ``images`` (the common case today) produce an empty list and the
+    caller falls back to leaving image off entirely.
+    """
+    if not isinstance(images, list):
+        images = [images] if images else []
+    author = attrs.get("image_author") or attrs.get("image_credit")
+    license_url = attrs.get("image_license")
+    out: list[dict[str, Any]] = []
+    for idx, img_url in enumerate(images):
+        if not isinstance(img_url, str) or not img_url.startswith("http"):
+            continue
+        obj: dict[str, Any] = {
+            "@type": "ImageObject",
+            "url": img_url,
+            "contentUrl": img_url,
+            "name": f"{entity_name} — {idx + 1}" if entity_name else None,
+        }
+        if isinstance(author, str) and author.strip():
+            obj["author"] = author.strip()
+            obj["copyrightHolder"] = author.strip()
+        if isinstance(license_url, str) and license_url.strip():
+            obj["license"] = license_url.strip()
+        out.append({k: v for k, v in obj.items() if v not in (None, "", [], {})})
+    return out
+
+
+def _build_breadcrumb(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    """BreadcrumbList for an entity detail page.
+
+    Tiers: Trang chủ > Type (catalog route) > Khu vực (if known) > Entity.
+    The type tier reuses real catalog routes (TYPE_BREADCRUMB_PATH) so the
+    JSON-LD breadcrumb matches the on-page breadcrumb in dia-diem/[id].vue and
+    never links to a non-existent route.
+    """
+    entity_id = str(entity.get("id"))
+    items: list[dict[str, Any]] = [
+        {"@type": "ListItem", "position": 1, "name": "Trang chủ", "item": f"{SITE}/"},
+    ]
+    etype = str(entity.get("type")) if entity.get("type") else None
+    type_path = TYPE_BREADCRUMB_PATH.get(etype) if etype else None
+    type_label = TYPE_BREADCRUMB_LABEL.get(etype) if etype else None
+    if type_path and type_label:
+        items.append({
+            "@type": "ListItem",
+            "position": len(items) + 1,
+            "name": type_label,
+            "item": f"{SITE}{type_path}",
+        })
+    area = _entity_area(entity, by_id)
+    if area:
+        items.append({
+            "@type": "ListItem",
+            "position": len(items) + 1,
+            "name": AREA_NAMES.get(area, area),
+            "item": f"{SITE}/khu-vuc/{quote(area, safe='-_~')}",
+        })
+    items.append({
+        "@type": "ListItem",
+        "position": len(items) + 1,
+        "name": entity.get("name") or entity_id,
+        "item": _entity_url(entity_id),
+    })
+    return {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": items,
+    }
+
+
 def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]) -> dict[str, Any]:
     schema_type = TYPE_SCHEMA.get(str(entity.get("type")), "Thing")
     entity_id = str(entity.get("id"))
@@ -240,7 +392,11 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
     if entity.get("summary"):
         ld["description"] = entity["summary"]
     if entity.get("images"):
-        ld["image"] = entity["images"] if isinstance(entity["images"], list) else [entity["images"]]
+        # B6: emit ImageObject[] (with attribution when available) only when
+        # real image URLs exist; otherwise leave image off entirely.
+        image_objects = _build_image_objects(entity["images"], ld["name"], attrs)
+        if image_objects:
+            ld["image"] = image_objects
 
     coordinates = parse_coordinates(entity.get("coordinates") or entity.get("coords"))
     if coordinates:
@@ -291,6 +447,8 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
     if schema_type == "Person" and attrs.get("role"):
         ld["jobTitle"] = attrs["role"]
 
+    ld["breadcrumb"] = _build_breadcrumb(entity, by_id)
+
     return {key: value for key, value in ld.items() if value not in (None, "", [], {})}
 
 
@@ -302,6 +460,72 @@ def entity_jsonld(entity_id: str):
     if not entity:
         return {"error": "not found"}
     return build_entity_jsonld(entity, by_id)
+
+
+def _is_public(entity: dict[str, Any]) -> bool:
+    """An entity is listable in public collection schema unless it is explicitly
+    provisional or explicitly marked verified=False (Track-H: only surface
+    moderated public entities)."""
+    if entity.get("status") == "provisional":
+        return False
+    if entity.get("verified") is False:
+        return False
+    return True
+
+
+def build_collection_jsonld(collection_type: str, data: dict[str, Any]) -> dict[str, Any] | None:
+    """ItemList JSON-LD for a catalog collection route, or None if unknown."""
+    collection = COLLECTIONS.get(collection_type)
+    if not collection:
+        return None
+    types = collection["types"]
+    require_attr = collection.get("require_attr")
+    items: list[dict[str, Any]] = []
+    for e in data.get("entities", []):
+        if not isinstance(e, dict) or e.get("type") not in types or not e.get("id"):
+            continue
+        if not _is_public(e):
+            continue
+        if require_attr:
+            attrs = e.get("attributes") if isinstance(e.get("attributes"), dict) else {}
+            if not attrs.get(require_attr):
+                continue
+        items.append(e)
+
+    items.sort(key=lambda e: (-float(e.get("confidence") or 0.5), str(e.get("name") or "")))
+    items = items[:100]
+
+    elements: list[dict[str, Any]] = []
+    for idx, e in enumerate(items):
+        element: dict[str, Any] = {
+            "@type": "ListItem",
+            "position": idx + 1,
+            "name": e.get("name") or str(e.get("id")),
+            "url": _entity_url(str(e.get("id"))),
+        }
+        summary = e.get("summary")
+        if isinstance(summary, str) and summary.strip():
+            element["description"] = summary.strip()[:200]
+        elements.append(element)
+
+    return {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": collection["name"],
+        "description": collection["description"],
+        "url": f"{SITE}/{collection_type}",
+        "numberOfItems": len(elements),
+        "itemListElement": elements,
+    }
+
+
+@router.get("/seo/jsonld/collection/{collection_type}")
+def collection_jsonld(collection_type: str):
+    data = _load()
+    result = build_collection_jsonld(collection_type, data)
+    if result is None:
+        return {"error": "not found"}
+    return result
 
 
 def _url_xml(loc: str, *, changefreq: str, priority: str, lastmod: str | None = None) -> str:

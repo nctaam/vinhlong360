@@ -35,9 +35,29 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ error: any }>()
+import type { Entity } from '~/types'
+import { captureClientError, installGlobalErrorCapture } from '~/composables/useClientError'
+const props = defineProps<{ error: { statusCode?: number; message?: string; url?: string } }>()
 
 const is404 = computed(() => props.error?.statusCode === 404)
+
+// P3: báo lỗi fatal về backend (best-effort). Bỏ qua 404 (định tuyến bình thường,
+// tránh spam). Chỉ chạy client-side; composable đã tự guard SSR + opt-out.
+onMounted(() => {
+  try {
+    installGlobalErrorCapture()
+    const code = props.error?.statusCode
+    if (code !== 404) {
+      captureClientError(
+        `error.vue: HTTP ${code ?? 'unknown'}`,
+        props.error?.message || `status ${code}`,
+        { statusCode: code, url: props.error?.url },
+      )
+    }
+  } catch {
+    /* capture không bao giờ làm vỡ trang lỗi */
+  }
+})
 
 const message = computed(() => {
   const code = props.error?.statusCode

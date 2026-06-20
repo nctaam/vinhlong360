@@ -270,9 +270,16 @@ class Database:
         source_val = entity.get("source", {})
         # Normalize attribute key aliases on write
         if isinstance(attrs_val, dict):
-            _ATTR_ALIASES = {"open_hours": "hours", "opening_hours": "hours",
-                             "foodyRating": "rating", "foodyComments": "review_count",
-                             "bestTime": "best_time"}
+            _ATTR_ALIASES = {
+                "open_hours": "hours", "opening_hours": "hours",
+                "operating_hours": "hours", "open_on": "hours",
+                "foodyRating": "rating", "foodyComments": "review_count",
+                "bestTime": "best_time", "best_time_to_visit": "best_time",
+                "priceRange": "price_range", "bestSeason": "season_note",
+                "checkin": "check_in", "checkout": "check_out",
+                "highlights": "highlight", "booking": "booking_note",
+                "admission_fee": "admission", "location": "address",
+            }
             attrs_val = {_ATTR_ALIASES.get(k, k): v for k, v in attrs_val.items()}
         # Normalize source to list[dict] on write
         if isinstance(source_val, str):
@@ -1016,14 +1023,15 @@ class Database:
             row = self._fetchone(conn, f"SELECT * FROM users WHERE id::text = {ph}", (str(user_id),))
             return self._row_to_dict(row)
 
-    def create_user(self, phone: str, display_name: str = None) -> dict:
+    def create_user(self, phone: str, display_name: str = None, consent_version: str = "1.0") -> dict:
         self.initialize()
         ph = self._ph
         with self._conn() as conn:
             row = self._fetchone(conn, f"""
-                INSERT INTO users (phone, display_name) VALUES ({ph}, {ph})
+                INSERT INTO users (phone, display_name, consent_at, consent_version)
+                VALUES ({ph}, {ph}, NOW(), {ph})
                 RETURNING *
-            """, (phone, display_name or f"User_{phone[-4:]}"))
+            """, (phone, display_name or f"User_{phone[-4:]}", consent_version))
             return self._row_to_dict(row)
 
     def update_user(self, user_id: str, **fields) -> dict | None:
@@ -1058,6 +1066,7 @@ class Database:
                     d[field] = json.loads(d[field])
                 except Exception:
                     pass
+        _normalize_entity_timestamps(d)
         return d
 
     def _parse_itinerary(self, row) -> dict:
@@ -1069,6 +1078,77 @@ class Database:
                 except Exception:
                     d["stops"] = []
         return d
+
+
+# ══════════════════════════════════════════════════
+#  P4 TRUST: timestamp normalization (no fabrication)
+# ══════════════════════════════════════════════════
+
+def _coerce_iso_date(value) -> str | None:
+    """Trả ISO-8601 UTC (…Z) từ một giá trị ngày đã có sẵn trong DB/data.
+    KHÔNG bịa ngày: chỉ chuẩn hoá định dạng. Trả None nếu không phân giải được.
+    Track-H: không bao giờ thay bằng datetime.now()."""
+    if not value or not isinstance(value, str):
+        return None
+    s = value.strip()
+    if not s:
+        return None
+    # Đã là ISO có Z → giữ nguyên
+    if "T" in s and s.endswith("Z"):
+        return s
+    # Có 'T' nhưng thiếu Z (vd "2026-06-11T00:00:00") → thêm Z
+    if "T" in s:
+        return s.rstrip("Z") + "Z"
+    # SQLite "datetime('now')" cho dạng "2026-06-13 04:00:38"
+    candidate = s.replace(" ", "T", 1) if " " in s else s
+    try:
+        # Bỏ phần phân số giây nếu có (fromisoformat đời cũ kén)
+        core = candidate.split(".")[0]
+        parsed = datetime.fromisoformat(core)
+        return parsed.strftime("%Y-%m-%dT%H:%M:%SZ")
+    except (ValueError, AttributeError):
+        # Date-only "2026-06-10" không qua được fromisoformat ở mọi runtime?
+        # fromisoformat xử lý được date-only từ 3.11; fallback an toàn:
+        return candidate + ("T00:00:00Z" if "T" not in candidate else "Z")
+
+
+def _normalize_entity_timestamps(d: dict) -> dict:
+    """Đảm bảo entity luôn phơi ra mốc thời gian ổn định, KHÔNG bịa.
+
+    - updatedAt: chuẩn hoá ISO-8601 UTC. Nếu thiếu → suy từ created_at (DB luôn có).
+    - createdAt: phơi created_at của DB (audit) nếu chưa có.
+    - verifiedAt: mặc định = updatedAt (lần cập nhật gần nhất ngụ ý lần kiểm gần nhất);
+      nếu sau này có attributes.verifiedAt riêng thì giữ cái đó.
+    Tất cả nguồn đều là field DB/data sẵn có — không dùng ngày hiện tại.
+    """
+    if not isinstance(d, dict):
+        return d
+
+    updated = d.get("updatedAt")
+    iso_updated = _coerce_iso_date(updated) if updated else None
+    if not iso_updated:
+        # Fallback an toàn: dùng created_at của hàng DB (không bao giờ là "now")
+        iso_updated = _coerce_iso_date(d.get("created_at"))
+    if iso_updated:
+        d["updatedAt"] = iso_updated
+
+    # createdAt (audit) — chỉ phơi nếu DB có created_at
+    if d.get("created_at") and not d.get("createdAt"):
+        iso_created = _coerce_iso_date(d.get("created_at"))
+        if iso_created:
+            d["createdAt"] = iso_created
+
+    # verifiedAt — ưu tiên giá trị tường minh trong attributes (admin có thể set sau)
+    attrs = d.get("attributes")
+    explicit_verified = attrs.get("verifiedAt") if isinstance(attrs, dict) else None
+    if explicit_verified:
+        coerced = _coerce_iso_date(explicit_verified)
+        if coerced:
+            d["verifiedAt"] = coerced
+    elif not d.get("verifiedAt") and d.get("updatedAt"):
+        d["verifiedAt"] = d["updatedAt"]
+
+    return d
 
 
 # Singleton

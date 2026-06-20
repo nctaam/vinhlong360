@@ -581,6 +581,150 @@ async def remove_entity_image(entity_id: str, index: int):
     return {"status": "removed", "removed_url": removed, "images": images}
 
 
+# ══════════════════════════════════════════════════
+#  IMAGE INGEST REVIEW QUEUE (P2, review-gated — B6)
+# ══════════════════════════════════════════════════
+# Human-in-the-loop: ingest scripts queue licensed image CANDIDATES; nothing goes
+# live until an admin approves here. On approve we re-encode + upload to R2 and
+# carry license + author + source onto the entity (attributes.image_credits) per B6.
+
+import image_suggestions as _imgq
+
+
+class ImageSuggestionItem(BaseModel):
+    entity_id: str = Field(..., min_length=1, max_length=100)
+    candidate_url: str = Field(..., min_length=1, max_length=600)
+    wp_title: str = Field("", max_length=200)
+    license: str = Field("", max_length=80)
+    author: str = Field("", max_length=120)
+    source: str = Field("wikipedia-vi", max_length=40)
+    match_confidence: float = Field(0.7, ge=0.0, le=1.0)
+
+
+class ImageSuggestionBatch(BaseModel):
+    suggestions: list[ImageSuggestionItem] = Field(..., max_length=500)
+
+
+class RejectSuggestionRequest(BaseModel):
+    reason: str | None = Field(None, max_length=300)
+
+
+@router.get("/image-suggestions")
+async def list_image_suggestions(
+    status: Optional[str] = Query(None, pattern="^(pending|approved|rejected)$"),
+    entity_id: Optional[str] = Query(None, max_length=100),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+):
+    """Liệt kê ứng viên ảnh chờ duyệt (mặc định: tất cả; lọc theo status/entity)."""
+    result = _imgq.list_suggestions(status=status, entity_id=entity_id, limit=limit, offset=offset)
+    result["counts"] = _imgq.status_counts()
+    return result
+
+
+@router.get("/image-suggestions/{suggestion_id}")
+async def get_image_suggestion(suggestion_id: str):
+    """Chi tiết 1 ứng viên ảnh (kèm tên entity để review)."""
+    s = _imgq.get_suggestion(suggestion_id)
+    if not s:
+        raise HTTPException(404, f"Suggestion '{suggestion_id}' not found")
+    return s
+
+
+@router.post("/image-suggestions/create-batch")
+async def create_image_suggestion_batch(body: ImageSuggestionBatch):
+    """Nhận lô ứng viên từ script ingest (mode=queue). KHÔNG publish — chỉ xếp hàng chờ duyệt."""
+    payload = [s.model_dump() for s in body.suggestions]
+    return _imgq.create_batch(payload)
+
+
+@router.post("/image-suggestions/{suggestion_id}/approve")
+async def approve_image_suggestion(suggestion_id: str):
+    """Duyệt 1 ứng viên: tải ảnh → WebP 3 cỡ → R2 → gắn vào entity.images + lưu
+    license/author/source vào attributes.image_credits (B6). Chỉ xử lý khi đang 'pending'."""
+    from fastapi.concurrency import run_in_threadpool
+    from storage import storage, MAX_IMAGE_SIZE
+
+    s = _imgq.get_suggestion(suggestion_id)
+    if not s:
+        raise HTTPException(404, f"Suggestion '{suggestion_id}' not found")
+    if s.get("status") != "pending":
+        raise HTTPException(400, f"Suggestion đã ở trạng thái '{s.get('status')}' — không thể duyệt lại")
+
+    entity = db.get_entity(s["entity_id"])
+    if not entity:
+        raise HTTPException(404, f"Entity '{s['entity_id']}' not found")
+
+    images = list(entity.get("images") or [])
+    if len(images) >= 10:
+        raise HTTPException(400, "Tối đa 10 ảnh mỗi entity")
+
+    # Fetch the candidate from its licensed source (Commons etc.). Bounded + guarded.
+    candidate_url = s["candidate_url"]
+    try:
+        import httpx
+        headers = {"User-Agent": "vinhlong360-image-review/1.0 (+https://vinhlong360.vn)"}
+        resp = await run_in_threadpool(
+            lambda: httpx.get(candidate_url, headers=headers, timeout=25, follow_redirects=True)
+        )
+        resp.raise_for_status()
+        data = resp.content
+    except Exception as e:  # noqa: BLE001 — network/404 → 502 with retry note
+        raise HTTPException(502, f"Không tải được ảnh nguồn (thử lại sau): {str(e)[:120]}")
+
+    if not data or len(data) > MAX_IMAGE_SIZE:
+        raise HTTPException(400, f"Ảnh nguồn rỗng hoặc quá lớn (tối đa {MAX_IMAGE_SIZE // 1024 // 1024}MB)")
+
+    try:
+        urls = await run_in_threadpool(storage.upload_image_set, data, "entities", s["entity_id"])
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(500, f"Lỗi xử lý/upload ảnh: {str(e)[:120]}")
+
+    cover = urls.get("md") or urls.get("lg") or urls.get("sm")
+    if cover and cover not in images:
+        images.append(cover)
+    entity["images"] = images
+
+    # B6: persist license + author + source alongside the uploaded URL.
+    attrs = entity.get("attributes") or {}
+    if not isinstance(attrs, dict):
+        attrs = {}
+    credits = attrs.get("image_credits")
+    if not isinstance(credits, list):
+        credits = []
+    credits.append({
+        "url": cover,
+        "license": s.get("license") or "",
+        "author": s.get("author") or "",
+        "source": s.get("source") or "",
+        "source_url": candidate_url,
+        "wp_title": s.get("wp_title") or "",
+        "added_at": datetime.now().strftime("%Y-%m-%d"),
+    })
+    attrs["image_credits"] = credits
+    entity["attributes"] = attrs
+    entity["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
+    db.upsert_entity(entity)
+
+    # require_admin already authenticated; record a generic approver marker for audit.
+    _imgq.mark_status(suggestion_id, "approved", approved_by="admin")
+    _sync_kb()
+    return {"status": "approved", "url": cover, "sizes": urls, "images": images,
+            "backend": storage.backend, "credits": credits[-1]}
+
+
+@router.post("/image-suggestions/{suggestion_id}/reject")
+async def reject_image_suggestion(suggestion_id: str, body: RejectSuggestionRequest = RejectSuggestionRequest()):
+    """Từ chối 1 ứng viên (ghi lý do). Không tải/không upload gì."""
+    s = _imgq.get_suggestion(suggestion_id)
+    if not s:
+        raise HTTPException(404, f"Suggestion '{suggestion_id}' not found")
+    if s.get("status") != "pending":
+        raise HTTPException(400, f"Suggestion đã ở trạng thái '{s.get('status')}' — không thể từ chối lại")
+    _imgq.mark_status(suggestion_id, "rejected", rejection_reason=(body.reason or "").strip())
+    return {"status": "rejected", "id": suggestion_id}
+
+
 # ── Data management ──
 
 @router.get("/stats")

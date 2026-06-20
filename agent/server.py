@@ -65,12 +65,14 @@ from auth import router as auth_router
 from notifications import router as community_router
 from public_api import router as public_router
 import public_api as _public_api
+from saved import router as saved_router
 from seo import router as seo_router
 from social import router as social_router
 from tools import TOOLS, SYSTEM_PROMPT
 from middleware import (
-    logger, chat_limiter, stream_limiter, admin_limiter,
+    logger, chat_limiter, stream_limiter, admin_limiter, report_limiter,
     response_tracker, error_tracker, generate_request_id, get_client_ip,
+    verify_admin_key,
 )
 from itinerary_gen import generate_itinerary
 from scheduler import start_scheduler, scheduler_status, sync_data_json_to_js
@@ -245,6 +247,22 @@ except ImportError:
 # GĐ6/11: federation, a2a_protocol, advanced_graph, agent_relay, streaming_tools,
 # multimodal_engine, knowledge_evolution đã bị XOÁ (dead-weight) — import/flag/endpoint
 # tương ứng đã gỡ. KHÔNG thêm lại trừ khi tái triển khai module thật.
+
+# ── Feature flag registry ──
+from feature_flags import features
+for _name, _val in {
+    "vector": HAS_VECTOR, "realtime": HAS_REALTIME, "circuit_breaker": HAS_CIRCUIT_BREAKER,
+    "parallel": HAS_PARALLEL, "autocorrect": HAS_AUTOCORRECT, "recommender": HAS_RECOMMENDER,
+    "freshness": HAS_FRESHNESS, "image_recognition": HAS_IMAGE_RECOGNITION,
+    "metrics": HAS_METRICS, "ab_testing": HAS_AB_TESTING, "prompt_cache": HAS_PROMPT_CACHE,
+    "orchestrator": HAS_ORCHESTRATOR, "memory_graph": HAS_MEMORY_GRAPH, "tracing": HAS_TRACING,
+    "contextual": HAS_CONTEXTUAL, "kb_context": HAS_KB_CONTEXT, "experience": HAS_EXPERIENCE,
+    "fewshot": HAS_FEWSHOT, "checkpoints": HAS_CHECKPOINTS, "guardrails": HAS_GUARDRAILS,
+    "cost_tracker": HAS_COST_TRACKER, "eval": HAS_EVAL, "optimizer": HAS_OPTIMIZER,
+    "semantic_cache": HAS_SEMANTIC_CACHE, "llm_judge": HAS_LLM_JUDGE,
+    "dynamic_agents": HAS_DYNAMIC_AGENTS,
+}.items():
+    features.register(_name, _val)
 
 # ── OpenAI client ──
 
@@ -823,6 +841,7 @@ app.add_middleware(
 app.include_router(admin_router)
 app.include_router(auth_router)
 app.include_router(public_router)
+app.include_router(saved_router)
 app.include_router(seo_router)
 app.include_router(social_router)
 app.include_router(community_router)
@@ -953,6 +972,50 @@ class DynamicAgentCreateRequest(BaseModel):
 class SemanticCacheInvalidateRequest(BaseModel):
     entity_id: str | None = Field(default=None, max_length=64)
     query: str | None = Field(default=None, max_length=500)
+
+
+# ── P3: Client-side error capture (B8 — KHÔNG Sentry/dịch vụ trả phí) ──
+# Thu lỗi frontend qua POST /api/client-error: rate-limit + cap kích thước +
+# che PII, ghi vào StructuredLogger (JSONL xoay vòng) đã có sẵn. Opt-in,
+# fire-and-forget từ phía client (không chặn UI).
+
+ENABLE_CLIENT_ERROR_CAPTURE = _env_bool("ENABLE_CLIENT_ERROR_CAPTURE", True)
+
+_PII_PATTERNS = [
+    (re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.-]+\b"), "[EMAIL]"),
+    (re.compile(r"\b(?:0|\+?84)\d{8,10}\b"), "[PHONE]"),
+    (re.compile(r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"), "[IP]"),
+    # token/bearer/api-key-ish chuỗi dài
+    (re.compile(r"\b[A-Za-z0-9_-]{32,}\b"), "[TOKEN]"),
+]
+
+
+def _sanitize_client_text(text: str, max_len: int) -> str:
+    """Che PII (email/phone/IP/token) + strip HTML, cắt theo max_len. B6/privacy."""
+    if not text or not isinstance(text, str):
+        return ""
+    out = re.sub(r"<[^>]+>", "", text)
+    for pat, repl in _PII_PATTERNS:
+        out = pat.sub(repl, out)
+    return out[:max_len].strip()
+
+
+class ClientErrorRequest(BaseModel):
+    """Lỗi do frontend gửi lên. Mọi field optional/có default để fire-and-forget
+    không bao giờ fail vì thiếu dữ liệu; size-capped để chống abuse/DoS."""
+    message: str = Field(default="", max_length=500)
+    error: str = Field(default="", max_length=500)
+    stack: str = Field(default="", max_length=2000)
+    url: str = Field(default="", max_length=300)
+    level: str = Field(default="error", max_length=10)
+    timestamp: str = Field(default="", max_length=40)
+    user_agent: str = Field(default="", max_length=300)
+    session_id: str = Field(default="", max_length=64)
+
+    @field_validator("level")
+    @classmethod
+    def _clamp_level(cls, v):
+        return v if v in {"error", "warn", "info"} else "error"
 
 
 def _resolve_contextual_query(message: str, history: list[dict]) -> str:
@@ -2600,6 +2663,54 @@ async def user_feedback(req: FeedbackRequest, request: Request):
         pass  # Non-critical
     logger.info("User feedback", user_id=user_id, rating=rating, query=query[:50])
     return {"status": "ok"}
+
+
+@app.post("/api/client-error")
+async def client_error(req: ClientErrorRequest, request: Request):
+    """P3: Nhận lỗi frontend (uncaught/unhandledrejection/component) để admin xem.
+
+    B8: KHÔNG Sentry/dịch vụ trả phí — chỉ ghi vào StructuredLogger (JSONL xoay vòng)
+    đã có sẵn. Rate-limit (report_limiter: 5 lỗi/IP/5 phút) + cap kích thước (model
+    Field max_length) + che PII. Best-effort: luôn trả 200 để client fire-and-forget,
+    kể cả khi bị giới hạn (không để client retry loop)."""
+    if not ENABLE_CLIENT_ERROR_CAPTURE:
+        return {"status": "disabled"}
+
+    client_ip = get_client_ip(request)
+    allowed, _ = report_limiter.is_allowed(f"clienterr:{client_ip}")
+    if not allowed:
+        # Không trả 429 để tránh client coi là lỗi → vòng lặp báo lỗi-của-lỗi.
+        return {"status": "rate_limited"}
+
+    try:
+        logger.error(
+            "Client error",
+            source="client",
+            level=req.level,
+            client_message=_sanitize_client_text(req.message, 500),
+            client_error=_sanitize_client_text(req.error, 500),
+            stack=_sanitize_client_text(req.stack, 800),
+            url=_sanitize_client_text(req.url, 300),
+            user_agent=req.user_agent[:200],
+            session_id=req.session_id[:64],
+            client_ts=req.timestamp[:40],
+        )
+    except Exception:
+        # Ghi log không bao giờ được làm vỡ response.
+        pass
+    return {"status": "ok"}
+
+
+@app.get("/system/client-errors", tags=["System"])
+async def system_client_errors(request: Request, limit: int = 50):
+    """Admin xem lỗi frontend gần đây (lọc source=client từ StructuredLogger).
+    Gate bằng admin key (giống các /system/* khác ở production)."""
+    if not verify_admin_key(request):
+        return JSONResponse(status_code=403, content={"error": "forbidden"})
+    limit = max(1, min(limit, 200))
+    rows = logger.recent(limit * 4, level="error")
+    client_rows = [r for r in rows if r.get("source") == "client"]
+    return {"errors": client_rows[-limit:], "count": len(client_rows[-limit:])}
 
 
 @app.get("/welcome")
