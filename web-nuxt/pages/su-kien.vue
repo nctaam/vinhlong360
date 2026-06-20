@@ -7,8 +7,8 @@
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true">🎪</span>
         <div>
-          <h1>Sự kiện</h1>
-          <p>Sự kiện văn hóa, hội chợ, festival và hoạt động sắp diễn ra tại Vĩnh Long, Bến Tre, Trà Vinh.</p>
+          <h1>{{ pc('hero_title') }}</h1>
+          <p>{{ pc('hero_subtitle') }}</p>
         </div>
       </div>
       <div v-if="allEvents.length" class="catalog-stats">
@@ -78,7 +78,7 @@
     <!-- Controls -->
     <div class="controls">
       <div class="search-row">
-        <input v-model="q" type="search" placeholder="Tìm sự kiện…" aria-label="Tìm sự kiện" />
+        <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm sự kiện…" aria-label="Tìm sự kiện" />
       </div>
       <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
         <button type="button" :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả vùng</button>
@@ -93,7 +93,12 @@
       <button type="button" :class="['toggle-btn', { active: view === 'calendar' }]" :aria-pressed="view === 'calendar'" @click="view = 'calendar'">📅 Lịch</button>
     </div>
 
-    <EmptyState v-if="fetchError" icon="⚠️" title="Không thể tải dữ liệu" message="Vui lòng thử lại sau." />
+    <EmptyState v-if="fetchError" icon="⚠️" title="Chưa tải được sự kiện" message="Có thể do mạng chập chờn. Thử lại nhé.">
+      <template #actions>
+        <button type="button" class="btn btn-outline" @click="refreshNuxtData('events')">Thử lại</button>
+      </template>
+    </EmptyState>
+    <SkeletonList v-else-if="!data && view === 'list'" :count="5" />
     <SkeletonGrid v-else-if="!data" :count="4" />
 
     <template v-else-if="view === 'list'">
@@ -123,7 +128,12 @@
           </div>
         </NuxtLink>
       </div>
-      <EmptyState v-else message="Không có sự kiện nào phù hợp." />
+      <EmptyState v-else icon="🎪" title="Không tìm thấy sự kiện" message="Thử đổi khu vực hoặc từ khóa khác nhé.">
+        <template #actions>
+          <button type="button" class="btn btn-outline" @click="areaFilter = 'all'; q = ''">Xóa bộ lọc</button>
+          <button type="button" class="btn btn-outline" @click="view = 'calendar'">Xem lịch</button>
+        </template>
+      </EmptyState>
     </template>
 
     <template v-else>
@@ -139,7 +149,7 @@
             v-for="(cell, i) in calendarCells" :key="i"
             class="cal-cell"
             role="gridcell"
-            :tabindex="cell.events?.length ? 0 : -1"
+            :tabindex="-1"
             :class="{ 'cal-empty': !cell.day, 'cal-today': cell.isToday, 'cal-has-events': cell.events?.length }"
             :aria-label="cell.day ? `Ngày ${cell.day}${cell.events?.length ? `, ${cell.events.length} sự kiện` : ''}` : undefined"
           >
@@ -187,10 +197,12 @@
 </template>
 
 <script setup lang="ts">
+import type { Entity } from '~/types'
 import { AREA_META } from '~/composables/useConstants'
 import { lunarLabel, isLunarFirstDay, isLunarFull } from '~/composables/useLunar'
 
 useReveal()
+const { f: pc } = usePageContent('su_kien')
 
 const q = ref('')
 const areaFilter = ref('all')
@@ -199,11 +211,11 @@ const view = ref('list')
 useFilterUrl({ vung: areaFilter }, { vung: 'all' })
 
 const { data, error: fetchError } = await useAsyncData('events', () =>
-  $fetch<any>('/api/events?limit=200')
+  $fetch<{ events: Entity[] }>('/api/events?limit=200')
 )
 
 const allEvents = computed(() =>
-  (data.value?.events || []).filter((e: any) => (e.attributes?.category || 'su-kien') !== 'le-hoi')
+  (data.value?.events || []).filter((e: Entity) => (e.attributes?.category || 'su-kien') !== 'le-hoi')
 )
 
 const areaCounts = computed(() => {
@@ -218,44 +230,44 @@ const areaCounts = computed(() => {
 })
 
 function countByArea(key: string) {
-  return allEvents.value.filter((e: any) => getArea(e) === key).length
+  return allEvents.value.filter((e: Entity) => getArea(e) === key).length
 }
 
 const upcoming = computed(() => {
   const now = new Date().toISOString().slice(0, 10)
   return allEvents.value
-    .filter((e: any) => {
+    .filter((e: Entity) => {
       const ds = e.attributes?.date_start
       return ds && ds >= now
     })
-    .sort((a: any, b: any) => (a.attributes?.date_start || '').localeCompare(b.attributes?.date_start || ''))
+    .sort((a: Entity, b: Entity) => (a.attributes?.date_start || '').localeCompare(b.attributes?.date_start || ''))
     .slice(0, 6)
 })
 
 const filtered = computed(() => {
   let list = allEvents.value
   if (areaFilter.value !== 'all') {
-    list = list.filter((e: any) => getArea(e) === areaFilter.value)
+    list = list.filter((e: Entity) => getArea(e) === areaFilter.value)
   }
   if (q.value.trim()) {
     const kw = q.value.toLowerCase()
-    list = list.filter((e: any) => e.name.toLowerCase().includes(kw) || (e.summary || '').toLowerCase().includes(kw))
+    list = list.filter((e: Entity) => e.name.toLowerCase().includes(kw) || (e.summary || '').toLowerCase().includes(kw))
   }
   return list
 })
 
-function getArea(e: any): string {
+function getArea(e: Entity): string {
   return e.place_area || e.area || ''
 }
 
-function getDateStart(e: any): Date | null {
+function getDateStart(e: Entity): Date | null {
   const ds = e.attributes?.date_start
   if (!ds) return null
   const d = new Date(ds + 'T00:00:00')
   return isNaN(d.getTime()) ? null : d
 }
 
-function formatMonth(e: any): string {
+function formatMonth(e: Entity): string {
   const d = getDateStart(e)
   if (!d) {
     const months = e.season?.months
@@ -265,13 +277,13 @@ function formatMonth(e: any): string {
   return `Tg ${d.getMonth() + 1}`
 }
 
-function formatDay(e: any): string {
+function formatDay(e: Entity): string {
   const d = getDateStart(e)
   if (!d) return '—'
   return String(d.getDate())
 }
 
-function dateRange(e: any): string {
+function dateRange(e: Entity): string {
   const attrs = e.attributes || {}
   const ds = attrs.date_start
   const de = attrs.date_end
@@ -318,13 +330,13 @@ const calendarCells = computed(() => {
   if (startDow === 0) startDow = 7
   startDow--
 
-  const cells: any[] = []
+  const cells: { day: number; isToday?: boolean; events?: Entity[]; lunar?: string; lunarFirst?: boolean; lunarMid?: boolean }[] = []
   for (let i = 0; i < startDow; i++) cells.push({ day: 0 })
 
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
     const isToday = y === today.getFullYear() && m === today.getMonth() && d === today.getDate()
-    const events = allEvents.value.filter((e: any) => {
+    const events = allEvents.value.filter((e: Entity) => {
       const attrs = e.attributes || {}
       const ds = attrs.date_start
       const de = attrs.date_end || ds
@@ -342,11 +354,12 @@ const calendarCells = computed(() => {
 })
 
 useSeoMeta({
-  title: 'Sự kiện — vinhlong360',
-  description: 'Sự kiện văn hóa, hội chợ, festival và hoạt động sắp diễn ra tại Vĩnh Long, Bến Tre, Trà Vinh.',
-  ogTitle: 'Sự kiện — vinhlong360',
-  ogDescription: 'Lịch sự kiện miền Tây: hội chợ, festival, marathon và hơn thế.',
+  title: () => pc('seo_title'),
+  description: () => pc('seo_description'),
+  ogTitle: () => pc('og_title'),
+  ogDescription: () => pc('og_description'),
 })
+useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/su-kien') }] })
 </script>
 
 <style>

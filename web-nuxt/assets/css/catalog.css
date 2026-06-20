@@ -41,8 +41,10 @@
   display: flex; gap: var(--space-6); margin-top: var(--space-5); padding-top: var(--space-4);
   border-top: .5px solid var(--line);
 }
-.stat-item { display: flex; flex-direction: column; }
-.stat-num { font-size: var(--text-2xl); font-weight: var(--weight-extrabold); color: var(--primary-fg); letter-spacing: var(--tracking-tight); }
+.stat-item { display: flex; flex-direction: column; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); transition: background .3s var(--ease-out); cursor: default; }
+.stat-item:hover { background: var(--overlay-subtle); }
+.stat-num { font-size: var(--text-2xl); font-weight: var(--weight-extrabold); color: var(--primary-fg); letter-spacing: var(--tracking-tight); transition: color .3s var(--ease-out); }
+.stat-item:hover .stat-num { color: var(--primary-fg-strong, var(--primary-fg)); }
 .stat-label { font-size: var(--text-xs); color: var(--muted); text-transform: uppercase; letter-spacing: var(--tracking-caps); font-weight: var(--weight-semibold); }
 
 /* ── Section desc ── */
@@ -62,6 +64,16 @@
   .scroll-row > * { flex: 0 0 220px; }
   .scroll-row > .card { flex: 0 0 200px; }
   .scroll-row { gap: var(--space-3); }
+}
+
+/* Scroll fade mask — gradient hint via mask-image (no wrapper needed) */
+.scroll-row {
+  -webkit-mask-image: linear-gradient(to right, black 0%, black calc(100% - 40px), transparent 100%);
+  mask-image: linear-gradient(to right, black 0%, black calc(100% - 40px), transparent 100%);
+}
+.scroll-row.scroll-end {
+  -webkit-mask-image: none;
+  mask-image: none;
 }
 
 /* ── Interest Nav (kham-pha page chips) ── */
@@ -97,7 +109,8 @@
 .cross-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .cross-card:active { transform: scale(.97); transition-duration: .08s; }
 .cross-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.cross-icon { font-size: 1.6rem; flex-shrink: 0; }
+.cross-icon { font-size: 1.6rem; flex-shrink: 0; transition: transform .35s var(--ease-spring-gentle); }
+.cross-card:hover .cross-icon { transform: scale(1.12); }
 .cross-card strong { display: block; font-size: var(--text-sm); }
 .cross-card p { margin: 0; font-size: var(--text-xs); color: var(--muted); }
 
@@ -121,7 +134,9 @@
   background: linear-gradient(90deg, rgba(var(--accent-rgb), .12), transparent);
   border: .5px solid rgba(var(--accent-rgb), .25);
   margin-bottom: var(--space-4);
+  transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo);
 }
+.seasonal-banner:hover { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .08); }
 .seasonal-banner-icon { font-size: 1.8rem; }
 .seasonal-banner strong { font-size: var(--text-base); }
 .seasonal-banner p { margin: 0; font-size: var(--text-sm); color: var(--muted); }
@@ -139,7 +154,8 @@
 .quick-pick:active { transform: scale(.96); transition-duration: .08s; }
 .quick-pick:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .quick-pick.active { border-color: var(--primary); background: rgba(var(--primary-rgb), .06); }
-.quick-pick-icon { font-size: 1.6rem; }
+.quick-pick-icon { font-size: 1.6rem; transition: transform .4s var(--ease-spring-gentle); }
+.quick-pick:hover .quick-pick-icon { transform: scale(1.15); }
 .quick-pick-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
 .quick-pick-count { font-size: var(--text-xs); color: var(--muted); }
 
@@ -217,7 +233,7 @@
 .step-card h3 { margin: 2px 0; font-size: 1.05rem; }
 .stop-link { color: inherit; }
 .step-card .summary { margin: 0; color: var(--muted); font-size: var(--text-sm); }
-.step-note { margin: var(--space-1) 0 0; font-size: var(--text-xs); color: var(--accent-dark); font-weight: var(--weight-semibold); }
+.step-note { margin: var(--space-1) 0 0; font-size: var(--text-xs); color: var(--accent-text); font-weight: var(--weight-semibold); }
 .step-content { flex: 1; min-width: 0; }
 .step-type-label { display: inline-block; font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; color: var(--muted); letter-spacing: .03em; margin-bottom: 2px; }
 .itin-actions { display: flex; gap: var(--space-3); align-items: center; margin-bottom: var(--space-4); flex-wrap: wrap; }

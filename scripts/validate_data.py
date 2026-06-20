@@ -18,6 +18,13 @@ MEKONG_LAT_RANGE = (8.0, 11.5)
 MEKONG_LNG_RANGE = (104.0, 107.5)
 MAX_NEAR_DISTANCE_KM = 50.0
 MAX_DIRECT_RELATIONSHIPS = 120
+# Placeholder summaries from failed LLM enrichment — must never ship to users.
+# Phase 0 quarantined these (blanked to ""); this guard stops them returning.
+import re  # noqa: E402
+BOILERPLATE_SUMMARY = re.compile(
+    r"không\s*(có\s*)?đủ thông tin|404|không tìm thấy thông tin|no information|not found",
+    re.IGNORECASE,
+)
 
 
 @dataclass
@@ -128,6 +135,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     missing_summary = 0
     missing_summary_non_place = 0
     missing_summary_place = 0
+    boilerplate_summary = 0
     missing_source = 0
     missing_source_non_place = 0
     missing_source_place = 0
@@ -160,12 +168,15 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
             missing_type += 1
         entity_type = entity.get("type")
         is_place = entity_type == "place"
-        if not entity.get("summary"):
+        summary_val = entity.get("summary")
+        if not summary_val:
             missing_summary += 1
             if is_place:
                 missing_summary_place += 1
             else:
                 missing_summary_non_place += 1
+        elif BOILERPLATE_SUMMARY.search(str(summary_val)):
+            boilerplate_summary += 1
         source = entity.get("source")
         if not source or (isinstance(source, list) and len(source) == 0):
             missing_source += 1
@@ -390,6 +401,8 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         issues.append(Issue("warning", "duplicate_relationships", f"{duplicate_rel_count} duplicate relationship keys found"))
     if missing_summary_non_place:
         issues.append(Issue("warning", "missing_summary_non_place", f"{missing_summary_non_place} non-place entities are missing summary"))
+    if boilerplate_summary:
+        issues.append(Issue("error", "boilerplate_summary", f"{boilerplate_summary} entities have placeholder '404 / không đủ thông tin' summaries"))
     if missing_summary_place:
         issues.append(Issue("warning", "missing_summary_place", f"{missing_summary_place} place entities are missing summary"))
     if missing_source:
@@ -426,6 +439,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         "relationship_types": dict(relationship_type_counts.most_common(10)),
         "missing_summary": missing_summary,
         "missing_summary_non_place": missing_summary_non_place,
+        "boilerplate_summary": boilerplate_summary,
         "missing_summary_place": missing_summary_place,
         "missing_source": missing_source,
         "missing_source_non_place": missing_source_non_place,
@@ -469,6 +483,7 @@ def print_report(issues: list[Issue], stats: dict[str, Any]) -> None:
     print("\nData quality:")
     for key in [
         "missing_summary_non_place",
+        "boilerplate_summary",
         "missing_summary_place",
         "missing_source_non_place",
         "missing_source_place",

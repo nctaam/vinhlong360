@@ -141,13 +141,23 @@ def _is_valid_url(value: Any) -> bool:
     return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
 
 
+def _is_external_url(url: Any) -> bool:
+    """Valid http(s) URL that is NOT our own site (self-citation is not a source)."""
+    if not _is_valid_url(url):
+        return False
+    u = str(url).lower()
+    return ("//vinhlong360.vn" not in u) and ("//www.vinhlong360.vn" not in u)
+
+
 def _source_info(entity: dict[str, Any]) -> tuple[str | None, str | None]:
     source = entity.get("source")
+    if isinstance(source, list):  # source stored as a list of {title,url,maps}; use the first
+        source = source[0] if source else None
     if isinstance(source, str):
-        return (source, source if _is_valid_url(source) else None)
+        return (source, source if _is_external_url(source) else None)
     if isinstance(source, dict):
         url = source.get("url")
-        return (source.get("title") or source.get("name") or None, url if _is_valid_url(url) else None)
+        return (source.get("title") or source.get("name") or None, url if _is_external_url(url) else None)
     return (None, None)
 
 
@@ -371,6 +381,38 @@ def sitemap():
     )
 
 
+@router.get("/sitemap-media.xml", response_class=Response)
+def sitemap_media():
+    """GĐ8.5: image sitemap — entity detail URLs with their image(s) so Google
+    Images can index them. Auto-populates as entities gain images (GĐ8.2/8.4)."""
+    data = _load()
+    urls: list[str] = []
+    for entity in data.get("entities", []):
+        if not isinstance(entity, dict) or not entity.get("id") or entity.get("type") == "place":
+            continue
+        imgs = entity.get("images")
+        if not isinstance(imgs, list) or not imgs:
+            continue
+        loc = _entity_url(str(entity["id"]))
+        tags = ""
+        for img in imgs[:20]:
+            if isinstance(img, str) and img.startswith("http"):
+                tags += f"\n    <image:image><image:loc>{xml_escape(img)}</image:loc></image:image>"
+        if tags:
+            urls.append(f"  <url>\n    <loc>{xml_escape(loc)}</loc>{tags}\n  </url>")
+
+    xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml += ('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
+            'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n')
+    xml += "\n".join(urls)
+    xml += "\n</urlset>"
+    return Response(
+        content=xml,
+        media_type="application/xml",
+        headers={"Cache-Control": "public, max-age=600, stale-while-revalidate=1200"},
+    )
+
+
 @router.get("/robots.txt", response_class=PlainTextResponse)
 def robots():
     return f"""User-agent: *
@@ -392,4 +434,5 @@ User-agent: Google-Extended
 Allow: /
 
 Sitemap: {SITE}/sitemap.xml
+Sitemap: {SITE}/sitemap-media.xml
 """

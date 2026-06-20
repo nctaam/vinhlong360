@@ -20,12 +20,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Query, Request, Depends
+from fastapi import APIRouter, HTTPException, Query, Request, Depends, UploadFile, File
 from pydantic import BaseModel, Field, field_validator
 
 import data_quality
 import knowledge
 import analytics
+import site_settings
 from database import db
 
 try:
@@ -297,6 +298,80 @@ async def delete_entity(entity_id: str):
         raise HTTPException(404, f"Entity '{entity_id}' not found")
     _sync_kb()
     return {"status": "deleted", "entity_id": entity_id}
+
+
+class _EntityImageURL(BaseModel):
+    url: str
+
+
+@router.post("/entities/{entity_id}/images")
+async def add_entity_image_url(entity_id: str, body: _EntityImageURL):
+    """GĐ8.4: thêm ảnh entity theo URL (chỉ nguồn cấp phép — B6)."""
+    entity = db.get_entity(entity_id)
+    if not entity:
+        raise HTTPException(404, f"Entity '{entity_id}' not found")
+    url = (body.url or "").strip()
+    if not (url.startswith("http://") or url.startswith("https://") or url.startswith("/")):
+        raise HTTPException(400, "URL ảnh không hợp lệ")
+    images = list(entity.get("images") or [])
+    if len(images) >= 10:
+        raise HTTPException(400, "Tối đa 10 ảnh mỗi entity")
+    if url not in images:
+        images.append(url)
+    entity["images"] = images
+    entity["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
+    db.upsert_entity(entity)
+    _sync_kb()
+    return {"status": "added", "images": images}
+
+
+@router.post("/entities/{entity_id}/images/upload")
+async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
+    """GĐ8.4: upload file ảnh → WebP 3 cỡ → R2 (fallback đĩa) → entity.images.
+    Lưu URL cỡ md (800px) làm ảnh hiển thị; sm/lg cũng được upload để dùng srcset sau."""
+    from fastapi.concurrency import run_in_threadpool
+    from storage import storage, ALLOWED_TYPES, MAX_IMAGE_SIZE
+
+    entity = db.get_entity(entity_id)
+    if not entity:
+        raise HTTPException(404, f"Entity '{entity_id}' not found")
+    if file.content_type not in ALLOWED_TYPES:
+        raise HTTPException(400, f"Định dạng không hỗ trợ: {file.content_type}")
+    data = await file.read()
+    if len(data) > MAX_IMAGE_SIZE:
+        raise HTTPException(400, f"Ảnh quá lớn (tối đa {MAX_IMAGE_SIZE // 1024 // 1024}MB)")
+    if len(entity.get("images") or []) >= 10:
+        raise HTTPException(400, "Tối đa 10 ảnh mỗi entity")
+    try:
+        urls = await run_in_threadpool(storage.upload_image_set, data, "entities", entity_id)
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(500, f"Lỗi xử lý/upload ảnh: {e}")
+
+    cover = urls.get("md") or urls.get("lg")
+    images = list(entity.get("images") or [])
+    if cover and cover not in images:
+        images.append(cover)
+    entity["images"] = images
+    entity["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
+    db.upsert_entity(entity)
+    _sync_kb()
+    return {"status": "uploaded", "url": cover, "sizes": urls, "images": images, "backend": storage.backend}
+
+
+@router.delete("/entities/{entity_id}/images/{idx}")
+async def remove_entity_image(entity_id: str, idx: int):
+    """Gỡ ảnh thứ idx khỏi entity.images (không xoá file R2 — tránh mất ảnh dùng chung)."""
+    entity = db.get_entity(entity_id)
+    if not entity:
+        raise HTTPException(404, f"Entity '{entity_id}' not found")
+    images = list(entity.get("images") or [])
+    if 0 <= idx < len(images):
+        images.pop(idx)
+    entity["images"] = images
+    entity["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
+    db.upsert_entity(entity)
+    _sync_kb()
+    return {"status": "removed", "images": images}
 
 
 @router.get("/unclassified")
@@ -643,12 +718,15 @@ async def list_sources():
 
 @router.get("/moderation/queue")
 async def moderation_queue(
-    status: str = Query("pending", pattern="^(pending|flagged|approved|rejected)$"),
+    status: str = Query("review", pattern="^(review|pending|flagged|approved|rejected)$"),
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
 ):
     ph = db._ph
     offset = (page - 1) * limit
+    # "review" = everything needing a human decision (auto-flagged + pending).
+    statuses = ["pending", "flagged"] if status == "review" else [status]
+    placeholders = ", ".join([ph] * len(statuses))
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
             SELECT p.*, u.display_name, u.phone,
@@ -656,13 +734,13 @@ async def moderation_queue(
             FROM posts p
             JOIN users u ON u.id = p.user_id
             LEFT JOIN entities e ON e.id = p.entity_id
-            WHERE p.moderation_status = {ph}
+            WHERE p.moderation_status IN ({placeholders})
             ORDER BY p.created_at DESC
             LIMIT {ph} OFFSET {ph}
-        """, (status, limit, offset))
+        """, (*statuses, limit, offset))
         total = db._fetchone(conn, f"""
-            SELECT COUNT(*) as c FROM posts WHERE moderation_status = {ph}
-        """, (status,))
+            SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ({placeholders})
+        """, (*statuses,))
     return {
         "posts": [_mod_post(db._row_to_dict(r)) for r in rows],
         "total": total["c"] if total else 0,
@@ -681,14 +759,18 @@ async def approve_post(post_id: str):
     return {"success": True}
 
 
+class RejectBody(BaseModel):
+    reason: str | None = None
+
+
 @router.post("/moderation/{post_id}/reject")
-async def reject_post(post_id: str):
+async def reject_post(post_id: str, body: RejectBody = RejectBody()):
     ph = db._ph
     with db._conn() as conn:
         db._execute(conn, f"""
             UPDATE posts SET moderation_status = 'rejected' WHERE id::text = {ph}
         """, (post_id,))
-    _log_mod_action("post", post_id, "rejected")
+    _log_mod_action("post", post_id, "rejected", (body.reason or "").strip() or None)
     return {"success": True}
 
 
@@ -955,11 +1037,13 @@ def _mod_post(row: dict) -> dict:
             images = []
     return {
         "id": str(row["id"]),
-        "content": row.get("content", "")[:200],
+        "content": row.get("content", "")[:2000],
         "post_type": row.get("post_type", "share"),
         "moderation_status": row.get("moderation_status", "pending"),
         "images": images,
         "author": row.get("display_name", ""),
+        "display_name": row.get("display_name", ""),
+        "phone": _mask(row.get("phone", "")),
         "entity_name": row.get("entity_name"),
         "created_at": str(row.get("created_at", "")),
     }
@@ -971,9 +1055,70 @@ def _mask(phone: str) -> str:
     return phone[:3] + "****" + phone[-3:]
 
 
-def _log_mod_action(target_type, target_id, action):
+def _log_mod_action(target_type, target_id, action, reason=None):
     try:
         from moderation import log_moderation
-        log_moderation(target_type, target_id, action, {}, auto=False)
+        log_moderation(target_type, target_id, action, {"reason": reason} if reason else {}, auto=False)
     except Exception:
         pass
+
+
+# ══════════════════════════════════════════════════
+#  SITE SETTINGS — CMS admin endpoints
+# ══════════════════════════════════════════════════
+
+@router.get("/site-settings")
+async def admin_get_all_settings():
+    """All settings grouped by category (for admin overview)."""
+    if not db._use_pg:
+        raise HTTPException(503, detail="Site settings require PostgreSQL")
+    return site_settings.get_all_grouped()
+
+
+@router.get("/site-settings/{category}")
+async def admin_get_settings_by_category(category: str):
+    """Settings for a specific category (for admin editor page)."""
+    if not db._use_pg:
+        raise HTTPException(503, detail="Site settings require PostgreSQL")
+    items = site_settings.get_by_category(category)
+    if not items:
+        raise HTTPException(404, detail=f"No settings found for category '{category}'")
+    return {"category": category, "settings": items}
+
+
+class SettingUpdate(BaseModel):
+    value: object = Field(..., description="New value for the setting")
+
+
+@router.put("/site-settings/{key:path}")
+async def admin_update_setting(key: str, body: SettingUpdate):
+    """Update a single setting value."""
+    if not db._use_pg:
+        raise HTTPException(503, detail="Site settings require PostgreSQL")
+    ok = site_settings.upsert(key, body.value)
+    if not ok:
+        raise HTTPException(500, detail="Failed to update setting")
+    return {"success": True, "key": key}
+
+
+class BulkSettingUpdate(BaseModel):
+    updates: dict[str, object] = Field(..., description="Map of key→value to update")
+
+
+@router.post("/site-settings/bulk")
+async def admin_bulk_update_settings(body: BulkSettingUpdate):
+    """Batch update multiple settings at once."""
+    if not db._use_pg:
+        raise HTTPException(503, detail="Site settings require PostgreSQL")
+    count = site_settings.bulk_upsert(body.updates)
+    return {"success": True, "updated": count}
+
+
+@router.post("/site-settings/reset/{category}")
+async def admin_reset_category(category: str):
+    """Reset all settings in a category to their defaults."""
+    if not db._use_pg:
+        raise HTTPException(503, detail="Site settings require PostgreSQL")
+    from seed_site_settings import DEFAULTS
+    count = site_settings.reset_category(category, DEFAULTS)
+    return {"success": True, "reset": count}

@@ -73,15 +73,25 @@ def _json_clone(value: Any) -> Any:
 def _canonical_value(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
+def _is_external_url(url: Any) -> bool:
+    """Valid http(s) URL that is NOT our own site (self-citation is not a source)."""
+    if not is_valid_url(url):
+        return False
+    u = str(url).lower()
+    return ("//vinhlong360.vn" not in u) and ("//www.vinhlong360.vn" not in u)
+
+
 def source_info(entity: dict[str, Any]) -> dict[str, Any]:
     source = entity.get("source")
+    if isinstance(source, list):  # entities store source as a list of {title,url,maps}; use the first
+        source = source[0] if source else None
     if isinstance(source, str):
-        return {"title": source, "url": source if is_valid_url(source) else None}
+        return {"title": source, "url": source if _is_external_url(source) else None}
     if isinstance(source, dict):
         url = source.get("url")
         return {
             "title": source.get("title") or source.get("name") or "",
-            "url": str(url) if is_valid_url(url) else None,
+            "url": str(url) if _is_external_url(url) else None,
         }
     return {"title": "", "url": None}
 
