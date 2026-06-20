@@ -9,6 +9,11 @@
         <div>
           <h1>{{ pc('hero_title') }}</h1>
           <p>{{ pc('hero_subtitle') }}</p>
+          <div class="hero-creds" aria-hidden="true">
+            <span class="hero-cred hero-cred-seal">🏅 Chuẩn OCOP <em>Nhà nước</em></span>
+            <span class="hero-cred">✓ Kiểm chứng</span>
+            <span v-if="allOcop.length" class="hero-cred">📊 {{ allOcop.length }} sản phẩm</span>
+          </div>
         </div>
       </div>
       <div v-if="allOcop.length" class="catalog-stats">
@@ -49,7 +54,11 @@
         <button type="button" class="see-all" @click="starFilter = 5; scrollToGrid()">Xem tất cả →</button>
       </div>
       <p class="section-desc">Sản phẩm đạt chuẩn cao nhất — 5 sao OCOP, chất lượng vượt trội.</p>
-      <div class="scroll-row" role="region" aria-label="Sản phẩm OCOP 5 sao">
+      <div class="honor-banner">
+        <span class="honor-banner-icon" aria-hidden="true">👑</span>
+        <span class="honor-banner-text">Danh sách vinh dự</span>
+      </div>
+      <div class="scroll-row honor-roll" role="region" aria-label="Sản phẩm OCOP 5 sao">
         <EntityCard v-for="e in fiveStarHighlights" :key="e.id" :entity="e" />
       </div>
     </section>
@@ -59,15 +68,17 @@
       <div class="section-head">
         <h2>Chọn theo khu vực</h2>
       </div>
-      <div class="quick-picks">
+      <div class="quick-picks region-quick-picks">
         <button type="button"
           v-for="(meta, key) in AREA_META" :key="key"
-          :class="['quick-pick', { active: areaFilter === key }]"
+          :class="['quick-pick', 'region-pick', { active: areaFilter === key }]"
+          :style="{ '--AREA-rgb': REGION_RGB[key as string] || 'var(--primary-rgb)' }"
           :aria-pressed="areaFilter === key"
           @click="areaFilter = areaFilter === key ? 'all' : (key as string); scrollToGrid()"
         >
           <span class="quick-pick-icon">{{ meta.emoji }}</span>
           <span class="quick-pick-label">{{ meta.name }}</span>
+          <span v-if="REGION_TAGLINE[key as string]" class="region-tagline">{{ REGION_TAGLINE[key as string] }}</span>
           <span class="quick-pick-count">{{ countByArea(key as string) }} sản phẩm</span>
         </button>
       </div>
@@ -160,6 +171,19 @@ import { inSeason, relevanceScore } from '~/composables/useSeason'
 
 useReveal()
 const { f: pc } = usePageContent('ocop')
+
+// Per-region accent + tagline for the premium region quick-picks (geo-provenance).
+// Colors reuse the existing area→token convention (see catalog.css .cat-area-*).
+const REGION_RGB: Record<string, string> = {
+  'vinh-long': 'var(--primary-rgb)',
+  'ben-tre': 'var(--secondary-rgb)',
+  'tra-vinh': 'var(--river-rgb)',
+}
+const REGION_TAGLINE: Record<string, string> = {
+  'vinh-long': 'Miệt vườn cam sành',
+  'ben-tre': 'Xứ dừa ngọt lành',
+  'tra-vinh': 'Đặc sản dừa sáp',
+}
 
 const q = ref('')
 const starFilter = ref(0)
@@ -285,3 +309,102 @@ useHead(() => ({
   }],
 }))
 </script>
+
+<style scoped>
+/* Hero provenance / trust signals (OCOP official seal credibility) */
+.hero-creds {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-6);
+  font-size: var(--text-xs);
+  padding: var(--space-4) 0 0;
+  margin-top: var(--space-4);
+  border-top: .5px solid var(--line);
+}
+.hero-cred {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--muted);
+  font-weight: var(--weight-medium);
+}
+.hero-cred-seal {
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  color: var(--primary-fg);
+}
+.hero-cred-seal em { font-style: normal; color: var(--muted); text-transform: none; letter-spacing: 0; }
+
+/* Honor roll banner above the 5-star carousel */
+.honor-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  border-left: 3px solid var(--secondary);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, rgba(var(--secondary-rgb), .08), transparent);
+}
+.honor-banner-icon { font-size: 1.25rem; }
+.honor-banner-text {
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-sm);
+  color: var(--secondary-fg, var(--secondary));
+  letter-spacing: var(--tracking-tight);
+}
+/* Curated-collection lift + glow for honor-roll cards */
+.honor-roll :deep(.card:hover) {
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(var(--secondary-rgb), .2), 0 18px 40px -18px rgba(var(--secondary-rgb), .35);
+  transform: translateY(-8px);
+}
+
+/* Premium region quick-picks with geo-provenance accent + tagline */
+.region-quick-picks .region-pick {
+  background: linear-gradient(135deg, rgba(var(--AREA-rgb), .06), transparent);
+}
+.region-quick-picks .region-pick:hover {
+  border-color: rgba(var(--AREA-rgb), .55);
+  box-shadow: var(--shadow-md), 0 0 0 1px rgba(var(--AREA-rgb), .3);
+}
+.region-quick-picks .region-pick.active {
+  border-color: rgba(var(--AREA-rgb), .9);
+  background: linear-gradient(135deg, rgba(var(--AREA-rgb), .12), transparent);
+}
+.region-tagline {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* Filter panel labeled sections — clearer scannable groups (OCOP page only) */
+.controls .control-label {
+  position: relative;
+  font-size: .8rem;
+  padding-left: var(--space-3);
+}
+.controls .control-label::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: .85em;
+  border-radius: 2px;
+  background: var(--primary-fg);
+}
+
+.dark .hero-cred-seal { color: var(--primary-fg); }
+.dark .honor-banner { background: linear-gradient(90deg, rgba(var(--secondary-rgb), .12), transparent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .honor-roll :deep(.card:hover) { transform: none; }
+}
+
+@media (max-width: 640px) {
+  .hero-creds { gap: var(--space-4); }
+}
+</style>

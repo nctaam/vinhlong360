@@ -29,12 +29,13 @@
 
     <!-- Đang vào mùa -->
     <section v-if="seasonalHighlights.length" class="block reveal">
-      <div class="seasonal-banner">
-        <span class="seasonal-banner-icon">🔥</span>
+      <div class="seasonal-banner seasonal-banner-live">
+        <span class="seasonal-banner-icon" aria-hidden="true">🔥</span>
         <div>
           <strong>Tháng {{ currentMonth }} — đang vào mùa</strong>
           <p>Những sản phẩm đang chính vụ, ngon nhất thời điểm này.</p>
         </div>
+        <span class="seasonal-banner-month" aria-hidden="true">Tháng {{ currentMonth }}</span>
       </div>
       <div class="scroll-row" role="region" aria-label="Đặc sản đang mùa">
         <EntityCard v-for="e in seasonalHighlights" :key="e.id" :entity="e" :season-filter="String(currentMonth)" />
@@ -67,13 +68,13 @@
         <p class="control-label">Theo tháng</p>
         <div class="chip-row" role="group" aria-label="Lọc theo tháng">
           <button type="button" :class="['chip', 'season', { active: seasonFilter === 'all' }]" :aria-pressed="seasonFilter === 'all'" @click="seasonFilter = 'all'">Tất cả</button>
-          <button type="button" v-for="m in 12" :key="m" :class="['chip', 'season', { active: seasonFilter === String(m) }]" :aria-pressed="seasonFilter === String(m)" @click="seasonFilter = String(m)">
+          <button type="button" v-for="m in 12" :key="m" :class="['chip', 'season', { active: seasonFilter === String(m) }]" :aria-pressed="seasonFilter === String(m)" :aria-label="`Tháng ${m}`" @click="seasonFilter = String(m)">
             T{{ m }}
           </button>
           <button type="button" :class="['chip', 'season', { active: seasonFilter === 'flood' }]" :aria-pressed="seasonFilter === 'flood'" @click="seasonFilter = 'flood'">🌊 Mùa nước nổi</button>
         </div>
-        <div class="chip-row chip-row-extra">
-          <button type="button" :class="['chip', { active: ocopOnly }]" :aria-pressed="ocopOnly" @click="ocopOnly = !ocopOnly">⭐ Chỉ sản phẩm OCOP</button>
+        <div class="chip-row chip-row-extra" role="group" aria-label="Lọc nâng cao">
+          <button type="button" :class="['chip', { active: ocopOnly }]" :aria-pressed="ocopOnly" aria-label="Chỉ sản phẩm OCOP" @click="ocopOnly = !ocopOnly">⭐ Chỉ sản phẩm OCOP</button>
         </div>
       </div>
       <p class="result-meta" aria-live="polite">{{ filtered.length }} kết quả</p>
@@ -233,3 +234,40 @@ useHead(() => ({
   }],
 }))
 </script>
+
+<style scoped>
+/* Seasonal "đang vào mùa" banner — gentle live-pulse + month context label.
+   Scoped to .seasonal-banner-live so other pages' banners are unaffected. */
+.seasonal-banner-live .seasonal-banner-icon {
+  display: inline-block;
+  animation: season-fire-pulse 2.8s var(--ease-out-expo) infinite;
+}
+.seasonal-banner-month {
+  margin-left: auto;
+  flex-shrink: 0;
+  align-self: center;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--accent-fg, var(--muted));
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  background: rgba(var(--accent-rgb), .12);
+  white-space: nowrap;
+}
+
+@keyframes season-fire-pulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(var(--accent-rgb), 0)); }
+  50% { transform: scale(1.08); filter: drop-shadow(0 0 4px rgba(var(--accent-rgb), .45)); }
+}
+
+.dark .seasonal-banner-month { background: rgba(var(--accent-rgb), .18); }
+
+@media (prefers-reduced-motion: reduce) {
+  .seasonal-banner-live .seasonal-banner-icon { animation: none; }
+}
+
+@media (max-width: 640px) {
+  /* Keep the month chip from crowding the copy on small screens */
+  .seasonal-banner-month { display: none; }
+}
+</style>

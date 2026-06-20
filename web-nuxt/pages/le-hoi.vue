@@ -39,6 +39,7 @@
             <span class="edb-day">{{ formatDay(e) }}</span>
           </div>
           <div class="event-info">
+            <span v-if="eventStatus(e)" class="lehoi-status" :class="`status-${eventStatus(e)}`">{{ STATUS_LABEL[eventStatus(e)] }}</span>
             <h3>{{ e.name }}</h3>
             <div class="event-meta">
               <span v-if="e.place_name" class="event-place">📍 {{ e.place_name }}</span>
@@ -47,6 +48,11 @@
           </div>
         </NuxtLink>
       </div>
+    </section>
+
+    <!-- Off-season note (no upcoming festivals) -->
+    <section v-else-if="data && !fetchError && allEvents.length" class="block reveal">
+      <p class="lehoi-offseason">🌙 Lễ hội sẽ trở lại mùa sau — xem lịch bên dưới để biết các mùa lễ hội trong năm.</p>
     </section>
 
     <!-- Region quick-picks -->
@@ -110,6 +116,7 @@
             <span class="edb-day">{{ formatDay(e) }}</span>
           </div>
           <div class="event-info">
+            <span v-if="eventStatus(e)" class="lehoi-status" :class="`status-${eventStatus(e)}`">{{ STATUS_LABEL[eventStatus(e)] }}</span>
             <h3>{{ e.name }}</h3>
             <p v-if="e.summary" class="event-summary">{{ truncate(e.summary, 120) }}</p>
             <div class="event-meta">
@@ -120,7 +127,7 @@
             </div>
           </div>
           <div v-if="e.images?.length" class="event-thumb">
-            <img :src="e.images[0]" :alt="e.name" loading="lazy" decoding="async" width="160" height="120" />
+            <img :src="e.images[0]" :alt="e.name" loading="lazy" decoding="async" width="80" height="60" @error="(ev) => { const t = ev.target as HTMLImageElement; t.style.display = 'none' }" />
           </div>
         </NuxtLink>
       </div>
@@ -279,6 +286,24 @@ function formatDay(e: Entity): string {
   return String(d.getDate())
 }
 
+const todayStr = new Date().toISOString().slice(0, 10)
+
+// Time-aware status for a festival: '' | 'now' (đang diễn ra) | 'soon' (sắp khai mạc, ≤14 ngày)
+function eventStatus(e: Entity): '' | 'now' | 'soon' {
+  const attrs = e.attributes || {}
+  const ds = attrs.date_start
+  if (!ds) return ''
+  const de = attrs.date_end || ds
+  if (todayStr >= ds && todayStr <= de) return 'now'
+  if (ds > todayStr) {
+    const days = Math.round((new Date(ds + 'T00:00:00').getTime() - new Date(todayStr + 'T00:00:00').getTime()) / 86400000)
+    if (days <= 14) return 'soon'
+  }
+  return ''
+}
+
+const STATUS_LABEL: Record<string, string> = { now: 'Đang diễn ra', soon: 'Sắp khai mạc' }
+
 function dateRange(e: Entity): string {
   const attrs = e.attributes || {}
   const ds = attrs.date_start
@@ -394,6 +419,61 @@ useHead({
 .event-lunar {
   font-style: italic;
 }
-.catalog-hero.cat-festival { background: linear-gradient(135deg, rgba(var(--primary-rgb), .06) 0%, rgba(183, 110, 60, .08) 100%); }
-.dark .catalog-hero.cat-festival { background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%); }
+
+/* Hero depth & cultural warmth: layered scrim over the festival gradient */
+.catalog-hero.cat-festival {
+  position: relative;
+  background:
+    radial-gradient(120% 90% at 12% 0%, rgba(var(--accent-rgb), .07) 0%, transparent 55%),
+    linear-gradient(135deg, rgba(var(--primary-rgb), .06) 0%, rgba(183, 110, 60, .08) 100%);
+}
+.dark .catalog-hero.cat-festival {
+  background:
+    radial-gradient(120% 90% at 12% 0%, rgba(var(--accent-rgb), .05) 0%, transparent 55%),
+    linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%);
+}
+
+/* Time-aware status label above an event name */
+.lehoi-status {
+  display: inline-block;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: .02em;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-1);
+}
+.lehoi-status.status-soon {
+  background: rgba(var(--accent-rgb), .14);
+  color: var(--accent-dark);
+}
+.lehoi-status.status-now {
+  background: rgba(var(--secondary-rgb), .14);
+  color: var(--secondary-dark);
+  animation: lehoi-status-pulse 2.8s var(--ease-out-expo) infinite;
+}
+.dark .lehoi-status.status-soon { background: rgba(var(--accent-rgb), .22); color: var(--accent); }
+.dark .lehoi-status.status-now { background: rgba(var(--secondary-rgb), .22); color: var(--secondary); }
+@keyframes lehoi-status-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--secondary-rgb), .0); }
+  50% { box-shadow: 0 0 0 4px rgba(var(--secondary-rgb), .12); }
+}
+
+/* Off-season note when there are no upcoming festivals */
+.lehoi-offseason {
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--ink-tertiary, var(--muted));
+  background: rgba(var(--accent-rgb), .08);
+  border-radius: var(--radius-md);
+  border-left: 3px solid rgba(var(--accent-rgb), .35);
+}
+
+/* Thumbnail placeholder colour if image fails / while loading */
+.event-thumb { background: var(--bg-alt); }
+
+@media (prefers-reduced-motion: reduce) {
+  .lehoi-status.status-now { animation: none; }
+}
 </style>

@@ -24,7 +24,7 @@
         <span v-if="isPeak" class="badge peak">🔥 Đang rộ</span>
         <span v-if="isYearRoundSeason" class="badge year">Quanh năm</span>
         <span v-else class="badge season">{{ seasonLabel }}</span>
-        <span v-if="entity.attributes?.ocop" class="badge ocop">⭐ {{ entity.attributes.ocop }}</span>
+        <span v-if="entity.attributes?.ocop" :class="['badge', 'ocop', { 'ocop-5': ocopStars === 5, 'ocop-4': ocopStars === 4, 'ocop-3': ocopStars === 3 }]">⭐ {{ entity.attributes.ocop }}</span>
       </div>
     </div>
   </NuxtLink>
@@ -72,4 +72,22 @@ const cardMeta = computed(() => {
   const hours = a.hours || null
   return (price || hours) ? { price, hours } : null
 })
+const ocopStars = computed(() => parseInt(props.entity.attributes?.ocop) || 0)
 </script>
+
+<style scoped>
+/* Star-tier color coding for OCOP badge — additive on top of global .badge.ocop (cards.css).
+   Higher star ratings read as more premium; falls back to base .badge.ocop styling. */
+.badge.ocop-5 {
+  background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+  color: var(--text-on-dark, #fff);
+  border-color: transparent;
+  box-shadow: 0 0 0 2px rgba(var(--secondary-rgb), .2);
+}
+.badge.ocop-4 {
+  background: rgba(var(--secondary-rgb), .15);
+  color: var(--secondary-dark);
+}
+.dark .badge.ocop-5 { box-shadow: 0 0 0 2px rgba(var(--secondary-rgb), .35); }
+.dark .badge.ocop-4 { color: var(--secondary-fg); }
+</style>

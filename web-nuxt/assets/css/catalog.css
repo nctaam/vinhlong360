@@ -13,6 +13,9 @@
 .chip:hover { border-color: var(--primary-fg); background: var(--card); box-shadow: var(--shadow-xs); }
 .chip:active { transform: scale(.95); transition-duration: .08s; }
 .chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+/* when a chip is both active (filled brand bg) AND focused, swap the focus
+   ring to accent so it stays visible against the primary-coloured fill */
+.chip.active:focus-visible { outline-color: var(--accent); outline-offset: 4px; }
 .chip.active { background: var(--primary); color: var(--text-on-dark, #fff); border-color: var(--primary); }
 .chip.season.active { background: var(--primary); color: var(--text-on-dark, #fff); border-color: var(--primary); }
 .chip.season.active { background: rgba(var(--primary-rgb), .88); }
@@ -23,6 +26,10 @@
   .chip-row:focus-within, .chip-row:hover { mask-image: none; -webkit-mask-image: none; }
   .chip-row .chip { scroll-snap-align: start; }
   .chip-row.wrap-mobile { flex-wrap: wrap; overflow-x: visible; mask-image: none; -webkit-mask-image: none; scroll-snap-type: none; }
+}
+/* keep chips readable (don't compress below a comfortable width) on phones */
+@media (max-width: 640px) {
+  .chip-row:not(.wrap-mobile) .chip { min-width: 80px; justify-content: center; }
 }
 .result-meta { color: var(--ink); font-size: var(--text-sm); margin: var(--space-5) 0 var(--space-4); font-weight: var(--weight-medium); padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); background: var(--bg-alt); transition: background .3s var(--ease-out); }
 
@@ -109,6 +116,9 @@
 .stat-num { font-size: var(--text-2xl); font-weight: var(--weight-extrabold); color: var(--primary-fg); letter-spacing: var(--tracking-tight); transition: color .3s var(--ease-out); }
 .stat-item:hover .stat-num { color: var(--primary-fg-strong, var(--primary-fg)); }
 .stat-label { font-size: var(--text-xs); color: var(--muted); text-transform: uppercase; letter-spacing: var(--tracking-caps); font-weight: var(--weight-semibold); }
+/* visual star glyphs inside a stat-item — turns a dry count into visible proof */
+.stat-stars { font-size: 1rem; letter-spacing: .04em; line-height: 1; transition: transform .3s var(--ease-spring-gentle); }
+.stat-item:hover .stat-stars { transform: scale(1.15); }
 
 /* ── Section desc ── */
 .section-desc { color: var(--muted); font-size: var(--text-sm); margin: calc(-1 * var(--space-2)) 0 var(--space-4); line-height: var(--leading-relaxed); }
@@ -156,8 +166,8 @@
   content: ''; flex: 1; height: .5px; background: var(--line);
 }
 .catalog-divider-text {
-  font-size: var(--text-sm); font-weight: var(--weight-semibold);
-  color: var(--primary-fg); text-transform: uppercase; letter-spacing: var(--tracking-caps); white-space: nowrap;
+  font-size: var(--text-sm); font-weight: var(--weight-bold);
+  color: var(--primary-fg-strong, var(--primary-fg)); text-transform: uppercase; letter-spacing: var(--tracking-caps); white-space: nowrap;
   background: var(--bg); padding: 0 var(--space-3);
   transition: color .3s var(--ease-out);
 }
@@ -174,10 +184,16 @@
 .cross-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .cross-card:active { transform: scale(.97); transition-duration: .08s; }
 .cross-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.cross-icon { font-size: 1.6rem; flex-shrink: 0; transition: transform .35s var(--ease-spring-gentle); }
+.cross-icon { font-size: 1.6rem; flex-shrink: 0; transition: transform .35s var(--ease-spring-gentle), text-shadow .35s var(--ease-spring-gentle); }
 .cross-card:hover .cross-icon { transform: scale(1.12); }
 .cross-card strong { display: block; font-size: var(--text-sm); }
 .cross-card p { margin: 0; font-size: var(--text-xs); color: var(--muted); }
+/* tablet: lock cross-links to a tidy 2-up before the mobile breakpoint */
+@media (max-width: 768px) {
+  .cross-links { grid-template-columns: repeat(2, 1fr); }
+}
+/* dark mode: the cross-icon picks up a soft glow on hover */
+.dark .cross-card:hover .cross-icon { text-shadow: 0 0 12px rgba(var(--primary-rgb), .15); }
 
 /* ── Highlight card (larger featured card) ── */
 .highlight-scroll { display: flex; gap: var(--space-4); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: var(--space-2); scroll-snap-type: x proximity; overscroll-behavior-x: contain; mask-image: linear-gradient(to right, #000 90%, transparent); -webkit-mask-image: linear-gradient(to right, #000 90%, transparent); }
@@ -202,7 +218,21 @@
   transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo);
 }
 .seasonal-banner:hover { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .08); }
-.seasonal-banner-icon { font-size: 1.8rem; }
+.seasonal-banner-icon { font-size: 1.8rem; position: relative; display: inline-flex; align-items: center; justify-content: center; }
+/* soft radial halo behind the emoji so it reads as illustrated, not flat */
+.seasonal-banner-icon::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(var(--primary-rgb), .2), transparent 70%);
+  transition: opacity .35s var(--ease-out-expo);
+}
+.seasonal-banner:hover .seasonal-banner-icon { filter: drop-shadow(0 2px 6px rgba(var(--primary-rgb), .25)); }
+/* ground the banner with a faint accent baseline */
+.seasonal-banner { border-bottom: 1px solid rgba(var(--accent-rgb), .25); }
 .seasonal-banner strong { font-size: var(--text-base); }
 .seasonal-banner p { margin: 0; font-size: var(--text-sm); color: var(--muted); }
 
@@ -223,6 +253,38 @@
 .quick-pick:hover .quick-pick-icon { transform: scale(1.15); }
 .quick-pick-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
 .quick-pick-count { font-size: var(--text-xs); color: var(--muted); }
+/* keep a comfortable tap target when quick-picks compress on phones */
+@media (max-width: 640px) {
+  .quick-pick { padding: var(--space-6) var(--space-2); min-height: 48px; }
+}
+/* optional star glyphs inside a quick-pick gently twinkle on hover
+   (opt-in via .quick-pick-stars; existing quick-picks unaffected) */
+.quick-pick-stars { font-size: 1rem; letter-spacing: .04em; line-height: 1; }
+.quick-pick:hover .quick-pick-stars { animation: star-twinkle 1.2s var(--ease-spring, ease-in-out) infinite; }
+@keyframes star-twinkle {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: .4; }
+}
+
+/* ── Premium region quick-picks (curated-collection feel) ──
+   Opt-in variant on .quick-picks → .quick-pick. Region tint is supplied
+   per-card via a --AREA-rgb custom property (page sets it inline). Falls
+   back to the brand primary when unset so it never renders broken. */
+.region-quick-picks .quick-pick {
+  --AREA-rgb: var(--primary-rgb);
+  justify-content: flex-end;
+  min-height: 80px;
+  background: linear-gradient(135deg, rgba(var(--AREA-rgb), .06), transparent);
+}
+.region-quick-picks .quick-pick:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md), 0 0 0 1px rgba(var(--AREA-rgb), .3);
+  border-color: rgba(var(--AREA-rgb), .4);
+}
+.region-quick-picks .quick-pick .quick-pick-label { font-weight: var(--weight-bold); }
+.dark .region-quick-picks .quick-pick {
+  background: linear-gradient(135deg, rgba(var(--AREA-rgb), .12), transparent);
+}
 
 /* ── Hero variants ── */
 .catalog-hero.cat-experience { background: linear-gradient(135deg, rgba(var(--primary-rgb), .08) 0%, var(--bg-warm) 100%); }
@@ -287,6 +349,17 @@
   .catalog-stats { flex-wrap: wrap; gap: var(--space-4); }
   .cross-links { grid-template-columns: repeat(2, 1fr); }
   .quick-picks { grid-template-columns: repeat(3, 1fr); }
+  /* safe-area aware hero padding on notched phones */
+  .catalog-hero {
+    padding-right: max(var(--space-4), env(safe-area-inset-right));
+    padding-left: max(var(--space-4), env(safe-area-inset-left));
+  }
+  /* keep hero icon from crowding the title once stacked */
+  .catalog-hero-icon { margin-right: var(--space-2); }
+}
+/* very small phones: lock quick-picks to 2 columns so cells don't wrinkle */
+@media (max-width: 480px) {
+  .quick-picks { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* ── Itinerary cards + timeline ── */
@@ -370,6 +443,9 @@
 .dark .controls .search-row::before {
   background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2218%22%20height%3D%2218%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2398989d%22%20stroke-width%3D%222.2%22%20stroke-linecap%3D%22round%22%3E%3Ccircle%20cx%3D%2211%22%20cy%3D%2211%22%20r%3D%227%22%2F%3E%3Cpath%20d%3D%22M21%2021l-4.3-4.3%22%2F%3E%3C%2Fsvg%3E");
 }
+/* dark mode: lift glyph opacity so it keeps 3:1 contrast on the dark field */
+.dark .controls .search-row::before { opacity: .65; }
+.dark .controls .search-row:focus-within::before { opacity: .95; }
 
 /* 3 ── Premium active chip: filled brand pill that lifts slightly,
    gains a soft brand glow-ring and a tiny check-feel. Satisfying,
@@ -406,6 +482,20 @@
   box-shadow: 0 0 0 3px rgba(var(--secondary-rgb), .15);
   flex: 0 0 auto;
 }
+/* gentle fade-in on (re)render so a filter change reads as fresh status,
+   plus a calm breathing pulse on the status dot. CSS-only; safe fallback. */
+.result-meta { animation: result-pulse .5s var(--ease-out); }
+.result-meta::before { animation: result-dot-breathe 2.4s var(--ease-out) infinite; }
+@keyframes result-pulse {
+  from { opacity: 0; transform: translateY(-2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes result-dot-breathe {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(var(--secondary-rgb), .12); }
+  50%      { box-shadow: 0 0 0 4px rgba(var(--secondary-rgb), .26); }
+}
+/* dark mode: keep the pill intentional (transparent fill, visible hairline) */
+.dark .result-meta { background: transparent; border-color: var(--line); }
 
 /* 5 ── Designed empty / loading states inside catalog blocks.
    Wrap the empty-state in an illustrated, on-brand surface card
@@ -454,6 +544,13 @@
   font-size: 2.6rem;
   background: radial-gradient(circle at 50% 40%, rgba(var(--primary-rgb), .12), rgba(var(--primary-rgb), .04) 70%);
 }
+/* optional contextual hint line below an empty-state (e.g. region/star filter
+   context) — makes a no-result moment feel intentional, not blank */
+.block .empty-state .empty-hint {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  margin: var(--space-3) 0 var(--space-4);
+}
 
 /* ── Reduced motion (catalog shared) ── */
 @media (prefers-reduced-motion: reduce) {
@@ -470,4 +567,10 @@
   /* signature additions */
   .controls .chip.active { transform: none; }
   .controls .chip:not(.active):hover { transform: none; }
+  /* batch-2 additions */
+  .stat-item:hover .stat-stars { transform: none; }
+  .quick-pick:hover .quick-pick-stars { animation: none; }
+  .region-quick-picks .quick-pick:hover { transform: none; }
+  .result-meta { animation: none; }
+  .result-meta::before { animation: none; }
 }

@@ -7,6 +7,10 @@
         <div class="sk-line sk-title"></div>
         <div class="sk-line sk-text"></div>
         <div class="sk-line sk-text short"></div>
+        <div class="sk-badges">
+          <div class="sk-line sk-badge sk-badge-1"></div>
+          <div class="sk-line sk-badge sk-badge-2"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -38,6 +42,11 @@ withDefaults(defineProps<{ count?: number }>(), { count: 6 })
 .sk-title { width: 70%; height: 16px; }
 .sk-text { width: 100%; height: 12px; }
 .sk-text.short { width: 50%; }
+/* Badge-cluster placeholders — mirror card's season/ocop badge row for better load anticipation. */
+.sk-badges { display: flex; gap: var(--space-2); margin-top: var(--space-2); }
+.sk-badge { height: 10px; border-radius: var(--radius-full, 999px); }
+.sk-badge-1 { width: 60px; }
+.sk-badge-2 { width: 50px; }
 
 @keyframes shimmer {
   0% { background-position: 200% 0; }

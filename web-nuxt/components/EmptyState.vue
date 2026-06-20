@@ -14,6 +14,7 @@
     </svg>
     <h3 v-if="title" class="empty-title">{{ title }}</h3>
     <p class="empty-text">{{ message }}</p>
+    <p v-if="hint" class="empty-hint">{{ hint }}</p>
     <div v-if="$slots.actions" class="empty-actions">
       <slot name="actions" />
     </div>
@@ -26,6 +27,7 @@ defineProps<{
   message?: string
   icon?: string
   title?: string
+  hint?: string
   tone?: 'empty' | 'error'
 }>()
 </script>
@@ -33,6 +35,8 @@ defineProps<{
 <style scoped>
 .empty-state { animation: emptyIn .5s var(--ease-spring-gentle); }
 @keyframes emptyIn { from { opacity: 0; transform: translateY(12px) scale(.96); } }
+/* Optional contextual hint line below the message — used e.g. for region/star context on OCOP empty results. */
+.empty-hint { font-size: var(--text-sm); color: var(--muted); margin: var(--space-3) 0 var(--space-4); }
 .empty-icon { display: block; transition: transform .4s var(--ease-spring-gentle); }
 .empty-state:hover .empty-icon { transform: scale(1.1) rotate(-4deg); }
 .empty-illust { transition: transform .4s var(--ease-spring-gentle); }

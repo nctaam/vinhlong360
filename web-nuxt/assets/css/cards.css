@@ -41,6 +41,20 @@
 .badge.season { background: var(--badge-season-bg); color: var(--primary-fg); }
 .badge.peak { background: var(--accent); color: var(--ink); }
 .badge.ocop { background: var(--badge-ocop-bg); color: var(--secondary-dark); border: .5px solid var(--leaf-100); }
+/* star-tier colour coding for OCOP badges (opt-in via .ocop-5/4/3).
+   Falls back to the plain .ocop style above when no tier class is set. */
+.badge.ocop-5 {
+  background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+  color: var(--text-on-dark, #fff);
+  border-color: transparent;
+  box-shadow: 0 0 0 2px rgba(var(--secondary-rgb), .2);
+}
+.badge.ocop-4 {
+  background: rgba(var(--secondary-rgb), .15);
+  color: var(--secondary-dark);
+  border-color: rgba(var(--secondary-rgb), .3);
+}
+.badge.ocop-3 { background: var(--badge-ocop-bg); color: var(--secondary-dark); }
 .badge.year { background: var(--badge-year-bg); color: var(--muted); }
 
 /* category cover colors */
@@ -96,6 +110,9 @@
 .dark .cover-tag { background: rgba(0,0,0,.6); border-color: rgba(255,255,255,.1); }
 .dark .badge.season { color: var(--primary-fg-strong); }
 .dark .badge.ocop { color: var(--secondary-fg); border-color: rgba(75, 169, 125, .3); }
+.dark .badge.ocop-5 { color: var(--text-on-dark, #fff); box-shadow: 0 0 0 2px rgba(var(--secondary-rgb), .3); }
+.dark .badge.ocop-4 { background: rgba(var(--secondary-rgb), .22); color: var(--secondary-fg); border-color: rgba(var(--secondary-rgb), .4); }
+.dark .badge.ocop-3 { color: var(--secondary-fg); border-color: rgba(75, 169, 125, .3); }
 .dark .badge.year { background: rgba(255,255,255,.06); }
 .dark .region-card { background: var(--card); border-color: var(--line); }
 .dark .region-card:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.08); }
@@ -180,6 +197,8 @@
   50%      { box-shadow: 0 1px 2px rgba(var(--accent-rgb), .35), 0 0 0 4px rgba(var(--accent-rgb), .14); }
 }
 .badge.season, .badge.ocop, .badge.year { box-shadow: var(--shadow-xs); }
+/* re-assert the 5-star tier glow over the shared .badge.ocop shadow above */
+.badge.ocop-5 { box-shadow: 0 0 0 2px rgba(var(--secondary-rgb), .2); }
 /* card-type label: tiny brand dot for scannable category hierarchy */
 .card-type { display: inline-flex; align-items: center; gap: var(--space-2); }
 .card-type::before {
@@ -227,6 +246,42 @@
 .dark .card::before { background: linear-gradient(180deg, rgba(255,255,255,.10), transparent 18%); }
 .dark .card .cover-img::after { background: linear-gradient(to top, rgba(0,0,0,.5) 0%, rgba(0,0,0,.12) 34%, transparent 62%); }
 
+/* ============================================================
+   Product / OCOP card refinements (additive, scoped so other
+   pages' cards are untouched).
+   ============================================================ */
+
+/* product cards get a slightly taller cover for richer presence */
+.card.cat-product .cover-img { height: 180px; }
+@media (max-width: 480px) {
+  .card.cat-product .cover-img { height: 160px; }
+}
+/* product card meta reads as an appetizing, scannable pill */
+.card.cat-product .card-meta {
+  align-self: flex-start;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--bg-alt);
+}
+.dark .card.cat-product .card-meta { background: rgba(255,255,255,.06); }
+
+/* OCOP "honor roll" carousel: opt-in via .scroll-row.honor-roll so the
+   curated 5-star row lifts higher with a leaf-green (secondary) glow,
+   without changing other pages' scroll-rows. */
+.scroll-row.honor-roll .card:hover {
+  transform: translateY(-8px);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 0 1px rgba(var(--secondary-rgb), .2),
+    0 18px 40px -18px rgba(var(--secondary-rgb), .35);
+}
+.dark .scroll-row.honor-roll .card:hover {
+  box-shadow:
+    var(--shadow-lg),
+    0 0 0 1px rgba(var(--secondary-rgb), .3),
+    0 18px 44px -18px rgba(0,0,0,.7);
+}
+
 /* ── Reduced motion (cards) ── */
 @media (prefers-reduced-motion: reduce) {
   .card:hover { transform: none; }
@@ -242,6 +297,7 @@
   /* signature additions */
   .card::before, .card:hover::before { opacity: 0; transition: none; }
   .card .cover-img::after { transition: none; }
+  .scroll-row.honor-roll .card:hover { transform: none; }
   .card:hover .cover-generated .cover-svg-icon { transform: translate(-50%, -50%); }
   .card:hover .cover-tag { transform: none; }
   .card:hover .badge.peak { animation: none; }
