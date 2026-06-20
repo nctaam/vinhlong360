@@ -3,7 +3,9 @@
     <!-- 1. Hero — dynamic tagline + search + quick-pick pills -->
     <section class="hero">
       <HeroIllustration />
-      <div class="hero-inner">
+      <div class="hero-scrim" aria-hidden="true"></div>
+      <div class="hero-inner hero-enter">
+        <span class="hero-kicker"><span class="hero-kicker-dot" aria-hidden="true"></span>Vĩnh Long · Bến Tre · Trà Vinh</span>
         <h1>{{ seasonalTagline }}</h1>
         <p class="hero-sub">{{ ss('homepage.hero_subtitle', 'Trải nghiệm miệt vườn, đặc sản theo mùa, lễ hội truyền thống — tất cả trong một bản đồ.') }}</p>
         <form class="hero-search" role="search" aria-label="Tìm kiếm trang chủ" @submit.prevent="onHeroSearch">
@@ -403,21 +405,174 @@ useHead({
 <style>
 /* ── Homepage-specific overrides (scoped by .home) ── */
 
-/* Typography hierarchy: hero = Large Title tracking, sections = xl semibold */
-.home .hero h1 { letter-spacing: -1.05px; }
-.home .hero-sub { font-size: var(--text-lg); opacity: .92; max-width: 640px; margin: var(--space-4) 0 0; }
+/* ════════════════════════════════════════════════════════════════
+   SIGNATURE: Flagship hero — layered depth, display type, cinematic
+   entrance. All additive on top of base.css `.hero`; degrades cleanly.
+   ════════════════════════════════════════════════════════════════ */
+
+/* 1 — Layered depth scrim. Sits above the bg image, below content.
+   A warm radial glow (top-right, echoing the SVG sun) + a soft bottom
+   vignette give the flat photo real dimension and keep text legible. */
+.home .hero { isolation: isolate; }
+.home .hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 95% at 88% 6%, rgba(232,163,61,.30) 0%, rgba(232,163,61,.07) 34%, transparent 60%),
+    radial-gradient(90% 70% at 6% 100%, rgba(var(--primary-rgb),.32) 0%, transparent 58%),
+    linear-gradient(to top, rgba(var(--ink-rgb),.55) 0%, rgba(var(--ink-rgb),.06) 32%, transparent 55%);
+}
+.home .hero-inner { z-index: 1; }
+
+/* 2 — Kicker (eyebrow) above the headline: quiet authority + place IA */
+.home .hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3) var(--space-1) var(--space-2);
+  margin-bottom: var(--space-4);
+  background: rgba(255,255,255,.12);
+  backdrop-filter: saturate(180%) blur(8px);
+  -webkit-backdrop-filter: saturate(180%) blur(8px);
+  border: .5px solid rgba(255,255,255,.28);
+  border-radius: var(--radius-full);
+  color: var(--text-on-dark, #fff);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(0,0,0,.25);
+}
+.home .hero-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 0 rgba(var(--accent-rgb), .55);
+  animation: hero-dot-pulse 2.4s var(--ease-out) infinite;
+}
+@keyframes hero-dot-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), .55); }
+  70% { box-shadow: 0 0 0 7px rgba(var(--accent-rgb), 0); }
+  100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0); }
+}
+
+/* 3 — Display headline. Bigger, tighter, with a warm gradient accent
+   rule beneath it (a "signature stroke" the owner will feel at a glance). */
+.home .hero h1 {
+  font-size: clamp(2.15rem, 6.2vw, 3.6rem);
+  letter-spacing: -1.4px;
+  line-height: 1.05;
+  text-shadow: 0 2px 18px rgba(0,0,0,.28);
+  position: relative;
+  display: inline-block;
+}
+.home .hero h1::after {
+  content: "";
+  display: block;
+  width: clamp(56px, 14vw, 112px);
+  height: 4px;
+  margin-top: var(--space-4);
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--accent) 0%, var(--primary-light) 100%);
+  box-shadow: 0 2px 10px rgba(var(--accent-rgb), .45);
+  transform-origin: left center;
+}
+.home .hero-sub { font-size: var(--text-lg); opacity: .95; max-width: 640px; margin: var(--space-4) 0 0; text-shadow: 0 1px 8px rgba(0,0,0,.22); }
+.dark .home .hero-sub { opacity: 1; font-weight: 400; }
+
+/* 4 — Cinematic staggered entrance. JS-gated (html.js) so SSR/no-JS
+   renders fully visible. Calm spring rise, one beat per element. */
+html.js .home .hero-enter > * {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: hero-rise .7s var(--ease-out-expo) forwards;
+}
+html.js .home .hero-enter > .hero-kicker { animation-delay: .05s; }
+html.js .home .hero-enter > h1 { animation-delay: .14s; }
+html.js .home .hero-enter > .hero-sub { animation-delay: .24s; }
+html.js .home .hero-enter > .hero-search { animation-delay: .34s; }
+html.js .home .hero-enter > .hero-pills { animation-delay: .44s; }
+@keyframes hero-rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* underline draw — separate so it can run slightly behind the h1 */
+html.js .home .hero-enter h1::after {
+  animation: hero-underline-draw .8s var(--ease-out-expo) .5s both;
+}
+@keyframes hero-underline-draw {
+  from { transform: scaleX(0); opacity: 0; }
+  to { transform: scaleX(1); opacity: 1; }
+}
+
+/* 5 — Premium search capsule. Floats the field in a soft glass shell
+   with real elevation; focus blooms a warm ring. Layers on base.css. */
+.home .hero-search {
+  padding: var(--space-1);
+  background: rgba(255,255,255,.10);
+  backdrop-filter: saturate(180%) blur(10px);
+  -webkit-backdrop-filter: saturate(180%) blur(10px);
+  border: .5px solid rgba(255,255,255,.22);
+  border-radius: calc(var(--radius-md) + var(--space-1));
+  box-shadow: 0 8px 30px rgba(0,0,0,.18), 0 2px 8px rgba(0,0,0,.12);
+  transition: box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out), transform .35s var(--ease-spring-gentle);
+}
+.home .hero-search:focus-within {
+  border-color: rgba(var(--accent-rgb), .6);
+  box-shadow: 0 12px 40px rgba(0,0,0,.22), 0 0 0 4px rgba(var(--accent-rgb), .22);
+  transform: translateY(-1px);
+}
+.home .hero-search input { border-color: transparent; background: var(--card); }
+.home .hero-search input:focus { border-color: transparent; box-shadow: none; }
+
+/* ════════════════════════════════════════════════════════════════
+   SIGNATURE: Section rhythm — each heading gets a warm accent tick +
+   refined kicker weight, so the page reads as a designed flagship.
+   ════════════════════════════════════════════════════════════════ */
 
 /* Section headings — Apple HIG: xl semibold (not 2xl extrabold) */
 .home .section-head h2 {
   font-size: var(--text-xl);
-  font-weight: var(--weight-semibold);
-  letter-spacing: -.01em;
+  font-weight: var(--weight-bold);
+  letter-spacing: -.015em;
   line-height: var(--leading-snug);
+  position: relative;
+  padding-left: var(--space-4);
+}
+/* Vertical accent tick — a small warm gradient bar anchoring each section */
+.home .section-head h2::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 1.05em;
+  border-radius: var(--radius-full);
+  background: linear-gradient(180deg, var(--accent) 0%, var(--primary) 100%);
+}
+/* Subtle hairline divider above each block — calm section separation */
+.home .block + .block {
+  position: relative;
+}
+.home .block + .block::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100%, var(--maxw));
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--line) 22%, var(--line) 78%, transparent);
+  opacity: .7;
 }
 
 /* Breathing room between sections */
-.home .block { padding-top: var(--space-16); padding-bottom: var(--space-4); }
-.home .block-compact { padding-top: var(--space-8); padding-bottom: var(--space-12); }
+.home .block { padding-top: var(--space-16); padding-bottom: var(--space-8); }
+.home .block-compact { padding-top: var(--space-8); padding-bottom: var(--space-8); }
 
 /* ── Stats bar ── */
 .stats-bar {
@@ -427,6 +582,8 @@ useHead({
   padding: var(--space-5) var(--space-4);
   margin: calc(-1 * var(--space-4)) auto var(--space-4);
   max-width: var(--maxw);
+  background: var(--bg-alt);
+  border-radius: var(--radius-md);
 }
 .stats-bar .stat-item {
   display: flex;
@@ -471,8 +628,8 @@ useHead({
 .hero-pill {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-2) var(--space-4);
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-5);
   background: var(--overlay-light);
   backdrop-filter: saturate(180%) blur(12px);
   -webkit-backdrop-filter: saturate(180%) blur(12px);
@@ -583,7 +740,7 @@ useHead({
   border-radius: var(--radius-sm);
   color: var(--text-on-dark, #fff);
 }
-.ec-day { font-size: var(--text-xl); font-weight: var(--weight-extrabold); line-height: 1; }
+.ec-day { font-size: var(--text-xl); font-weight: var(--weight-extrabold); line-height: 1; font-variant-numeric: tabular-nums; }
 .ec-month { font-size: var(--text-xs); font-weight: var(--weight-semibold); opacity: .9; }
 .ec-info { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
 .ec-cat { font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .04em; color: var(--primary-fg); }
@@ -596,6 +753,9 @@ useHead({
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
   color: #9a6d1e;
+  background: rgba(154, 109, 30, .08);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
 }
 .ec-today {
   color: #b93a2a;
@@ -618,6 +778,7 @@ useHead({
   color: var(--primary-fg);
   margin: var(--space-4) 0 var(--space-2);
 }
+.dark .happening-label { color: var(--primary-fg-strong); }
 .happening-section { margin-top: var(--space-1); }
 
 /* ── Block CTA ── */
@@ -700,9 +861,10 @@ useHead({
 }
 .quick-link:focus-visible {
   outline: 2px solid var(--primary);
-  outline-offset: 3px;
+  outline-offset: 2px;
+  box-shadow: inset 0 0 0 2px var(--card);
 }
-.ql-icon { font-size: 1.6rem; line-height: 1; }
+.ql-icon { font-size: 1.6rem; line-height: 1; display: flex; align-items: center; justify-content: center; height: 1.8rem; }
 .ql-text { font-size: var(--text-xs); }
 
 /* ── Chatbot CTA — enhanced ── */
@@ -762,15 +924,15 @@ useHead({
   outline-offset: 3px;
 }
 @media (max-width: 480px) {
-  .chatbot-cta { flex-direction: column; text-align: center; }
+  .chatbot-cta { flex-direction: column; text-align: center; gap: var(--space-3); }
   .chatbot-cta-btn { width: 100%; }
 }
 
 /* ── Region picker (first visit) ── */
 .region-picker {
   text-align: center;
-  padding: var(--space-5) var(--space-4);
-  margin: calc(-1 * var(--space-2)) auto var(--space-2);
+  padding: var(--space-5) var(--space-5);
+  margin: 0 auto var(--space-4);
   max-width: var(--maxw);
 }
 .rp-question {
@@ -822,9 +984,9 @@ useHead({
   align-items: center;
   justify-content: center;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-4) var(--space-5);
   max-width: var(--maxw);
-  margin: calc(-1 * var(--space-2)) auto var(--space-2);
+  margin: 0 auto var(--space-4);
   font-size: var(--text-sm);
   color: var(--muted);
 }
@@ -857,8 +1019,7 @@ useHead({
   box-shadow: var(--shadow-lg);
 }
 .region-active .region-tile-in {
-  outline: 3px solid rgba(255,255,255,.4);
-  outline-offset: -3px;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.5);
 }
 
 /* ── Region mini-switcher bar ── */
@@ -915,6 +1076,20 @@ useHead({
   }
 }
 
+/* Dark mode — flagship hero pieces */
+.dark .home .hero-scrim {
+  background:
+    radial-gradient(120% 95% at 88% 6%, rgba(232,163,61,.22) 0%, rgba(232,163,61,.05) 34%, transparent 60%),
+    radial-gradient(90% 70% at 6% 100%, rgba(var(--primary-rgb),.28) 0%, transparent 58%),
+    linear-gradient(to top, rgba(0,0,0,.62) 0%, rgba(0,0,0,.10) 34%, transparent 58%);
+}
+.dark .home .hero-kicker { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.16); }
+.dark .home .hero-search { background: rgba(28,28,30,.5); border-color: rgba(255,255,255,.12); }
+.dark .home .hero-search input { background: var(--bg-alt); }
+.dark .home .hero-search:focus-within { border-color: rgba(var(--accent-rgb), .55); }
+.dark .home .section-head h2::before { background: linear-gradient(180deg, var(--accent) 0%, var(--primary-fg) 100%); }
+.dark .home .block + .block::before { background: linear-gradient(90deg, transparent, var(--line) 22%, var(--line) 78%, transparent); opacity: .6; }
+
 /* Dark mode */
 .dark .event-card { background: var(--card); border-color: var(--line); }
 .dark .ec-countdown { color: #e0b366; }
@@ -928,8 +1103,9 @@ useHead({
 .dark .stat-num { color: var(--primary-fg-strong); }
 .dark .rp-btn { background: var(--bg-alt); border-color: var(--border); }
 .dark .rp-btn:hover { background: var(--card); }
-.dark .rmb-btn { background: var(--card); border-color: var(--border); }
-.dark .rmb-btn.active { background: var(--primary); border-color: var(--primary); }
+.dark .rmb-btn { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); }
+.dark .rmb-btn:hover:not(.active) { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.15); }
+.dark .rmb-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
 .dark .wb-change { border-color: var(--border); }
 
 /* Reduce transparency */
@@ -938,8 +1114,18 @@ useHead({
   .hero-pill { backdrop-filter: none; background: rgba(255,255,255,.3); }
 }
 
+/* Reduce transparency — flagship hero glass falls back to solid scrims */
+@media (prefers-reduced-transparency: reduce) {
+  .home .hero-kicker { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(0,0,0,.4); }
+  .home .hero-search { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(0,0,0,.35); }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
+  /* Flagship hero: no entrance, no pulse, no underline draw — show final state */
+  html.js .home .hero-enter > * { opacity: 1; transform: none; animation: none; }
+  html.js .home .hero-enter h1::after { animation: none; transform: scaleX(1); opacity: 1; }
+  .home .hero-kicker-dot { animation: none; }
   .hero-pill:hover { transform: none; }
   .hero-pill:active { transform: none; }
   .event-card:hover { transform: none; }

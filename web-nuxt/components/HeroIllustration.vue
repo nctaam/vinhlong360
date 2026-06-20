@@ -31,11 +31,29 @@ const props = withDefaults(
     aria-hidden="true"
     focusable="false"
   >
+    <!-- Reusable gradient defs (additive — only referenced by the upgraded full scene) -->
+    <defs>
+      <radialGradient id="hero-sun-glow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="rgba(232,163,61,.55)" />
+        <stop offset="45%" stop-color="rgba(232,163,61,.18)" />
+        <stop offset="100%" stop-color="rgba(232,163,61,0)" />
+      </radialGradient>
+      <linearGradient id="hero-river-sheen" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="rgba(255,255,255,0)" />
+        <stop offset="50%" stop-color="rgba(255,255,255,.14)" />
+        <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+      </linearGradient>
+    </defs>
+
     <!-- ── FULL scene (original homepage) ── -->
     <template v-if="props.variant === 'full'">
+      <!-- Atmospheric sun glow — soft warm halo gives the scene depth/focal warmth -->
+      <circle class="hero-glow" cx="530" cy="60" r="150" fill="url(#hero-sun-glow)" />
       <!-- River -->
       <path d="M0 280 Q150 260 300 280 Q450 300 600 270 L600 400 L0 400Z" fill="rgba(255,255,255,.08)" />
       <path d="M0 300 Q120 285 280 300 Q440 315 600 290 L600 400 L0 400Z" fill="rgba(255,255,255,.05)" />
+      <!-- River sheen — a slow horizontal shimmer that travels across the water -->
+      <path class="hero-sheen" d="M0 290 Q140 273 290 290 Q450 307 600 280 L600 320 Q450 347 290 330 Q140 313 0 330Z" fill="url(#hero-river-sheen)" />
       <!-- Palm trees -->
       <g opacity=".15">
         <line x1="520" y1="280" x2="520" y2="160" stroke="#fff" stroke-width="4" />
@@ -142,6 +160,24 @@ const props = withDefaults(
   0%, 100% { transform: translate(0, 0); }
   50% { transform: translate(-8px, 4px); }
 }
+/* Sun glow — gentle breathing halo (full scene). Soft, slow, calm. */
+.hero-illustration .hero-glow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hero-glow-breathe 9s ease-in-out infinite;
+}
+@keyframes hero-glow-breathe {
+  0%, 100% { opacity: .9; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+/* River sheen — a slow light sweep travelling across the water */
+.hero-illustration .hero-sheen {
+  animation: hero-sheen-sweep 11s ease-in-out infinite;
+}
+@keyframes hero-sheen-sweep {
+  0%, 100% { opacity: .3; transform: translateX(-40px); }
+  50% { opacity: .9; transform: translateX(40px); }
+}
 /* Boat float (full scene) */
 .hero-illustration :deep(g[transform*="translate(80, 240)"]) {
   animation: boat-float 6s ease-in-out infinite;
@@ -167,6 +203,9 @@ const props = withDefaults(
 @media (prefers-reduced-motion: reduce) {
   .hero-illustration :deep(g),
   .hero-illustration :deep(path),
-  .hero-illustration .motif { animation: none !important; }
+  .hero-illustration .motif { animation: none !important; opacity: .08; }
+  /* New depth layers settle to a calm static state (keep their own opacity, no motion) */
+  .hero-illustration .hero-glow { animation: none !important; opacity: .9; }
+  .hero-illustration .hero-sheen { animation: none !important; opacity: .4; }
 }
 </style>

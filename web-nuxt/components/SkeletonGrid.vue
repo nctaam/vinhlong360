@@ -31,7 +31,7 @@ withDefaults(defineProps<{ count?: number }>(), { count: 6 })
 .skeleton-card:nth-child(5) { animation-delay: .24s; }
 .skeleton-card:nth-child(6) { animation-delay: .3s; }
 @keyframes skFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-.sk-cover { height: 160px; background: linear-gradient(90deg, var(--bg-warm, #f0ece2) 25%, var(--line, #e6e0d4) 50%, var(--bg-warm, #f0ece2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+.sk-cover { height: 160px; background: linear-gradient(90deg, rgba(var(--primary-rgb),.08) 25%, rgba(var(--primary-rgb),.15) 50%, rgba(var(--primary-rgb),.08) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
 .sk-body { padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); }
 .sk-line { border-radius: var(--radius-sm, 6px); background: linear-gradient(90deg, var(--bg-warm, #f0ece2) 25%, var(--line, #e6e0d4) 50%, var(--bg-warm, #f0ece2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
 .sk-type { width: 80px; height: 12px; }
@@ -43,7 +43,10 @@ withDefaults(defineProps<{ count?: number }>(), { count: 6 })
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
-:root .dark .sk-cover,
+:root .dark .sk-cover {
+  background: linear-gradient(90deg, rgba(255,255,255,.06) 25%, rgba(255,255,255,.12) 50%, rgba(255,255,255,.06) 75%);
+  background-size: 200% 100%;
+}
 :root .dark .sk-line {
   background: linear-gradient(90deg, var(--bg-alt) 25%, rgba(255,255,255,.06) 50%, var(--bg-alt) 75%);
   background-size: 200% 100%;

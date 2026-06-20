@@ -1,5 +1,8 @@
 /* ── Grid + cards (Apple HIG) ── */
 .grid { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); container-type: inline-size; }
+@container (max-width: 720px) {
+  .grid { gap: var(--space-4); }
+}
 @container (max-width: 480px) {
   .grid { grid-template-columns: 1fr; }
 }
@@ -15,8 +18,8 @@
 .cover-img { position: relative; height: 160px; overflow: hidden; background: linear-gradient(110deg, var(--bg-alt) 30%, var(--card) 50%, var(--bg-alt) 70%); background-size: 200% 100%; animation: shimmer 1.6s infinite linear; aspect-ratio: 5/2; }
 .cover-img:has(img.loaded), .cover-img:has(img:not([loading="lazy"])) { animation: none; background: var(--bg-alt); }
 .cover-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s var(--ease-out-expo), opacity .5s var(--ease-out-expo), filter .5s var(--ease-out-expo); will-change: transform; }
-.cover-img img[loading="lazy"] { opacity: 0; transform: scale(1.03); filter: blur(4px); }
-.cover-img img.loaded, .cover-img img:not([loading="lazy"]) { opacity: 1; transform: scale(1); filter: blur(0); }
+.cover-img img[loading="lazy"] { opacity: 0; transform: scale(1.02); filter: blur(2px); }
+.cover-img img.loaded, .cover-img img:not([loading="lazy"]) { opacity: 1; transform: scale(1); filter: blur(0); transition: opacity .6s var(--ease-out-expo), transform .6s var(--ease-out-expo), filter .6s var(--ease-out-expo); }
 .card:hover .cover-img img.loaded { transform: scale(1.04); }
 /* Deterministic per-entity gradient placeholder (no real photos yet) */
 .cover-generated { background-size: cover; background-position: center; background-repeat: no-repeat; animation: none; }
@@ -26,7 +29,7 @@
 .card-save { position: absolute; top: var(--space-3); right: var(--space-3); z-index: 2; }
 .card-b { padding: var(--space-4) var(--space-4) var(--space-5); display: flex; flex-direction: column; gap: var(--space-2); flex: 1; }
 .card-type { font-size: .7rem; font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--primary-fg); }
-.card h3 { margin: 0; font-size: 1.06rem; font-weight: var(--weight-semibold); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; letter-spacing: var(--tracking-tight); }
+.card h3 { margin: 0; font-size: 1.06rem; font-weight: var(--weight-semibold); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; letter-spacing: var(--tracking-tight); line-height: var(--leading-snug); }
 .card .summary { margin: 0; color: var(--muted); font-size: var(--text-sm); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: var(--leading-relaxed); }
 .card .place { margin: 0; font-size: .84rem; opacity: .7; }
 .card .place::before { content: "📍 "; }
@@ -99,6 +102,131 @@
 .dark .place-chip { background: var(--bg-alt); }
 .dark .place-chip.has-content { background: rgba(var(--primary-rgb), .1); }
 
+/* ============================================================
+   SIGNATURE UPGRADE — premium card depth, hover-glow & badges
+   (additive; layered AFTER base .card rules so it refines them
+    without removing any existing behaviour). Global → all grids.
+   ============================================================ */
+
+/* 1 ── Depth scrim on cover: a soft bottom-up gradient so the
+   category-tag + save button float on a legible base, and the
+   emoji/SVG icon gains dimension instead of sitting flat. */
+.card .cover-img::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to top, rgba(0,0,0,.30) 0%, rgba(0,0,0,.06) 34%, transparent 62%);
+  opacity: .85;
+  transition: opacity .5s var(--ease-out-expo);
+  z-index: 1;
+}
+.card:hover .cover-img::after { opacity: 1; }
+/* keep the tag + save button above the new scrim */
+.card .cover-tag, .card .card-save { z-index: 2; }
+/* lift the generated-icon a touch and add a gentle inner glow on hover */
+.cover-generated .cover-svg-icon { transition: transform .5s var(--ease-spring-gentle), opacity .5s var(--ease-out-expo); }
+.card:hover .cover-generated .cover-svg-icon { transform: translate(-50%, -50%) scale(1.08); opacity: .8; }
+
+/* 2 ── Hover-glow ring + deeper lift. A second box-shadow layer
+   paints a faint brand-tinted ring around the card on hover —
+   the "premium" tell — over the existing elevation shadow. */
+.card { position: relative; }
+.card:hover {
+  box-shadow:
+    var(--shadow-lg),
+    0 0 0 1px rgba(var(--primary-rgb), .14),
+    0 18px 40px -18px rgba(var(--primary-rgb), .35);
+}
+.card:focus-visible {
+  box-shadow:
+    var(--shadow-lg),
+    0 0 0 1px rgba(var(--primary-rgb), .14),
+    0 18px 40px -18px rgba(var(--primary-rgb), .35);
+}
+/* top sheen — a 1px highlight along the card's upper edge that
+   brightens on hover, the signature glassy-Apple finish. */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,.55), transparent 18%);
+  opacity: 0;
+  transition: opacity .45s var(--ease-out-expo);
+  mix-blend-mode: overlay;
+}
+.card:hover::before { opacity: .9; }
+
+/* 3 ── Stronger cover image zoom for clear "alive" feel on hover */
+.card:hover .cover-img img.loaded { transform: scale(1.07); }
+
+/* 4 ── Refined badges: clearer hierarchy + the peak badge becomes
+   a warm gradient pill with a calm breathing glow (not flashy). */
+.badge.peak {
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: var(--ink);
+  font-weight: var(--weight-semibold);
+  box-shadow: 0 1px 2px rgba(var(--accent-rgb), .35);
+  position: relative;
+}
+.card:hover .badge.peak {
+  animation: badge-pulse 2.4s var(--ease-out) infinite;
+}
+@keyframes badge-pulse {
+  0%, 100% { box-shadow: 0 1px 2px rgba(var(--accent-rgb), .35), 0 0 0 0 rgba(var(--accent-rgb), .0); }
+  50%      { box-shadow: 0 1px 2px rgba(var(--accent-rgb), .35), 0 0 0 4px rgba(var(--accent-rgb), .14); }
+}
+.badge.season, .badge.ocop, .badge.year { box-shadow: var(--shadow-xs); }
+/* card-type label: tiny brand dot for scannable category hierarchy */
+.card-type { display: inline-flex; align-items: center; gap: var(--space-2); }
+.card-type::before {
+  content: "";
+  width: 5px; height: 5px; border-radius: 50%;
+  background: currentColor; flex: 0 0 auto; opacity: .65;
+}
+
+/* 5 ── Cover-tag gains a subtle slide-up on card hover (life) */
+.card .cover-tag { transition: transform .4s var(--ease-spring-gentle), background .3s var(--ease-out); }
+.card:hover .cover-tag { transform: translateY(-2px); }
+
+/* 6 ── Signature staggered grid reveal: cards rise+fade in sequence
+   on first paint. CSS-only (no JS), capped at 8 so long lists don't
+   feel laggy. Animation runs once (both fill-mode keeps end state). */
+.grid > .card {
+  animation: card-rise .55s var(--ease-out-expo) both;
+}
+.grid > .card:nth-child(1) { animation-delay: .02s; }
+.grid > .card:nth-child(2) { animation-delay: .06s; }
+.grid > .card:nth-child(3) { animation-delay: .10s; }
+.grid > .card:nth-child(4) { animation-delay: .14s; }
+.grid > .card:nth-child(5) { animation-delay: .18s; }
+.grid > .card:nth-child(6) { animation-delay: .22s; }
+.grid > .card:nth-child(7) { animation-delay: .26s; }
+.grid > .card:nth-child(8) { animation-delay: .30s; }
+@keyframes card-rise {
+  from { opacity: 0; transform: translateY(14px) scale(.985); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Dark mode parity for signature card upgrades ── */
+.dark .card:hover {
+  box-shadow:
+    var(--shadow-lg),
+    0 0 0 1px rgba(var(--primary-rgb), .22),
+    0 18px 44px -18px rgba(0,0,0,.7);
+}
+.dark .card:focus-visible {
+  box-shadow:
+    var(--shadow-lg),
+    0 0 0 1px rgba(var(--primary-rgb), .22),
+    0 18px 44px -18px rgba(0,0,0,.7);
+}
+.dark .card::before { background: linear-gradient(180deg, rgba(255,255,255,.10), transparent 18%); }
+.dark .card .cover-img::after { background: linear-gradient(to top, rgba(0,0,0,.5) 0%, rgba(0,0,0,.12) 34%, transparent 62%); }
+
 /* ── Reduced motion (cards) ── */
 @media (prefers-reduced-motion: reduce) {
   .card:hover { transform: none; }
@@ -111,4 +239,11 @@
   .region-card:hover { transform: none; }
   .region-card:active { transform: none; }
   .place-chip.has-content:hover { transform: none; }
+  /* signature additions */
+  .card::before, .card:hover::before { opacity: 0; transition: none; }
+  .card .cover-img::after { transition: none; }
+  .card:hover .cover-generated .cover-svg-icon { transform: translate(-50%, -50%); }
+  .card:hover .cover-tag { transform: none; }
+  .card:hover .badge.peak { animation: none; }
+  .grid > .card { animation: none; }
 }

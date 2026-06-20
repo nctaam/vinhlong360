@@ -38,7 +38,9 @@ defineProps<{
 .empty-illust { transition: transform .4s var(--ease-spring-gentle); }
 .empty-state:hover .empty-illust { transform: scale(1.04); }
 @media (prefers-reduced-motion: reduce) {
-  .empty-state { animation: none; }
+  .empty-state { animation: none; opacity: 1; transform: none; }
   .empty-icon, .empty-illust { transition: none; }
+  .empty-state:hover .empty-icon { transform: none; }
+  .empty-state:hover .empty-illust { transform: none; }
 }
 </style>

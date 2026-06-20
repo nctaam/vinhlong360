@@ -14,9 +14,14 @@
     <div :class="['detail-cover', `cat-${typeMeta.cat}`, { 'has-cover-img': coverImage }]">
       <img v-if="coverImage" :src="coverImage" :alt="entity.name" class="dc-bg" loading="eager" fetchpriority="high" sizes="100vw" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="openCoverLightbox" />
       <div v-if="coverImage" class="dc-overlay"></div>
+      <div v-if="coverImage" class="dc-vignette" aria-hidden="true"></div>
       <div class="dc-inner">
-        <span class="dc-emoji">{{ typeMeta.emoji }}</span>
-        <span class="dc-type">{{ typeMeta.label }}</span>
+        <span class="dc-type-row">
+          <span class="dc-type-chip"><span class="dc-emoji" aria-hidden="true">{{ typeMeta.emoji }}</span>{{ typeMeta.label }}</span>
+          <span v-if="entity.attributes?.ocop" class="dc-ocop-chip" :aria-label="`Sản phẩm OCOP ${entity.attributes.ocop}`">
+            <span aria-hidden="true">⭐</span> OCOP {{ entity.attributes.ocop }}
+          </span>
+        </span>
         <h1>{{ entity.name }}</h1>
         <p v-if="entity.place_name" class="dc-place">📍 <NuxtLink v-if="entity.placeId" :to="`/xa-phuong/${entity.placeId}`" class="dc-place-link">{{ entity.place_name }}</NuxtLink><template v-else>{{ entity.place_name }}</template></p>
         <div class="dc-actions">
@@ -189,61 +194,75 @@
           <small>{{ ss('labels.detail.ocop_program', 'Chương trình Mỗi xã Một sản phẩm') }}</small>
         </div>
 
-        <h2>{{ ss('labels.detail.info_heading', 'Thông tin') }}</h2>
-        <div class="fact">
-          <span class="k">{{ ss('labels.detail.fact_type', 'Loại') }}</span>
-          <span class="v">{{ typeMeta.emoji }} {{ typeMeta.label }}</span>
-        </div>
-        <div v-if="entity.place_name" class="fact">
-          <span class="k">{{ ss('labels.detail.fact_place', 'Địa điểm') }}</span>
-          <span class="v">
-            <NuxtLink v-if="entity.placeId" :to="`/xa-phuong/${entity.placeId}`" class="fact-link">{{ entity.place_name }}</NuxtLink>
-            <template v-else>{{ entity.place_name }}</template>
-          </span>
-        </div>
-        <div v-if="entity.place_area" class="fact">
-          <span class="k">{{ ss('labels.detail.fact_area', 'Khu vực') }}</span>
-          <span class="v">
-            <NuxtLink :to="`/khu-vuc/${entity.place_area}`" class="fact-link">{{ areaName }}</NuxtLink>
-          </span>
-        </div>
-        <div v-if="entity.season" class="fact">
-          <span class="k">{{ ss('labels.detail.fact_season', 'Mùa') }}</span>
-          <span class="v">{{ seasonLabel }}</span>
-        </div>
+        <h2 class="facts-heading"><span class="facts-heading-icon" aria-hidden="true">📑</span>{{ ss('labels.detail.info_heading', 'Thông tin') }}</h2>
+        <div class="facts-card">
+          <div class="fact">
+            <span class="fact-ic" aria-hidden="true">{{ typeMeta.emoji }}</span>
+            <span class="k">{{ ss('labels.detail.fact_type', 'Loại') }}</span>
+            <span class="v">{{ typeMeta.label }}</span>
+          </div>
+          <div v-if="entity.place_name" class="fact">
+            <span class="fact-ic" aria-hidden="true">📍</span>
+            <span class="k">{{ ss('labels.detail.fact_place', 'Địa điểm') }}</span>
+            <span class="v">
+              <NuxtLink v-if="entity.placeId" :to="`/xa-phuong/${entity.placeId}`" class="fact-link">{{ entity.place_name }}</NuxtLink>
+              <template v-else>{{ entity.place_name }}</template>
+            </span>
+          </div>
+          <div v-if="entity.place_area" class="fact">
+            <span class="fact-ic" aria-hidden="true">🗺️</span>
+            <span class="k">{{ ss('labels.detail.fact_area', 'Khu vực') }}</span>
+            <span class="v">
+              <NuxtLink :to="`/khu-vuc/${entity.place_area}`" class="fact-link">{{ areaName }}</NuxtLink>
+            </span>
+          </div>
+          <div v-if="entity.season" class="fact">
+            <span class="fact-ic" aria-hidden="true">🌤️</span>
+            <span class="k">{{ ss('labels.detail.fact_season', 'Mùa') }}</span>
+            <span class="v">{{ seasonLabel }}</span>
+          </div>
 
-        <!-- Practical info from attributes -->
-        <div v-if="entity.attributes?.price" class="fact">
-          <span class="k">{{ ss('labels.detail.fact_price', 'Giá tham khảo') }}</span>
-          <span class="v">{{ entity.attributes.price }}</span>
-        </div>
-        <div v-if="entity.attributes?.hours" class="fact">
-          <span class="k">{{ ss('labels.detail.fact_hours', 'Giờ mở cửa') }}</span>
-          <span class="v">{{ entity.attributes.hours }}</span>
-        </div>
-        <div v-if="entity.attributes?.phone" class="fact">
-          <span class="k">{{ ss('labels.detail.fact_phone', 'Liên hệ') }}</span>
-          <span class="v"><a :href="'tel:' + entity.attributes.phone" class="fact-link">{{ entity.attributes.phone }}</a></span>
-        </div>
-        <div v-if="entity.attributes?.address" class="fact">
-          <span class="k">{{ ss('labels.detail.fact_address', 'Địa chỉ') }}</span>
-          <span class="v">{{ entity.attributes.address }}</span>
-        </div>
-        <div v-if="entity.attributes?.website" class="fact">
-          <span class="k">{{ ss('labels.detail.fact_website', 'Website') }}</span>
-          <span class="v"><a :href="entity.attributes.website" target="_blank" rel="noopener" class="fact-link website-link">{{ entity.attributes?.website?.replace(/^https?:\/\//, '') }}</a></span>
-        </div>
-        <div v-if="entity.attributes?.fee" class="fact">
-          <span class="k">{{ ss('labels.detail.fact_fee', 'Phí vào cửa') }}</span>
-          <span class="v">{{ entity.attributes.fee }}</span>
-        </div>
-        <div v-if="entity.attributes?.transport" class="fact">
-          <span class="k">{{ ss('labels.detail.fact_transport', 'Di chuyển') }}</span>
-          <span class="v">{{ entity.attributes.transport }}</span>
-        </div>
-        <div v-if="entity.attributes?.amenities" class="fact">
-          <span class="k">{{ ss('labels.detail.fact_amenities', 'Tiện ích') }}</span>
-          <span class="v">{{ Array.isArray(entity.attributes.amenities) ? entity.attributes.amenities.join(', ') : entity.attributes.amenities }}</span>
+          <!-- Practical info from attributes -->
+          <div v-if="entity.attributes?.price" class="fact">
+            <span class="fact-ic" aria-hidden="true">💰</span>
+            <span class="k">{{ ss('labels.detail.fact_price', 'Giá tham khảo') }}</span>
+            <span class="v">{{ entity.attributes.price }}</span>
+          </div>
+          <div v-if="entity.attributes?.hours" class="fact">
+            <span class="fact-ic" aria-hidden="true">🕒</span>
+            <span class="k">{{ ss('labels.detail.fact_hours', 'Giờ mở cửa') }}</span>
+            <span class="v">{{ entity.attributes.hours }}</span>
+          </div>
+          <div v-if="entity.attributes?.phone" class="fact">
+            <span class="fact-ic" aria-hidden="true">📞</span>
+            <span class="k">{{ ss('labels.detail.fact_phone', 'Liên hệ') }}</span>
+            <span class="v"><a :href="'tel:' + entity.attributes.phone" class="fact-link">{{ entity.attributes.phone }}</a></span>
+          </div>
+          <div v-if="entity.attributes?.address" class="fact">
+            <span class="fact-ic" aria-hidden="true">🏠</span>
+            <span class="k">{{ ss('labels.detail.fact_address', 'Địa chỉ') }}</span>
+            <span class="v">{{ entity.attributes.address }}</span>
+          </div>
+          <div v-if="entity.attributes?.website" class="fact">
+            <span class="fact-ic" aria-hidden="true">🔗</span>
+            <span class="k">{{ ss('labels.detail.fact_website', 'Website') }}</span>
+            <span class="v"><a :href="entity.attributes.website" target="_blank" rel="noopener" class="fact-link website-link">{{ entity.attributes?.website?.replace(/^https?:\/\//, '') }}</a></span>
+          </div>
+          <div v-if="entity.attributes?.fee" class="fact">
+            <span class="fact-ic" aria-hidden="true">🎫</span>
+            <span class="k">{{ ss('labels.detail.fact_fee', 'Phí vào cửa') }}</span>
+            <span class="v">{{ entity.attributes.fee }}</span>
+          </div>
+          <div v-if="entity.attributes?.transport" class="fact">
+            <span class="fact-ic" aria-hidden="true">🚗</span>
+            <span class="k">{{ ss('labels.detail.fact_transport', 'Di chuyển') }}</span>
+            <span class="v">{{ entity.attributes.transport }}</span>
+          </div>
+          <div v-if="entity.attributes?.amenities" class="fact">
+            <span class="fact-ic" aria-hidden="true">✅</span>
+            <span class="k">{{ ss('labels.detail.fact_amenities', 'Tiện ích') }}</span>
+            <span class="v">{{ Array.isArray(entity.attributes.amenities) ? entity.attributes.amenities.join(', ') : entity.attributes.amenities }}</span>
+          </div>
         </div>
 
         <!-- Liên hệ trực tiếp (showcase — KHÔNG đặt hàng/giỏ hàng/thanh toán on-site) -->
@@ -256,6 +275,12 @@
 
         <!-- P1: Provenance — civic trust signal (Nguồn · Cập nhật · Báo sai) -->
         <div v-if="sourceUrl || entity.updatedAt" class="provenance-block">
+          <div class="pb-head">
+            <span class="pb-shield" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+            </span>
+            <span class="pb-head-text">{{ ss('labels.detail.provenance_heading', 'Dữ liệu đã đối chiếu') }}</span>
+          </div>
           <div v-if="sourceUrl" class="pb-row">
             <span class="pb-label">{{ ss('labels.detail.provenance_source', 'Nguồn') }}</span>
             <a class="pb-value pb-link" :href="sourceUrl" target="_blank" rel="noopener nofollow" :title="sourceUrl">{{ sourceHost }}</a>
@@ -405,8 +430,16 @@ const lbSwiping = ref(false)
 const lbDragStyle = computed(() => {
   if (!lbSwiping.value || !lbTouchDX.value) return {}
   const dx = lbTouchDX.value
-  const opacity = Math.max(0.4, 1 - Math.abs(dx) / 400)
-  return { transform: `translateX(${dx}px) scale(${opacity > 0.7 ? 1 : 0.95})`, opacity, transition: 'none' }
+  const absThreshold = Math.abs(dx)
+  const isSwipeable = absThreshold > 20
+  const opacity = Math.max(0.5, 1 - absThreshold / 380)
+  const scale = opacity > 0.75 ? 1 : Math.max(0.94, opacity)
+  return {
+    transform: `translateX(${dx}px) scale(${scale})`,
+    opacity,
+    transition: 'none',
+    filter: isSwipeable ? 'brightness(1)' : 'brightness(0.98)',
+  }
 })
 function lbTouchStart(e: TouchEvent) {
   if (!e.touches.length) return

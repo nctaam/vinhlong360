@@ -62,8 +62,8 @@
         <p class="control-label">Theo tháng</p>
         <div class="chip-row" role="group" aria-label="Lọc theo tháng">
           <button type="button" :class="['chip', 'season', { active: seasonFilter === 'all' }]" :aria-pressed="seasonFilter === 'all'" @click="seasonFilter = 'all'">Tất cả</button>
-          <button type="button" v-for="m in 12" :key="m" :class="['chip', 'season', { active: seasonFilter === String(m) }]" :aria-pressed="seasonFilter === String(m)" @click="seasonFilter = String(m)">
-            T{{ m }}
+          <button type="button" v-for="m in 12" :key="m" :class="['chip', 'season', { active: seasonFilter === String(m) }]" :aria-pressed="seasonFilter === String(m)" :title="monthNames[m - 1]" :aria-label="monthNames[m - 1]" @click="seasonFilter = String(m)">
+            {{ monthAbbr[m - 1] }}
           </button>
           <button type="button" :class="['chip', 'season', { active: seasonFilter === 'flood' }]" :aria-pressed="seasonFilter === 'flood'" @click="seasonFilter = 'flood'">🌊 Mùa nước nổi</button>
         </div>
@@ -124,6 +124,12 @@ const typeChips = TYPES.map(t => ({
   value: t,
   label: `${TYPE_META[t].emoji} ${TYPE_META[t].label}`,
 }))
+
+const monthNames = [
+  'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+  'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12',
+]
+const monthAbbr = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12']
 
 const q = ref('')
 const typeFilter = ref('all')

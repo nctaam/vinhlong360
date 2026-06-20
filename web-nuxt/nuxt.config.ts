@@ -146,6 +146,13 @@ export default defineNuxtConfig({
 
   nitro: {
     compressPublicAssets: true,
+    // Dev-only: route the SWR/route cache to memory. The default fs cache driver
+    // hits EISDIR on Windows ('.nuxt/cache/nuxt/payload' written as both dir + file),
+    // 500-ing every SWR route in `nuxt dev`. Memory driver sidesteps it; prod cache
+    // (storage, used by the built .output) is untouched.
+    devStorage: {
+      cache: { driver: 'memory' },
+    },
     prerender: {
       routes: ['/', '/du-lich', '/san-pham', '/ocop', '/le-hoi', '/luu-tru',
                '/lich-trinh', '/su-kien', '/theo-mua', '/ban-do', '/danh-ba',
