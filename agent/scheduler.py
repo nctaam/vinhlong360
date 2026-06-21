@@ -60,7 +60,7 @@ def _env_bool(name: str, default: bool) -> bool:
 
 SCHEDULER_ENABLED = _env_bool("SCHEDULER_ENABLED", True)
 SCHEDULER_RUN_STARTUP_TASKS = _env_bool("SCHEDULER_RUN_STARTUP_TASKS", False)
-AUTONOMOUS_TASKS_ENABLED = _env_bool("SCHEDULER_ENABLE_AUTONOMOUS_TASKS", True)
+AUTONOMOUS_TASKS_ENABLED = _env_bool("SCHEDULER_ENABLE_AUTONOMOUS_TASKS", False)  # §B8: vòng lặp LLM nền TẮT mặc định (khớp config.py + .env.example)
 
 DISCOVERY_INTERVAL    = _env_int("LEARN_INTERVAL_DISCOVERY", 3600)        # 1h (adaptive 30m–6h)
 LEARNING_LOOP_INTERVAL = _env_int("LEARN_INTERVAL_LOOP", 3600)            # 1h
