@@ -1,8 +1,15 @@
 /* ── Detail page ── */
 
 /* Breadcrumb — horizontal scroll on mobile (Baymard: don't truncate hierarchy) */
-.breadcrumb { max-width: var(--maxw); margin: 0 auto; padding: var(--space-3) var(--space-5) 0; }
-.breadcrumb ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: nowrap; gap: var(--space-1); font-size: var(--text-xs); color: var(--muted); overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; mask-image: linear-gradient(to right, #000 85%, transparent); -webkit-mask-image: linear-gradient(to right, #000 85%, transparent); }
+.breadcrumb { max-width: var(--maxw); margin: 0 auto; padding: var(--space-3) var(--space-5) 0; display: flex; align-items: center; gap: var(--space-2); }
+/* Visible back button — wires the orphaned goBack(); discoverable return path */
+.bc-back { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; min-width: 44px; min-height: 44px; border-radius: var(--radius-full); border: .5px solid var(--line); background: var(--card); color: var(--ink); font-size: 1.15rem; line-height: 1; cursor: pointer; transition: background .3s var(--ease-out), border-color .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
+.bc-back:hover { background: var(--bg-warm); border-color: var(--primary-fg); transform: translateX(-2px); box-shadow: var(--shadow-xs); }
+.bc-back:active { transform: scale(.93); transition-duration: .08s; }
+.bc-back:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.dark .bc-back { background: var(--card); border-color: var(--line); }
+.dark .bc-back:hover { background: rgba(255,255,255,.06); }
+.breadcrumb ol { flex: 1; min-width: 0; list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: nowrap; gap: var(--space-1); font-size: var(--text-xs); color: var(--muted); overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; mask-image: linear-gradient(to right, #000 85%, transparent); -webkit-mask-image: linear-gradient(to right, #000 85%, transparent); }
 .breadcrumb ol::-webkit-scrollbar { display: none; }
 .breadcrumb li { white-space: nowrap; flex-shrink: 0; }
 .breadcrumb li::after { content: '/'; margin-inline-start: var(--space-2); opacity: .5; }
@@ -509,6 +516,7 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
   .ms-cell:hover { transform: none; }
   .ms-cell.on.peak { animation: none; }
   .nearby-item:hover { transform: none; }
+  .bc-back:hover { transform: none; }
   .ns-action:hover { transform: none; }
   .pt-item:hover { transform: none; }
   .ri-images img:hover { transform: none; }
@@ -529,6 +537,9 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
   .detail-body { grid-template-columns: 1fr; }
   .detail-aside { position: static; max-height: none; overflow-y: visible; }
   .breadcrumb { padding: var(--space-3) var(--space-4) 0; }
+  /* Sticky CTA bar is the single source of truth for contact on mobile —
+     hide the duplicate sidebar contact-row to avoid showing Gọi/Zalo twice. */
+  .contact-row { display: none; }
 }
 @media (max-width: 768px) {
   .reviews-header { flex-direction: column; gap: var(--space-1); }
@@ -541,6 +552,15 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
   .dc-photo-btn { bottom: var(--space-3); right: var(--space-3); padding: var(--space-1) var(--space-3); font-size: .82rem; }
   .dc-thumbs { display: none; }
   .dc-credit { display: none; }
+  /* Highlights (phone/Zalo/hours/price) already render first in .detail-main —
+     tighten them toward the fold so primary info sits just under the hero. */
+  .highlights { margin: 0 0 var(--space-4); gap: var(--space-1); }
+}
+/* Ultra-narrow: drop the map button so phone + Zalo stay full-width and legible
+   without text wrap; emoji always visible to preserve meaning. */
+@media (max-width: 320px) {
+  .sticky-cta-bar .scta-map { display: none; }
+  .sticky-cta-bar a { padding: var(--space-3) var(--space-2); font-size: var(--text-xs); }
 }
 
 /* ── Dark mode ── */
@@ -664,10 +684,23 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
     color: var(--ink);
     border: .5px solid var(--line);
   }
+  /* Fallback CTA when no phone/Zalo/map — primary brand fill, never a void */
+  .sticky-cta-bar .scta-plan {
+    background: var(--primary);
+    color: var(--text-on-dark, #fff);
+    box-shadow: 0 2px 8px rgba(var(--primary-rgb), .3), inset 0 1px 0 rgba(255,255,255,.16);
+  }
+  .sticky-cta-bar .scta-plan:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 5px 16px rgba(var(--primary-rgb), .38), inset 0 1px 0 rgba(255,255,255,.2); }
   .sticky-cta-bar a:active { transform: scale(.93); transition-duration: .08s; }
   .sticky-cta-bar a:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
   /* Add bottom padding to body so sticky bar doesn't cover content */
   .detail-body { padding-bottom: 80px; }
+}
+/* ≤480px: reserve extra room for sticky CTA + journey bar + toast so the last
+   sections (Liên kết, AI gợi ý…) aren't clipped/overlapped by floating bottom UI.
+   Placed after the 840px rule above so it wins on narrow viewports. */
+@media (max-width: 480px) {
+  .detail-body { padding-bottom: 120px; }
 }
 
 /* ── Map ── */

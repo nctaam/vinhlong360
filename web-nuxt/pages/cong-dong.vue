@@ -226,6 +226,15 @@
       </aside>
     </div>
 
+    <!-- Save momentum cue — keeps bookmarking from dead-ending -->
+    <Transition name="momentum-fade">
+      <div v-if="showBookmarkMomentum" class="bookmark-momentum" role="status">
+        <span class="bm-icon" aria-hidden="true">🔖</span>
+        <button type="button" class="bm-link" @click="setTab('bookmarks'); bookmarkBannerDismissed = true">Xem mục đã lưu</button>
+        <button type="button" class="bm-dismiss" aria-label="Đóng" @click="bookmarkBannerDismissed = true">&times;</button>
+      </div>
+    </Transition>
+
     <!-- Scroll to top FAB -->
     <Transition name="fab-fade">
       <button type="button"
@@ -285,6 +294,13 @@ const bookmarks = ref<Entity[]>([])
 const bookmarksLoading = ref(false)
 const bookmarksPage = ref(1)
 const bookmarksHasMore = ref(false)
+// Session momentum: after first save this session, surface a "view saved" cue
+// so bookmarking has a next action instead of dead-ending.
+const sessionBookmarked = ref(false)
+const bookmarkBannerDismissed = ref(false)
+const showBookmarkMomentum = computed(() =>
+  sessionBookmarked.value && !bookmarkBannerDismissed.value && activeTab.value !== 'bookmarks'
+)
 
 // ── Feed stats (computed from loaded data) ──
 const feedStats = computed(() => {
@@ -537,9 +553,16 @@ async function toggleBookmark(postId: string) {
     return
   }
   const post = posts.value.find(p => p.id === postId) || bookmarks.value.find(p => p.id === postId)
+  const wasBookmarked = post?.user_bookmarked
   if (post) post.user_bookmarked = !post.user_bookmarked
   try {
     await $fetch(`/api/posts/${postId}/bookmark`, { method: 'POST', headers: authHeaders() })
+    // Momentum cue: on a fresh save (not un-save), nudge toward the saved list
+    // so bookmarking doesn't dead-end. Banner shown once per session.
+    if (!wasBookmarked && post?.user_bookmarked) {
+      showToast('Đã lưu bài viết', 'success')
+      if (!sessionBookmarked.value) sessionBookmarked.value = true
+    }
   } catch {
     if (post) post.user_bookmarked = !post.user_bookmarked
     showToast('Không thể lưu bài viết', 'error')
@@ -804,12 +827,48 @@ useHead({
 .fab-fade-enter-from { opacity: 0; transform: translateY(16px) scale(.8); }
 .fab-fade-leave-to { opacity: 0; transform: translateY(8px) scale(.9); }
 
+/* ── Bookmark momentum cue (bottom-center, clears the right-side FAB) ── */
+.bookmark-momentum {
+  position: fixed; z-index: 50;
+  bottom: calc(var(--space-6) + env(safe-area-inset-bottom));
+  left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  background: var(--card); border: .5px solid var(--line);
+  border-radius: var(--radius-full); box-shadow: var(--shadow-lg);
+  max-width: calc(100vw - var(--space-6) * 2);
+}
+.bm-icon { font-size: 1.05rem; flex-shrink: 0; }
+.bm-link {
+  background: none; border: none; cursor: pointer; padding: 0;
+  color: var(--primary-fg); font-size: var(--text-sm); font-weight: var(--weight-semibold);
+  min-height: 44px; display: inline-flex; align-items: center;
+  transition: color .2s var(--ease-out);
+}
+.bm-link:hover { color: var(--ink); text-decoration: underline; }
+.bm-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-sm); }
+.bm-dismiss {
+  flex-shrink: 0; width: 44px; height: 44px; min-width: 44px; border-radius: var(--radius-full);
+  background: none; border: none; cursor: pointer; color: var(--muted);
+  font-size: 1.25rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center;
+  transition: background .2s var(--ease-out), color .2s var(--ease-out), transform .25s var(--ease-spring-gentle);
+}
+.bm-dismiss:hover { background: var(--bg-alt); color: var(--ink); }
+.bm-dismiss:active { transform: scale(.9); transition-duration: .08s; }
+.bm-dismiss:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.momentum-fade-enter-active { transition: opacity .25s var(--ease-out), transform .3s var(--ease-spring-gentle); }
+.momentum-fade-leave-active { transition: opacity .15s var(--ease-out), transform .15s var(--ease-out); }
+.momentum-fade-enter-from { opacity: 0; transform: translate(-50%, 16px); }
+.momentum-fade-leave-to { opacity: 0; transform: translate(-50%, 8px); }
+
 /* ── Dark mode ── */
 .dark .sidebar-card { background: var(--card); border-color: var(--line); }
 .dark .sidebar-card:hover { box-shadow: var(--shadow-sm); border-color: rgba(255,255,255,.14); }
 .dark .chip-filter { background: var(--bg-alt); border-color: var(--line); }
 .dark .chip-filter.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .dark .scroll-top-fab { background: var(--card); border-color: rgba(255,255,255,.1); box-shadow: 0 8px 32px rgba(0,0,0,.5); }
+.dark .bookmark-momentum { background: var(--card); border-color: rgba(255,255,255,.1); box-shadow: 0 8px 32px rgba(0,0,0,.5); }
+.dark .bm-dismiss:hover { background: rgba(255,255,255,.08); }
 .dark .sidebar-stat:hover { background: rgba(255,255,255,.03); }
 .dark .sidebar-list li:hover { background: rgba(255,255,255,.03); }
 .dark .report-entity-card { background: rgba(232,163,61,.08); border-color: rgba(232,163,61,.22); }
@@ -851,5 +910,8 @@ useHead({
   .threads-load-more:active { transform: none; }
   .scroll-top-fab:hover { transform: none; }
   .scroll-top-fab:active { transform: none; }
+  .momentum-fade-enter-active,
+  .momentum-fade-leave-active { transition: none; }
+  .bm-dismiss:active { transform: none; }
 }
 </style>

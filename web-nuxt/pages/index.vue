@@ -23,7 +23,7 @@
 
     <!-- Region selector — first visit prompt -->
     <ClientOnly>
-      <section v-if="!hasChosen" class="region-picker reveal">
+      <section v-if="!hasChosen && !regionSkipped" class="region-picker reveal">
         <p class="rp-question">Bạn muốn khám phá vùng nào?</p>
         <div class="rp-options">
           <button type="button" v-for="slug in Object.keys(AREA_META)" :key="slug" class="rp-btn" :class="`rp-${slug}`" @click="setRegion(slug as keyof typeof AREA_META)">
@@ -35,8 +35,9 @@
             <span class="rp-name">Cả 3 vùng</span>
           </button>
         </div>
+        <button type="button" class="rp-skip" @click="regionSkipped = true">Bỏ qua, xem tất cả</button>
       </section>
-      <div v-else-if="isReturning && region !== 'all'" class="welcome-back reveal">
+      <div v-else-if="isReturning && hasChosen && region && region !== 'all'" class="welcome-back reveal">
         <span class="wb-text">Chào mừng trở lại! Đang ưu tiên <strong>{{ AREA_META[region!]?.name || 'khu vực' }}</strong> cho bạn.</span>
         <button type="button" class="wb-change" @click="setRegion('all')">Xem tất cả</button>
       </div>
@@ -191,9 +192,9 @@
       </NuxtErrorBoundary>
     </ClientOnly>
 
-    <!-- Region mini-switcher — sticky, visible after first choice -->
+    <!-- Region mini-switcher — sticky, visible after first choice (or skip) -->
     <ClientOnly>
-      <div v-if="hasChosen" class="region-mini-bar">
+      <div v-if="hasChosen || regionSkipped" class="region-mini-bar">
         <button type="button"
           v-for="slug in Object.keys(AREA_META)"
           :key="slug"
@@ -256,8 +257,28 @@ const DEFAULT_QUICK_LINKS = [
 const quickLinks = computed(() => ss('homepage.quick_links', DEFAULT_QUICK_LINKS) as typeof DEFAULT_QUICK_LINKS)
 
 const { region, isReturning, hasChosen, setRegion, sortByRegion, orderedAreaKeys } = useRegionPref()
+// First-visit escape hatch: dismiss the region picker without committing a
+// region. `region` stays null so sortByRegion()/orderedAreaKeys() return all
+// content unsorted; the mini-switcher remains for optional later refinement.
+const regionSkipped = ref(false)
 const { favorites } = useFavorites()
 const recentSaved = computed(() => favorites.value.slice(0, 4))
+
+// Post-login welcome signal — warm re-entry cue for returning users. Fires once
+// on a guest→logged-in transition (additive; does not touch the region-recall
+// welcome-back banner). Toast only, client-side.
+const { isLoggedIn } = useAuth()
+const { show: showToast } = useToast()
+if (import.meta.client) {
+  let greeted = false
+  watch(isLoggedIn, (now, prev) => {
+    if (now && !prev && !greeted) {
+      greeted = true
+      const n = favorites.value.length
+      showToast(n ? `Chào mừng trở lại! Bạn có ${n} mục đã lưu.` : 'Chào mừng trở lại!', 'info')
+    }
+  })
+}
 function getFavTypeMeta(type: string) {
   return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }
 }
@@ -980,6 +1001,30 @@ html.js .home .hero-enter h1::after {
 }
 .rp-emoji { font-size: 1.2rem; }
 
+/* Skip / escape hatch — quiet secondary action so first-time users can start
+   browsing immediately without committing a region. */
+.rp-skip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: none;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--muted);
+  cursor: pointer;
+  min-height: 44px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color .3s var(--ease-out);
+}
+.rp-skip:hover { color: var(--primary-fg); }
+.rp-skip:active { transform: scale(.96); transition-duration: .08s; }
+.rp-skip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
 /* ── Welcome back banner ── */
 .welcome-back {
   display: flex;
@@ -1142,6 +1187,7 @@ html.js .home .hero-enter h1::after {
   .ec-live-dot { animation: none; }
   .rp-btn:hover { transform: none; }
   .rp-btn:active { transform: none; }
+  .rp-skip:active { transform: none; }
   .rmb-btn:hover { transform: none; }
   .rmb-btn:active { transform: none; }
   .stats-bar .stat-item:hover { transform: none; }

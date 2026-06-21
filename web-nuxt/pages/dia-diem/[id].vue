@@ -2,6 +2,9 @@
   <div v-if="entity">
     <!-- Breadcrumb -->
     <nav class="breadcrumb" aria-label="Breadcrumb">
+      <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
+        <span aria-hidden="true">←</span>
+      </button>
       <ol>
         <li><NuxtLink to="/">Trang chủ</NuxtLink></li>
         <li><NuxtLink :to="typeBreadcrumbUrl">{{ typeMeta.label }}</NuxtLink></li>
@@ -314,11 +317,8 @@
         <!-- Contextual next steps -->
         <div class="next-steps">
           <h3 class="ns-title">{{ ss('labels.detail.next_steps_title', 'Bước tiếp theo') }}</h3>
-          <ClientOnly>
-            <button type="button" class="ns-action" @click="toggleAndSave">
-              {{ entitySaved ? `❤️ ${ss('labels.detail.next_saved', 'Đã lưu')}` : `🤍 ${ss('labels.detail.next_save', 'Lưu vào lịch trình')}` }}
-            </button>
-          </ClientOnly>
+          <!-- Save affordance lives in the hero (SaveButton) — avoid a second, divergent toggle here.
+               Next step is the active-planning CTA, labeled to distinguish it from "save for later". -->
         <NuxtLink to="/tao-lich-trinh" no-prefetch class="ns-action">📋 {{ ss('labels.detail.next_add_itinerary', 'Thêm vào lịch trình') }}</NuxtLink>
           <NuxtLink v-if="entity.type !== 'accommodation'" to="/luu-tru" class="ns-action">🏡 {{ ss('labels.detail.next_find_stay', 'Tìm chỗ ở gần đây') }}</NuxtLink>
         <NuxtLink :to="mapUrl" no-prefetch class="ns-action">🗺️ {{ ss('labels.detail.next_view_map', 'Xem trên bản đồ') }}</NuxtLink>
@@ -327,11 +327,14 @@
       </aside>
     </div>
 
-    <!-- Sticky mobile CTA bar (always visible, thumb zone) -->
-    <div v-if="entity.attributes?.phone || zaloLink || hasCoords" class="sticky-cta-bar">
+    <!-- Sticky mobile CTA bar (always visible, thumb zone).
+         Always renders so mobile users never hit a "CTA void"; when there's no
+         phone/Zalo/map, fall back to the guaranteed next action (add to itinerary). -->
+    <div class="sticky-cta-bar">
       <a v-if="entity.attributes?.phone" class="scta-phone" :href="'tel:' + entity.attributes.phone" aria-label="Gọi điện thoại">📞 Gọi</a>
       <a v-if="zaloLink" class="scta-zalo" :href="zaloLink" target="_blank" rel="nofollow noopener" aria-label="Nhắn Zalo">💬 Zalo</a>
       <NuxtLink v-if="hasCoords" class="scta-map" :to="mapUrl" aria-label="Xem trên bản đồ">🗺️ Bản đồ</NuxtLink>
+      <NuxtLink v-if="!hasStickyContact" to="/tao-lich-trinh" no-prefetch class="scta-plan" aria-label="Thêm vào lịch trình">📋 {{ ss('labels.detail.next_add_itinerary', 'Thêm vào lịch trình') }}</NuxtLink>
     </div>
   </div>
   <div v-else class="page">
@@ -352,7 +355,6 @@ import { seasonText } from '~/composables/useSeason'
 useReveal()
 const { enabled: ff } = useFeature()
 const { get: ss } = useSiteSettings()
-const { isSaved, toggle: toggleFav } = useFavorites()
 
 const route = useRoute()
 const router = useRouter()
@@ -516,6 +518,9 @@ const mapUrl = computed(() => {
   return c ? `${base}&lat=${c[0]}&lng=${c[1]}` : base
 })
 const hasHighlights = computed(() => !!(entity.value?.attributes?.phone || zaloLink.value || entity.value?.attributes?.hours || priceText.value || addressText.value || hasCoords.value))
+// Sticky bar always renders; this tells the template whether any "contact" CTA
+// (phone/Zalo/map) is present. If not, the bar shows the itinerary fallback CTA.
+const hasStickyContact = computed(() => !!(entity.value?.attributes?.phone || zaloLink.value || hasCoords.value))
 
 const practicalTips = computed(() => {
   const a = entity.value?.attributes
@@ -574,11 +579,6 @@ function reportEntity() {
   openReport('entity', id.value)
 }
 const reportUrl = computed(() => `/cong-dong?report=${encodeURIComponent(id.value)}`)
-
-const entitySaved = computed(() => entity.value ? isSaved(entity.value.id) : false)
-function toggleAndSave() {
-  if (entity.value) toggleFav(entity.value)
-}
 
 // GĐ10.4: normalizeCoords gom vào composables/useCoords.ts (Nuxt auto-import).
 

@@ -4,6 +4,7 @@ export function useNotifications() {
   const notifications = useState<any[]>('notifications', () => [])
   const unreadCount = useState('unread-count', () => 0)
   const loading = useState('notif-loading', () => true)
+  const fetchError = useState('notif-fetch-error', () => false)
   const { isLoggedIn, authHeaders } = useAuth()
 
   async function fetchNotifications() {
@@ -12,7 +13,8 @@ export function useNotifications() {
       const res = await $fetch<{ notifications: Notification[] }>('/api/notifications?limit=20', { headers: authHeaders() })
       notifications.value = res.notifications || []
       unreadCount.value = res.unread_count || 0
-    } catch { /* ignore */ } finally { loading.value = false }
+      fetchError.value = false
+    } catch { fetchError.value = true } finally { loading.value = false }
   }
 
   async function markAllRead() {
@@ -46,5 +48,5 @@ export function useNotifications() {
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null }
   }
 
-  return { notifications, unreadCount, loading, fetchNotifications, markAllRead, markRead, startPolling, stopPolling }
+  return { notifications, unreadCount, loading, fetchError, fetchNotifications, markAllRead, markRead, startPolling, stopPolling }
 }

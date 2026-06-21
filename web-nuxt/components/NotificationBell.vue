@@ -29,6 +29,11 @@
           <div v-if="loading && !notifications.length" class="notif-loading" role="status" aria-label="Đang tải thông báo">
             <div class="spinner spinner-sm"></div>
           </div>
+          <div v-else-if="fetchError && !notifications.length" class="notif-error" role="alert">
+            <span class="notif-error-icon" aria-hidden="true">⚠️</span>
+            <p>Không thể tải thông báo</p>
+            <button type="button" class="notif-retry" @click="fetchNotifications">Thử lại</button>
+          </div>
           <div v-else-if="!notifications.length" class="notif-empty">
             <span class="notif-empty-icon">🔔</span>
             <p>Chưa có thông báo</p>
@@ -42,7 +47,7 @@
 <script setup lang="ts">
 import type { Entity } from '~/types'
 const { isLoggedIn } = useAuth()
-const { notifications, unreadCount, loading, markAllRead, markRead, startPolling, stopPolling } = useNotifications()
+const { notifications, unreadCount, loading, fetchError, fetchNotifications, markAllRead, markRead, startPolling, stopPolling } = useNotifications()
 
 const open = ref(false)
 
@@ -81,3 +86,25 @@ function onClickOutside(e: MouseEvent) {
 onMounted(() => { startPolling(); document.addEventListener('keydown', onEsc); document.addEventListener('click', onClickOutside) })
 onUnmounted(() => { stopPolling(); document.removeEventListener('keydown', onEsc); document.removeEventListener('click', onClickOutside) })
 </script>
+
+<style scoped>
+.notif-error { text-align: center; padding: var(--space-5); color: var(--muted); font-size: .88rem; display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
+.notif-error-icon { font-size: 1.5rem; }
+.notif-error p { margin: 0; }
+.notif-retry {
+  min-height: 44px; padding: var(--space-2) var(--space-4);
+  border: .5px solid var(--line); border-radius: var(--radius-full);
+  background: var(--card); color: var(--ink); cursor: pointer;
+  font-size: var(--text-sm); font-weight: var(--weight-semibold);
+  transition: background .25s var(--ease-out), transform .25s var(--ease-spring-gentle), border-color .25s var(--ease-out);
+}
+.notif-retry:hover { background: var(--bg-alt); border-color: var(--ink); }
+.notif-retry:active { transform: scale(.96); transition-duration: .08s; }
+.notif-retry:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+:global(.dark) .notif-retry { background: var(--bg-alt); border-color: var(--line); }
+:global(.dark) .notif-retry:hover { border-color: rgba(255,255,255,.2); }
+@media (prefers-reduced-motion: reduce) {
+  .notif-retry { transition: none; }
+  .notif-retry:active { transform: none; }
+}
+</style>

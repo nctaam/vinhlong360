@@ -56,35 +56,68 @@
       <div class="profile-tabs">
         <button type="button" :class="['chip', { active: tab === 'posts' }]" :aria-pressed="tab === 'posts'" @click="tab = 'posts'">Bài viết</button>
         <button type="button" :class="['chip', { active: tab === 'reviews' }]" :aria-pressed="tab === 'reviews'" @click="tab = 'reviews'">Đánh giá</button>
+        <button type="button" v-if="isSelf" :class="['chip', { active: tab === 'saved' }]" :aria-pressed="tab === 'saved'" @click="tab = 'saved'">
+          Đã lưu<ClientOnly><span v-if="savedCount > 0" class="tab-count">{{ savedCount }}</span></ClientOnly>
+        </button>
       </div>
 
       <div class="feed-main">
-        <TransitionGroup name="post-list" tag="div">
-          <PostCard
-            v-for="post in filteredPosts"
-            :key="post.id"
-            :post="post"
-            @like="toggleLike"
-            @comment="id => navigateTo(`/bai-viet/${id}`)"
-            @bookmark="toggleBookmark"
-            @report="reportPost"
-          />
-        </TransitionGroup>
-        <Transition name="fade">
-          <EmptyState
-            v-if="!filteredPosts.length && !loading"
-            :icon="tab === 'reviews' ? '⭐' : '✍️'"
-            :title="tab === 'reviews' ? 'Chưa có đánh giá' : 'Chưa có bài viết'"
-            :message="tab === 'reviews' ? 'Chưa có đánh giá nào.' : 'Chưa có bài viết nào.'"
-            :hint="emptyHint"
-          >
-            <NuxtLink v-if="isSelf" to="/cong-dong" class="btn btn-primary btn-sm">
-              {{ tab === 'reviews' ? 'Viết đánh giá đầu tiên' : 'Viết bài viết đầu tiên' }}
+        <!-- Đã lưu (self only, client-only — từ localStorage) -->
+        <ClientOnly v-if="tab === 'saved'">
+          <div v-if="favorites.length" class="saved-grid">
+            <NuxtLink v-for="fav in favorites" :key="fav.id" :to="`/dia-diem/${fav.id}`" class="card saved-card">
+              <div v-if="fav.image" class="cover cover-img">
+                <img :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" />
+              </div>
+              <div class="card-b">
+                <span class="card-type">{{ getSavedTypeMeta(fav.type).label }}</span>
+                <h3>{{ fav.name }}</h3>
+                <p v-if="fav.place_name" class="place">{{ fav.place_name }}</p>
+              </div>
             </NuxtLink>
+          </div>
+          <div v-if="favorites.length" class="saved-cta">
+            <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-primary btn-sm">📋 Tạo lịch trình từ danh sách đã lưu</NuxtLink>
+          </div>
+          <EmptyState
+            v-else
+            icon="❤️"
+            title="Chưa lưu địa điểm nào"
+            message="Lưu địa điểm yêu thích để xem lại nhanh và ghép vào lịch trình."
+            hint="Nhấn nút lưu ở bất kỳ địa điểm nào để bắt đầu."
+          >
+            <NuxtLink to="/du-lich" class="btn btn-primary btn-sm">Khám phá địa điểm</NuxtLink>
           </EmptyState>
-        </Transition>
-        <SkeletonList v-if="loading && !posts.length" :count="3" class="profile-skeleton" />
-        <div v-else-if="loading" class="profile-loading" role="status" aria-label="Đang tải"><div class="spinner"></div></div>
+        </ClientOnly>
+
+        <template v-else>
+          <TransitionGroup name="post-list" tag="div">
+            <PostCard
+              v-for="post in filteredPosts"
+              :key="post.id"
+              :post="post"
+              @like="toggleLike"
+              @comment="id => navigateTo(`/bai-viet/${id}`)"
+              @bookmark="toggleBookmark"
+              @report="reportPost"
+            />
+          </TransitionGroup>
+          <Transition name="fade">
+            <EmptyState
+              v-if="!filteredPosts.length && !loading"
+              :icon="tab === 'reviews' ? '⭐' : '✍️'"
+              :title="tab === 'reviews' ? 'Chưa có đánh giá' : 'Chưa có bài viết'"
+              :message="tab === 'reviews' ? 'Chưa có đánh giá nào.' : 'Chưa có bài viết nào.'"
+              :hint="emptyHint"
+            >
+              <NuxtLink v-if="isSelf" to="/cong-dong" class="btn btn-primary btn-sm">
+                {{ tab === 'reviews' ? 'Viết đánh giá đầu tiên' : 'Viết bài viết đầu tiên' }}
+              </NuxtLink>
+            </EmptyState>
+          </Transition>
+          <SkeletonList v-if="loading && !posts.length" :count="3" class="profile-skeleton" />
+          <div v-else-if="loading" class="profile-loading" role="status" aria-label="Đang tải"><div class="spinner"></div></div>
+        </template>
       </div>
     </div>
 
@@ -97,6 +130,7 @@
 
 <script setup lang="ts">
 import type { Entity } from '~/types'
+import { TYPE_META } from '~/composables/useConstants'
 useReveal()
 const route = useRoute()
 const userId = route.params.id as string
@@ -111,6 +145,7 @@ useHead({
 
 const tab = ref('posts')
 const posts = ref<Entity[]>([])
+const { favorites, count: savedCount } = useFavorites()
 const loading = ref(true)
 const isFollowing = ref(false)
 const followLoading = ref(false)
@@ -145,6 +180,10 @@ const filteredPosts = computed(() => {
   if (tab.value === 'reviews') return posts.value.filter(p => p.post_type === 'review')
   return posts.value
 })
+
+function getSavedTypeMeta(type: string) {
+  return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }
+}
 
 const displayName = computed(() => profile.value?.display_name || profile.value?.phone || 'Người dùng')
 const emptyHint = computed(() => {
@@ -284,6 +323,18 @@ if (profile.value) {
 
 .profile-skeleton { margin-top: var(--space-2); }
 
+/* Saved tab (self profile) */
+.tab-count {
+  margin-left: var(--space-2); padding: 0 var(--space-2);
+  border-radius: var(--radius-full); background: rgba(var(--accent-rgb), .16);
+  color: var(--accent-dark); font-size: var(--text-xs); font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums; line-height: 1.6;
+}
+.saved-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-4); margin-top: var(--space-2); }
+.saved-cta { text-align: center; margin-top: var(--space-5); }
+.saved-cta .btn:active { transform: scale(.97); transition-duration: .08s; }
+.dark .tab-count { background: rgba(232,163,61,.2); color: var(--accent); }
+
 /* Dark mode */
 .dark .profile-cover { border-color: var(--line); }
 .dark .profile-avatar-wrap .avatar { border-color: var(--bg-warm); }
@@ -302,5 +353,6 @@ if (profile.value) {
   .profile-avatar-wrap .avatar:hover { transform: none; }
   .stat-item:hover { transform: none; }
   .profile-tabs .chip:active { transform: none; }
+  .saved-cta .btn:active { transform: none; }
 }
 </style>

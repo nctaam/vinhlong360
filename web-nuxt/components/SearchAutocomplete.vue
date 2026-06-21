@@ -34,7 +34,7 @@
           <span class="ac-hint-title">Tìm theo danh mục</span>
         </div>
         <div class="ac-chips">
-          <NuxtLink v-for="c in quickCategories" :key="c.to" :to="c.to" class="ac-chip" @mousedown.prevent="goCategory(c.to)">
+          <NuxtLink v-for="c in quickCategories" :key="c.to" :to="c.to" class="ac-chip" @mousedown.prevent="goCategory(c.to)" @keydown.enter.prevent="goCategory(c.to)" @keydown.space.prevent="goCategory(c.to)">
             <span aria-hidden="true">{{ c.emoji }}</span> {{ c.label }}
           </NuxtLink>
         </div>
@@ -105,7 +105,7 @@
         <p class="ac-empty-title">Chưa tìm thấy nơi nào khớp</p>
         <p class="ac-empty-hint">Thử từ khóa khác, hoặc xem gợi ý theo danh mục:</p>
         <div class="ac-chips ac-empty-chips">
-          <NuxtLink v-for="c in quickCategories" :key="c.to" :to="c.to" class="ac-chip" @mousedown.prevent="goCategory(c.to)">
+          <NuxtLink v-for="c in quickCategories" :key="c.to" :to="c.to" class="ac-chip" @mousedown.prevent="goCategory(c.to)" @keydown.enter.prevent="goCategory(c.to)" @keydown.space.prevent="goCategory(c.to)">
             <span aria-hidden="true">{{ c.emoji }}</span> {{ c.label }}
           </NuxtLink>
         </div>

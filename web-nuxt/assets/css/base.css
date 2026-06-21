@@ -877,7 +877,11 @@ a.thread-author:hover { color: var(--primary-fg); }
 .dark .journey-card:hover { border-color: var(--border); box-shadow: 0 4px 16px rgba(0,0,0,.3); }
 @media (max-width: 480px) {
   .chat-panel { bottom: 0; right: 0; width: 100vw; height: 100dvh; max-height: 100dvh; border-radius: 0; padding-bottom: env(safe-area-inset-bottom); }
-  .chat-fab { bottom: var(--space-4); right: var(--space-4); }
+  /* Lift FAB above the bottom z-stack (journey bar ~bottom:16px + sticky CTA ~60px)
+     so it never overlaps the journey bar / sticky CTA touch targets on narrow viewports.
+     Right edge unchanged → stays in thumb reach. */
+  .chat-fab { bottom: calc(var(--space-4) + 60px + env(safe-area-inset-bottom)); right: var(--space-4); }
+  .chat-fab.open { bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); }
   .hero { min-height: 240px; }
   .hero h1 { font-size: 1.5rem; }
   .hero p { font-size: .95rem; }
