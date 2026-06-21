@@ -228,7 +228,7 @@ def task_seo(entities, dry_run=False, workers=12):
                     if isinstance(attrs, str):
                         try:
                             attrs = json.loads(attrs)
-                        except:
+                        except Exception:
                             attrs = {}
                     attrs["seo_title"] = result["seo"]["seo_title"]
                     attrs["seo_description"] = result["seo"]["seo_description"]
@@ -285,7 +285,7 @@ def task_tips(entities, dry_run=False, workers=12):
                     if isinstance(attrs, str):
                         try:
                             attrs = json.loads(attrs)
-                        except:
+                        except Exception:
                             attrs = {}
                     attrs["travel_tips"] = result["tips_data"].get("tips", [])
                     attrs["best_time"] = result["tips_data"].get("best_time", "")
@@ -314,7 +314,7 @@ def attrs_one(entity):
     if isinstance(existing_attrs, str):
         try:
             existing_attrs = json.loads(existing_attrs)
-        except:
+        except Exception:
             existing_attrs = {}
 
     prompt = f"""Bổ sung thông tin thực tế cho {etype} "{entity['name']}" ở {area}.
@@ -365,7 +365,7 @@ def task_attrs(entities, dry_run=False, workers=12):
                     if isinstance(attrs, str):
                         try:
                             attrs = json.loads(attrs)
-                        except:
+                        except Exception:
                             attrs = {}
                     # Merge — don't overwrite existing values
                     for k, v in result["new_attrs"].items():
@@ -387,7 +387,7 @@ def _has_rich_attrs(entity):
     if isinstance(attrs, str):
         try:
             attrs = json.loads(attrs)
-        except:
+        except Exception:
             return False
     return len(attrs) >= 5
 
@@ -621,7 +621,7 @@ def task_tags(entities, dry_run=False, workers=12):
                     if isinstance(attrs, str):
                         try:
                             attrs = json.loads(attrs)
-                        except:
+                        except Exception:
                             attrs = {}
                     tags_data = result["tags"]
                     attrs["tourist_rating"] = tags_data.get("tourist_rating")
