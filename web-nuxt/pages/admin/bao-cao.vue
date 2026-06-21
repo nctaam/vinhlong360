@@ -39,11 +39,14 @@
       </div>
 
       <!-- ── Bulk action bar ── -->
-      <div v-if="selectedIds.size" class="rpt-bulkbar">
-        <span class="rpt-bulk-count">{{ selectedIds.size }} đã chọn</span>
+      <div v-if="selectedIds.size" class="rpt-bulkbar" role="region" aria-label="Thao tác hàng loạt">
+        <span class="rpt-bulk-summary">
+          <span class="rpt-bulk-count">{{ selectedIds.size }} đã chọn</span>
+          <span class="rpt-bulk-hint">sẵn sàng xử lý hàng loạt</span>
+        </span>
         <div class="rpt-bulk-actions">
-          <button type="button" class="btn-success" :disabled="bulkActing" @click="bulkAction('resolve')">
-            {{ bulkActing ? '…' : 'Xử lý đã chọn' }}
+          <button type="button" class="btn-success rpt-bulk-primary" :disabled="bulkActing" @click="bulkAction('resolve')">
+            {{ bulkActing ? '…' : `Xử lý ${selectedIds.size} đã chọn` }}
           </button>
           <button type="button" class="btn-danger" :disabled="bulkActing" @click="bulkAction('dismiss')">Bỏ qua đã chọn</button>
           <button type="button" class="rpt-bulk-clear" :disabled="bulkActing" @click="clearSelection">Bỏ chọn</button>
@@ -89,6 +92,7 @@
                   v-if="isLongReason(r.reason)" type="button" class="rpt-reason-toggle"
                   :aria-expanded="expanded.has(r.id)" @click="toggleExpand(r.id)">
                   {{ expanded.has(r.id) ? 'Thu gọn' : 'Xem thêm' }}
+                  <span class="rpt-reason-chevron" aria-hidden="true">{{ expanded.has(r.id) ? '⌃' : '⌄' }}</span>
                 </button>
               </td>
               <td>
@@ -107,7 +111,11 @@
             </tr>
             <tr v-if="!filteredReports.length">
               <td colspan="8" class="admin-empty-row">
-                <div class="rpt-empty"><span class="rpt-empty-icon">&#128203;</span><span>{{ reports.length ? 'Không có báo cáo khớp bộ lọc.' : 'Không có báo cáo nào.' }}</span></div>
+                <div class="admin-empty-state">
+                  <div class="admin-empty-state-icon">{{ reports.length ? '\u{1F50D}' : '\u{1F4CB}' }}</div>
+                  <div class="admin-empty-state-text">{{ reports.length ? 'Không có báo cáo khớp bộ lọc.' : 'Không có báo cáo nào.' }}</div>
+                  <div class="admin-empty-state-hint">{{ reports.length ? 'Thử đổi hoặc xoá bộ lọc trạng thái / đối tượng.' : 'Mọi báo cáo đã được xử lý. Tốt lắm!' }}</div>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -399,9 +407,6 @@ onMounted(() => fetchAll())
 .status-dismissed::before { background: var(--muted); opacity: .4; }
 @keyframes rpt-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 
-.rpt-empty { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
-.rpt-empty-icon { font-size: 2rem; opacity: .3; }
-
 /* ── Filter chips ── */
 .rpt-filters {
   display: flex; flex-wrap: wrap; gap: var(--space-5) var(--space-6);
@@ -421,7 +426,16 @@ onMounted(() => fetchAll())
 .rpt-chip:active { transform: scale(.96); }
 .rpt-chip.active {
   background: var(--primary, #0071e3); border-color: var(--primary, #0071e3); color: #fff;
+  position: relative; box-shadow: 0 2px 8px rgba(0,113,227,.22);
 }
+/* subtle affordance dot under the active chip */
+.rpt-chip.active::after {
+  content: ''; position: absolute; left: 50%; bottom: -7px;
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--primary, #0071e3); transform: translateX(-50%);
+  animation: rpt-dot-in .25s cubic-bezier(.2,1,.4,1);
+}
+@keyframes rpt-dot-in { from { opacity: 0; transform: translate(-50%, -3px); } to { opacity: 1; transform: translate(-50%, 0); } }
 .rpt-chip:focus-visible { outline: 2px solid var(--primary, #0071e3); outline-offset: 2px; }
 .rpt-chip-count {
   display: inline-flex; align-items: center; justify-content: center;
@@ -441,8 +455,12 @@ onMounted(() => fetchAll())
   animation: rpt-slide-in .25s cubic-bezier(.2,1,.4,1);
 }
 @keyframes rpt-slide-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.rpt-bulk-summary { display: inline-flex; align-items: baseline; gap: var(--space-2); flex-wrap: wrap; }
 .rpt-bulk-count { font-size: .82rem; font-weight: 600; color: var(--primary, #0071e3); }
+.rpt-bulk-hint { font-size: .74rem; color: var(--muted); }
 .rpt-bulk-actions { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+/* make the primary bulk action more prominent than the secondary ones */
+.rpt-bulk-primary { font-weight: 600; box-shadow: 0 2px 8px rgba(33,150,83,.18); }
 .rpt-bulk-clear {
   min-height: 32px; padding: 4px 12px; border: none; border-radius: 8px;
   background: transparent; color: var(--muted); font-size: .78rem; cursor: pointer;
@@ -466,6 +484,7 @@ onMounted(() => fetchAll())
 }
 .rpt-reason-toggle:hover { text-decoration: underline; }
 .rpt-reason-toggle:focus-visible { outline: 2px solid var(--primary, #0071e3); outline-offset: 2px; border-radius: 4px; }
+.rpt-reason-chevron { font-size: .8rem; line-height: 1; margin-left: 2px; }
 
 /* ── Pager ── */
 .rpt-pager {
@@ -490,6 +509,7 @@ onMounted(() => fetchAll())
   .rpt-chip, .rpt-loadmore { transition: none; }
   .rpt-chip:active, .rpt-loadmore:active { transform: none; }
   .rpt-bulkbar { animation: none; }
+  .rpt-chip.active::after { animation: none; }
 }
 
 /* ── Dark ── */
@@ -500,7 +520,17 @@ onMounted(() => fetchAll())
 .dark .rpt-chip { background: rgba(255,255,255,.04); }
 .dark .rpt-chip-count { background: rgba(255,255,255,.1); }
 .dark .rpt-chip.active .rpt-chip-count { background: rgba(255,255,255,.25); }
-.dark .rpt-bulkbar { background: rgba(0,113,227,.12); }
+.dark .rpt-bulkbar { background: rgba(0,113,227,.16); border-color: rgba(64,156,255,.55); }
+.dark .rpt-bulk-count { color: #67adff; }
+.dark .rpt-bulk-hint { color: rgba(255,255,255,.55); }
 .dark .rpt-row-selected { background: rgba(0,113,227,.1); }
 .dark .rpt-loadmore { background: rgba(255,255,255,.04); }
+/* dark-mode contrast: brighter primary so toggle/chip-dot reach WCAG AA */
+.dark .rpt-reason-toggle { color: #67adff; }
+.dark .rpt-chip.active { box-shadow: 0 2px 8px rgba(0,0,0,.35); }
+.dark .rpt-chip.active::after { background: #67adff; }
+
+/* fix 4 — keep header visually separated on scroll within this page's tables */
+.admin-table th { box-shadow: 0 2px 4px rgba(0,0,0,.04); }
+.dark .admin-table th { box-shadow: 0 2px 6px rgba(0,0,0,.35); }
 </style>

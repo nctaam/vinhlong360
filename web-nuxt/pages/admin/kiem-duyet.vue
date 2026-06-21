@@ -78,7 +78,7 @@
             <td class="admin-actions">
               <template v-if="p.moderation_status !== 'approved'">
                 <button type="button" class="btn-success" :disabled="acting === p.id" @click="approve(p.id)">
-                  {{ acting === p.id ? '...' : 'Duyệt' }}
+                  <span v-if="acting === p.id" class="mod-btn-spin" aria-hidden="true"></span>{{ acting === p.id ? 'Đang duyệt' : 'Duyệt' }}
                 </button>
               </template>
               <button v-if="p.moderation_status !== 'rejected'" type="button" class="btn-danger" :disabled="acting === p.id" @click="startReject(p.id)">Từ chối</button>
@@ -86,25 +86,32 @@
           </tr>
           <tr v-if="rejectingId === p.id" class="mod-reject-row">
             <td colspan="6">
+              <div class="mod-reject-container">
               <div class="mod-reject">
+                <span class="mod-reject-label" aria-hidden="true">&#9888; Lý do:</span>
                 <input
                   v-model="rejectReason" type="text" class="mod-reason-input"
                   placeholder="Lý do từ chối (tuỳ chọn, lưu vào nhật ký)…"
                   @keyup.enter="confirmReject(p.id)" @keyup.esc="cancelReject"
                 />
                 <button type="button" class="btn-danger" :disabled="acting === p.id" @click="confirmReject(p.id)">
-                  {{ acting === p.id ? '...' : 'Xác nhận từ chối' }}
+                  <span v-if="acting === p.id" class="mod-btn-spin" aria-hidden="true"></span>{{ acting === p.id ? 'Đang xử lý' : 'Xác nhận từ chối' }}
                 </button>
                 <button type="button" class="btn-ghost-sm" @click="cancelReject">Huỷ</button>
+              </div>
               </div>
             </td>
           </tr>
         </template>
         <tr v-if="!queue.length">
-          <td colspan="6" class="admin-empty-row">
-            <div class="mod-empty">
-              <span class="mod-empty-icon">&#127881;</span>
-              <span>{{ status === 'review' ? 'Không có bài nào chờ duyệt. Tốt lắm!' : 'Không có bài nào.' }}</span>
+          <td colspan="6">
+            <div class="admin-empty-state">
+              <div class="admin-empty-state-icon">{{ emptyState.icon }}</div>
+              <div class="admin-empty-state-text">{{ emptyState.text }}</div>
+              <button
+                v-if="status !== 'review'" type="button" class="mod-empty-action"
+                @click="setStatus('review')"
+              >Về hàng đợi cần duyệt &rarr;</button>
             </div>
           </td>
         </tr>
@@ -156,6 +163,16 @@ const rejectReason = ref('')
 const hasMore = computed(() => queue.value.length < total.value)
 
 function badgeOf(s: string) { return BADGES[s] || { label: s, cls: 'mb-pending' } }
+
+const EMPTY_STATES: Record<string, { icon: string; text: string }> = {
+  review: { icon: '🎉', text: 'Hàng đợi đã sạch. Tốt lắm!' },
+  pending: { icon: '🎉', text: 'Không có bài nào đang chờ duyệt.' },
+  flagged: { icon: '✓', text: 'Không có bài nào bị gắn cờ.' },
+  approved: { icon: '📭', text: 'Chưa có bài viết nào đã duyệt.' },
+  rejected: { icon: '📭', text: 'Chưa có bài viết nào bị từ chối.' },
+}
+const emptyState = computed(() => EMPTY_STATES[status.value] || { icon: '📭', text: 'Không có bài nào.' })
+
 function tabCount(key: string): number | null {
   if (key === 'review') return (modStats.value.pending || 0) + (modStats.value.flagged || 0)
   const v = modStats.value[key]
@@ -258,23 +275,34 @@ onMounted(() => fetchQueue())
 .mod-tab:active { transform: scale(.97); }
 .mod-tab.active { background: var(--primary, #219653); color: #fff; border-color: var(--primary, #219653); }
 .mod-tab:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
-.mod-tab-count { font-size: .72rem; font-weight: 700; padding: 0 6px; border-radius: 10px; background: rgba(0,0,0,.08); }
-.mod-tab.active .mod-tab-count { background: rgba(255,255,255,.25); }
+.mod-tab-count { font-size: .72rem; font-weight: 700; padding: 0 6px; border-radius: 100px; background: var(--line); color: var(--muted); }
+.mod-tab.active .mod-tab-count { background: rgba(255,255,255,.2); color: #fff; }
 
 /* ── Stat card icon ── */
 .stat-card { display: flex; align-items: center; gap: var(--space-4); }
 .mod-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; transition: transform .25s cubic-bezier(.2,1,.4,1); }
 .stat-card:hover .mod-icon { transform: scale(1.08); }
+/* Urgency accent for queue cards with pending/flagged items (dashboard-at-a-glance) */
+.stat-card.status-warn { border-left: 4px solid var(--warning, #FF9F0A); }
+.stat-card.status-error { border-left: 4px solid var(--error, #D94F3D); }
+.stat-card.status-warn .mod-icon,
+.stat-card.status-error .mod-icon { font-size: 1.3rem; font-weight: 700; }
 
 /* ── Author cell ── */
-.mod-author { display: flex; align-items: center; gap: var(--space-2); }
-.mod-author-avatar { width: 28px; height: 28px; border-radius: 50%; background: rgba(52,120,246,.1); color: #3478F6; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .7rem; flex-shrink: 0; text-transform: uppercase; }
+.mod-author { display: flex; align-items: center; gap: var(--space-3); }
+.mod-author-avatar { width: 32px; height: 32px; border-radius: 50%; background: rgba(52,120,246,.1); color: #3478F6; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .76rem; flex-shrink: 0; text-transform: uppercase; }
+.mod-author > span { font-weight: 600; color: var(--ink); }
 
 /* ── Content cell ── */
 .mod-content-cell { max-width: 420px; }
 .mod-content-truncate { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .mod-expand { display: inline-block; margin-top: 4px; background: none; border: none; padding: 0; color: var(--primary-fg, #219653); font-size: .76rem; font-weight: 600; cursor: pointer; }
 .mod-expand:hover { text-decoration: underline; }
+.mod-expand:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; border-radius: 4px; }
+
+/* Keyboard affordance: highlight the row whose action button is focused (mirrors tr:hover) */
+.admin-table tbody tr:focus-within td { background: rgba(0,0,0,.04); }
+.dark .admin-table tbody tr:focus-within td { background: rgba(255,255,255,.05); }
 
 /* ── Type + status badges ── */
 .mod-type-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .72rem; font-weight: 600; background: rgba(142,142,147,.08); color: var(--muted); }
@@ -286,21 +314,35 @@ onMounted(() => fetchQueue())
 
 /* ── Reject reason inline ── */
 .mod-reject-row td { background: rgba(217,79,61,.04); }
-.mod-reject { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; padding: var(--space-2) 0; }
+.mod-reject-container { background: var(--bg); border: 1px solid rgba(217,79,61,.2); border-radius: 10px; padding: var(--space-3); margin: var(--space-2) 0; }
+.mod-reject-label { font-size: .8rem; font-weight: 600; color: #D94F3D; white-space: nowrap; flex-shrink: 0; }
+.mod-reject { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
+
+/* Inline action spinner (reuses global admin-spin keyframe) */
+.mod-btn-spin { display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: admin-spin .6s linear infinite; }
 .mod-reason-input { flex: 1; min-width: 200px; padding: 9px 12px; border: .5px solid var(--line); border-radius: 10px; font-size: .85rem; background: var(--bg); color: var(--ink); min-height: 40px; }
 .mod-reason-input:focus { outline: none; border-color: #D94F3D; box-shadow: 0 0 0 3px rgba(217,79,61,.1); }
 .btn-ghost-sm { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; padding: 8px 12px; border-radius: 8px; }
 .btn-ghost-sm:hover { background: var(--bg-alt); color: var(--ink); }
 
 .mod-load-more { margin-top: var(--space-4); }
-.mod-empty { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
-.mod-empty-icon { font-size: 2rem; }
+.mod-empty-action {
+  background: none; border: .5px solid var(--line); border-radius: 8px;
+  padding: 7px 14px; font-size: .82rem; font-weight: 500; color: var(--primary, #219653);
+  cursor: pointer; min-height: 36px;
+  transition: border-color .25s, background .25s, transform .15s cubic-bezier(.2,1,.4,1);
+}
+.mod-empty-action:hover { border-color: var(--primary, #219653); background: rgba(33,150,83,.04); }
+.mod-empty-action:active { transform: scale(.96); }
+.mod-empty-action:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .mod-empty-action:active { transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
   .stat-card:hover .mod-icon { transform: none; }
   .mod-tab:active { transform: none; }
+  .mod-btn-spin { animation: none; }
 }
 .dark .mod-author-avatar { background: rgba(52,120,246,.15); }
 .dark .mod-type-badge { background: rgba(255,255,255,.06); }
-.dark .mod-tab-count { background: rgba(255,255,255,.12); }
+.dark .mod-tab.active .mod-tab-count { background: rgba(255,255,255,.2); color: #fff; }
 </style>

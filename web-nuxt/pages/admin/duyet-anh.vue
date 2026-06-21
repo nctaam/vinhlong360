@@ -27,6 +27,11 @@
 
     <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
     <template v-else>
+      <!-- License legend: orient admins on which badges are safe to approve -->
+      <div v-if="queue.length" class="img-legend" aria-hidden="true">
+        <span class="img-legend-item"><span class="img-legend-dot img-legend-ok"></span> Giấy phép OK (CC0 / CC-BY / công cộng)</span>
+        <span class="img-legend-item"><span class="img-legend-dot img-legend-warn"></span> Không rõ — kiểm tra trước khi duyệt</span>
+      </div>
       <!-- Card grid: visual review needs the thumbnail front and centre -->
       <div v-if="queue.length" class="img-grid">
         <div v-for="s in queue" :key="s.id" class="img-card">
@@ -43,12 +48,27 @@
           </div>
           <div class="img-meta">
             <div class="img-entity">{{ s.entity_name || s.entity_id }}</div>
+            <div
+              class="img-conf-bar" :class="confClass(s.match_confidence)"
+              :title="`Độ khớp tên: ${Math.round((s.match_confidence ?? 0) * 100)}%`"
+              role="img" :aria-label="`Độ khớp tên ${Math.round((s.match_confidence ?? 0) * 100)} phần trăm`"
+            >
+              <span class="img-conf-fill" :style="{ width: Math.round((s.match_confidence ?? 0) * 100) + '%' }"></span>
+            </div>
             <div class="img-row">
               <span class="img-type-badge">{{ s.entity_type || '—' }}</span>
-              <span v-if="s.license" class="img-lic-badge" :class="{ 'lic-warn': !licenseLooksOk(s.license) }">
+              <span
+                v-if="s.license" class="img-lic-badge" :class="{ 'lic-warn': !licenseLooksOk(s.license) }"
+                :title="licenseLooksOk(s.license) ? 'Giấy phép cho phép dùng (vẫn nên ghi nguồn nếu là CC-BY).' : 'Giấy phép chưa rõ — xác minh trước khi duyệt.'"
+                :aria-label="`Giấy phép ${s.license}${licenseLooksOk(s.license) ? ', cho phép dùng' : ', chưa rõ — cần xác minh'}`"
+              >
                 {{ s.license }}
               </span>
-              <span v-else class="img-lic-badge lic-warn">không rõ giấy phép</span>
+              <span
+                v-else class="img-lic-badge lic-warn"
+                title="Không có thông tin giấy phép — không nên duyệt khi chưa xác minh nguồn."
+                aria-label="Không rõ giấy phép, cần xác minh nguồn"
+              >không rõ giấy phép</span>
             </div>
             <div v-if="s.wp_title" class="img-detail">
               <span class="img-detail-k">Wikipedia:</span> {{ s.wp_title }}
@@ -56,9 +76,15 @@
             <div v-if="s.author" class="img-detail">
               <span class="img-detail-k">Tác giả:</span> {{ s.author }}
             </div>
-            <a :href="s.candidate_url" target="_blank" rel="noopener nofollow" class="img-src-link">
-              Mở ảnh gốc &#8599;
-            </a>
+            <div class="img-links">
+              <a
+                v-if="s.entity_id" :href="`/admin/entities?id=${s.entity_id}`" target="_blank"
+                rel="noopener" class="img-entity-link"
+              >Xem entity &#8599;</a>
+              <a :href="s.candidate_url" target="_blank" rel="noopener nofollow" class="img-src-link">
+                Mở ảnh gốc &#8599;
+              </a>
+            </div>
             <div v-if="s.status === 'rejected' && s.rejection_reason" class="img-detail img-reject-note">
               Lý do từ chối: {{ s.rejection_reason }}
             </div>
@@ -92,9 +118,14 @@
         </div>
       </div>
 
-      <div v-else class="img-empty">
-        <span class="img-empty-icon">&#127752;</span>
-        <span>{{ status === 'pending' ? 'Không có ứng viên ảnh nào chờ duyệt.' : 'Không có ứng viên nào.' }}</span>
+      <div v-else class="admin-empty-state">
+        <div class="admin-empty-state-icon">&#127752;</div>
+        <div class="admin-empty-state-text">
+          {{ status === 'pending' ? 'Không có ứng viên ảnh nào chờ duyệt.' : 'Không có ứng viên nào.' }}
+        </div>
+        <div class="admin-empty-state-hint">
+          {{ status === 'pending' ? 'Tất cả ảnh đã được xử lý. Chuyển tab để xem ảnh đã duyệt hoặc bị từ chối.' : 'Chuyển tab “Chờ duyệt” để xử lý ứng viên mới.' }}
+        </div>
       </div>
 
       <button type="button" v-if="hasMore" class="btn btn-outline img-load-more" :disabled="loading" @click="loadMore">
@@ -229,7 +260,12 @@ onMounted(() => fetchQueue())
 .refresh-spin { display: inline-block; animation: admin-spin .6s linear infinite; }
 
 /* ── Status tabs (match kiem-duyet) ── */
-.img-tabs { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-5); }
+.img-tabs {
+  display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-5);
+  position: sticky; top: 0; z-index: 10;
+  padding: var(--space-2) 0; background: var(--bg);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
 .img-tab {
   display: inline-flex; align-items: center; gap: 6px; min-height: 38px;
   padding: 7px 14px; border-radius: 100px; border: .5px solid var(--line);
@@ -288,13 +324,42 @@ onMounted(() => fetchQueue())
 .btn-ghost-sm { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; padding: 8px 12px; border-radius: 8px; }
 .btn-ghost-sm:hover { background: var(--bg-alt); color: var(--ink); }
 
-.img-empty { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-8) 0; color: var(--muted); }
-.img-empty-icon { font-size: 2.4rem; }
 .img-load-more { margin-top: var(--space-5); }
+
+/* ── License legend ── */
+.img-legend { display: flex; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-4); font-size: .76rem; color: var(--muted); }
+.img-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.img-legend-dot { display: inline-block; width: 9px; height: 9px; border-radius: 3px; }
+.img-legend-ok { background: #219653; }
+.img-legend-warn { background: #D94F3D; }
+
+/* ── Confidence bar (additive visual of match_confidence) ── */
+.img-conf-bar { height: 4px; border-radius: 100px; background: rgba(142,142,147,.18); overflow: hidden; }
+.img-conf-fill { display: block; height: 100%; border-radius: 100px; background: var(--muted); transition: width .3s cubic-bezier(.2,1,.4,1); }
+.img-conf-bar.conf-high .img-conf-fill { background: #219653; }
+.img-conf-bar.conf-mid .img-conf-fill { background: #C98A1A; }
+.img-conf-bar.conf-low .img-conf-fill { background: #D94F3D; }
+
+/* ── Meta links row ── */
+.img-links { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.img-entity-link { font-size: .76rem; font-weight: 600; color: var(--primary-fg, #219653); text-decoration: none; }
+.img-entity-link:hover { text-decoration: underline; }
+
+/* ── Broken-image affordance ── */
+.img-thumb-wrap::after {
+  content: "Ảnh không tải được"; position: absolute; inset: 0;
+  display: none; align-items: center; justify-content: center; text-align: center;
+  font-size: .76rem; font-weight: 600; color: #D94F3D; padding: var(--space-3);
+  background: rgba(217,79,61,.08);
+}
+.img-thumb-wrap:has(.img-broken)::after { display: flex; }
 
 @media (prefers-reduced-motion: reduce) {
   .img-tab:active { transform: none; }
+  .img-conf-fill { transition: none; }
 }
 .dark .img-type-badge { background: rgba(255,255,255,.06); }
 .dark .img-tab-count { background: rgba(255,255,255,.12); }
+.dark .img-tabs { background: var(--bg); }
+.dark .img-conf-bar { background: rgba(255,255,255,.12); }
 </style>
