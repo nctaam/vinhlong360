@@ -23,6 +23,11 @@
 /* Breadcrumb */
 .dark .breadcrumb a:hover { background: rgba(255,255,255,.06); }
 
+/* SearchAutocomplete — lift type/place label contrast on dark surfaces
+   (base uses --primary-fg / --muted which can dip below 4.5:1 on dark hover) */
+.dark .ac-type { color: rgba(255,255,255,.75); font-weight: var(--weight-semibold); }
+.dark .ac-place { color: rgba(255,255,255,.55); }
+
 /* ── 404 catch-all ([...slug]) ── */
 .dark .nf-search input { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); color: var(--ink); }
 .dark .nf-search input:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(232, 163, 61, .15); }

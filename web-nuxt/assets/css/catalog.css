@@ -6,8 +6,12 @@
 .search-row:focus-within { border-color: var(--primary-fg); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .1); background: var(--card); }
 .search-row input[type=search] { flex: 1 1 260px; padding: var(--space-3) var(--space-4); border: .5px solid transparent; border-radius: var(--radius-sm); font-size: var(--text-base); background: transparent; transition: border-color .25s var(--ease-out), box-shadow .25s, background .25s; }
 .search-row input[type=search]:focus { outline: none; border-color: transparent; background: transparent; box-shadow: none; }
+/* a11y: keyboard users still get a visible ring on the field itself
+   (mouse :focus stays clean; container :focus-within highlight is preserved) */
+.search-row input[type=search]:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .search-row select { padding: var(--space-3) var(--space-4); border: .5px solid transparent; border-radius: var(--radius-sm); background: transparent; color: var(--ink); transition: border-color .25s, box-shadow .25s; }
 .search-row select:focus { outline: none; border-color: transparent; box-shadow: none; }
+.search-row select:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .chip-row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 .chip { border: .5px solid var(--line); background: var(--bg-alt); color: var(--ink); padding: var(--space-2) var(--space-4); border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: var(--weight-medium); cursor: pointer; transition: background .2s var(--ease-out), color .2s var(--ease-out), border-color .2s var(--ease-out), box-shadow .2s var(--ease-out), transform .15s var(--ease-spring); white-space: nowrap; display: inline-flex; align-items: center; min-height: 44px; }
 .chip:hover { border-color: var(--primary-fg); background: var(--card); box-shadow: var(--shadow-xs); }
