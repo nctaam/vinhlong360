@@ -1,5 +1,5 @@
 /* ── Grid + cards (Apple HIG) ── */
-.grid { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); container-type: inline-size; }
+.grid { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); container-type: inline-size; content-visibility: auto; contain-intrinsic-size: auto 400px; }
 @container (max-width: 720px) {
   .grid { gap: var(--space-4); }
 }
@@ -130,7 +130,7 @@
 .cover.cat-place { background: var(--cat-place); }
 
 /* ── Region cards ── */
-.region-grid { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); container-type: inline-size; }
+.region-grid { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); container-type: inline-size; content-visibility: auto; contain-intrinsic-size: auto 500px; }
 @container (max-width: 600px) {
   .region-grid { grid-template-columns: 1fr; }
 }

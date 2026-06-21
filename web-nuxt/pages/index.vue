@@ -358,8 +358,8 @@ const eventListSchema = computed(() => {
 useHead({
   link: [
     { rel: 'canonical', href: canonicalUrl('/') },
-    { rel: 'preload', as: 'image', href: '/img/hero-mobile.jpg', fetchpriority: 'high', media: '(max-width: 640px)' },
-    { rel: 'preload', as: 'image', href: '/img/hero.jpg', fetchpriority: 'high', media: '(min-width: 641px)' },
+    { rel: 'preload', as: 'image', href: '/img/hero-mobile.jpg', fetchpriority: 'high', media: '(max-width: 640px)', imagesrcset: '/img/hero-mobile.jpg', imagesizes: '100vw' },
+    { rel: 'preload', as: 'image', href: '/img/hero.jpg', fetchpriority: 'high', media: '(min-width: 641px)', imagesrcset: '/img/hero.jpg', imagesizes: '100vw' },
   ],
   script: [
     {
@@ -465,7 +465,9 @@ useHead({
   font-size: clamp(2.15rem, 6.2vw, 3.6rem);
   letter-spacing: -1.4px;
   line-height: 1.05;
-  text-shadow: 0 2px 18px rgba(0,0,0,.28);
+  /* LCP element: smaller blur radius = cheaper paint, same legibility over the
+     hero photo (tighter shadow + slightly higher opacity preserves contrast). */
+  text-shadow: 0 1px 6px rgba(0,0,0,.34);
   position: relative;
   display: inline-block;
 }

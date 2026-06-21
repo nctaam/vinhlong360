@@ -21,10 +21,31 @@ const props = withDefaults(
   }>(),
   { variant: 'full' },
 )
+
+/**
+ * Perf: pause the decorative infinite animations while the hero is scrolled
+ * out of view. Purely additive + progressive — when in view (or if the
+ * observer never runs, e.g. SSR / no-IO) the look is unchanged. Animations are
+ * already transform/opacity (paint-cheap) and reduced-motion gated globally;
+ * this just avoids spending compositor cycles on an off-screen hero.
+ */
+const root = ref<SVGSVGElement | null>(null)
+onMounted(() => {
+  if (!import.meta.client || typeof IntersectionObserver === 'undefined') return
+  const el = root.value
+  if (!el) return
+  const io = new IntersectionObserver(
+    ([entry]) => el.classList.toggle('is-offscreen', !entry.isIntersecting),
+    { rootMargin: '120px' },
+  )
+  io.observe(el)
+  onUnmounted(() => io.disconnect())
+})
 </script>
 
 <template>
   <svg
+    ref="root"
     class="hero-illustration"
     viewBox="0 0 600 400"
     xmlns="http://www.w3.org/2000/svg"
@@ -199,6 +220,13 @@ const props = withDefaults(
 @keyframes wave-drift {
   0%, 100% { opacity: 1; transform: translateX(0); }
   50% { opacity: .6; transform: translateX(8px); }
+}
+/* Off-screen pause (JS-gated via IntersectionObserver). Holds the current
+   frame — same paint, zero ongoing compositor work while scrolled away.
+   No-op when the class is absent (in view / SSR / no observer). */
+.hero-illustration.is-offscreen,
+.hero-illustration.is-offscreen :deep(*) {
+  animation-play-state: paused !important;
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-illustration :deep(g),

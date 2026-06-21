@@ -494,9 +494,11 @@
   from { opacity: 0; transform: translateY(-2px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+/* Cheaper repaint: breathe via transform+opacity (GPU) instead of box-shadow ring.
+   Static ring kept on ::before above; the pulse now scales the dot itself. */
 @keyframes result-dot-breathe {
-  0%, 100% { box-shadow: 0 0 0 3px rgba(var(--secondary-rgb), .12); }
-  50%      { box-shadow: 0 0 0 4px rgba(var(--secondary-rgb), .26); }
+  0%, 100% { transform: scale(1); opacity: .9; }
+  50%      { transform: scale(1.18); opacity: 1; }
 }
 /* dark mode: keep the pill intentional (transparent fill, visible hairline) */
 .dark .result-meta { background: transparent; border-color: var(--line); }

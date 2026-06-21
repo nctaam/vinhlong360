@@ -123,7 +123,10 @@ h1, h2, h3 { line-height: var(--leading-tight); letter-spacing: var(--tracking-t
 .theme-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* ── Hero ── */
-.hero { background-color: var(--primary); background-image: linear-gradient(105deg, rgba(var(--ink-rgb),.86) 0%, rgba(var(--ink-rgb),.52) 46%, rgba(var(--ink-rgb),.12) 100%), url('/img/hero.jpg'); background-size: cover; background-position: center; color: var(--text-on-dark, #fff); position: relative; overflow: hidden; }
+/* min-height reserves the hero box before the background image paints (CLS guard).
+   Floor sits below natural content height at every breakpoint, so it never adds
+   layout — it only holds space if hero content/fonts arrive late. */
+.hero { background-color: var(--primary); background-image: linear-gradient(105deg, rgba(var(--ink-rgb),.86) 0%, rgba(var(--ink-rgb),.52) 46%, rgba(var(--ink-rgb),.12) 100%), url('/img/hero.jpg'); background-size: cover; background-position: center; color: var(--text-on-dark, #fff); position: relative; overflow: hidden; min-height: 320px; }
 /* Mobile: hero nhẹ (768w, ~76KB) thay 1280w — tiết kiệm data + LCP */
 @media (max-width: 640px) { .hero { background-image: linear-gradient(105deg, rgba(var(--ink-rgb),.86) 0%, rgba(var(--ink-rgb),.52) 46%, rgba(var(--ink-rgb),.12) 100%), url('/img/hero-mobile.jpg'); } }
 .hero-inner { max-width: var(--maxw); margin: 0 auto; padding: var(--space-16) var(--space-5) calc(var(--space-16) + var(--space-2)); position: relative; z-index: 1; }
@@ -875,6 +878,7 @@ a.thread-author:hover { color: var(--primary-fg); }
 @media (max-width: 480px) {
   .chat-panel { bottom: 0; right: 0; width: 100vw; height: 100dvh; max-height: 100dvh; border-radius: 0; padding-bottom: env(safe-area-inset-bottom); }
   .chat-fab { bottom: var(--space-4); right: var(--space-4); }
+  .hero { min-height: 240px; }
   .hero h1 { font-size: 1.5rem; }
   .hero p { font-size: .95rem; }
   .hero-inner { padding: var(--space-10) var(--space-4) calc(var(--space-10) + var(--space-1)); }
