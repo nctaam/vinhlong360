@@ -13,8 +13,8 @@
       </div>
     </section>
 
-    <div class="search-row search-row-spaced">
-      <input v-model="searchInput" type="search" enterkeyhint="search" placeholder="Tìm đặc sản, trải nghiệm…" aria-label="Tìm kiếm" autocomplete="off" @keyup.enter="doSearch" />
+    <div class="search-row search-row-spaced" :class="{ error: hasError }">
+      <input v-model="searchInput" type="search" enterkeyhint="search" placeholder="Tìm đặc sản, trải nghiệm…" aria-label="Tìm kiếm" :aria-invalid="hasError || undefined" autocomplete="off" @keyup.enter="doSearch" />
       <button type="button" class="btn btn-primary" @click="doSearch">Tìm</button>
     </div>
 
@@ -29,7 +29,19 @@
       <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData('search-results')">Thử lại</button>
     </EmptyState>
     <template v-else-if="results.length">
-      <p class="result-meta" aria-live="polite">{{ results.length }} kết quả cho "{{ q }}"</p>
+      <div class="result-summary" aria-live="polite">
+        <p class="result-meta">
+          <strong class="result-query">"{{ q }}"</strong>
+          <span class="result-count">{{ results.length }} kết quả</span>
+        </p>
+        <ul v-if="typeBreakdown.length" class="result-types" aria-label="Phân loại kết quả">
+          <li v-for="t in typeBreakdown" :key="t.type" class="result-type-badge">
+            <span aria-hidden="true">{{ t.emoji }}</span>
+            <span>{{ t.label }}</span>
+            <span class="result-type-count">{{ t.count }}</span>
+          </li>
+        </ul>
+      </div>
       <div class="grid">
         <EntityCard v-for="e in results" :key="e.id" :entity="e" />
       </div>
@@ -129,6 +141,7 @@
 </template>
 
 <script setup lang="ts">
+import { TYPE_META } from '~/composables/useConstants'
 useReveal()
 const { f: pc } = usePageContent('tim_kiem')
 const route = useRoute()
@@ -144,6 +157,23 @@ const searching = computed(() => status.value === 'pending' && !!q.value)
 
 const results = computed(() => data.value?.entities || [])
 const hasError = computed(() => !!searchError.value)
+
+// SERPs-style type distribution badges (e.g. 5 Trải nghiệm · 4 Đặc sản · 3 Lưu trú).
+const typeBreakdown = computed(() => {
+  const counts = new Map<string, number>()
+  for (const e of results.value as any[]) {
+    const t = e?.type
+    if (t) counts.set(t, (counts.get(t) || 0) + 1)
+  }
+  return [...counts.entries()]
+    .map(([type, count]) => ({
+      type,
+      count,
+      label: TYPE_META[type]?.label || type,
+      emoji: TYPE_META[type]?.emoji || '📍',
+    }))
+    .sort((a, b) => b.count - a.count)
+})
 
 function doSearch() {
   if (searchInput.value.trim()) {
@@ -182,11 +212,28 @@ useHead({
 <style scoped>
 .search-row-spaced { margin-bottom: var(--space-5); }
 .fetch-error { color: var(--error); text-align: center; padding: var(--space-5); }
-.result-meta { font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-4); }
+
+/* Result summary header (SERPs-style query echo + type breakdown) */
+.result-summary { margin-bottom: var(--space-4); }
+.result-meta { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--space-2); font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-2); }
+.result-query { color: var(--ink); font-weight: var(--weight-semibold); }
+.result-count { color: var(--muted); }
+.result-types { display: flex; flex-wrap: wrap; gap: var(--space-2); list-style: none; padding: 0; margin: 0; }
+.result-type-badge {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  background: var(--bg-alt); border: .5px solid var(--line);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--ink);
+}
+.result-type-count { color: var(--primary-fg); font-weight: var(--weight-semibold); }
+
+/* Search input error feedback */
+.search-row.error input { border-color: var(--error); box-shadow: 0 0 0 3px rgba(var(--error-rgb, 217, 79, 61), .12); }
 
 .quick-picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--space-3); }
 .quick-pick { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); text-align: center; box-shadow: var(--shadow-xs); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
-.quick-pick:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--primary-fg); }
+.quick-pick:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--primary-fg); background: rgba(var(--primary-rgb), .04); }
 .quick-pick:active { transform: scale(.97); transition-duration: .08s; }
 .quick-pick:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .quick-pick-icon { font-size: var(--text-2xl); transition: transform .35s var(--ease-spring-gentle); }
@@ -208,8 +255,10 @@ useHead({
 
 /* Dark mode */
 .dark .quick-pick { background: var(--bg-alt); border-color: var(--line); }
-.dark .quick-pick:hover { border-color: rgba(255,255,255,.15); box-shadow: var(--shadow-md); }
+.dark .quick-pick:hover { border-color: rgba(255,255,255,.15); box-shadow: var(--shadow-md); background: rgba(255,255,255,.04); }
 .dark .result-meta { color: var(--ink-tertiary); }
+.dark .result-query { color: var(--ink); }
+.dark .result-type-badge { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); }
 .dark .fetch-error { color: var(--error); }
 
 /* Reduced motion */
@@ -217,6 +266,6 @@ useHead({
   .quick-pick:hover { transform: none; }
   .quick-pick:active { transform: none; }
   .quick-pick:hover .quick-pick-icon { transform: none; }
-  .grid { animation: none; }
+  .grid { animation: none; opacity: 1; transform: none; }
 }
 </style>

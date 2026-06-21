@@ -27,6 +27,19 @@
     <span class="sr-only" aria-live="polite" aria-atomic="true">{{ suggestions.length ? `${suggestions.length} kết quả` : '' }}</span>
     <Transition name="menu-pop">
     <div v-if="showDropdown" id="ac-listbox" class="ac-dropdown" role="listbox">
+      <!-- Initial-state hint: categories when no query (and no recents) -->
+      <div v-if="!query.trim() && !recentSearches.length" class="ac-hint-section">
+        <div class="ac-hint-head">
+          <span class="ac-hint-icon" aria-hidden="true">🧭</span>
+          <span class="ac-hint-title">Tìm theo danh mục</span>
+        </div>
+        <div class="ac-chips">
+          <NuxtLink v-for="c in quickCategories" :key="c.to" :to="c.to" class="ac-chip" @mousedown.prevent="goCategory(c.to)">
+            <span aria-hidden="true">{{ c.emoji }}</span> {{ c.label }}
+          </NuxtLink>
+        </div>
+      </div>
+
       <!-- Recent searches (when no query) -->
       <div v-if="!query.trim() && recentSearches.length" class="ac-section">
         <div class="ac-section-header">
@@ -88,11 +101,21 @@
 
       <!-- Empty state -->
       <div v-if="query.trim() && !suggestions.length && !loading" class="ac-empty">
-        <span aria-hidden="true">🔍</span> Chưa tìm thấy nơi nào khớp. Thử từ khóa khác hoặc xem tất cả kết quả bên dưới.
+        <span class="ac-empty-icon" aria-hidden="true">🔍</span>
+        <p class="ac-empty-title">Chưa tìm thấy nơi nào khớp</p>
+        <p class="ac-empty-hint">Thử từ khóa khác, hoặc xem gợi ý theo danh mục:</p>
+        <div class="ac-chips ac-empty-chips">
+          <NuxtLink v-for="c in quickCategories" :key="c.to" :to="c.to" class="ac-chip" @mousedown.prevent="goCategory(c.to)">
+            <span aria-hidden="true">{{ c.emoji }}</span> {{ c.label }}
+          </NuxtLink>
+        </div>
+        <NuxtLink :to="`/tim-kiem?q=${encodeURIComponent(query.trim())}`" class="ac-empty-all" @mousedown.prevent="onSubmit">
+          Xem tất cả kết quả →
+        </NuxtLink>
       </div>
 
-      <!-- Loading -->
-      <div v-if="loading" class="ac-loading">
+      <!-- Loading (delayed 150ms to avoid flicker on fast networks) -->
+      <div v-if="showLoading" class="ac-loading" role="status" aria-label="Đang tìm kiếm">
         <div class="spinner spinner-sm"></div>
       </div>
     </div>
@@ -113,9 +136,27 @@ const suggestions = ref<Entity[]>([])
 const highlightIndex = ref(-1)
 const showDropdown = ref(false)
 const loading = ref(false)
+// Delayed loading flag: only flips true 150ms after a fetch starts, so the
+// spinner never flickers on fast responses. Mirrors `loading` otherwise.
+const showLoading = ref(false)
+let loadingTimer: ReturnType<typeof setTimeout> | null = null
 const inputEl = ref<HTMLInputElement | null>(null)
 const recentSearches = ref<string[]>([])
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
+
+// Initial-state discovery chips (frictionless category jump when no query).
+const quickCategories = [
+  { to: '/du-lich', emoji: '🌿', label: 'Du lịch' },
+  { to: '/san-pham', emoji: '🍊', label: 'Đặc sản' },
+  { to: '/luu-tru', emoji: '🏡', label: 'Lưu trú' },
+  { to: '/ocop', emoji: '⭐', label: 'OCOP' },
+]
+
+function goCategory(to: string) {
+  close()
+  query.value = ''
+  navigateTo(to)
+}
 
 const recentOffset = computed(() => !query.value.trim() ? recentSearches.value.length : 0)
 const totalItems = computed(() => {
@@ -177,6 +218,8 @@ async function fetchSuggestions(q: string) {
     return
   }
   loading.value = true
+  if (loadingTimer) clearTimeout(loadingTimer)
+  loadingTimer = setTimeout(() => { if (loading.value) showLoading.value = true }, 150)
   try {
     const data = await $fetch<any>(`/api/entities?q=${encodeURIComponent(q)}&limit=5`)
     suggestions.value = data?.entities || []
@@ -184,6 +227,8 @@ async function fetchSuggestions(q: string) {
     suggestions.value = []
   }
   loading.value = false
+  if (loadingTimer) { clearTimeout(loadingTimer); loadingTimer = null }
+  showLoading.value = false
 }
 
 function onInput() {
@@ -197,9 +242,9 @@ function onInput() {
 
 function onFocus() {
   loadRecents()
-  if (suggestions.value.length > 0 || query.value.trim().length >= 2 || recentSearches.value.length > 0) {
-    showDropdown.value = true
-  }
+  // Always open on focus: shows suggestions/recents when present, or the
+  // category-discovery hint when the input is empty (frictionless start).
+  showDropdown.value = true
 }
 
 function close() {
@@ -262,3 +307,76 @@ if (import.meta.client) {
   onUnmounted(() => document.removeEventListener('click', onClick))
 }
 </script>
+
+<style scoped>
+/* ── Keyboard navigation indicator (iOS-style focus accent) ────────────────
+   Stronger visual distinction for the highlighted item than bg-alt alone, and
+   guaranteed 44px touch targets on mobile. */
+.ac-dropdown :deep(.ac-item) { min-height: 44px; }
+.ac-dropdown :deep(.ac-item.highlighted) {
+  border-left: 3px solid var(--primary);
+  padding-left: calc(var(--space-4) - 3px);
+}
+
+/* ── Dark-mode contrast for result metadata (WCAG 1.4.3) ───────────────────
+   Re-implemented here (was proposed for dark-overrides.css) so the autocomplete
+   owns its own dark tokens. Raises .ac-type / .ac-place legibility on dark bg
+   and on the .highlighted state. */
+:global(.dark) .ac-dropdown :deep(.ac-type) {
+  color: rgba(255, 255, 255, .78);
+  font-weight: var(--weight-semibold);
+}
+:global(.dark) .ac-dropdown :deep(.ac-place) { color: rgba(255, 255, 255, .56); }
+
+/* ── Loading entry motion ──────────────────────────────────────────────────*/
+.ac-loading { animation: acLoadingFade .25s var(--ease-out) both; }
+@keyframes acLoadingFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── Initial-state category hint ───────────────────────────────────────────*/
+.ac-hint-section { padding: var(--space-3) var(--space-4) var(--space-4); }
+.ac-hint-head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
+.ac-hint-icon { font-size: 1.1rem; }
+.ac-hint-title {
+  font-size: var(--text-xs); font-weight: var(--weight-semibold);
+  color: var(--muted); text-transform: uppercase; letter-spacing: .04em;
+}
+.ac-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.ac-chip {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  min-height: 36px; padding: var(--space-2) var(--space-3);
+  background: var(--bg-alt); border: .5px solid var(--line);
+  border-radius: var(--radius-full); color: var(--ink);
+  font-size: var(--text-sm); font-weight: var(--weight-medium);
+  text-decoration: none; cursor: pointer;
+  transition: background .25s var(--ease-out), border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle);
+}
+.ac-chip:hover { background: var(--card); border-color: var(--primary-fg); transform: translateY(-1px); }
+.ac-chip:active { transform: scale(.97); transition-duration: .08s; }
+.ac-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* ── Expanded empty state ──────────────────────────────────────────────────*/
+.ac-empty { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
+.ac-empty-icon { font-size: 1.6rem; line-height: 1; }
+.ac-empty-title { font-weight: var(--weight-semibold); color: var(--ink); margin: 0; }
+.ac-empty-hint { font-size: var(--text-xs); color: var(--muted); margin: 0; }
+.ac-empty-chips { justify-content: center; margin-top: var(--space-1); }
+.ac-empty-all {
+  margin-top: var(--space-2); font-size: var(--text-sm);
+  font-weight: var(--weight-semibold); color: var(--primary-fg);
+  text-decoration: none; min-height: 36px; display: inline-flex; align-items: center;
+}
+.ac-empty-all:hover { text-decoration: underline; }
+.ac-empty-all:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-sm); }
+
+/* ── Dark mode for new sections ────────────────────────────────────────────*/
+:global(.dark) .ac-chip { background: rgba(255, 255, 255, .05); border-color: rgba(255, 255, 255, .1); }
+:global(.dark) .ac-chip:hover { background: rgba(255, 255, 255, .08); border-color: rgba(255, 255, 255, .2); }
+:global(.dark) .ac-empty-title { color: rgba(255, 255, 255, .9); }
+
+/* ── Reduced motion ────────────────────────────────────────────────────────*/
+@media (prefers-reduced-motion: reduce) {
+  .ac-loading { animation: none; }
+  .ac-chip:hover { transform: none; }
+  .ac-chip:active { transform: none; }
+}
+</style>

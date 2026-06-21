@@ -145,13 +145,28 @@ useHead({
   border-color: var(--border);
 }
 .contact-card:active { transform: translateY(0) scale(.98); transition-duration: .08s; }
-/* Inert info cards (no CTA) should not signal tappability */
+/* Inert info cards (no CTA) should not signal interactivity:
+   no lift, no shadow/border shift, no icon motion. */
+.card-report, .card-privacy { cursor: default; }
+.card-report:hover, .card-privacy:hover {
+  transform: none;
+  box-shadow: var(--shadow-xs);
+  border-color: var(--line);
+}
 .card-report:active, .card-privacy:active { transform: none; }
 
 .card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, rgba(var(--primary-rgb), .08), rgba(var(--primary-rgb), .02) 70%);
   font-size: var(--text-2xl);
-  margin-bottom: var(--space-2);
-  transition: transform .35s var(--ease-spring-gentle);
+  line-height: 1;
+  margin-bottom: var(--space-3);
+  transition: transform .35s var(--ease-spring-gentle), background .3s var(--ease-out);
 }
 .contact-card:hover .card-icon { transform: scale(1.1) rotate(-3deg); }
 .card-report:hover, .card-report:hover .card-icon, .card-privacy:hover, .card-privacy:hover .card-icon { transform: none; }
@@ -170,13 +185,13 @@ useHead({
 }
 .contact-card p:last-child { margin-bottom: 0; }
 
-.card-action { margin: var(--space-4) 0 var(--space-2); }
+.card-action { margin: var(--space-4) 0 var(--space-3); }
 .card-action .btn { min-height: 44px; }
 
-.card-note {
-  font-size: var(--text-xs) !important;
-  color: var(--muted) !important;
-  margin-top: var(--space-1);
+.contact-card .card-note {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  margin: var(--space-2) 0 0;
 }
 
 .card-claim {
@@ -186,12 +201,17 @@ useHead({
 }
 
 @media (min-width: 640px) {
+  /* Intentional hierarchy: primary claim full-width, then a row of
+     actionable cards (general + partner), then a row of informational
+     cards (report + privacy). 6-col base lets thirds & halves coexist. */
   .contact-cards {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(6, 1fr);
     gap: var(--space-5);
   }
-  .card-claim, .card-general { grid-column: span 2; }
+  .card-claim { grid-column: 1 / -1; }
+  .card-general, .card-partner { grid-column: span 3; }
+  .card-report, .card-privacy { grid-column: span 3; }
 }
 
 /* Focus & accessibility */
@@ -203,16 +223,21 @@ useHead({
 /* Dark mode */
 .dark .contact-card { background: var(--bg-alt); border-color: var(--line); }
 .dark .contact-card:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.1); }
-.dark .card-claim { background: color-mix(in srgb, var(--accent) 6%, var(--bg-alt)); border-color: rgba(var(--accent-rgb, 234,140,30), .25); }
+.dark .card-report:hover, .dark .card-privacy:hover { box-shadow: var(--shadow-xs); border-color: var(--line); }
+.dark .card-claim { background: color-mix(in srgb, var(--accent) 10%, var(--bg-alt)); border-color: rgba(var(--accent-rgb, 240,160,80), .35); }
 .dark .contact-card p { color: var(--ink-secondary); }
 .dark .contact-card h2 { color: var(--ink); }
+.dark .card-icon { background: radial-gradient(circle at 40% 40%, rgba(255,255,255,.07), rgba(255,255,255,.02) 70%); }
+.dark .card-claim .card-icon { background: radial-gradient(circle at 40% 40%, rgba(var(--accent-rgb, 240,160,80), .14), rgba(var(--accent-rgb, 240,160,80), .03) 70%); }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .contact-card:hover { transform: none; }
-  .contact-card:active { transform: none; }
-  .contact-card:hover .card-icon { transform: none; }
-  .card-action .btn:hover { transform: none; }
-  .card-action .btn:active { transform: none; }
+  .contact-card:hover,
+  .contact-card:active,
+  .contact-card:hover .card-icon,
+  .card-action .btn:hover,
+  .card-action .btn:active {
+    transform: none;
+  }
 }
 </style>
