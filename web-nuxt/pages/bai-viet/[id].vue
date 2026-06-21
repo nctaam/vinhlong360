@@ -9,8 +9,9 @@
       <!-- Comment thread -->
       <div class="thread-comments">
         <div class="replies-header">
+          <svg class="replies-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
           <span class="replies-label">Trả lời</span>
-          <span v-if="comments.length" class="replies-count">{{ comments.length }}</span>
+          <span v-if="comments.length" class="replies-count" :class="{ 'replies-count--active': comments.length > 0 }">{{ comments.length }}</span>
         </div>
 
         <!-- Comment form (Threads style) -->
@@ -57,7 +58,7 @@
         </div>
 
         <div v-if="!comments.length && !loading" class="comment-empty">
-          <span class="comment-empty-icon">💬</span>
+          <span class="comment-empty-halo"><span class="comment-empty-icon">💬</span></span>
           <p>Chưa có bình luận nào.</p>
           <p class="comment-empty-hint">{{ isLoggedIn ? 'Hãy là người đầu tiên trả lời!' : 'Đăng nhập để bình luận.' }}</p>
         </div>
@@ -65,7 +66,14 @@
       </div>
     </div>
 
-    <div v-else-if="!pending" class="empty-state-wrap">
+    <div v-else-if="pending" class="thread-detail-skeleton" role="status" aria-label="Đang tải bài viết">
+      <SkeletonList :count="1" />
+      <div class="thread-detail-skeleton-comments">
+        <SkeletonList :count="2" />
+      </div>
+    </div>
+
+    <div v-else class="empty-state-wrap">
       <EmptyState v-if="postFetchFailed" icon="⚠️" title="Không thể tải bài viết" message="Lỗi kết nối. Vui lòng thử lại.">
         <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData(`post-${postId}`)">Thử lại</button>
       </EmptyState>
@@ -233,17 +241,23 @@ if (post.value) {
 .thread-detail-page { max-width: 680px; margin: 0 auto; }
 .thread-detail { display: flex; flex-direction: column; }
 
+/* ── Section rhythm: clear break between post & comments ── */
+.thread-comments { margin-top: var(--space-6); padding-top: var(--space-5); border-top: .5px solid var(--line); }
+
 /* ── Replies header ── */
 .replies-header {
   display: flex; align-items: center; gap: var(--space-2);
-  padding: var(--space-4) 0 var(--space-2);
-  border-top: .5px solid var(--line);
+  padding: 0 0 var(--space-4);
 }
-.replies-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); }
+.replies-icon { color: var(--primary-fg); flex-shrink: 0; }
+.replies-label { font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--ink); letter-spacing: .01em; }
 .replies-count {
   font-size: var(--text-xs); font-weight: var(--weight-semibold);
   background: var(--bg-alt); color: var(--muted); border-radius: var(--radius-full);
-  padding: 2px 8px; min-width: 20px; text-align: center;
+  padding: 2px 9px; min-width: 22px; text-align: center; line-height: 1.6;
+}
+.replies-count--active {
+  background: rgba(var(--primary-rgb), .12); color: var(--primary-fg);
 }
 
 /* ── Comment compose (Threads style) ── */
@@ -256,16 +270,20 @@ if (post.value) {
 .thread-comment-compose .compose-left { width: 32px; flex-shrink: 0; display: flex; justify-content: center; }
 .thread-comment-compose .compose-right { flex: 1; display: flex; gap: var(--space-2); align-items: center; }
 .compose-input-sm {
-  flex: 1; border: none; background: transparent; color: var(--ink);
+  flex: 1; border: none; border-bottom: 2px solid transparent; background: transparent; color: var(--ink);
   font-size: var(--text-sm); line-height: var(--leading-relaxed);
   outline: none; font-family: inherit; min-height: 44px; padding: 0;
+  transition: border-color .2s var(--ease-out);
 }
-.compose-input-sm::placeholder { color: var(--muted); }
+.compose-input-sm::placeholder { color: var(--ink-tertiary, var(--muted)); }
+.compose-input-sm:focus { border-bottom-color: var(--primary-fg); box-shadow: none; }
 .compose-send {
   width: 44px; height: 44px; min-height: 44px; padding: 0;
   display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-full);
+  transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out), background .2s var(--ease-out);
 }
-.compose-send .spinner-sm { width: 14px; height: 14px; }
+.compose-send:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.compose-send .spinner-sm { width: 14px; height: 14px; color: var(--primary-fg); }
 
 .thread-comment-guest { padding: var(--space-3) 0 var(--space-4); border-bottom: .5px solid var(--line); }
 .guest-reply-link { font-size: var(--text-sm); color: var(--primary-fg); text-decoration: none; font-weight: var(--weight-medium); border-radius: var(--radius-sm); }
@@ -274,6 +292,7 @@ if (post.value) {
 
 /* ── Thread replies ── */
 .thread-comments { display: flex; flex-direction: column; }
+/* (section rhythm spacing for .thread-comments defined above) */
 
 .thread-reply {
   display: flex; gap: var(--space-3); padding: var(--space-3) var(--space-2);
@@ -294,18 +313,47 @@ if (post.value) {
 
 @keyframes replyIn { from { opacity: 0; transform: translateY(4px); } }
 
-.comment-empty { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-8) 0 var(--space-6); text-align: center; }
-.comment-empty-icon { font-size: var(--text-2xl, 1.75rem); opacity: .6; }
+.comment-empty {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+  padding: var(--space-8) var(--space-4); text-align: center;
+  background: var(--bg-warm); border-radius: var(--radius-lg);
+}
+.comment-empty-halo {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 64px; height: 64px; border-radius: var(--radius-full);
+  background: rgba(var(--accent-rgb), .08); margin-bottom: var(--space-1);
+}
+.comment-empty-icon { font-size: var(--text-2xl, 1.75rem); opacity: .8; }
 .comment-empty p { margin: 0; color: var(--ink); font-size: var(--text-sm); font-weight: var(--weight-medium); }
 .comment-empty-hint { color: var(--muted); font-size: var(--text-xs); font-weight: var(--weight-normal); }
 .empty-state-wrap { padding: var(--space-8) 0; text-align: center; }
+.dark .comment-empty { background: rgba(255,255,255,.03); }
 
 .feed-loading { text-align: center; padding: var(--space-5); }
 .feed-loading .spinner { margin: 0 auto; }
 
+/* ── Post-detail loading skeleton (reduces CLS vs blank) ── */
+.thread-detail-skeleton-comments { margin-top: var(--space-6); padding-top: var(--space-5); border-top: .5px solid var(--line); }
+
 .avatar-sm { width: 32px; height: 32px; font-size: var(--text-xs); }
+
+/* ── Reading experience: full content on detail page (no line-clamp) ── */
+.thread-detail-page :deep(.thread-content) {
+  -webkit-line-clamp: unset; line-clamp: unset; display: block;
+  font-size: var(--text-base); line-height: var(--leading-relaxed, 1.65);
+  max-width: 65ch; overflow: visible;
+}
+.thread-detail-page :deep(.thread-body) { cursor: default; }
+
+/* ── Focus-visible & keyboard nav in replies ── */
+.thread-reply .thread-author:focus-visible,
+.thread-reply .thread-avatar-link:focus-visible {
+  outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-sm);
+}
 
 @media (prefers-reduced-motion: reduce) {
   .thread-reply { animation: none; }
+  .compose-input-sm, .compose-send { transition: none; }
+  .compose-send:hover:not(:disabled) { transform: none; }
 }
 </style>

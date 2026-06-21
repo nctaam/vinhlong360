@@ -5,6 +5,7 @@
     <div v-if="profile" class="user-profile reveal">
       <div class="profile-cover">
         <UserCoverPlaceholder />
+        <div class="cover-scrim" aria-hidden="true"></div>
         <div class="profile-avatar-wrap">
           <span v-if="profile.avatar" class="avatar avatar-xl">
             <img :src="profile.avatar" :alt="profile.display_name" loading="lazy" decoding="async" width="96" height="96" />
@@ -20,9 +21,11 @@
             v-if="isLoggedIn && !isSelf"
             :class="['btn btn-sm', isFollowing ? 'btn-ghost' : 'btn-primary']"
             :disabled="followLoading"
+            :aria-busy="followLoading"
             @click="toggleFollow"
           >
-            {{ isFollowing ? 'Đang theo dõi' : 'Theo dõi' }}
+            <span v-if="!followLoading">{{ isFollowing ? 'Đang theo dõi' : 'Theo dõi' }}</span>
+            <span v-else class="spinner spinner-sm" aria-label="Đang xử lý"></span>
           </button>
           <NuxtLink v-if="isSelf" to="/cai-dat" class="btn btn-ghost btn-sm">
             <svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Sửa hồ sơ
@@ -68,13 +71,24 @@
           />
         </TransitionGroup>
         <Transition name="fade">
-          <EmptyState v-if="!filteredPosts.length && !loading" :message="tab === 'reviews' ? 'Chưa có đánh giá nào.' : 'Chưa có bài viết nào.'" />
+          <EmptyState
+            v-if="!filteredPosts.length && !loading"
+            :icon="tab === 'reviews' ? '⭐' : '✍️'"
+            :title="tab === 'reviews' ? 'Chưa có đánh giá' : 'Chưa có bài viết'"
+            :message="tab === 'reviews' ? 'Chưa có đánh giá nào.' : 'Chưa có bài viết nào.'"
+            :hint="emptyHint"
+          >
+            <NuxtLink v-if="isSelf" to="/cong-dong" class="btn btn-primary btn-sm">
+              {{ tab === 'reviews' ? 'Viết đánh giá đầu tiên' : 'Viết bài viết đầu tiên' }}
+            </NuxtLink>
+          </EmptyState>
         </Transition>
-        <div v-if="loading" class="profile-loading" role="status" aria-label="Đang tải"><div class="spinner"></div></div>
+        <SkeletonList v-if="loading && !posts.length" :count="3" class="profile-skeleton" />
+        <div v-else-if="loading" class="profile-loading" role="status" aria-label="Đang tải"><div class="spinner"></div></div>
       </div>
     </div>
 
-    <EmptyState v-else-if="profileFetchFailed" icon="⚠️" title="Không thể tải trang" message="Lỗi kết nối. Vui lòng thử lại.">
+    <EmptyState v-else-if="profileFetchFailed" icon="⚠️" tone="error" title="Không thể tải trang" message="Lỗi kết nối. Vui lòng thử lại.">
       <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData(`user-${userId}`)">Thử lại</button>
     </EmptyState>
     <EmptyState v-else message="Không tìm thấy người dùng." />
@@ -130,6 +144,12 @@ const joinDate = computed(() => {
 const filteredPosts = computed(() => {
   if (tab.value === 'reviews') return posts.value.filter(p => p.post_type === 'review')
   return posts.value
+})
+
+const displayName = computed(() => profile.value?.display_name || profile.value?.phone || 'Người dùng')
+const emptyHint = computed(() => {
+  if (isSelf.value) return 'Chia sẻ trải nghiệm của bạn với cộng đồng.'
+  return `Theo dõi ${displayName.value} để nhận cập nhật mới.`
 })
 
 async function fetchPosts() {
@@ -217,9 +237,10 @@ if (profile.value) {
 .profile-loading { text-align: center; padding: var(--space-5) 0; }
 .profile-loading .spinner { margin: 0 auto; }
 
-.profile-cover { position: relative; border-radius: var(--radius-xl, 20px); overflow: hidden; margin-bottom: calc(-1 * var(--space-8)); }
-.profile-avatar-wrap { position: absolute; bottom: calc(-1 * var(--space-6)); left: var(--space-5); }
-.profile-avatar-wrap .avatar { border: 3px solid var(--card); box-shadow: var(--shadow-md); transition: transform .35s var(--ease-spring-gentle); }
+.profile-cover { position: relative; border-radius: var(--radius-xl, 20px); overflow: hidden; margin-bottom: calc(-1 * var(--space-8)); box-shadow: var(--shadow-lg, var(--shadow-md)); }
+.cover-scrim { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.18)); }
+.profile-avatar-wrap { position: absolute; bottom: calc(-1 * var(--space-6)); left: var(--space-5); z-index: 1; }
+.profile-avatar-wrap .avatar { border: 6px solid var(--card); box-shadow: 0 0 0 2px var(--line), 0 8px 28px rgba(0,0,0,.12); transition: transform .35s var(--ease-spring-gentle); }
 .profile-avatar-wrap .avatar:hover { transform: scale(1.05); }
 .profile-avatar-wrap .avatar:active { transform: scale(.98); transition-duration: .08s; }
 
@@ -227,14 +248,15 @@ if (profile.value) {
 .user-profile-page { max-width: 680px; margin: 0 auto; }
 .profile-name-row { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
 .profile-name-row h1 { flex: 1; min-width: 0; }
-.profile-info h1 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); margin: 0; }
-.profile-bio { color: var(--ink-secondary); font-size: var(--text-sm); line-height: var(--leading-relaxed); margin-top: var(--space-2); }
+.profile-info h1 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); margin: 0; text-wrap: balance; overflow-wrap: break-word; }
+.profile-bio { color: var(--ink-secondary); font-size: var(--text-sm); line-height: var(--leading-relaxed); margin-top: var(--space-2); max-width: 640px; overflow-wrap: break-word; word-break: break-word; }
 
 .profile-stats { display: flex; gap: var(--space-6); margin-top: var(--space-4); }
-.stat-item { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); cursor: default; transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
-.stat-item:hover { background: var(--bg-alt); transform: translateY(-1px); box-shadow: var(--shadow-xs); }
+.stat-item { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-3); background: var(--bg-warm); border: .5px solid var(--line); border-radius: var(--radius-md); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), border-color .3s var(--ease-out); }
+.stat-item:hover { background: var(--card); transform: translateY(-1px); box-shadow: var(--shadow-sm); border-color: var(--border, var(--line)); }
 .stat-item:active { transform: scale(.95); transition-duration: .08s; }
-.stat-item strong { font-size: var(--text-lg); font-weight: var(--weight-bold); }
+.stat-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.stat-item strong { font-size: var(--text-lg); font-weight: var(--weight-bold); user-select: all; }
 .stat-item span { font-size: var(--text-xs); color: var(--muted); }
 
 .profile-tabs { display: flex; gap: var(--space-2); margin: var(--space-5) 0 var(--space-4); border-bottom: .5px solid var(--line); padding-bottom: var(--space-3); }
@@ -256,12 +278,24 @@ if (profile.value) {
 /* Follow button spring */
 .profile-name-row .btn { transition: transform .35s var(--ease-spring-gentle), background .3s var(--ease-out), color .3s var(--ease-out), border-color .3s var(--ease-out); }
 .profile-name-row .btn:active { transform: scale(.92); transition-duration: .08s; }
+.profile-name-row .btn[aria-busy="true"] { pointer-events: none; }
+/* Spinner contrast inside filled primary follow button */
+.profile-name-row .btn-primary .spinner-sm { border-color: rgba(255,255,255,.45); border-top-color: #fff; }
+
+.profile-skeleton { margin-top: var(--space-2); }
 
 /* Dark mode */
 .dark .profile-cover { border-color: var(--line); }
-.dark .profile-avatar-wrap .avatar { border-color: var(--bg); }
-.dark .stat-item:hover { background: rgba(255,255,255,.04); }
+.dark .profile-avatar-wrap .avatar { border-color: var(--bg-warm); }
+.dark .stat-item:hover { background: var(--card); box-shadow: var(--shadow-sm); }
 .dark .profile-tabs { border-bottom-color: var(--line); }
+
+/* Mobile: stack follow/edit button below name */
+@media (max-width: 480px) {
+  .profile-name-row { flex-direction: column; align-items: flex-start; }
+  .profile-name-row .btn { width: 100%; justify-content: center; }
+  .profile-stats { gap: var(--space-3); flex-wrap: wrap; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .post-list-enter-active, .post-list-leave-active, .post-list-move { transition: none; }

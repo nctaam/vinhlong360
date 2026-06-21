@@ -37,7 +37,7 @@
         </div>
 
         <!-- Create post (Threads style) -->
-        <div v-if="isLoggedIn" class="threads-compose">
+        <div v-if="isLoggedIn" ref="composeEl" class="threads-compose">
           <div class="compose-left">
             <span class="avatar thread-avatar">{{ userInitial }}</span>
           </div>
@@ -53,6 +53,7 @@
             </div>
 
             <textarea
+              ref="composeInputEl"
               v-model="newContent"
               class="compose-input"
               :placeholder="typePlaceholder"
@@ -104,7 +105,7 @@
         </div>
 
         <!-- Main tabs -->
-        <div class="threads-filter">
+        <div class="threads-filter" role="region" aria-label="Bộ lọc bảng tin">
           <button type="button" :class="['threads-tab', { active: activeTab === 'latest' }]" :aria-pressed="activeTab === 'latest'" @click="setTab('latest')">Mới nhất</button>
           <button type="button" :class="['threads-tab', { active: activeTab === 'trending' }]" :aria-pressed="activeTab === 'trending'" @click="setTab('trending')">Nổi bật</button>
           <button type="button" v-if="isLoggedIn" :class="['threads-tab', { active: activeTab === 'bookmarks' }]" :aria-pressed="activeTab === 'bookmarks'" @click="setTab('bookmarks')">
@@ -159,12 +160,20 @@
           v-else-if="activeTab !== 'bookmarks' && !posts.length && !loading && !feedError"
           icon="💬" title="Cộng đồng đang chờ bạn"
           message="Chưa có bài viết nào. Hãy là người đầu tiên chia sẻ!"
-        />
+          hint="Chia sẻ ảnh chuyến đi, đặt câu hỏi, hay để lại đánh giá của bạn."
+        >
+          <template v-if="isLoggedIn" #actions>
+            <button type="button" class="btn btn-primary btn-sm" @click="focusComposer">Viết bài đầu tiên</button>
+          </template>
+          <template v-else #actions>
+            <NuxtLink to="/dang-nhap" class="btn btn-primary btn-sm">Đăng nhập để chia sẻ</NuxtLink>
+          </template>
+        </EmptyState>
 
         <button type="button" v-if="canLoadMore" class="btn btn-ghost threads-load-more" @click="loadMore">
           Xem thêm
         </button>
-        <div v-if="(loading && posts.length) || bookmarksLoading" class="feed-loading" role="status" aria-label="Đang tải bài viết"><div class="spinner"></div></div>
+        <div v-if="(loading && posts.length) || bookmarksLoading" class="feed-loading" role="status" aria-live="polite" aria-label="Đang tải bài viết"><div class="spinner"></div></div>
       </div>
 
       <aside class="threads-sidebar">
@@ -324,6 +333,15 @@ function onScroll() {
 }
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+// ── Composer focus (from empty-state CTA) ──
+const composeEl = ref<HTMLElement | null>(null)
+const composeInputEl = ref<HTMLTextAreaElement | null>(null)
+function focusComposer() {
+  const prefersReduced = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  composeEl.value?.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'center' })
+  nextTick(() => composeInputEl.value?.focus())
 }
 
 function autoGrow(e: Event) {
@@ -582,8 +600,19 @@ useHead({
   min-height: 44px; padding: 0;
 }
 .compose-input::placeholder { color: var(--muted); }
-.threads-compose { transition: background .3s var(--ease-out), border-color .3s var(--ease-out); border-radius: var(--radius-sm); margin: 0 calc(var(--space-2) * -1); padding: var(--space-4) var(--space-2); }
-.threads-compose:focus-within { background: var(--overlay-subtle); border-bottom-color: var(--ink); }
+.threads-compose {
+  transition: background .3s var(--ease-out), border-color .3s var(--ease-out), border-radius .3s var(--ease-out), box-shadow .3s var(--ease-out-expo);
+  border-radius: var(--radius-md); margin: 0 calc(var(--space-2) * -1);
+  padding: var(--space-5) var(--space-3) var(--space-4);
+  background: rgba(var(--accent-rgb), .04);
+  border-bottom: none; box-shadow: var(--shadow-xs);
+}
+.threads-compose:focus-within { background: rgba(var(--accent-rgb), .07); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+/* Composer post-type chips — micro feedback on selection (signature) */
+.post-type-selector { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.post-type-selector .chip-sm { transition: background .2s, color .2s, border-color .2s, transform .3s var(--ease-spring-gentle); }
+.post-type-selector .chip-sm.active { transform: scale(1.04) rotate(-1deg); }
+.post-type-selector .chip-sm:active { transform: scale(.95); transition-duration: .08s; }
 .compose-footer { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); padding-top: var(--space-1); }
 .compose-footer-left { display: flex; align-items: center; gap: var(--space-3); }
 .compose-attach {
@@ -609,7 +638,14 @@ useHead({
 .guest-content p { margin: 0; color: var(--muted); font-size: var(--text-sm); flex: 1; }
 
 /* ── Filter tabs ── */
-.threads-filter { display: flex; border-bottom: .5px solid var(--line); }
+.threads-filter {
+  display: flex; border-bottom: .5px solid var(--line);
+  margin-top: var(--space-5);
+  position: sticky; top: 78px; z-index: 20;
+  background: var(--surface-translucent, var(--bg));
+  backdrop-filter: var(--glass, saturate(160%) blur(12px));
+  -webkit-backdrop-filter: var(--glass, saturate(160%) blur(12px));
+}
 .threads-tab {
   flex: 1; text-align: center; padding: var(--space-3) var(--space-4);
   background: none; border: none; border-bottom: 2px solid transparent;
@@ -658,7 +694,16 @@ useHead({
 .post-list-move { transition: transform .3s var(--ease-spring-gentle); }
 
 /* ── Load more ── */
-.threads-load-more { width: 100%; margin-top: var(--space-2); min-height: 44px; }
+.threads-load-more {
+  width: 100%; margin-top: var(--space-3); min-height: 44px;
+  font-weight: var(--weight-semibold);
+  transition: background .25s var(--ease-out), transform .25s var(--ease-spring-gentle), box-shadow .25s var(--ease-out);
+}
+.threads-load-more:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); }
+.threads-load-more:active { transform: scale(.98); transition-duration: .08s; }
+.threads-load-more:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+/* Section rhythm — quiet divider between compose and feed */
+.type-filter-row + .post-list-container { margin-top: var(--space-1); }
 
 /* ── Sidebar ── */
 .threads-sidebar { position: sticky; top: 78px; display: flex; flex-direction: column; gap: var(--space-4); }
@@ -666,9 +711,10 @@ useHead({
   background: var(--card); border: .5px solid var(--line);
   border-radius: var(--radius-lg); padding: var(--space-4);
   box-shadow: var(--shadow-xs);
-  transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo);
+  transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out);
 }
-.sidebar-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.sidebar-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border, var(--ink)); }
+.sidebar-card:focus-within { border-color: var(--border, var(--ink)); }
 .sidebar-card h3 { margin: 0 0 var(--space-3); font-size: var(--text-sm); font-weight: var(--weight-bold); }
 .sidebar-card p { margin: 0; font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
 
@@ -682,26 +728,43 @@ useHead({
 .sidebar-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
 .sidebar-list li { display: flex; gap: var(--space-3); align-items: flex-start; font-size: var(--text-sm); line-height: var(--leading-snug); padding: var(--space-2); border-radius: var(--radius-sm); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle); }
 .sidebar-list li:hover { background: var(--overlay-subtle); transform: translateX(2px); }
-.sl-icon { font-size: var(--text-lg); flex-shrink: 0; width: 24px; text-align: center; }
+.sl-icon { font-size: var(--text-lg); flex-shrink: 0; width: 24px; text-align: center; transition: transform .3s var(--ease-spring-gentle); }
+.sidebar-list li:hover .sl-icon { transform: scale(1.15); }
 .sl-desc { font-size: var(--text-xs); color: var(--muted); }
 .sidebar-list strong { font-weight: var(--weight-semibold); }
 
 .sidebar-rules-list {
-  padding: 0 0 0 var(--space-4); margin: 0;
+  padding: 0; margin: 0; list-style: none;
+  counter-reset: rule-counter;
   font-size: var(--text-sm); color: var(--ink-secondary);
   display: flex; flex-direction: column; gap: var(--space-2);
   line-height: var(--leading-relaxed);
 }
+.sidebar-rules-list li {
+  counter-increment: rule-counter;
+  display: flex; align-items: flex-start; gap: var(--space-2);
+}
+.sidebar-rules-list li::before {
+  content: counter(rule-counter);
+  flex-shrink: 0;
+  width: 20px; height: 20px; border-radius: var(--radius-full);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: var(--text-xs); font-weight: var(--weight-bold);
+  background: rgba(var(--accent-rgb), .14); color: var(--accent-dark);
+  margin-top: 1px;
+}
 
 /* ── Report card ── */
 .report-entity-card {
-  display: grid; gap: var(--space-3); margin-bottom: 0; padding: var(--space-4);
-  border: .5px solid var(--clay-100); border-radius: var(--radius-lg);
-  background: var(--clay-50); box-shadow: var(--shadow-xs);
+  display: grid; gap: var(--space-3); margin-bottom: 0;
+  padding: var(--space-5) var(--space-4) var(--space-4);
+  border: .5px solid rgba(var(--accent-rgb), .2); border-radius: var(--radius-lg);
+  background: rgba(var(--accent-rgb), .06); box-shadow: var(--shadow-xs);
   animation: slideDown .35s var(--ease-spring-gentle);
   transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo);
 }
 .report-entity-card:focus-within { border-color: var(--accent-dark); box-shadow: 0 0 0 4px rgba(var(--accent-rgb), .1), var(--shadow-sm); }
+.report-entity-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 @keyframes slideDown { from { opacity: 0; transform: translateY(-8px) scale(.99); } }
 .report-entity-card h2 { margin: 2px 0 var(--space-1); font-size: var(--text-base); font-weight: var(--weight-semibold); }
 .report-entity-card p { margin: 0; color: var(--muted); font-size: var(--text-sm); }
@@ -743,18 +806,25 @@ useHead({
 
 /* ── Dark mode ── */
 .dark .sidebar-card { background: var(--card); border-color: var(--line); }
+.dark .sidebar-card:hover { box-shadow: var(--shadow-sm); border-color: rgba(255,255,255,.14); }
 .dark .chip-filter { background: var(--bg-alt); border-color: var(--line); }
 .dark .chip-filter.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .dark .scroll-top-fab { background: var(--card); border-color: rgba(255,255,255,.1); box-shadow: 0 8px 32px rgba(0,0,0,.5); }
 .dark .sidebar-stat:hover { background: rgba(255,255,255,.03); }
 .dark .sidebar-list li:hover { background: rgba(255,255,255,.03); }
-.dark .report-entity-card { background: rgba(232,163,61,.06); border-color: rgba(232,163,61,.15); }
+.dark .report-entity-card { background: rgba(232,163,61,.08); border-color: rgba(232,163,61,.22); }
 .dark .compose-attach:hover { background: rgba(255,255,255,.08); }
+.dark .threads-compose { background: rgba(232,163,61,.06); }
+.dark .threads-compose:focus-within { background: rgba(232,163,61,.1); }
+.dark .threads-filter { background: var(--surface-translucent, rgba(0,0,0,.72)); }
+.dark .sidebar-rules-list li::before { background: rgba(232,163,61,.2); color: var(--accent); }
 
 @media (max-width: 820px) {
   .threads-layout { grid-template-columns: 1fr; }
   .threads-sidebar { display: none; }
   .threads-page { max-width: 100%; }
+  .threads-feed { padding-inline: var(--space-1); }
+  .threads-compose { padding-inline: var(--space-3); }
   .scroll-top-fab { bottom: var(--space-4); right: var(--space-4); }
 }
 
@@ -769,8 +839,17 @@ useHead({
   .sidebar-card { transition: none; }
   .sidebar-card:hover { transform: none; }
   .sidebar-list li:hover { transform: none; }
+  .sidebar-list li:hover .sl-icon { transform: none; }
   .img-preview-item:hover { transform: none; }
   .compose-attach:hover { transform: none; }
+  .compose-attach:active { transform: none; }
   .threads-tab::after { transition: none; }
+  .post-type-selector .chip-sm.active { transform: none; }
+  .post-type-selector .chip-sm:active { transform: none; }
+  .chip-filter:active { transform: none; }
+  .threads-load-more:hover { transform: none; }
+  .threads-load-more:active { transform: none; }
+  .scroll-top-fab:hover { transform: none; }
+  .scroll-top-fab:active { transform: none; }
 }
 </style>

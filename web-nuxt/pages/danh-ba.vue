@@ -60,13 +60,14 @@
       </label>
     </section>
 
-    <p class="dir-disclaimer">⚠️ Thông tin mang tính tham khảo và có thể thay đổi sau sắp xếp đơn vị hành chính —
+    <p class="dir-disclaimer"><strong class="dir-disclaimer-mark" aria-hidden="true">⚠️</strong> Thông tin mang tính tham khảo và có thể thay đổi sau sắp xếp đơn vị hành chính —
       vui lòng kiểm chứng với cơ quan trước khi sử dụng.
-      <NuxtLink to="/lien-he">Báo thông tin sai</NuxtLink>.</p>
+      <NuxtLink to="/lien-he" class="dir-disclaimer-link">Báo thông tin sai</NuxtLink>.</p>
 
     <div v-if="!wardId" class="empty-hint">
-      <span class="empty-hint-icon">🏘️</span>
-      <p>Hãy chọn một xã/phường để xem danh bạ cơ quan hành chính.</p>
+      <span class="empty-hint-halo" aria-hidden="true"><span class="empty-hint-icon">🏘️</span></span>
+      <h3 class="empty-hint-title">Chọn một xã/phường</h3>
+      <p>Chọn khu vực rồi chọn xã/phường ở trên để xem danh bạ cơ quan hành chính.</p>
     </div>
     <template v-else>
       <p class="ward-hub-link">
@@ -74,9 +75,10 @@
       </p>
       <div v-if="loading" class="fac-skeleton" role="status" aria-label="Đang tải dữ liệu" aria-busy="true">
         <div v-for="i in 3" :key="i" class="fac-sk-item">
-          <div class="sk-bar sk-bar--sm"></div>
+          <div class="sk-bar sk-bar--badge"></div>
           <div class="sk-bar sk-bar--lg sk-bar--wide"></div>
           <div class="sk-bar sk-bar--mid"></div>
+          <div class="sk-bar sk-bar--sm"></div>
         </div>
       </div>
       <ul v-else-if="facilities.length" class="fac-list">
@@ -88,11 +90,12 @@
           <div v-if="attr(f, 'address')" class="fac-row">📍 {{ attr(f, 'address') }}</div>
           <div v-if="attr(f, 'phone')" class="fac-row">📞 <a :href="`tel:${attr(f, 'phone')}`">{{ attr(f, 'phone') }}</a></div>
           <div v-if="attr(f, 'hours')" class="fac-row">🕒 {{ attr(f, 'hours') }}</div>
-          <small v-if="f.source?.url || f.updatedAt" class="fac-src">
+          <footer v-if="f.source?.url || f.updatedAt" class="fac-src">
+            <span v-if="isOfficialSource(f)" class="fac-verified" title="Nguồn chính thống">✓</span>
             Nguồn: <a v-if="f.source?.url" :href="f.source.url" target="_blank" rel="nofollow noopener">{{ f.source?.title || 'nguồn' }}</a>
             <span v-else>{{ f.source?.title }}</span>
-            <time v-if="f.updatedAt" :datetime="f.updatedAt"> · cập nhật {{ f.updatedAt }}</time>
-          </small>
+            <time v-if="f.updatedAt" :datetime="f.updatedAt"> · cập nhật {{ relativeUpdated(f.updatedAt) }}</time>
+          </footer>
           <button type="button" class="fac-report" :disabled="reported[f.id]" :aria-expanded="reportingId === f.id" @click="openReport(f)">
             {{ reported[f.id] ? '✓ Đã gửi báo sai' : '⚠️ Báo thông tin sai' }}
           </button>
@@ -176,6 +179,24 @@ const loading = ref(false)
 function attr(f: Entity, k: string) { return (f.attributes || {})[k] }
 function kindMeta(f: Entity) { return OFFICE_KIND[attr(f, 'office_kind')] || OFFICE_KIND.khac }
 
+// Only flag as verified when the source URL is a genuine official gov domain — never fabricate trust (Track-H)
+function isOfficialSource(f: Entity) {
+  const url = f.source?.url || ''
+  return /\.gov\.vn(\/|$|\?|#)/i.test(url)
+}
+// Relative "x ngày trước"; falls back to the raw stored value if unparseable
+function relativeUpdated(raw: string) {
+  if (!raw) return ''
+  const t = Date.parse(raw)
+  if (Number.isNaN(t)) return raw
+  const days = Math.floor((Date.now() - t) / 86400000)
+  if (days <= 0) return 'hôm nay'
+  if (days === 1) return 'hôm qua'
+  if (days < 30) return `${days} ngày trước`
+  if (days < 365) return `${Math.floor(days / 30)} tháng trước`
+  return `${Math.floor(days / 365)} năm trước`
+}
+
 const reported = ref<Record<string, boolean>>({})
 const reportingId = ref('')
 const reportDetail = ref('')
@@ -240,37 +261,50 @@ useHead(() => ({
 
 <style scoped>
 .dir-page { max-width: 920px; }
-.empty-hint { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-8) var(--space-4); color: var(--muted); text-align: center; }
-.empty-hint-icon { font-size: var(--text-4xl, 2.5rem); }
-.empty-hint p { margin: 0; font-size: var(--text-sm); }
+.empty-hint { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-8) var(--space-4); color: var(--muted); text-align: center; background: radial-gradient(120% 100% at 50% 0%, rgba(var(--primary-rgb), .06), transparent 70%); border: .5px solid var(--line); border-radius: var(--radius-lg); }
+.empty-hint-halo { display: inline-flex; align-items: center; justify-content: center; width: 96px; height: 96px; border-radius: 50%; background: radial-gradient(circle, rgba(var(--primary-rgb), .14), rgba(var(--primary-rgb), .04) 70%); margin-bottom: var(--space-1); }
+.empty-hint-icon { font-size: 2.6rem; line-height: 1; }
+.empty-hint-title { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--ink); }
+.empty-hint p { margin: 0; font-size: var(--text-sm); max-width: 38ch; }
 .muted { color: var(--muted); }
-.ward-pick { display: flex; flex-direction: column; gap: var(--space-2); max-width: 420px; }
+.ward-pick { display: flex; flex-direction: column; gap: var(--space-2); max-width: 420px; padding: var(--space-4); border: .5px solid var(--line); border-radius: var(--radius-lg); background: var(--card); box-shadow: var(--shadow-xs); }
+.ward-pick .control-label { font-weight: var(--weight-semibold); }
 .ward-pick select { padding: var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-md); font-size: 1rem; min-height: 44px; background: var(--bg-alt); transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo); }
-.ward-pick select:focus-visible { outline: none; border-color: var(--primary-fg); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .12), var(--shadow-xs); }
-.dir-disclaimer { background: rgba(var(--accent-rgb), .06); border: .5px solid rgba(var(--accent-rgb), .2); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); font-size: var(--text-sm); margin: var(--space-3) 0 var(--space-5); line-height: var(--leading-relaxed); }
+.ward-pick select:focus-visible { outline: none; border-color: var(--primary-fg); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .15), var(--shadow-xs); }
+.dir-disclaimer { background: rgba(var(--accent-rgb), .06); border: .5px solid rgba(var(--accent-rgb), .2); border-left: 2px solid var(--accent); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); font-size: var(--text-sm); margin: var(--space-6) 0 var(--space-5); line-height: var(--leading-relaxed); }
+.dir-disclaimer-mark { font-style: normal; }
+.dir-disclaimer-link { color: var(--primary-fg); font-weight: var(--weight-semibold); }
+.dir-disclaimer-link:hover { text-decoration: underline; }
 .fac-list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-3); }
-.fac { border: .5px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-4); background: var(--card); box-shadow: var(--shadow-xs); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
-.fac:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); }
-.fac-head { display: flex; flex-direction: column; gap: 2px; margin-bottom: var(--space-2); }
-.fac-kind { font-size: var(--text-xs); color: var(--primary-fg); font-weight: var(--weight-semibold); }
+.fac { position: relative; border: .5px solid var(--line); border-left: 4px solid var(--secondary-fg); border-radius: var(--radius-lg); padding: var(--space-5); background: linear-gradient(180deg, rgba(var(--primary-rgb), .04), transparent 60%), var(--card); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
+.fac:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); border-left-color: var(--secondary-fg); }
+.fac-head { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); margin-bottom: var(--space-2); }
+.fac-kind { align-self: flex-start; font-size: var(--text-xs); color: var(--primary-fg); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide, .04em); background: rgba(var(--primary-rgb), .12); border-radius: var(--radius-sm); padding: 2px var(--space-2); line-height: 1.5; }
 .fac-row { font-size: var(--text-sm); margin: 2px 0; }
 .fac-row a { transition: color .3s var(--ease-out); }
 .fac-row a:hover { color: var(--primary-fg); }
-.fac-row a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.fac-src { color: var(--muted); display: block; margin-top: var(--space-2); font-size: var(--text-xs); }
+.fac-row a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-sm); }
+/* Phone as accessible tel: target — full 44px tap area, brand colour on hover */
+.fac-row a[href^="tel:"] { display: inline-flex; align-items: center; min-height: 44px; color: var(--primary-fg); font-weight: var(--weight-semibold); border-radius: var(--radius-sm); }
+.fac-row a[href^="tel:"]:hover { color: var(--primary-fg-strong, var(--primary-fg)); text-decoration: underline; }
+.fac-src { color: var(--muted); display: block; margin: var(--space-3) calc(-1 * var(--space-5)) 0; padding: var(--space-2) var(--space-5); font-size: var(--text-xs); background: var(--overlay-subtle, rgba(0,0,0,.02)); border-top: .5px solid var(--line); }
+.fac-src a { color: var(--ink-secondary); text-decoration: underline; transition: color .3s var(--ease-out); }
+.fac-src a:hover { color: var(--primary-fg); }
+.fac-verified { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; margin-right: 2px; border-radius: 50%; background: rgba(var(--secondary-rgb, 22,163,74), .14); color: var(--success, #16a34a); font-weight: var(--weight-bold); font-size: .65rem; vertical-align: middle; }
 .ward-hub-link { margin: 0 0 var(--space-4); }
 .ward-hub-link a { color: var(--primary-fg); font-weight: var(--weight-semibold); transition: opacity .3s var(--ease-out); }
 .ward-hub-link a:active { opacity: .7; }
-.fac-report { margin-top: var(--space-2); background: none; border: none; padding: 4px 0; color: var(--muted); font-size: var(--text-xs); cursor: pointer; text-decoration: underline; transition: color .3s var(--ease-out); min-height: 44px; display: inline-flex; align-items: center; }
-.fac-report:hover:not(:disabled) { color: var(--primary-fg); }
+.fac-report { margin-top: var(--space-2); background: none; border: none; padding: var(--space-2) var(--space-3); margin-left: calc(-1 * var(--space-3)); color: var(--muted); font-size: var(--text-xs); cursor: pointer; text-decoration: underline; transition: color .3s var(--ease-out), background .3s var(--ease-out); min-height: 44px; border-radius: var(--radius-sm); display: inline-flex; align-items: center; }
+.fac-report:hover:not(:disabled) { color: var(--primary-fg); background: rgba(var(--primary-rgb), .06); }
 .fac-report:active:not(:disabled) { transform: scale(.97); }
 .fac-report:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .fac-report:disabled { cursor: default; text-decoration: none; color: var(--success, #16a34a); }
 .fac-report-form { margin-top: var(--space-2); display: flex; flex-direction: column; gap: var(--space-2); }
 .fac-report-actions { display: flex; gap: var(--space-2); }
 .fac-skeleton { display: grid; gap: var(--space-3); }
-.fac-sk-item { border: .5px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-4); background: var(--card); display: flex; flex-direction: column; gap: var(--space-2); }
+.fac-sk-item { border: .5px solid var(--line); border-left: 4px solid var(--secondary-fg); border-radius: var(--radius-lg); padding: var(--space-5); background: var(--card); display: flex; flex-direction: column; gap: var(--space-2); }
 .sk-bar { height: 10px; border-radius: var(--radius-sm); background: linear-gradient(110deg, var(--bg-alt) 30%, var(--card) 50%, var(--bg-alt) 70%); background-size: 200% 100%; animation: shimmer 1.6s infinite linear; }
+.sk-bar--badge { width: 70px; height: 16px; border-radius: var(--radius-sm); }
 .sk-bar--sm { width: 35%; }
 .sk-bar--lg { height: 14px; }
 .sk-bar--wide { width: 65%; }
@@ -278,14 +312,16 @@ useHead(() => ({
 @media (prefers-reduced-motion: reduce) { .sk-bar { animation: none; } }
 
 /* Dark mode */
-.dark .fac { background: var(--bg-alt); border-color: var(--line); }
-.dark .fac:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.1); }
-.dark .dir-disclaimer { background: rgba(var(--accent-rgb), .08); border-color: rgba(var(--accent-rgb), .15); }
+.dark .fac { background: var(--bg-alt); border-color: var(--line); border-left-color: var(--secondary-fg); }
+.dark .fac:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.1); border-left-color: var(--secondary-fg); }
+.dark .dir-disclaimer { background: rgba(var(--accent-rgb), .08); border-color: rgba(var(--accent-rgb), .15); border-left-color: var(--accent); }
 .dark .ward-pick select { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
 .dark .ward-pick select:focus-visible { border-color: var(--primary-fg); }
-.dark .empty-hint { color: var(--ink-tertiary); }
+.dark .empty-hint { color: var(--muted); border-color: rgba(255,255,255,.08); background: radial-gradient(120% 100% at 50% 0%, rgba(var(--primary-rgb), .1), transparent 70%); }
+.dark .empty-hint-title { color: var(--ink); }
+.dark .fac-src { background: rgba(255,255,255,.03); border-top-color: rgba(255,255,255,.08); }
 .dark .fac-report:hover:not(:disabled) { color: var(--primary); }
-.dark .fac-sk-item { background: var(--bg-alt); border-color: var(--line); }
+.dark .fac-sk-item { background: var(--bg-alt); border-color: var(--line); border-left-color: var(--secondary-fg); }
 
 /* Reduced motion — full */
 @media (prefers-reduced-motion: reduce) {
