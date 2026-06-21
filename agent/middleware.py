@@ -331,18 +331,35 @@ error_tracker = ErrorTracker()
 # ══════════════════════════════════════════════════
 
 ADMIN_API_KEY = os.environ.get("ADMIN_API_KEY", "")
+# True chỉ khi key được sinh tạm ở DEV — server startup mới in giá trị cho dev xài.
+ADMIN_KEY_AUTOGEN = False
+_IS_PRODUCTION = os.environ.get("ENVIRONMENT", "development").strip().lower() == "production"
 
 def _generate_default_key():
     """Generate a default admin key if not set in .env."""
     return secrets.token_hex(24)
 
 if not ADMIN_API_KEY:
-    ADMIN_API_KEY = _generate_default_key()
-    logger.warn("ADMIN_API_KEY not set in .env — generated temporary key (check server startup output)")
+    if _IS_PRODUCTION:
+        # Fail-closed: KHÔNG bao giờ auto-sinh secret ở production. Admin auth tắt
+        # (verify_admin_key luôn False) tới khi đặt ADMIN_API_KEY thật trong .env.
+        logger.error(
+            "ADMIN_API_KEY not set in production — admin endpoints DISABLED (fail-closed). "
+            "Set ADMIN_API_KEY in .env."
+        )
+    else:
+        ADMIN_API_KEY = _generate_default_key()
+        ADMIN_KEY_AUTOGEN = True
+        logger.warn(
+            "ADMIN_API_KEY not set — generated a temporary DEV key (printed at server startup). "
+            "Set ADMIN_API_KEY in .env for a stable key."
+        )
 
 
 def verify_admin_key(request) -> bool:
     """Verify admin API key from the X-Admin-Key header."""
+    if not ADMIN_API_KEY:  # fail-closed nếu chưa cấu hình (vd prod thiếu key)
+        return False
     key = request.headers.get("X-Admin-Key")
     if not key:
         return False

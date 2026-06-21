@@ -3329,8 +3329,15 @@ if __name__ == "__main__":
     print(f"  Level 7 (Self-Evolving):")
     print(f"    LLM Judge:     {'✓' if HAS_LLM_JUDGE else '✗'}  (Quality Eval)")
     print(f"    Dynamic Agents:{'✓' if HAS_DYNAMIC_AGENTS else '✗'}  (Self-Creating)")
-    from middleware import ADMIN_API_KEY
-    print(f"  Admin Key:   {ADMIN_API_KEY[:12]}... (set ADMIN_API_KEY in .env)")
+    from middleware import ADMIN_API_KEY, ADMIN_KEY_AUTOGEN
+    if ADMIN_KEY_AUTOGEN:
+        # DEV-only: in full key đã auto-sinh để dev xài (log cục bộ). KHÔNG bao giờ
+        # in key đã cấu hình từ .env (tránh rò qua log container ở prod).
+        print(f"  Admin Key:   {ADMIN_API_KEY}  (DEV auto-gen — set ADMIN_API_KEY in .env)")
+    elif ADMIN_API_KEY:
+        print("  Admin Key:   (configured via .env)")
+    else:
+        print("  Admin Key:   (NOT SET — admin endpoints disabled)")
     print(f"  URL:         http://localhost:8360")
     print("=" * 64)
     uvicorn.run(app, host="0.0.0.0", port=8360)
