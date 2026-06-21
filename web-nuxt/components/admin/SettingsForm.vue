@@ -9,6 +9,7 @@
       <template v-if="field.input_type === 'toggle'">
         <label class="sf-toggle">
           <input :id="`sf-${field.key}`" type="checkbox" :checked="!!localValues[field.key]"
+            :aria-label="`${field.label}: ${localValues[field.key] ? 'Bật' : 'Tắt'}`"
             @change="localValues[field.key] = ($event.target as HTMLInputElement).checked" />
           <span class="sf-toggle-track"><span class="sf-toggle-thumb"></span></span>
           <span class="sf-toggle-label">{{ localValues[field.key] ? 'Bật' : 'Tắt' }}</span>
@@ -70,13 +71,15 @@
       </template>
     </div>
 
-    <div class="sf-actions">
+    <div class="sf-actions" :class="{ 'sf-actions-dirty': isDirty && !saving }">
       <button type="submit" class="btn-primary sf-save" :disabled="saving">
-        {{ saving ? 'Đang lưu...' : 'Lưu thay đổi' }}
+        <span v-if="saving" class="sf-spinner" aria-hidden="true"></span>
+        {{ saving ? 'Đang lưu...' : (changedCount > 0 ? `Lưu ${changedCount} thay đổi` : 'Lưu thay đổi') }}
       </button>
       <button type="button" v-if="!hideReset" class="btn-outline sf-reset" :disabled="saving" @click="onReset">
         Đặt lại mặc định
       </button>
+      <span v-if="isDirty && !saving" class="sf-dirty-badge" role="status">Chưa lưu</span>
     </div>
   </form>
 </template>
@@ -134,6 +137,9 @@ const saving = ref(false)
 const localValues = ref<Record<string, any>>({})
 const jsonTexts = ref<Record<string, string>>({})
 const jsonErrors = ref<Record<string, string>>({})
+// Snapshot of values at load/save time, used purely for dirty-state display.
+// Does NOT participate in the save/data path.
+const initialSnapshot = ref<string>('{}')
 
 function initValues() {
   const vals: Record<string, any> = {}
@@ -153,7 +159,33 @@ function initValues() {
   localValues.value = vals
   jsonTexts.value = jTexts
   jsonErrors.value = {}
+  initialSnapshot.value = snapshotOf(vals, jTexts)
 }
+
+// Build a stable string snapshot of the editable state for dirty comparison.
+function snapshotOf(vals: Record<string, any>, jTexts: Record<string, string>): string {
+  try {
+    const out: Record<string, any> = {}
+    for (const f of props.fields) {
+      out[f.key] = isJsonLike(f) ? (jTexts[f.key] ?? '') : vals[f.key]
+    }
+    return JSON.stringify(out)
+  } catch { return '' }
+}
+
+const currentSnapshot = computed(() => snapshotOf(localValues.value, jsonTexts.value))
+const isDirty = computed(() => currentSnapshot.value !== initialSnapshot.value)
+const changedCount = computed(() => {
+  try {
+    const before = JSON.parse(initialSnapshot.value || '{}')
+    const after = JSON.parse(currentSnapshot.value || '{}')
+    let n = 0
+    for (const f of props.fields) {
+      if (JSON.stringify(before[f.key]) !== JSON.stringify(after[f.key])) n++
+    }
+    return n
+  } catch { return 0 }
+})
 
 watch(() => [props.fields, props.objectValue], initValues, { immediate: true, deep: true })
 
@@ -205,6 +237,7 @@ async function onSave() {
         body: { updates },
       })
     }
+    initialSnapshot.value = snapshotOf(localValues.value, jsonTexts.value)
     showToast('Đã lưu cài đặt', 'success')
     emit('saved')
   } catch (e: any) {
@@ -265,7 +298,7 @@ async function onReset() {
 }
 .sf-input::placeholder, .sf-textarea::placeholder { color: var(--muted); opacity: .6; }
 .sf-textarea { resize: vertical; min-height: 88px; font-family: inherit; line-height: 1.5; }
-.sf-json { font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace; font-size: .8rem; min-height: 160px; line-height: 1.6; tab-size: 2; }
+.sf-json { font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace; font-size: .8rem; min-height: 160px; line-height: 1.5; tab-size: 2; }
 .sf-json-invalid { border-color: #D94F3D !important; box-shadow: 0 0 0 3px rgba(217,79,61,.08) !important; }
 .sf-json-error { color: #D94F3D; font-size: .75rem; margin-top: 4px; }
 
@@ -359,6 +392,24 @@ async function onReset() {
 .sf-reset:active:not(:disabled) { transform: scale(.97); }
 .sf-reset:focus-visible { outline: 2px solid #D94F3D; outline-offset: 2px; }
 
+/* ── Save spinner ── */
+.sf-save { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.sf-spinner {
+  width: 16px; height: 16px; flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%;
+  animation: sf-spin .7s linear infinite;
+}
+@keyframes sf-spin { to { transform: rotate(360deg); } }
+
+/* ── Dirty / unsaved indicator ── */
+.sf-actions-dirty { border-top-color: var(--primary, #219653); }
+.sf-dirty-badge {
+  display: inline-flex; align-items: center; align-self: center;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: .72rem; font-weight: 600; color: var(--primary, #219653);
+  background: rgba(33,150,83,.1); border: .5px solid rgba(33,150,83,.25);
+}
+
 /* ── Dark ── */
 .dark .sf-input, .dark .sf-textarea { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
 .dark .sf-color-picker { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
@@ -366,6 +417,7 @@ async function onReset() {
 .dark .sf-color-clear { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
 .dark .sf-toggle-track { background: rgba(255,255,255,.15); }
 .dark .sf-toggle-thumb { box-shadow: 0 1px 4px rgba(0,0,0,.35); }
+.dark .sf-dirty-badge { color: #5fcf8a; background: rgba(33,150,83,.18); border-color: rgba(95,207,138,.3); }
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
@@ -373,5 +425,6 @@ async function onReset() {
   .sf-save, .sf-reset, .sf-color-clear, .sf-toggle-track, .sf-toggle-thumb { transition: none; }
   .sf-save:hover:not(:disabled), .sf-save:active:not(:disabled),
   .sf-reset:active:not(:disabled), .sf-color-clear:active { transform: none; }
+  .sf-spinner { animation: none; }
 }
 </style>

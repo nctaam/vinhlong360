@@ -11,7 +11,11 @@
     </div>
 
     <div class="admin-toolbar">
-      <input v-model="search" class="input" placeholder="Tìm entity…" aria-label="Tìm entity" @input="debounceFetch" />
+      <div class="ent-search-wrap">
+        <input v-model="search" class="input" placeholder="Tìm entity…" aria-label="Tìm entity" @input="debounceFetch" @keyup.escape="clearSearch" />
+        <button v-if="search" type="button" class="ent-search-clear" aria-label="Xóa tìm kiếm" @click="clearSearch">&times;</button>
+        <span v-if="searching" class="ent-searching" aria-live="polite">Đang tìm…</span>
+      </div>
       <select v-model="typeFilter" class="input admin-select-filter" @change="fetchEntities(true)">
         <option value="">Tất cả loại</option>
         <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
@@ -25,7 +29,21 @@
       <button type="button" class="btn btn-outline btn-sm" @click="selected = new Set()">Bỏ chọn</button>
     </div>
 
-    <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
+    <div v-if="loadError && !loading" class="ent-error-banner" role="alert">
+      <span>Không thể tải danh sách entity.</span>
+      <button type="button" class="btn btn-outline btn-sm" @click="fetchEntities()">Thử lại</button>
+    </div>
+
+    <div v-if="loading" class="admin-loading" role="status" aria-label="Đang tải">
+      <div class="ent-skeleton" aria-hidden="true">
+        <div v-for="n in 6" :key="n" class="ent-skel-row">
+          <span class="skeleton ent-skel-check"></span>
+          <span class="skeleton skeleton-text ent-skel-id"></span>
+          <span class="skeleton skeleton-text ent-skel-name"></span>
+          <span class="skeleton skeleton-text ent-skel-type"></span>
+        </div>
+      </div>
+    </div>
     <template v-else>
       <div class="admin-table-wrap">
       <table class="admin-table">
@@ -40,7 +58,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="e in entities" :key="e.id" :class="{ 'row-selected': selected.has(e.id) }">
+          <tr v-for="e in entities" :key="e.id" :class="{ 'row-selected': selected.has(e.id), 'row-acting': acting === e.id }">
             <td><input type="checkbox" :checked="selected.has(e.id)" @change="toggleSel(e.id)" :aria-label="`Chọn ${e.name}`" /></td>
             <td class="admin-td-id">{{ e.id }}</td>
             <td>
@@ -63,7 +81,14 @@
             <td colspan="6" class="admin-empty-row">
               <div class="ent-empty">
                 <span class="ent-empty-icon">&#128269;</span>
-                <span>Không tìm thấy entity nào.</span>
+                <template v-if="search">
+                  <span>Không có kết quả cho “{{ search }}”.</span>
+                  <button type="button" class="btn btn-outline btn-sm" @click="clearSearch">Xóa tìm kiếm</button>
+                </template>
+                <template v-else>
+                  <span>Chưa có entity nào.</span>
+                  <button type="button" class="btn btn-primary btn-sm" @click="openCreate">+ Tạo mới</button>
+                </template>
               </div>
             </td>
           </tr>
@@ -71,9 +96,11 @@
       </table>
       </div>
 
-      <nav class="admin-pagination" role="navigation" aria-label="Phân trang">
+      <nav v-if="entities.length || page > 1" class="admin-pagination" role="navigation" aria-label="Phân trang">
         <button type="button" :disabled="page <= 1" @click="page--; fetchEntities()">← Trước</button>
-        <span class="admin-page-info">Trang {{ page }}</span>
+        <span class="admin-page-info">
+          Trang {{ page }}<span v-if="entities.length < limit" class="ent-page-hint"> · trang cuối</span>
+        </span>
         <button type="button" :disabled="entities.length < limit" @click="page++; fetchEntities()">Sau →</button>
       </nav>
     </template>
@@ -84,13 +111,30 @@
       <div class="modal admin-modal-md">
         <h2>{{ editingEntity ? 'Sửa Entity' : 'Tạo Entity' }}</h2>
         <div class="admin-form-col">
-          <input v-model="form.id" class="input" placeholder="ID (slug)" aria-label="ID (slug)" :disabled="!!editingEntity" />
-          <input v-model="form.name" class="input" placeholder="Tên" aria-label="Tên entity" />
-          <select v-model="form.type" class="input" aria-label="Loại entity">
-            <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
-          </select>
-          <input v-model="form.placeId" class="input" placeholder="Place ID (xã/phường)" aria-label="Place ID" />
-          <textarea v-model="form.summary" class="input admin-textarea" placeholder="Tóm tắt" aria-label="Tóm tắt" rows="3"></textarea>
+          <div class="ent-field">
+            <label class="form-label" for="ent-id">ID (slug)</label>
+            <input id="ent-id" v-model="form.id" class="input" :class="{ error: fieldErrors.id }" placeholder="ID (slug)" aria-label="ID (slug)" :disabled="!!editingEntity" @input="clearFieldError('id')" />
+            <span v-if="fieldErrors.id" class="form-error">{{ fieldErrors.id }}</span>
+          </div>
+          <div class="ent-field">
+            <label class="form-label" for="ent-name">Tên</label>
+            <input id="ent-name" v-model="form.name" class="input" :class="{ error: fieldErrors.name }" placeholder="Tên" aria-label="Tên entity" @input="clearFieldError('name')" />
+            <span v-if="fieldErrors.name" class="form-error">{{ fieldErrors.name }}</span>
+          </div>
+          <div class="ent-field">
+            <label class="form-label" for="ent-type">Loại</label>
+            <select id="ent-type" v-model="form.type" class="input" aria-label="Loại entity">
+              <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
+            </select>
+          </div>
+          <div class="ent-field">
+            <label class="form-label" for="ent-place">Place ID (xã/phường)</label>
+            <input id="ent-place" v-model="form.placeId" class="input" placeholder="Place ID (xã/phường)" aria-label="Place ID" />
+          </div>
+          <div class="ent-field">
+            <label class="form-label" for="ent-summary">Tóm tắt</label>
+            <textarea id="ent-summary" v-model="form.summary" class="input admin-textarea" placeholder="Tóm tắt" aria-label="Tóm tắt" rows="3"></textarea>
+          </div>
           <!-- Quản lý ảnh (chỉ khi sửa) -->
           <div v-if="editingEntity" class="img-mgr">
             <strong class="admin-label">Ảnh ({{ (form.images || []).length }}/10)</strong>
@@ -161,11 +205,20 @@ const loading = ref(true)
 const acting = ref<string | null>(null)
 const saving = ref(false)
 const bulkBusy = ref(false)
+// Additive UX state — does not alter save/data path
+const loadError = ref(false)
+const searching = ref(false)
+const fieldErrors = ref<Record<string, string>>({})
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 function debounceFetch() {
   if (debounceTimer) clearTimeout(debounceTimer)
+  searching.value = true
   debounceTimer = setTimeout(() => fetchEntities(true), 300)
+}
+function clearSearch() {
+  search.value = ''
+  fetchEntities(true)
 }
 onUnmounted(() => { if (debounceTimer) clearTimeout(debounceTimer) })
 
@@ -178,16 +231,20 @@ async function fetchEntities(reset = false) {
     if (typeFilter.value) params.set('type', typeFilter.value)
     const res = await $fetch<Record<string, unknown>>(`/admin-api/entities?${params}`, { headers: authHeaders() })
     entities.value = res.entities || res || []
+    loadError.value = false
   } catch {
+    loadError.value = true
     showToast('Không thể tải danh sách entity', 'error')
   }
   loading.value = false
+  searching.value = false
 }
 
 function openCreate() {
   editingEntity.value = null
   form.value = { id: '', name: '', type: 'experience', placeId: '', summary: '', images: [] }
   newImage.value = ''
+  fieldErrors.value = {}
   showModal.value = true
 }
 
@@ -197,6 +254,7 @@ function openEdit(e: Entity) {
                  images: Array.isArray(e.images) ? [...e.images] : [] }
   newImage.value = ''
   newRel.value = { to_id: '', type: 'related_to' }
+  fieldErrors.value = {}
   fetchRels(e.id)
   showModal.value = true
 }
@@ -231,9 +289,26 @@ async function removeRel(r: Record<string, unknown>) {
   } catch { showToast('Xóa quan hệ lỗi', 'error') }
 }
 
+function clearFieldError(key: string) {
+  if (fieldErrors.value[key]) {
+    const next = { ...fieldErrors.value }
+    delete next[key]
+    fieldErrors.value = next
+  }
+}
+function validateForm(): boolean {
+  const errs: Record<string, string> = {}
+  if (!String(form.value.name || '').trim()) errs.name = 'Tên không được để trống'
+  if (!editingEntity.value && !String(form.value.id || '').trim()) errs.id = 'ID không được để trống'
+  fieldErrors.value = errs
+  return Object.keys(errs).length === 0
+}
 async function saveEntity() {
-  if (!form.value.name?.trim()) { showToast('Tên không được để trống', 'error'); return }
-  if (!editingEntity.value && !form.value.id?.trim()) { showToast('ID không được để trống', 'error'); return }
+  // Field-level errors (additive); keep existing toast guards as fallback
+  if (!validateForm()) {
+    showToast(Object.values(fieldErrors.value)[0] || 'Vui lòng kiểm tra biểu mẫu', 'error')
+    return
+  }
   saving.value = true
   try {
     if (editingEntity.value) {
@@ -325,7 +400,17 @@ async function deleteEntity(id: string) {
   acting.value = null
 }
 
-onMounted(() => fetchEntities())
+// Esc clears bulk selection (only when modal is closed) — additive
+function onKeydown(ev: KeyboardEvent) {
+  if (ev.key === 'Escape' && !showModal.value && selected.value.size) {
+    selected.value = new Set()
+  }
+}
+onMounted(() => {
+  fetchEntities()
+  window.addEventListener('keydown', onKeydown)
+})
+onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 </script>
 
 <style scoped>
@@ -383,13 +468,70 @@ onMounted(() => fetchEntities())
 /* ── Image manager ── */
 .img-mgr { border-top: .5px solid var(--line); padding-top: var(--space-3); margin-top: var(--space-1); }
 .img-row { display: flex; align-items: center; gap: var(--space-2); margin: var(--space-2) 0; }
-.img-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; flex: 0 0 40px; }
+.img-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; flex: 0 0 40px; border: .5px solid var(--line); transition: transform .2s var(--ease-out, ease); }
+.img-row:hover .img-thumb { transform: scale(1.06); }
 .img-url { flex: 1; font-size: .78rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── Search box (clear + searching feedback) ── */
+.ent-search-wrap { position: relative; display: flex; align-items: center; flex: 1 1 220px; min-width: 180px; }
+.ent-search-wrap .input { width: 100%; padding-right: 32px; }
+.ent-search-clear {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  width: 22px; height: 22px; border: none; background: transparent;
+  font-size: 1.1rem; line-height: 1; color: var(--muted); cursor: pointer;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+}
+.ent-search-clear:hover { background: var(--bg-alt); color: var(--ink); }
+.ent-search-clear:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.ent-searching {
+  position: absolute; left: 0; top: calc(100% + 2px);
+  font-size: .72rem; color: var(--muted); opacity: .8;
+  animation: ent-fade-in .2s var(--ease-out, ease);
+}
+@keyframes ent-fade-in { from { opacity: 0; } }
+
+/* ── Error banner ── */
+.ent-error-banner {
+  display: flex; align-items: center; gap: var(--space-3);
+  margin: var(--space-3) 0; padding: var(--space-3) var(--space-4);
+  background: var(--error-bg); border: .5px solid var(--error);
+  border-radius: 10px; font-size: .88rem; color: var(--error);
+}
+
+/* ── Skeleton loading rows ── */
+.ent-skeleton { display: flex; flex-direction: column; gap: var(--space-3); width: 100%; padding: var(--space-2) 0; }
+.ent-skel-row { display: flex; align-items: center; gap: var(--space-4); }
+.ent-skel-check { width: 18px; height: 18px; border-radius: 4px; flex: 0 0 18px; }
+.skeleton-text.ent-skel-id { width: 64px; margin: 0; }
+.skeleton-text.ent-skel-name { flex: 1; max-width: 320px; margin: 0; }
+.skeleton-text.ent-skel-type { width: 90px; margin: 0; }
+
+/* ── Acting (deleting) row overlay ── */
+.row-acting td { opacity: .5; pointer-events: none; transition: opacity .2s; }
+
+/* ── Modal form fields (labels + spacing) ── */
+.admin-form-col { gap: var(--space-4); }
+.ent-field { display: flex; flex-direction: column; gap: var(--space-1); }
+.ent-field .form-error { margin-top: 2px; }
+
+/* ── Row action buttons: consistent sizing + 44px touch + focus ── */
+.admin-actions { display: flex; gap: var(--space-1); align-items: center; }
+.admin-actions button { min-height: 36px; }
+.admin-actions button:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+@media (max-width: 768px) {
+  .admin-actions button { min-height: 44px; }
+}
+
+/* ── Pagination hint ── */
+.ent-page-hint { color: var(--muted); font-weight: 400; }
+.admin-pagination button { min-height: 44px; }
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   .ent-name-cell:hover .ent-thumb { transform: none; }
+  .img-row:hover .img-thumb { transform: none; }
   .bulk-bar { animation: none; }
+  .ent-searching { animation: none; }
 }
 
 /* ── Dark mode ── */
@@ -400,8 +542,14 @@ onMounted(() => fetchEntities())
 .dark .type-badge[data-type="nature"] { background: rgba(52,199,89,.15); }
 .dark .type-badge[data-type="experience"] { background: rgba(255,159,10,.15); color: #ffb340; }
 .dark .type-badge[data-type="craft_village"] { background: rgba(162,132,94,.15); }
-.dark .type-badge[data-type="event"] { background: rgba(217,79,61,.15); }
+.dark .type-badge[data-type="event"] { background: rgba(217,79,61,.15); color: #ef7d6c; }
+.dark .type-badge[data-type="drink"] { background: rgba(0,199,190,.15); }
+.dark .type-badge[data-type="place"] { background: rgba(142,142,147,.18); color: #b0b0b5; }
 .dark .ent-name-cell:hover .ent-thumb { box-shadow: 0 2px 8px rgba(0,0,0,.3); }
 .dark .row-selected td { background: rgba(52,120,246,.08); }
 .dark .bulk-bar { background: rgba(52,120,246,.08); border-color: rgba(52,120,246,.15); }
+.dark .img-thumb { border-color: rgba(255,255,255,.1); }
+.dark .ent-search-clear:hover { background: rgba(255,255,255,.08); color: #fff; }
+.dark .admin-actions button:focus-visible,
+.dark .ent-search-clear:focus-visible { outline-color: var(--primary-fg, #D98A6F); }
 </style>

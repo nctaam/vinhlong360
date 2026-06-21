@@ -12,6 +12,13 @@
 
     <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
     <template v-else>
+    <div class="dash-loaded">
+
+    <!-- Partial-degradation banner -->
+    <div v-if="partialDegraded" class="dash-degraded" role="status">
+      <span class="dash-degraded-icon" aria-hidden="true">&#9888;</span>
+      <span>Một phần dữ liệu dashboard chưa tải được — bấm "Làm mới" để thử lại.</span>
+    </div>
 
     <!-- Primary stats -->
     <div class="dash-stats">
@@ -134,6 +141,7 @@
       </div>
     </div>
 
+    </div>
     </template>
   </div>
 </template>
@@ -148,6 +156,7 @@ const stats = ref<Record<string, unknown>>({})
 const modStats = ref<Record<string, unknown>>({})
 const infoReports = ref<number | null>(null)
 const loading = ref(true)
+const partialDegraded = ref(false)
 
 function formatNum(n: unknown): string {
   const num = Number(n) || 0
@@ -159,7 +168,7 @@ function formatNum(n: unknown): string {
 const TYPE_COLORS: Record<string, string> = {
   attraction: '#219653', dish: '#FF9F0A', product: '#3478F6',
   accommodation: '#AF52DE', nature: '#34C759', experience: '#FF9500',
-  craft_village: '#8B6914', event: '#FF3B30', drink: '#30B0C7',
+  craft_village: '#A6822A', event: '#FF3B30', drink: '#30B0C7',
   facility: '#8E8E93',
 }
 
@@ -192,17 +201,21 @@ const donutSegments = computed(() => {
   })
 })
 
+const DEGRADED = Symbol('degraded')
+
 async function fetchDashboard() {
   loading.value = true
+  partialDegraded.value = false
   try {
     const [s, m, ir] = await Promise.all([
       $fetch<Record<string, unknown>>('/admin-api/stats', { headers: authHeaders() }),
-      $fetch<Record<string, unknown>>('/admin-api/moderation/stats', { headers: authHeaders() }).catch(() => ({})),
-      $fetch<Record<string, unknown>>('/admin-api/info-reports?limit=1', { headers: authHeaders() }).catch(() => null),
+      $fetch<Record<string, unknown>>('/admin-api/moderation/stats', { headers: authHeaders() }).catch(() => DEGRADED),
+      $fetch<Record<string, unknown>>('/admin-api/info-reports?limit=1', { headers: authHeaders() }).catch(() => DEGRADED),
     ])
     stats.value = s
-    modStats.value = m
-    if (ir) infoReports.value = ir.total ?? 0
+    if (m !== DEGRADED) modStats.value = m as Record<string, unknown>
+    if (ir && ir !== DEGRADED) infoReports.value = (ir as Record<string, unknown>).total as number ?? 0
+    partialDegraded.value = m === DEGRADED || ir === DEGRADED
   } catch {
     showToast('Không thể tải dữ liệu dashboard', 'error')
   }
@@ -214,6 +227,10 @@ onMounted(fetchDashboard)
 
 <style scoped>
 .dash-subtitle { font-size: .88rem; color: var(--muted); margin-top: var(--space-1); }
+
+/* Signal freshly-loaded (vs stale) data: fade content in after fetch resolves */
+.dash-loaded { animation: dash-fade-in .4s ease-out both; }
+@keyframes dash-fade-in { from { opacity: .5; } to { opacity: 1; } }
 
 /* ── Primary stat cards ── */
 .dash-stats {
@@ -238,8 +255,19 @@ onMounted(fetchDashboard)
 .dash-stat-value { font-size: 1.5rem; font-weight: 800; line-height: 1.2; }
 .dash-stat-label { font-size: .75rem; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: .5px; }
 
+/* ── Partial-degradation banner ── */
+.dash-degraded {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-3) var(--space-4); border-radius: 10px;
+  margin-bottom: var(--space-5); font-size: .85rem; font-weight: 500;
+  background: rgba(255,159,10,.1); color: #c67a00;
+  border: .5px solid rgba(255,159,10,.2);
+}
+.dash-degraded-icon { font-size: 1rem; flex-shrink: 0; }
+.dark .dash-degraded { background: rgba(255,159,10,.08); color: #ffb340; border-color: rgba(255,159,10,.15); }
+
 /* ── Alert banners ── */
-.dash-alerts { display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-6); }
+.dash-alerts { display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-8); }
 .dash-alert {
   display: flex; align-items: center; gap: var(--space-3);
   padding: var(--space-3) var(--space-4); border-radius: 10px;
@@ -263,7 +291,7 @@ onMounted(fetchDashboard)
   text-decoration: none; color: inherit; font-size: .85rem; font-weight: 500;
   transition: transform .3s cubic-bezier(.2,1,.4,1), box-shadow .3s, border-color .3s;
 }
-.dash-action:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.06); border-color: var(--primary); }
+.dash-action:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.06); border-color: var(--primary); background: color-mix(in oklab, var(--primary, #219653) 6%, var(--bg)); }
 .dash-action:active { transform: scale(.97); }
 .dash-action:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .dash-action-icon { font-size: 1.5rem; }
@@ -326,7 +354,8 @@ onMounted(fetchDashboard)
 .dash-bar-count { font-size: .82rem; font-weight: 700; text-align: right; }
 
 /* ── Refresh animation ── */
-.refresh-spin { display: inline-block; animation: admin-spin .6s linear infinite; }
+.refresh-spin { display: inline-block; font-size: 1.3rem; line-height: 1; animation: admin-spin .6s linear infinite; }
+.admin-refresh:disabled { opacity: .55; cursor: not-allowed; }
 
 /* ── Dark mode ── */
 .dark .dash-stat-card { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
@@ -334,13 +363,15 @@ onMounted(fetchDashboard)
 .dark .dash-alert.warn { background: rgba(255,159,10,.08); color: #ffb340; border-color: rgba(255,159,10,.15); }
 .dark .dash-alert.error { background: rgba(217,79,61,.08); color: #ff6b5a; border-color: rgba(217,79,61,.15); }
 .dark .dash-action { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
-.dark .dash-action:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,.3); }
+.dark .dash-action:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,.3); background: color-mix(in oklab, var(--primary, #219653) 12%, var(--card, #2c2c2e)); }
+.dark .admin-refresh:disabled { border-color: rgba(255,255,255,.12); }
 .dark .dash-chart-card { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 .dark .dash-chart-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,.2); }
 .dark .dash-bar-track { background: rgba(255,255,255,.05); }
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
+  .dash-loaded { animation: none; }
   .dash-stat-card:hover { transform: none; }
   .dash-stat-card:active { transform: none; }
   .dash-stat-card:hover .dash-stat-icon { transform: none; }
@@ -351,6 +382,11 @@ onMounted(fetchDashboard)
   .dash-bar-fill { animation: none; }
 }
 
+/* Stack donut + bars earlier (accounts for sidebar on tablet landscape) */
+@media (max-width: 900px) {
+  .dash-chart-row { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 768px) {
   .dash-stats { grid-template-columns: repeat(2, 1fr); }
   .dash-stat-card { padding: var(--space-4); }
@@ -358,7 +394,12 @@ onMounted(fetchDashboard)
   .dash-stat-value { font-size: 1.2rem; }
   .dash-actions { grid-template-columns: repeat(2, 1fr); }
   .dash-chart-row { grid-template-columns: 1fr; }
-  .dash-bar-row { grid-template-columns: 80px 1fr 36px; }
+  .dash-bar-row { grid-template-columns: 70px 1fr 36px; }
   .dash-bar-name { font-size: .72rem; }
+}
+
+@media (max-width: 480px) {
+  .dash-donut-legend { gap: 3px 6px; }
+  .dash-legend-item { font-size: .65rem; }
 }
 </style>

@@ -3,7 +3,9 @@
     <TransitionGroup name="sl-list" tag="div" class="sl-items">
       <div v-for="(item, i) in localItems" :key="itemKey(item, i)" class="sl-item" :class="{ 'sl-item-editing': editingIndex === i }">
         <div class="sl-item-head">
-          <span class="sl-handle" aria-hidden="true">☰</span>
+          <span class="sl-handle" aria-hidden="true" tabindex="0"
+            :aria-label="`Mục ${i + 1}. Shift+mũi tên lên/xuống để di chuyển`"
+            @keydown.up.shift.prevent="moveUp(i)" @keydown.down.shift.prevent="moveDown(i)">☰</span>
           <div class="sl-item-content">
             <template v-if="editingIndex === i">
               <div class="sl-edit-fields">
@@ -25,8 +27,8 @@
             </template>
           </div>
           <div class="sl-actions">
-            <button type="button" class="sl-btn" :disabled="i === 0" @click="moveUp(i)" title="Lên" aria-label="Di chuyển lên">▲</button>
-            <button type="button" class="sl-btn" :disabled="i === localItems.length - 1" @click="moveDown(i)" title="Xuống" aria-label="Di chuyển xuống">▼</button>
+            <button type="button" class="sl-btn" :disabled="i === 0" @click="moveUp(i)" title="Lên" :aria-label="`Di chuyển mục ${i + 1} lên`">▲</button>
+            <button type="button" class="sl-btn" :disabled="i === localItems.length - 1" @click="moveDown(i)" title="Xuống" :aria-label="`Di chuyển mục ${i + 1} xuống`">▼</button>
             <button type="button" class="sl-btn sl-btn-edit" @click="toggleEdit(i)" :title="editingIndex === i ? 'Đóng' : 'Sửa'" :aria-label="editingIndex === i ? 'Đóng chỉnh sửa' : 'Sửa mục'">
               {{ editingIndex === i ? '✓' : '✎' }}
             </button>
@@ -50,6 +52,8 @@
         </Transition>
       </div>
     </TransitionGroup>
+
+    <p v-if="localItems.length === 0" class="sl-empty">Chưa có mục nào. Bấm + để thêm.</p>
 
     <button type="button" class="sl-add" @click="addItem">+ {{ addLabel }}</button>
   </div>
@@ -164,10 +168,17 @@ function addChild(parentIdx: number) {
 }
 .sl-handle {
   color: var(--muted); font-size: .85rem; cursor: grab; user-select: none;
-  width: 20px; text-align: center; opacity: .5;
+  width: 20px; text-align: center; opacity: .5; border-radius: 6px;
   transition: opacity .2s;
 }
 .sl-item:hover .sl-handle { opacity: 1; }
+.sl-handle:focus-visible { opacity: 1; outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
+
+.sl-empty {
+  text-align: center; padding: var(--space-5) var(--space-3);
+  color: var(--muted); font-size: .85rem;
+  border: 1px dashed var(--line); border-radius: 12px; margin: 0;
+}
 
 .sl-item-content { flex: 1; min-width: 0; }
 .sl-item-label { font-size: .88rem; font-weight: 500; }
@@ -202,7 +213,9 @@ function addChild(parentIdx: number) {
 }
 
 .sl-children {
-  padding: 0 14px 14px 44px;
+  padding: 0 14px 14px 60px;
+  margin-left: 22px;
+  border-left: 2px dashed var(--line);
   display: flex; flex-direction: column; gap: var(--space-2);
 }
 .sl-children-list { display: flex; flex-direction: column; gap: var(--space-2); }
@@ -249,6 +262,8 @@ function addChild(parentIdx: number) {
 .dark .sl-btn { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 .dark .sl-edit-input { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.08); }
 .dark .sl-add { border-color: rgba(255,255,255,.1); }
+.dark .sl-children { border-left-color: rgba(255,255,255,.1); }
+.dark .sl-empty { border-color: rgba(255,255,255,.1); }
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {

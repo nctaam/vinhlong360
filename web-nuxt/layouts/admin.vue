@@ -97,6 +97,15 @@
       </div>
     </aside>
     <main class="admin-main">
+      <div class="admin-topbar">
+        <nav class="admin-crumbs" aria-label="Đường dẫn">
+          <NuxtLink to="/admin" class="admin-crumb-root">AdminCP</NuxtLink>
+          <template v-if="currentPageLabel">
+            <span class="admin-crumb-sep" aria-hidden="true">&rsaquo;</span>
+            <span class="admin-crumb-current" aria-current="page">{{ currentPageLabel }}</span>
+          </template>
+        </nav>
+      </div>
       <slot />
     </main>
   </div>
@@ -106,6 +115,32 @@
 const route = useRoute()
 const { user, fetchMe, token } = useAuth()
 const sidebarCollapsed = ref(false)
+
+const ADMIN_PAGE_LABELS: Record<string, string> = {
+  '/admin/thong-ke': 'Thống kê',
+  '/admin/entities': 'Entities',
+  '/admin/chua-phan-loai': 'Chưa phân loại',
+  '/admin/danh-ba': 'Danh bạ HC',
+  '/admin/lich-trinh': 'Lịch trình',
+  '/admin/data-quality': 'Chất lượng DL',
+  '/admin/kiem-duyet': 'Kiểm duyệt',
+  '/admin/duyet-anh': 'Duyệt ảnh',
+  '/admin/users': 'Users',
+  '/admin/bao-cao': 'Báo cáo',
+  '/admin/duyet-tu-hoc': 'Duyệt & Tools',
+  '/admin/ai': 'Knowledge Agent',
+  '/admin/cai-dat': 'Cài đặt trang',
+}
+const currentPageLabel = computed(() => {
+  const path = route.path
+  if (path === '/admin' || path === '/admin/') return ''
+  if (ADMIN_PAGE_LABELS[path]) return ADMIN_PAGE_LABELS[path]
+  // Nested routes (e.g. /admin/cai-dat/branding): match by longest known prefix
+  const match = Object.keys(ADMIN_PAGE_LABELS)
+    .filter(k => path.startsWith(k + '/'))
+    .sort((a, b) => b.length - a.length)[0]
+  return match ? ADMIN_PAGE_LABELS[match] : ''
+})
 
 useHead({
   meta: [{ name: 'robots', content: 'noindex,nofollow' }],
@@ -194,8 +229,9 @@ onMounted(async () => {
 .admin-nav a:active { transform: scale(.97); transition-duration: .08s; }
 .admin-nav a:focus-visible { outline: 2px solid var(--accent, #f5c518); outline-offset: -2px; }
 .admin-nav a.active {
-  background: rgba(255,255,255,.12); color: #fff; font-weight: 600;
-  box-shadow: inset 3px 0 0 var(--accent, #f5c518);
+  background: rgba(255,255,255,.14); color: #fff; font-weight: 600;
+  box-shadow: inset 4px 0 0 var(--accent, #f5c518);
+  transition: box-shadow .2s, background .2s, color .25s;
 }
 .nav-icon { font-size: 1.05rem; flex-shrink: 0; width: 24px; text-align: center; transition: transform .35s cubic-bezier(.2,1,.4,1); }
 .admin-nav a:hover .nav-icon { transform: scale(1.1); }
@@ -219,7 +255,7 @@ onMounted(async () => {
 }
 .admin-user-info { display: flex; align-items: center; gap: var(--space-3); }
 .admin-user-avatar {
-  width: 32px; height: 32px; border-radius: 50%;
+  width: 32px; height: 32px; min-width: 32px; border-radius: 50%;
   background: var(--accent, #f5c518); color: var(--ink, #1a1a2e);
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: .8rem; flex-shrink: 0;
@@ -238,6 +274,23 @@ onMounted(async () => {
 .back-link:hover { color: rgba(255,255,255,.85); transform: translateX(-2px); }
 .back-link:active { transform: translateX(0) scale(.95); transition-duration: .08s; }
 .back-link:focus-visible { outline: 2px solid var(--accent, #f5c518); outline-offset: 2px; border-radius: 4px; }
+
+/* ── Topbar breadcrumb ── */
+.admin-topbar {
+  position: sticky; top: 0; z-index: var(--z-sticky, 100);
+  margin: calc(var(--space-6) * -1) calc(var(--space-8) * -1) var(--space-5);
+  padding: var(--space-3) var(--space-8);
+  background: color-mix(in oklab, var(--bg-alt) 85%, transparent);
+  -webkit-backdrop-filter: saturate(1.4) blur(8px);
+  backdrop-filter: saturate(1.4) blur(8px);
+  border-bottom: .5px solid var(--line);
+}
+.admin-crumbs { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; font-size: .82rem; }
+.admin-crumb-root { color: var(--muted); text-decoration: none; font-weight: 600; transition: color .2s; }
+.admin-crumb-root:hover { color: var(--primary, #219653); }
+.admin-crumb-root:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; border-radius: 4px; }
+.admin-crumb-sep { color: var(--muted); opacity: .5; }
+.admin-crumb-current { color: var(--ink); font-weight: 600; }
 
 /* ── Main area ── */
 .admin-main {
@@ -267,6 +320,7 @@ onMounted(async () => {
   color: var(--muted); border-bottom: .5px solid var(--line);
   text-transform: uppercase; letter-spacing: .5px;
   position: sticky; top: 0; z-index: 1;
+  box-shadow: 0 2px 4px rgba(0,0,0,.02);
 }
 .admin-table td { padding: var(--space-3) var(--space-4); border-bottom: .5px solid var(--line); font-size: .88rem; }
 .admin-table tbody tr { transition: background .25s cubic-bezier(.4,0,.2,1); }
@@ -335,6 +389,10 @@ onMounted(async () => {
 .admin-td-id { font-size: .75rem; color: var(--muted); max-width: 120px; overflow: hidden; text-overflow: ellipsis; font-family: var(--font-mono, monospace); }
 .admin-td-truncate { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .admin-empty-row { text-align: center; padding: var(--space-8); color: var(--muted); font-size: .9rem; }
+.admin-empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: var(--space-12); gap: var(--space-4); color: var(--muted); text-align: center; }
+.admin-empty-state-icon { font-size: 3rem; opacity: .4; line-height: 1; }
+.admin-empty-state-text { font-size: .9rem; }
+.admin-empty-state-hint { font-size: .8rem; color: rgba(0,0,0,.3); }
 .admin-section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: var(--space-3); }
 .admin-section-block { margin-bottom: var(--space-6); }
 .admin-btn-group { display: flex; gap: var(--space-3); flex-wrap: wrap; }
@@ -373,6 +431,14 @@ onMounted(async () => {
 .status-error .stat-value { color: var(--error, #D94F3D); }
 
 /* ── Dark mode ── */
+.dark .admin-sidebar { background: #0a0a0a; border-right-color: rgba(255,255,255,.08); }
+.dark .nav-group-label { color: rgba(255,255,255,.35); }
+.dark .admin-nav a { color: rgba(255,255,255,.65); }
+.dark .admin-nav a:hover { color: #fff; background: rgba(255,255,255,.12); }
+.dark .admin-nav a.active { background: rgba(255,255,255,.14); color: #fff; box-shadow: inset 4px 0 0 var(--primary-fg, #D98A6F); }
+.dark .admin-table th { box-shadow: 0 2px 4px rgba(0,0,0,.03); }
+.dark .admin-empty-state-hint { color: rgba(255,255,255,.3); }
+.dark .admin-topbar { background: color-mix(in oklab, var(--bg, #1c1c1e) 85%, transparent); border-bottom-color: rgba(255,255,255,.08); }
 .dark .admin-main { background: var(--bg, #1c1c1e); }
 .dark .stat-card { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 .dark .stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.3); }
@@ -432,11 +498,30 @@ onMounted(async () => {
   .admin-nav a.active { box-shadow: none; background: rgba(255,255,255,.15); }
   .admin-sidebar-footer { display: none; }
   .admin-main { padding: var(--space-4); }
+  .admin-topbar { margin: calc(var(--space-4) * -1) calc(var(--space-4) * -1) var(--space-4); padding: var(--space-3) var(--space-4); }
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
   .admin-table { font-size: .82rem; }
   .admin-table th, .admin-table td { padding: var(--space-2) var(--space-3); }
   .admin-toolbar .input { min-width: 140px; }
   .sidebar-toggle { display: none; }
   .collapsed .admin-nav a[title]:hover::after { display: none; }
+}
+
+/* ── Toast / feedback (shared across admin pages) ── */
+.admin-toast {
+  position: fixed; bottom: var(--space-4); right: var(--space-4);
+  z-index: var(--z-toast, 600); padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm, 10px); background: var(--bg, #fff);
+  border: 1px solid var(--line); box-shadow: var(--shadow-lg);
+  font-size: .88rem; color: var(--ink);
+  animation: toastIn .25s var(--ease-out, ease-out);
+}
+.admin-toast.success { border-left: 4px solid var(--secondary, #219653); }
+.admin-toast.error { border-left: 4px solid var(--error, #D94F3D); }
+.admin-toast.warning { border-left: 4px solid var(--warning, #e67e22); }
+@keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.dark .admin-toast { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
+@media (prefers-reduced-motion: reduce) {
+  .admin-toast { animation: none; }
 }
 </style>
