@@ -119,11 +119,15 @@
       <h2 class="admin-section-title">Response Times</h2>
       <div class="ai-metrics">
         <div class="ai-metric">
-          <span class="ai-metric-val">{{ health.response_times.avg_ms || 0 }}<small>ms</small></span>
+          <span class="ai-metric-val" :style="{ color: rtColor(health.response_times.avg_ms) }">
+            <span class="ai-rt-dot" :style="{ background: rtColor(health.response_times.avg_ms) }" aria-hidden="true"></span>{{ health.response_times.avg_ms || 0 }}<small>ms</small>
+          </span>
           <span class="ai-metric-lbl">Trung bình</span>
         </div>
         <div class="ai-metric">
-          <span class="ai-metric-val">{{ health.response_times.p95_ms || 0 }}<small>ms</small></span>
+          <span class="ai-metric-val" :style="{ color: rtColor(health.response_times.p95_ms) }">
+            <span class="ai-rt-dot" :style="{ background: rtColor(health.response_times.p95_ms) }" aria-hidden="true"></span>{{ health.response_times.p95_ms || 0 }}<small>ms</small>
+          </span>
           <span class="ai-metric-lbl">P95</span>
         </div>
         <div class="ai-metric">
@@ -152,7 +156,7 @@
     <div class="ai-section">
       <h2 class="admin-section-title">Subsystems</h2>
       <div class="ai-subsys-grid">
-        <div v-for="(val, key) in subsystems" :key="key" class="ai-subsys" :class="val ? 'ai-subsys-on' : 'ai-subsys-off'">
+        <div v-for="(val, key) in subsystems" :key="key" class="ai-subsys" :class="val ? 'ai-subsys-on' : 'ai-subsys-off'" :title="`${key}: ${val ? 'online' : 'offline'}`" :aria-label="`${key}: ${val ? 'online' : 'offline'}`">
           <span class="ai-subsys-dot"></span>
           <span>{{ key }}</span>
         </div>
@@ -162,19 +166,20 @@
     <!-- Cost & Budget -->
     <div class="ai-section">
       <h2 class="admin-section-title">Chi phí & ngân sách</h2>
-      <div class="ai-metrics" v-if="cost">
+      <div class="ai-metrics" v-if="cost" aria-live="polite">
         <div class="ai-metric">
           <span class="ai-metric-val">{{ cost.llm?.available ? '$' + (cost.llm.total_cost_usd || 0).toFixed(4) : '—' }}</span>
           <span class="ai-metric-lbl">LLM tích lũy</span>
         </div>
-        <div class="ai-metric" :class="{ 'ai-near-cap': agentNearCap }">
+        <div class="ai-metric" :class="{ 'ai-near-cap': agentNearCap }" :aria-label="agentNearCap ? 'Budget near capacity' : undefined">
           <span class="ai-metric-val">{{ cost.agent_budget?.enabled ? `${cost.agent_budget.used_today}/${cost.agent_budget.cap_per_day}` : 'TẮT' }}</span>
           <span class="ai-metric-lbl">Agent LLM hôm nay</span>
         </div>
       </div>
       <p class="ai-cost-note">
-        Agent tự động: <strong>{{ cost?.agent_budget?.enabled ? 'BẬT' : 'TẮT (mặc định)' }}</strong> —
-        đổi qua .env AUTONOMOUS_AGENT_ENABLED + AUTONOMOUS_AGENT_MAX_CALLS_PER_DAY.
+        <span class="ai-cost-note-icon" aria-hidden="true">&#8505;</span>
+        <span>Agent tự động: <strong>{{ cost?.agent_budget?.enabled ? 'BẬT' : 'TẮT (mặc định)' }}</strong> —
+        đổi qua .env AUTONOMOUS_AGENT_ENABLED + AUTONOMOUS_AGENT_MAX_CALLS_PER_DAY.</span>
       </p>
     </div>
 
@@ -182,21 +187,26 @@
     <div class="ai-section">
       <h2 class="admin-section-title">Hành động</h2>
       <div class="ai-action-grid">
-        <button type="button" class="ai-action-btn" :disabled="triggerLoading" @click="triggerLearn">
-          <span class="ai-action-icon">&#129504;</span>
+        <button type="button" class="ai-action-btn ai-action-primary" :disabled="triggerLoading" @click="triggerLearn">
+          <span v-if="triggerLoading" class="ai-action-spinner" aria-hidden="true"></span>
+          <span v-else class="ai-action-icon">&#129504;</span>
           <span>{{ triggerLoading ? 'Đang chạy...' : 'Trigger Learn' }}</span>
         </button>
-        <button type="button" class="ai-action-btn" @click="reload">
+        <button type="button" class="ai-action-btn ai-action-primary" :disabled="triageLoading" @click="triage">
+          <span v-if="triageLoading" class="ai-action-spinner" aria-hidden="true"></span>
+          <span v-else class="ai-action-icon">&#129302;</span>
+          <span>{{ triageLoading ? 'Đang phân tích...' : 'Gợi ý ưu tiên' }}</span>
+        </button>
+        <button type="button" class="ai-action-btn ai-action-secondary" @click="reload">
           <span class="ai-action-icon">&#128260;</span>
           <span>Reload KB</span>
         </button>
-        <button type="button" class="ai-action-btn" :disabled="triageLoading" @click="triage">
-          <span class="ai-action-icon">&#129302;</span>
-          <span>{{ triageLoading ? 'Đang phân tích...' : 'Gợi ý ưu tiên' }}</span>
-        </button>
       </div>
-      <p v-if="triggerResult" class="ai-trigger-result">{{ triggerResult }}</p>
-      <div v-if="triageOut" class="ai-triage-box">{{ triageOut }}</div>
+      <p v-if="triggerResult" class="ai-trigger-result" :class="{ 'ai-result-error': triggerResultIsError }" role="status" aria-live="polite">{{ triggerResult }}</p>
+      <div v-if="triageOut" class="ai-triage-box" :class="{ 'ai-triage-error': triageOutIsError }" role="status" aria-live="polite">
+        <span class="ai-triage-icon" aria-hidden="true">{{ triageOutIsError ? '⚠' : '✓' }}</span>
+        <span class="ai-triage-text">{{ triageOut }}</span>
+      </div>
     </div>
 
     </template>
@@ -308,6 +318,33 @@ async function reload() {
   } catch { triggerResult.value = 'Reload failed' }
 }
 
+// ── Presentational helpers (display-only, no effect on call logic) ──
+function rtColor(ms: number | undefined): string {
+  const v = Number(ms) || 0
+  if (v <= 0) return 'var(--ink)'
+  if (v < 500) return '#219653'
+  if (v <= 1000) return '#e67e22'
+  return '#D94F3D'
+}
+const triggerResultIsError = computed(() => /error|failed|lỗi/i.test(triggerResult.value))
+const triageOutIsError = computed(() => /^lỗi|llm lỗi|error/i.test(triageOut.value.trim()))
+
+// ── Auto-hide stale result feedback after 5s (display-only) ──
+let triggerResultTimer: ReturnType<typeof setTimeout> | null = null
+let triageOutTimer: ReturnType<typeof setTimeout> | null = null
+watch(triggerResult, (v) => {
+  if (triggerResultTimer) { clearTimeout(triggerResultTimer); triggerResultTimer = null }
+  if (v) triggerResultTimer = setTimeout(() => { triggerResult.value = '' }, 5000)
+})
+watch(triageOut, (v) => {
+  if (triageOutTimer) { clearTimeout(triageOutTimer); triageOutTimer = null }
+  if (v) triageOutTimer = setTimeout(() => { triageOut.value = '' }, 5000)
+})
+onBeforeUnmount(() => {
+  if (triggerResultTimer) clearTimeout(triggerResultTimer)
+  if (triageOutTimer) clearTimeout(triageOutTimer)
+})
+
 onMounted(() => { fetchHealth(); fetchCost() })
 </script>
 
@@ -325,14 +362,22 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .stat-card:hover .ai-icon { transform: scale(1.08); }
 .ai-model-val { font-size: .9rem; font-family: var(--font-mono, monospace); }
 
-/* ── Sections ── */
-.ai-section { margin-bottom: var(--space-6); }
+/* ── Sections (card containers with left accent bar) ── */
+.ai-section {
+  margin-bottom: var(--space-6);
+  position: relative;
+  background: var(--card, #fff);
+  border: .5px solid var(--line);
+  border-left: 4px solid var(--primary, #219653);
+  border-radius: 14px;
+  padding: var(--space-5);
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+.ai-section > .admin-section-title { margin-top: 0; }
 
 /* ── Cache ring + row ── */
 .ai-cache-row {
   display: flex; align-items: center; gap: var(--space-5);
-  background: var(--bg); border: .5px solid var(--line); border-radius: 14px;
-  padding: var(--space-5);
 }
 .ai-ring-wrap { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
 .ai-ring { width: 80px; height: 80px; transform: rotate(-90deg); }
@@ -349,8 +394,6 @@ onMounted(() => { fetchHealth(); fetchCost() })
 /* ── Data quality progress bar ── */
 .ai-dq-row {
   display: flex; align-items: center; gap: var(--space-5);
-  background: var(--bg); border: .5px solid var(--line); border-radius: 14px;
-  padding: var(--space-5);
 }
 .ai-dq-bar-wrap { flex: 1; min-width: 200px; }
 .ai-dq-bar-label {
@@ -384,7 +427,19 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-metric-val { font-size: 1.2rem; font-weight: 800; line-height: 1.2; }
 .ai-metric-val small { font-size: .7rem; font-weight: 500; opacity: .6; }
 .ai-metric-lbl { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
-.ai-near-cap { border-color: var(--warning, #e67e22); background: rgba(255,159,10,.04); }
+.ai-rt-dot {
+  display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  margin-right: 6px; vertical-align: middle;
+}
+.ai-near-cap {
+  border-color: var(--warning, #e67e22); background: rgba(255,159,10,.04);
+  border-left-width: 4px; border-left-style: dashed;
+  animation: ai-near-cap-pulse 2s ease-in-out infinite;
+}
+@keyframes ai-near-cap-pulse {
+  0%, 100% { border-left-color: #e67e22; }
+  50% { border-left-color: transparent; }
+}
 
 /* ── Subsystems grid ── */
 .ai-subsys-grid {
@@ -410,17 +465,39 @@ onMounted(() => { fetchHealth(); fetchCost() })
   gap: var(--space-3);
 }
 .ai-action-btn {
-  display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-2);
+  min-height: 44px;
   padding: var(--space-4) var(--space-3); border-radius: 14px;
   background: var(--bg); border: .5px solid var(--line);
   cursor: pointer; font-size: .82rem; font-weight: 500; color: var(--ink);
-  transition: transform .3s cubic-bezier(.2,1,.4,1), box-shadow .3s, border-color .3s;
+  transition: transform .3s cubic-bezier(.2,1,.4,1), box-shadow .3s, border-color .3s, background .3s;
 }
 .ai-action-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.06); border-color: var(--primary); }
 .ai-action-btn:active:not(:disabled) { transform: scale(.97); }
 .ai-action-btn:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .ai-action-btn:disabled { opacity: .4; cursor: not-allowed; }
 .ai-action-icon { font-size: 1.4rem; }
+
+/* Primary actions — stronger visual weight */
+.ai-action-primary {
+  background: var(--primary, #219653); border-color: var(--primary, #219653);
+  color: #fff; font-weight: 600;
+}
+.ai-action-primary:hover:not(:disabled) {
+  transform: translateY(-3px); box-shadow: 0 6px 20px rgba(33,150,83,.28);
+  border-color: var(--primary, #219653);
+}
+/* Secondary action — outline style */
+.ai-action-secondary { background: var(--bg); }
+
+/* Inline action spinner */
+.ai-action-spinner {
+  width: 16px; height: 16px;
+  border: 2px solid currentColor; border-top-color: transparent;
+  border-radius: 50%;
+  animation: admin-spin .6s linear infinite;
+  opacity: .7;
+}
 
 /* ── Results ── */
 .ai-trigger-result {
@@ -429,27 +506,47 @@ onMounted(() => { fetchHealth(); fetchCost() })
   background: rgba(33,150,83,.06); border: .5px solid rgba(33,150,83,.15);
   color: #219653;
 }
-.ai-triage-box {
-  margin-top: var(--space-3); padding: var(--space-4);
-  border: .5px solid var(--line); border-radius: 12px;
-  white-space: pre-wrap; font-size: .85rem; line-height: 1.6;
-  background: var(--bg);
+.ai-trigger-result.ai-result-error {
+  background: rgba(217,79,61,.08); border-color: #D94F3D; color: #D94F3D;
 }
+.ai-triage-box {
+  display: flex; align-items: flex-start; gap: var(--space-2);
+  margin-top: var(--space-3); padding: var(--space-4);
+  border: .5px solid rgba(33,150,83,.2); border-left: 3px solid #219653; border-radius: 12px;
+  font-size: .85rem; line-height: 1.6;
+  background: rgba(33,150,83,.05);
+}
+.ai-triage-box .ai-triage-text { white-space: pre-wrap; flex: 1; min-width: 0; }
+.ai-triage-icon { font-weight: 800; color: #219653; flex-shrink: 0; line-height: 1.6; }
+.ai-triage-box.ai-triage-error {
+  background: rgba(217,79,61,.08); border-color: #D94F3D; border-left-color: #D94F3D;
+}
+.ai-triage-box.ai-triage-error .ai-triage-icon { color: #D94F3D; }
 
-/* ── Cost note ── */
-.ai-cost-note { font-size: .78rem; color: var(--muted); margin-top: var(--space-2); }
+/* ── Cost note callout ── */
+.ai-cost-note {
+  display: flex; align-items: flex-start; gap: var(--space-2);
+  font-size: .78rem; color: var(--muted); margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-4); border-radius: 10px;
+  background: rgba(255,159,10,.04); border: 1px solid rgba(255,159,10,.2);
+}
+.ai-cost-note-icon { color: #e67e22; flex-shrink: 0; font-weight: 700; line-height: 1.4; }
+.ai-cost-note strong { color: var(--ink); }
 
 /* ── Dark mode ── */
-.dark .ai-cache-row { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
-.dark .ai-dq-row { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
+.dark .ai-section { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); border-left-color: var(--primary, #219653); box-shadow: 0 1px 3px rgba(0,0,0,.3); }
 .dark .ai-dq-track { background: rgba(255,255,255,.06); }
-.dark .ai-metric { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
+.dark .ai-metric { background: var(--bg, #1c1c1e); border-color: rgba(255,255,255,.08); }
 .dark .ai-subsys-on { background: rgba(33,150,83,.1); }
 .dark .ai-subsys-off { background: rgba(217,79,61,.1); }
-.dark .ai-action-btn { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); color: var(--ink); }
+.dark .ai-action-secondary { background: var(--bg, #1c1c1e); border-color: rgba(255,255,255,.08); color: var(--ink); }
 .dark .ai-action-btn:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(0,0,0,.3); }
-.dark .ai-triage-box { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
+.dark .ai-action-primary { color: #fff; }
+.dark .ai-triage-box { background: rgba(33,150,83,.1); border-color: rgba(33,150,83,.3); }
+.dark .ai-triage-box.ai-triage-error { background: rgba(217,79,61,.12); border-color: #D94F3D; border-left-color: #D94F3D; }
 .dark .ai-trigger-result { background: rgba(33,150,83,.1); border-color: rgba(33,150,83,.2); }
+.dark .ai-trigger-result.ai-result-error { background: rgba(217,79,61,.12); border-color: #D94F3D; }
+.dark .ai-cost-note { background: rgba(255,159,10,.06); border-color: rgba(255,159,10,.25); }
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
@@ -459,7 +556,9 @@ onMounted(() => { fetchHealth(); fetchCost() })
   .ai-dq-fill { animation: none; }
   .ai-action-btn:hover:not(:disabled) { transform: none; }
   .ai-action-btn:active:not(:disabled) { transform: none; }
+  .ai-action-primary:hover:not(:disabled) { transform: none; }
   .ai-metric:hover { transform: none; }
+  .ai-near-cap { animation: none; border-left-color: #e67e22; }
 }
 
 @media (max-width: 768px) {

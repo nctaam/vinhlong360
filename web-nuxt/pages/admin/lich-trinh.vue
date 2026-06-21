@@ -32,22 +32,22 @@
               <td><strong>{{ it.name }}</strong></td>
               <td><span v-if="it.area" class="lt-area-badge">{{ it.area }}</span><span v-else class="admin-td-muted">—</span></td>
               <td>
-                <span v-if="it.duration" class="lt-duration">&#128338; {{ it.duration }}</span>
+                <span v-if="it.duration" class="lt-duration"><span class="lt-duration-icon" aria-hidden="true">&#128338;</span> {{ it.duration }}</span>
                 <span v-else class="admin-td-muted">—</span>
               </td>
               <td>
                 <span class="lt-stops-badge">{{ it.stops?.length || 0 }}</span>
               </td>
               <td class="admin-actions">
-                <button type="button" class="btn-success" @click="openEdit(it)">Sửa</button>
-                <button type="button" class="btn-danger" :disabled="acting === it.id" @click="deleteItinerary(it.id)">Xóa</button>
+                <button type="button" class="btn-success lt-row-btn" :aria-label="`Sửa lịch trình ${it.name}`" @click="openEdit(it)">Sửa</button>
+                <button type="button" class="btn-danger lt-row-btn" :aria-label="`Xóa lịch trình ${it.name}`" :disabled="acting === it.id" @click="deleteItinerary(it.id)">Xóa</button>
               </td>
             </tr>
             <tr v-if="!itineraries.length">
               <td colspan="6" class="admin-empty-row">
-                <div class="lt-empty">
-                  <span class="lt-empty-icon">&#128506;</span>
-                  <span>Chưa có lịch trình. Tạo mới từ nút trên.</span>
+                <div class="admin-empty-state">
+                  <span class="admin-empty-state-icon" aria-hidden="true">&#128506;</span>
+                  <span class="admin-empty-state-text">Chưa có lịch trình. Tạo mới từ nút trên.</span>
                 </div>
               </td>
             </tr>
@@ -57,10 +57,12 @@
     </template>
 
     <Transition name="modal-fade">
-    <div v-if="showModal" class="modal-overlay show" role="dialog" aria-modal="true" :aria-label="editing ? 'Sửa Lịch trình' : 'Tạo Lịch trình'" @click.self="showModal = false" @keyup.escape="showModal = false">
+    <div v-if="showModal" class="modal-overlay show" role="dialog" aria-modal="true" aria-labelledby="lt-modal-title" @click.self="showModal = false" @keyup.escape="showModal = false">
       <div class="modal admin-modal-md">
-        <h2>{{ editing ? 'Sửa Lịch trình' : 'Tạo Lịch trình' }}</h2>
-        <div class="admin-form-col">
+        <div class="modal-head">
+          <h2 id="lt-modal-title">{{ editing ? 'Sửa Lịch trình' : 'Tạo Lịch trình' }}</h2>
+        </div>
+        <div class="modal-body admin-form-col">
           <input v-model="form.id" class="input" placeholder="ID (slug)" aria-label="ID (slug)" :disabled="!!editing" />
           <input v-model="form.name" class="input" placeholder="Tên lịch trình" aria-label="Tên lịch trình" />
           <input v-model="form.area" class="input" placeholder="Khu vực (vinh-long / ben-tre / tra-vinh)" aria-label="Khu vực" />
@@ -77,13 +79,17 @@
           <textarea v-if="jsonMode" v-model="stopsJson" class="input admin-textarea admin-code" rows="8" aria-label="Stops dạng JSON"></textarea>
 
           <template v-else>
-            <div v-if="!stops.length" class="lt-stops-empty">Chưa có điểm dừng nào.</div>
+            <div v-if="!stops.length" class="lt-stops-empty">
+              <span class="lt-stops-empty-icon" aria-hidden="true">&#128205;</span>
+              <span>Chưa có điểm dừng nào. Thêm từ nút bên dưới.</span>
+            </div>
             <ul v-else class="lt-stop-list">
-              <li v-for="(s, i) in stops" :key="s._key" class="lt-stop-row">
+              <li v-for="(s, i) in stops" :key="s._key" class="lt-stop-row" :class="`lt-stop-${stopStatus(s).kind}`">
                 <div class="lt-stop-order">
                   <button type="button" class="lt-move" :disabled="i === 0" aria-label="Lên trên" title="Lên trên" @click="moveStop(i, -1)">&#9650;</button>
                   <span class="lt-stop-num">{{ i + 1 }}</span>
                   <button type="button" class="lt-move" :disabled="i === stops.length - 1" aria-label="Xuống dưới" title="Xuống dưới" @click="moveStop(i, 1)">&#9660;</button>
+                  <span class="lt-stop-status" :class="`lt-stop-status-${stopStatus(s).kind}`" :title="stopStatus(s).title" :aria-label="stopStatus(s).title">{{ stopStatus(s).icon }}</span>
                 </div>
                 <div class="lt-stop-fields">
                   <div class="lt-stop-grid">
@@ -99,10 +105,11 @@
             <button type="button" class="lt-add-stop" @click="addStop">+ Thêm điểm dừng</button>
           </template>
         </div>
-        <div class="admin-modal-actions">
+        <div class="admin-modal-actions lt-modal-actions">
+          <span v-if="isDirty && !saving" class="lt-dirty-badge" role="status">Chưa lưu</span>
           <button type="button" class="btn btn-outline" @click="showModal = false">Hủy</button>
-          <button type="button" class="btn btn-primary" :disabled="saving" @click="save">
-            {{ saving ? 'Đang lưu...' : (editing ? 'Cập nhật' : 'Tạo') }}
+          <button type="button" class="btn btn-primary" :disabled="saving || (!!editing && !isDirty)" @click="save">
+            {{ saving ? 'Đang lưu...' : (editing ? (isDirty ? 'Cập nhật' : 'Không có thay đổi') : 'Tạo') }}
           </button>
         </div>
       </div>
@@ -140,6 +147,27 @@ interface StopRow {
 const stops = ref<StopRow[]>([])
 const jsonMode = ref(false)
 let stopKeySeq = 0
+
+// Dirty-state tracking (display + accidental-save guard only; never alters the
+// save/data path). Snapshot is captured when the modal opens.
+const initialSnapshot = ref('{}')
+function buildSnapshot(): string {
+  try {
+    // Canonicalise stops to compact JSON so merely toggling between the list and
+    // JSON editor (which pretty-prints) does not register as a change.
+    let stopsPart: string
+    if (jsonMode.value) {
+      try { stopsPart = JSON.stringify(JSON.parse(stopsJson.value)) }
+      catch { stopsPart = stopsJson.value }
+    } else {
+      stopsPart = JSON.stringify(stops.value.map(fromStopRow))
+    }
+    return JSON.stringify({ form: form.value, stops: stopsPart })
+  } catch {
+    return Math.random().toString() // never matches snapshot -> treated as dirty
+  }
+}
+const isDirty = computed(() => buildSnapshot() !== initialSnapshot.value)
 
 const KNOWN_STOP_KEYS = ['time', 'id', 'entityId', 'name', 'note']
 
@@ -179,6 +207,17 @@ function fromStopRow(r: StopRow): Record<string, unknown> {
 function rowsFromStops(raw: unknown): StopRow[] {
   const arr = Array.isArray(raw) ? raw : []
   return arr.map(toStopRow)
+}
+
+// Lightweight per-row validation for the visual editor (display only; never
+// blocks save). ok = has both time + id; warn = missing one of them.
+function stopStatus(s: StopRow): { kind: 'ok' | 'warn'; icon: string; title: string } {
+  const hasTime = !!s.time.trim()
+  const hasId = !!s.entityId.trim()
+  if (hasTime && hasId) return { kind: 'ok', icon: '✓', title: 'Đầy đủ thời điểm và ID điểm đến' }
+  if (!hasTime && !hasId) return { kind: 'warn', icon: '⚠', title: 'Thiếu thời điểm và ID điểm đến' }
+  if (!hasId) return { kind: 'warn', icon: '⚠', title: 'Thiếu ID điểm đến' }
+  return { kind: 'warn', icon: '⚠', title: 'Thiếu thời điểm' }
 }
 
 function addStop() {
@@ -225,6 +264,7 @@ function openCreate() {
   stops.value = []
   stopsJson.value = '[]'
   jsonMode.value = false
+  initialSnapshot.value = buildSnapshot()
   showModal.value = true
 }
 
@@ -235,6 +275,7 @@ function openEdit(it: Itinerary) {
   stops.value = rowsFromStops(rawStops)
   stopsJson.value = JSON.stringify(rawStops, null, 2)
   jsonMode.value = false
+  initialSnapshot.value = buildSnapshot()
   showModal.value = true
 }
 
@@ -337,10 +378,13 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 .lt-mode-toggle:focus-visible { outline: 2px solid #3478F6; outline-offset: 2px; }
 
 .lt-stops-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--space-2);
   font-size: .82rem; color: var(--muted);
-  padding: var(--space-3); text-align: center;
+  padding: var(--space-4); text-align: center;
   border: 1px dashed var(--border, rgba(0,0,0,.14)); border-radius: 10px;
 }
+.lt-stops-empty-icon { font-size: 2rem; opacity: .4; line-height: 1; }
 
 .lt-stop-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
 .lt-stop-row {
@@ -350,12 +394,23 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   transition: border-color .2s, background .2s;
 }
 .lt-stop-row:hover { border-color: rgba(52,120,246,.28); background: rgba(52,120,246,.03); }
+/* Status colour-coding: a left accent bar for quick scanning. */
+.lt-stop-row { border-left-width: 3px; }
+.lt-stop-ok { border-left-color: rgba(33,150,83,.5); }
+.lt-stop-warn { border-left-color: rgba(230,126,34,.55); }
 
 .lt-stop-order { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 0 0 auto; padding-top: 2px; }
 .lt-stop-num {
   font-size: .8rem; font-weight: 700; color: var(--muted);
   min-width: 22px; text-align: center;
 }
+.lt-stop-status {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; margin-top: 2px;
+  border-radius: 50%; font-size: .68rem; font-weight: 700; line-height: 1;
+}
+.lt-stop-status-ok { background: rgba(33,150,83,.12); color: #219653; }
+.lt-stop-status-warn { background: rgba(230,126,34,.14); color: #c46b13; }
 .lt-move {
   appearance: none; border: none; background: transparent; cursor: pointer;
   color: var(--muted); font-size: .7rem; line-height: 1;
@@ -398,8 +453,37 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   .lt-move:hover:not(:disabled), .lt-stop-del:hover, .lt-add-stop:hover { transform: none; }
 }
 
+/* Table-row action buttons: comfortable touch target + clear focus ring. */
+.lt-row-btn { min-height: 44px; }
+.lt-row-btn:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
+
+/* Duration cell: isolate the clock glyph so it can be tuned per theme. */
+.lt-duration-icon { opacity: .65; }
+
+/* Dirty-state badge (mirrors SettingsForm .sf-dirty-badge; that class is scoped
+   to its own component, so the visual is redefined page-locally here). */
+.lt-modal-actions { align-items: center; flex-wrap: wrap; }
+.lt-dirty-badge {
+  margin-right: auto;
+  display: inline-flex; align-items: center;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: .72rem; font-weight: 600; color: var(--primary, #219653);
+  background: rgba(33,150,83,.1); border: .5px solid rgba(33,150,83,.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lt-row-btn { transition: none; }
+}
+
 .dark .lt-stops-count { background: rgba(33,150,83,.15); }
 .dark .lt-stop-row { background: rgba(255,255,255,.02); border-color: rgba(255,255,255,.08); }
 .dark .lt-stop-row:hover { background: rgba(52,120,246,.08); }
+.dark .lt-stop-ok { border-left-color: rgba(33,150,83,.6); }
+.dark .lt-stop-warn { border-left-color: rgba(230,126,34,.65); }
 .dark .lt-stops-empty { border-color: rgba(255,255,255,.14); }
+.dark .lt-stop-status-ok { background: rgba(33,150,83,.2); color: #5fcf8a; }
+.dark .lt-stop-status-warn { background: rgba(230,126,34,.22); color: #f0a35a; }
+.dark .lt-duration { color: rgba(255,255,255,.55); }
+.dark .lt-duration-icon { opacity: .8; }
+.dark .lt-dirty-badge { color: #5fcf8a; background: rgba(33,150,83,.18); border-color: rgba(95,207,138,.3); }
 </style>

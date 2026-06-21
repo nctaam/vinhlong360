@@ -9,28 +9,31 @@
     </div>
 
     <!-- Form -->
-    <form class="db-form" @submit.prevent="create">
+    <form class="db-form" @submit.prevent="create" @keydown.ctrl.enter.prevent="create" @keydown.meta.enter.prevent="create">
       <h3 class="db-form-title">Thêm cơ quan mới</h3>
       <div class="db-form-grid">
         <label class="db-field">
           <span class="db-field-label">Tên cơ quan *</span>
-          <input v-model="f.name" class="input" required placeholder="UBND xã An Bình" />
+          <input v-model="f.name" class="input" :class="{ 'db-input-error': formErrors.name }" required placeholder="UBND xã An Bình" :aria-invalid="!!formErrors.name" />
+          <span v-if="formErrors.name" class="db-field-error" role="alert">{{ formErrors.name }}</span>
         </label>
         <label class="db-field">
           <span class="db-field-label">Loại cơ quan *</span>
-          <select v-model="f.office_kind" class="input" required>
+          <select v-model="f.office_kind" class="input" :class="{ 'db-input-error': formErrors.office_kind }" required :aria-invalid="!!formErrors.office_kind">
             <option value="">— Chọn —</option>
             <option v-for="(m, k) in OFFICE_KIND" :key="k" :value="k">{{ m.emoji }} {{ m.label }}</option>
           </select>
+          <span v-if="formErrors.office_kind" class="db-field-error" role="alert">{{ formErrors.office_kind }}</span>
         </label>
         <label class="db-field">
           <span class="db-field-label">Xã / phường *</span>
-          <select v-model="f.placeId" class="input" required>
+          <select v-model="f.placeId" class="input" :class="{ 'db-input-error': formErrors.placeId }" required :aria-invalid="!!formErrors.placeId">
             <option value="">— Chọn —</option>
             <optgroup v-for="g in wardGroups" :key="g.area" :label="g.label">
               <option v-for="w in g.wards" :key="w.id" :value="w.id">{{ w.name }}</option>
             </optgroup>
           </select>
+          <span v-if="formErrors.placeId" class="db-field-error" role="alert">{{ formErrors.placeId }}</span>
         </label>
         <label class="db-field">
           <span class="db-field-label">Số điện thoại</span>
@@ -46,10 +49,18 @@
         </label>
         <label class="db-field db-field-full">
           <span class="db-field-label">Nguồn (URL chính thống) *</span>
-          <input v-model="f.sourceUrl" class="input" required placeholder="https://...gov.vn/..." />
+          <input v-model="f.sourceUrl" class="input" :class="{ 'db-input-error': formErrors.sourceUrl, 'db-input-ok': sourceUrlValid }" required placeholder="https://...gov.vn/..." :aria-invalid="!!formErrors.sourceUrl" />
+          <span v-if="formErrors.sourceUrl" class="db-field-error" role="alert">{{ formErrors.sourceUrl }}</span>
+          <span v-else-if="f.sourceUrl && !sourceUrlValid" class="db-field-hint">Nên là URL chính thống .gov.vn (bắt đầu bằng https://)</span>
         </label>
       </div>
-      <button type="submit" class="btn btn-primary" :disabled="busy">{{ busy ? 'Đang lưu...' : 'Thêm cơ quan' }}</button>
+      <div class="db-form-actions">
+        <button type="submit" class="btn btn-primary" :disabled="busy" title="Lưu (Ctrl+Enter)">
+          <span v-if="busy" class="db-save-spinner" aria-hidden="true"></span>
+          {{ busy ? 'Đang lưu...' : 'Thêm cơ quan' }}
+        </button>
+        <span v-if="isDirty && !busy" class="sf-dirty-badge" role="status">Chưa lưu</span>
+      </div>
     </form>
 
     <!-- List -->
@@ -59,7 +70,10 @@
         <span v-if="facilities.length" class="db-count-badge">{{ facilities.length }}</span>
       </div>
 
-      <div v-if="loadingList" class="admin-loading"><div class="spinner"></div></div>
+      <div v-if="loadingList" class="admin-loading" role="status" aria-live="polite">
+        <div class="spinner"></div>
+        <span class="db-sr-only">Đang tải danh sách cơ quan...</span>
+      </div>
       <template v-else>
         <div v-if="facilities.length" class="admin-table-wrap">
           <table class="admin-table">
@@ -76,15 +90,16 @@
                 </td>
                 <td class="admin-td-muted"><small>{{ e.source?.url || e.source?.title || '—' }}</small></td>
                 <td>
-                  <button type="button" class="btn-danger btn-sm" style="border:none" :disabled="deleting === e.id" @click="del(e)">Xóa</button>
+                  <button type="button" class="btn-danger btn-sm db-del-btn" :disabled="deleting === e.id" :aria-label="`Xóa ${e.name}`" @click="del(e)">{{ deleting === e.id ? 'Đang xóa...' : 'Xóa' }}</button>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-        <div v-else class="db-empty">
-          <span class="db-empty-icon">&#127963;</span>
-          <span>Chưa có cơ quan nào. Thêm từ form trên.</span>
+        <div v-else class="admin-empty-state">
+          <span class="admin-empty-state-icon" aria-hidden="true">&#127963;</span>
+          <span class="admin-empty-state-text">Chưa có cơ quan nào</span>
+          <span class="admin-empty-state-hint">Thêm cơ quan đầu tiên từ form phía trên.</span>
         </div>
       </template>
     </div>
@@ -100,11 +115,35 @@ const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const ADMIN_LEVELS = ['phuong', 'xa', 'tinh']
 
-const f = ref({ name: '', office_kind: '', placeId: '', phone: '', address: '', hours: '', sourceUrl: '' })
+const EMPTY_FORM = { name: '', office_kind: '', placeId: '', phone: '', address: '', hours: '', sourceUrl: '' }
+const f = ref({ ...EMPTY_FORM })
 const busy = ref(false)
 const facilities = ref<Entity[]>([])
 const loadingList = ref(true)
 const deleting = ref<string | null>(null)
+
+// Inline field-level validation messages (cleared as the user edits).
+const formErrors = ref<Record<string, string>>({})
+
+// Dirty-state: true once the operator has typed anything into the form.
+const initialSnapshot = JSON.stringify(EMPTY_FORM)
+const isDirty = computed(() => JSON.stringify(f.value) !== initialSnapshot)
+
+// Soft live hint for the source URL (does NOT block submit — any official URL is accepted).
+const sourceUrlValid = computed(() => /^https:\/\/.+\.gov\.vn/i.test(f.value.sourceUrl.trim()))
+
+// Clear a field's inline error as soon as the operator edits it.
+watch(f, () => { if (Object.keys(formErrors.value).length) validate() }, { deep: true })
+
+function validate(): boolean {
+  const errs: Record<string, string> = {}
+  if (!f.value.name) errs.name = 'Bắt buộc nhập tên cơ quan'
+  if (!f.value.office_kind) errs.office_kind = 'Chọn loại cơ quan'
+  if (!f.value.placeId) errs.placeId = 'Chọn xã / phường'
+  if (!f.value.sourceUrl) errs.sourceUrl = 'Bắt buộc khai nguồn chính thống'
+  formErrors.value = errs
+  return Object.keys(errs).length === 0
+}
 
 const { data: places } = await useAsyncData('adb-places', () => $fetch<Place[]>('/api/places').catch(() => []))
 const placeById = computed(() => Object.fromEntries((places.value || []).map((p: Entity) => [p.id, p])))
@@ -137,7 +176,7 @@ async function loadFacilities() {
 }
 
 async function create() {
-  if (!f.value.name || !f.value.office_kind || !f.value.placeId || !f.value.sourceUrl) {
+  if (!validate()) {
     showToast('Vui lòng điền đầy đủ các trường bắt buộc', 'error'); return
   }
   busy.value = true
@@ -153,7 +192,8 @@ async function create() {
       },
     })
     showToast('Đã thêm cơ quan', 'success')
-    f.value = { name: '', office_kind: '', placeId: '', phone: '', address: '', hours: '', sourceUrl: '' }
+    f.value = { ...EMPTY_FORM }
+    formErrors.value = {}
     await loadFacilities()
   } catch (e: unknown) {
     showToast((e as any)?.data?.detail || 'Thêm thất bại (id trùng?)', 'error')
@@ -198,6 +238,35 @@ onMounted(loadFacilities)
 .db-field:focus-within .db-field-label { color: var(--primary, #219653); }
 .db-field-full { grid-column: 1 / -1; }
 
+/* ── Inline validation ── */
+.db-field-error {
+  font-size: .74rem; font-weight: 500; color: var(--error, #D94F3D);
+  display: flex; align-items: center; gap: 4px;
+}
+.db-field-error::before { content: "\26A0"; font-size: .8em; }
+.db-field-hint { font-size: .74rem; color: var(--muted); }
+.db-input-error { border-color: var(--error, #D94F3D) !important; }
+.db-input-error:focus { box-shadow: 0 0 0 3px rgba(217,79,61,.12); }
+.db-input-ok { border-color: rgba(33,150,83,.5); }
+
+/* ── Form actions ── */
+.db-form-actions { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.db-save-spinner {
+  display: inline-block; width: 14px; height: 14px; margin-right: 6px;
+  vertical-align: -2px; border: 2px solid currentColor; border-top-color: transparent;
+  border-radius: 50%; animation: admin-spin .6s linear infinite;
+}
+
+/* ── Delete button: touch target + focus-visible ── */
+.db-del-btn { border: none; min-height: 44px; }
+.db-del-btn:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
+
+/* ── Screen-reader-only ── */
+.db-sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
 /* ── List ── */
 .db-list-section { margin-top: var(--space-4); }
 .db-list-head {
@@ -212,21 +281,27 @@ onMounted(loadFacilities)
 }
 .db-meta { display: block; color: var(--muted); margin-top: 2px; font-size: .78rem; }
 
-.db-empty {
-  display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
-  padding: var(--space-8);
-  background: var(--bg); border: .5px solid var(--line); border-radius: 14px;
-  color: var(--muted); font-size: .88rem;
+/* ── Dirty / unsaved indicator (mirrors SettingsForm .sf-dirty-badge) ── */
+.sf-dirty-badge {
+  display: inline-flex; align-items: center;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: .72rem; font-weight: 600; color: var(--primary, #219653);
+  background: rgba(33,150,83,.1); border: .5px solid rgba(33,150,83,.25);
 }
-.db-empty-icon { font-size: 2rem; opacity: .3; }
 
 /* ── Dark ── */
 .dark .db-form { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 .dark .db-form:focus-within { box-shadow: 0 4px 20px rgba(0,0,0,.3); border-color: rgba(33,150,83,.3); }
 .dark .db-count-badge { background: rgba(52,120,246,.12); }
-.dark .db-empty { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
+.dark .sf-dirty-badge { color: #5fcf8a; background: rgba(33,150,83,.18); border-color: rgba(95,207,138,.3); }
+.dark .db-input-ok { border-color: rgba(95,207,138,.45); }
 
 @media (max-width: 640px) {
   .db-form-grid { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .db-save-spinner { animation: none; }
+  .db-form { transition: none; }
 }
 </style>
