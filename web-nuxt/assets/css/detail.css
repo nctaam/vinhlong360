@@ -1,39 +1,6 @@
 /* ── Detail page ── */
 
-/* Breadcrumb — horizontal scroll on mobile (Baymard: don't truncate hierarchy) */
-.breadcrumb { max-width: var(--maxw); margin: 0 auto; padding: var(--space-3) var(--space-5) 0; display: flex; align-items: center; gap: var(--space-2); }
-/* Visible back button — wires the orphaned goBack(); discoverable return path */
-.bc-back { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; min-width: 44px; min-height: 44px; border-radius: var(--radius-full); border: .5px solid var(--line); background: var(--card); color: var(--ink); font-size: 1.15rem; line-height: 1; cursor: pointer; transition: background .3s var(--ease-out), border-color .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
-.bc-back:hover { background: var(--bg-warm); border-color: var(--primary-fg); transform: translateX(-2px); box-shadow: var(--shadow-xs); }
-.bc-back:active { transform: scale(.93); transition-duration: .08s; }
-.bc-back:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.dark .bc-back { background: var(--card); border-color: var(--line); }
-.dark .bc-back:hover { background: rgba(255,255,255,.06); }
-.breadcrumb ol { flex: 1; min-width: 0; list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: nowrap; gap: var(--space-1); font-size: var(--text-xs); color: var(--muted); overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; mask-image: linear-gradient(to right, #000 85%, transparent); -webkit-mask-image: linear-gradient(to right, #000 85%, transparent); }
-.breadcrumb ol::-webkit-scrollbar { display: none; }
-.breadcrumb li { white-space: nowrap; flex-shrink: 0; }
-.breadcrumb li::after { content: '/'; margin-inline-start: var(--space-2); opacity: .5; }
-.breadcrumb li:last-child::after { display: none; }
-.breadcrumb li:last-child { color: var(--ink); font-weight: var(--weight-semibold); }
-.breadcrumb a { color: var(--primary-fg); transition: color .3s var(--ease-out); min-height: 44px; display: inline-flex; align-items: center; padding: var(--space-2) var(--space-1); }
-.breadcrumb a:hover { text-decoration: underline; }
-.breadcrumb a:active { opacity: .7; }
-.breadcrumb a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-
-/* Highlights quét nhanh (giờ/giá/liên hệ/map) — đầu trang, trên fold.
-   Action chips (Gọi/Zalo/Bản đồ) = premium pill cluster; info chips = quiet & cohesive. */
-.highlights { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0 0 var(--space-5); }
-.hl { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: var(--weight-semibold); min-height: 44px; line-height: 1.2; flex-shrink: 0; }
-.hl:not(a) { background: var(--bg-warm); color: var(--ink); border: .5px solid var(--line); transition: transform .3s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), background .3s var(--ease-out), border-color .3s var(--ease-out); }
-.hl:not(a):hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); background: var(--card); border-color: var(--border); }
-/* Primary action chip — filled brand pill with depth + spring press */
-a.hl { background: var(--primary); color: var(--text-on-dark, #fff); min-height: 44px; box-shadow: 0 2px 8px rgba(var(--primary-rgb), .28), inset 0 1px 0 rgba(255,255,255,.16); transition: background .3s var(--ease-out), transform .3s var(--ease-spring-gentle), box-shadow .3s var(--ease-out-expo); }
-a.hl:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(var(--primary-rgb), .36), inset 0 1px 0 rgba(255,255,255,.2); }
-a.hl:active { transform: scale(.96); transition-duration: .08s; }
-a.hl:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-/* Zalo highlight reads in its own brand color for instant recognition */
-a.hl-action[href^="https://zalo"] { background: var(--brand-zalo); box-shadow: 0 2px 8px rgba(0,104,255,.3), inset 0 1px 0 rgba(255,255,255,.18); }
-a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); box-shadow: 0 6px 18px rgba(0,104,255,.38), inset 0 1px 0 rgba(255,255,255,.22); }
+/* Breadcrumb + Highlights → assets/css/detail-shared.css (global, dùng cả ngoài trang chi tiết) */
 
 .detail-cover { color: var(--text-on-dark, #fff); background: var(--cat-place); padding: var(--space-8) var(--space-5) var(--space-8); position: relative; overflow: hidden; }
 .detail-cover.has-cover-img { padding: 0; min-height: 380px; display: flex; align-items: flex-end; }
@@ -237,30 +204,7 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
 .ms-legend { display: flex; gap: var(--space-2); align-items: center; color: var(--muted); font-size: var(--text-xs); margin-top: var(--space-2); }
 .ms-legend-swatch { width: 16px; height: 16px; }
 
-/* ── Legacy gallery (kept for backward compat, hidden when cover has images) ── */
-.detail-gallery .detail-img { cursor: pointer; transition: opacity .3s var(--ease-out), transform .35s var(--ease-spring-gentle); }
-.detail-gallery .detail-img:hover { opacity: .85; transform: scale(1.02); }
-.detail-gallery .detail-img:active { transform: scale(.97); transition-duration: .08s; }
-
-/* ── Lightbox ── */
-.lightbox { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,.94); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); display: flex; align-items: center; justify-content: center; }
-.lb-fade-enter-active { transition: opacity .3s var(--ease-out-expo); }
-.lb-fade-enter-active .lb-img { transition: transform .4s var(--ease-spring-gentle), opacity .3s var(--ease-out); }
-.lb-fade-leave-active { transition: opacity .25s var(--ease-out); }
-.lb-fade-enter-from, .lb-fade-leave-to { opacity: 0; }
-.lb-fade-enter-from .lb-img { transform: scale(.92); }
-.lb-img { max-width: 90vw; max-height: 85vh; object-fit: contain; border-radius: var(--radius-md); box-shadow: 0 16px 64px rgba(0,0,0,.5); transition: transform .35s var(--ease-spring-gentle), opacity .3s var(--ease-out); user-select: none; -webkit-user-drag: none; touch-action: pan-y; }
-.lb-close { position: absolute; top: var(--space-4); right: var(--space-5); font-size: 1.6rem; color: var(--text-on-dark, #fff); background: rgba(255,255,255,.1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: .5px solid rgba(255,255,255,.15); cursor: pointer; line-height: 1; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background .3s var(--ease-out), transform .3s var(--ease-spring-gentle); }
-.lb-close:hover { background: rgba(255,255,255,.22); transform: scale(1.08); }
-.lb-close:active { transform: scale(.9); transition-duration: .08s; }
-.lb-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
-.lb-prev, .lb-next { position: absolute; top: 50%; transform: translateY(-50%); font-size: 1.6rem; color: var(--text-on-dark, #fff); background: rgba(255,255,255,.08); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: .5px solid rgba(255,255,255,.12); cursor: pointer; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background .3s var(--ease-out), transform .3s var(--ease-spring-gentle); }
-.lb-prev { left: var(--space-4); }
-.lb-next { right: var(--space-4); }
-.lb-prev:hover, .lb-next:hover { background: rgba(255,255,255,.2); transform: translateY(-50%) scale(1.08); }
-.lb-prev:active, .lb-next:active { transform: translateY(-50%) scale(.92); }
-.lb-prev:focus-visible, .lb-next:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
-.lb-counter { position: absolute; bottom: var(--space-5); left: 50%; transform: translateX(-50%); color: var(--text-on-dark, #fff); font-size: var(--text-sm); font-weight: var(--weight-semibold); background: rgba(0,0,0,.45); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); padding: var(--space-1) var(--space-4); border-radius: var(--radius-full); letter-spacing: .02em; border: .5px solid rgba(255,255,255,.12); }
+/* Legacy gallery + Lightbox → assets/css/detail-shared.css (global; dùng bởi ImageGallery + PostCard) */
 
 /* Reviews CSS → components/EntityReviews.vue (route-load, GĐ-HARDEN CWV — bỏ khỏi global entry.css) */
 
@@ -432,9 +376,7 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
 
 /* ── Relationship list (hover highlight is on the li above, no extra borders needed) ── */
 
-@media (prefers-reduced-motion: reduce) {
-  .lb-fade-enter-active, .lb-fade-leave-active { transition-duration: 0s; }
-  .dc-bg { transition: opacity .3s; filter: none; }
+@media (prefers-reduced-motion: reduce) {  .dc-bg { transition: opacity .3s; filter: none; }
   .dc-bg.loaded { animation: none; transform: none; }
   .detail-cover:hover .dc-bg.loaded { transform: none; }
   .dc-inner > * { animation: none; }
@@ -444,7 +386,7 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
   .desc-toggle-icon { transition: none; }
   .dc-thumb:hover, .dc-thumb.active { transform: none; }
   .ms-cell:hover { transform: none; }
-  .ms-cell.on.peak { animation: none; }  .bc-back:hover { transform: none; }
+  .ms-cell.on.peak { animation: none; }
   .ns-action:hover { transform: none; }
   .pt-item:hover { transform: none; }  .rel-list li:hover { transform: none; }  .ocop-highlight:hover { transform: none; }
   .provenance-block:hover { box-shadow: 0 0 0 1px rgba(var(--secondary-rgb), .1), var(--shadow-xs); }
@@ -457,9 +399,7 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
   .dc-thumbs { right: 120px; }}
 @media (max-width: 840px) {
   .detail-body { grid-template-columns: 1fr; }
-  .detail-aside { position: static; max-height: none; overflow-y: visible; }
-  .breadcrumb { padding: var(--space-3) var(--space-4) 0; }
-  /* Sticky CTA bar is the single source of truth for contact on mobile —
+  .detail-aside { position: static; max-height: none; overflow-y: visible; }  /* Sticky CTA bar is the single source of truth for contact on mobile —
      hide the duplicate sidebar contact-row to avoid showing Gọi/Zalo twice. */
   .contact-row { display: none; }
 }
@@ -472,9 +412,7 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
   .dc-thumbs { display: none; }
   .dc-credit { display: none; }
   /* Highlights (phone/Zalo/hours/price) already render first in .detail-main —
-     tighten them toward the fold so primary info sits just under the hero. */
-  .highlights { margin: 0 0 var(--space-4); gap: var(--space-1); }
-}
+     tighten them toward the fold so primary info sits just under the hero. */}
 /* Ultra-narrow: drop the map button so phone + Zalo stay full-width and legible
    without text wrap; emoji always visible to preserve meaning. */
 @media (max-width: 320px) {
@@ -508,12 +446,8 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
 }
 .dark .pb-report:active {
   background: rgba(255, 255, 255, .12);
-}
-.dark .breadcrumb li:last-child { color: var(--ink); }
-.dark .ms-cell.on.peak { color: var(--ink-900); }
-.dark .detail-cover.has-cover-img .dc-overlay { background: linear-gradient(to top, rgba(0,0,0,.82) 0%, rgba(0,0,0,.5) 40%, rgba(0,0,0,.18) 75%, rgba(0,0,0,.08) 100%); }
-.dark .hl:not(a) { background: var(--bg-alt); border-color: var(--line); }
-.dark .practical-tips { border-color: var(--line); }
+}.dark .ms-cell.on.peak { color: var(--ink-900); }
+.dark .detail-cover.has-cover-img .dc-overlay { background: linear-gradient(to top, rgba(0,0,0,.82) 0%, rgba(0,0,0,.5) 40%, rgba(0,0,0,.18) 75%, rgba(0,0,0,.08) 100%); }.dark .practical-tips { border-color: var(--line); }
 .dark .pt-item { border-color: var(--line); }
 .dark .fact { border-color: var(--line); }
 .dark .facts-card { background: rgba(255,255,255,.02); border-color: var(--line); }
@@ -612,12 +546,4 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
   .detail-body { padding-bottom: 120px; }
 }
 
-/* ── Map ── */
-.map-filters { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-3); }
-@media (max-width: 840px) { .map-filters { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: var(--space-1); } .map-filters::-webkit-scrollbar { display: none; } }
-#mapContainer { height: 560px; border-radius: var(--radius); overflow: hidden; border: .5px solid var(--line); background: var(--map-bg); box-shadow: var(--shadow-sm); }
-@media (max-width: 768px) { #mapContainer { height: 400px; } }
-@media (max-width: 480px) { #mapContainer { height: 300px; } }
-.map-legend { display: flex; gap: var(--space-5); margin-top: var(--space-3); font-size: var(--text-sm); color: var(--muted); flex-wrap: wrap; }
-.ml-item { display: flex; align-items: center; gap: var(--space-2); }
-.ml-item i { display: inline-block; width: 14px; height: 14px; border-radius: 50%; }
+/* ── Map (trang ban-do) → assets/css/detail-shared.css (global) ── */

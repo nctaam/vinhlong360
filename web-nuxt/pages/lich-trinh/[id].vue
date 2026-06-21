@@ -325,6 +325,9 @@ if (itinerary.value && !itinerary.value.error) {
 }
 </script>
 
+<!-- detail.css nạp theo route (bỏ khỏi global entry.css; phần dùng-chung ở detail-shared.css) -->
+<style src="~/assets/css/detail.css"></style>
+
 <style scoped>
 .itin-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-4) 0; }
 .itin-actions .btn { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }

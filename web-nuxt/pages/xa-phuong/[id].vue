@@ -268,6 +268,9 @@ watch(mapEl, async (el) => {
 }, { once: true })
 </script>
 
+<!-- detail.css nạp theo route (bỏ khỏi global entry.css; phần dùng-chung ở detail-shared.css) -->
+<style src="~/assets/css/detail.css"></style>
+
 <style scoped>
 .wp { max-width: var(--maxw, 1100px); margin: 0 auto; padding: 0 var(--space-4) var(--space-16); }
 

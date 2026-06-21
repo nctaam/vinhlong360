@@ -779,3 +779,6 @@ if (entity.value && !entity.value.error) {
   })
 }
 </script>
+
+<!-- detail.css nạp theo route (bỏ khỏi global entry.css; phần dùng-chung ở detail-shared.css) -->
+<style src="~/assets/css/detail.css"></style>

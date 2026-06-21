@@ -32,7 +32,10 @@ export default defineNuxtConfig({
     '~/assets/css/base.css',
     '~/assets/css/components.css',
     '~/assets/css/cards.css',
-    '~/assets/css/detail.css',
+    // detail.css KHÔNG global: chỉ 3 trang chi tiết (dia-diem/xa-phuong/lich-trinh) dùng
+    // → import qua <style src> trong 3 page đó (bỏ ~35KB khỏi entry.css mọi trang).
+    // detail-shared.css = phần dùng-chung (breadcrumb/highlights/lightbox/map) GIỮ global.
+    '~/assets/css/detail-shared.css',
     '~/assets/css/catalog.css',
     // events.css KHÔNG global: chỉ le-hoi.vue + su-kien.vue dùng (xem <style src> trong 2 page đó)
     // → bỏ ~10.5KB khỏi entry.css mọi trang. Verify usage: scratch/analyze_css.py.
