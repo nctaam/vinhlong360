@@ -22,10 +22,13 @@
       <span class="cover-tag cat-itinerary">🗺️ Lịch trình</span>
     </div>
     <div class="card-b">
-      <span class="card-type">{{ areaEmoji }} {{ areaName }} · {{ itinerary.duration }}</span>
+      <span class="card-type">{{ areaEmoji }} {{ areaName }}</span>
       <h3>{{ itinerary.title || itinerary.name }}</h3>
+      <div class="itinerary-badge-row">
+        <span v-if="itinerary.duration" class="itinerary-duration-badge">🕐 {{ itinerary.duration }}</span>
+        <span class="itinerary-stops-badge">🗺️ {{ stopCount }} điểm dừng</span>
+      </div>
       <p class="summary">{{ itinerary.summary || itinerary.description || '' }}</p>
-      <p class="place">{{ itinerary.stops?.length || 0 }} điểm dừng</p>
     </div>
   </NuxtLink>
 </template>
@@ -49,4 +52,6 @@ const placeholderSvg = computed(() => generateCategoryIcon('itinerary'))
 const areaMeta = computed(() => AREA_META[props.itinerary.area] || { emoji: '📍', name: props.itinerary.area })
 const areaEmoji = computed(() => areaMeta.value.emoji)
 const areaName = computed(() => areaMeta.value.name)
+// stop count drives the curated-trip indicator badge (duration + stops)
+const stopCount = computed(() => props.itinerary.stops?.length ?? props.itinerary.days?.reduce((n: number, d: any) => n + (d.stops?.length || 0), 0) ?? 0)
 </script>

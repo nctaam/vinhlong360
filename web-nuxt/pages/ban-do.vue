@@ -14,28 +14,41 @@
     </section>
 
     <ClientOnly>
-      <div class="map-filters reveal" role="group" aria-label="Lọc theo loại địa điểm">
-        <button type="button" v-for="f in typeFilters" :key="f.value" :class="['chip', { active: activeTypes.has(f.value) }]" :aria-pressed="activeTypes.has(f.value)" @click="toggleType(f.value)">
-          {{ f.label }}
-        </button>
+      <div class="controls map-filters reveal">
+        <div class="chip-row" role="group" aria-label="Lọc theo loại địa điểm">
+          <button type="button" v-for="f in typeFilters" :key="f.value" :class="['chip', { active: activeTypes.has(f.value) }]" :aria-pressed="activeTypes.has(f.value)" @click="toggleType(f.value)">
+            {{ f.label }}
+          </button>
+        </div>
+        <p class="result-meta" aria-live="polite">
+          {{ visibleLabel }}
+        </p>
       </div>
     </ClientOnly>
 
     <ClientOnly>
-      <p v-if="!activeTypes.has('all') && visibleCount === 0 && !mapLoadError && !fetchError" class="map-empty-notice" role="status" style="text-align:center; padding:var(--space-3); color:var(--muted); font-size:var(--text-sm)">
-        Chưa có địa điểm nào thuộc loại này trên bản đồ. Thử bỏ bớt bộ lọc nhé.
-      </p>
+      <div v-if="!activeTypes.has('all') && visibleCount === 0 && !mapLoadError && !fetchError" class="block map-empty-block">
+        <EmptyState
+          icon="🗺️"
+          title="Chưa có địa điểm nào"
+          message="Không có địa điểm thuộc loại đang lọc trên bản đồ. Thử bỏ bớt bộ lọc để xem thêm."
+        >
+          <template #actions>
+            <button type="button" class="btn btn-outline btn-sm" @click="toggleType('all')">Xem tất cả</button>
+          </template>
+        </EmptyState>
+      </div>
     </ClientOnly>
-    <div v-if="fetchError" class="fetch-error">
-      <EmptyState message="Không thể tải dữ liệu bản đồ." icon="🗺️">
+    <div v-if="fetchError" class="block fetch-error">
+      <EmptyState title="Không tải được dữ liệu" message="Không thể tải dữ liệu bản đồ. Vui lòng kiểm tra kết nối và thử lại." icon="🗺️" tone="error">
         <template #actions>
           <button type="button" class="btn btn-outline btn-sm" @click="$router.go(0)">Tải lại trang</button>
           <NuxtLink to="/" class="btn btn-ghost btn-sm">Về trang chủ</NuxtLink>
         </template>
       </EmptyState>
     </div>
-    <div v-if="mapLoadError" class="fetch-error">
-      <EmptyState message="Không tải được bản đồ. Vui lòng kiểm tra kết nối và thử lại." icon="🗺️" tone="error">
+    <div v-if="mapLoadError" class="block fetch-error">
+      <EmptyState title="Không tải được bản đồ" message="Không tải được bản đồ. Vui lòng kiểm tra kết nối và thử lại." icon="🗺️" tone="error">
         <template #actions>
           <button type="button" class="btn btn-outline btn-sm" @click="$router.go(0)">Tải lại trang</button>
         </template>
@@ -112,10 +125,23 @@ function esc(s: string) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
+// GĐ-UX: popup có bố cục flex + viền trái theo màu loại điểm (etype) cho cảm giác premium.
+// Inputs phải đã esc() trước khi truyền vào (color là literal hex an toàn).
+function popupHTML(emoji: string, name: string, label: string, color: string, id: string) {
+  const labelLine = label ? `<small style="display:block;color:var(--muted,#666);margin-top:2px">${label}</small>` : ''
+  const linkLine = id ? `<a href="/dia-diem/${id}" style="display:inline-block;margin-top:6px;font-weight:600">Xem chi tiết →</a>` : ''
+  return `<div style="display:flex;gap:8px;border-left:4px solid ${color};padding-left:8px"><div style="font-size:1.15rem;line-height:1.2">${emoji}</div><div style="min-width:0"><strong style="display:block">${name}</strong>${labelLine}${linkLine}</div></div>`
+}
+
 // GĐ10.4: normalizeCoords gom vào composables/useCoords.ts (Nuxt auto-import).
 
 // GĐ10.2: dựng GeoJSON từ entity đã lọc (thay 700 DOM marker bằng nguồn GeoJSON + clustering).
 const visibleCount = ref(0)
+const visibleLabel = computed(() =>
+  activeTypes.value.has('all')
+    ? `${visibleCount.value} địa điểm`
+    : `${visibleCount.value} địa điểm phù hợp`
+)
 function buildGeoJSON() {
   const show = activeTypes.value
   const features: Record<string, unknown>[] = []
@@ -143,6 +169,10 @@ function updateMarkers() {
   // Lọc theo type = nạp lại dữ liệu nguồn (clustering tự dựng lại).
   mapRef?.getSource?.('entities')?.setData(buildGeoJSON())
 }
+
+// Seed result-meta đếm số điểm ngay khi có dữ liệu (trước khi map style load xong),
+// tránh nháy "0 địa điểm" trong pill. Chỉ chạy client (pill nằm trong ClientOnly).
+onMounted(() => { buildGeoJSON() })
 
 const mapLoadError = ref(false)
 watch(mapEl, async (el) => {
@@ -208,9 +238,10 @@ watch(mapEl, async (el) => {
       const f = ev.features?.[0]
       if (!f) return
       const p = f.properties
+      const pColor = MARKER_COLORS[p.etype as string] || (p.color as string) || '#9C3D22'
       new maplibregl.Popup({ offset: 12 })
         .setLngLat(f.geometry.coordinates)
-        .setHTML(`<strong>${esc(p.emoji)} ${esc(p.name)}</strong><br><small>${esc(p.label)}</small><br><a href="/dia-diem/${esc(p.id)}">Xem chi tiết →</a>`)
+        .setHTML(popupHTML(esc(p.emoji), esc(p.name), esc(p.label), pColor, esc(p.id)))
         .addTo(map)
     })
     for (const lid of ['clusters', 'unclustered']) {
@@ -228,8 +259,9 @@ watch(mapEl, async (el) => {
       map.flyTo({ center: [flng, flat], zoom: 15 })
       const m: any = fent ? (TYPE_META[fent.type] || { emoji: '📍' }) : { emoji: '📍' }
       const nm = fent ? fent.name : 'Địa điểm'
+      const fColor = fent ? (MARKER_COLORS[fent.type] || '#9C3D22') : '#9C3D22'
       new maplibregl.Popup({ offset: 12 }).setLngLat([flng, flat])
-        .setHTML(`<strong>${esc(m.emoji || '📍')} ${esc(nm)}</strong>${fent ? `<br><small>${esc(m.label || fent.type)}</small>` : ''}`)
+        .setHTML(popupHTML(esc(m.emoji || '📍'), esc(nm), fent ? esc(m.label || fent.type) : '', fColor, fent ? esc(fent.id) : ''))
         .addTo(map)
     }
   }
@@ -263,11 +295,52 @@ useHead({
 </script>
 
 <style scoped>
-#mapContainer { height: 65vh; min-height: 400px; border-radius: var(--radius-lg, 16px); overflow: hidden; box-shadow: var(--shadow-md); border: .5px solid var(--line); transition: box-shadow .35s var(--ease-out-expo); }
-#mapContainer:hover { box-shadow: var(--shadow-lg); }
-.map-fallback { display: flex; align-items: center; justify-content: center; background: var(--bg-alt); }
+#mapContainer {
+  height: 65vh; min-height: 400px;
+  border-radius: var(--radius-lg, 16px);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  border: .5px solid var(--line);
+  transition: box-shadow .35s var(--ease-out-expo), transform .35s var(--ease-out-expo);
+  will-change: transform;
+}
+/* Refined elevation: stacked brand-tinted + ambient depth shadow with a hair of lift. */
+#mapContainer:hover {
+  box-shadow:
+    0 8px 28px -8px rgba(var(--primary-rgb), .28),
+    0 20px 48px -20px rgba(0, 0, 0, .35);
+  transform: scale(1.005);
+}
+
+/* Designed loading state: card-like surface with radial brand wash, matching
+   the .block .empty-state aesthetic so the wait moment feels intentional. */
+.map-fallback {
+  display: flex; align-items: center; justify-content: center;
+  background:
+    radial-gradient(120% 90% at 50% -10%, rgba(var(--primary-rgb), .06), transparent 60%),
+    var(--bg-alt);
+  border: .5px solid var(--line);
+}
+.dark .map-fallback {
+  background:
+    radial-gradient(120% 90% at 50% -10%, rgba(var(--primary-rgb), .08), transparent 60%),
+    var(--bg-alt);
+}
+
+/* Controls panel spacing for the filter/result row. */
 .map-filters { margin-bottom: var(--space-4); }
 
-/* Dark mode */
+/* Dark mode: keep a visible hairline + deeper ambient hover shadow. */
 .dark #mapContainer { border-color: var(--line); box-shadow: var(--shadow-lg); }
+.dark #mapContainer:hover {
+  box-shadow:
+    0 8px 28px -8px rgba(var(--primary-rgb), .34),
+    0 22px 52px -20px rgba(0, 0, 0, .6);
+}
+
+/* Reduced motion: no scale/transform on hover; keep the elevation cue. */
+@media (prefers-reduced-motion: reduce) {
+  #mapContainer { transition: box-shadow .35s var(--ease-out-expo); will-change: auto; }
+  #mapContainer:hover { transform: none; }
+}
 </style>

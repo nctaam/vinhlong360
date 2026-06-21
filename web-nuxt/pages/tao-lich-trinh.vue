@@ -13,6 +13,21 @@
       </div>
     </section>
 
+    <!-- Guided flow indicator -->
+    <ol class="planner-steps" aria-label="Các bước tạo lịch trình">
+      <li :class="['planner-step', { active: !stops.length, done: stops.length > 0 }]">
+        <span class="step-dot">1</span><span class="step-label">Chọn điểm</span>
+      </li>
+      <li class="planner-step-sep" aria-hidden="true"></li>
+      <li :class="['planner-step', { active: stops.length > 0 && stops.length < 2, done: stops.length >= 2 }]">
+        <span class="step-dot">2</span><span class="step-label">Sắp xếp</span>
+      </li>
+      <li class="planner-step-sep" aria-hidden="true"></li>
+      <li :class="['planner-step', { active: stops.length >= 2 }]">
+        <span class="step-dot">3</span><span class="step-label">Xem & lưu</span>
+      </li>
+    </ol>
+
     <div class="planner-layout">
       <!-- Left: Entity picker -->
       <div class="planner-picker">
@@ -36,7 +51,7 @@
           <div
             v-for="e in pickerResults"
             :key="e.id"
-            class="picker-item"
+            :class="['picker-item', { adding: addingId === e.id }]"
             role="button"
             tabindex="0"
             @click="addStop(e)"
@@ -51,8 +66,12 @@
             <button type="button" class="btn btn-sm btn-ghost" title="Thêm vào lịch trình">+</button>
           </div>
           <p v-if="fetchError" class="empty picker-empty">⚠️ Không thể tải danh sách. <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData('planner-entities')">Thử lại</button></p>
-          <EmptyState v-else-if="sourceTab === 'saved' && !favCount" icon="❤️" title="Chưa có điểm đã lưu" message="Nhấn hình trái tim ở các điểm đến để lưu lại, rồi quay lại đây thêm vào lịch trình." />
-          <EmptyState v-else-if="!pickerResults.length" icon="🔎" title="Không tìm thấy" message="Thử từ khóa khác hoặc bỏ bộ lọc loại nhé." />
+          <div v-else-if="sourceTab === 'saved' && !favCount" class="premium-empty-state">
+            <EmptyState icon="❤️" title="Chưa có điểm đã lưu" message="Nhấn hình trái tim ở các điểm đến để lưu lại, rồi quay lại đây thêm vào lịch trình." />
+          </div>
+          <div v-else-if="!pickerResults.length" class="premium-empty-state">
+            <EmptyState icon="🔎" title="Không tìm thấy" message="Thử từ khóa khác hoặc bỏ bộ lọc loại nhé." />
+          </div>
         </div>
       </div>
 
@@ -62,7 +81,7 @@
           <input v-model="planTitle" class="input builder-title" placeholder="Tên lịch trình (VD: 2 ngày khám phá Vĩnh Long)" aria-label="Tên lịch trình" />
           <div class="builder-actions">
             <button type="button" class="btn btn-sm btn-ghost" @click="clearPlan" :disabled="!stops.length">Xóa tất cả</button>
-            <button type="button" class="btn btn-sm btn-primary" @click="savePlan" :disabled="!stops.length">Lưu lịch trình</button>
+            <button type="button" :class="['btn', 'btn-sm', 'btn-primary', { 'save-pulse': savePulse }]" @click="savePlan" :disabled="!stops.length">Lưu lịch trình</button>
           </div>
         </div>
 
@@ -84,7 +103,7 @@
 
         <div v-else class="stop-list">
           <template v-for="(stop, idx) in stops" :key="stop.id + '-' + idx">
-            <div class="stop-item">
+            <div class="stop-item" :style="{ animationDelay: `${idx * 50}ms` }">
               <div class="stop-num">{{ idx + 1 }}</div>
               <div class="stop-connector" v-if="idx < stops.length - 1"></div>
               <div class="stop-card">
@@ -95,8 +114,8 @@
                     <small>{{ stop.place_name || '' }} · {{ getTypeMeta(stop.type).label }}</small>
                   </div>
                   <div class="stop-card-actions">
-                    <button type="button" v-if="idx > 0" class="btn-icon-sm" title="Lên" aria-label="Di chuyển lên" @click="moveStop(idx, -1)">↑</button>
-                    <button type="button" v-if="idx < stops.length - 1" class="btn-icon-sm" title="Xuống" aria-label="Di chuyển xuống" @click="moveStop(idx, 1)">↓</button>
+                    <button type="button" v-if="idx > 0" class="btn-icon-sm move" title="Lên" aria-label="Di chuyển lên" @click="moveStop(idx, -1)">↑</button>
+                    <button type="button" v-if="idx < stops.length - 1" class="btn-icon-sm move" title="Xuống" aria-label="Di chuyển xuống" @click="moveStop(idx, 1)">↓</button>
                     <button type="button" class="btn-icon-sm danger" title="Xóa" aria-label="Xóa điểm dừng" @click="removeStop(idx)">✕</button>
                   </div>
                 </div>
@@ -201,6 +220,10 @@ const transportMode = ref<TransportMode>('driving')
 const routeResult = ref<RouteResult | null>(null)
 const routeLoading = ref(false)
 const routeMapEl = ref<HTMLElement | null>(null)
+const addingId = ref<string | null>(null)
+let addingTimer: ReturnType<typeof setTimeout> | null = null
+const savePulse = ref(false)
+let savePulseTimer: ReturnType<typeof setTimeout> | null = null
 
 const { createMap: createNDAMap } = useNDAMap()
 let mapInstance: unknown = null
@@ -266,6 +289,10 @@ function addStop(entity: Entity) {
     time: '',
     notes: '',
   })
+  // brief highlight to confirm the item was added
+  addingId.value = entity.id
+  if (addingTimer) clearTimeout(addingTimer)
+  addingTimer = setTimeout(() => { addingId.value = null }, 300)
 }
 
 function removeStop(idx: number) {
@@ -296,6 +323,10 @@ function savePlan() {
   }
   savedPlans.value.unshift(plan)
   localStorage.setItem('vl360_plans', JSON.stringify(savedPlans.value))
+  // brief spring feedback on the button to reinforce the save toast
+  savePulse.value = true
+  if (savePulseTimer) clearTimeout(savePulseTimer)
+  savePulseTimer = setTimeout(() => { savePulse.value = false }, 220)
   showToast(`Đã lưu "${plan.title}"`, 'success')
 }
 
@@ -451,6 +482,8 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (routeTimer) clearTimeout(routeTimer)
+  if (addingTimer) clearTimeout(addingTimer)
+  if (savePulseTimer) clearTimeout(savePulseTimer)
 })
 
 useSeoMeta({
@@ -540,11 +573,78 @@ useHead({
 .dark .builder-title { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
 .dark .stop-time-input, .dark .stop-note-input { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
 
+/* ── Guided flow step indicator ───────────────────────────── */
+.planner-steps {
+  list-style: none; margin: 0 0 var(--space-5); padding: 0;
+  display: flex; align-items: center; gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.planner-step { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--muted); font-size: var(--text-sm); transition: color .3s var(--ease-out); }
+.planner-step .step-dot {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: var(--text-xs); font-weight: var(--weight-bold);
+  background: var(--bg-alt); color: var(--muted);
+  border: .5px solid var(--line);
+  transition: background .3s var(--ease-out), color .3s var(--ease-out), border-color .3s var(--ease-out), box-shadow .3s var(--ease-out-expo), transform .35s var(--ease-spring-gentle);
+}
+.planner-step.active { color: var(--ink); font-weight: var(--weight-semibold); }
+.planner-step.active .step-dot { background: var(--primary); color: var(--text-on-dark, #fff); border-color: var(--primary); box-shadow: 0 0 0 4px rgba(var(--primary-rgb), .12); transform: scale(1.05); }
+.planner-step.done .step-dot { background: rgba(var(--secondary-rgb), .14); color: var(--secondary-fg); border-color: rgba(var(--secondary-rgb), .3); }
+.planner-step.done .step-label { color: var(--ink); }
+.planner-step-sep { flex: 1 1 18px; min-width: 18px; max-width: 48px; height: 2px; border-radius: 1px; background: var(--line); }
+.dark .planner-step .step-dot { background: var(--bg-alt); border-color: var(--line); }
+
+/* ── Premium picker empty state surface ───────────────────── */
+.premium-empty-state {
+  background:
+    radial-gradient(120% 90% at 50% -10%, rgba(var(--primary-rgb), .06), transparent 60%),
+    var(--card);
+  border: .5px solid var(--line);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8) var(--space-4);
+  position: relative; overflow: hidden;
+}
+.premium-empty-state::before {
+  content: ""; position: absolute; inset: auto 0 0 0; height: 90px;
+  opacity: .06; pointer-events: none;
+  background-repeat: no-repeat; background-position: center bottom; background-size: 480px auto;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22480%22%20height%3D%2290%22%20viewBox%3D%220%200%20480%2090%22%20fill%3D%22none%22%20stroke%3D%22%23586860%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M-20%2030%20Q60%2014%20140%2030%20T300%2030%20T460%2030%22%2F%3E%3Cpath%20d%3D%22M-20%2060%20Q60%2044%20140%2060%20T300%2060%20T460%2060%22%2F%3E%3C%2Fsvg%3E");
+}
+.premium-empty-state > * { position: relative; z-index: 1; }
+.dark .premium-empty-state {
+  background:
+    radial-gradient(120% 90% at 50% -10%, rgba(var(--primary-rgb), .08), transparent 60%),
+    var(--card);
+}
+.dark .premium-empty-state::before {
+  opacity: .07;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22480%22%20height%3D%2290%22%20viewBox%3D%220%200%20480%2090%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M-20%2030%20Q60%2014%20140%2030%20T300%2030%20T460%2030%22%2F%3E%3Cpath%20d%3D%22M-20%2060%20Q60%2044%20140%2060%20T300%2060%20T460%2060%22%2F%3E%3C%2Fsvg%3E");
+}
+
+/* ── Picker item: brief highlight when added ──────────────── */
+.picker-item.adding { background: rgba(var(--primary-rgb), .12); transform: scale(1.02); }
+
+/* ── Move buttons: draggable affordance on hover ──────────── */
+.stop-card-actions button.move:hover { background: var(--bg-warm); border-radius: var(--radius-full); }
+
+/* ── Save button: spring feedback on save ─────────────────── */
+.save-pulse { animation: save-pop .22s var(--ease-spring-gentle); }
+@keyframes save-pop { 0% { transform: scale(1); } 40% { transform: scale(.96); } 100% { transform: scale(1); } }
+
+/* ── Route loading: pulsing text while computing ──────────── */
+.route-loading { animation: route-loading-pulse 1.2s var(--ease-out) infinite; }
+@keyframes route-loading-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .picker-item:hover { transform: none; }
   .picker-item:active { transform: none; }
+  .picker-item.adding { transform: none; }
   .stop-card:hover { transform: none; }
   .stop-item { animation: none; }
+  .planner-step.active .step-dot { transform: none; }
+  .save-pulse { animation: none; }
+  .route-loading { animation: none; opacity: .7; }
 }
 </style>

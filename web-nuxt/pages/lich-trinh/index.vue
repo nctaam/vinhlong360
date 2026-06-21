@@ -102,12 +102,14 @@
       <div v-else-if="filtered.length" class="grid itin">
         <ItineraryCard v-for="it in filtered" :key="it.id" :itinerary="it" />
       </div>
-      <EmptyState v-else icon="🗺️" title="Chưa có lịch trình" message="Chưa có lịch trình gợi ý cho khu vực này. Bạn có thể tự tạo lịch trình riêng!">
-        <template #actions>
-          <button type="button" class="btn btn-outline" @click="areaFilter = 'all'">Xem tất cả khu vực</button>
-          <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-outline">Tự tạo lịch trình</NuxtLink>
-        </template>
-      </EmptyState>
+      <div v-else class="block empty-state itin-empty">
+        <EmptyState icon="🗺️" title="Khám phá từ vùng khác" :message="emptyMessage">
+          <template #actions>
+            <button type="button" class="btn btn-outline" @click="areaFilter = 'all'">Xem tất cả khu vực</button>
+            <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-primary">Tạo lịch trình</NuxtLink>
+          </template>
+        </EmptyState>
+      </div>
 
       <div class="block-cta">
         <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-primary">+ Tự tạo lịch trình</NuxtLink>
@@ -184,6 +186,12 @@ const filtered = computed(() => {
   return list.filter((it: Itinerary) => it.area === areaFilter.value)
 })
 
+const emptyMessage = computed(() => {
+  const meta = AREA_META[areaFilter.value as keyof typeof AREA_META]
+  const regionName = meta?.name || 'Khu vực này'
+  return `${regionName} chưa có lịch trình gợi ý, nhưng các vùng khác đang chờ bạn khám phá — hoặc tự tạo một lịch trình riêng theo sở thích.`
+})
+
 useSeoMeta({
   title: 'Lịch trình — vinhlong360',
   description: 'Tuyến tham quan Vĩnh Long, Bến Tre, Trà Vinh được thiết kế sẵn — chỉ cần chọn và đi. Hoặc tự tạo lịch trình cá nhân theo sở thích.',
@@ -247,6 +255,24 @@ useHead(() => ({
 .js-item:active { transform: scale(.97); transition-duration: .08s; }
 .js-emoji { font-size: var(--text-lg); }
 
+/* Premium hero stat-items: brand-tinted surface + accent border */
+.catalog-hero .stat-item {
+  background: rgba(var(--secondary-rgb), .04);
+  border-left: 3px solid var(--secondary);
+  border-radius: var(--radius-sm);
+  transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle);
+}
+.catalog-hero .stat-item:hover {
+  background: rgba(var(--secondary-rgb), .08);
+  transform: translateY(-2px);
+}
+.catalog-hero .stat-item:hover .stat-num { letter-spacing: .02em; }
+.dark .catalog-hero .stat-item { background: rgba(var(--secondary-rgb), .08); }
+.dark .catalog-hero .stat-item:hover { background: rgba(var(--secondary-rgb), .14); }
+
+/* Itinerary empty-state wrapper rhythm */
+.itin-empty { margin-top: var(--space-2); }
+
 .fetch-error { color: var(--error); text-align: center; padding: var(--space-5); display: flex; flex-direction: column; align-items: center; gap: var(--space-3); }
 .block-cta { margin-top: var(--space-6); text-align: center; }
 .block-cta .btn:active { transform: scale(.97); transition-duration: .08s; }
@@ -267,5 +293,6 @@ useHead(() => ({
   .js-item:active { transform: none; }
   .saved-cta .btn:active { transform: none; }
   .block-cta .btn:active { transform: none; }
+  .catalog-hero .stat-item:hover { transform: none; }
 }
 </style>

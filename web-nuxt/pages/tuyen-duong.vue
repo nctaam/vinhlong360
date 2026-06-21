@@ -37,6 +37,9 @@
       </div>
     </div>
 
+    <p class="result-meta" aria-live="polite">{{ filtered.length }} tuyến đường</p>
+
+    <section class="reveal">
     <div v-if="filtered.length" class="route-grid">
       <div v-for="r in filtered" :key="r.id" class="route-card">
         <div :class="['route-header', `area-${r.area}`]">
@@ -66,9 +69,24 @@
       </div>
     </div>
 
+    <!-- Designed empty state (e.g. filter to an area with 0 routes) -->
+    <div v-else class="block">
+      <EmptyState
+        icon="🛤️"
+        title="Không tìm thấy tuyến"
+        message="Chưa có tuyến đường gợi ý cho khu vực này. Thử chọn khu vực khác nhé."
+      >
+        <template #actions>
+          <button type="button" class="btn btn-outline" @click="areaFilter = 'all'">Xem tất cả khu vực</button>
+        </template>
+      </EmptyState>
+    </div>
+    </section>
+
     <!-- Cross-links -->
     <section class="block catalog-cross reveal">
       <h2>Khám phá thêm</h2>
+      <p class="cross-sub">Tiếp tục hành trình miền Tây của bạn</p>
       <div class="cross-links">
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
           <span class="cross-icon">🗺️</span>
@@ -138,13 +156,16 @@ useHead({
 
 <style scoped>
 .route-grid { display: flex; flex-direction: column; gap: var(--space-6); }
-.route-card { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
-.route-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); }
+.route-card { position: relative; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
+/* glassy top-sheen, revealed on hover for an Apple-style finish */
+.route-card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 40%; pointer-events: none; opacity: 0; background: linear-gradient(180deg, rgba(255,255,255,.18), transparent); transition: opacity .35s var(--ease-out); z-index: 2; }
+.route-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg), 0 0 0 1px rgba(var(--primary-rgb), .14), 0 18px 40px -18px rgba(var(--primary-rgb), .35); border-color: var(--border); }
+.route-card:hover::before { opacity: .9; }
 .route-card:active { transform: translateY(0) scale(.99); transition-duration: .08s; }
-.route-header { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-5) var(--space-6); color: var(--text-on-dark, #fff); }
-.route-header h2 { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); }
+.route-header { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-5) var(--space-6); color: var(--text-on-dark, #fff); box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 2px rgba(0,0,0,.1); transition: background .3s var(--ease-out); }
+.route-header h2 { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); text-shadow: var(--shadow-text); }
 .route-meta { font-size: var(--text-sm); opacity: .9; }
-.route-emoji { font-size: var(--text-3xl); }
+.route-emoji { font-size: var(--text-3xl); text-shadow: var(--shadow-text); }
 .route-header.area-vinh-long { background: var(--cat-experience); }
 .route-header.area-ben-tre { background: var(--cat-product); }
 .route-header.area-tra-vinh { background: var(--cat-attraction); }
@@ -152,25 +173,61 @@ useHead({
 .route-body p { margin: 0 0 var(--space-3); line-height: var(--leading-relaxed); color: var(--ink); }
 .route-body h3 { font-size: var(--text-base); font-weight: var(--weight-semibold); margin: var(--space-4) 0 var(--space-2); }
 .route-stops { margin: 0 0 var(--space-3); padding-inline-start: var(--space-5); }
-.route-stops li { margin-bottom: var(--space-2); line-height: var(--leading-normal); transition: transform .3s var(--ease-out); }
-.route-stops li:hover { transform: translateX(2px); }
-.route-stops strong { color: var(--ink); }
+.route-stops li { margin-bottom: var(--space-2); padding: 2px var(--space-2); margin-left: calc(var(--space-2) * -1); border-radius: var(--radius-sm); line-height: var(--leading-normal); transition: transform .3s var(--ease-out), background .25s var(--ease-out); animation: stopFadeIn .4s var(--ease-out) both; }
+.route-stops li:nth-child(1) { animation-delay: 40ms; }
+.route-stops li:nth-child(2) { animation-delay: 80ms; }
+.route-stops li:nth-child(3) { animation-delay: 120ms; }
+.route-stops li:nth-child(4) { animation-delay: 160ms; }
+.route-stops li:nth-child(5) { animation-delay: 200ms; }
+.route-stops li:nth-child(n+6) { animation-delay: 240ms; }
+@keyframes stopFadeIn { from { opacity: 0; transform: translateY(4px); } }
+.route-stops li:hover { transform: translateX(2px); background: var(--overlay-subtle); }
+.route-stops li:hover strong { color: var(--primary-fg); }
+.route-stops strong { color: var(--ink); transition: color .25s var(--ease-out); }
 .route-stops span { color: var(--muted); font-size: var(--text-sm); }
-.route-tips { background: var(--badge-season-bg); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); font-size: var(--text-sm); margin-bottom: var(--space-3); line-height: var(--leading-normal); }
+.route-tips { background: var(--badge-season-bg); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); font-size: var(--text-sm); margin-bottom: var(--space-3); line-height: var(--leading-normal); border: .5px solid rgba(var(--primary-rgb), .15); box-shadow: 0 1px 2px rgba(var(--primary-rgb), .2); transition: box-shadow .3s var(--ease-out); }
+/* subtle breathing pulse when the card is hovered, to draw the eye to the tip */
+.route-card:hover .route-tips { animation: tips-pulse 2.4s var(--ease-out) infinite; }
+@keyframes tips-pulse {
+  0%, 100% { box-shadow: 0 1px 2px rgba(var(--primary-rgb), .2); }
+  50%      { box-shadow: 0 1px 8px rgba(var(--primary-rgb), .32); }
+}
+/* staggered entrance for route cards, tying into the batch signature rhythm */
+.route-grid > .route-card { animation: card-rise .55s var(--ease-out-expo) both; }
+.route-grid > .route-card:nth-child(1) { animation-delay: .02s; }
+.route-grid > .route-card:nth-child(2) { animation-delay: .06s; }
+.route-grid > .route-card:nth-child(3) { animation-delay: .10s; }
+.route-grid > .route-card:nth-child(4) { animation-delay: .14s; }
+.route-grid > .route-card:nth-child(5) { animation-delay: .18s; }
+.route-grid > .route-card:nth-child(n+6) { animation-delay: .22s; }
+.cross-sub { margin: calc(var(--space-3) * -1) 0 var(--space-4); color: var(--muted); font-size: var(--text-sm); }
 .route-links { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 .route-links .btn { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
 .route-links .btn:active { transform: scale(.95); transition-duration: .08s; }
 .dark .route-card { background: var(--card); border-color: var(--line); }
-.dark .route-card:hover { box-shadow: var(--shadow-lg); border-color: var(--border); }
-.dark .route-tips { background: rgba(var(--primary-rgb), .08); }
-.dark .route-body p { color: var(--ink); }
-.dark .route-stops span { color: var(--ink-tertiary); }
+.dark .route-card::before { background: linear-gradient(180deg, rgba(255,255,255,.07), transparent); }
+.dark .route-card:hover { box-shadow: var(--shadow-lg), 0 0 0 1px rgba(var(--primary-rgb), .22), 0 18px 44px -18px rgba(0,0,0,.6); border-color: var(--border); }
+.dark .route-tips { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.1); }
+.dark .route-body p { color: rgba(255,255,255,.85); }
+.dark .route-stops li:hover strong { color: var(--primary); }
+.dark .route-stops span { color: rgba(255,255,255,.55); }
+
+/* Mobile: tighten card padding so emoji + name don't crowd narrow screens */
+@media (max-width: 640px) {
+  .route-header { padding: var(--space-4) var(--space-5); }
+  .route-body { padding: var(--space-4) var(--space-5); }
+  .route-stops li { line-height: var(--leading-relaxed); }
+}
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .route-card:hover { transform: none; }
   .route-card:active { transform: none; }
+  .route-card:hover::before { opacity: 0; }
   .route-stops li:hover { transform: none; }
   .route-links .btn:active { transform: none; }
+  .route-grid > .route-card { animation: none; }
+  .route-stops li { animation: none; }
+  .route-card:hover .route-tips { animation: none; box-shadow: 0 1px 8px rgba(var(--primary-rgb), .28); }
 }
 </style>
