@@ -362,6 +362,9 @@ useSeoMeta({
 useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/su-kien') }] })
 </script>
 
+<!-- events.css nạp theo route (bỏ khỏi global entry.css) — dùng .event-*/.cal-*/.toggle-btn -->
+<style src="~/assets/css/events.css"></style>
+
 <style>
 .catalog-hero.cat-event { background: linear-gradient(135deg, rgba(var(--accent-rgb, 255,193,7), .08) 0%, rgba(183, 110, 60, .06) 100%); }
 .dark .catalog-hero.cat-event { background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%); }

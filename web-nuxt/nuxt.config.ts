@@ -34,7 +34,8 @@ export default defineNuxtConfig({
     '~/assets/css/cards.css',
     '~/assets/css/detail.css',
     '~/assets/css/catalog.css',
-    '~/assets/css/events.css',
+    // events.css KHÔNG global: chỉ le-hoi.vue + su-kien.vue dùng (xem <style src> trong 2 page đó)
+    // → bỏ ~10.5KB khỏi entry.css mọi trang. Verify usage: scratch/analyze_css.py.
     '~/assets/css/dark-overrides.css',
   ],
 

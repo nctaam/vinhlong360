@@ -409,6 +409,9 @@ useHead({
 })
 </script>
 
+<!-- events.css nạp theo route (bỏ khỏi global entry.css) — dùng .event-*/.cal-*/.toggle-btn -->
+<style src="~/assets/css/events.css"></style>
+
 <style>
 .lehoi-badge {
   background: var(--primary-dark);
