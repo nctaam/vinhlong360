@@ -199,3 +199,67 @@ jobs:
         uses: trufflesecurity/trufflehog@main
         with:
           extra_args: --only-verified
+
+  # ── 7. Frontend typecheck (informational, non-blocking) ─────
+  # Runs `nuxt typecheck` (vue-tsc). NON-BLOCKING for now: the app carries a
+  # backlog of pre-existing type errors (untyped useFetch/$fetch data). The job
+  # surfaces the count so it can be driven down incrementally; flip
+  # continue-on-error to false once it reaches 0 to make it a real gate.
+  # Value today: catches the "missing composable / undefined → SSR 500" class
+  # (e.g. the /danh-ba, /theo-mua regression) that `npm run build` did not.
+  typecheck:
+    name: Frontend typecheck (informational)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    defaults:
+      run:
+        working-directory: web-nuxt
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: web-nuxt/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run nuxt typecheck
+        run: npm run typecheck
+
+  # ── 8. Dependency CVE scan (informational, non-blocking) ────
+  # Scans Python (pip-audit) and Node (npm audit) deps for known CVEs.
+  # NON-BLOCKING: upstream advisories can land on unrelated PRs, so this
+  # reports rather than gates. Complements the verified-secret scan above.
+  deps-audit:
+    name: Dependency CVE scan (informational)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: pip-audit (Python deps)
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt --progress-spinner off
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: web-nuxt/package-lock.json
+
+      - name: npm audit (Node deps, high+)
+        working-directory: web-nuxt
+        run: npm audit --audit-level=high
