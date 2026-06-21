@@ -30,6 +30,25 @@ from tracing import (
     _store_lock,
     _record_span,
 )
+import tracing
+
+
+@pytest.fixture(autouse=True)
+def _force_noop_tracer():
+    """No-op mode độc lập thứ tự import.
+
+    tracing.py khởi tạo _tracer lúc import theo OTEL_ENABLED (default "true").
+    Nếu test khác import tracing trước khi file này đặt OTEL_ENABLED=false thì
+    _tracer là tracer thật (module bị cache) → các test "yields_none" đỏ. Ép
+    _tracer=None trong phạm vi test rồi khôi phục (các hàm trace_* đọc global
+    _tracer lúc gọi).
+    """
+    saved = tracing._tracer
+    tracing._tracer = None
+    try:
+        yield
+    finally:
+        tracing._tracer = saved
 
 
 # ---- Context Managers (no-op mode) ----

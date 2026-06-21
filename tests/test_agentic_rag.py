@@ -14,7 +14,10 @@ from agentic_rag import (
 
 @pytest.fixture(autouse=True)
 def ensure_loaded():
-    knowledge._ensure()
+    # reload() (không phải _ensure) để khôi phục KB thật nếu test khác đã để
+    # _entities global rỗng/nhỏ — tránh flaky phụ thuộc thứ tự collection.
+    if not knowledge._entities or len(knowledge._entities) < 100:
+        knowledge.reload()
 
 
 # ── classify_query ──

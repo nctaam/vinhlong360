@@ -5,8 +5,14 @@ import knowledge
 
 @pytest.fixture(autouse=True)
 def ensure_loaded():
-    """Make sure data is loaded before every test."""
-    knowledge._ensure()
+    """KB thật được nạp trước mỗi test, độc lập thứ tự collection.
+
+    _ensure() là no-op nếu _entities đã set → nếu test khác (thứ tự khác) để
+    KB global rỗng/nhỏ thì các test data-thật thấy 0 (flaky). reload() khôi
+    phục KB thật từ DB; chỉ reload khi nghi pollution để giữ tốc độ.
+    """
+    if not knowledge._entities or len(knowledge._entities) < 100:
+        knowledge.reload()
 
 
 def _sample_entity_id() -> str:
