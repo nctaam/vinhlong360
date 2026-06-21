@@ -262,79 +262,9 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
 .lb-prev:focus-visible, .lb-next:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .lb-counter { position: absolute; bottom: var(--space-5); left: 50%; transform: translateX(-50%); color: var(--text-on-dark, #fff); font-size: var(--text-sm); font-weight: var(--weight-semibold); background: rgba(0,0,0,.45); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); padding: var(--space-1) var(--space-4); border-radius: var(--radius-full); letter-spacing: .02em; border: .5px solid rgba(255,255,255,.12); }
 
-/* ── Reviews Section ── */
-.reviews-section { margin-top: var(--space-8); }
-.reviews-header { display: flex; align-items: baseline; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-4); }
-.reviews-header h2 { font-size: var(--text-lg); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); margin: 0; }
-.reviews-summary { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); }
-.review-count { color: var(--muted); }
+/* Reviews CSS → components/EntityReviews.vue (route-load, GĐ-HARDEN CWV — bỏ khỏi global entry.css) */
 
-.review-form {
-  background: linear-gradient(135deg, rgba(185, 219, 198, .04) 0%, rgba(232, 163, 61, .03) 100%);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: var(--space-5);
-  margin-bottom: var(--space-5);
-  box-shadow: 0 0 0 1px rgba(var(--secondary-rgb), .08);
-}
-.rf-rating { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); }
-.rf-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--muted); }
-.rf-error { color: var(--error); font-size: var(--text-sm); margin-top: var(--space-2); }
-.review-form .btn { margin-top: var(--space-2); }
-.review-login-hint { font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-4); }
-.review-login-hint a { color: var(--primary-fg); font-weight: var(--weight-semibold); }
-
-.review-form { transition: border-color .35s var(--ease-out), box-shadow .35s var(--ease-out-expo); }
-.review-form:focus-within { border-color: var(--primary-fg); box-shadow: 0 0 0 4px rgba(var(--primary-rgb), .12), var(--shadow-sm); }
-.review-form .btn:active { transform: scale(.95); transition-duration: .08s; }
-
-.review-list { display: flex; flex-direction: column; gap: var(--space-4); }
-.review-item { border-bottom: .5px solid var(--line); padding: var(--space-3) var(--space-3) var(--space-4); margin: 0 calc(var(--space-3) * -1); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle); border-radius: var(--radius-sm); }
-.review-item:hover { background: var(--overlay-subtle); transform: translateX(2px); }
-.review-item:last-child { border-bottom: none; }
-.ri-head { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-2); }
-.ri-author { display: flex; align-items: center; gap: var(--space-2); text-decoration: none; color: inherit; min-height: 44px; }
-.ri-author strong { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
-.ri-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
-.ri-avatar-placeholder { width: 32px; height: 32px; border-radius: 50%; background: var(--secondary); color: var(--text-on-dark, #fff); display: flex; align-items: center; justify-content: center; font-weight: var(--weight-bold); font-size: var(--text-sm); }
-.ri-date { font-size: var(--text-xs); color: var(--muted); margin-inline-start: auto; }
-.ri-content { margin: 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); }
-.ri-images { display: flex; gap: var(--space-2); margin-top: var(--space-2); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; scroll-snap-type: x proximity; overscroll-behavior-x: contain; }
-.ri-images::-webkit-scrollbar { display: none; }
-.ri-images img { width: 120px; height: 90px; object-fit: cover; border-radius: var(--radius-sm); flex-shrink: 0; cursor: pointer; scroll-snap-align: start; transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
-.ri-images img:hover { transform: scale(1.05); box-shadow: var(--shadow-md); }
-.ri-images img:active { transform: scale(.96); transition-duration: .08s; }
-
-/* ── Nearby entities ── */
-.nearby-section { margin-top: var(--space-8); }
-.nearby-section h2 { font-size: var(--text-lg); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); margin: 0 0 var(--space-3); }
-.nearby-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: var(--space-3);
-  container-type: inline-size;
-}
-@media (max-width: 640px) {
-  .nearby-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (max-width: 480px) {
-  .nearby-grid {
-    grid-template-columns: 1fr;
-  }
-}
-.nearby-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-md); transition: background .3s var(--ease-out), border-color .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
-.nearby-item:hover { background: var(--bg-warm); border-color: var(--primary-fg); transform: translateX(4px); box-shadow: var(--shadow-sm); }
-.nearby-item:active { transform: translateX(1px) scale(.98); transition-duration: .1s; }
-.nearby-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.nearby-thumb { width: 56px; height: 56px; border-radius: var(--radius-sm); object-fit: cover; flex-shrink: 0; }
-.nearby-sametype { margin-top: var(--space-6); }
-.nearby-sametype h2 { font-size: var(--text-lg); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); margin: 0 0 var(--space-3); }
-.nearby-emoji { font-size: var(--text-xl); flex-shrink: 0; }
-.nearby-info { min-width: 0; }
-.nearby-info strong { display: block; font-size: var(--text-sm); font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.nearby-info small { color: var(--muted); font-size: var(--text-xs); }
+/* Nearby CSS → components/NearbyEntities.vue (route-load, GĐ-HARDEN CWV — bỏ khỏi global entry.css) */
 
 /* ── Next Steps (contextual CTA) ── */
 .next-steps { margin-top: var(--space-4); border-top: .5px solid var(--line); padding-top: var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); }
@@ -514,15 +444,9 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
   .desc-toggle-icon { transition: none; }
   .dc-thumb:hover, .dc-thumb.active { transform: none; }
   .ms-cell:hover { transform: none; }
-  .ms-cell.on.peak { animation: none; }
-  .nearby-item:hover { transform: none; }
-  .bc-back:hover { transform: none; }
+  .ms-cell.on.peak { animation: none; }  .bc-back:hover { transform: none; }
   .ns-action:hover { transform: none; }
-  .pt-item:hover { transform: none; }
-  .ri-images img:hover { transform: none; }
-  .rel-list li:hover { transform: none; }
-  .review-item:hover { transform: none; }
-  .ocop-highlight:hover { transform: none; }
+  .pt-item:hover { transform: none; }  .rel-list li:hover { transform: none; }  .ocop-highlight:hover { transform: none; }
   .provenance-block:hover { box-shadow: 0 0 0 1px rgba(var(--secondary-rgb), .1), var(--shadow-xs); }
 }
 
@@ -530,9 +454,7 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
 @media (min-width: 769px) and (max-width: 1024px) {
   .detail-body { grid-template-columns: 1fr 260px; gap: var(--space-5); }
   .detail-cover.has-cover-img { min-height: 320px; }
-  .dc-thumbs { right: 120px; }
-  .nearby-grid { grid-template-columns: repeat(2, 1fr); }
-}
+  .dc-thumbs { right: 120px; }}
 @media (max-width: 840px) {
   .detail-body { grid-template-columns: 1fr; }
   .detail-aside { position: static; max-height: none; overflow-y: visible; }
@@ -541,10 +463,7 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
      hide the duplicate sidebar contact-row to avoid showing Gọi/Zalo twice. */
   .contact-row { display: none; }
 }
-@media (max-width: 768px) {
-  .reviews-header { flex-direction: column; gap: var(--space-1); }
-  .ri-date { margin-inline-start: 0; }
-  .detail-cover h1 { font-size: var(--text-2xl); }
+@media (max-width: 768px) {  .detail-cover h1 { font-size: var(--text-2xl); }
 }
 @media (max-width: 480px) {
   .detail-cover h1 { font-size: 1.5rem; }
@@ -603,17 +522,7 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
 .dark .facts-heading-icon { background: rgba(var(--primary-rgb), .18); }
 .dark .next-steps { border-color: var(--line); }
 .dark .sticky-cta-bar { box-shadow: 0 -2px 16px rgba(0,0,0,.4); border-color: rgba(255,255,255,.06); }
-.dark .detail-aside:hover { box-shadow: var(--shadow-md); }
-.dark .nearby-item { background: var(--card); border-color: var(--line); }
-.dark .nearby-item:hover { background: rgba(255,255,255,.04); box-shadow: var(--shadow-sm); }
-.dark .review-form {
-  background: linear-gradient(135deg, rgba(75, 169, 125, .04) 0%, rgba(240, 160, 80, .03) 100%);
-  border-color: rgba(255, 255, 255, .06);
-}
-.dark .review-form:focus-within { box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .15); }
-.dark .review-item:hover { background: rgba(255,255,255,.03); }
-.dark .ri-avatar-placeholder { background: rgba(var(--primary-rgb), .3); }
-.dark .detail-aside { background: var(--card); border-color: var(--line); }
+.dark .detail-aside:hover { box-shadow: var(--shadow-md); }.dark .detail-aside { background: var(--card); border-color: var(--line); }
 .dark .ms-cell { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.08); }
 .dark .ms-cell.on { background: rgba(var(--primary-rgb), .15); }
 .dark .ns-action { background: var(--card); }
