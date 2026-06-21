@@ -10,7 +10,15 @@
       </button>
     </div>
 
-    <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
+    <!-- Skeleton placeholders while loading (replaces flash of empty spinner) -->
+    <div v-if="loading" class="tk-skeleton" aria-hidden="true">
+      <div class="stat-grid">
+        <div v-for="n in 4" :key="'sk-card-' + n" class="tk-sk-card" :style="{ animationDelay: (n * 80) + 'ms' }"></div>
+      </div>
+      <div class="tk-panels">
+        <div v-for="n in 3" :key="'sk-panel-' + n" class="tk-sk-panel" :style="{ animationDelay: (n * 100) + 'ms' }"></div>
+      </div>
+    </div>
     <template v-else>
 
     <!-- Summary cards -->
@@ -39,13 +47,18 @@
       <div class="stat-card">
         <div class="tk-icon" style="background: rgba(33,150,83,.1); color: #219653;">&#128176;</div>
         <div>
-          <div class="stat-value">{{ costTotal }}</div>
+          <div class="stat-value">
+            {{ costTotal }}
+            <span v-if="costScope" class="tk-cost-scope">{{ costScope }}</span>
+          </div>
           <div class="stat-label">Chi phí (ước)</div>
         </div>
       </div>
     </div>
 
     <!-- Three-column panels -->
+    <section class="tk-section" aria-label="Phân tích chi tiết">
+    <h3 class="tk-section-title">Phân tích chi tiết</h3>
     <div class="tk-panels">
       <section class="tk-panel">
         <div class="tk-panel-head">
@@ -104,6 +117,7 @@
         </div>
       </section>
     </div>
+    </section>
 
     </template>
   </div>
@@ -134,6 +148,16 @@ const costTotal = computed(() => {
   return v != null ? (typeof v === 'number' ? v.toLocaleString('vi-VN') : v) : '—'
 })
 
+// Scope label for the cost card — derived from which field supplied the value (no extra backend data)
+const costScope = computed(() => {
+  const c = (data.value?.costs || {}) as Record<string, unknown>
+  if (c.available === false) return ''
+  if (c.total_cost != null || c.total != null) return ''
+  if ((c.monthly as Record<string, unknown>)?.spent != null) return 'tháng'
+  if ((c.daily as Record<string, unknown>)?.spent != null) return 'ngày'
+  return ''
+})
+
 async function fetchData() {
   loading.value = true
   try {
@@ -159,6 +183,43 @@ onMounted(fetchData)
   font-size: 1.3rem; flex-shrink: 0;
 }
 
+/* ── Metric hierarchy (page-local override of shared .stat-card) ── */
+.stat-card .stat-value {
+  font-size: 2rem; line-height: 1.1; font-weight: 800;
+  display: flex; align-items: baseline; gap: 6px;
+}
+.stat-card .stat-label {
+  font-size: .7rem; text-transform: uppercase; letter-spacing: .6px;
+  font-weight: 600; color: var(--muted); margin-top: 3px;
+}
+/* Cost-scope micro badge ("tháng" / "ngày") */
+.tk-cost-scope {
+  font-size: .62rem; font-weight: 700; line-height: 1;
+  text-transform: uppercase; letter-spacing: .4px;
+  padding: 2px 6px; border-radius: 100px;
+  background: rgba(33,150,83,.12); color: #219653;
+  align-self: center;
+}
+
+/* ── Warn-state card: tint + border/icon only, neutral text ── */
+.stat-card.status-warn {
+  border-color: var(--warning, #e67e22);
+  background: rgba(230,126,34,.04);
+}
+.stat-card.status-warn .tk-icon {
+  background: rgba(255,159,10,.18) !important;
+  color: var(--warning, #e67e22) !important;
+}
+
+/* ── Section grouping + divider ── */
+.tk-section { margin-top: var(--space-6); }
+.tk-section-title {
+  font-size: .95rem; font-weight: 600; color: var(--muted);
+  margin: 0 0 var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px dashed var(--line);
+}
+
 /* ── Panels ── */
 .tk-panels {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -182,8 +243,14 @@ onMounted(fetchData)
   min-width: 24px; height: 24px; padding: 0 8px;
   border-radius: 100px; font-size: .72rem; font-weight: 700;
   background: rgba(52,120,246,.1); color: #3478F6;
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  transition: background .2s, color .2s;
 }
 .tk-count-warn { background: rgba(255,159,10,.1); color: #c67a00; }
+/* Brighten badge when scanning the panel */
+.tk-panel:hover .tk-count-badge { background: rgba(52,120,246,.22); }
+.tk-panel:hover .tk-count-warn { background: rgba(255,159,10,.22); }
 
 /* ── List items ── */
 .tk-list { list-style: none; padding: 0; margin: 0; }
@@ -198,14 +265,25 @@ onMounted(fetchData)
 .tk-list li:last-child { border-bottom: none; }
 .tk-list li:hover { background: rgba(0,0,0,.015); margin: 0 calc(var(--space-2) * -1); padding-left: var(--space-2); padding-right: var(--space-2); border-radius: 6px; }
 .tk-rank {
-  width: 20px; height: 20px; border-radius: 6px;
+  width: 24px; height: 24px; border-radius: 7px;
   display: flex; align-items: center; justify-content: center;
-  font-size: .68rem; font-weight: 700; flex-shrink: 0;
+  font-size: .72rem; font-weight: 700; flex-shrink: 0;
   background: var(--bg-alt); color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }
-.tk-list li:nth-child(-n+3) .tk-rank { background: rgba(33,150,83,.1); color: #219653; }
+/* Semantic ranking: top-3 solid, 4-10 muted outline, rest plain */
+.tk-list li:nth-child(-n+3) .tk-rank { background: var(--primary, #219653); color: #fff; }
+.tk-list li:nth-child(n+4):nth-child(-n+10) .tk-rank {
+  background: transparent; border: 1px solid rgba(33,150,83,.3); color: #219653;
+}
 .tk-query { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tk-hits { font-weight: 700; color: var(--primary, #219653); font-size: .82rem; flex-shrink: 0; position: relative; }
+.tk-hits {
+  flex: 0 0 auto; text-align: right;
+  font-weight: 700; color: var(--primary, #219653); font-size: .82rem;
+  position: relative;
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}
 
 /* ── Bar background in list items ── */
 .tk-bar-bg {
@@ -237,15 +315,56 @@ onMounted(fetchData)
 }
 
 /* ── Dark mode ── */
-.dark .tk-panel { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
-.dark .tk-panel:hover { box-shadow: 0 4px 16px rgba(0,0,0,.3); border-color: rgba(52,120,246,.25); }
+.dark .tk-panel {
+  background: rgb(46,46,50);
+  border-color: rgba(255,255,255,.1);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+}
+.dark .tk-panel:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 4px 16px rgba(0,0,0,.3); border-color: rgba(52,120,246,.3); }
 .dark .tk-list li:hover { background: rgba(255,255,255,.03); }
 .dark .tk-rank { background: rgba(255,255,255,.06); }
-.dark .tk-list li:nth-child(-n+3) .tk-rank { background: rgba(33,150,83,.15); }
+.dark .tk-list li:nth-child(n+4):nth-child(-n+10) .tk-rank { border-color: rgba(33,150,83,.5); color: #4fb87a; }
 .dark .tk-count-badge { background: rgba(52,120,246,.15); }
 .dark .tk-count-warn { background: rgba(255,159,10,.15); color: #ffb340; }
+.dark .tk-panel:hover .tk-count-badge { background: rgba(52,120,246,.3); }
+.dark .tk-panel:hover .tk-count-warn { background: rgba(255,159,10,.28); }
+/* stat-value (primary green) — keep high contrast in dark */
+.dark .stat-card .stat-value { color: #4fb87a; }
+.dark .tk-cost-scope { background: rgba(33,150,83,.22); color: #6fce96; }
+.dark .stat-card.status-warn { background: rgba(240,160,80,.08); border-color: var(--warning, #f0a050); }
+.dark .tk-sk-card, .dark .tk-sk-panel { background: rgba(255,255,255,.06); }
 
+/* ── Loading skeleton ── */
+.tk-skeleton .stat-grid { margin-bottom: var(--space-8); }
+.tk-sk-card {
+  height: 80px; border-radius: 14px; background: var(--line);
+  opacity: .4; animation: tk-skeleton-pulse 1.4s ease-in-out infinite;
+}
+.tk-skeleton .tk-panels {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-4);
+}
+.tk-sk-panel {
+  height: 256px; border-radius: 14px; background: var(--line);
+  opacity: .3; animation: tk-skeleton-pulse 1.4s ease-in-out infinite;
+}
+@keyframes tk-skeleton-pulse {
+  0%, 100% { opacity: .4; }
+  50% { opacity: .65; }
+}
+
+/* ── Responsive stat-grid (page-local) ── */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 767px) {
+  .stat-grid { grid-template-columns: 1fr; }
+}
 @media (max-width: 768px) {
   .tk-panels { grid-template-columns: 1fr; }
+}
+
+/* ── Reduced motion: skeleton ── */
+@media (prefers-reduced-motion: reduce) {
+  .tk-sk-card, .tk-sk-panel { animation: none; }
 }
 </style>

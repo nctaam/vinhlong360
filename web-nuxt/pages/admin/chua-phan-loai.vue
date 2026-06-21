@@ -5,7 +5,12 @@
         <h1>Chưa phân loại xã/phường</h1>
         <p class="cpl-subtitle">Entity nội dung chưa gán xã. Gán đúng để xuất hiện ở trang xã/phường + danh mục khu vực.</p>
       </div>
-      <button type="button" class="admin-refresh" :disabled="loading" @click="load"><span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới</button>
+      <div class="admin-head-actions">
+        <span v-if="total" class="cpl-progress-pill" role="status" aria-label="Tiến độ phân loại">
+          {{ filtered.length }} / {{ total }} cần gán
+        </span>
+        <button type="button" class="admin-refresh" :disabled="loading" @click="load"><span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới</button>
+      </div>
     </div>
 
     <div class="cpl-toolbar">
@@ -23,20 +28,21 @@
     <template v-else>
       <!-- Bulk action bar -->
       <div v-if="selectedIds.length" class="cpl-bulk-bar" role="region" aria-label="Gán hàng loạt">
-        <span class="cpl-bulk-count">{{ selectedIds.length }} đã chọn</span>
+        <span class="cpl-bulk-count">{{ selectedIds.length }} / {{ filtered.length }} đã chọn</span>
         <select v-model="bulkPick" class="cpl-place-select" aria-label="Chọn xã/phường để gán hàng loạt" :disabled="bulkBusy">
           <option value="">— Chọn xã/phường —</option>
           <optgroup v-for="g in wardGroups" :key="g.area" :label="g.label">
             <option v-for="w in g.wards" :key="w.id" :value="w.id">{{ w.name }}</option>
           </optgroup>
         </select>
-        <button type="button" class="btn btn-primary btn-sm" :disabled="!bulkPick || bulkBusy" @click="assignBulk">
+        <button type="button" class="btn btn-primary btn-sm cpl-bulk-apply" :disabled="!bulkPick || bulkBusy" @click="assignBulk">
           {{ bulkBusy ? `Đang gán ${bulkProgress.done}/${bulkProgress.total}...` : `Gán ${selectedIds.length} entity` }}
+          <span v-if="bulkBusy && bulkProgress.total" class="cpl-bulk-progress" :style="{ width: (bulkProgress.done / bulkProgress.total * 100) + '%' }" aria-hidden="true"></span>
         </button>
-        <button type="button" class="btn btn-secondary btn-sm" :disabled="bulkBusy" @click="clearSelection">Bỏ chọn</button>
+        <button type="button" class="btn btn-secondary btn-sm cpl-bulk-clear" :disabled="bulkBusy" @click="clearSelection">Bỏ chọn</button>
       </div>
 
-      <div v-if="items.length" class="admin-table-wrap">
+      <div v-if="items.length && filtered.length" class="admin-table-wrap cpl-table-wrap">
         <table class="admin-table">
           <thead>
             <tr>
@@ -72,7 +78,7 @@
                 <strong>{{ e.name }}</strong>
                 <small v-if="e.summary" class="cpl-summary">{{ e.summary }}</small>
               </td>
-              <td><span class="cpl-type-badge">{{ e.type }}</span></td>
+              <td><span class="cpl-type-badge" :style="typeBadgeStyle(e.type)">{{ e.type }}</span></td>
               <td>
                 <select v-model="pick[e.id]" class="cpl-place-select" :aria-label="`Chọn xã/phường cho ${e.name}`">
                   <option value="">— Chọn —</option>
@@ -91,19 +97,24 @@
         </table>
 
         <div v-if="filtered.length > pageItems.length" class="cpl-loadmore">
-          <span class="cpl-loadmore-info">Hiển thị {{ pageItems.length }} / {{ filtered.length }}</span>
+          <div class="cpl-loadmore-track" role="progressbar" :aria-valuenow="loadPct" aria-valuemin="0" aria-valuemax="100" :aria-label="`Đã hiển thị ${pageItems.length} trên ${filtered.length}`">
+            <div class="cpl-loadmore-fill" :style="{ width: loadPct + '%' }"></div>
+          </div>
+          <span class="cpl-loadmore-info">Hiển thị {{ pageItems.length }} / {{ filtered.length }} ({{ loadPct }}%)</span>
           <button type="button" class="btn btn-secondary btn-sm" @click="showMore">Tải thêm</button>
         </div>
       </div>
 
-      <div v-else class="cpl-empty">
-        <span class="cpl-empty-icon">&#127881;</span>
-        <p>Không có entity nào chưa phân loại.</p>
+      <div v-else-if="items.length && !filtered.length" class="admin-empty-state cpl-empty-miss">
+        <div class="admin-empty-state-icon">&#128269;</div>
+        <div class="admin-empty-state-text">Không tìm thấy</div>
+        <div class="admin-empty-state-hint">Không có entity nào khớp bộ lọc. Thử bỏ bộ lọc hoặc tìm kiếm lại.</div>
       </div>
 
-      <div v-if="items.length && !filtered.length" class="cpl-empty">
-        <span class="cpl-empty-icon">&#128269;</span>
-        <p>Không có entity nào khớp bộ lọc.</p>
+      <div v-else class="admin-empty-state cpl-empty-done">
+        <div class="admin-empty-state-icon">&#10004;</div>
+        <div class="admin-empty-state-text">Hoàn tất</div>
+        <div class="admin-empty-state-hint">Không có entity nào chưa phân loại. Quay lại danh sách entities để xem toàn bộ.</div>
       </div>
     </template>
   </div>
@@ -163,6 +174,23 @@ const filtered = computed(() => {
 
 // Client-side pagination ("load more")
 const pageItems = computed(() => filtered.value.slice(0, visibleCount.value))
+const loadPct = computed(() => filtered.value.length ? Math.round((pageItems.value.length / filtered.value.length) * 100) : 0)
+
+// Semantic type→color mapping for badges (fallback to neutral gray).
+const TYPE_COLORS: Record<string, string> = {
+  'Điểm đến': '#3478F6', 'Du lịch': '#3478F6',
+  'Dịch vụ': '#AF52DE',
+  'Ẩm thực': '#FF9F0A', 'Món ăn': '#FF9F0A', 'Đặc sản': '#FF9F0A',
+  'Sản phẩm': '#34C759', 'OCOP': '#34C759',
+  'Lưu trú': '#5AC8FA',
+  'Sự kiện': '#FF375F', 'Lễ hội': '#FF375F',
+  'Làng nghề': '#A2845E',
+}
+function typeBadgeStyle(type?: string) {
+  const c = (type && TYPE_COLORS[type])
+  if (!c) return {}
+  return { background: c + '1f', color: c }
+}
 
 // Selection helpers (selection is tracked by id, survives pagination)
 const selectedIds = computed(() => Object.keys(selected.value).filter(id => selected.value[id]))
@@ -264,12 +292,21 @@ onMounted(load)
 <style scoped>
 .cpl-subtitle { font-size: .82rem; color: var(--muted); margin-top: 2px; max-width: 500px; }
 
+/* ── Head row progress pill ── */
+.admin-head-actions { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.cpl-progress-pill {
+  display: inline-flex; align-items: center; padding: 3px 11px;
+  border-radius: 100px; font-size: .75rem; font-weight: 600;
+  background: rgba(120,120,128,.1); color: var(--muted);
+  white-space: nowrap;
+}
+
 .cpl-toolbar {
   display: flex; gap: var(--space-3); align-items: center;
   margin-bottom: var(--space-4); flex-wrap: wrap;
 }
 .cpl-toolbar .input { max-width: 280px; }
-.cpl-type-filter { max-width: 220px; min-height: 36px; cursor: pointer; }
+.cpl-type-filter { max-width: 220px; min-height: 44px; cursor: pointer; }
 
 .cpl-total-badge {
   display: inline-flex; align-items: center; padding: 2px 10px;
@@ -287,7 +324,7 @@ onMounted(load)
 }
 
 .cpl-place-select {
-  max-width: 220px; padding: 4px 8px; min-height: 36px;
+  max-width: 220px; padding: 4px 8px; min-height: 44px;
   font-size: .82rem; border: .5px solid var(--line); border-radius: 8px;
   background: var(--bg); color: var(--ink); cursor: pointer;
   transition: border-color .2s cubic-bezier(.2,1,.4,1), box-shadow .2s;
@@ -299,41 +336,83 @@ onMounted(load)
 .cpl-bulk-bar {
   display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap;
   margin-bottom: var(--space-3); padding: var(--space-2) var(--space-3);
-  background: rgba(33,150,83,.06); border: .5px solid rgba(33,150,83,.2);
+  background: rgba(33,150,83,.06);
+  border: .5px solid rgba(33,150,83,.2); border-top: 1px solid rgba(33,150,83,.3);
   border-radius: 12px;
 }
-.cpl-bulk-count { font-size: .82rem; font-weight: 600; color: #1a7a44; }
+.cpl-bulk-count { font-size: .82rem; font-weight: 600; color: var(--primary, #219653); }
+.cpl-bulk-clear { margin-left: auto; }
+
+/* Progress bar along bottom edge of the bulk-apply button */
+.cpl-bulk-apply { position: relative; overflow: hidden; }
+.cpl-bulk-progress {
+  position: absolute; left: 0; bottom: 0; height: 2px;
+  background: rgba(255,255,255,.85); border-radius: 0 1px 1px 0;
+  transition: width .2s cubic-bezier(.2,1,.4,1);
+}
 
 /* ── Checkboxes ── */
-.cpl-check-col { width: 36px; text-align: center; }
+.cpl-check-col { width: 44px; text-align: center; }
 .cpl-checkbox {
   width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary, #219653);
+  /* expand hit area to WCAG 2.5.5 (44px) without growing the visual box */
+  padding: 13px; margin: -13px; box-sizing: content-box;
 }
-.cpl-checkbox:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
+.cpl-checkbox:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; border-radius: 3px; }
 .cpl-row-selected { background: rgba(33,150,83,.05); }
+
+/* ── Row density + scan-friendly hover (page-scoped; does not touch shared .admin-table rules) ── */
+.cpl-table-wrap :deep(.admin-table) td { padding-top: var(--space-2); padding-bottom: var(--space-2); }
+.cpl-table-wrap :deep(.admin-table) td strong { line-height: 1.3; }
+.cpl-table-wrap :deep(.admin-table) tbody tr td:first-child { position: relative; }
+.cpl-table-wrap :deep(.admin-table) tbody tr:hover td:first-child::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: var(--primary, #219653);
+}
 
 /* ── Load more ── */
 .cpl-loadmore {
-  display: flex; align-items: center; justify-content: center; gap: var(--space-3);
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
   padding: var(--space-3); margin-top: var(--space-2);
+}
+.cpl-loadmore-track {
+  width: 100%; max-width: 360px; height: 4px; border-radius: 100px;
+  background: rgba(120,120,128,.16); overflow: hidden;
+}
+.cpl-loadmore-fill {
+  height: 100%; border-radius: 100px; background: var(--primary, #219653);
+  transition: width .25s cubic-bezier(.2,1,.4,1);
 }
 .cpl-loadmore-info { font-size: .8rem; color: var(--muted); }
 
-.cpl-empty {
-  display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
-  padding: var(--space-8); text-align: center;
-  background: var(--bg); border: .5px solid var(--line); border-radius: 14px;
+/* ── Empty states (use shared .admin-empty-state; tint icon by intent) ── */
+.cpl-empty-done .admin-empty-state-icon { color: var(--primary, #219653); opacity: .85; }
+.cpl-empty-miss .admin-empty-state-icon { color: var(--muted); }
+
+/* ── Responsive: reflow toolbar on narrow viewports ── */
+@media (max-width: 600px) {
+  .cpl-toolbar { display: grid; grid-template-columns: 1fr auto; align-items: stretch; }
+  .cpl-toolbar .input { max-width: none; grid-column: 1 / 2; }
+  .cpl-toolbar .btn { grid-column: 2 / 3; }
+  .cpl-type-filter { grid-column: 1 / -1; max-width: none; }
+  .cpl-total-badge, .cpl-filter-badge { grid-column: 1 / -1; }
+  .cpl-bulk-clear { margin-left: 0; }
 }
-.cpl-empty-icon { font-size: 2.5rem; }
-.cpl-empty p { margin: 0; font-weight: 500; color: #219653; }
 
 /* ── Dark ── */
+.dark .cpl-progress-pill { background: rgba(255,255,255,.08); }
 .dark .cpl-total-badge { background: rgba(255,159,10,.12); color: #ffb340; }
 .dark .cpl-filter-badge { background: rgba(33,150,83,.14); color: #4ade80; }
 .dark .cpl-type-badge { background: rgba(255,255,255,.06); }
 .dark .cpl-place-select { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
-.dark .cpl-bulk-bar { background: rgba(33,150,83,.1); border-color: rgba(33,150,83,.25); }
+.dark .cpl-bulk-bar { background: rgba(33,150,83,.1); border-color: rgba(33,150,83,.25); border-top-color: rgba(33,150,83,.35); }
 .dark .cpl-bulk-count { color: #4ade80; }
+.dark .cpl-bulk-progress { background: rgba(255,255,255,.7); }
+.dark .cpl-loadmore-track { background: rgba(255,255,255,.1); }
 .dark .cpl-row-selected { background: rgba(33,150,83,.08); }
-.dark .cpl-empty { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .cpl-place-select, .cpl-bulk-progress, .cpl-loadmore-fill { transition: none; }
+}
 </style>

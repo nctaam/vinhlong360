@@ -12,19 +12,19 @@
     <div class="dth-section">
       <div class="dth-section-head">
         <h2 class="admin-section-title">Entity tự học chờ duyệt</h2>
-        <span v-if="provisional.length" class="dth-count-badge dth-count-warn">{{ provisional.length }}</span>
+        <span v-if="provisional.length" class="dth-count-badge dth-count-warn" role="status" :aria-label="`${provisional.length} entity chờ duyệt`">{{ provisional.length }}</span>
       </div>
 
       <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
       <template v-else>
         <div v-if="!provisional.length" class="dth-empty">
           <span class="dth-empty-icon">&#9989;</span>
-          <p>Không có entity provisional.</p>
-          <small class="admin-muted">Lưu ý: trạng thái provisional nằm trong data.json; DB là nguồn sự thật cho chat nên entity tự học hiện đã live — quarantine chỉ còn ý nghĩa khi mô hình hoá cột status ở DB.</small>
+          <p>Tất cả entity tự học đã được duyệt.</p>
+          <small class="admin-muted">Quay lại kiểm tra sau, hoặc tải nguồn dữ liệu để xem thống kê.</small>
         </div>
         <div v-else class="admin-table-wrap">
           <table class="admin-table">
-            <thead><tr><th>Entity</th><th>Loại</th><th>Nguồn</th><th>Thao tác</th></tr></thead>
+            <thead><tr><th>Entity</th><th>Loại</th><th>Tin cậy</th><th>Nguồn</th><th>Thao tác</th></tr></thead>
             <tbody>
               <tr v-for="e in provisional" :key="e.id">
                 <td>
@@ -32,7 +32,11 @@
                   <small v-if="e.summary" class="dth-summary">{{ e.summary }}</small>
                 </td>
                 <td><span class="dth-type-badge">{{ e.type }}</span></td>
-                <td class="admin-td-muted"><small>{{ e.source?.url || e.source?.title || '—' }}</small></td>
+                <td>
+                  <span v-if="typeof e.confidence === 'number'" class="dth-conf-badge" :class="e.confidence >= 0.7 ? 'dth-conf-high' : 'dth-conf-low'">{{ Math.round(e.confidence * 100) }}%</span>
+                  <span v-else class="admin-td-muted"><small>—</small></span>
+                </td>
+                <td class="admin-td-muted"><small>{{ e.source?.[0]?.url || e.source?.[0]?.name || '—' }}</small></td>
                 <td class="admin-actions">
                   <button type="button" class="btn-success" :disabled="acting === e.id" @click="approve(e)">
                     {{ acting === e.id ? '...' : 'Duyệt' }}
@@ -51,12 +55,14 @@
       <h2 class="admin-section-title">Tiện ích dữ liệu</h2>
       <div class="dth-tools-grid">
         <button type="button" class="dth-tool-card" :disabled="exporting" @click="exportJson">
-          <span class="dth-tool-icon">&#128230;</span>
+          <span v-if="exporting" class="dth-tool-spinner" aria-hidden="true"></span>
+          <span v-else class="dth-tool-icon">&#128230;</span>
           <span class="dth-tool-label">{{ exporting ? 'Đang xuất...' : 'Export JSON (DB)' }}</span>
           <small>Tải data.json từ DB</small>
         </button>
         <button type="button" class="dth-tool-card" :disabled="loadingSources" @click="loadSources">
-          <span class="dth-tool-icon">&#128218;</span>
+          <span v-if="loadingSources" class="dth-tool-spinner" aria-hidden="true"></span>
+          <span v-else class="dth-tool-icon">&#128218;</span>
           <span class="dth-tool-label">{{ loadingSources ? 'Đang tải...' : 'Xem nguồn dữ liệu' }}</span>
           <small>Thống kê theo nguồn</small>
         </button>
@@ -69,7 +75,7 @@
             <tbody>
               <tr v-for="s in sources" :key="s.title">
                 <td><strong>{{ s.title }}</strong></td>
-                <td><span class="dth-source-count">{{ s.count }}</span></td>
+                <td><span class="dth-source-count" :aria-label="`${s.count} entity`">{{ s.count }}</span></td>
                 <td class="admin-td-muted"><small>{{ s.sample_url || '—' }}</small></td>
               </tr>
             </tbody>
@@ -173,6 +179,15 @@ onMounted(loadProvisional)
   background: rgba(142,142,147,.08); color: var(--muted);
 }
 
+/* ── Confidence badge ── */
+.dth-conf-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 40px; padding: 2px 8px; border-radius: 100px;
+  font-size: .72rem; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.dth-conf-high { background: rgba(33,150,83,.1); color: #1a7a43; }
+.dth-conf-low { background: rgba(255,159,10,.12); color: #c67a00; }
+
 /* ── Empty state ── */
 .dth-empty {
   display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
@@ -200,6 +215,12 @@ onMounted(loadProvisional)
 .dth-tool-card:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .dth-tool-card:disabled { opacity: .4; cursor: not-allowed; }
 .dth-tool-icon { font-size: 1.6rem; }
+.dth-tool-spinner {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid rgba(33,150,83,.2); border-top-color: var(--primary, #219653);
+  animation: dth-spin .7s linear infinite;
+}
+@keyframes dth-spin { to { transform: rotate(360deg); } }
 .dth-tool-label { font-size: .88rem; font-weight: 600; color: var(--ink); }
 .dth-tool-card small { font-size: .75rem; color: var(--muted); }
 
@@ -210,12 +231,15 @@ onMounted(loadProvisional)
 @media (prefers-reduced-motion: reduce) {
   .dth-tool-card:hover:not(:disabled) { transform: none; }
   .dth-tool-card:active:not(:disabled) { transform: none; }
+  .dth-tool-spinner { animation: none; }
 }
 
 /* ── Dark ── */
 .dark .dth-empty { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 .dark .dth-tool-card { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
-.dark .dth-tool-card:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+.dark .dth-tool-card:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(0,0,0,.4); }
+.dark .dth-conf-high { background: rgba(33,150,83,.18); color: #4ade80; }
+.dark .dth-conf-low { background: rgba(255,159,10,.14); color: #ffb340; }
 .dark .dth-tool-label { color: var(--ink); }
 .dark .dth-count-warn { background: rgba(255,159,10,.12); color: #ffb340; }
 .dark .dth-type-badge { background: rgba(255,255,255,.06); }
