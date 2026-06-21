@@ -181,6 +181,8 @@ def post_suggestions(suggestions: list[dict]) -> None:
 def main():
     dry_run = "--dry-run" in sys.argv
     queue_mode = "--mode=queue" in sys.argv or "--queue" in sys.argv
+    limit_arg = next((a for a in sys.argv if a.startswith("--limit=")), None)
+    limit = int(limit_arg.split("=", 1)[1]) if limit_arg else None
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     target_type = args[0] if args else None
 
@@ -197,6 +199,8 @@ def main():
             continue
         need_images.append(e)
 
+    if limit:
+        need_images = need_images[:limit]
     print(f"Found {len(need_images)} entities needing images")
     if target_type:
         print(f"  (filtered to type: {target_type})")
