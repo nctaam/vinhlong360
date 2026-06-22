@@ -284,6 +284,16 @@ def test_pg_pool_fallback_on_bad_dsn(tmp_path, monkeypatch):
     assert d._pg_pool_failed is True
 
 
+def test_pg_pool_default_off(tmp_path, monkeypatch):
+    """OPT-IN: KHÔNG set PG_USE_POOL → pool OFF (connect-trực-tiếp). Khoá incident-fix
+    2026-06-22 (pool treo agent startup prod). Pool chỉ bật khi PG_USE_POOL=true tường minh."""
+    d = Database(db_path=str(tmp_path / "t.db"))
+    d._use_pg = True
+    d._dsn = "postgresql://x@127.0.0.1:5432/x"
+    monkeypatch.delenv("PG_USE_POOL", raising=False)
+    assert d._get_pg_pool() is None
+
+
 # ── GĐ13.3: danh bạ hành chính (facility theo placeId) ──
 
 def test_facilities_by_place(db):

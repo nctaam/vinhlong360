@@ -90,13 +90,15 @@ class Database:
         self._use_pg = USE_PG
         self._dsn = DATABASE_URL if USE_PG else None
         # D02: connection pool cho PG (tái dùng connection thay vì connect/close mỗi request).
-        # Kill-switch PG_USE_POOL=false → quay lại connect-trực-tiếp. Fallback tự động nếu
-        # pool tạo lỗi (an-toàn: không pool còn hơn crash).
+        # OPT-IN (OFF mặc định): bật bằng PG_USE_POOL=true. Mặc định connect-trực-tiếp.
+        # LÝ DO: pool gây TREO agent lúc startup trên prod 2026-06-22 (ThreadedConnectionPool
+        # getconn/init block) + code này untestable local (không có PG local, §B3). Pool chỉ là
+        # tối ưu perf, <10k user connect-trực-tiếp dư sức. CHỈ bật lại sau khi test được với PG thật.
         self._pg_pool = None
         self._pg_pool_failed = False
 
     def _get_pg_pool(self):
-        if self._pg_pool_failed or os.environ.get("PG_USE_POOL", "true").strip().lower() in ("0", "false", "no", "off"):
+        if self._pg_pool_failed or os.environ.get("PG_USE_POOL", "false").strip().lower() not in ("1", "true", "yes", "on"):
             return None
         if self._pg_pool is None:
             with self._lock:
