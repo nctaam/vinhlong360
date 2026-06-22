@@ -253,9 +253,13 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 - **Toạ độ re-align + cờ gần-đúng** (commit dae52fa + 51ee906): sau khi sửa placeId, re-align 227 pin sai-ward → centroid-placeId; gắn `coords_approximate=true` cho 698 entity ngồi trên centroid; **null 87** coords (placeId None) — gỡ pin giả. FE trang chi tiết hiện "📍 Vị trí: Gần đúng (trung tâm xã/phường)" khi approximate (verify dev SSR pass). missing_location 12→99 (đúng nguyên tắc).
 - Cơ chế: placeId=None = "chưa phân loại" (`/admin/unclassified` + `chua-phan-loai.vue`) — KHÔNG đoán bừa.
 
-**CÒN NỢ (cần nguồn/duyệt — KHÔNG tự bịa):**
-- 🔴 **Toạ độ chính xác**: ~698 entity vẫn ở centroid-xã (đã gắn cờ approximate + FE báo rõ) → cần geocode thật để nâng cấp. KHÔNG còn pin sai-ward.
-- 🔴 **210 thiếu placeId** (+87 thiếu coords): ĐỀU không có address đủ → để None (chưa phân loại, vào /admin/unclassified). Cần nguồn/geocode hoặc admin gán tay.
+**✅ PASS-2c — nghiên cứu sâu để xử nợ (2026-06-22):**
+- **placeId thiếu: giải 11** qua CROSSWALK + parser bắt 'P./TT./TX./X.' viết tắt (commit bed805c, e1e39bd; CHẶN bug 'Tp.'/'tx.' bị hiểu nhầm = negative lookbehind). 199 None còn lại = 31 không-address + ~18 phường-số-không-trong-NQ1687 + ~150 chỉ street+thành-phố KHÔNG có ward → đúng để None.
+- **Geocode 55 toạ độ THẬT** từ Nominatim/OSM (commit 6eb5f4e) — gate validate: chỉ nhận kết quả cách centroid-ward 0.2–5km (loại echo + match-sai trùng-tên-đường tỉnh khác). 478 ứng viên → nhận 55 (12%), loại 423 (OSM phủ kém ĐBSCL). coords_approximate 698→644.
+
+**CÒN NỢ — GIỚI HẠN CỨNG bởi nguồn ngoài (KHÔNG bịa được):**
+- 🔴 **~644 toạ độ vẫn gần-đúng** (đã gắn cờ + FE báo): OSM không có dữ liệu street vùng ĐBSCL → cần geocode trả-phí (Google, §B8 cấm) hoặc khảo sát thực địa.
+- 🔴 **199 placeId None + ~97 thiếu coords**: address chỉ street+thành-phố (không ward) hoặc phường-số ngoài NQ1687 → không xác định ward an-toàn → admin gán tay (/admin/unclassified).
 - ✅ **produced_in rác**: ĐÃ gỡ 1665 cạnh Cartesian (fanout-nguồn>=6, auto-sinh) — commit a9d8a26. Giữ 133 (fanout<=5, chủ ý). Đồng thời gỡ 176 near không hợp lệ (sửa regression coords). rels 11346→9505, validate 0.
 - 🟠 **CTA (§1.4)**: trích được 2 phone có-nhãn (90b8d74); còn lại entity THỰC SỰ không có contact trong data (162 đã có phone) → 0 Zalo/website cần **nguồn ngoài**, KHÔNG bịa được.
 - 🟡 **115 attributes.ward giữ-soát + ~few address-conflict không hội tụ**: phần lớn placeId VỐN ĐÚNG (address ghi tên cũ); phần nghi sai để nguyên/None.
