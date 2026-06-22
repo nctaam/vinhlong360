@@ -139,8 +139,11 @@ export default defineNuxtConfig({
   },
 
   vite: {
+    // maplibre-gl ~900KB: EXCLUDE khỏi pre-bundle để giữ nó là lazy dynamic-import chunk
+    // (composables/useNDAMap.ts dùng `await import('maplibre-gl')`). 'include' trước đây
+    // ép eager-bundle → phình bộ nhớ build (ARCH-006/D01). Map chỉ tải khi cần.
     optimizeDeps: {
-      include: ['maplibre-gl'],
+      exclude: ['maplibre-gl'],
     },
   },
 

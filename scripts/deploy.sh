@@ -64,7 +64,9 @@ $SSH "$VPS" 'systemctl is-active vl-agent vl-nuxt >/dev/null && echo "services u
 # 1. Build frontend (local) --------------------------------------------------
 if [ "$DO_FRONTEND" = 1 ] && [ "$DO_BUILD" = 1 ]; then
   echo "==> building web-nuxt (npm run build)"
-  ( cd web-nuxt && npm run build )
+  # ARCH-006: cấp thêm heap V8 cho build (maplibre + tooling nặng) tránh OOM.
+  # KHÔNG đặt quá cao (8192) — sẽ bỏ đói esbuild/WASM native; 4096 cân bằng.
+  ( cd web-nuxt && NODE_OPTIONS="--max-old-space-size=4096" npm run build )
 fi
 
 # 2. Pack tarballs (local) ---------------------------------------------------
