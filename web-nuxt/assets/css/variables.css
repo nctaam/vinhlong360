@@ -16,6 +16,7 @@
   --amber-100: #FAEBD0;
   --amber-500: #E8A33D;
   --amber-600: #C4872A;
+  --amber-700: #9a6d1e; /* A11Y-01: amber đậm cho text (contrast trên nền sáng) */
   /* Leaf (miệt vườn / dừa) */
   --leaf-100: #E7F3EC;
   --leaf-600: #2E7D5B;

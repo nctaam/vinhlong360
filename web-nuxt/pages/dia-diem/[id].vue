@@ -71,7 +71,7 @@
         @touchstart.passive="lbTouchStart" @touchmove.passive="lbTouchMove" @touchend="lbTouchEnd">
         <button type="button" class="lb-close" aria-label="Đóng" @click="lightboxOpen = false">&times;</button>
         <button type="button" v-if="entity.images?.length > 1" class="lb-prev" aria-label="Ảnh trước" @click="lbPrev">&#8249;</button>
-        <img :src="entity.images[lbIndex]" :alt="`${entity.name} - ${lbIndex + 1}`" class="lb-img" :style="lbDragStyle" :key="lbIndex" />
+        <img :src="entity.images[lbIndex]" :alt="`${entity.name} - ${lbIndex + 1}`" class="lb-img" :style="lbDragStyle" :key="lbIndex" loading="lazy" decoding="async" />
         <button type="button" v-if="entity.images?.length > 1" class="lb-next" aria-label="Ảnh tiếp" @click="lbNext">&#8250;</button>
         <div class="lb-counter" aria-live="polite">{{ lbIndex + 1 }} / {{ entity.images.length }}</div>
       </div>

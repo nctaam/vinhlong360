@@ -775,7 +775,7 @@ html.js .home .hero-enter h1::after {
   gap: 4px;
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
-  color: #9a6d1e;
+  color: var(--amber-700); /* A11Y-01: qua token thay vì hex cứng */
   background: rgba(154, 109, 30, .08);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-full);

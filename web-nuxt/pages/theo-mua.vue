@@ -321,7 +321,7 @@ useHead(() => ({
       '@type': 'CollectionPage',
       name: `Tháng ${month.value}: đi đâu, ăn gì ở Vĩnh Long`,
       description: `Những mục đang mùa, ngon nhất vào tháng ${month.value} — trái cây, nông sản, ẩm thực, trải nghiệm miệt vườn.`,
-      url: canonicalUrl(`/theo-mua?month=${month.value}`),
+      url: canonicalUrl('/theo-mua'),
     }),
   }],
 }))
