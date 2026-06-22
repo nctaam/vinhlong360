@@ -289,7 +289,9 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
   - **P1 dữ liệu §1.4:** ✅admission_fee alias · ✅9 transposed coords (+49 ngoài-bbox → null) · ✅siết bbox validator. CÒN: 16 dup entity · 68 summary/37 address sai tỉnh · 169 orphan.
   - **P2 DB/script:** ✅guard optimize_data.py + gỡ bịa produced_in. CÒN: replace_from_json atomic + description round-trip (test trước §B3) · ETL-03/04 migrate_sap_nhap+fix_audit_safe key.
   - **P3 perf/FE/deploy:** ✅maplibre lazy→build OOM fix→ĐÃ deploy FE note. CÒN: PG pool · N+1 places_in_area · FE null-safety coords (xa-phuong/lich-trinh) · SEO breadcrumb/ogImage/CWV.
-  - **ĐÃ DEPLOY prod (2026-06-22):** 9 nhóm fix trên (commit f2e5658→7727b02) + data 1791e/9306r.
+  - **ĐÃ DEPLOY prod (2026-06-22):** 9 nhóm fix (f2e5658→7727b02) + resilience (15a372c) + dedup 2 entity (4f1dded) + DF-02 address-tỉnh-cũ 235 + 69 orphan-link (11e68ea). Data 1789e/9371r.
+  - **DƯƠNG-TÍNH-GIẢ/LOW (verify-by-check, KHÔNG sửa):** Vàm Ray "×4" dup (chỉ 1 Vàm Ray + 1 Samrông Ek khác nhau); coord-dup (centroid placeholder); F3 description round-trip (description RỖNG toàn bộ, admin-only qua update_description); /graph no-auth (KB public); GS-02 ward→vinh-long (đúng sau sáp nhập); audit-3 .env-leak (gitignore đúng).
+  - **CẦN PHIÊN RIÊNG (refactor + test-first §B3, KHÔNG gấp):** replace_from_json PG atomic (mitigation: deploy pg_dump trước mỗi replace) · CONC-001 async SSE to_thread · D02 PG-pool · N+1 places_in_area · FE null-safety coords · SEO/CWV.
   - DƯƠNG-TÍNH-GIẢ (KHÔNG sửa): GS-02 (ward BT/TV→vinh-long là đúng sau sáp nhập); audit-3 .env-leak (đã verify gitignore đúng).
 
 - **(2026-06-20) 🌟 WORLD-CLASS HARDENING** (audit 10 chiều, 5.5/10 → memory `project-worldclass-roadmap`). Verdict: KHÔNG "thô sơ" mà thiếu nội dung + vài bug data-shape. Lộ trình 5 phase; mỗi phase build+test+preview+**prod-verify** (không deploy mù).
