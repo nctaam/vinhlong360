@@ -239,6 +239,17 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 ---
 
+### 🔬 Audit dữ liệu đa-agent (2026-06-22) — 24 agent, 9 chiều + verify + critic + round2
+**ĐÃ FIX & DEPLOY (commit gói safe-fix, deploy 20260622-101033):** gói tự-sửa-an-toàn (suy nội bộ, KHÔNG bịa, B1 backup, dry-run): con-phung→con-phung-con-ong-dao-dua (3 itinerary, gỡ dead-end); p-vung-liem.parentId→vinh-long; `attributes.district`→`legacy_district` (465, FE không render); address bỏ ", huyện X" (447, bảo thủ — chừa "Huyện Lộ", giữ thị trấn/TX); **sinh located_in backbone** entity→xã (1354)+xã→tỉnh (124)=+1478 rel (fix graph mồ côi); **validate refine** (B4+test): located_in/part_of không tính fanout-120. rels 9934→11412, validate 0, baseline 1190.
+**CÒN NỢ (theo severity, từ audit — chưa làm):**
+- 🔴 **Toạ độ placeholder**: 1303 entity dùng chung centroid + 58 ngoài bbox + 126 lệch tỉnh → cần geocode từ nguồn (§1.4 không bịa). near-check hiện là dương-tính-giả do centroid.
+- 🟠 **produced_in rác**: 1987/2390 cạnh Descartes (fanout đều 22, tự-sinh) + 592 dish→craft_village sai-loại → cắt cần LUẬT rõ + duyệt (xoá-hàng-loạt, không safe-auto). HOÃN.
+- 🟠 **Graph ngữ nghĩa thưa**: 717 entity không quan hệ ngữ-nghĩa (located_in đã fix phần backbone; còn related_to/associated_with theo cụm chủ đề — bán-tự-động).
+- 🟠 **CTA (§1.4)**: 0 Zalo, product 217/218 không kênh liên hệ, 33 facility (gồm SĐT cấp cứu) source='curated' → cần nguồn/schema. Quick-win: parse `booking_note` trích phone/web có-sẵn (H9); FE tách website vs source (H10).
+- 🟡 **§1.4/dead-link cần người (§4)**: 6 summary SAI tỉnh (scrape nhầm); 16 itinerary-entity split-brain (15/16 trả 404); record rác prov-1 + 5 ghost → xoá cần duyệt.
+- 🟡 **Stale-admin còn**: 259 attributes.ward + 68 address-commune≠placeId-ward → cần crosswalk NQ1687; 728 summary nhắc đơn vị cũ → viết lại.
+- 🟢 **Đối chứng (KHÔNG lỗi)**: 0 dangling/self-loop/dup-triple; DB↔json khớp 100%; near cấu trúc sạch; 0% ảnh=GĐ8; 162 product area-level=đúng.
+
 ## VERIFY TỔNG THỂ (sau toàn bộ)
 
 - [ ] Sửa entity ở admin → phản ánh ngay ở **cả** chat lẫn Nuxt.
