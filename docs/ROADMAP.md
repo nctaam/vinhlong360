@@ -284,6 +284,13 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 > Khi phát hiện việc đáng làm ngoài roadmap, ghi vào đây kèm ngày + lý do, rồi tiếp tục task hiện tại.
 
+- **(2026-06-22) 🔬 AUDIT SÂU 3 LƯỢT ĐA-AGENT → `docs/audit-findings-20260622.md`** (110 finding verified: 3 crit, 26 high, 46 med, 35 low + audit-3 scan-only). Đã FIX: ARCH-001 (province area). Lộ trình sửa đề xuất theo rủi-ro:
+  - **P0 vận hành/bất-biến:** CONC-001 (sync OpenAI in event loop §4) · CLP-01 memory_graph LLM no-gate (§B8) · EH-01/02 generate_followups+json.loads no-timeout/guard · SEC-001 OTP leak · SEC-002 XFF spoof · /graph no-auth. (server.py chat = blind-spot §B3 → viết test trước.)
+  - **P1 dữ liệu §1.4:** admission_fee alias · 16 dup entity · 9 transposed coords · 68 summary/37 address sai tỉnh · 169 orphan.
+  - **P2 DB/script:** replace_from_json atomic + description (test trước §B3) · guard optimize_data.py + gỡ bịa produced_in.
+  - **P3 perf/FE/deploy:** maplibre lazy→fix build OOM→deploy FE note · PG pool · N+1 · FE null-safety coords · SEO/CWV.
+  - DƯƠNG-TÍNH-GIẢ (KHÔNG sửa): GS-02 (ward BT/TV→vinh-long là đúng sau sáp nhập); audit-3 .env-leak (đã verify gitignore đúng).
+
 - **(2026-06-20) 🌟 WORLD-CLASS HARDENING** (audit 10 chiều, 5.5/10 → memory `project-worldclass-roadmap`). Verdict: KHÔNG "thô sơ" mà thiếu nội dung + vài bug data-shape. Lộ trình 5 phase; mỗi phase build+test+preview+**prod-verify** (không deploy mù).
   - **P0 ✅ DEPLOYED (commit 579ee38):** fix bug `source` dạng LIST (877 entity rớt nguồn → emit JSON-LD citation/sameAs); canonical dedup (đúng 1/trang); og:image chỉ ảnh thật; contrast `--ink-tertiary` + token `--accent-text` AA; quarantine 11 summary rác "404/không đủ thông tin" + guard `validate_data.BOILERPLATE_SUMMARY` (ERROR); geocode 6 entity coordless qua centroid + xoá 75 near-edge vô nghĩa → **lỗi "77 near thiếu toạ độ" RESOLVED** (validate exit 0); `sitemap-media.xml`.
   - **P1 ✅ DEPLOYED (commit 4f9309c, đa-agent workflow investigate→implement):** placeholder SVG gradient deterministic theo id (prod 239/239 card, hết stock-tile lặp); hero motif vùng Mekong (catalog `::before`); `.reveal` hiện-khi-không-JS (html.js gate + inline head script); `useModalA11y` (focus-trap + scroll-lock + ESC, `immediate` watch) + modal max-height/internal-scroll (sửa keyboard-trap); thang z-index token; khối provenance "Nguồn·Cập nhật·Báo sai" → report flow; trang `/gioi-thieu` (+ AboutPage/Organization JSON-LD) + link footer. **2 bug bắt nhờ preview-verify + fixed:** data-uri quote → SSR hydration style mismatch; modal watch thiếu `immediate`.
