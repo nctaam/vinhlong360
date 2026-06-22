@@ -256,8 +256,8 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 **CÒN NỢ (cần nguồn/duyệt — KHÔNG tự bịa):**
 - 🔴 **Toạ độ chính xác**: ~698 entity vẫn ở centroid-xã (đã gắn cờ approximate + FE báo rõ) → cần geocode thật để nâng cấp. KHÔNG còn pin sai-ward.
 - 🔴 **210 thiếu placeId** (+87 thiếu coords): ĐỀU không có address đủ → để None (chưa phân loại, vào /admin/unclassified). Cần nguồn/geocode hoặc admin gán tay.
-- 🟠 **produced_in rác**: 1987/2390 cạnh Descartes → cắt cần LUẬT rõ + duyệt. HOÃN.
-- 🟠 **CTA (§1.4)**: 0 Zalo, product 217/218 không kênh liên hệ → cần nguồn/schema (H9/H10).
+- ✅ **produced_in rác**: ĐÃ gỡ 1665 cạnh Cartesian (fanout-nguồn>=6, auto-sinh) — commit a9d8a26. Giữ 133 (fanout<=5, chủ ý). Đồng thời gỡ 176 near không hợp lệ (sửa regression coords). rels 11346→9505, validate 0.
+- 🟠 **CTA (§1.4)**: trích được 2 phone có-nhãn (90b8d74); còn lại entity THỰC SỰ không có contact trong data (162 đã có phone) → 0 Zalo/website cần **nguồn ngoài**, KHÔNG bịa được.
 - 🟡 **115 attributes.ward giữ-soát + ~few address-conflict không hội tụ**: phần lớn placeId VỐN ĐÚNG (address ghi tên cũ); phần nghi sai để nguyên/None.
 - ✅ **summary 'huyện X'**: ĐÃ viết lại 259. Còn 140 cố ý giữ (brand/scope/không-neo).
 - 🟢 **Đối chứng (KHÔNG lỗi)**: 0 dangling/self-loop/dup-triple; DB↔json khớp 100%; near cấu trúc sạch; placeId trỏ non-ward 13→0.
