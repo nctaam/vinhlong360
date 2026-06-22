@@ -246,6 +246,11 @@
             <span class="k">{{ ss('labels.detail.fact_address', 'Địa chỉ') }}</span>
             <span class="v">{{ entity.attributes.address }}</span>
           </div>
+          <div v-if="entity.attributes?.coords_approximate && hasCoords" class="fact fact-approx">
+            <span class="fact-ic" aria-hidden="true">📍</span>
+            <span class="k">{{ ss('labels.detail.fact_location', 'Vị trí') }}</span>
+            <span class="v">{{ ss('labels.detail.coords_approximate', 'Gần đúng (trung tâm xã/phường) — chưa có toạ độ chính xác') }}</span>
+          </div>
           <div v-if="entity.attributes?.website" class="fact">
             <span class="fact-ic" aria-hidden="true">🔗</span>
             <span class="k">{{ ss('labels.detail.fact_website', 'Website') }}</span>
