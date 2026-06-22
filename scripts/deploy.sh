@@ -120,15 +120,25 @@ fi
 if [ "\$DO_REPLACE" = 1 ]; then
   echo "  data --replace (destructive, guarded)"
   set -a; . ./.env; set +a
-  ALLOW_DESTRUCTIVE_DB_REPLACE=1 ./venv/bin/python agent/database.py --replace 2>&1 | tail -8
+  # PG_USE_POOL=false: pool treo replace lúc startup (incident 2026-06-22); timeout: fail-fast
+  ALLOW_DESTRUCTIVE_DB_REPLACE=1 PG_USE_POOL=false timeout 240 ./venv/bin/python agent/database.py --replace 2>&1 | tail -8
+  [ \${PIPESTATUS[0]:-0} -eq 124 ] && { echo "  ❌ replace TIMEOUT 240s — abort (data cũ giữ nguyên, transaction rollback)"; exit 1; }
 fi
 
 echo "  restart services"
 [ "\$DO_BACKEND" = 1 ] && systemctl restart vl-agent
 [ "\$DO_FRONTEND" = 1 ] && systemctl restart vl-nuxt
 [ "\$DO_REPLACE" = 1 ] && systemctl restart vl-agent   # reload RAM cache after import
-sleep 4
+sleep 6
 systemctl is-active vl-agent vl-nuxt
+# Cổng health agent: treo-startup KHÔNG log error + is-active báo "active" → poll :8360 thật
+acode=000
+for i in 1 2 3 4 5 6 7 8 9 10; do
+  acode=\$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 http://127.0.0.1:8360/health 2>/dev/null || echo 000)
+  [ "\$acode" = 200 ] && break; sleep 3
+done
+echo "  agent_health=\$acode"
+[ "\$acode" = 200 ] || echo "  ⚠️ AGENT KHÔNG 200 (có thể treo startup) — journalctl -u vl-agent"
 
 echo "  cleanup /tmp"
 rm -f /tmp/vl-deploy.tar.gz /tmp/vl-nuxt-output.tar.gz
@@ -136,5 +146,5 @@ EOF
 
 # 6. Verify ------------------------------------------------------------------
 echo "==> verify"
-$SSH "$VPS" 'curl -s -o /dev/null -w "  home=%{http_code}\n" https://vinhlong360.vn/; journalctl -u vl-agent --since "2 min ago" -p err --no-pager | tail -5 || true'
+$SSH "$VPS" 'curl -s -o /dev/null -w "  home=%{http_code}\n" https://vinhlong360.vn/; curl -s -o /dev/null -w "  agent_health=%{http_code}\n" --max-time 10 http://127.0.0.1:8360/health; journalctl -u vl-agent --since "2 min ago" -p err --no-pager | tail -5 || true'
 echo "==> deploy $TS DONE. Rollback: backups/pre-deploy-$TS.tar.gz + backups/db-pre-deploy-$TS.sql"
