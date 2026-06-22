@@ -67,7 +67,7 @@ CROSSWALK = {
  "Long Thành": ["Long Khánh", "Long Thành"], "Đôn Châu": ["Đôn Xuân", "Đôn Châu"],
  "Ngũ Lạc": ["Thạnh Hòa Sơn", "Ngũ Lạc"],
  # Bến Tre
- "Phú Túc": ["Tân Thạch", "Tường Đa", "Phú Túc"], "Giao Long": ["An Phước", "Quới Sơn", "Giao Long"],
+ "Phú Túc": ["Tân Thạch", "Tường Đa", "Phú Túc", "An Khánh"], "Giao Long": ["An Phước", "Quới Sơn", "Giao Long"],  # An Khánh→Phú Túc (chủ dự án xác nhận 2026-06-22; verbatim k59 model cắt sót)
  "Tiên Thủy": ["Thành Triệu", "Quới Thành", "Tiên Thủy"], "Tân Phú": ["Tiên Long", "Phú Đức", "Tân Phú"],
  "Phú Phụng": ["Sơn Định", "Vĩnh Bình", "Phú Phụng"],
  "Phú Khương": ["Phú Hưng", "Nhơn Thạnh", "Phú Khương"], "Bến Tre": ["Bình Phú", "Thanh Tân", "Bến Tre"],
@@ -82,7 +82,7 @@ CROSSWALK = {
  "Hương Mỹ": ["Ngãi Đăng", "Cẩm Sơn", "Hương Mỹ"], "Đại Điền": ["Phú Khánh", "Tân Phong", "Thới Thạnh", "Đại Điền"],
  "Quới Điền": ["Mỹ Hưng", "Quới Điền"], "Thạnh Phú": ["Bình Thạnh", "Mỹ An", "Thạnh Phú"],
  "An Qui": ["An Thuận", "An Nhơn", "An Qui"], "Thạnh Hải": ["An Điền", "Thạnh Hải"],
- "Thạnh Phong": ["Giao Thạnh", "Thạnh Phong"], "Tân Thủy": ["An Hòa Tây", "Tân Thủy"],
+ "Thạnh Phong": ["Giao Thạnh", "Thạnh Phong"], "Tân Thủy": ["An Hòa Tây", "Tân Thủy", "An Thủy"],  # An Thủy→Tân Thủy (chủ dự án xác nhận)
  "Bảo Thạnh": ["Bảo Thuận", "Bảo Thạnh"],
  "Ba Tri": ["An Đức", "Vĩnh An", "An Bình Tây", "Ba Tri"], "Tân Xuân": ["Phú Lễ", "Phước Ngãi", "Tân Xuân"],
  "Mỹ Chánh Hòa": ["Mỹ Nhơn", "Mỹ Chánh Hòa"], "An Ngãi Trung": ["An Phú Trung", "An Ngãi Trung"],
