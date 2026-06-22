@@ -394,3 +394,53 @@ def test_response_has_request_id(client):
 def test_response_has_response_time(client):
     response = client.get("/health")
     assert "x-response-time" in response.headers
+
+
+def test_chat_stream_concurrent_non_blocking():
+    """CONC-001: 2 request /chat/stream ĐỒNG THỜI phải CHỒNG nhau (LLM-call chạy trong
+    thread, không chặn event loop). Nếu serialize (chặn loop) → ~2× thời gian."""
+    import asyncio
+    import time as _time
+    from httpx import ASGITransport, AsyncClient
+
+    SLEEP = 0.35
+
+    def _slow_create(**kwargs):
+        _time.sleep(SLEEP)  # mô phỏng LLM chậm (đồng bộ)
+        if kwargs.get("stream"):
+            class _C:
+                class _D:
+                    content = "x"
+                choices = [MagicMock(delta=_D())]
+
+            class _E:
+                class _D:
+                    content = None
+                choices = [MagicMock(delta=_D())]
+            return iter([_C(), _E()])
+        return _mock_response
+
+    slow = MagicMock()
+    slow.chat.completions.create = _slow_create
+
+    async def _run():
+        with patch("server.client", slow), \
+             patch("server.start_scheduler", MagicMock()), \
+             patch("server.sync_data_json_to_js", MagicMock()):
+            import server
+            from server import app
+            # bỏ rate-limit để 2 request đồng thời đều qua
+            server.stream_limiter.is_allowed = lambda ip: (True, {})
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://test") as ac:
+                async def one(n):
+                    r = await ac.get("/chat/stream", params={"message": f"cau hoi doc nhat {n}", "session_id": f"s{n}"})
+                    return r.status_code
+                t0 = _time.time()
+                codes = await asyncio.gather(one(1), one(2))
+                return _time.time() - t0, codes
+
+    elapsed, codes = asyncio.run(_run())
+    assert all(c == 200 for c in codes), codes
+    # Mỗi request ≥2 LLM-call × SLEEP. Serialize 2 request ≈ 4×SLEEP=1.4s; chồng ≈ 2×SLEEP=0.7s.
+    assert elapsed < 1.15, f"event loop bị CHẶN (serialize): {elapsed:.2f}s — CONC-001 chưa fix"

@@ -2004,7 +2004,9 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                 _kw = {"model": _stream_model, "messages": messages, "tools": TOOLS, "tool_choice": "auto", "timeout": LLM_TIMEOUT}
                 if _stream_temp is not None:
                     _kw["temperature"] = _stream_temp
-                response = client.chat.completions.create(**_kw)
+                # CONC-001: chạy LLM-call ĐỒNG-BỘ trong thread để KHÔNG chặn event loop
+                # (request /chat khác + /health vẫn xử lý được trong lúc chờ LLM).
+                response = await asyncio.to_thread(lambda: client.chat.completions.create(**_kw))
                 msg = response.choices[0].message
             except Exception as exc:
                 error_tracker.record_error("/chat/stream", str(exc), traceback.format_exc())
@@ -2027,7 +2029,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                     yield f"data: {json.dumps({'type': 'tool_start', 'name': fn_name, 'description': tool_desc, 'args': fn_args}, ensure_ascii=False)}\n\n"
 
                     t0 = time.time()
-                    result = call_tool(fn_name, fn_args)
+                    result = await asyncio.to_thread(call_tool, fn_name, fn_args)  # CONC-001: tool I/O off event loop
                     duration_ms = round((time.time() - t0) * 1000)
                     messages.append({"role": "tool", "tool_call_id": tc.id, "content": result})
 
@@ -2046,17 +2048,38 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                         except Exception:
                             pass
             else:
-                # Stream the final response
-                stream = client.chat.completions.create(
-                    model=_stream_model, messages=messages, stream=True,
-                    timeout=LLM_TIMEOUT,
-                )
+                # CONC-001: SDK streaming là iterator ĐỒNG-BỘ — lặp nó trong async gen sẽ
+                # chặn event loop từng token. Chạy create+iterate trong THREAD, đẩy từng
+                # chunk qua asyncio.Queue (thread-safe) để consumer async yield không chặn.
+                loop = asyncio.get_running_loop()
+                chunk_q: asyncio.Queue = asyncio.Queue()
+
+                def _produce_stream():
+                    try:
+                        stream = client.chat.completions.create(
+                            model=_stream_model, messages=messages, stream=True,
+                            timeout=LLM_TIMEOUT,
+                        )
+                        for chunk in stream:
+                            delta = chunk.choices[0].delta
+                            if delta.content:
+                                loop.call_soon_threadsafe(chunk_q.put_nowait, delta.content)
+                    except Exception as exc:  # đẩy lỗi sang consumer để xử lý sạch
+                        loop.call_soon_threadsafe(chunk_q.put_nowait, exc)
+                    finally:
+                        loop.call_soon_threadsafe(chunk_q.put_nowait, None)  # sentinel hết stream
+
+                producer = asyncio.create_task(asyncio.to_thread(_produce_stream))
                 full_text = ""
-                for chunk in stream:
-                    delta = chunk.choices[0].delta
-                    if delta.content:
-                        full_text += delta.content
-                        yield f"data: {json.dumps({'type': 'text', 'content': delta.content}, ensure_ascii=False)}\n\n"
+                while True:
+                    item = await chunk_q.get()
+                    if item is None:
+                        break
+                    if isinstance(item, Exception):
+                        raise item
+                    full_text += item
+                    yield f"data: {json.dumps({'type': 'text', 'content': item}, ensure_ascii=False)}\n\n"
+                await producer
 
                 # Record in memory
                 memory_manager.on_message(sid, "assistant", full_text)
