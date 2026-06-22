@@ -278,7 +278,7 @@ MODEL_MINI = os.environ.get("LLM_MODEL_MINI", "cx/gpt-5.4-mini")
 def web_search(query: str, max_results: int = 5) -> list[dict]:
     try:
         from ddgs import DDGS
-        with DDGS() as ddgs:
+        with DDGS(timeout=10) as ddgs:  # EH-04: timeout để 1 request DDG chậm không treo tool call
             results = list(ddgs.text(query, region="vn-vi", max_results=max_results))
         return [{"title": r.get("title", ""), "url": r.get("href", ""), "snippet": r.get("body", "")} for r in results]
     except Exception as e:
@@ -324,6 +324,7 @@ Ngữ cảnh: {context}
 
 Trả về JSON array gồm 3 string. Chỉ trả JSON, không text khác."""}],
             temperature=0.7,
+            timeout=LLM_TIMEOUT,
         )
         content = response.choices[0].message.content.strip()
         content = re.sub(r"^```json\s*", "", content)
@@ -1424,7 +1425,10 @@ def _run_agent(messages: list[dict], max_rounds: int = 8, max_tool_calls: int = 
                 })
                 continue
             fn_name = tc.function.name
-            fn_args = json.loads(tc.function.arguments)
+            try:
+                fn_args = json.loads(tc.function.arguments)
+            except (json.JSONDecodeError, TypeError):
+                fn_args = {}  # EH-02: LLM trả JSON args lỗi → dùng {} thay vì crash agent loop
             tools_used.append(f"{fn_name}({json.dumps(fn_args, ensure_ascii=False)})")
             total_tool_calls += 1
             pending_calls.append({"id": tc.id, "name": fn_name, "args": fn_args})
@@ -2012,7 +2016,10 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                 messages.append(msg)
                 for tc in msg.tool_calls:
                     fn_name = tc.function.name
-                    fn_args = json.loads(tc.function.arguments)
+                    try:
+                        fn_args = json.loads(tc.function.arguments)
+                    except (json.JSONDecodeError, TypeError):
+                        fn_args = {}  # EH-02: JSON args lỗi → {} thay vì crash stream
                     tools_used.append(fn_name)
 
                     # Tool-use Tracing: send start event with description
