@@ -864,6 +864,9 @@ class Database:
         if not self._use_pg and os.path.exists(self.db_path):
             backup_path = self.backup()
 
+        # F1 (atomic): DELETE + INSERT trong CÙNG 1 transaction cho CẢ PG lẫn SQLite.
+        # Crash giữa chừng → rollback → data CŨ còn nguyên (KHÔNG để DB rỗng). Trước đây
+        # PG xoá ở transaction này rồi nạp ở migrate_from_json (transaction KHÁC) → không atomic.
         with self._conn() as conn:
             self._execute(conn, "DELETE FROM relationships")
             self._execute(conn, "DELETE FROM itineraries")
@@ -874,96 +877,98 @@ class Database:
                     pass
             self._execute(conn, "DELETE FROM entities")
 
-            if self._use_pg:
-                pass
-            else:
-                entity_rows = []
-                fts_rows = []
-                for entity in data.get("entities", []):
-                    season_val = entity.get("season")
-                    attrs_val = entity.get("attributes", {})
-                    source_val = entity.get("source", {})
-                    images_val = entity.get("images", [])
-                    coords_val = entity.get("coordinates")
-                    updated = entity.get("updatedAt", datetime.now().strftime("%Y-%m-%d"))
-                    entity_rows.append((
-                        entity["id"], entity["type"], entity["name"],
-                        entity.get("summary", ""), entity.get("placeId"),
-                        entity.get("confidence", 1.0),
-                        json.dumps(season_val, ensure_ascii=False) if season_val else None,
-                        json.dumps(attrs_val, ensure_ascii=False),
-                        json.dumps(source_val, ensure_ascii=False),
-                        json.dumps(images_val, ensure_ascii=False),
-                        updated,
-                        json.dumps(coords_val) if coords_val else None,
-                        entity.get("area"), entity.get("level"), entity.get("parentId"),
-                        entity.get("legacyArea"),
-                    ))
-                    fts_rows.append((
-                        entity["id"], entity["name"], entity.get("summary", ""), entity["type"]
-                    ))
-
-                conn.executemany("""
-                    INSERT OR REPLACE INTO entities
-                    (id, type, name, summary, placeId, confidence, season, attributes, source, images, updatedAt,
-                     coordinates, area, level, parentId, legacyArea)
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-                """, entity_rows)
-                try:
-                    conn.executemany(
-                        "INSERT OR REPLACE INTO entities_fts(id, name, summary, type) VALUES (?, ?, ?, ?)",
-                        fts_rows,
-                    )
-                except sqlite3.OperationalError:
-                    pass
-
-                relationship_rows = []
-                for rel in data.get("relationships", []):
-                    source_id = rel.get("from") or rel.get("from_id") or rel.get("source_id")
-                    target_id = rel.get("to") or rel.get("to_id") or rel.get("target_id")
-                    rel_type = rel.get("type") or rel.get("rel_type")
-                    if source_id and target_id and rel_type:
-                        relationship_rows.append((source_id, target_id, rel_type))
-                conn.executemany(
-                    "INSERT OR IGNORE INTO relationships (from_id, to_id, type) VALUES (?, ?, ?)",
-                    relationship_rows,
-                )
-
-                itinerary_rows = []
-                for itinerary in data.get("itineraries", []):
-                    itinerary_rows.append((
-                        itinerary["id"], itinerary["title"], itinerary.get("area"),
-                        itinerary.get("duration"), itinerary.get("summary", ""),
-                        json.dumps(itinerary.get("stops", []), ensure_ascii=False),
-                    ))
-                conn.executemany("""
-                    INSERT OR REPLACE INTO itineraries (id, title, area, duration, summary, stops)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                """, itinerary_rows)
-
-                # GĐ3.2: đếm in/out để migrate quan sát được tính lossless.
-                stored_rels = self._fetchone(conn, "SELECT COUNT(*) as c FROM relationships")["c"]
-                dropped = len(relationship_rows) - stored_rels
-                result = {
-                    "status": "migrated",
-                    "entities": len(entity_rows),
-                    "relationships": len(relationship_rows),
-                    "relationships_stored": stored_rels,
-                    "relationships_dropped": dropped,
-                    "itineraries": len(itinerary_rows),
-                    "backend": "sqlite",
-                }
-                if dropped > 0:
-                    print(f"[replace_from_json] CANH BAO: {dropped} quan he trung (from,to,type) bi bo khi luu "
-                          f"(input {len(relationship_rows)} -> stored {stored_rels})")
-
-        if self._use_pg:
-            result = self.migrate_from_json(json_path)
+            result = self._bulk_load(conn, data)
+            if result.get("relationships_dropped", 0) > 0:
+                print(f"[replace_from_json] CANH BAO: {result['relationships_dropped']} quan he trung "
+                      f"(from,to,type) bi bo khi luu (input {result['relationships']} -> stored "
+                      f"{result['relationships_stored']})")
 
         result["mode"] = "replace"
         if backup_path:
             result["backup"] = backup_path
         return result
+
+    def _bulk_load(self, conn, data: dict) -> dict:
+        """Nạp entities+relationships+itineraries vào DB trên CONNECTION đã cho (không tự
+        commit) — để replace_from_json gói DELETE+INSERT trong 1 transaction (F1 atomic).
+        SQLite + PostgreSQL dùng chung cấu trúc; SQL theo từng backend (copy từ upsert_*)."""
+        now = datetime.now().strftime("%Y-%m-%d")
+        entity_rows, fts_rows = [], []
+        for entity in data.get("entities", []):
+            season_val = entity.get("season")
+            coords_val = entity.get("coordinates")
+            entity_rows.append((
+                entity["id"], entity["type"], entity["name"],
+                entity.get("summary", ""), entity.get("placeId"),
+                entity.get("confidence", 1.0),
+                json.dumps(season_val, ensure_ascii=False) if season_val else None,
+                json.dumps(entity.get("attributes", {}), ensure_ascii=False),
+                json.dumps(entity.get("source", {}), ensure_ascii=False),
+                json.dumps(entity.get("images", []), ensure_ascii=False),
+                entity.get("updatedAt", now),
+                json.dumps(coords_val) if coords_val else None,
+                entity.get("area"), entity.get("level"), entity.get("parentId"),
+                entity.get("legacyArea"),
+            ))
+            fts_rows.append((entity["id"], entity["name"], entity.get("summary", ""), entity["type"]))
+
+        rel_rows = []
+        for rel in data.get("relationships", []):
+            s = rel.get("from") or rel.get("from_id") or rel.get("source_id")
+            t = rel.get("to") or rel.get("to_id") or rel.get("target_id")
+            rt = rel.get("type") or rel.get("rel_type")
+            if s and t and rt:
+                rel_rows.append((s, t, rt))
+
+        itin_rows = []
+        for it in data.get("itineraries", []):
+            itin_rows.append((
+                it["id"], it["title"], it.get("area"), it.get("duration"),
+                it.get("summary", ""), json.dumps(it.get("stops", []), ensure_ascii=False),
+            ))
+
+        if self._use_pg:
+            cur = conn.cursor()
+            cur.executemany(
+                'INSERT INTO entities (id, type, name, summary, "placeId", confidence, season, '
+                'attributes, source, images, "updatedAt", coordinates, area, level, "parentId", "legacyArea") '
+                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT (id) DO NOTHING",
+                entity_rows)
+            cur.executemany(
+                "INSERT INTO relationships (from_id, to_id, type) VALUES (%s,%s,%s) ON CONFLICT DO NOTHING",
+                rel_rows)
+            cur.executemany(
+                "INSERT INTO itineraries (id, title, area, duration, summary, stops) "
+                "VALUES (%s,%s,%s,%s,%s,%s) ON CONFLICT (id) DO NOTHING",
+                itin_rows)
+            stored = self._fetchone(conn, "SELECT COUNT(*) as c FROM relationships")["c"]
+        else:
+            conn.executemany(
+                "INSERT OR REPLACE INTO entities (id, type, name, summary, placeId, confidence, season, "
+                "attributes, source, images, updatedAt, coordinates, area, level, parentId, legacyArea) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", entity_rows)
+            try:
+                conn.executemany(
+                    "INSERT OR REPLACE INTO entities_fts(id, name, summary, type) VALUES (?, ?, ?, ?)",
+                    fts_rows)
+            except sqlite3.OperationalError:
+                pass
+            conn.executemany(
+                "INSERT OR IGNORE INTO relationships (from_id, to_id, type) VALUES (?, ?, ?)", rel_rows)
+            conn.executemany(
+                "INSERT OR REPLACE INTO itineraries (id, title, area, duration, summary, stops) "
+                "VALUES (?, ?, ?, ?, ?, ?)", itin_rows)
+            stored = conn.execute("SELECT COUNT(*) as c FROM relationships").fetchone()["c"]
+
+        return {
+            "status": "migrated",
+            "entities": len(entity_rows),
+            "relationships": len(rel_rows),
+            "relationships_stored": stored,
+            "relationships_dropped": len(rel_rows) - stored,
+            "itineraries": len(itin_rows),
+            "backend": "postgresql" if self._use_pg else "sqlite",
+        }
 
     def backup(self, backup_path: str = None) -> str:
         """Create a backup (SQLite only; PG uses pg_dump)."""

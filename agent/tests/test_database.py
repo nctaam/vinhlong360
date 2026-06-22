@@ -197,6 +197,49 @@ def test_replace_from_json_with_override_roundtrip(db, tmp_path, monkeypatch):
     assert db.get_entity("new1")["name"] == "Mới"
 
 
+def test_replace_from_json_roundtrip_with_rels_itins(db, tmp_path, monkeypatch):
+    """Replace nạp đủ entity + relationship + itinerary; xoá row cũ (stale)."""
+    monkeypatch.setenv("DESTRUCTIVE_OPS_LOCKED", "1")
+    monkeypatch.setenv("ALLOW_DESTRUCTIVE_DB_REPLACE", "1")
+    db.upsert_entity(_entity(eid="stale"))  # phải biến mất sau replace
+    data = {
+        "entities": [_entity(eid="a"), _entity(eid="b")],
+        "relationships": [{"from": "a", "to": "b", "type": "near"}],
+        "itineraries": [{"id": "it1", "title": "T", "area": "vinh-long", "stops": [{"name": "A"}]}],
+    }
+    p = tmp_path / "data.json"
+    p.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    db.replace_from_json(str(p))
+    assert db.get_entity("stale") is None
+    assert db.get_entity("a") and db.get_entity("b")
+    assert db.all_relationships() == [{"from": "a", "to": "b", "type": "near"}]
+    its = db.all_itineraries()
+    assert len(its) == 1 and its[0]["id"] == "it1"
+
+
+def test_replace_from_json_atomic_rollback(db, tmp_path, monkeypatch):
+    """ATOMIC (F1): insert lỗi giữa chừng → DELETE rollback → data CŨ còn nguyên,
+    KHÔNG để DB rỗng. (Hợp-nhất path: SQLite+PG cùng 1 transaction qua _bulk_load.)"""
+    monkeypatch.setenv("DESTRUCTIVE_OPS_LOCKED", "1")
+    monkeypatch.setenv("ALLOW_DESTRUCTIVE_DB_REPLACE", "1")
+    db.upsert_entity(_entity(eid="old", name="Cũ"))
+    data = {"entities": [_entity(eid="new1")], "relationships": [], "itineraries": []}
+    p = tmp_path / "data.json"
+    p.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+
+    def boom(conn, d):
+        conn.execute("INSERT OR REPLACE INTO entities (id, type, name) VALUES ('partial','dish','X')")
+        raise RuntimeError("simulated crash mid-insert")
+    monkeypatch.setattr(db, "_bulk_load", boom)
+
+    with pytest.raises(RuntimeError):
+        db.replace_from_json(str(p))
+    # DELETE + partial-INSERT đều rollback trong 1 transaction
+    assert db.get_entity("old") is not None, "data cũ phải còn (transaction rollback)"
+    assert db.get_entity("new1") is None
+    assert db.get_entity("partial") is None
+
+
 # ── Bulk getters (GĐ3.4: nguồn nạp knowledge in-memory) ──
 
 def test_all_entities_includes_place(db):
