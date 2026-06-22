@@ -54,6 +54,8 @@ def test_validate_flags_coordinates_outside_mekong_bbox(tmp_path: Path) -> None:
         "entities": [
             {"id": "p-vinh-long", "type": "place", "name": "Phuong Vinh Long", "summary": "Place", "coordinates": [10.25, 106.0]},
             {"id": "bad", "type": "attraction", "name": "Bad", "summary": "Bad", "area": "vinh-long", "coordinates": [21.0, 105.8]},
+            # DI-001/005: bbox siết (9.0–11.0, 105.0–107.0) — điểm này lọt bbox cũ (11.5/107.5) nhưng nay phải bị bắt
+            {"id": "edge", "type": "attraction", "name": "Edge", "summary": "Edge", "area": "tra-vinh", "coordinates": [11.3, 106.5]},
         ],
         "relationships": [],
         "itineraries": [],
@@ -61,7 +63,7 @@ def test_validate_flags_coordinates_outside_mekong_bbox(tmp_path: Path) -> None:
 
     issues, stats = validate_data.validate(data, tmp_path / "data.json")
 
-    assert stats["out_of_bounds_coordinates"] == 1
+    assert stats["out_of_bounds_coordinates"] == 2
     assert "out_of_bounds_coordinates" in {issue.code for issue in issues}
 
 def test_validate_flags_area_place_conflicts(tmp_path: Path) -> None:

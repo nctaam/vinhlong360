@@ -14,8 +14,10 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DATA = ROOT / "web" / "data.json"
-MEKONG_LAT_RANGE = (8.0, 11.5)
-MEKONG_LNG_RANGE = (104.0, 107.5)
+# Bao 3 tỉnh sáp nhập (Vĩnh Long+Bến Tre+Trà Vinh) + lề. Trước (8.0–11.5, 104.0–107.5)
+# quá lỏng → lọt 58 toạ-độ sai (lat>11/lon>107/lon~104 transposed). Siết DI-001/005.
+MEKONG_LAT_RANGE = (9.0, 11.0)
+MEKONG_LNG_RANGE = (105.0, 107.0)
 MAX_NEAR_DISTANCE_KM = 50.0
 MAX_DIRECT_RELATIONSHIPS = 120
 # Quan hệ phân-cấp (chứa-đựng) — không tính vào ngưỡng fanout-120 (vốn để chặn
