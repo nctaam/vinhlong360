@@ -33,9 +33,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-21T17:04:47Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-21T17:04:47Z"
   },
   {
@@ -63,9 +63,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": null,
     "updatedAt": "2026-06-18T06:12:14.388505Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-18T06:12:14.388505Z"
   },
   {
@@ -93,9 +93,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Vĩnh Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -123,9 +123,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Vĩnh Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -153,9 +153,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Vĩnh Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -183,9 +183,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Vĩnh Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -213,9 +213,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Vĩnh Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -243,9 +243,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TX Bình Minh",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -273,9 +273,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TX Bình Minh",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -303,9 +303,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TX Bình Minh",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -333,9 +333,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mang Thít",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -363,9 +363,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mang Thít",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -393,9 +393,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mang Thít",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -423,9 +423,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mang Thít",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -453,9 +453,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Long Hồ",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -483,9 +483,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Long Hồ",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -513,9 +513,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -543,9 +543,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -573,9 +573,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -603,9 +603,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -633,9 +633,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -663,9 +663,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -693,9 +693,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -723,9 +723,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -753,9 +753,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tam Bình",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -783,9 +783,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Trà Ôn",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -813,9 +813,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tam Bình",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -843,9 +843,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tam Bình",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -873,9 +873,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tam Bình",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -903,9 +903,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tam Bình",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -933,9 +933,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tam Bình",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -963,9 +963,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Tân",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -993,9 +993,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Tân",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1027,9 +1027,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1062,9 +1062,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1092,9 +1092,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Long Hồ",
     "updatedAt": "2026-06-18T06:12:14.384018Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-18T06:12:14.384018Z"
   },
   {
@@ -1122,9 +1122,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tam Bình",
     "updatedAt": "2026-06-18T06:12:14.386370Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-18T06:12:14.386370Z"
   },
   {
@@ -1152,9 +1152,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Tân",
     "updatedAt": "2026-06-18T06:12:14.386804Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-18T06:12:14.386804Z"
   },
   {
@@ -1182,9 +1182,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Trà Ôn",
     "updatedAt": "2026-06-18T06:12:14.387185Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-18T06:12:14.387185Z"
   },
   {
@@ -1221,9 +1221,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1260,9 +1260,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1299,9 +1299,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1346,9 +1346,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1385,9 +1385,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1432,9 +1432,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1471,9 +1471,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1510,9 +1510,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1549,9 +1549,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1588,9 +1588,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1627,9 +1627,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1666,9 +1666,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1705,9 +1705,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1744,9 +1744,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1774,9 +1774,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1804,9 +1804,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Trà Vinh",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1834,9 +1834,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Trà Vinh",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1864,9 +1864,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Trà Vinh",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1894,9 +1894,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Trà Vinh",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1924,9 +1924,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TX Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1954,9 +1954,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TX Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1984,9 +1984,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2014,9 +2014,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Càng Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2044,9 +2044,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Càng Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2074,9 +2074,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Càng Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2104,9 +2104,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Càng Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2134,9 +2134,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Châu Thành",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2164,9 +2164,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Châu Thành",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2194,9 +2194,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Châu Thành",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2224,9 +2224,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Kè",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2254,9 +2254,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Kè",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2284,9 +2284,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Kè",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2314,9 +2314,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Kè",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2344,9 +2344,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Ngang",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2374,9 +2374,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Ngang",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2404,9 +2404,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Ngang",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2434,9 +2434,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Ngang",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2464,9 +2464,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Ngang",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2494,9 +2494,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Trà Cú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2524,9 +2524,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Trà Cú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2554,9 +2554,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Trà Cú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2584,9 +2584,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Trà Cú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2614,9 +2614,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Trà Cú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2644,9 +2644,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Trà Cú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2674,9 +2674,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2704,9 +2704,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2734,9 +2734,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2764,9 +2764,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2794,9 +2794,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2824,9 +2824,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2858,9 +2858,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2888,9 +2888,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Bến Tre",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2918,9 +2918,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Bến Tre",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2948,9 +2948,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Bến Tre",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2978,9 +2978,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Bến Tre",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3008,9 +3008,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Bến Tre",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3038,9 +3038,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Châu Thành",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3068,9 +3068,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Châu Thành",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3098,9 +3098,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Chợ Lách",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3138,9 +3138,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Chợ Lách",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3168,9 +3168,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Chợ Lách",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3198,9 +3198,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Chợ Lách",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3228,9 +3228,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Bắc",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3258,9 +3258,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Bắc",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3288,9 +3288,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Bắc",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3318,9 +3318,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Nam",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3348,9 +3348,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Nam",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3378,9 +3378,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Nam",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3408,9 +3408,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Nam",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3438,9 +3438,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Thạnh Phú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3468,9 +3468,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Thạnh Phú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3498,9 +3498,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Thạnh Phú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3528,9 +3528,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Thạnh Phú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3558,9 +3558,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Thạnh Phú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3588,9 +3588,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Ba Tri",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3618,9 +3618,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Ba Tri",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3648,9 +3648,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Ba Tri",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3678,9 +3678,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Ba Tri",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3708,9 +3708,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Ba Tri",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3738,9 +3738,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Giồng Trôm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3768,9 +3768,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Giồng Trôm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3798,9 +3798,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Giồng Trôm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3828,9 +3828,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Giồng Trôm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3858,9 +3858,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Giồng Trôm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3888,9 +3888,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Giồng Trôm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3918,9 +3918,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Giồng Trôm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3948,9 +3948,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Đại",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3978,9 +3978,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Đại",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -4008,9 +4008,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Đại",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -4038,9 +4038,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Đại",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -4068,9 +4068,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Đại",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -4098,9 +4098,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Đại",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -4133,9 +4133,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -4163,9 +4163,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Ba Tri",
     "updatedAt": "2026-06-18T06:12:14.389180Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-18T06:12:14.389180Z"
   },
   {
@@ -4193,9 +4193,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Đại",
     "updatedAt": "2026-06-18T06:12:14.389945Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-18T06:12:14.389945Z"
   },
   {
@@ -4223,9 +4223,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Nam",
     "updatedAt": "2026-06-18T06:12:14.390479Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-18T06:12:14.390479Z"
   },
   {
@@ -4262,9 +4262,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Châu Thành",
     "updatedAt": "2026-06-18T06:12:14.391234Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-18T06:12:14.391234Z"
   },
   {
@@ -4292,9 +4292,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Châu Thành",
     "updatedAt": "2026-06-18T06:12:14.391688Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-18T06:12:14.391688Z"
   },
   {
@@ -4322,9 +4322,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Ba Tri",
     "updatedAt": "2026-06-18T06:12:14.392074Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-18T06:12:14.392074Z"
   },
   {
@@ -4352,9 +4352,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Càng Long",
     "updatedAt": "2026-06-18T06:12:14.392513Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-18T06:12:14.392513Z"
   },
   {
@@ -4382,9 +4382,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tiểu Cần",
     "updatedAt": "2026-06-18T06:12:14.392980Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-18T06:12:14.392980Z"
   },
   {
@@ -4412,9 +4412,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tiểu Cần",
     "updatedAt": "2026-06-18T06:12:14.393240Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-18T06:12:14.393240Z"
   },
   {
@@ -4442,9 +4442,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tiểu Cần",
     "updatedAt": "2026-06-18T06:12:14.393555Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-18T06:12:14.393555Z"
   },
   {
@@ -4472,9 +4472,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tiểu Cần",
     "updatedAt": "2026-06-18T06:12:14.393883Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-18T06:12:14.393883Z"
   },
   {
@@ -4524,9 +4524,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4566,9 +4566,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4610,9 +4610,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4650,9 +4650,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4690,9 +4690,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4730,9 +4730,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4770,9 +4770,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4810,9 +4810,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4850,9 +4850,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4891,9 +4891,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4934,9 +4934,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4976,9 +4976,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -5018,9 +5018,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -5060,9 +5060,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -5102,9 +5102,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -5144,9 +5144,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -5186,9 +5186,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -5228,9 +5228,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -5273,9 +5273,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   }
 ];
@@ -5322,9 +5322,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-21T17:04:47Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-21T17:04:47Z"
   },
   {
@@ -5355,7 +5355,8 @@ var items = [
     "attributes": {
       "address": "Hẻm 1 Hoàng Thái Hiếu, P. 1 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 8.1,
-      "review_count": 50
+      "review_count": 50,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -5364,17 +5365,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5405,7 +5406,8 @@ var items = [
     "attributes": {
       "address": "115 Nguyễn Thị Minh Khai, P. 1 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 8.5,
-      "review_count": 45
+      "review_count": 45,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -5414,17 +5416,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5455,7 +5457,8 @@ var items = [
     "attributes": {
       "address": "Góc Trần Đại Nghĩa, P. 4 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.5,
-      "review_count": 32
+      "review_count": 32,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -5464,17 +5467,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5505,7 +5508,8 @@ var items = [
     "attributes": {
       "address": "38D Trần Đại Nghĩa, P. 4 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.1,
-      "review_count": 51
+      "review_count": 51,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -5514,17 +5518,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5555,7 +5559,8 @@ var items = [
     "attributes": {
       "address": "152 Trưng Nữ Vương, P. 1 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.3,
-      "review_count": 17
+      "review_count": 17,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -5564,17 +5569,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5605,7 +5610,8 @@ var items = [
     "attributes": {
       "address": "52A Trần Đại Nghĩa, P. 4 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.6,
-      "review_count": 22
+      "review_count": 22,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -5614,17 +5620,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5655,7 +5661,8 @@ var items = [
     "attributes": {
       "address": "19 Đường 2 tháng 9, P. 1 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.6,
-      "review_count": 17
+      "review_count": 17,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -5664,17 +5671,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5705,7 +5712,8 @@ var items = [
     "attributes": {
       "address": "68/19 Phạm Thái Bường, P. 4 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.8,
-      "review_count": 16
+      "review_count": 16,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -5714,17 +5722,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5755,7 +5763,8 @@ var items = [
     "attributes": {
       "address": "Phạm Thái Bường, P. 4 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.3,
-      "review_count": 15
+      "review_count": 15,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -5764,17 +5773,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5805,7 +5814,8 @@ var items = [
     "attributes": {
       "address": "47 Nguyễn Thị Minh Khai, P. 1 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.8,
-      "review_count": 15
+      "review_count": 15,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -5814,17 +5824,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5879,9 +5889,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5919,7 +5929,8 @@ var items = [
     "attributes": {
       "address": "1/14 Nguyễn Đình Chiểu, P. 1 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 8.4,
-      "review_count": 14
+      "review_count": 14,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -5928,17 +5939,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5969,7 +5980,8 @@ var items = [
     "attributes": {
       "address": "Trần Đại Nghĩa, P. 4 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.6,
-      "review_count": 14
+      "review_count": 14,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -5978,17 +5990,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6026,7 +6038,8 @@ var items = [
     "attributes": {
       "address": "66 Hưng Đạo Vương, P. 1 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.7,
-      "review_count": 12
+      "review_count": 12,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -6035,17 +6048,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6084,18 +6097,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2399,
-      106.0862
-    ],
+    "coordinates": null,
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6148,9 +6158,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6181,7 +6191,8 @@ var items = [
     "attributes": {
       "address": "247A Phạm Hùng, P. 9 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.4,
-      "review_count": 10
+      "review_count": 10,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -6190,17 +6201,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6238,7 +6249,8 @@ var items = [
     "attributes": {
       "address": "97 Nguyễn Thị Minh Khai, P. 1 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.0,
-      "review_count": 10
+      "review_count": 10,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -6247,17 +6259,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6288,7 +6300,8 @@ var items = [
     "attributes": {
       "address": "91 Trưng Nữ Vương, P. 1 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.6,
-      "review_count": 9
+      "review_count": 9,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -6297,17 +6310,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6355,9 +6368,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6392,7 +6405,8 @@ var items = [
     "attributes": {
       "address": "Ba Mươi Tháng Tư, P. 1 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.4,
-      "review_count": 9
+      "review_count": 9,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -6401,17 +6415,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6449,7 +6463,8 @@ var items = [
     "attributes": {
       "address": "52 Bạch Đàn, P. 3 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 8.0,
-      "review_count": 7
+      "review_count": 7,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -6458,17 +6473,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6516,9 +6531,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6563,18 +6578,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2399,
-      106.0862
-    ],
+    "coordinates": null,
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6617,18 +6629,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2399,
-      106.0862
-    ],
+    "coordinates": null,
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6683,9 +6692,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6739,9 +6748,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6778,7 +6787,8 @@ var items = [
     "attributes": {
       "address": "33/3B Phạm Thái Bường, P. 4 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.6,
-      "review_count": 7
+      "review_count": 7,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -6787,17 +6797,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6845,9 +6855,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6899,9 +6909,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6939,7 +6949,8 @@ var items = [
     "attributes": {
       "address": "10 Nguyễn Trung Trực, P. 8 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.3,
-      "review_count": 7
+      "review_count": 7,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -6948,17 +6959,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6997,18 +7008,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2399,
-      106.0862
-    ],
+    "coordinates": null,
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7047,7 +7055,8 @@ var items = [
     "attributes": {
       "address": "55/2A Phạm Thái Bường, P. 4 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.6,
-      "review_count": 6
+      "review_count": 6,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -7056,17 +7065,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7105,7 +7114,8 @@ var items = [
     "attributes": {
       "address": "Phó Cơ Điều, P. 3 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 8.0,
-      "review_count": 6
+      "review_count": 6,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -7114,17 +7124,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7163,7 +7173,8 @@ var items = [
     "attributes": {
       "address": "Phạm Thái Bường, P. 4 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.0,
-      "review_count": 4
+      "review_count": 4,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -7172,17 +7183,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7238,9 +7249,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7275,7 +7286,8 @@ var items = [
     "attributes": {
       "address": "33/11A Phạm Thái Bường, P. 4 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 8.3,
-      "review_count": 6
+      "review_count": 6,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -7284,17 +7296,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7331,7 +7343,8 @@ var items = [
     "attributes": {
       "address": "18 Trưng Nữ Vương, P. 1 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.9,
-      "review_count": 6
+      "review_count": 6,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -7340,17 +7353,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7381,7 +7394,8 @@ var items = [
     "attributes": {
       "address": "45 Nguyễn Thái Học, P. 1 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.2,
-      "review_count": 6
+      "review_count": 6,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -7390,17 +7404,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7439,7 +7453,8 @@ var items = [
     "attributes": {
       "address": "53 Đường 14 Tháng 9, P. 5 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.8,
-      "review_count": 5
+      "review_count": 5,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -7448,17 +7463,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7493,7 +7508,8 @@ var items = [
     "attributes": {
       "address": "56 Đường 2 Tháng 9, P. 1 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.7,
-      "review_count": 6
+      "review_count": 6,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -7502,17 +7518,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7557,18 +7573,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2399,
-      106.0862
-    ],
+    "coordinates": null,
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7612,18 +7625,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2399,
-      106.0862
-    ],
+    "coordinates": null,
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7654,7 +7664,8 @@ var items = [
     "attributes": {
       "address": "249 Phạm Hùng, P. 9 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.3,
-      "review_count": 6
+      "review_count": 6,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -7663,17 +7674,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7718,18 +7729,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2399,
-      106.0862
-    ],
+    "coordinates": null,
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7766,7 +7774,8 @@ var items = [
     "attributes": {
       "address": "46 Phạm Thái Bường, P. 4 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.9,
-      "review_count": 6
+      "review_count": 6,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -7775,17 +7784,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7822,7 +7831,8 @@ var items = [
     "attributes": {
       "address": "68/5 Phạm Thái Bường, Khóm 5, P. 4 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 8.2,
-      "review_count": 5
+      "review_count": 5,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -7831,17 +7841,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7879,7 +7889,8 @@ var items = [
     "attributes": {
       "address": "57/40 Phạm Thái Bường, P. 4 , Thành Phố Vĩnh Long , Vĩnh Long",
       "rating": 7.4,
-      "review_count": 5
+      "review_count": 5,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -7888,17 +7899,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7945,18 +7956,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2468,
-      106.4204
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8004,9 +8012,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8045,18 +8053,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2468,
-      106.4204
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8095,7 +8100,8 @@ var items = [
     "attributes": {
       "address": "8 Khu Phố Bình Khởi, P. 6 , Thành Phố Bến Tre , Bến Tre",
       "rating": 7.2,
-      "review_count": 7
+      "review_count": 7,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -8104,17 +8110,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2714275,
+      106.3393737
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8157,18 +8163,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2468,
-      106.4204
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8202,7 +8205,8 @@ var items = [
     "attributes": {
       "address": "27E Đường Số 2, KP. Mỹ Tân, P. 7 , Thành Phố Bến Tre , Bến Tre",
       "rating": 8.0,
-      "review_count": 9
+      "review_count": 9,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -8211,17 +8215,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2361217,
+      106.3763684
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8268,18 +8272,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2468,
-      106.4204
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8318,18 +8319,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2468,
-      106.4204
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8372,18 +8370,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2468,
-      106.4204
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8431,9 +8426,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8472,18 +8467,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2468,
-      106.4204
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8522,18 +8514,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2468,
-      106.4204
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8572,7 +8561,8 @@ var items = [
     "attributes": {
       "address": "Xã An Khánh, Bến Tre",
       "rating": 7.4,
-      "review_count": 6
+      "review_count": 6,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -8589,9 +8579,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8626,7 +8616,8 @@ var items = [
     "attributes": {
       "address": "Đồng Văn Cống, P. 7 , Thành Phố Bến Tre , Bến Tre",
       "rating": 7.7,
-      "review_count": 5
+      "review_count": 5,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -8635,17 +8626,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2361217,
+      106.3763684
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8684,7 +8675,8 @@ var items = [
     "attributes": {
       "address": "226B Nguyễn Đình Chiểu, P. 8 , Thành Phố Bến Tre , Bến Tre",
       "rating": 9.8,
-      "review_count": 5
+      "review_count": 5,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -8693,17 +8685,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8745,18 +8737,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2468,
-      106.4204
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8795,7 +8784,8 @@ var items = [
     "attributes": {
       "address": "17A10 Đồng Văn Cống, KP. Bình Khởi, P. 6 , Thành Phố Bến Tre , Bến Tre",
       "rating": 7.5,
-      "review_count": 5
+      "review_count": 5,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -8804,17 +8794,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2714275,
+      106.3393737
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8853,7 +8843,8 @@ var items = [
     "attributes": {
       "address": "52-53/18 ấp 3, Xã Tân Thạch, Bến Tre",
       "rating": 8.2,
-      "review_count": 4
+      "review_count": 4,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -8870,9 +8861,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8911,18 +8902,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2468,
-      106.4204
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8953,7 +8941,8 @@ var items = [
     "attributes": {
       "address": "849 Ấp 6, Thị Trấn Giồng Trôm, Bến Tre",
       "rating": 8.8,
-      "review_count": 4
+      "review_count": 4,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -8970,9 +8959,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9011,18 +9000,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2468,
-      106.4204
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9061,18 +9047,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2468,
-      106.4204
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9111,18 +9094,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2468,
-      106.4204
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9165,18 +9145,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2468,
-      106.4204
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9223,18 +9200,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2468,
-      106.4204
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9265,7 +9239,8 @@ var items = [
     "attributes": {
       "address": "93E Tỉnh Lộ 887, Ấp An Thuận B, Xã Mỹ Thạnh An , Thành Phố Bến Tre , Bến Tre",
       "rating": 10.0,
-      "review_count": 3
+      "review_count": 3,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -9282,9 +9257,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9323,18 +9298,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2468,
-      106.4204
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9373,18 +9345,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2468,
-      106.4204
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9415,7 +9384,8 @@ var items = [
     "attributes": {
       "address": "Ấp 1, Quốc lộ 60, Xã Sơn Đông , Thành Phố Bến Tre , Bến Tre",
       "rating": 7.7,
-      "review_count": 4
+      "review_count": 4,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -9432,9 +9402,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9473,18 +9443,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2468,
-      106.4204
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9523,18 +9490,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2468,
-      106.4204
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9565,7 +9529,8 @@ var items = [
     "attributes": {
       "address": "Ấp Phước Thạnh, Xã Tam Phước, Bến Tre",
       "rating": 8.6,
-      "review_count": 3
+      "review_count": 3,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -9582,9 +9547,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9623,18 +9588,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2468,
-      106.4204
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9673,18 +9635,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2468,
-      106.4204
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9728,18 +9687,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2468,
-      106.4204
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9787,9 +9743,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9820,7 +9776,8 @@ var items = [
     "attributes": {
       "address": "2 Nguyễn Thái Học, P. 1 , Tp. Trà Vinh , Trà Vinh",
       "rating": 7.5,
-      "review_count": 19
+      "review_count": 19,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -9829,17 +9786,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9878,18 +9835,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0007,
-      106.3124
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9928,7 +9882,8 @@ var items = [
     "attributes": {
       "address": "Dương Duy Khương, P. 4 , Tp. Trà Vinh , Trà Vinh",
       "rating": 7.8,
-      "review_count": 14
+      "review_count": 14,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -9937,17 +9892,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      9.9762521,
+      106.3445798
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9978,7 +9933,8 @@ var items = [
     "attributes": {
       "address": "2/14 Đường 19 Tháng 5, P. 1 , Tp. Trà Vinh , Trà Vinh",
       "rating": 7.8,
-      "review_count": 13
+      "review_count": 13,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -9987,17 +9943,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10028,7 +9984,8 @@ var items = [
     "attributes": {
       "address": "275 Phạm Ngũ Lão, P. 1 , Tp. Trà Vinh , Trà Vinh",
       "rating": 8.0,
-      "review_count": 12
+      "review_count": 12,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -10037,17 +9994,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10078,7 +10035,8 @@ var items = [
     "attributes": {
       "address": "200 Phạm Ngũ Lão, P. 1 , Tp. Trà Vinh , Trà Vinh",
       "rating": 8.0,
-      "review_count": 10
+      "review_count": 10,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -10087,17 +10045,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10136,18 +10094,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0007,
-      106.3124
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10186,18 +10141,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0007,
-      106.3124
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10228,7 +10180,8 @@ var items = [
     "attributes": {
       "address": "19 Lê Lợi, P. 4 , Tp. Trà Vinh , Trà Vinh",
       "rating": 9.0,
-      "review_count": 8
+      "review_count": 8,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -10237,17 +10190,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      9.9762521,
+      106.3445798
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10286,18 +10239,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0007,
-      106.3124
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10333,7 +10283,8 @@ var items = [
     "attributes": {
       "address": "310 Phan Đình Phùng, P. 7 , Tp. Trà Vinh , Trà Vinh",
       "rating": 9.1,
-      "review_count": 7
+      "review_count": 7,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -10342,17 +10293,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      9.9333987,
+      106.3121888
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10383,7 +10334,8 @@ var items = [
     "attributes": {
       "address": "296A Phạm Ngũ Lão, P. 1 , Tp. Trà Vinh , Trà Vinh",
       "rating": 7.9,
-      "review_count": 7
+      "review_count": 7,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -10392,17 +10344,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10441,18 +10393,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0007,
-      106.3124
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10499,18 +10448,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0007,
-      106.3124
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10541,7 +10487,8 @@ var items = [
     "attributes": {
       "address": "441 Phạm Ngũ Lão, Khóm 4, P. 1 , Tp. Trà Vinh , Trà Vinh",
       "rating": 8.3,
-      "review_count": 4
+      "review_count": 4,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -10550,17 +10497,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10599,7 +10546,8 @@ var items = [
     "attributes": {
       "address": "110 Bạch Đằng, P. 4 , Tp. Trà Vinh , Trà Vinh",
       "rating": 8.3,
-      "review_count": 3
+      "review_count": 3,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -10608,17 +10556,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      9.9762521,
+      106.3445798
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10666,9 +10614,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10715,18 +10663,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0007,
-      106.3124
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10774,9 +10719,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10815,18 +10760,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0007,
-      106.3124
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10865,18 +10807,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0007,
-      106.3124
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10915,7 +10854,8 @@ var items = [
     "attributes": {
       "address": "59 Lý Thường Kiệt, P. 4 , Tp. Trà Vinh , Trà Vinh",
       "rating": 7.1,
-      "review_count": 4
+      "review_count": 4,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -10924,17 +10864,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      9.9762521,
+      106.3445798
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10973,18 +10913,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0007,
-      106.3124
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11015,7 +10952,8 @@ var items = [
     "attributes": {
       "address": "492F Vành Đai, Khóm 4, P. 1 , Tp. Trà Vinh , Trà Vinh",
       "rating": 7.3,
-      "review_count": 4
+      "review_count": 4,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -11024,17 +10962,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11077,18 +11015,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0007,
-      106.3124
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11136,9 +11071,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11180,18 +11115,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0007,
-      106.3124
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11222,7 +11154,8 @@ var items = [
     "attributes": {
       "address": "316 Phạm Ngũ Lão, P. 1 , Tp. Trà Vinh , Trà Vinh",
       "rating": 8.1,
-      "review_count": 4
+      "review_count": 4,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -11231,17 +11164,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11272,7 +11205,8 @@ var items = [
     "attributes": {
       "address": "260 Phạm Ngũ Lão, P. 1 , Tp. Trà Vinh , Trà Vinh",
       "rating": 9.1,
-      "review_count": 3
+      "review_count": 3,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -11281,17 +11215,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11330,18 +11264,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0007,
-      106.3124
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11388,18 +11319,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0007,
-      106.3124
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11447,9 +11375,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11485,7 +11413,8 @@ var items = [
     "attributes": {
       "address": "365B1 Phạm Ngũ Lão, K. 4, P. 1 , Tp. Trà Vinh , Trà Vinh",
       "rating": 8.6,
-      "review_count": 2
+      "review_count": 2,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -11494,17 +11423,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11552,9 +11481,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11585,7 +11514,8 @@ var items = [
     "attributes": {
       "address": "6 Lý Tự Trọng , Thị Xã Duyên Hải , Trà Vinh",
       "rating": 10.0,
-      "review_count": 2
+      "review_count": 2,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -11602,9 +11532,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11643,18 +11573,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0007,
-      106.3124
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11701,18 +11628,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0007,
-      106.3124
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11743,7 +11667,8 @@ var items = [
     "attributes": {
       "address": "Đường B, P. 1 , Tp. Trà Vinh , Trà Vinh",
       "rating": 7.5,
-      "review_count": 2
+      "review_count": 2,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -11752,17 +11677,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11793,7 +11718,8 @@ var items = [
     "attributes": {
       "address": "Lý Thường Kiệt , P. 4 , Tp. Trà Vinh , Trà Vinh",
       "rating": 8.0,
-      "review_count": 2
+      "review_count": 2,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -11802,17 +11728,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      9.9762521,
+      106.3445798
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11859,18 +11785,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0007,
-      106.3124
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11909,7 +11832,8 @@ var items = [
     "attributes": {
       "address": "Trần Phú Nối Dài, P. 7 , Tp. Trà Vinh , Trà Vinh",
       "rating": 8.0,
-      "review_count": 2
+      "review_count": 2,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -11918,17 +11842,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      9.9333987,
+      106.3121888
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11967,7 +11891,8 @@ var items = [
     "attributes": {
       "address": "Trần Phú Nối Dài, P. 7 , Tp. Trà Vinh , Trà Vinh",
       "rating": 8.3,
-      "review_count": 2
+      "review_count": 2,
+      "coords_approximate": true
     },
     "source": [
       {
@@ -11976,17 +11901,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      9.9333987,
+      106.3121888
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -12033,18 +11958,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0007,
-      106.3124
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -12101,9 +12023,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-17T00:00:00Z"
   },
   {
@@ -12160,9 +12082,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12205,9 +12127,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12266,9 +12188,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12323,9 +12245,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12380,9 +12302,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12412,9 +12334,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12444,9 +12366,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12501,9 +12423,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12533,9 +12455,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12565,9 +12487,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12597,9 +12519,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12629,9 +12551,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12661,9 +12583,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12693,9 +12615,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12725,9 +12647,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12757,9 +12679,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12771,7 +12693,8 @@ var items = [
     "confidence": 0.85,
     "season": null,
     "attributes": {
-      "era": "Chùa Khmer lâu đời của cộng đồng Phật giáo Nam tông Khmer"
+      "era": "Chùa Khmer lâu đời của cộng đồng Phật giáo Nam tông Khmer",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -12789,9 +12712,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12847,9 +12770,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12879,7 +12802,8 @@ var items = [
     },
     "attributes": {
       "price": "Khoảng 35.000-75.000 VND/kg tùy loại cá và thời điểm",
-      "weight/unit": "Bán theo kg"
+      "weight/unit": "Bán theo kg",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -12897,9 +12821,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12929,7 +12853,8 @@ var items = [
     },
     "attributes": {
       "price": "Khoảng 35.000-70.000 VND/kg tùy loại và thời điểm",
-      "weight/unit": "Bán theo kg"
+      "weight/unit": "Bán theo kg",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -12947,9 +12872,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12983,7 +12908,8 @@ var items = [
     },
     "attributes": {
       "address": "Khu vực Trà Cuôn, Trà Vinh",
-      "products": "Mắm bò hóc, mắm cá kiểu Khmer, nguyên liệu nấu bún nước lèo"
+      "products": "Mắm bò hóc, mắm cá kiểu Khmer, nguyên liệu nấu bún nước lèo",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -13001,9 +12927,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13041,7 +12967,8 @@ var items = [
     },
     "attributes": {
       "price": "Khoảng 500.000-1.200.000 VND/phòng/đêm",
-      "address": "Thành phố Trà Vinh"
+      "address": "Thành phố Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -13059,9 +12986,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13086,7 +13013,8 @@ var items = [
     },
     "attributes": {
       "address": "Huyện Cầu Kè, Trà Vinh",
-      "products": "Quýt đường, trái cây vườn"
+      "products": "Quýt đường, trái cây vườn",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -13104,9 +13032,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13142,7 +13070,8 @@ var items = [
     },
     "attributes": {
       "address": "Huyện Châu Thành, Bến Tre",
-      "products": "Bưởi da xanh ruột hồng, sản phẩm từ bưởi"
+      "products": "Bưởi da xanh ruột hồng, sản phẩm từ bưởi",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -13160,9 +13089,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13218,9 +13147,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13232,7 +13161,8 @@ var items = [
     "confidence": 0.65,
     "season": null,
     "attributes": {
-      "era": "Chùa Khmer cổ, gắn với văn hóa Phật giáo Nam tông Khmer ở Trà Vinh"
+      "era": "Chùa Khmer cổ, gắn với văn hóa Phật giáo Nam tông Khmer ở Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -13250,9 +13180,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13264,7 +13194,8 @@ var items = [
     "confidence": 0.65,
     "season": null,
     "attributes": {
-      "era": "Chùa Khmer lâu đời ở vùng Trà Cú"
+      "era": "Chùa Khmer lâu đời ở vùng Trà Cú",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -13282,9 +13213,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13321,7 +13252,8 @@ var items = [
       "text": "Khách sạn phục vụ quanh năm. Cao điểm du lịch thường rơi vào mùa khô từ tháng 10 đến tháng 4."
     },
     "attributes": {
-      "price": "khoảng 500.000–900.000 VND/phòng/đêm"
+      "price": "khoảng 500.000–900.000 VND/phòng/đêm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -13339,9 +13271,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13377,7 +13309,8 @@ var items = [
     },
     "attributes": {
       "price": "khoảng 20.000–40.000 VND/kg",
-      "weight/unit": "kg"
+      "weight/unit": "kg",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -13387,17 +13320,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0675818,
-      105.8219716
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13420,7 +13353,8 @@ var items = [
     },
     "attributes": {
       "price": "khoảng 300.000–600.000 VND/kg, tùy mùa và kích cỡ",
-      "weight/unit": "kg"
+      "weight/unit": "kg",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -13430,17 +13364,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.9451384,
-      105.9564155
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13469,7 +13403,8 @@ var items = [
     },
     "attributes": {
       "price": "khoảng 100.000–180.000 VND/kg",
-      "weight/unit": "kg"
+      "weight/unit": "kg",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -13487,9 +13422,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13526,7 +13461,8 @@ var items = [
     "attributes": {
       "hours": "Thường tham quan ban ngày",
       "admission": "Thường miễn phí; chi phí mua đặc sản tính riêng",
-      "address": "Xã Mỹ Thạnh, Bến Tre"
+      "address": "Xã Mỹ Thạnh, Bến Tre",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -13544,9 +13480,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13602,9 +13538,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13642,7 +13578,8 @@ var items = [
     },
     "attributes": {
       "hours": "Không gian biển mở, thường tham quan ban ngày",
-      "admission": "Thường miễn phí"
+      "admission": "Thường miễn phí",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -13660,9 +13597,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13718,9 +13655,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13752,9 +13689,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -13814,9 +13751,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -13876,9 +13813,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -13909,9 +13846,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -13942,9 +13879,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -13975,9 +13912,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14036,9 +13973,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14069,9 +14006,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14102,9 +14039,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14163,9 +14100,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14222,9 +14159,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14283,9 +14220,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14344,9 +14281,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14384,9 +14321,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14445,9 +14382,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14478,9 +14415,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14511,9 +14448,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14544,9 +14481,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14577,9 +14514,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14638,9 +14575,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14693,9 +14630,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14726,9 +14663,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14773,9 +14710,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14814,7 +14751,8 @@ var items = [
       "season_note": "Mùa khô biển lặng, sóng nhỏ, nước trong hơn; đường ven biển ít bị xói lở, bãi cát dễ đi lại",
       "peak_event": "Tháng 4–5: mùa đánh bắt hải sản ven bờ, hải sản tươi ngon và giá rẻ nhất",
       "travel_tip": "Không có dịch vụ lưu trú tại chỗ — chuẩn bị đồ ăn, nước uống và mang tiền mặt từ trước khi đến.",
-      "highlight": "Cửa biển Bình Đại hoang sơ với hàng phi lao vi vu và hoàng hôn nhuộm vàng mặt sông biển."
+      "highlight": "Cửa biển Bình Đại hoang sơ với hàng phi lao vi vu và hoàng hôn nhuộm vàng mặt sông biển.",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -14832,9 +14770,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14893,9 +14831,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14954,9 +14892,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14987,9 +14925,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15010,7 +14948,8 @@ var items = [
       "priority": "B+",
       "target_segments": "Văn hóa; tâm linh",
       "suggested_duration": "1 giờ",
-      "role": "support_asset"
+      "role": "support_asset",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -15028,9 +14967,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15043,7 +14982,8 @@ var items = [
     "season": null,
     "attributes": {
       "travel_tip": "Kết hợp tham quan khu di tích Nguyễn Đình Chiểu và mộ Võ Trường Toản trong cùng một ngày để hiểu trọn vẹn dòng chảy văn hóa Ba Tri.",
-      "highlight": "Nơi yên nghỉ của người thầy không để lại sách vở nhưng để lại cả thế hệ học trò làm rạng danh đất Nam Kỳ."
+      "highlight": "Nơi yên nghỉ của người thầy không để lại sách vở nhưng để lại cả thế hệ học trò làm rạng danh đất Nam Kỳ.",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -15061,9 +15001,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15120,9 +15060,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15153,9 +15093,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15186,9 +15126,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15219,9 +15159,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15268,9 +15208,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15283,7 +15223,8 @@ var items = [
     "season": null,
     "attributes": {
       "travel_tip": "Đặt trước tour có hướng dẫn viên địa phương để nghe những câu chuyện lịch sử chưa được in thành sách.",
-      "highlight": "Căn cứ cách mạng được phục dựng nguyên trạng giữa rừng tràm, nơi lịch sử kháng chiến Trà Vinh còn hiện diện rõ nét."
+      "highlight": "Căn cứ cách mạng được phục dựng nguyên trạng giữa rừng tràm, nơi lịch sử kháng chiến Trà Vinh còn hiện diện rõ nét.",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -15301,9 +15242,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15334,9 +15275,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15367,9 +15308,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15382,7 +15323,8 @@ var items = [
     "season": null,
     "attributes": {
       "travel_tip": "Đến vào buổi sáng sớm khi các sư thầy đi khất thực để chụp ảnh và trải nghiệm không khí thanh tịnh nhất.",
-      "highlight": "Ngôi chùa Khmer giản dị và yên tĩnh, chốn lý tưởng để thoát khỏi ồn ào và cảm nhận nhịp sống Khmer Nam Bộ."
+      "highlight": "Ngôi chùa Khmer giản dị và yên tĩnh, chốn lý tưởng để thoát khỏi ồn ào và cảm nhận nhịp sống Khmer Nam Bộ.",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -15400,9 +15342,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15433,9 +15375,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15466,9 +15408,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15527,9 +15469,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15588,9 +15530,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15629,7 +15571,8 @@ var items = [
       "season_note": "Mùa khô thuận lợi phơi cói, sản xuất chiếu đạt chất lượng tốt nhất, làng nghề hoạt động nhộn nhịp",
       "peak_event": "Cao điểm sản xuất trước Tết Nguyên Đán tháng 12–1",
       "travel_tip": "Đến vào buổi sáng (7-9h) để gặp nghệ nhân đang dệt và mua chiếu giá tốt hơn chợ.",
-      "highlight": "Chiếu Khmer hoa văn thủ công — dệt bằng tay, mang hồn văn hóa trăm năm"
+      "highlight": "Chiếu Khmer hoa văn thủ công — dệt bằng tay, mang hồn văn hóa trăm năm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -15647,9 +15590,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15689,7 +15632,8 @@ var items = [
       "highlight": "Bánh tét nếp dẻo nhân đậm — gói tay, luộc củi, hương vị Tết chính gốc Nam Bộ",
       "target_segments": [
         "SEG07: Foodie/ẩm thực"
-      ]
+      ],
+      "coords_approximate": true
     },
     "source": [
       {
@@ -15707,9 +15651,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15754,9 +15698,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15811,9 +15755,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15852,7 +15796,8 @@ var items = [
       "season_note": "Mùa khô tre trúc dễ khai thác và phơi khô, nghệ nhân làm việc liên tục, dễ tham quan xưởng sản xuất",
       "peak_event": "Cao điểm sản xuất trước Tết và đầu hè tháng 4–5 chuẩn bị hàng xuất chợ",
       "travel_tip": "Hỏi chủ cơ sở để được thử tay đan — nhiều hộ gia đình sẵn sàng hướng dẫn miễn phí.",
-      "highlight": "Đan đát tre trúc thủ công — từng sợi mây tết nên nét văn hóa nông thôn Nam Bộ thuần khiết"
+      "highlight": "Đan đát tre trúc thủ công — từng sợi mây tết nên nét văn hóa nông thôn Nam Bộ thuần khiết",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -15870,9 +15815,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15911,7 +15856,8 @@ var items = [
       "season_note": "Mùa khô thuận lợi phơi cói và sản xuất, chiếu dệt ra đẹp hơn, làng nghề hoạt động đều đặn",
       "peak_event": "Cao điểm sản xuất trước Tết Nguyên Đán tháng 12–1",
       "travel_tip": "Giá chiếu tại xưởng rẻ hơn chợ 20-30%; mang theo xe tải nhỏ hoặc buộc chắc nếu đi xe máy.",
-      "highlight": "Chiếu lác dệt tay An Hiệp — bền, mát, dày dặn, người miền Tây tin dùng qua nhiều thế hệ"
+      "highlight": "Chiếu lác dệt tay An Hiệp — bền, mát, dày dặn, người miền Tây tin dùng qua nhiều thế hệ",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -15929,9 +15875,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15972,7 +15918,8 @@ var items = [
       "season_note": "Mùa khô dừa thu hoạch nhiều, xơ dừa dễ phơi khô và xe chỉ đạt chất lượng cao, xưởng sản xuất hoạt động nhộn nhịp",
       "peak_event": "Lễ hội dừa Bến Tre (tổ chức 2 năm/lần, thường vào tháng 2–3)",
       "travel_tip": "Liên hệ trước để đặt tham quan xưởng; nhiều cơ sở xuất khẩu không bán lẻ tại chỗ.",
-      "highlight": "Chỉ xơ dừa An Thạnh — từ vỏ dừa bỏ đi thành sản phẩm xanh xuất khẩu toàn cầu"
+      "highlight": "Chỉ xơ dừa An Thạnh — từ vỏ dừa bỏ đi thành sản phẩm xanh xuất khẩu toàn cầu",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -15990,9 +15937,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16023,9 +15970,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16038,7 +15985,8 @@ var items = [
     "season": null,
     "attributes": {
       "travel_tip": "Nên đến vào buổi sáng, thuyết minh viên có mặt từ 7h30 và kể chuyện rất sinh động.",
-      "highlight": "Nơi tôn vinh người mẹ anh hùng với câu nói bất hủ đi vào lịch sử kháng chiến Việt Nam."
+      "highlight": "Nơi tôn vinh người mẹ anh hùng với câu nói bất hủ đi vào lịch sử kháng chiến Việt Nam.",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -16056,9 +16004,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16117,9 +16065,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16178,9 +16126,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16239,9 +16187,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16300,9 +16248,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16361,9 +16309,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16394,9 +16342,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16409,7 +16357,8 @@ var items = [
     "season": null,
     "attributes": {
       "travel_tip": "Công phu sáng bắt đầu lúc 5h — đến sớm để nghe tiếng chuông chùa trong không khí tĩnh lặng trước khi chợ búa nhộn nhịp.",
-      "highlight": "Ngôi chùa cổ hơn 150 năm tuổi với pháp khí quý và không gian tu tập thanh tịnh giữa lòng thị tứ Cái Vồn."
+      "highlight": "Ngôi chùa cổ hơn 150 năm tuổi với pháp khí quý và không gian tu tập thanh tịnh giữa lòng thị tứ Cái Vồn.",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -16419,17 +16368,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0675818,
-      105.8219716
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16488,9 +16437,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16548,9 +16497,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16605,9 +16554,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16666,9 +16615,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16709,7 +16658,8 @@ var items = [
       "season_note": "Mùa khô thuận lợi di chuyển vào vùng sông nước Bến Tre, sản lượng dừa ổn định, tham quan dây chuyền nước cốt dừa đóng gói đạt công suất cao",
       "peak_event": "Tết Nguyên Đán – đơn hàng xuất khẩu và nội địa tăng đột biến, dễ quan sát quy trình sản xuất tổng lực",
       "travel_tip": "Liên hệ trước để tham quan dây chuyền sản xuất; sản phẩm mua tại xưởng rẻ hơn siêu thị và tươi hơn.",
-      "highlight": "Nước cốt dừa Lương Quới — béo sánh tự nhiên, không chất bảo quản, xuất khẩu nhiều nước"
+      "highlight": "Nước cốt dừa Lương Quới — béo sánh tự nhiên, không chất bảo quản, xuất khẩu nhiều nước",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -16727,9 +16677,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16763,7 +16713,8 @@ var items = [
       "season_note": "Ca cao Bến Tre vào vụ chính từ tháng 10 đến tháng 3, trái chín vàng đỏ đẹp, xưởng rang xay và lên men hoạt động nhộn nhịp nhất",
       "peak_event": "Thu hoạch ca cao vụ chính tháng 10–12, du khách có thể trải nghiệm hái trái và lên men thủ công",
       "travel_tip": "Gọi điện trước để đặt lịch tham quan xưởng, tránh đến lúc xưởng đang nghỉ giữa ca.",
-      "highlight": "Trải nghiệm làm socola từ hạt ca cao Bến Tre ngay tại xưởng sản xuất thực thụ."
+      "highlight": "Trải nghiệm làm socola từ hạt ca cao Bến Tre ngay tại xưởng sản xuất thực thụ.",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -16781,9 +16732,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16842,9 +16793,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16900,9 +16851,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16933,9 +16884,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16966,9 +16917,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17032,9 +16983,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17075,7 +17026,8 @@ var items = [
       "season_note": "Mùa khô nước sông êm, đi thuyền ngắm dừa nước và làng bè dễ chịu; tránh mùa mưa vì sóng gió, nước đục và lũ nhỏ ảnh hưởng lưu thông",
       "peak_event": "Tết Nguyên Đán – làng bè trang trí đèn lồng, du khách đông, các hoạt động ẩm thực đặc sản Bến Tre tưng bừng",
       "travel_tip": "Gọi đặt bàn ăn trưa trước 1 ngày vào cuối tuần — đặc biệt món cá tai tượng thường hết sớm.",
-      "highlight": "Bè nổi giữa rừng dừa nước, ẩm thực sông nước chuẩn vị và trò chơi dân gian nguyên bản miền Tây."
+      "highlight": "Bè nổi giữa rừng dừa nước, ẩm thực sông nước chuẩn vị và trò chơi dân gian nguyên bản miền Tây.",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -17085,17 +17037,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.3276125,
-      106.3512572
+      10.2361217,
+      106.3763684
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17153,9 +17105,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17168,7 +17120,8 @@ var items = [
     "season": null,
     "attributes": {
       "travel_tip": "Lễ hội Ok Om Bok diễn ra vào rằm tháng 10 âm lịch — đặt chỗ nghỉ sớm vì khách sạn gần đó thường hết phòng trước 1 tháng.",
-      "highlight": "Hồ nước cổ tích giữa lòng Trà Vinh — trung tâm của lễ hội đua ghe ngo và thả đèn nước Khmer huyền ảo."
+      "highlight": "Hồ nước cổ tích giữa lòng Trà Vinh — trung tâm của lễ hội đua ghe ngo và thả đèn nước Khmer huyền ảo.",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -17186,9 +17139,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17219,9 +17172,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17252,9 +17205,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17285,9 +17238,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17318,9 +17271,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17333,7 +17286,8 @@ var items = [
     "season": null,
     "attributes": {
       "travel_tip": "Đến buổi sáng sớm để chụp ảnh kiến trúc với ánh sáng đẹp, tránh nắng gắt buổi trưa.",
-      "highlight": "Kiến trúc giao thoa Pháp-Nam Bộ hiếm có, nguyên vẹn từ năm 1924."
+      "highlight": "Kiến trúc giao thoa Pháp-Nam Bộ hiếm có, nguyên vẹn từ năm 1924.",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -17343,17 +17297,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.9451384,
-      105.9564155
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17384,9 +17338,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17417,9 +17371,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17450,9 +17404,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17483,9 +17437,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17528,9 +17482,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17561,9 +17515,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17594,9 +17548,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17627,9 +17581,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17660,9 +17614,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17705,9 +17659,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17738,9 +17692,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17771,9 +17725,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17804,9 +17758,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17837,9 +17791,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17870,9 +17824,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17903,9 +17857,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17936,9 +17890,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17969,9 +17923,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18034,9 +17988,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18077,7 +18031,8 @@ var items = [
       "season_note": "Mùa cao điểm du lịch Vĩnh Long, nhóm biểu diễn thường xuyên phục vụ khách tại các điểm homestay và nhà vườn cù lao; thời tiết đẹp, thuận lợi đi lại trên sông",
       "peak_event": "Hội thi đờn ca tài tử tỉnh Vĩnh Long dịp Tết và các festival miền Tây",
       "travel_tip": "Liên hệ trước để hỏi lịch biểu diễn — nhóm thường có buổi diễn định kỳ vào cuối tuần và các dịp lễ địa phương.",
-      "highlight": "Đờn ca tài tử đẳng cấp hội thi — giọng ca mượt mà giữ nguyên hồn nhạc Nam Bộ truyền thống."
+      "highlight": "Đờn ca tài tử đẳng cấp hội thi — giọng ca mượt mà giữ nguyên hồn nhạc Nam Bộ truyền thống.",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -18095,9 +18050,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18138,7 +18093,8 @@ var items = [
       "season_note": "Hoạt động biểu diễn cộng đồng diễn ra quanh năm nhưng tập trung và thuận lợi nhất vào mùa khô khi khách đến Vĩnh Long đông và sinh hoạt ngoài trời dễ dàng",
       "peak_event": "Biểu diễn tại các sự kiện văn hóa địa phương, hội diễn nghệ thuật quần chúng tháng 4 (ngày Giải phóng miền Nam)",
       "travel_tip": "Hỏi người địa phương về lịch tập luyện của nhóm — thường diễn ra vào buổi tối thứ 3 và thứ 6 hàng tuần.",
-      "highlight": "Đờn ca tài tử dân gian chân thực nhất: nghệ nhân làng xóm trình diễn mộc mạc giữa đời thường."
+      "highlight": "Đờn ca tài tử dân gian chân thực nhất: nghệ nhân làng xóm trình diễn mộc mạc giữa đời thường.",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -18156,9 +18112,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18199,7 +18155,8 @@ var items = [
       "season_note": "Mùa du lịch cao điểm đồng bằng sông Cửu Long, CLB phục vụ văn nghệ trên tàu du lịch và nhà hàng sông nước; lượng khách đông, tiết mục biểu diễn hàng ngày",
       "peak_event": "Phục vụ tour du lịch sông nước Vĩnh Long tập trung cao điểm dịp Tết Nguyên Đán và lễ 30/4–1/5",
       "travel_tip": "Kết hợp xem biểu diễn với bữa ăn trưa hay tối trên thuyền sông Cổ Chiên để có trải nghiệm miền Tây trọn vẹn.",
-      "highlight": "Đờn ca tài tử UNESCO ngay trên thuyền sông nước — trải nghiệm văn hóa đỉnh cao của tour Vĩnh Long."
+      "highlight": "Đờn ca tài tử UNESCO ngay trên thuyền sông nước — trải nghiệm văn hóa đỉnh cao của tour Vĩnh Long.",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -18217,9 +18174,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18257,7 +18214,8 @@ var items = [
     },
     "attributes": {
       "travel_tip": "Đến vào các buổi sinh hoạt định kỳ (hỏi Trung tâm Văn hóa Thông tin tỉnh để biết lịch) — du khách được tham gia giao lưu miễn phí.",
-      "highlight": "Nơi trao truyền đờn ca tài tử giữa lòng tỉnh — gặp gỡ nghệ nhân và nghe nhạc dân gian chân thực nhất."
+      "highlight": "Nơi trao truyền đờn ca tài tử giữa lòng tỉnh — gặp gỡ nghệ nhân và nghe nhạc dân gian chân thực nhất.",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -18275,9 +18233,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18315,7 +18273,8 @@ var items = [
     },
     "attributes": {
       "travel_tip": "Mặc quần dài và giày kín mũi khi cưỡi đà điểu; trẻ dưới 10 tuổi nên chọn trải nghiệm cho ăn thay vì cưỡi.",
-      "highlight": "Cưỡi đà điểu giữa đồng quê Vĩnh Long — trải nghiệm độc nhất vô nhị mà cả gia đình đều mê."
+      "highlight": "Cưỡi đà điểu giữa đồng quê Vĩnh Long — trải nghiệm độc nhất vô nhị mà cả gia đình đều mê.",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -18333,9 +18292,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18373,7 +18332,8 @@ var items = [
     },
     "attributes": {
       "travel_tip": "Mặc trang phục kín đáo khi vào chùa; nên ghé vào sáng sớm để tham quan yên tĩnh và chụp ảnh ánh sáng đẹp.",
-      "highlight": "Ngôi chùa Khmer cổ gần 400 năm tuổi giữa rừng cây di sản — di tích lịch sử mang hồn thiêng miền Tây."
+      "highlight": "Ngôi chùa Khmer cổ gần 400 năm tuổi giữa rừng cây di sản — di tích lịch sử mang hồn thiêng miền Tây.",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -18383,17 +18343,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.9451384,
-      105.9564155
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18450,9 +18410,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18509,9 +18469,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18568,9 +18528,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18627,9 +18587,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18669,7 +18629,8 @@ var items = [
       "address": "Số 40, phường Trà Vinh, TP Trà Vinh",
       "ocop": "OCOP",
       "travel_tip": "Hỏi xin túi đựng chân không miễn phí khi mua đặc sản khô (tôm khô, mực khô) để mang về xa không bị hỏng.",
-      "key_facts": "Sản phẩm OCOP đạt chuẩn 3-5 sao | Có tem truy xuất nguồn gốc | Giá niêm yết cố định"
+      "key_facts": "Sản phẩm OCOP đạt chuẩn 3-5 sao | Có tem truy xuất nguồn gốc | Giá niêm yết cố định",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -18687,9 +18648,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18746,9 +18707,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18787,7 +18748,8 @@ var items = [
     "attributes": {
       "address": "Ấp Cồn Chim, xã Hòa Minh",
       "travel_tip": "Thử xin nếm thử trước khi mua – chủ cửa hàng thường cho nếm mắm chua ngọt và bánh đặc sản tại chỗ.",
-      "key_facts": "Đặc sản địa phương và OCOP | Giá bình dân hơn siêu thị | Nên đến buổi sáng hàng còn đầy đủ"
+      "key_facts": "Đặc sản địa phương và OCOP | Giá bình dân hơn siêu thị | Nên đến buổi sáng hàng còn đầy đủ",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -18805,9 +18767,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18864,9 +18826,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18924,9 +18886,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18966,7 +18928,8 @@ var items = [
       "address": "Khu di tích Ao Bà Om, phường Nguyệt Hóa, TP Trà Vinh",
       "ocop": "OCOP",
       "travel_tip": "Kết hợp tham quan Ao Bà Om và mua sắm trong một chuyến – dành 30 phút cho cửa hàng sau khi thăm di tích để chọn quà lưu niệm.",
-      "key_facts": "Ngay tại khu di tích Ao Bà Om | Đặc sản Khmer và sản phẩm OCOP Trà Vinh | Giá tốt nhất khu vực"
+      "key_facts": "Ngay tại khu di tích Ao Bà Om | Đặc sản Khmer và sản phẩm OCOP Trà Vinh | Giá tốt nhất khu vực",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -18984,9 +18947,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19043,9 +19006,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19102,9 +19065,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19133,7 +19096,8 @@ var items = [
       "best_time": "Mùa gió chướng, trước và sau Tết Nguyên Đán khoảng 1 tháng",
       "category": "seafood",
       "ingredients": "cá cháy sông Hậu, nước mắm, đường, gia vị, trứng cá",
-      "origin": "Xã Tích Thiện, huyện Trà Ôn"
+      "origin": "Xã Tích Thiện, huyện Trà Ôn",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -19150,9 +19114,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19196,7 +19160,8 @@ var items = [
       "best_time": "Tháng 4-5 âm lịch (mùa cá lăng nhiều nhất)",
       "category": "seafood",
       "ingredients": "cá lăng tươi, giấm, nước dừa tươi, sả hành tây, bông súng điên điển",
-      "origin": "Sông Cổ Chiên, tỉnh Vĩnh Long"
+      "origin": "Sông Cổ Chiên, tỉnh Vĩnh Long",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -19213,9 +19178,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19256,7 +19221,8 @@ var items = [
       "best_time": "Quanh năm, ngon nhất mùa nước nổi (tháng 7-10 âm lịch)",
       "category": "seafood",
       "ingredients": "cá cóc sông, nước dừa xiêm, nước mắm, đường thốt nốt, gia vị",
-      "origin": "Sông Tiền, sông Hậu - toàn tỉnh Vĩnh Long"
+      "origin": "Sông Tiền, sông Hậu - toàn tỉnh Vĩnh Long",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -19273,9 +19239,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19316,7 +19282,8 @@ var items = [
       "best_time": "Quanh năm, khoai ngon nhất mùa khô (tháng 12-4)",
       "category": "street_food",
       "ingredients": "khoai lang Bình Tân, mắm cá sặc, lá cách, thịt heo luộc, chanh ớt tỏi gừng",
-      "origin": "Huyện Bình Tân (khoai lang) - toàn tỉnh Vĩnh Long"
+      "origin": "Huyện Bình Tân (khoai lang) - toàn tỉnh Vĩnh Long",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -19333,9 +19300,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19372,7 +19339,8 @@ var items = [
       "category": "packaged",
       "ingredients": "đậu nành, nước, dầu chiên",
       "origin": "Xã Mỹ Hòa, thị xã Bình Minh",
-      "ocop": "OCOP 4 sao"
+      "ocop": "OCOP 4 sao",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -19389,9 +19357,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19439,9 +19407,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19485,9 +19453,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19545,9 +19513,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19584,7 +19552,8 @@ var items = [
       "category": "packaged",
       "ingredients": "đậu nành",
       "origin": "Xã Mỹ Hòa, thị xã Bình Minh",
-      "ocop": "OCOP 4 sao"
+      "ocop": "OCOP 4 sao",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -19601,9 +19570,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19640,7 +19609,8 @@ var items = [
       "category": "packaged",
       "ingredients": "đậu hủ, nước cốt dừa, muối, men vi sinh tự nhiên",
       "origin": "Xã Tân Phú, huyện Tam Bình",
-      "ocop": "OCOP 4 sao"
+      "ocop": "OCOP 4 sao",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -19657,9 +19627,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19693,7 +19663,8 @@ var items = [
       "best_time": "Mùa nước nổi (tháng 8-11), cua đồng nhiều và béo",
       "category": "restaurant",
       "ingredients": "cua đồng, đậu hủ, tôm sông, rau nhút bông súng, cà chua",
-      "origin": "Toàn tỉnh Vĩnh Long, phổ biến vùng đồng ruộng"
+      "origin": "Toàn tỉnh Vĩnh Long, phổ biến vùng đồng ruộng",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -19710,9 +19681,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19747,7 +19718,8 @@ var items = [
       "best_time": "Mùa mưa (tháng 5-10), ốc béo và nhiều",
       "category": "street_food",
       "ingredients": "ốc lác sông, lá gừng tươi, sả, nước mắm gừng",
-      "origin": "Vùng sông rạch toàn tỉnh Vĩnh Long"
+      "origin": "Vùng sông rạch toàn tỉnh Vĩnh Long",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -19764,9 +19736,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19806,7 +19778,8 @@ var items = [
       "best_time": "Quanh năm, sáng sớm ngon nhất",
       "category": "street_food",
       "ingredients": "mắm cá linh/cá sặc, bún tươi, chả cá tôm mực, bông súng, bắp chuối",
-      "origin": "Toàn tỉnh Vĩnh Long"
+      "origin": "Toàn tỉnh Vĩnh Long",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -19823,9 +19796,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19865,7 +19838,8 @@ var items = [
       "best_time": "Quanh năm",
       "category": "restaurant",
       "ingredients": "mắm cá sặc, trứng gà, thịt heo xay, chuối chát, rau sống",
-      "origin": "Cù lao An Bình, huyện Long Hồ"
+      "origin": "Cù lao An Bình, huyện Long Hồ",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -19882,9 +19856,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19916,7 +19890,8 @@ var items = [
       "best_time": "Quanh năm, mùa nước nổi cá nhiều hơn",
       "category": "restaurant",
       "ingredients": "cá kèo sông tươi, ống sậy, muối gia vị, rau sống",
-      "origin": "Vùng sông rạch Vĩnh Long"
+      "origin": "Vùng sông rạch Vĩnh Long",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -19933,9 +19908,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19974,7 +19949,8 @@ var items = [
       "best_time": "Dịp Tết Nguyên Đán (làm nhiều nhất), quanh năm vẫn có",
       "category": "packaged",
       "ingredients": "gạo nếp, đậu xanh, thịt mỡ, lòng đỏ trứng vịt muối, lá chuối",
-      "origin": "TP Vĩnh Long"
+      "origin": "TP Vĩnh Long",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -19991,9 +19967,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20043,9 +20019,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20076,7 +20052,8 @@ var items = [
       "best_time": "Mùa hè (tháng 4-7), ve sầu nhiều nhất",
       "category": "street_food",
       "ingredients": "ve sầu tươi, bột chiên, muối tiêu, tỏi, ớt",
-      "origin": "Vùng vườn cây ăn trái toàn tỉnh Vĩnh Long"
+      "origin": "Vùng vườn cây ăn trái toàn tỉnh Vĩnh Long",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -20093,9 +20070,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20153,9 +20130,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20205,9 +20182,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20243,7 +20220,8 @@ var items = [
       "best_time": "Cả năm, sáng sớm",
       "category": "street_food",
       "ingredients": "bột gạo, vịt xiêm, xương heo, huyết nếp, hành ngò",
-      "origin": "TP. Bến Tre"
+      "origin": "TP. Bến Tre",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -20260,9 +20238,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20306,7 +20284,8 @@ var items = [
       "best_time": "Cả năm",
       "category": "restaurant",
       "ingredients": "củ hủ dừa, tôm sú, thịt ba chỉ, rau răm, đậu phộng rang",
-      "origin": "Bến Tre (phổ biến toàn tỉnh)"
+      "origin": "Bến Tre (phổ biến toàn tỉnh)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -20323,9 +20302,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20369,7 +20348,8 @@ var items = [
       "best_time": "Cả năm",
       "category": "rice_dish",
       "ingredients": "gạo nàng hương, dừa xiêm, nước dừa, lá dứa, muối",
-      "origin": "Bến Tre (phổ biến toàn tỉnh)"
+      "origin": "Bến Tre (phổ biến toàn tỉnh)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -20386,9 +20366,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20432,7 +20412,8 @@ var items = [
       "best_time": "Cả năm",
       "category": "restaurant",
       "ingredients": "cá bống, nước dừa tươi, nước mắm, tiêu, ớt",
-      "origin": "Bến Tre (phổ biến toàn tỉnh)"
+      "origin": "Bến Tre (phổ biến toàn tỉnh)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -20449,9 +20430,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20504,9 +20485,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20550,7 +20531,8 @@ var items = [
       "best_time": "Cả năm",
       "category": "restaurant",
       "ingredients": "chuột dừa, sả, gừng, gia vị địa phương, lá cách",
-      "origin": "Bến Tre (phổ biến ở vùng vườn dừa)"
+      "origin": "Bến Tre (phổ biến ở vùng vườn dừa)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -20567,9 +20549,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20608,18 +20590,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2237865,
-      106.1914491
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20664,9 +20643,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20702,7 +20681,8 @@ var items = [
       "best_time": "Cả năm",
       "category": "street_food",
       "ingredients": "chuối xiêm, nước cốt dừa, đường thốt nốt, muối, mè rang",
-      "origin": "Bến Tre (phổ biến toàn tỉnh)"
+      "origin": "Bến Tre (phổ biến toàn tỉnh)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -20719,9 +20699,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20769,9 +20749,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20819,18 +20799,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0729285,
-      106.5976522
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20881,18 +20858,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.1673217,
-      106.6970838
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20943,18 +20917,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      9.932093,
-      106.561003
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20995,7 +20966,8 @@ var items = [
       "best_time": "Cả năm",
       "category": "seafood",
       "ingredients": "ốc len, nước cốt dừa, sả, ớt, lá chanh",
-      "origin": "Vùng rừng ngập mặn ven biển Thạnh Phú, Bình Đại"
+      "origin": "Vùng rừng ngập mặn ven biển Thạnh Phú, Bình Đại",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -21012,9 +20984,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21059,7 +21031,8 @@ var items = [
       "category": "drink",
       "ingredients": "dừa sáp, sữa đặc, đá xay, đậu phộng rang, nước cốt dừa",
       "origin": "Trà Vinh (nguyên liệu gốc); sản phẩm chế biến phổ biến tại Bến Tre",
-      "ocop": "OCOP 5 sao"
+      "ocop": "OCOP 5 sao",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -21076,9 +21049,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21114,7 +21087,8 @@ var items = [
       "best_time": "Cả năm",
       "category": "street_food",
       "ingredients": "da heo, thịt ba rọi, thính gạo rang, bún, bánh tráng mềm",
-      "origin": "Bến Tre (phổ biến toàn tỉnh)"
+      "origin": "Bến Tre (phổ biến toàn tỉnh)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -21131,9 +21105,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21174,7 +21148,8 @@ var items = [
       "best_time": "Cả năm",
       "category": "packaged",
       "ingredients": "me chua, mãng cầu (na dai), đường, muối, ớt",
-      "origin": "Bến Tre"
+      "origin": "Bến Tre",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -21191,9 +21166,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21232,7 +21207,8 @@ var items = [
       "best_time": "Dịp Tết Nguyên Đán",
       "category": "packaged",
       "ingredients": "cùi dừa non, đường, vani, màu thực phẩm tự nhiên, gừng",
-      "origin": "Bến Tre (phổ biến ở Mỏ Cày, TP. Bến Tre)"
+      "origin": "Bến Tre (phổ biến ở Mỏ Cày, TP. Bến Tre)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -21249,9 +21225,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21286,7 +21262,8 @@ var items = [
       "best_time": "Cả năm",
       "category": "street_food",
       "ingredients": "cua đồng, gạo tẻ, hành ngò, tiêu, rau muống",
-      "origin": "Bến Tre (phổ biến vùng đồng ruộng)"
+      "origin": "Bến Tre (phổ biến vùng đồng ruộng)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -21303,9 +21280,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21348,7 +21325,8 @@ var items = [
       "best_time": "Cả năm",
       "category": "restaurant",
       "ingredients": "tôm sú tươi, nước dừa xiêm, sả, gừng, ớt",
-      "origin": "Bến Tre (kết hợp hải sản và dừa địa phương)"
+      "origin": "Bến Tre (kết hợp hải sản và dừa địa phương)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -21365,9 +21343,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21403,7 +21381,8 @@ var items = [
       "best_time": "Quanh năm, sáng sớm đến 10h",
       "category": "street_food",
       "ingredients": "bột gạo lúa mùa, xương heo, lòng heo, giò heo, huyết heo",
-      "origin": "Ấp Bến Có, xã Nguyệt Hóa, huyện Châu Thành, Trà Vinh"
+      "origin": "Ấp Bến Có, xã Nguyệt Hóa, huyện Châu Thành, Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -21420,9 +21399,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21455,7 +21434,8 @@ var items = [
       "best_time": "Mùa khô (tháng 11 - 4), cá vào mùa nhiều và béo nhất",
       "category": "seafood",
       "ingredients": "cá khoai biển, gừng, hành lá, mắm, gạo (nếu nấu cháo)",
-      "origin": "Biển Ba Động, huyện Duyên Hải, Trà Vinh"
+      "origin": "Biển Ba Động, huyện Duyên Hải, Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -21472,9 +21452,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21514,7 +21494,8 @@ var items = [
       "best_time": "Làm vào mùa khô (tháng 11-4) khi cá nhiều",
       "category": "packaged",
       "ingredients": "cá nước ngọt, muối, cơm nguội, rượu, thính gạo",
-      "origin": "Các phum sóc Khmer khắp tỉnh Trà Vinh"
+      "origin": "Các phum sóc Khmer khắp tỉnh Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -21531,9 +21512,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21562,7 +21543,8 @@ var items = [
       "category": "dessert",
       "ingredients": "nếp non, dừa nạo, đường thốt nốt, nước cốt dừa",
       "origin": "Làng cốm dẹp Ba So, huyện Cầu Ngang và các huyện Khmer Trà Vinh",
-      "ocop": "OCOP 3 sao"
+      "ocop": "OCOP 3 sao",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -21579,9 +21561,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21621,7 +21603,8 @@ var items = [
       "category": "packaged",
       "ingredients": "thịt heo, trứng vịt muối, trứng gà, nấm mèo, pâté",
       "origin": "44 Phạm Thái Bường và 108 Lý Thường Kiệt, P.3, TP. Trà Vinh",
-      "ocop": "OCOP 4 sao"
+      "ocop": "OCOP 4 sao",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -21638,9 +21621,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21679,7 +21662,8 @@ var items = [
       "best_time": "Quanh năm; nhiều nhất dịp Tết Đoan Ngọ (mùng 5 tháng 5 âm lịch)",
       "category": "packaged",
       "ingredients": "gạo nếp, đậu xanh, thịt mỡ, trứng vịt muối, lá ngót",
-      "origin": "Ấp Hương Phụ, xã Đa Lộc, huyện Châu Thành, Trà Vinh"
+      "origin": "Ấp Hương Phụ, xã Đa Lộc, huyện Châu Thành, Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -21696,9 +21680,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21741,7 +21725,8 @@ var items = [
       "category": "packaged",
       "ingredients": "gạo trắng, nước",
       "origin": "Ấp Trà Vi (Bến Có), xã Nguyệt Hóa, huyện Châu Thành, Trà Vinh",
-      "ocop": "OCOP 3 sao"
+      "ocop": "OCOP 3 sao",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -21758,9 +21743,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21795,7 +21780,8 @@ var items = [
       "best_time": "Mùa khô (tháng 12 - 4), ốc nhiều và ngon nhất",
       "category": "seafood",
       "ingredients": "ốc loi choi, sả, ớt, tỏi, hành tím",
-      "origin": "Huyện Duyên Hải và Cầu Ngang, Trà Vinh"
+      "origin": "Huyện Duyên Hải và Cầu Ngang, Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -21812,9 +21798,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21856,7 +21842,8 @@ var items = [
       "category": "seafood",
       "ingredients": "cua biển, gừng, muối, hành",
       "origin": "Thị xã Duyên Hải, Trà Vinh (nuôi ao ven biển)",
-      "ocop": "OCOP 3 sao"
+      "ocop": "OCOP 3 sao",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -21873,9 +21860,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21895,7 +21882,8 @@ var items = [
       "note_for_tourists": "Chuỗi nhà thuốc uy tín, thuốc có nguồn gốc rõ ràng, tra cứu thuốc online qua app Long Châu. Có bán thuốc không kê đơn phổ biến cho du khách.",
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
-      "category_tag": "practical_info"
+      "category_tag": "practical_info",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -21912,9 +21900,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21934,7 +21922,8 @@ var items = [
       "note_for_tourists": "Nằm trên trục QL54 tiện cho du khách di chuyển từ hướng Bình Minh/Trà Ôn. Chuỗi Long Châu có app đặt thuốc online giao tận nơi.",
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
-      "category_tag": "practical_info"
+      "category_tag": "practical_info",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -21951,9 +21940,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21973,7 +21962,8 @@ var items = [
       "note_for_tourists": "Đổi ngoại tệ (USD, EUR, v.v.) tại quầy giao dịch. Cần mang hộ chiếu. ATM Vietcombank nhận thẻ Visa/Mastercard/JCB quốc tế.",
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
-      "category_tag": "practical_info"
+      "category_tag": "practical_info",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -21990,9 +21980,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22012,7 +22002,8 @@ var items = [
       "note_for_tourists": "ATM BIDV nhận thẻ quốc tế. Phòng giao dịch tại 50 Nguyễn Huệ và 22 Đường 1/5 thuận tiện khu trung tâm.",
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
-      "category_tag": "practical_info"
+      "category_tag": "practical_info",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -22029,9 +22020,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22051,7 +22042,8 @@ var items = [
       "note_for_tourists": "Nhận thẻ Visa, Mastercard, JCB, UnionPay quốc tế. Hạn mức rút thường 5 triệu/lần, tối đa 20 triệu/ngày với thẻ quốc tế.",
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
-      "category_tag": "practical_info"
+      "category_tag": "practical_info",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -22068,9 +22060,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22090,7 +22082,8 @@ var items = [
       "note_for_tourists": "Bán SIM du lịch Viettel cho người nước ngoài (cần hộ chiếu). Gói data 5GB/7 ngày ~50.000đ. Viettel phủ sóng tốt nhất ở vùng sông nước miền Tây.",
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
-      "category_tag": "practical_info"
+      "category_tag": "practical_info",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -22107,9 +22100,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22129,7 +22122,8 @@ var items = [
       "note_for_tourists": "Đăng ký SIM mới, đổi eSIM. Gần khu vực Bệnh viện Xuyên Á, thuận tiện nếu ở phía tây thành phố.",
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
-      "category_tag": "practical_info"
+      "category_tag": "practical_info",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -22146,9 +22140,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22168,7 +22162,8 @@ var items = [
       "note_for_tourists": "Điểm giao dịch chính thức Viettel, bán SIM du lịch (tourist SIM) cần xuất trình hộ chiếu. Hỗ trợ tiếng Việt.",
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
-      "category_tag": "practical_info"
+      "category_tag": "practical_info",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -22185,9 +22180,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22207,7 +22202,8 @@ var items = [
       "note_for_tourists": "Wifi miễn phí tại một số điểm công cộng và quán cà phê. Tuy nhiên tốc độ không ổn định — nên mua SIM data (50.000–100.000đ) để dùng bản đồ và liên lạc khi đi thăm cồn/làng nghề vùng sâu.",
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
-      "category_tag": "practical_info"
+      "category_tag": "practical_info",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -22224,9 +22220,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22246,7 +22242,8 @@ var items = [
       "note_for_tourists": "Bệnh viện tuyến tỉnh lớn nhất Bến Tre, 1.398 giường, hạng 1. Đây là nơi đầu tiên cần liên hệ khi có cấp cứu. Số cấp cứu toàn quốc: 115",
       "province_old": "Bến Tre",
       "area": "ben-tre",
-      "category_tag": "practical_info"
+      "category_tag": "practical_info",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -22263,9 +22260,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22285,7 +22282,8 @@ var items = [
       "note_for_tourists": "Bệnh viện tư nhân, khám nhanh hơn so với bệnh viện công, có dịch vụ đặt lịch. Phù hợp cho trường hợp không quá khẩn cấp hoặc muốn dịch vụ tiện hơn",
       "province_old": "Bến Tre",
       "area": "ben-tre",
-      "category_tag": "practical_info"
+      "category_tag": "practical_info",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -22294,17 +22292,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2272245,
-      106.4071974
+      10.2714275,
+      106.3393737
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22324,7 +22322,8 @@ var items = [
       "note_for_tourists": "Chuỗi nhà thuốc uy tín toàn quốc, thuốc chính hãng có đầy đủ. Nằm trên trục đường chính Đồng Khởi, dễ tìm",
       "province_old": "Bến Tre",
       "area": "ben-tre",
-      "category_tag": "practical_info"
+      "category_tag": "practical_info",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -22333,17 +22332,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2272245,
-      106.4071974
+      10.2693325,
+      106.3962973
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22363,7 +22362,8 @@ var items = [
       "note_for_tourists": "Chuỗi nhà thuốc lớn, có bán thuốc OTC, thực phẩm chức năng, đồ y tế. Gần Bệnh viện Nguyễn Đình Chiểu",
       "province_old": "Bến Tre",
       "area": "ben-tre",
-      "category_tag": "practical_info"
+      "category_tag": "practical_info",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -22380,9 +22380,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22402,7 +22402,8 @@ var items = [
       "note_for_tourists": "Đổi ngoại tệ (USD, EUR) được tại đây. ATM Vietcombank chấp nhận thẻ Visa/Mastercard quốc tế. Nên dùng Vietcombank khi rút tiền bằng thẻ quốc tế để tránh phí cao",
       "province_old": "Bến Tre",
       "area": "ben-tre",
-      "category_tag": "practical_info"
+      "category_tag": "practical_info",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -22419,9 +22420,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22441,7 +22442,8 @@ var items = [
       "note_for_tourists": "BIDV có nhiều máy ATM nhất tại TP. Bến Tre, tập trung trên trục Đại lộ Đồng Khởi và Đoàn Hoàng Minh. Hạn mức rút tối đa thường 5 triệu/lần",
       "province_old": "Bến Tre",
       "area": "ben-tre",
-      "category_tag": "practical_info"
+      "category_tag": "practical_info",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -22458,9 +22460,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22480,7 +22482,8 @@ var items = [
       "note_for_tourists": "Mua SIM Vinaphone du lịch (data 4G). Cần mang CCCD/Hộ chiếu để đăng ký SIM theo quy định. SIM du lịch ngắn hạn 7–30 ngày giá từ 50.000–150.000đ",
       "province_old": "Bến Tre",
       "area": "ben-tre",
-      "category_tag": "practical_info"
+      "category_tag": "practical_info",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -22497,9 +22500,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22519,7 +22522,8 @@ var items = [
       "note_for_tourists": "Điểm giao dịch VNPT thứ hai tại TP. Bến Tre. Mua SIM, nạp tiền, hỗ trợ kỹ thuật di động. Chuỗi Thế Giới Di Động trên đường Đồng Khởi cũng bán SIM Viettel/Mobifone",
       "province_old": "Bến Tre",
       "area": "ben-tre",
-      "category_tag": "practical_info"
+      "category_tag": "practical_info",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -22536,9 +22540,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22558,7 +22562,8 @@ var items = [
       "payment_methods": "tiền mặt/thẻ/QR",
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
-      "category": "shopping"
+      "category": "shopping",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -22575,9 +22580,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22622,7 +22627,8 @@ var items = [
       "payment_methods": "tiền mặt/QR",
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
-      "category": "shopping"
+      "category": "shopping",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -22639,9 +22645,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22686,7 +22692,8 @@ var items = [
       "payment_methods": "tiền mặt/QR",
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
-      "category": "shopping"
+      "category": "shopping",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -22703,9 +22710,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22750,7 +22757,8 @@ var items = [
       "payment_methods": "tiền mặt/QR",
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
-      "category": "shopping"
+      "category": "shopping",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -22767,9 +22775,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22814,7 +22822,8 @@ var items = [
       "payment_methods": "tiền mặt/QR",
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
-      "category": "shopping"
+      "category": "shopping",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -22831,9 +22840,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22877,7 +22886,8 @@ var items = [
       "payment_methods": "tiền mặt",
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
-      "category": "shopping"
+      "category": "shopping",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -22894,9 +22904,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22941,7 +22951,8 @@ var items = [
       "payment_methods": "tiền mặt/QR",
       "province_old": "Bến Tre",
       "area": "ben-tre",
-      "category": "shopping"
+      "category": "shopping",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -22958,9 +22969,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23005,7 +23016,8 @@ var items = [
       "payment_methods": "tiền mặt/QR",
       "province_old": "Bến Tre",
       "area": "ben-tre",
-      "category": "shopping"
+      "category": "shopping",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -23022,9 +23034,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23069,7 +23081,8 @@ var items = [
       "payment_methods": "tiền mặt/thẻ/QR",
       "province_old": "Bến Tre",
       "area": "ben-tre",
-      "category": "shopping"
+      "category": "shopping",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -23086,9 +23099,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23133,7 +23146,8 @@ var items = [
       "payment_methods": "tiền mặt",
       "province_old": "Bến Tre",
       "area": "ben-tre",
-      "category": "shopping"
+      "category": "shopping",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -23150,9 +23164,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23197,7 +23211,8 @@ var items = [
       "payment_methods": "tiền mặt/QR",
       "province_old": "Bến Tre",
       "area": "ben-tre",
-      "category": "shopping"
+      "category": "shopping",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -23206,17 +23221,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2272245,
-      106.4071974
+      10.1245898,
+      106.2556223
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23261,7 +23276,8 @@ var items = [
       "payment_methods": "tiền mặt/QR",
       "province_old": "Bến Tre",
       "area": "ben-tre",
-      "category": "shopping"
+      "category": "shopping",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -23270,17 +23286,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2272245,
-      106.4071974
+      10.2946542,
+      106.3018701
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23325,7 +23341,8 @@ var items = [
       "payment_methods": "tiền mặt/QR",
       "province_old": "Trà Vinh",
       "area": "tra-vinh",
-      "category": "shopping"
+      "category": "shopping",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -23334,17 +23351,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23389,7 +23406,8 @@ var items = [
       "payment_methods": "tiền mặt",
       "province_old": "Trà Vinh",
       "area": "tra-vinh",
-      "category": "shopping"
+      "category": "shopping",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -23406,9 +23424,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23453,7 +23471,8 @@ var items = [
       "payment_methods": "tiền mặt/QR",
       "province_old": "Trà Vinh",
       "area": "tra-vinh",
-      "category": "shopping"
+      "category": "shopping",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -23462,17 +23481,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23517,7 +23536,8 @@ var items = [
       "payment_methods": "tiền mặt",
       "province_old": "Trà Vinh",
       "area": "tra-vinh",
-      "category": "shopping"
+      "category": "shopping",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -23526,17 +23546,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.703934,
+      106.532933
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23581,7 +23601,8 @@ var items = [
       "payment_methods": "tiền mặt/QR",
       "province_old": "Trà Vinh",
       "area": "tra-vinh",
-      "category": "shopping"
+      "category": "shopping",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -23590,17 +23611,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.7976352,
+      106.4547669
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23645,7 +23666,8 @@ var items = [
       "payment_methods": "tiền mặt/QR",
       "province_old": "Trà Vinh",
       "area": "tra-vinh",
-      "category": "shopping"
+      "category": "shopping",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -23654,17 +23676,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23729,9 +23751,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23794,9 +23816,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23859,9 +23881,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23907,7 +23929,8 @@ var items = [
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
       "category": "waterway",
-      "stream": "waterways"
+      "stream": "waterways",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -23924,9 +23947,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23998,9 +24021,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24046,7 +24069,8 @@ var items = [
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
       "category": "waterway",
-      "stream": "waterways"
+      "stream": "waterways",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -24063,9 +24087,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24111,7 +24135,8 @@ var items = [
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
       "category": "waterway",
-      "stream": "waterways"
+      "stream": "waterways",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -24128,9 +24153,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24176,7 +24201,8 @@ var items = [
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
       "category": "waterway",
-      "stream": "waterways"
+      "stream": "waterways",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -24193,9 +24219,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24258,9 +24284,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24318,9 +24344,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24383,9 +24409,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24431,7 +24457,8 @@ var items = [
       "province_old": "Bến Tre",
       "area": "ben-tre",
       "category": "waterway",
-      "stream": "waterways"
+      "stream": "waterways",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -24448,9 +24475,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24496,7 +24523,8 @@ var items = [
       "province_old": "Bến Tre",
       "area": "ben-tre",
       "category": "waterway",
-      "stream": "waterways"
+      "stream": "waterways",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -24513,9 +24541,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24561,7 +24589,8 @@ var items = [
       "province_old": "Bến Tre",
       "area": "ben-tre",
       "category": "waterway",
-      "stream": "waterways"
+      "stream": "waterways",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -24578,9 +24607,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24626,7 +24655,8 @@ var items = [
       "province_old": "Bến Tre",
       "area": "ben-tre",
       "category": "waterway",
-      "stream": "waterways"
+      "stream": "waterways",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -24643,9 +24673,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24691,7 +24721,8 @@ var items = [
       "province_old": "Trà Vinh",
       "area": "tra-vinh",
       "category": "waterway",
-      "stream": "waterways"
+      "stream": "waterways",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -24708,9 +24739,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24756,7 +24787,8 @@ var items = [
       "province_old": "Trà Vinh",
       "area": "tra-vinh",
       "category": "waterway",
-      "stream": "waterways"
+      "stream": "waterways",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -24773,9 +24805,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24821,7 +24853,8 @@ var items = [
       "province_old": "Trà Vinh",
       "area": "tra-vinh",
       "category": "waterway",
-      "stream": "waterways"
+      "stream": "waterways",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -24838,9 +24871,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24903,9 +24936,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24951,7 +24984,8 @@ var items = [
       "province_old": "Trà Vinh",
       "area": "tra-vinh",
       "category": "waterway",
-      "stream": "waterways"
+      "stream": "waterways",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -24968,9 +25002,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25016,7 +25050,8 @@ var items = [
       "province_old": "Trà Vinh",
       "area": "tra-vinh",
       "category": "waterway",
-      "stream": "waterways"
+      "stream": "waterways",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -25033,9 +25068,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25081,7 +25116,8 @@ var items = [
       "province_old": "Trà Vinh",
       "area": "tra-vinh",
       "category": "waterway",
-      "stream": "waterways"
+      "stream": "waterways",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -25098,9 +25134,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25148,7 +25184,8 @@ var items = [
       "view": "yes",
       "parking": "yes",
       "live_seafood": "yes",
-      "location_type": "bờ sông"
+      "location_type": "bờ sông",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -25165,9 +25202,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25214,7 +25251,8 @@ var items = [
       "specialty": "Cá tai tượng chiên xù, tôm nướng, cháo gỏi gà ta",
       "seating_capacity": "khoảng 80 – 100 chỗ",
       "atmosphere": "sân vườn miền Tây, ao cá, võng lá dừa, không khí làng quê yên bình",
-      "local_favorite": "yes"
+      "local_favorite": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -25231,9 +25269,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25282,7 +25320,8 @@ var items = [
       "broth_style": "Xương hầm heo trong vắt, ngọt tự nhiên",
       "toppings": "Thịt nạc băm, gan, lòng non, tôm khô, hành phi",
       "daily_capacity": "150-200 tô",
-      "must_order": "Hủ tiếu đặc biệt (đầy đủ topping) + trứng cút"
+      "must_order": "Hủ tiếu đặc biệt (đầy đủ topping) + trứng cút",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -25299,9 +25338,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25350,7 +25389,8 @@ var items = [
       "broth_style": "Xương bò hầm hàng giờ, gừng nướng, hoa hồi",
       "toppings": "Bò tái, nạm, gầu, gân, hành lá",
       "daily_capacity": "100-130 tô",
-      "must_order": "Phở tái nạm đặc biệt"
+      "must_order": "Phở tái nạm đặc biệt",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -25367,9 +25407,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25418,7 +25458,8 @@ var items = [
       "broth_style": "Xương heo + tôm khô hầm, nước dùng ngọt kiểu Nam Vang",
       "toppings": "Thịt nạc, tôm tươi, gan heo, trứng cút, hành phi",
       "daily_capacity": "150-180 tô",
-      "must_order": "Hủ tiếu khô + nước dùng riêng"
+      "must_order": "Hủ tiếu khô + nước dùng riêng",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -25435,9 +25476,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25486,7 +25527,8 @@ var items = [
       "broth_style": "Cua đồng giã lọc, cà chua, mắm tôm nhẹ",
       "toppings": "Chả cua, đậu hũ chiên, huyết, rau muống, bông chuối",
       "daily_capacity": "100-130 tô",
-      "must_order": "Bún riêu đặc biệt thêm đậu hũ chiên"
+      "must_order": "Bún riêu đặc biệt thêm đậu hũ chiên",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -25503,9 +25545,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25554,7 +25596,8 @@ var items = [
       "broth_style": "Xương heo hầm đặc sánh, nêm nước mắm đồng",
       "toppings": "Giò heo, chả cá, trứng cút, hành ngò",
       "daily_capacity": "80-100 tô",
-      "must_order": "Bánh canh giò heo + chả cá"
+      "must_order": "Bánh canh giò heo + chả cá",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -25571,9 +25614,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25622,7 +25665,8 @@ var items = [
       "broth_style": "Xương heo + mực khô hầm, kiểu Mỹ Tho trong và ngọt",
       "toppings": "Thịt xá xíu, tôm, bạch tuộc nhỏ, giá sống",
       "daily_capacity": "120-150 tô",
-      "must_order": "Hủ tiếu Mỹ Tho tôm thịt"
+      "must_order": "Hủ tiếu Mỹ Tho tôm thịt",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -25639,9 +25683,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25690,7 +25734,8 @@ var items = [
       "broth_style": "Không có nước dùng (bánh mì khô/pate)",
       "toppings": "Pate gan, chả lụa, thịt nguội, dưa leo, đồ chua, ngò rí",
       "daily_capacity": "200-300 ổ",
-      "must_order": "Bánh mì đặc biệt pate + chả lụa + bơ"
+      "must_order": "Bánh mì đặc biệt pate + chả lụa + bơ",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -25707,9 +25752,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25758,7 +25803,8 @@ var items = [
       "broth_style": "Mắm cá sặc + sả, nước dùng kiểu Khmer Nam Bộ đậm đà",
       "toppings": "Cá lóc phi lê, tôm, huyết, rau muống, bông chuối, giá",
       "daily_capacity": "80-100 tô",
-      "must_order": "Bún nước lèo cá lóc + tôm"
+      "must_order": "Bún nước lèo cá lóc + tôm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -25775,9 +25821,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25826,7 +25872,8 @@ var items = [
       "broth_style": "Xương heo nhẹ, đơn giản kiểu xe hủ tiếu dạo",
       "toppings": "Thịt bằm, hành lá, giá sống, chanh ớt",
       "daily_capacity": "80-100 tô",
-      "must_order": "Hủ tiếu khô thêm trứng"
+      "must_order": "Hủ tiếu khô thêm trứng",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -25843,9 +25890,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25893,7 +25940,8 @@ var items = [
       "location_type": "trung tâm",
       "live_seafood": "yes",
       "view": "no",
-      "parking": "yes"
+      "parking": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -25910,9 +25958,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25960,7 +26008,8 @@ var items = [
       "location_type": "bờ sông",
       "live_seafood": "yes",
       "view": "yes",
-      "parking": "yes"
+      "parking": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -25977,9 +26026,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26027,7 +26076,8 @@ var items = [
       "location_type": "ven biển",
       "live_seafood": "yes",
       "view": "no",
-      "parking": "yes"
+      "parking": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -26044,9 +26094,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26094,7 +26144,8 @@ var items = [
       "location_type": "trung tâm",
       "live_seafood": "yes",
       "view": "no",
-      "parking": "yes"
+      "parking": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -26111,9 +26162,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26161,7 +26212,8 @@ var items = [
       "location_type": "bờ sông",
       "live_seafood": "yes",
       "view": "yes",
-      "parking": "yes"
+      "parking": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -26170,17 +26222,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2272245,
-      106.4071974
+      10.1786779,
+      106.2581577
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26228,7 +26280,8 @@ var items = [
       "seating_capacity": "60-80 chỗ (chòi riêng biệt, bãi đậu xe rộng)",
       "atmosphere": "Sân vườn đồng quê, chòi lá mát mẻ, gần vườn cây trái",
       "best_dish": "Lươn um lá chuối hoặc ếch xào lăn",
-      "local_favorite": "yes"
+      "local_favorite": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -26245,9 +26298,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26295,7 +26348,8 @@ var items = [
       "seating_capacity": "50-70 chỗ, bàn lớn nhóm đông",
       "atmosphere": "Sân vườn cây xanh, đèn dây trang trí, không khí miền Tây hoài cổ",
       "best_dish": "Cá kèo nướng muối ớt ăn kèm bông súng và rau đồng",
-      "local_favorite": "yes"
+      "local_favorite": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -26312,9 +26366,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26362,7 +26416,8 @@ var items = [
       "broth_style": "xương hầm, sốt cà chua đặc trưng (hủ tiếu khô)",
       "toppings": "tôm, thịt heo, gan, hẹ, hành phi, tóp mỡ",
       "specialty": "Hủ tiếu khô Đồng Khánh",
-      "must_order": "Hủ tiếu khô Đồng Khánh"
+      "must_order": "Hủ tiếu khô Đồng Khánh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -26379,9 +26434,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26429,7 +26484,8 @@ var items = [
       "broth_style": "xương heo hầm trong, ngọt thanh kiểu Nam Vang",
       "toppings": "tôm tươi, thịt heo, gan, tim, trứng cút, hành phi",
       "specialty": "Hủ tiếu Nam Vang nước tô đặc biệt",
-      "must_order": "Hủ tiếu Nam Vang nước tô đặc biệt"
+      "must_order": "Hủ tiếu Nam Vang nước tô đặc biệt",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -26446,9 +26502,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26496,7 +26552,8 @@ var items = [
       "broth_style": "xương hầm, có cả bún mắm nước lèo đặc trưng miền Tây",
       "toppings": "hải sản (tôm, mực), thịt heo, hành phi",
       "specialty": "Hủ tiếu hải sản, bún mắm",
-      "must_order": "Hủ tiếu hải sản, bún mắm"
+      "must_order": "Hủ tiếu hải sản, bún mắm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -26513,9 +26570,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26563,7 +26620,8 @@ var items = [
       "broth_style": "xương hầm, kiểu truyền thống Tiều (người Hoa)",
       "toppings": "sủi cảo, lòng heo, thịt heo thái mỏng, hành ngò",
       "specialty": "Hủ tiếu sủi cảo, cháo lòng",
-      "must_order": "Hủ tiếu sủi cảo, cháo lòng"
+      "must_order": "Hủ tiếu sủi cảo, cháo lòng",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -26580,9 +26638,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26626,7 +26684,8 @@ var items = [
       "priority": "A+",
       "target_segments": "Quốc tế; nội địa; học sinh",
       "suggested_duration": "3N2Đ",
-      "role": "mega_route"
+      "role": "mega_route",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -26643,9 +26702,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26693,7 +26752,8 @@ var items = [
       "broth_style": "xương hầm, nước dùng trong ngọt, phục vụ nhiều món điểm tâm",
       "toppings": "thịt bò, hành lá, ngò rí; nhiều món phong phú (phở, bún, mì)",
       "specialty": "Phở bò, cơm gà gấc",
-      "must_order": "Phở bò, cơm gà gấc"
+      "must_order": "Phở bò, cơm gà gấc",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -26710,9 +26770,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26760,7 +26820,8 @@ var items = [
       "broth_style": "xương heo hầm kiểu truyền thống miền Tây",
       "toppings": "tôm, thịt heo, gan, hành phi, hẹ",
       "specialty": "Hủ tiếu nước đặc biệt",
-      "must_order": "Hủ tiếu nước đặc biệt"
+      "must_order": "Hủ tiếu nước đặc biệt",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -26777,9 +26838,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26832,7 +26893,8 @@ var items = [
       "priority": "B+",
       "target_segments": "Tour ngày; gia đình",
       "suggested_duration": "1-2 giờ",
-      "role": "support_asset"
+      "role": "support_asset",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -26849,9 +26911,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26901,7 +26963,8 @@ var items = [
       "live_seafood": "no",
       "signature_dish": "Cháo lươn nấu đậu xanh, lươn um rau ngổ",
       "view": "no",
-      "parking": "no"
+      "parking": "no",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -26918,9 +26981,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26970,7 +27033,8 @@ var items = [
       "live_seafood": "yes",
       "signature_dish": "Cá bông lau hấp gừng sả, cá điêu hồng chiên xù",
       "view": "yes",
-      "parking": "yes"
+      "parking": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -26987,9 +27051,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27039,7 +27103,8 @@ var items = [
       "live_seafood": "yes",
       "signature_dish": "Lẩu mắm miền Tây cá linh bông điên điển",
       "view": "yes",
-      "parking": "yes"
+      "parking": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -27056,9 +27121,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27108,7 +27173,8 @@ var items = [
       "live_seafood": "yes",
       "signature_dish": "Cá hú kho tộ, canh chua cá chép bông so đũa",
       "view": "yes",
-      "parking": "yes"
+      "parking": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -27125,9 +27191,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27177,7 +27243,8 @@ var items = [
       "live_seafood": "yes",
       "signature_dish": "Cua biển rang me, tôm hùm nướng phô mai",
       "view": "no",
-      "parking": "yes"
+      "parking": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -27194,9 +27261,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27246,7 +27313,8 @@ var items = [
       "live_seafood": "no",
       "signature_dish": "Ốc len xào dừa, hến xào lăn, trai nấu gừng",
       "view": "yes",
-      "parking": "yes"
+      "parking": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -27263,9 +27331,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27315,7 +27383,8 @@ var items = [
       "live_seafood": "yes",
       "signature_dish": "Lẩu cá kèo bần chua, cá bống dừa kho tiêu",
       "view": "no",
-      "parking": "yes"
+      "parking": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -27324,17 +27393,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.254177,
-      105.9627693
+      10.0964974,
+      106.1854829
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27384,7 +27453,8 @@ var items = [
       "live_seafood": "yes",
       "signature_dish": "Cá rô đồng chiên giòn chấm mắm me, ếch chiên sả ớt",
       "view": "yes",
-      "parking": "yes"
+      "parking": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -27401,9 +27471,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27451,7 +27521,8 @@ var items = [
       "tip": "Đến trước 7h để có chỗ ngồi, gần hết sớm vào cuối tuần",
       "famous_for": "Nước lèo ngọt từ xương hầm lâu, bánh canh sợi tươi mềm dai, giò heo beo béo",
       "queue_level": "Đông",
-      "years_in_business": "20+ năm"
+      "years_in_business": "20+ năm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -27468,9 +27539,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27518,7 +27589,8 @@ var items = [
       "tip": "Gọi thêm chả giò để ăn kèm, ngon hơn hẳn",
       "famous_for": "Thịt nướng than hoa thơm, nước mắm pha chua ngọt đậm đà kiểu miền Tây",
       "queue_level": "Đông",
-      "years_in_business": "15+ năm"
+      "years_in_business": "15+ năm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -27535,9 +27607,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27585,7 +27657,8 @@ var items = [
       "tip": "Ăn hủ tiếu khô trộn nước mắm riêng, đặc sản hơn",
       "famous_for": "Sợi hủ tiếu gốc Sa Đéc mang về, nước dùng trong veo ngọt thanh, thịt bằm mịn",
       "queue_level": "Vừa",
-      "years_in_business": "10+ năm"
+      "years_in_business": "10+ năm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -27602,9 +27675,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27652,7 +27725,8 @@ var items = [
       "tip": "Mua buổi sáng sẽ có bánh nướng mới ra lò, giòn nhất",
       "famous_for": "Bánh mì vỏ giòn ruột mềm, nhân xíu mại sốt cà chua đặc trưng, ăn no",
       "queue_level": "Đông",
-      "years_in_business": "20+ năm"
+      "years_in_business": "20+ năm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -27669,9 +27743,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27719,7 +27793,8 @@ var items = [
       "tip": "Gọi chè bắp nước dừa — đặc sản đất dừa không đâu ngon bằng",
       "famous_for": "Chè nấu bằng nước cốt dừa Bến Tre thật, béo ngậy, mát lạnh buổi chiều",
       "queue_level": "Đông (chiều tối)",
-      "years_in_business": "15+ năm"
+      "years_in_business": "15+ năm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -27736,9 +27811,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27786,7 +27861,8 @@ var items = [
       "tip": "Cuốn kèm chuối chát và khế chua để đúng vị miền Tây",
       "famous_for": "Bánh xèo miền Tây cỡ lớn, giòn rụm, nhân tôm sú tươi, ăn kèm rau vườn nhà",
       "queue_level": "Đông (chiều tối cuối tuần)",
-      "years_in_business": "10+ năm"
+      "years_in_business": "10+ năm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -27803,9 +27879,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27853,7 +27929,8 @@ var items = [
       "tip": "Đến trước 7h có đủ lòng non, sau 8h30 có thể hết phần ngon",
       "famous_for": "Cháo lòng heo tươi mổ buổi sáng, lòng sạch không tanh, cháo sánh vừa",
       "queue_level": "Đông (sáng sớm)",
-      "years_in_business": "25+ năm"
+      "years_in_business": "25+ năm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -27870,9 +27947,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27920,7 +27997,8 @@ var items = [
       "tip": "Ăn kèm giá trụng và rau thơm, thêm ớt xanh mới đúng bài",
       "famous_for": "Nước dùng mắm ruốc sả đặc trưng, cá lóc đồng tươi, rau muống bông và bắp chuối thái",
       "queue_level": "Đông",
-      "years_in_business": "20+ năm"
+      "years_in_business": "20+ năm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -27937,9 +28015,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27987,7 +28065,8 @@ var items = [
       "tip": "Ăn tại chỗ ngay khi còn nóng, để lâu bánh sẽ vón cục",
       "famous_for": "Bánh tằm sợi mềm mượt chan nước cốt dừa béo ngậy, thêm tóp mỡ giòn",
       "queue_level": "Đông (giờ tan trường)",
-      "years_in_business": "10+ năm"
+      "years_in_business": "10+ năm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -28004,9 +28083,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28054,7 +28133,8 @@ var items = [
       "tip": "Đặt trước nếu mua cả chục, thêm ớt băm vào nước chấm để dậy mùi",
       "famous_for": "Tôm luộc tươi ngọt, cuốn chắc tay, nước chấm tương đen đậu phộng giã thô đặc sản",
       "queue_level": "Vừa",
-      "years_in_business": "15+ năm"
+      "years_in_business": "15+ năm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -28071,9 +28151,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28121,7 +28201,8 @@ var items = [
       "tip": "Đến sớm trước 7h, phần lòng gà ngon thường hết trước 9h",
       "famous_for": "Bánh ướt tráng mỏng mềm mướt, lòng gà xào sả ớt thơm, hành phi giòn rắc lên trên",
       "queue_level": "Đông (sáng sớm)",
-      "years_in_business": "18+ năm"
+      "years_in_business": "18+ năm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -28138,9 +28219,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28188,7 +28269,8 @@ var items = [
       "seating_capacity": "hơn 100 chỗ mỗi chi nhánh",
       "atmosphere": "nhà hàng bình dân, sạch sẽ, thoáng mát",
       "best_dish": "Cơm tấm sườn nướng than hoa kèm bì và chả trứng",
-      "local_favorite": "yes"
+      "local_favorite": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -28205,9 +28287,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28255,7 +28337,8 @@ var items = [
       "seating_capacity": "khoảng 40 – 50 chỗ",
       "atmosphere": "quán bình dân nhỏ gọn, phục vụ nhanh",
       "best_dish": "Đĩa cơm tấm đầy đủ: sườn + bì + chả + trứng ốp la + dưa chua",
-      "local_favorite": "yes"
+      "local_favorite": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -28272,9 +28355,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28322,7 +28405,8 @@ var items = [
       "seating_capacity": "khoảng 60 – 80 chỗ",
       "atmosphere": "quán rộng rãi, bãi xe miễn phí, sạch sẽ",
       "best_dish": "Cơm tấm sườn nướng than",
-      "local_favorite": "yes"
+      "local_favorite": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -28339,9 +28423,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28389,7 +28473,8 @@ var items = [
       "seating_capacity": "hơn 150 chỗ (nhiều chòi lá)",
       "atmosphere": "sân vườn rộng, chòi lá mát mẻ, view cây xanh",
       "best_dish": "Lẩu ếch nước dừa kiểu Bến Tre",
-      "local_favorite": "yes"
+      "local_favorite": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -28406,9 +28491,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28456,7 +28541,8 @@ var items = [
       "seating_capacity": "hơn 200 chỗ (khuôn viên lớn)",
       "atmosphere": "sân vườn rộng, thiên nhiên xanh mát, phù hợp tiệc gia đình",
       "best_dish": "Cá lóc nướng trui ăn kèm bún và rau rừng",
-      "local_favorite": "yes"
+      "local_favorite": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -28473,9 +28559,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28522,7 +28608,8 @@ var items = [
       "specialty": "Cơm tấm sườn nướng kiểu miền Tây, mỡ hành thơm",
       "seating_capacity": 20,
       "atmosphere": "lều chợ",
-      "local_favorite": "yes"
+      "local_favorite": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -28539,9 +28626,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28589,7 +28676,8 @@ var items = [
       "broth_style": "xương heo hầm thanh ngọt kiểu Nam Vang",
       "toppings": "thịt nạc, gan heo, tôm tươi, trứng cút, hẹ",
       "daily_capacity": "khoảng 150-200 tô/ngày",
-      "must_order": "hủ tiếu Nam Vang tô đặc biệt"
+      "must_order": "hủ tiếu Nam Vang tô đặc biệt",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -28598,17 +28686,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28656,7 +28744,8 @@ var items = [
       "broth_style": "mắm bò hóc (prohok) Khmer hầm xả sả nghệ, đặc trưng vùng Trà Vinh-Sóc Trăng",
       "toppings": "tôm, cá lóc, thịt heo, rau muống, bắp chuối bào, rau thơm",
       "daily_capacity": "khoảng 100-150 tô/ngày",
-      "must_order": "bún nước lèo tô thập cẩm"
+      "must_order": "bún nước lèo tô thập cẩm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -28665,17 +28754,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28723,7 +28812,8 @@ var items = [
       "broth_style": "xương heo hầm kỹ, trong ngọt tự nhiên",
       "toppings": "thịt nạc xắt, lòng heo, giá trụng, hành phi",
       "daily_capacity": "khoảng 100 tô/ngày",
-      "must_order": "hủ tiếu khô trộn mỡ hành"
+      "must_order": "hủ tiếu khô trộn mỡ hành",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -28732,17 +28822,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.8715789,
+      106.089896
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28790,7 +28880,8 @@ var items = [
       "broth_style": "xương bò hầm sả ớt, mắm ruốc Huế đậm đà",
       "toppings": "thịt bò, chả Huế, huyết heo, bắp bò, giò heo",
       "daily_capacity": "khoảng 120 tô/ngày",
-      "must_order": "bún bò tô đặc biệt có bắp bò và giò"
+      "must_order": "bún bò tô đặc biệt có bắp bò và giò",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -28807,9 +28898,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28857,7 +28948,8 @@ var items = [
       "broth_style": "xương bò hầm quế hồi gừng nướng kiểu phở Bắc",
       "toppings": "tái, chín, nạm, gầu, gân bò",
       "daily_capacity": "khoảng 80-100 tô/ngày",
-      "must_order": "phở bò tái gầu"
+      "must_order": "phở bò tái gầu",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -28866,17 +28958,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28924,7 +29016,8 @@ var items = [
       "broth_style": "nước dùng hải sản, tôm mực hầm ngọt thanh",
       "toppings": "mực tươi, tôm, chả cá, hành phi, rau sống",
       "daily_capacity": "khoảng 100 tô/ngày",
-      "must_order": "hủ tiếu mực tô đặc biệt"
+      "must_order": "hủ tiếu mực tô đặc biệt",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -28933,17 +29026,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.8402585,
+      106.1728568
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28991,7 +29084,8 @@ var items = [
       "broth_style": "pate gan heo tự làm, đồ chua ngâm truyền thống",
       "toppings": "pate, thịt nguội, chả lụa, dưa leo, hành ngò, ớt tươi",
       "daily_capacity": "khoảng 200-300 ổ/ngày",
-      "must_order": "bánh mì đặc biệt đầy đủ nhân"
+      "must_order": "bánh mì đặc biệt đầy đủ nhân",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -29000,17 +29094,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9464031,
+      106.3679964
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29058,7 +29152,8 @@ var items = [
       "broth_style": "cua đồng giã lọc, cà chua, mắm tôm nhẹ, chua ngọt dịu",
       "toppings": "gạch cua, chả bò, tiết, đậu hũ chiên, rau sống, mắm tôm",
       "daily_capacity": "khoảng 80-100 tô/ngày",
-      "must_order": "bún riêu cua thập cẩm thêm tiết và đậu"
+      "must_order": "bún riêu cua thập cẩm thêm tiết và đậu",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -29067,17 +29162,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9762521,
+      106.3445798
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29125,7 +29220,8 @@ var items = [
       "broth_style": "nước dùng hải sản tươi địa phương: cua biển, tôm sú, mực",
       "toppings": "tôm sú, mực, cua biển, chả cá thu, giá, hành phi",
       "daily_capacity": "khoảng 120 tô/ngày",
-      "must_order": "hủ tiếu hải sản tô lớn tươi ngon theo mùa"
+      "must_order": "hủ tiếu hải sản tô lớn tươi ngon theo mùa",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -29134,17 +29230,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.6620895,
+      106.5179466
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29192,7 +29288,8 @@ var items = [
       "location_type": "bờ sông",
       "live_seafood": "yes",
       "view": "yes",
-      "parking": "yes"
+      "parking": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -29209,9 +29306,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29259,7 +29356,8 @@ var items = [
       "location_type": "bờ sông",
       "live_seafood": "yes",
       "view": "yes",
-      "parking": "yes"
+      "parking": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -29276,9 +29374,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29326,7 +29424,8 @@ var items = [
       "location_type": "ven biển",
       "live_seafood": "yes",
       "view": "yes",
-      "parking": "yes"
+      "parking": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -29335,17 +29434,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.6427206,
+      106.5489482
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29393,7 +29492,8 @@ var items = [
       "location_type": "trung tâm",
       "live_seafood": "yes",
       "view": "no",
-      "parking": "yes"
+      "parking": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -29402,17 +29502,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.6620895,
+      106.5179466
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29460,7 +29560,8 @@ var items = [
       "location_type": "bờ sông",
       "live_seafood": "yes",
       "view": "yes",
-      "parking": "yes"
+      "parking": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -29477,9 +29578,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29527,7 +29628,8 @@ var items = [
       "location_type": "bờ sông",
       "live_seafood": "no",
       "view": "yes",
-      "parking": "yes"
+      "parking": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -29544,9 +29646,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29594,7 +29696,8 @@ var items = [
       "location_type": "trung tâm",
       "live_seafood": "yes",
       "view": "no",
-      "parking": "yes"
+      "parking": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -29611,9 +29714,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29661,7 +29764,8 @@ var items = [
       "location_type": "bờ sông",
       "live_seafood": "no",
       "view": "yes",
-      "parking": "yes"
+      "parking": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -29670,17 +29774,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.8402585,
+      106.1728568
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29728,7 +29832,8 @@ var items = [
       "location_type": "bờ sông",
       "live_seafood": "yes",
       "view": "yes",
-      "parking": "yes"
+      "parking": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -29745,9 +29850,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29795,7 +29900,8 @@ var items = [
       "location_type": "ven biển",
       "live_seafood": "yes",
       "view": "yes",
-      "parking": "yes"
+      "parking": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -29804,17 +29910,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.7846708,
+      106.5058929
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29862,7 +29968,8 @@ var items = [
       "famous_for": "Quán lâu đời, cháo nấu từ gạo rang với cá lóc, thêm hành phi, mực khô và tôm khô — đặc sản cháo ám truyền thống Trà Vinh xuất hiện từ thập niên 1930 tại chợ Châu Thành",
       "queue_level": "Đông",
       "tip": "Đến trước 7h để có bàn ngồi dưới hàng cây Lê Lợi, gọi thêm dầu cháo quẩy ăn kèm",
-      "years_in_business": "Truyền thống vài thập niên"
+      "years_in_business": "Truyền thống vài thập niên",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -29871,17 +29978,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29929,7 +30036,8 @@ var items = [
       "famous_for": "Nước dùng từ mắm bò hóc (prahok) không nặng mùi, ngọt thanh, thịt heo và cá lóc tươi, rau sống địa phương — phong cách ẩm thực Khmer đặc trưng Trà Vinh",
       "queue_level": "Đông",
       "tip": "Hỏi xin thêm rau muống bào và giá sống, nước dùng ở đây ít mặn hơn các quán khác — hợp khẩu vị người lần đầu thử",
-      "years_in_business": "Trên 10 năm"
+      "years_in_business": "Trên 10 năm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -29938,17 +30046,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29996,7 +30104,8 @@ var items = [
       "famous_for": "Đầu bếp người Khmer, nước dùng đậm mắm bò hóc chính thống, nổi tiếng nhất trong giới người Khmer địa phương",
       "queue_level": "Đông",
       "tip": "Quán gần khu dân cư Khmer nên không khí rất địa phương, nên gọi thêm chả cá chiên ăn kèm",
-      "years_in_business": "Trên 15 năm"
+      "years_in_business": "Trên 15 năm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -30005,17 +30114,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9333987,
+      106.3121888
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30063,7 +30172,8 @@ var items = [
       "famous_for": "Quán hủ tiếu xí quách duy nhất tại TP. Trà Vinh — xương hầm mềm rục, nước dùng ngọt sâu, bán kèm hủ tiếu/bánh canh/nui tùy chọn",
       "queue_level": "Đông",
       "tip": "Gọi combo hủ tiếu + xí quách riêng để chấm nước tương gừng; buổi sáng thường hết xí quách trước 10h",
-      "years_in_business": "Trên 10 năm"
+      "years_in_business": "Trên 10 năm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -30080,9 +30190,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30130,7 +30240,8 @@ var items = [
       "famous_for": "Quán gia truyền lâu năm, suông tôm tự nhồi tay dày chắc, nước dùng chua thanh từ me — đặc sản bún suông độc quyền của Trà Vinh",
       "queue_level": "Đông",
       "tip": "Bún suông chỉ có ở Trà Vinh, đừng bỏ qua; ăn kèm rau muống bào và giá trụng mới đủ vị",
-      "years_in_business": "Trên 15 năm"
+      "years_in_business": "Trên 15 năm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -30147,9 +30258,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30197,7 +30308,8 @@ var items = [
       "famous_for": "Quán quen thuộc của người dân phường 1, vị suông tôm truyền thống, giá bình dân, bán sáng sớm sẽ hết trước 10h",
       "queue_level": "Vừa",
       "tip": "Nên đến trước 8h; quán hay hết suông sớm vào cuối tuần",
-      "years_in_business": "Trên 10 năm"
+      "years_in_business": "Trên 10 năm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -30206,17 +30318,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30264,7 +30376,8 @@ var items = [
       "famous_for": "Há cảo nhân tôm thịt vỏ mỏng dai kiểu người Hoa Trà Vinh, chấm tương ớt tỏi đặc biệt — phản ánh nét ẩm thực người Hoa tại tỉnh",
       "queue_level": "Vừa",
       "tip": "Gọi thêm xíu mại hấp ăn kèm; quán chỉ bán buổi chiều",
-      "years_in_business": "Khoảng 10 năm"
+      "years_in_business": "Khoảng 10 năm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -30281,9 +30394,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30331,7 +30444,8 @@ var items = [
       "famous_for": "Bánh tráng nướng giòn nhiều lớp topping: ruốc, trứng cút, mực khô, mayonnaise — điểm ăn vặt quen thuộc của học sinh sinh viên Trà Vinh",
       "queue_level": "Đông",
       "tip": "Đặt trước để tránh chờ lâu vào buổi tối; có thể chọn độ cay theo ý",
-      "years_in_business": "Khoảng 5-7 năm"
+      "years_in_business": "Khoảng 5-7 năm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -30340,17 +30454,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30398,7 +30512,8 @@ var items = [
       "famous_for": "Nơi được xem là cội nguồn của món cháo ám từ thập niên 1930 — nấu với gạo rang, thêm mực khô, tôm khô, hành phi — vị cháo đậm đà nhất tỉnh",
       "queue_level": "Đông",
       "tip": "Hàng bán rất sớm và hết nhanh; nên đến trước 7h; nhiều hàng cháo ám tập trung quanh chợ, chọn hàng nào đông người địa phương nhất",
-      "years_in_business": "Hơn 30 năm (truyền thống từ thập niên 1930)"
+      "years_in_business": "Hơn 30 năm (truyền thống từ thập niên 1930)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -30407,17 +30522,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.8432052,
+      106.3356274
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30465,7 +30580,8 @@ var items = [
       "famous_for": "Quán ăn vặt theo phong cách Hàn-Việt, nổi nhất với chân gà chiên mắm tỏi ớt và nem chua rán giòn — điểm tụ họp của giới trẻ Trà Vinh",
       "queue_level": "Đông vào tối cuối tuần",
       "tip": "Gọi combo chân gà + kimbap chiên + trà sữa; nên đặt qua điện thoại vào tối thứ 6-7",
-      "years_in_business": "Khoảng 5 năm"
+      "years_in_business": "Khoảng 5 năm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -30474,17 +30590,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9464031,
+      106.3679964
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30532,7 +30648,8 @@ var items = [
       "famous_for": "Hiếm gặp vì chỉ bán buổi chiều — nước dùng mắm bò hóc được hầm lại từ sáng sâu vị hơn, thịt heo và cá lóc tươi, rất đông khách buổi xế",
       "queue_level": "Đông",
       "tip": "Một trong số ít quán bún nước lèo bán buổi chiều — lạ và đáng thử; đến trễ sau 16h30 thường hết nước",
-      "years_in_business": "Trên 10 năm"
+      "years_in_business": "Trên 10 năm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -30549,9 +30666,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30599,7 +30716,8 @@ var items = [
       "seating_capacity": 30,
       "atmosphere": "lều chợ",
       "best_dish": "Cá kho tộ ăn cơm trắng",
-      "local_favorite": "yes"
+      "local_favorite": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -30608,17 +30726,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30666,7 +30784,8 @@ var items = [
       "seating_capacity": 25,
       "atmosphere": "nhà hàng",
       "best_dish": "Cơm tấm sườn nướng bì chả",
-      "local_favorite": "yes"
+      "local_favorite": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -30675,17 +30794,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30733,7 +30852,8 @@ var items = [
       "seating_capacity": 80,
       "atmosphere": "sân vườn",
       "best_dish": "Cá lóc nướng trui chấm mắm me",
-      "local_favorite": "yes"
+      "local_favorite": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -30742,17 +30862,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30800,7 +30920,8 @@ var items = [
       "seating_capacity": 50,
       "atmosphere": "sân vườn",
       "best_dish": "Cơm niêu kho quẹt ăn với rau sống đồng",
-      "local_favorite": "yes"
+      "local_favorite": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -30809,17 +30930,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9762521,
+      106.3445798
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30867,7 +30988,8 @@ var items = [
       "seating_capacity": 60,
       "atmosphere": "sân vườn",
       "best_dish": "Vịt nướng chao ăn với bánh hỏi",
-      "local_favorite": "yes"
+      "local_favorite": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -30884,9 +31006,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30934,7 +31056,8 @@ var items = [
       "seating_capacity": 35,
       "atmosphere": "nhà hàng",
       "best_dish": "Thịt kho hột vịt nước dừa",
-      "local_favorite": "yes"
+      "local_favorite": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -30943,17 +31066,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31001,7 +31124,8 @@ var items = [
       "seating_capacity": 70,
       "atmosphere": "sân vườn",
       "best_dish": "Tôm càng xanh nướng muối ớt",
-      "local_favorite": "yes"
+      "local_favorite": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -31018,9 +31142,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31068,7 +31192,8 @@ var items = [
       "seating_capacity": 20,
       "atmosphere": "lều chợ",
       "best_dish": "Cá chốt kho tiêu ăn cơm trắng",
-      "local_favorite": "yes"
+      "local_favorite": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -31085,9 +31210,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31135,7 +31260,8 @@ var items = [
       "seating_capacity": 100,
       "atmosphere": "sân vườn",
       "best_dish": "Ghẹ hấp bia tươi chấm muối tiêu chanh",
-      "local_favorite": "yes"
+      "local_favorite": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -31144,17 +31270,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.6427206,
+      106.5489482
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31201,9 +31327,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31235,7 +31361,8 @@ var items = [
       ],
       "responsible_tips": [
         "Thương mại hóa lễ hội: Tách phần lễ-phần hội; quy tắc ứng xử; tham vấn ban tổ chức/cộng đồng"
-      ]
+      ],
+      "coords_approximate": true
     },
     "source": [
       {
@@ -31253,9 +31380,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31299,9 +31426,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31335,7 +31462,8 @@ var items = [
       ],
       "responsible_tips": [
         "Thương mại hóa lễ hội: Tách phần lễ-phần hội; quy tắc ứng xử; tham vấn ban tổ chức/cộng đồng"
-      ]
+      ],
+      "coords_approximate": true
     },
     "source": [
       {
@@ -31353,9 +31481,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31402,9 +31530,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31450,9 +31578,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31499,9 +31627,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31578,9 +31706,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31649,9 +31777,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31719,9 +31847,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31762,9 +31890,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31843,9 +31971,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31927,9 +32055,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31982,7 +32110,8 @@ var items = [
       "season_note": "Mùa khô hanh, công đoạn phơi tàu hũ ky ngoài trời đạt chất lượng tốt nhất, dễ quan sát quy trình sản xuất",
       "peak_event": "Dịp trước Tết Nguyên Đán (tháng 12 âm lịch) sản xuất rộn ràng nhất",
       "travel_tip": "Đến trước 6h sáng để xem công đoạn kéo tàu hủ ky — đây là khoảnh khắc đẹp và sinh động nhất của làng nghề.",
-      "highlight": "Hơn 110 năm kéo tàu hủ ky thủ công — Di sản Phi vật thể Quốc gia vàng óng từ 4h sáng"
+      "highlight": "Hơn 110 năm kéo tàu hủ ky thủ công — Di sản Phi vật thể Quốc gia vàng óng từ 4h sáng",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -31992,17 +32121,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0675818,
-      105.8219716
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32061,9 +32190,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32087,7 +32216,8 @@ var items = [
       "tip": "Tuyến phà huyết mạch QL57 nối Vĩnh Long–Bến Tre. Dịp lễ Tết phương tiện tăng 30%, thường xuyên ùn tắc nặng. Nên đi trước 6h sáng hoặc sau 9h tối để tránh kẹt. Tương lai sẽ có cầu Đình Khao thay thế.",
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
-      "category": "transport"
+      "category": "transport",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -32104,9 +32234,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32131,7 +32261,8 @@ var items = [
       "tip": "Huyện Trà Ôn ở cực nam tỉnh, giáp Cần Thơ và Sóc Trăng qua sông Hậu. Từ Trà Ôn có thể đi phà sang Cần Thơ (Cái Vồn). Bến xe nhỏ, chủ yếu phục vụ khách địa phương đi Vĩnh Long và Cần Thơ.",
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
-      "category": "transport"
+      "category": "transport",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -32148,9 +32279,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32173,7 +32304,8 @@ var items = [
       "tip": "Đây là tuyến xe buýt liên tỉnh tiện lợi và phổ biến nhất kết nối Vĩnh Long với Cần Thơ. Xe điều hòa, sạch sẽ. Có thể mua vé trực tiếp tại bến hoặc app Futa. Thời gian di chuyển khoảng 45–60 phút.",
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
-      "category": "transport"
+      "category": "transport",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -32190,9 +32322,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32215,7 +32347,8 @@ var items = [
       "tip": "Tuyến phà tồn tại hơn 15 năm, chủ yếu phục vụ người dân qua lại giữa Vĩnh Long và Cần Thơ vào buổi chiều tối. Thích hợp cho xe máy và khách bộ hành. Nếu đi ban ngày nên chọn đường cầu hoặc xe buýt.",
       "province_old": "Vĩnh Long",
       "area": "vinh-long",
-      "category": "transport"
+      "category": "transport",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -32232,9 +32365,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32255,7 +32388,8 @@ var items = [
       "tip": "Chợ Lách nổi tiếng với làng hoa và trái cây; từ đây sang Vĩnh Long qua Phà Đình Khao rất gần. Khách du lịch từ TP.HCM thường ghé đây trên đường về.",
       "province_old": "Bến Tre",
       "area": "ben-tre",
-      "category": "transport"
+      "category": "transport",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -32264,17 +32398,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2272245,
-      106.4071974
+      10.2237865,
+      106.1914491
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32295,7 +32429,8 @@ var items = [
       "tip": "Bến tàu đưa vào hoạt động tháng 2/2023, đầu tư 12,2 tỷ đồng. Tuyến Bến Tre – Vũng Tàu cao tốc chỉ mất khoảng 2 giờ, thích hợp cho khách muốn kết hợp tham quan Vũng Tàu. Đặt vé trước vì lịch thưa.",
       "province_old": "Bến Tre",
       "area": "ben-tre",
-      "category": "transport"
+      "category": "transport",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -32304,17 +32439,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2272245,
-      106.4071974
+      10.2009202,
+      106.3727946
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32335,7 +32470,8 @@ var items = [
       "tip": "Hiện nay cầu Hàm Luông đã xây dựng trên QL60, nhưng phà nhỏ vẫn phục vụ xe thô sơ và xe máy đường tắt qua các xã ven sông. Kiểm tra trước nếu đi ô tô vì một số phà đã ngừng sau khi có cầu.",
       "province_old": "Bến Tre",
       "area": "ben-tre",
-      "category": "transport"
+      "category": "transport",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -32352,9 +32488,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32375,7 +32511,8 @@ var items = [
       "tip": "Điểm cuối của xe buýt tuyến 03 từ TP. Bến Tre. Khách muốn vào các xã vùng sâu Châu Thành nên bắt xe buýt 03 từ bến xe trung tâm, giá rẻ và tiện lợi.",
       "province_old": "Bến Tre",
       "area": "ben-tre",
-      "category": "transport"
+      "category": "transport",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -32384,17 +32521,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2272245,
-      106.4071974
+      10.1245898,
+      106.2556223
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32415,7 +32552,8 @@ var items = [
       "tip": "Xe buýt nội tỉnh Bến Tre được trợ giá, rất rẻ và đúng giờ. Dùng để đi từ trung tâm tỉnh ra các huyện mà không cần thuê xe máy. Tuyến 08 hữu ích nếu muốn sang Vĩnh Long qua phà Đình Khao.",
       "province_old": "Bến Tre",
       "area": "ben-tre",
-      "category": "transport"
+      "category": "transport",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -32432,9 +32570,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32455,7 +32593,8 @@ var items = [
       "tip": "Bến xe nằm cách trung tâm TP. Trà Vinh khoảng 40km về phía đông nam (gần biển). Phù hợp cho du khách tham quan khu vực Duyên Hải, bãi biển Ba Động mà không cần về bến trung tâm. Từ đây cũng có xe đi Hồ Chí Minh trực tiếp.",
       "province_old": "Trà Vinh",
       "area": "tra-vinh",
-      "category": "transport"
+      "category": "transport",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -32464,17 +32603,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.6620895,
+      106.5179466
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32495,7 +32634,8 @@ var items = [
       "tip": "Huyện Trà Cú có đông đồng bào Khmer sinh sống. Vào mùa lễ Ok Om Bok (tháng 10 âm lịch) và Chol Chnam Thmay (tháng 4), lượng khách tăng mạnh, cần mua vé sớm. Bến xe Miền Tây cũng có tuyến trực tiếp đến Trà Cú.",
       "province_old": "Trà Vinh",
       "area": "tra-vinh",
-      "category": "transport"
+      "category": "transport",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -32504,17 +32644,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.6997244,
+      106.2732243
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32535,7 +32675,8 @@ var items = [
       "tip": "Cầu Kè nổi tiếng với bánh tét lá cẩm và vườn cây ăn trái. Xe Kim Hoàng là nhà xe quen thuộc của người địa phương trên tuyến Sài Gòn - Cầu Kè. Từ bến này dễ kết nối sang Vĩnh Long hoặc Cần Thơ.",
       "province_old": "Trà Vinh",
       "area": "tra-vinh",
-      "category": "transport"
+      "category": "transport",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -32544,17 +32685,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.8715789,
+      106.089896
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32575,7 +32716,8 @@ var items = [
       "tip": "Cầu Ngang là huyện nằm giữa TP. Trà Vinh và TX. Duyên Hải trên Quốc lộ 53. Nếu đi từ TP.HCM, xe khách thường dừng trả khách ở Cầu Ngang trước khi vào trung tâm thành phố Trà Vinh, tiết kiệm thời gian nếu khách ở khu vực này.",
       "province_old": "Trà Vinh",
       "area": "tra-vinh",
-      "category": "transport"
+      "category": "transport",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -32584,17 +32726,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.7976352,
+      106.4547669
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32615,7 +32757,8 @@ var items = [
       "tip": "Đây từng là một trong các điểm kẹt phà nổi tiếng miền Tây, đặc biệt dịp lễ Tết. Cầu Đại Ngãi 2 đã hợp long và thông xe đầu năm 2025, vì vậy lưu lượng phà đang giảm dần. Nếu đi xe khách trên QL60 từ Trà Vinh sang Sóc Trăng, xe sẽ qua phà hoặc cầu mới này.",
       "province_old": "Trà Vinh",
       "area": "tra-vinh",
-      "category": "transport"
+      "category": "transport",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -32624,17 +32767,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.7406093,
+      106.4535937
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32655,7 +32798,8 @@ var items = [
       "tip": "Xe buýt nội tỉnh Trà Vinh phù hợp để di chuyển rẻ trong thành phố và ra vùng ven. Tuy nhiên tần suất thưa, cần xem giờ trước khi đi. Các tuyến xe buýt không có app tra cứu online riêng - nên hỏi trực tiếp tại bến xe hoặc gọi đến Bến xe Trà Vinh để xác nhận lịch.",
       "province_old": "Trà Vinh",
       "area": "tra-vinh",
-      "category": "transport"
+      "category": "transport",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -32664,17 +32808,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32695,7 +32839,8 @@ var items = [
       "tip": "Tiểu Cần nằm trên Quốc lộ 60 - trục giao thông chính nối Trà Vinh với Sóc Trăng qua cầu/phà Đại Ngãi. Bến xe nhỏ phục vụ chủ yếu người dân địa phương. Khách du lịch tham quan các điểm OCOP Tiểu Cần, chùa Khmer trong vùng có thể xuống đây. Sau khi cầu Đại Ngãi thông xe, tuyến đi Sóc Trăng sẽ nhanh hơn trước đáng kể.",
       "province_old": "Trà Vinh",
       "area": "tra-vinh",
-      "category": "transport"
+      "category": "transport",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -32704,17 +32849,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.8402585,
+      106.1728568
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32762,7 +32907,8 @@ var items = [
       "admission": "Miễn phí",
       "dress_code": "Ăn mặc chỉnh tề, nghiêm túc",
       "hours": "06:00 - 18:00 hàng ngày",
-      "annual_festival": "Lễ Kỳ Yên (tháng 2 và tháng 8 âm lịch)"
+      "annual_festival": "Lễ Kỳ Yên (tháng 2 và tháng 8 âm lịch)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -32779,9 +32925,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32829,7 +32975,8 @@ var items = [
       "admission": "Miễn phí",
       "dress_code": "Ăn mặc kín đáo, trang nghiêm khi vào trong nhà thờ",
       "hours": "05:00 - 20:00 hàng ngày; Thánh lễ: 05:15 và 17:15 ngày thường",
-      "annual_festival": "Lễ Giáng Sinh (24-25/12), Lễ Phục Sinh, Lễ Quan Thầy Thánh Giuse (19/3)"
+      "annual_festival": "Lễ Giáng Sinh (24-25/12), Lễ Phục Sinh, Lễ Quan Thầy Thánh Giuse (19/3)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -32846,9 +32993,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32896,7 +33043,8 @@ var items = [
       "admission": "Miễn phí",
       "dress_code": "Ăn mặc kín đáo, không mặc đồ ngắn",
       "hours": "05:00 - 22:00 hàng ngày (tấp nập nhất dịp lễ hội)",
-      "annual_festival": "Vía Bà Chúa Xứ (23-27/4 âm lịch) - lễ hội lớn nhất, có múa bóng rỗi, thả hoa đăng"
+      "annual_festival": "Vía Bà Chúa Xứ (23-27/4 âm lịch) - lễ hội lớn nhất, có múa bóng rỗi, thả hoa đăng",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -32913,9 +33061,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32963,7 +33111,8 @@ var items = [
       "admission": "Miễn phí",
       "dress_code": "Ăn mặc kín đáo và sạch sẽ",
       "hours": "06:00 - 18:00 hàng ngày",
-      "annual_festival": "Vía Bà Thiên Hậu (23/3 âm lịch) - rước kiệu, múa lân, dâng lễ vật"
+      "annual_festival": "Vía Bà Thiên Hậu (23/3 âm lịch) - rước kiệu, múa lân, dâng lễ vật",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -32980,9 +33129,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33030,7 +33179,8 @@ var items = [
       "admission": "Miễn phí",
       "dress_code": "Ăn mặc kín đáo",
       "hours": "06:00 - 19:00 hàng ngày",
-      "annual_festival": "Vía Quan Đế (24/6 âm lịch) - lễ hội cộng đồng người Hoa lớn, múa lân sư rồng"
+      "annual_festival": "Vía Quan Đế (24/6 âm lịch) - lễ hội cộng đồng người Hoa lớn, múa lân sư rồng",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -33047,9 +33197,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33097,7 +33247,8 @@ var items = [
       "admission": "Miễn phí",
       "dress_code": "Ăn mặc kín đáo, tránh quần áo ngắn",
       "hours": "05:30 - 20:00 hàng ngày",
-      "annual_festival": "Lễ Phật Đản (Rằm tháng 4), Lễ Vu Lan báo hiếu (Rằm tháng 7 âm lịch)"
+      "annual_festival": "Lễ Phật Đản (Rằm tháng 4), Lễ Vu Lan báo hiếu (Rằm tháng 7 âm lịch)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -33114,9 +33265,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33164,7 +33315,8 @@ var items = [
       "admission": "Miễn phí",
       "dress_code": "Ăn mặc kín đáo, không mặc quần short hoặc áo hở vai",
       "hours": "06:00 - 18:00 hàng ngày",
-      "annual_festival": "Lễ Phật Đản (15/4 âm lịch), Lễ Vu Lan (15/7 âm lịch)"
+      "annual_festival": "Lễ Phật Đản (15/4 âm lịch), Lễ Vu Lan (15/7 âm lịch)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -33181,9 +33333,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33231,7 +33383,8 @@ var items = [
       "admission": "Miễn phí",
       "dress_code": "Ăn mặc lịch sự",
       "hours": "07:00 - 17:00 hàng ngày",
-      "annual_festival": "Lễ Kỳ Yên (tháng 1 và tháng 7 âm lịch)"
+      "annual_festival": "Lễ Kỳ Yên (tháng 1 và tháng 7 âm lịch)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -33248,9 +33401,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33298,7 +33451,8 @@ var items = [
       "admission": "Miễn phí",
       "dress_code": "Trang phục kín đáo, không mặc quần đùi, váy ngắn",
       "hours": "06:00 - 18:00 hàng ngày (mở cửa tham quan ngoài giờ lễ)",
-      "annual_festival": "Lễ Giáng Sinh (25/12), Lễ Phục Sinh, Lễ Đức Mẹ Vô Nhiễm (8/12)"
+      "annual_festival": "Lễ Giáng Sinh (25/12), Lễ Phục Sinh, Lễ Đức Mẹ Vô Nhiễm (8/12)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -33315,9 +33469,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33365,7 +33519,8 @@ var items = [
       "admission": "Miễn phí",
       "dress_code": "Bắt buộc trang phục kín đáo, áo dài trắng nếu tham dự lễ",
       "hours": "06:00 - 18:00, lễ 4 lần/ngày: 06:00, 12:00, 18:00, 00:00",
-      "annual_festival": "Lễ Vía Đức Cao Đài (9/1 âm lịch), Lễ Hội Yến Diêu Trì Cung (15/8 âm lịch)"
+      "annual_festival": "Lễ Vía Đức Cao Đài (9/1 âm lịch), Lễ Hội Yến Diêu Trì Cung (15/8 âm lịch)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -33382,9 +33537,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33432,7 +33587,8 @@ var items = [
       "admission": "Miễn phí",
       "dress_code": "Trang phục lịch sự, kín đáo",
       "hours": "06:00 - 18:00 hàng ngày",
-      "annual_festival": "Lễ Phật Đản, Lễ Vu Lan, Tết Thượng Nguyên (15/1 âm lịch)"
+      "annual_festival": "Lễ Phật Đản, Lễ Vu Lan, Tết Thượng Nguyên (15/1 âm lịch)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -33449,9 +33605,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33499,7 +33655,8 @@ var items = [
       "admission": "Miễn phí",
       "dress_code": "Ăn mặc lịch sự, không mặc quần áo hở hang",
       "hours": "05:00 - 21:00 hàng ngày",
-      "annual_festival": "Vía Bà Chúa Xứ (23-27/4 âm lịch)"
+      "annual_festival": "Vía Bà Chúa Xứ (23-27/4 âm lịch)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -33516,9 +33673,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33566,7 +33723,8 @@ var items = [
       "admission": "Miễn phí",
       "dress_code": "Bắt buộc trang phục kín đáo, tháo giày trước khi vào chánh điện",
       "hours": "06:00 - 18:00 hàng ngày",
-      "annual_festival": "Tết Chol Chnam Thmay (tháng 4), Lễ Ok Om Bok (tháng 10 âm lịch)"
+      "annual_festival": "Tết Chol Chnam Thmay (tháng 4), Lễ Ok Om Bok (tháng 10 âm lịch)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -33583,9 +33741,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33650,9 +33808,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33700,7 +33858,8 @@ var items = [
       "admission": "Miễn phí",
       "dress_code": "Trang phục kín đáo, lịch sự",
       "hours": "06:00 - 18:00 hàng ngày",
-      "annual_festival": "Lễ Giáng Sinh, Lễ Phục Sinh, Lễ Các Thánh Tử Đạo Việt Nam (24/11)"
+      "annual_festival": "Lễ Giáng Sinh, Lễ Phục Sinh, Lễ Các Thánh Tử Đạo Việt Nam (24/11)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -33717,9 +33876,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33767,7 +33926,8 @@ var items = [
       "admission": "Miễn phí",
       "dress_code": "Kín đáo, tháo giày dép vào chánh điện",
       "hours": "05:30–18:00 hàng ngày",
-      "annual_festival": "Tết Chol Chnam Thmay, Pchum Ben (lễ báo hiếu tổ tiên Khmer)"
+      "annual_festival": "Tết Chol Chnam Thmay, Pchum Ben (lễ báo hiếu tổ tiên Khmer)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -33784,9 +33944,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33834,7 +33994,8 @@ var items = [
       "admission": "Miễn phí",
       "dress_code": "Ăn mặc nghiêm túc, kín đáo",
       "hours": "05:00–18:00 hàng ngày",
-      "annual_festival": "Ok Om Bok, Dolta, Tết Chol Chnam Thmay; lễ hội thu hút hàng vạn người"
+      "annual_festival": "Ok Om Bok, Dolta, Tết Chol Chnam Thmay; lễ hội thu hút hàng vạn người",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -33851,9 +34012,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33901,7 +34062,8 @@ var items = [
       "admission": "Miễn phí",
       "dress_code": "Kín đáo, trang trọng",
       "hours": "06:00–17:00 hàng ngày",
-      "annual_festival": "Lễ Phật Đản (15/4 âm lịch), Vu Lan (15/7 âm lịch)"
+      "annual_festival": "Lễ Phật Đản (15/4 âm lịch), Vu Lan (15/7 âm lịch)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -33918,9 +34080,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33968,7 +34130,8 @@ var items = [
       "admission": "Miễn phí",
       "dress_code": "Lịch sự, kín đáo, im lặng khi có lễ",
       "hours": "06:00–11:30 và 14:00–18:00; lễ sáng 05:30 và 17:30",
-      "annual_festival": "Lễ Giáng Sinh (24–25/12), Lễ Đức Mẹ Vô Nhiễm (8/12), Phục Sinh"
+      "annual_festival": "Lễ Giáng Sinh (24–25/12), Lễ Đức Mẹ Vô Nhiễm (8/12), Phục Sinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -33985,9 +34148,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34035,7 +34198,8 @@ var items = [
       "admission": "Miễn phí",
       "dress_code": "Mặc áo trắng nếu tham dự lễ; khách tham quan ăn mặc kín đáo",
       "hours": "06:00–17:00; lễ cúng 4 lần/ngày: 06:00, 12:00, 18:00, 24:00",
-      "annual_festival": "Lễ Vía Đức Chí Tôn (9/1 âm lịch), Hội Yến Diêu Trì Cung (15/8 âm lịch)"
+      "annual_festival": "Lễ Vía Đức Chí Tôn (9/1 âm lịch), Hội Yến Diêu Trì Cung (15/8 âm lịch)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -34052,9 +34216,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34103,7 +34267,8 @@ var items = [
       "best_time": "sáng",
       "type": "cà phê",
       "vibe": "cổ điển",
-      "instagram_worthy": "yes"
+      "instagram_worthy": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -34120,9 +34285,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34171,7 +34336,8 @@ var items = [
       "best_time": "sáng",
       "type": "cà phê",
       "vibe": "bờ sông",
-      "instagram_worthy": "yes"
+      "instagram_worthy": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -34188,9 +34354,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34239,7 +34405,8 @@ var items = [
       "best_time": "sáng",
       "type": "cà phê",
       "vibe": "sân vườn",
-      "instagram_worthy": "yes"
+      "instagram_worthy": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -34256,9 +34423,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34307,7 +34474,8 @@ var items = [
       "best_time": "sáng",
       "type": "cà phê",
       "vibe": "cổ điển",
-      "instagram_worthy": "no"
+      "instagram_worthy": "no",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -34324,9 +34492,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34375,7 +34543,8 @@ var items = [
       "best_time": "chiều",
       "type": "cà phê",
       "vibe": "hiện đại",
-      "instagram_worthy": "yes"
+      "instagram_worthy": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -34392,9 +34561,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34443,7 +34612,8 @@ var items = [
       "best_time": "chiều",
       "type": "chè",
       "vibe": "cổ điển",
-      "instagram_worthy": "no"
+      "instagram_worthy": "no",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -34460,9 +34630,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34511,7 +34681,8 @@ var items = [
       "best_time": "sáng",
       "type": "bánh",
       "vibe": "cổ điển",
-      "instagram_worthy": "no"
+      "instagram_worthy": "no",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -34520,17 +34691,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.254177,
-      105.9627693
+      10.0964974,
+      106.1854829
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34579,7 +34750,8 @@ var items = [
       "best_time": "chiều",
       "type": "kem",
       "vibe": "cổ điển",
-      "instagram_worthy": "no"
+      "instagram_worthy": "no",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -34596,9 +34768,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34647,7 +34819,8 @@ var items = [
       "best_time": "chiều",
       "type": "sinh tố",
       "vibe": "hiện đại",
-      "instagram_worthy": "yes"
+      "instagram_worthy": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -34664,9 +34837,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34715,7 +34888,8 @@ var items = [
       "best_time": "tối",
       "type": "chè",
       "vibe": "hiện đại",
-      "instagram_worthy": "yes"
+      "instagram_worthy": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -34732,9 +34906,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34780,7 +34954,8 @@ var items = [
       "price_range": "30.000 – 70.000 VND (lẩu chay 120.000 – 230.000 VND)",
       "specialty": "Cơm chay phần, lẩu chay đồng bằng, bánh canh chay; không gian rộng phù hợp nhóm đông",
       "food_type": "chay Phật giáo",
-      "vegan_friendly": "yes"
+      "vegan_friendly": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -34797,9 +34972,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34845,7 +35020,8 @@ var items = [
       "price_range": "20.000 – 50.000 VND",
       "specialty": "Cơm chay thực đơn thay đổi hàng ngày; đặc biệt đông khách ngày rằm và mồng một",
       "food_type": "chay",
-      "vegan_friendly": "yes"
+      "vegan_friendly": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -34862,9 +35038,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34910,7 +35086,8 @@ var items = [
       "price_range": "10.000 – 160.000 VND",
       "specialty": "Bún chay, cơm chay, chè chay; mở sớm nhất khu vực, phù hợp điểm tâm buổi sáng",
       "food_type": "chay Phật giáo",
-      "vegan_friendly": "yes"
+      "vegan_friendly": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -34927,9 +35104,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34975,7 +35152,8 @@ var items = [
       "price_range": "25.000 – 60.000 VND",
       "specialty": "Cơm chay phần, canh chua chay, cá kho chay kiểu miền Tây; không gian sạch sẽ, phục vụ nhiệt tình",
       "food_type": "chay",
-      "vegan_friendly": "yes"
+      "vegan_friendly": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -34992,9 +35170,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35040,7 +35218,8 @@ var items = [
       "price_range": "35.000 – 70.000 VND",
       "specialty": "Mì tàu nước, mì khô kiểu người Hoa; xá xíu tự làm, hoành thánh, hủ tiếu mì",
       "food_type": "Hoa",
-      "vegan_friendly": "no"
+      "vegan_friendly": "no",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -35057,9 +35236,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35108,7 +35287,8 @@ var items = [
       "instagram_worthy": "yes",
       "vibe": "cổ điển",
       "wifi": "yes",
-      "best_time": "sáng"
+      "best_time": "sáng",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -35117,17 +35297,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35176,7 +35356,8 @@ var items = [
       "instagram_worthy": "no",
       "vibe": "bình dân chợ",
       "wifi": "no",
-      "best_time": "sáng"
+      "best_time": "sáng",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -35185,17 +35366,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35244,7 +35425,8 @@ var items = [
       "instagram_worthy": "yes",
       "vibe": "bờ sông",
       "wifi": "yes",
-      "best_time": "chiều"
+      "best_time": "chiều",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -35253,17 +35435,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35312,7 +35494,8 @@ var items = [
       "instagram_worthy": "yes",
       "vibe": "sân vườn gần hồ",
       "wifi": "no",
-      "best_time": "chiều"
+      "best_time": "chiều",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -35321,17 +35504,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9333987,
+      106.3121888
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35380,7 +35563,8 @@ var items = [
       "instagram_worthy": "yes",
       "vibe": "sân vườn",
       "wifi": "no",
-      "best_time": "sáng"
+      "best_time": "sáng",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -35389,17 +35573,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9464031,
+      106.3679964
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35448,7 +35632,8 @@ var items = [
       "instagram_worthy": "no",
       "vibe": "hiện đại bình dân",
       "wifi": "no",
-      "best_time": "chiều"
+      "best_time": "chiều",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -35465,9 +35650,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35516,7 +35701,8 @@ var items = [
       "instagram_worthy": "yes",
       "vibe": "cổ điển gần chùa Khmer",
       "wifi": "no",
-      "best_time": "sáng"
+      "best_time": "sáng",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -35525,17 +35711,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9333987,
+      106.3121888
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35584,7 +35770,8 @@ var items = [
       "instagram_worthy": "yes",
       "vibe": "cổ điển, dưới bóng cây lớn",
       "wifi": "yes",
-      "best_time": "sáng"
+      "best_time": "sáng",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -35593,17 +35780,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9762521,
+      106.3445798
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35652,7 +35839,8 @@ var items = [
       "instagram_worthy": "no",
       "vibe": "phố đêm sầm uất",
       "wifi": "no",
-      "best_time": "tối"
+      "best_time": "tối",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -35669,9 +35857,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35720,7 +35908,8 @@ var items = [
       "instagram_worthy": "yes",
       "vibe": "sân vườn ven hồ",
       "wifi": "yes",
-      "best_time": "chiều"
+      "best_time": "chiều",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -35737,9 +35926,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35785,7 +35974,8 @@ var items = [
       "price_range": "15.000 - 35.000 VND",
       "specialty": "Cơm chay, bún chay, các món từ đậu hũ và rau củ theo truyền thống Phật giáo",
       "food_type": "chay Phật giáo",
-      "vegan_friendly": "yes"
+      "vegan_friendly": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -35802,9 +35992,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35850,7 +36040,8 @@ var items = [
       "price_range": "20.000 - 40.000 VND",
       "specialty": "Cháo cá rô đồng theo kiểu nấu dân tộc Khmer, cháo bắp, bánh tét lá cẩm",
       "food_type": "Khmer",
-      "vegan_friendly": "no"
+      "vegan_friendly": "no",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -35859,17 +36050,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.8715789,
+      106.089896
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35915,7 +36106,8 @@ var items = [
       "price_range": "30.000 - 55.000 VND",
       "specialty": "Hủ tiếu khô kiểu Tiều (Triều Châu), xíu mại, hoành thánh chiên",
       "food_type": "Hoa",
-      "vegan_friendly": "no"
+      "vegan_friendly": "no",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -35924,17 +36116,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35980,7 +36172,8 @@ var items = [
       "price_range": "25.000 - 50.000 VND",
       "specialty": "Bánh canh nước dừa kiểu Khmer, bún mắm kèm rau đồng, bánh tét nhân chuối",
       "food_type": "Khmer",
-      "vegan_friendly": "no"
+      "vegan_friendly": "no",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -35997,9 +36190,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36045,7 +36238,8 @@ var items = [
       "price_range": "15.000 - 30.000 VND",
       "specialty": "Cơm chay, canh chua chay, đậu hũ kho sả ớt theo kiểu Phật tử Khmer",
       "food_type": "chay Phật giáo",
-      "vegan_friendly": "yes"
+      "vegan_friendly": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -36054,17 +36248,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36110,7 +36304,8 @@ var items = [
       "price_range": "50.000 - 120.000 VND/người",
       "specialty": "Lẩu mắm bò hóc kiểu Khmer, gỏi cuốn tép đất, mắm kho quẹt ăn rau đồng",
       "food_type": "Khmer",
-      "vegan_friendly": "no"
+      "vegan_friendly": "no",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -36119,17 +36314,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0260222,
-      106.2929946
+      9.8402585,
+      106.1728568
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36175,7 +36370,8 @@ var items = [
       "price_range": "10.000 - 25.000 VND",
       "specialty": "Bún chay, xôi chay, bánh bèo chay, nước uống thảo dược",
       "food_type": "chay Phật giáo",
-      "vegan_friendly": "yes"
+      "vegan_friendly": "yes",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -36192,9 +36388,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36230,7 +36426,8 @@ var items = [
       "area": "vinh-long",
       "category": "su-kien",
       "date_start": "2026-04-28",
-      "date_end": "2026-05-02"
+      "date_end": "2026-05-02",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -36247,9 +36444,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36288,7 +36485,8 @@ var items = [
       "area": "vinh-long",
       "category": "su-kien",
       "date_start": "2026-02-10",
-      "date_end": "2026-02-16"
+      "date_end": "2026-02-16",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -36305,9 +36503,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36342,7 +36540,8 @@ var items = [
       "area": "vinh-long",
       "category": "su-kien",
       "date_start": "2026-07-15",
-      "date_end": "2026-07-22"
+      "date_end": "2026-07-22",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -36359,9 +36558,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36400,7 +36599,8 @@ var items = [
       "area": "ben-tre",
       "category": "su-kien",
       "date_start": "2026-07-10",
-      "date_end": "2026-07-12"
+      "date_end": "2026-07-12",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -36417,9 +36617,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36457,7 +36657,8 @@ var items = [
       "area": "vinh-long",
       "category": "su-kien",
       "date_start": "2026-11-20",
-      "date_end": "2026-11-25"
+      "date_end": "2026-11-25",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -36474,9 +36675,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36511,7 +36712,8 @@ var items = [
       "area": "vinh-long",
       "category": "su-kien",
       "date_start": "2026-10-15",
-      "date_end": "2026-10-20"
+      "date_end": "2026-10-20",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -36528,9 +36730,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36565,7 +36767,8 @@ var items = [
       "area": "ben-tre",
       "category": "su-kien",
       "date_start": "2026-07-20",
-      "date_end": "2026-07-25"
+      "date_end": "2026-07-25",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -36582,9 +36785,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36619,7 +36822,8 @@ var items = [
       "area": "tra-vinh",
       "category": "su-kien",
       "date_start": "2026-08-15",
-      "date_end": "2026-08-20"
+      "date_end": "2026-08-20",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -36636,9 +36840,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36673,7 +36877,8 @@ var items = [
       "area": "ben-tre",
       "category": "su-kien",
       "date_start": "2026-09-20",
-      "date_end": "2026-09-25"
+      "date_end": "2026-09-25",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -36690,9 +36895,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36727,7 +36932,8 @@ var items = [
       "area": "vinh-long",
       "category": "su-kien",
       "date_start": "2026-10-25",
-      "date_end": "2026-10-30"
+      "date_end": "2026-10-30",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -36744,9 +36950,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36781,7 +36987,8 @@ var items = [
       "area": "tra-vinh",
       "category": "su-kien",
       "date_start": "2026-08-10",
-      "date_end": "2026-08-15"
+      "date_end": "2026-08-15",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -36798,9 +37005,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36843,7 +37050,8 @@ var items = [
       "risk": "Cần xây lịch thường niên và hệ thống gian hàng chất lượng, tránh trùng lặp hội chợ.",
       "tour": "Làm điểm đêm/điểm sự kiện cho tuyến Bến Tre, ghép Cồn Phụng - Lan Vương.",
       "source_corpus": "https://baovinhlong.com.vn/kinh-te/thuong-mai-dich-vu/202606/khai-mac-tuan-le-van-hoa-du-lich-am-thuc-banh-dan-gian-nam-bo-vi-ngon-xu-dua-phuong-an-hoi-ce310af/",
-      "source_official": "https://vietnamtourism.gov.vn/post/62273"
+      "source_official": "https://vietnamtourism.gov.vn/post/62273",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -36860,9 +37068,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36897,7 +37105,8 @@ var items = [
       "area": "tra-vinh",
       "category": "su-kien",
       "date_start": "2026-11-20",
-      "date_end": "2026-11-24"
+      "date_end": "2026-11-24",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -36914,9 +37123,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36951,7 +37160,8 @@ var items = [
       "area": "vinh-long",
       "category": "su-kien",
       "date_start": "2026-03-08",
-      "date_end": "2026-03-08"
+      "date_end": "2026-03-08",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -36968,9 +37178,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37007,7 +37217,8 @@ var items = [
       "area": "vinh-long",
       "category": "su-kien",
       "date_start": "2026-05-15",
-      "date_end": "2026-05-17"
+      "date_end": "2026-05-17",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -37024,9 +37235,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37061,7 +37272,8 @@ var items = [
       "area": "ben-tre",
       "category": "su-kien",
       "date_start": "2026-04-05",
-      "date_end": "2026-04-05"
+      "date_end": "2026-04-05",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -37078,9 +37290,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37115,7 +37327,8 @@ var items = [
       "area": "tra-vinh",
       "category": "su-kien",
       "date_start": "2026-03-22",
-      "date_end": "2026-03-22"
+      "date_end": "2026-03-22",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -37132,9 +37345,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37169,7 +37382,8 @@ var items = [
       "area": "tra-vinh",
       "category": "su-kien",
       "date_start": "2026-09-01",
-      "date_end": "2026-09-03"
+      "date_end": "2026-09-03",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -37186,9 +37400,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37223,7 +37437,8 @@ var items = [
       "area": "ben-tre",
       "category": "su-kien",
       "date_start": "2026-05-10",
-      "date_end": "2026-05-15"
+      "date_end": "2026-05-15",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -37240,9 +37455,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37277,7 +37492,8 @@ var items = [
       "area": "ben-tre",
       "category": "su-kien",
       "date_start": "2026-10-05",
-      "date_end": "2026-10-07"
+      "date_end": "2026-10-07",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -37294,9 +37510,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37331,7 +37547,8 @@ var items = [
       "area": "tra-vinh",
       "category": "su-kien",
       "date_start": "2026-08-01",
-      "date_end": "2026-08-03"
+      "date_end": "2026-08-03",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -37348,9 +37565,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37388,7 +37605,8 @@ var items = [
       "category": "le-hoi",
       "date_start": "2026-11-22",
       "date_end": "2026-11-24",
-      "lunar_date": "Rằm tháng 10 âm lịch (dịp Ok Om Bok)"
+      "lunar_date": "Rằm tháng 10 âm lịch (dịp Ok Om Bok)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -37405,9 +37623,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37445,7 +37663,8 @@ var items = [
       "category": "le-hoi",
       "date_start": "2026-11-22",
       "date_end": "2026-11-24",
-      "lunar_date": "Rằm tháng 10 âm lịch (dịp Ok Om Bok)"
+      "lunar_date": "Rằm tháng 10 âm lịch (dịp Ok Om Bok)",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -37462,9 +37681,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37499,7 +37718,8 @@ var items = [
     },
     "attributes": {
       "ocop": "4 sao",
-      "price": "60.000–120.000đ/trái"
+      "price": "60.000–120.000đ/trái",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -37509,17 +37729,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.8555412,
-      106.081416
+      9.8715789,
+      106.089896
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37567,9 +37787,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37628,9 +37848,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37687,9 +37907,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37720,9 +37940,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37760,7 +37980,8 @@ var items = [
     },
     "attributes": {
       "price": "500.000-1.200.000 VND/phòng/đêm",
-      "address": "Tỉnh Trà Vinh"
+      "address": "Tỉnh Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -37778,9 +37999,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37833,9 +38054,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37865,9 +38086,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37897,9 +38118,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37952,9 +38173,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37974,7 +38195,8 @@ var items = [
       ],
       "best_time": "Thứ 3–Thứ 5, sáng sớm",
       "budget_range": "485.000–550.000 VNĐ/người",
-      "content": "# Vĩnh Long 1 ngày – Cù lao + Chợ nổi\n**Đối tượng:** Backpacker | **Xuất phát:** TP.HCM | **Ngày:** 1 ngày\n\n---\n\n## Di chuyển tổng quan\n\n- **TP.HCM → Vĩnh Long:** Xe khách Phương Trang hoặc Mekong Express tại bến Miền Tây, ~2 tiếng, 80.000–100.000 VNĐ/chiều\n- **Phà Đình Khao:** Qua sông Cổ Chiên sang cù lao, 5.000 VNĐ/người + xe máy 10.000 VNĐ (nếu thuê xe máy tại bến ~100.000 VNĐ/ngày)\n\n---\n\n## Lịch trình chi tiết\n\n### 5:00 – Xuất phát từ TP.HCM\nBắt xe khách tại bến Miền Tây (Q. Bình Tân). Đặt vé trước qua app, chọn chuyến 5h–5h30.\n> Chi phí: 90.000 VNĐ/chiều\n\n### 7:00 – Đến bến xe Vĩnh Long, bắt xe ôm/grab ra bến phà Đình Khao\nKhoảng 3 km từ bến xe. Ghé ăn sáng bún nước lèo hoặc hủ tiếu Nam Vang ngay khu bến.\n> Chi phí: Ăn sáng 30.000–40.000 VNĐ | Grab/xe ôm 15.000 VNĐ\n\n### 7:30 – Phà Đình Khao sang cù lao Bình Hòa Phước\nPhà chạy liên tục 5–10 phút/chuyến. Sang đảo thuê xe đạp hoặc đi bộ khám phá.\n> Chi phí: Phà 5.000 VNĐ | Xe đạp thuê 50.000 VNĐ/ngày\n\n### 8:00–10:00 – Vườn trái cây + đò chèo kênh rạch\nGhé vườn trái cây nhà dân (bưởi năm roi, xoài, nhãn) – mua tại vườn giá rẻ hơn ngoài chợ. Thuê đò chèo luồn kênh rạch nhỏ, ngắm dừa nước, cầu khỉ.\n> Chi phí: Vào vườn + trái cây ~50.000 VNĐ | Đò chèo 60.000–80.000 VNĐ/người (nhóm 2–4 giảm giá)\n> *Ghi chú: Mặc cả nhẹ với chủ đò, nên đi buổi sáng sớm trước khi nắng to*\n\n### 10:30 – Gốm Mang Thít (di chuyển ~20 km)\nLàng gốm đỏ nổi tiếng nhất miền Tây, lò gốm cổ hàng trăm năm tuổi đang được bảo tồn. Chụp ảnh check-in, xem thợ làm gốm thủ công.\n> Chi phí: Miễn phí tham quan | Mua gốm lưu niệm nhỏ 20.000–50.000 VNĐ\n> *Ghi chú: Vào trong lò gốm cũ cần hỏi chủ nhà, đa số họ vui lòng cho vào*\n\n### 12:30 – Cơm trưa tại chợ Mang Thít\nCơm bình dân đặc sản: cá lóc nướng trui, canh chua bông so đũa, mắm kho.\n> Chi phí: 60.000–80.000 VNĐ/người\n\n### 14:00 – Chợ nổi Cái Bè (Tiền Giang, cách ~15 km)\nChợ nổi còn hoạt động buổi sáng–chiều, thuê xuồng máy ra giữa sông ngắm ghe hàng. Buổi chiều ít người hơn sáng nhưng vẫn có ghe bán trái cây.\n> Chi phí: Thuê xuồng 100.000–120.000 VNĐ/người (nhóm 3–5 người)\n> *Ghi chú: Không mua hàng trên xuồng nếu không hỏi giá trước*\n\n### 16:00 – Ra bến xe Vĩnh Long, về TP.HCM\nGrab/xe ôm ra bến, bắt xe 16h30–17h.\n> Chi phí: 90.000 VNĐ/chiều | Về đến TP.HCM ~19h–19h30\n\n---\n\n## Tổng chi phí ước tính\n\n| Khoản mục | Chi phí |\n|---|---|\n| Xe khách 2 chiều | 180.000 VNĐ |\n| Phà + xe đạp | 55.000 VNĐ |\n| Ăn uống (sáng + trưa + nước) | 100.000 VNĐ |\n| Đò chèo + xuồng máy | 100.000 VNĐ |\n| Vườn trái cây + linh tinh | 50.000 VNĐ |\n| **Tổng** | **~485.000–550.000 VNĐ** |\n\n---\n\n## Tips thực tế\n\n- Mang theo tiền lẻ mệnh giá nhỏ (5k, 10k, 20k) cho phà và chợ\n- Kem chống nắng và mũ rộng vành bắt buộc – nắng miền Tây rất gắt từ 9h\n- Không cần đặt tour, đi tự do linh hoạt hơn và rẻ hơn 30–40%\n- Cuối tuần vui hơn ngày thường nhưng đông khách hơn, nên đi thứ 3–5\n- Số điện thoại đò chèo cù lao Bình Hòa Phước: hỏi chủ homestay hoặc người dân bến phà"
+      "content": "# Vĩnh Long 1 ngày – Cù lao + Chợ nổi\n**Đối tượng:** Backpacker | **Xuất phát:** TP.HCM | **Ngày:** 1 ngày\n\n---\n\n## Di chuyển tổng quan\n\n- **TP.HCM → Vĩnh Long:** Xe khách Phương Trang hoặc Mekong Express tại bến Miền Tây, ~2 tiếng, 80.000–100.000 VNĐ/chiều\n- **Phà Đình Khao:** Qua sông Cổ Chiên sang cù lao, 5.000 VNĐ/người + xe máy 10.000 VNĐ (nếu thuê xe máy tại bến ~100.000 VNĐ/ngày)\n\n---\n\n## Lịch trình chi tiết\n\n### 5:00 – Xuất phát từ TP.HCM\nBắt xe khách tại bến Miền Tây (Q. Bình Tân). Đặt vé trước qua app, chọn chuyến 5h–5h30.\n> Chi phí: 90.000 VNĐ/chiều\n\n### 7:00 – Đến bến xe Vĩnh Long, bắt xe ôm/grab ra bến phà Đình Khao\nKhoảng 3 km từ bến xe. Ghé ăn sáng bún nước lèo hoặc hủ tiếu Nam Vang ngay khu bến.\n> Chi phí: Ăn sáng 30.000–40.000 VNĐ | Grab/xe ôm 15.000 VNĐ\n\n### 7:30 – Phà Đình Khao sang cù lao Bình Hòa Phước\nPhà chạy liên tục 5–10 phút/chuyến. Sang đảo thuê xe đạp hoặc đi bộ khám phá.\n> Chi phí: Phà 5.000 VNĐ | Xe đạp thuê 50.000 VNĐ/ngày\n\n### 8:00–10:00 – Vườn trái cây + đò chèo kênh rạch\nGhé vườn trái cây nhà dân (bưởi năm roi, xoài, nhãn) – mua tại vườn giá rẻ hơn ngoài chợ. Thuê đò chèo luồn kênh rạch nhỏ, ngắm dừa nước, cầu khỉ.\n> Chi phí: Vào vườn + trái cây ~50.000 VNĐ | Đò chèo 60.000–80.000 VNĐ/người (nhóm 2–4 giảm giá)\n> *Ghi chú: Mặc cả nhẹ với chủ đò, nên đi buổi sáng sớm trước khi nắng to*\n\n### 10:30 – Gốm Mang Thít (di chuyển ~20 km)\nLàng gốm đỏ nổi tiếng nhất miền Tây, lò gốm cổ hàng trăm năm tuổi đang được bảo tồn. Chụp ảnh check-in, xem thợ làm gốm thủ công.\n> Chi phí: Miễn phí tham quan | Mua gốm lưu niệm nhỏ 20.000–50.000 VNĐ\n> *Ghi chú: Vào trong lò gốm cũ cần hỏi chủ nhà, đa số họ vui lòng cho vào*\n\n### 12:30 – Cơm trưa tại chợ Mang Thít\nCơm bình dân đặc sản: cá lóc nướng trui, canh chua bông so đũa, mắm kho.\n> Chi phí: 60.000–80.000 VNĐ/người\n\n### 14:00 – Chợ nổi Cái Bè (Tiền Giang, cách ~15 km)\nChợ nổi còn hoạt động buổi sáng–chiều, thuê xuồng máy ra giữa sông ngắm ghe hàng. Buổi chiều ít người hơn sáng nhưng vẫn có ghe bán trái cây.\n> Chi phí: Thuê xuồng 100.000–120.000 VNĐ/người (nhóm 3–5 người)\n> *Ghi chú: Không mua hàng trên xuồng nếu không hỏi giá trước*\n\n### 16:00 – Ra bến xe Vĩnh Long, về TP.HCM\nGrab/xe ôm ra bến, bắt xe 16h30–17h.\n> Chi phí: 90.000 VNĐ/chiều | Về đến TP.HCM ~19h–19h30\n\n---\n\n## Tổng chi phí ước tính\n\n| Khoản mục | Chi phí |\n|---|---|\n| Xe khách 2 chiều | 180.000 VNĐ |\n| Phà + xe đạp | 55.000 VNĐ |\n| Ăn uống (sáng + trưa + nước) | 100.000 VNĐ |\n| Đò chèo + xuồng máy | 100.000 VNĐ |\n| Vườn trái cây + linh tinh | 50.000 VNĐ |\n| **Tổng** | **~485.000–550.000 VNĐ** |\n\n---\n\n## Tips thực tế\n\n- Mang theo tiền lẻ mệnh giá nhỏ (5k, 10k, 20k) cho phà và chợ\n- Kem chống nắng và mũ rộng vành bắt buộc – nắng miền Tây rất gắt từ 9h\n- Không cần đặt tour, đi tự do linh hoạt hơn và rẻ hơn 30–40%\n- Cuối tuần vui hơn ngày thường nhưng đông khách hơn, nên đi thứ 3–5\n- Số điện thoại đò chèo cù lao Bình Hòa Phước: hỏi chủ homestay hoặc người dân bến phà",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -37991,9 +38213,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38005,7 +38227,8 @@ var items = [
     "confidence": 1.0,
     "season": null,
     "attributes": {
-      "content": "# Bến Tre 2 ngày – Cặp đôi lãng mạn\n\n## Di chuyển đến Bến Tre\n- **Từ TP.HCM:** Xe khách Phương Trang tại bến Miền Tây → Bến Tre (~2,5 giờ)\n- **Chi phí:** 80.000–120.000đ/người (2 chiều)\n- **Mẹo:** Đặt vé sớm cuối tuần, khởi hành 6:00–7:00 để tránh kẹt xa lộ Hà Nội\n\n---\n\n## Ngày 1 – Sông nước & vườn dừa\n\n**07:00** – Đến Bến Tre, ăn sáng tại quán địa phương\n- Bún cá, bánh mì thịt nướng đặc sản\n- **Chi phí:** 40.000–60.000đ/2 người\n\n**09:00** – **Cồn Phụng** *(Cù lao Phụng, xã Tân Thạch)*\n- Thuê thuyền đưa cặp đôi len lỏi kênh rạch, chụp ảnh giữa rừng dừa nước xanh rì\n- **Chi phí:** 150.000đ/thuyền (30 phút), vé vào cồn ~50.000đ/người\n- **Ghi chú:** Mặc đồ sáng màu, mang kem chống nắng; buổi sáng ánh sáng đẹp nhất để chụp ảnh\n\n**11:00** – **Vườn dừa Bến Tre** *(khu vực Châu Thành)*\n- Dạo vườn, hái dừa uống tươi, chụp ảnh couple giữa hàng dừa thẳng tắp\n- **Chi phí:** 50.000đ/người (vào vườn có hướng dẫn)\n\n**12:30** – Trưa tại nhà hàng trên sông\n- Cá tai tượng chiên xù, lẩu mắm, tôm nướng muối ớt\n- **Chi phí:** 300.000–400.000đ/2 người\n\n**14:30** – **Làng nghề kẹo dừa Mỏ Cày**\n- Xem thợ làm kẹo thủ công, mua kẹo dừa sầu riêng, ca cao, lá dứa làm quà\n- **Chi phí:** Mua kẹo ~100.000–200.000đ/túi tùy loại\n- **Ghi chú:** Hỏi thử trước khi mua; xưởng Thanh Long và Duy Loan uy tín\n\n**17:00** – Nhận phòng **Homestay nhà vườn**\n- Gợi ý: Mekong Homestay hoặc Sân Vườn Bến Tre (khu Châu Thành)\n- **Chi phí:** 500.000–800.000đ/đêm/phòng đôi\n- **Ghi chú:** Đặt trước ít nhất 3 ngày cuối tuần; chọn phòng view sông\n\n**19:00** – Tối lãng mạn tại homestay\n- Chủ nhà nấu cơm miền Tây theo yêu cầu, ngồi võng ngắm đom đóm\n- **Chi phí:** 200.000–300.000đ/bữa\n\n---\n\n## Ngày 2 – Bình minh & thiên nhiên\n\n**05:30** – **Sân chim Vàm Hồ** *(huyện Ba Tri)*\n- Đón bình minh, ngắm hàng ngàn cò, vạc bay về tổ – khoảnh khắc lãng mạn không thể quên\n- **Chi phí:** Vé vào 40.000đ/người + thuyền tham quan 120.000đ/thuyền\n- **Ghi chú:** Phải có mặt trước 6:00 để thấy chim nhiều nhất; mang áo khoác vì sáng sớm lạnh\n\n**08:30** – Ăn sáng gần Vàm Hồ\n- Bánh canh Bến Tre, cháo vịt đặc sản Ba Tri\n- **Chi phí:** 50.000–70.000đ/2 người\n\n**10:00** – Mua sắm & về TP.HCM\n- Ghé chợ Bến Tre mua: kẹo dừa, mắm còng, bánh phồng, trái cây\n- **Chi phí:** 200.000–500.000đ tùy mua sắm\n\n---\n\n## Tổng chi phí ước tính (2 người / 2 ngày)\n\n| Hạng mục | Chi phí |\n|---|---|\n| Xe khách khứ hồi | 320.000đ |\n| Lưu trú (1 đêm) | 700.000đ |\n| Ăn uống | 800.000đ |\n| Tham quan & thuyền | 560.000đ |\n| Mua sắm quà | 300.000đ |\n| **Tổng cộng** | **~2.700.000đ** |\n\n---\n\n## Tips dành cho cặp đôi\n- Đi vào **tháng 1–4** (mùa khô) để thời tiết dễ chịu, ít mưa\n- Thuê **xe máy điện** tại Bến Tre để tự do khám phá (~100.000đ/ngày)\n- Mang **máy ảnh hoặc gimbal** – ánh sáng vườn dừa lúc 8–10 giờ sáng cực đẹp\n- Báo homestay trước nếu muốn **bữa tối riêng tư** ngoài vườn theo phong cách \"candlelight\""
+      "content": "# Bến Tre 2 ngày – Cặp đôi lãng mạn\n\n## Di chuyển đến Bến Tre\n- **Từ TP.HCM:** Xe khách Phương Trang tại bến Miền Tây → Bến Tre (~2,5 giờ)\n- **Chi phí:** 80.000–120.000đ/người (2 chiều)\n- **Mẹo:** Đặt vé sớm cuối tuần, khởi hành 6:00–7:00 để tránh kẹt xa lộ Hà Nội\n\n---\n\n## Ngày 1 – Sông nước & vườn dừa\n\n**07:00** – Đến Bến Tre, ăn sáng tại quán địa phương\n- Bún cá, bánh mì thịt nướng đặc sản\n- **Chi phí:** 40.000–60.000đ/2 người\n\n**09:00** – **Cồn Phụng** *(Cù lao Phụng, xã Tân Thạch)*\n- Thuê thuyền đưa cặp đôi len lỏi kênh rạch, chụp ảnh giữa rừng dừa nước xanh rì\n- **Chi phí:** 150.000đ/thuyền (30 phút), vé vào cồn ~50.000đ/người\n- **Ghi chú:** Mặc đồ sáng màu, mang kem chống nắng; buổi sáng ánh sáng đẹp nhất để chụp ảnh\n\n**11:00** – **Vườn dừa Bến Tre** *(khu vực Châu Thành)*\n- Dạo vườn, hái dừa uống tươi, chụp ảnh couple giữa hàng dừa thẳng tắp\n- **Chi phí:** 50.000đ/người (vào vườn có hướng dẫn)\n\n**12:30** – Trưa tại nhà hàng trên sông\n- Cá tai tượng chiên xù, lẩu mắm, tôm nướng muối ớt\n- **Chi phí:** 300.000–400.000đ/2 người\n\n**14:30** – **Làng nghề kẹo dừa Mỏ Cày**\n- Xem thợ làm kẹo thủ công, mua kẹo dừa sầu riêng, ca cao, lá dứa làm quà\n- **Chi phí:** Mua kẹo ~100.000–200.000đ/túi tùy loại\n- **Ghi chú:** Hỏi thử trước khi mua; xưởng Thanh Long và Duy Loan uy tín\n\n**17:00** – Nhận phòng **Homestay nhà vườn**\n- Gợi ý: Mekong Homestay hoặc Sân Vườn Bến Tre (khu Châu Thành)\n- **Chi phí:** 500.000–800.000đ/đêm/phòng đôi\n- **Ghi chú:** Đặt trước ít nhất 3 ngày cuối tuần; chọn phòng view sông\n\n**19:00** – Tối lãng mạn tại homestay\n- Chủ nhà nấu cơm miền Tây theo yêu cầu, ngồi võng ngắm đom đóm\n- **Chi phí:** 200.000–300.000đ/bữa\n\n---\n\n## Ngày 2 – Bình minh & thiên nhiên\n\n**05:30** – **Sân chim Vàm Hồ** *(huyện Ba Tri)*\n- Đón bình minh, ngắm hàng ngàn cò, vạc bay về tổ – khoảnh khắc lãng mạn không thể quên\n- **Chi phí:** Vé vào 40.000đ/người + thuyền tham quan 120.000đ/thuyền\n- **Ghi chú:** Phải có mặt trước 6:00 để thấy chim nhiều nhất; mang áo khoác vì sáng sớm lạnh\n\n**08:30** – Ăn sáng gần Vàm Hồ\n- Bánh canh Bến Tre, cháo vịt đặc sản Ba Tri\n- **Chi phí:** 50.000–70.000đ/2 người\n\n**10:00** – Mua sắm & về TP.HCM\n- Ghé chợ Bến Tre mua: kẹo dừa, mắm còng, bánh phồng, trái cây\n- **Chi phí:** 200.000–500.000đ tùy mua sắm\n\n---\n\n## Tổng chi phí ước tính (2 người / 2 ngày)\n\n| Hạng mục | Chi phí |\n|---|---|\n| Xe khách khứ hồi | 320.000đ |\n| Lưu trú (1 đêm) | 700.000đ |\n| Ăn uống | 800.000đ |\n| Tham quan & thuyền | 560.000đ |\n| Mua sắm quà | 300.000đ |\n| **Tổng cộng** | **~2.700.000đ** |\n\n---\n\n## Tips dành cho cặp đôi\n- Đi vào **tháng 1–4** (mùa khô) để thời tiết dễ chịu, ít mưa\n- Thuê **xe máy điện** tại Bến Tre để tự do khám phá (~100.000đ/ngày)\n- Mang **máy ảnh hoặc gimbal** – ánh sáng vườn dừa lúc 8–10 giờ sáng cực đẹp\n- Báo homestay trước nếu muốn **bữa tối riêng tư** ngoài vườn theo phong cách \"candlelight\"",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -38022,9 +38245,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38059,9 +38282,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38096,9 +38319,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38110,7 +38333,8 @@ var items = [
     "confidence": 1.0,
     "season": null,
     "attributes": {
-      "content": "# Trà Vinh 2 Ngày – Văn Hóa Khmer\n\n## Thông tin chung\n- **Xuất phát:** TP. Hồ Chí Minh hoặc Vĩnh Long\n- **Phương tiện:** Xe máy hoặc xe thuê\n- **Đối tượng:** Cặp đôi, gia đình, nhóm bạn yêu văn hóa bản địa\n\n---\n\n## Ngày 1 – Khám Phá Trung Tâm Văn Hóa Khmer\n\n**9:30 – Ao Bà Om & Chùa Âng**\n- Phí vào cửa: **Miễn phí**\n- Ghi chú: Ăn mặc kín đáo khi vào chùa\n\n**11:30 – Bảo tàng Văn hóa Khmer Trà Vinh**\n- Phí vào cửa: **10.000đ/người**\n- Ghi chú: Mở cửa 7:30–11:30 và 13:30–17:00, đóng thứ Hai\n\n**12:30 – Trưa tại Chợ Trà Vinh**\n- Chi phí: **40.000–70.000đ/người**\n- Thử bún nước lèo, bánh tét lá cẩm, chè thốt nốt\n\n**14:30 – Chùa Hang (Kompong Chrây)**\n- Phí vào cửa: **Miễn phí**\n- Ghi chú: Cách trung tâm ~12km\n\n**16:30** – Nhận phòng khách sạn\n- Chi phí: **250.000–400.000đ/đêm**\n\n**19:00 – Ăn tối & dạo phố**\n- Chi phí: **50.000–80.000đ/người**\n\n---\n\n## Ngày 2 – Biển Ba Động & Trở Về\n\n**8:30–12:00 – Biển Ba Động**\n- Bãi biển hoang sơ dài hơn 50km, ít du khách\n- Chi phí hải sản: **100.000–200.000đ/người**\n- Ghi chú: Tốt nhất từ tháng 3–8\n\n---\n\n## Tổng Chi Phí Ước Tính (1 người, 2 ngày)\n\n| Hạng mục | Chi phí |\n|---|---|\n| Di chuyển | 200.000–350.000đ |\n| Lưu trú (1 đêm) | 250.000–400.000đ |\n| Ăn uống (4 bữa) | 200.000–350.000đ |\n| Vé tham quan | 10.000–20.000đ |\n| **Tổng cộng** | **660.000–1.120.000đ** |\n\n---\n\n## Tips Hữu Ích\n- Mang theo trang phục kín khi thăm chùa\n- Thời điểm lý tưởng: tháng 10–11 (lễ Ok Om Bok)\n- Mua nước thốt nốt tươi dọc đường"
+      "content": "# Trà Vinh 2 Ngày – Văn Hóa Khmer\n\n## Thông tin chung\n- **Xuất phát:** TP. Hồ Chí Minh hoặc Vĩnh Long\n- **Phương tiện:** Xe máy hoặc xe thuê\n- **Đối tượng:** Cặp đôi, gia đình, nhóm bạn yêu văn hóa bản địa\n\n---\n\n## Ngày 1 – Khám Phá Trung Tâm Văn Hóa Khmer\n\n**9:30 – Ao Bà Om & Chùa Âng**\n- Phí vào cửa: **Miễn phí**\n- Ghi chú: Ăn mặc kín đáo khi vào chùa\n\n**11:30 – Bảo tàng Văn hóa Khmer Trà Vinh**\n- Phí vào cửa: **10.000đ/người**\n- Ghi chú: Mở cửa 7:30–11:30 và 13:30–17:00, đóng thứ Hai\n\n**12:30 – Trưa tại Chợ Trà Vinh**\n- Chi phí: **40.000–70.000đ/người**\n- Thử bún nước lèo, bánh tét lá cẩm, chè thốt nốt\n\n**14:30 – Chùa Hang (Kompong Chrây)**\n- Phí vào cửa: **Miễn phí**\n- Ghi chú: Cách trung tâm ~12km\n\n**16:30** – Nhận phòng khách sạn\n- Chi phí: **250.000–400.000đ/đêm**\n\n**19:00 – Ăn tối & dạo phố**\n- Chi phí: **50.000–80.000đ/người**\n\n---\n\n## Ngày 2 – Biển Ba Động & Trở Về\n\n**8:30–12:00 – Biển Ba Động**\n- Bãi biển hoang sơ dài hơn 50km, ít du khách\n- Chi phí hải sản: **100.000–200.000đ/người**\n- Ghi chú: Tốt nhất từ tháng 3–8\n\n---\n\n## Tổng Chi Phí Ước Tính (1 người, 2 ngày)\n\n| Hạng mục | Chi phí |\n|---|---|\n| Di chuyển | 200.000–350.000đ |\n| Lưu trú (1 đêm) | 250.000–400.000đ |\n| Ăn uống (4 bữa) | 200.000–350.000đ |\n| Vé tham quan | 10.000–20.000đ |\n| **Tổng cộng** | **660.000–1.120.000đ** |\n\n---\n\n## Tips Hữu Ích\n- Mang theo trang phục kín khi thăm chùa\n- Thời điểm lý tưởng: tháng 10–11 (lễ Ok Om Bok)\n- Mua nước thốt nốt tươi dọc đường",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -38127,9 +38351,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38141,7 +38365,8 @@ var items = [
     "confidence": 1.0,
     "season": null,
     "attributes": {
-      "content": "# Miền Tây Nhiếp ảnh – Chợ nổi, làng gốm, hoàng hôn\n\n**Tuyến:** Vĩnh Long → Trà Ôn → Mang Thít → sông Tiền Giang\n**Thời lượng:** 2 ngày 1 đêm\n\n---\n\n## Ngày 1\n\n### 5:00 – Chợ Nổi Trà Ôn\n- Chi phí: Thuê đò 150.000–200.000 VNĐ/người\n- Ghi chú: Chợ họp sớm nhất 4:30, đông nhất 5:00–6:30. Mang ống kính tele 70–200mm.\n\n### 9:30 – Làng gốm Mang Thít\n- \"Giờ vàng\" chụp lò nung là 9:30–11:00\n- Chi phí: Vào tham quan miễn phí\n\n### 13:00 – Nghỉ trưa, nhận phòng homestay Mang Thít\n- Chi phí: 200.000–350.000 VNĐ/đêm\n\n---\n\n## Ngày 2\n\n### 5:30 – Bình minh ven kênh Thầy Cai\n- Sương mù kênh rạch tạo hiệu ứng \"fog layer\" tự nhiên\n\n### 17:00 – Hoàng hôn sông Tiền Giang (Mỹ Tho hoặc Cồn Thới Sơn)\n- Chi phí: Thuê đò nhỏ 100.000–150.000 VNĐ/người\n\n---\n\n## Tổng Chi Phí\n\n| Hạng mục | Chi phí |\n|---|---|\n| Di chuyển | 300.000–400.000 VNĐ |\n| Đò/ghe (3 lượt) | 350.000–450.000 VNĐ |\n| Ăn uống (2 ngày) | 200.000–300.000 VNĐ |\n| Lưu trú (1 đêm) | 200.000–350.000 VNĐ |\n| **Tổng** | **1.150.000–1.650.000 VNĐ** |\n\n---\n\n## Tips Nhiếp ảnh\n- Bọc túi chống nước khi đi đò\n- Thời điểm lý tưởng: Tháng 11 đến tháng 2\n- Luôn xin phép trước khi chụp người dân"
+      "content": "# Miền Tây Nhiếp ảnh – Chợ nổi, làng gốm, hoàng hôn\n\n**Tuyến:** Vĩnh Long → Trà Ôn → Mang Thít → sông Tiền Giang\n**Thời lượng:** 2 ngày 1 đêm\n\n---\n\n## Ngày 1\n\n### 5:00 – Chợ Nổi Trà Ôn\n- Chi phí: Thuê đò 150.000–200.000 VNĐ/người\n- Ghi chú: Chợ họp sớm nhất 4:30, đông nhất 5:00–6:30. Mang ống kính tele 70–200mm.\n\n### 9:30 – Làng gốm Mang Thít\n- \"Giờ vàng\" chụp lò nung là 9:30–11:00\n- Chi phí: Vào tham quan miễn phí\n\n### 13:00 – Nghỉ trưa, nhận phòng homestay Mang Thít\n- Chi phí: 200.000–350.000 VNĐ/đêm\n\n---\n\n## Ngày 2\n\n### 5:30 – Bình minh ven kênh Thầy Cai\n- Sương mù kênh rạch tạo hiệu ứng \"fog layer\" tự nhiên\n\n### 17:00 – Hoàng hôn sông Tiền Giang (Mỹ Tho hoặc Cồn Thới Sơn)\n- Chi phí: Thuê đò nhỏ 100.000–150.000 VNĐ/người\n\n---\n\n## Tổng Chi Phí\n\n| Hạng mục | Chi phí |\n|---|---|\n| Di chuyển | 300.000–400.000 VNĐ |\n| Đò/ghe (3 lượt) | 350.000–450.000 VNĐ |\n| Ăn uống (2 ngày) | 200.000–300.000 VNĐ |\n| Lưu trú (1 đêm) | 200.000–350.000 VNĐ |\n| **Tổng** | **1.150.000–1.650.000 VNĐ** |\n\n---\n\n## Tips Nhiếp ảnh\n- Bọc túi chống nước khi đi đò\n- Thời điểm lý tưởng: Tháng 11 đến tháng 2\n- Luôn xin phép trước khi chụp người dân",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -38158,9 +38383,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38195,9 +38420,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38209,7 +38434,8 @@ var items = [
     "confidence": 1.0,
     "season": null,
     "attributes": {
-      "content": "# Lễ hội Ok Om Bok – Trà Vinh tháng 10 âm lịch\n\n## Ngày 1 – Khám phá lễ hội và đua ghe ngo\n\n**09:30** – Chùa Âng: Miễn phí, ngôi chùa Khmer cổ hơn 1.500 năm\n\n**13:30** – Hội chợ đặc sản Khmer tại Ao Bà Om\n- Mua sắm 100.000–300.000đ\n\n**15:30** – Đua ghe ngo sông Long Bình\n- Khán đài miễn phí; VIP 50.000–100.000đ\n- Hơn 30 đội ghe từ các chùa Khmer\n\n**19:30** – Lễ cúng trăng (Ok Om Bok) tại Ao Bà Om: Miễn phí\n\n**21:00** – Dạo phố đèn lồng trung tâm TP. Trà Vinh\n\n---\n\n## Ngày 2 – Di tích và về\n\n**07:30** – Bánh canh Bến Có: 35.000–50.000đ\n\n**09:00** – Ao Bà Om & Bảo tàng văn hóa Khmer: 15.000đ/người\n\n---\n\n## Tổng chi phí\n\n| Hạng mục | Chi phí |\n|---|---|\n| Xe khách 2 chiều | 160.000–240.000đ |\n| Khách sạn 1 đêm | 350.000–600.000đ |\n| Ăn uống 2 ngày | 300.000–450.000đ |\n| Mua sắm & đặc sản | 200.000–500.000đ |\n| **Tổng** | **~1.000.000–1.800.000đ/người** |\n\n## Tips\n- Đặt khách sạn trước ít nhất 2 tuần\n- Đua ghe ngo bắt đầu khoảng 14:00–17:00, có mặt trước 1 tiếng\n- Tháng 10 âm lịch có thể có mưa chiều, mang áo mưa"
+      "content": "# Lễ hội Ok Om Bok – Trà Vinh tháng 10 âm lịch\n\n## Ngày 1 – Khám phá lễ hội và đua ghe ngo\n\n**09:30** – Chùa Âng: Miễn phí, ngôi chùa Khmer cổ hơn 1.500 năm\n\n**13:30** – Hội chợ đặc sản Khmer tại Ao Bà Om\n- Mua sắm 100.000–300.000đ\n\n**15:30** – Đua ghe ngo sông Long Bình\n- Khán đài miễn phí; VIP 50.000–100.000đ\n- Hơn 30 đội ghe từ các chùa Khmer\n\n**19:30** – Lễ cúng trăng (Ok Om Bok) tại Ao Bà Om: Miễn phí\n\n**21:00** – Dạo phố đèn lồng trung tâm TP. Trà Vinh\n\n---\n\n## Ngày 2 – Di tích và về\n\n**07:30** – Bánh canh Bến Có: 35.000–50.000đ\n\n**09:00** – Ao Bà Om & Bảo tàng văn hóa Khmer: 15.000đ/người\n\n---\n\n## Tổng chi phí\n\n| Hạng mục | Chi phí |\n|---|---|\n| Xe khách 2 chiều | 160.000–240.000đ |\n| Khách sạn 1 đêm | 350.000–600.000đ |\n| Ăn uống 2 ngày | 300.000–450.000đ |\n| Mua sắm & đặc sản | 200.000–500.000đ |\n| **Tổng** | **~1.000.000–1.800.000đ/người** |\n\n## Tips\n- Đặt khách sạn trước ít nhất 2 tuần\n- Đua ghe ngo bắt đầu khoảng 14:00–17:00, có mặt trước 1 tiếng\n- Tháng 10 âm lịch có thể có mưa chiều, mang áo mưa",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -38226,9 +38452,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38247,7 +38473,8 @@ var items = [
         "Bến Tre"
       ],
       "traveler_type": "Birdwatcher, du lịch sinh thái",
-      "content": "# Bến Tre – Ngắm Chim Vàm Hồ (Tháng 9 – Tháng 3)\n\n| Giờ | Điểm dừng | Chi phí | Ghi chú |\n|-----|-----------|---------|---------|\n| 04:30 | Khởi hành từ TP.HCM / Vĩnh Long | Xe khách ~80.000đ | Bắt xe sớm |\n| 06:00 | **Sân chim Vàm Hồ** (xã Mỹ Hòa, Ba Tri) | Vé vào: 30.000đ/người | Đến trước 5h30; mang ống nhòm |\n| 07:30 | Điểm tâm: cháo cá lóc/bánh mì tại Ba Tri | 25.000–40.000đ | |\n| 09:00 | **Rừng đước Long Khánh** | Thuê xuồng: 150.000–200.000đ/2 người | |\n| 15:00 | **Cồn Phụng** | Đò: 50.000đ khứ hồi | |\n| 17:30 | Xưởng kẹo dừa | Mua hàng: 50.000–150.000đ | |\n| 20:30 | Nhận phòng homestay | 200.000–350.000đ/đêm | |\n\n## Tổng Chi Phí (1 người)\n\n| Khoản mục | Chi phí |\n|-----------|---------|\n| Di chuyển | ~250.000đ |\n| Vé + thuê xuồng | ~200.000đ |\n| Ăn uống (3 bữa) | ~280.000đ |\n| Lưu trú 1 đêm | ~280.000đ |\n| **Tổng** | **~1.100.000đ** |\n\n## Tips\n- Mang ống nhòm (loại 8x42 trở lên) – bắt buộc\n- Mặc quần áo tối màu\n- Sân chim đông nhất lúc **5h00–6h30**\n- Tháng 11–1 là cao điểm nhất"
+      "content": "# Bến Tre – Ngắm Chim Vàm Hồ (Tháng 9 – Tháng 3)\n\n| Giờ | Điểm dừng | Chi phí | Ghi chú |\n|-----|-----------|---------|---------|\n| 04:30 | Khởi hành từ TP.HCM / Vĩnh Long | Xe khách ~80.000đ | Bắt xe sớm |\n| 06:00 | **Sân chim Vàm Hồ** (xã Mỹ Hòa, Ba Tri) | Vé vào: 30.000đ/người | Đến trước 5h30; mang ống nhòm |\n| 07:30 | Điểm tâm: cháo cá lóc/bánh mì tại Ba Tri | 25.000–40.000đ | |\n| 09:00 | **Rừng đước Long Khánh** | Thuê xuồng: 150.000–200.000đ/2 người | |\n| 15:00 | **Cồn Phụng** | Đò: 50.000đ khứ hồi | |\n| 17:30 | Xưởng kẹo dừa | Mua hàng: 50.000–150.000đ | |\n| 20:30 | Nhận phòng homestay | 200.000–350.000đ/đêm | |\n\n## Tổng Chi Phí (1 người)\n\n| Khoản mục | Chi phí |\n|-----------|---------|\n| Di chuyển | ~250.000đ |\n| Vé + thuê xuồng | ~200.000đ |\n| Ăn uống (3 bữa) | ~280.000đ |\n| Lưu trú 1 đêm | ~280.000đ |\n| **Tổng** | **~1.100.000đ** |\n\n## Tips\n- Mang ống nhòm (loại 8x42 trở lên) – bắt buộc\n- Mặc quần áo tối màu\n- Sân chim đông nhất lúc **5h00–6h30**\n- Tháng 11–1 là cao điểm nhất",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -38264,9 +38491,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38278,7 +38505,8 @@ var items = [
     "confidence": 1.0,
     "season": null,
     "attributes": {
-      "content": "# Chợ Nổi Trà Ôn – Trải nghiệm thuyền hoa quả\n\n- **Địa điểm:** Chợ Nổi Trà Ôn, huyện Trà Ôn, tỉnh Vĩnh Long\n- **Thời gian lý tưởng:** Tháng 11 – tháng 4\n\n### 05:00 – Thuê thuyền ra chợ nổi\n- **Chi phí:** 150.000đ/thuyền (2–4 người)\n\n### 06:00 – Mua hoa quả từ ghe\n- Xoài cát Hòa Lộc ~40.000đ/kg, chôm chôm ~20.000đ/kg\n- Giá rẻ hơn chợ trên bờ 20–30%\n\n### 06:30 – Cà phê trên sông\n- **Chi phí:** 15.000–25.000đ/ly\n\n### 08:30 – Ăn sáng hủ tiếu Trà Ôn\n- **Chi phí:** 30.000–45.000đ/tô\n\n---\n\n## Tổng chi phí (1 người)\n\n| Hạng mục | Chi phí |\n|---|---|\n| Thuê thuyền (chia 2) | 75.000đ |\n| Mua hoa quả | 80.000đ |\n| Cà phê + ăn sáng | 60.000đ |\n| **Tổng** | **~245.000đ** |\n\n## Tips\n- Đến **trước 5h30** – chợ tan dần sau 8h\n- Mang **tiền lẻ**\n- **Không xả rác** xuống sông"
+      "content": "# Chợ Nổi Trà Ôn – Trải nghiệm thuyền hoa quả\n\n- **Địa điểm:** Chợ Nổi Trà Ôn, huyện Trà Ôn, tỉnh Vĩnh Long\n- **Thời gian lý tưởng:** Tháng 11 – tháng 4\n\n### 05:00 – Thuê thuyền ra chợ nổi\n- **Chi phí:** 150.000đ/thuyền (2–4 người)\n\n### 06:00 – Mua hoa quả từ ghe\n- Xoài cát Hòa Lộc ~40.000đ/kg, chôm chôm ~20.000đ/kg\n- Giá rẻ hơn chợ trên bờ 20–30%\n\n### 06:30 – Cà phê trên sông\n- **Chi phí:** 15.000–25.000đ/ly\n\n### 08:30 – Ăn sáng hủ tiếu Trà Ôn\n- **Chi phí:** 30.000–45.000đ/tô\n\n---\n\n## Tổng chi phí (1 người)\n\n| Hạng mục | Chi phí |\n|---|---|\n| Thuê thuyền (chia 2) | 75.000đ |\n| Mua hoa quả | 80.000đ |\n| Cà phê + ăn sáng | 60.000đ |\n| **Tổng** | **~245.000đ** |\n\n## Tips\n- Đến **trước 5h30** – chợ tan dần sau 8h\n- Mang **tiền lẻ**\n- **Không xả rác** xuống sông",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -38295,9 +38523,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38309,7 +38537,8 @@ var items = [
     "confidence": 1.0,
     "season": null,
     "attributes": {
-      "content": "# Làng Hoa Cái Mơn Dịp Tết – Chợ Lách, Bến Tre\n\n- **Thời gian:** 1 ngày (tháng 12 – tháng 1)\n- **Đối tượng:** Gia đình, nhóm bạn, người yêu hoa\n\n### 8:30 – Tham quan vườn ươm hoa Cái Mơn\n- Hoa cúc đại đóa, hoa hồng nhung, lan mokara nở rộ\n- Chi phí: Miễn phí tham quan; mua cây 30.000–500.000đ/cây\n\n### 10:00 – Chợ hoa Chợ Lách\n- Cây kiểng 50.000–2.000.000đ tùy loại\n\n### 12:30 – Ăn trưa đặc sản miệt vườn\n- Chi phí: 80.000–150.000đ/người\n\n### 14:00 – Làng nghề ghép cây giống Cái Mơn\n- Cây giống đặc sản 15.000–80.000đ/cây\n\n### 15:30 – Chụp ảnh cánh đồng hoa cúc\n- Chậu hoa cúc Tết 80.000–200.000đ/chậu\n\n---\n\n## Tổng chi phí\n\n| Hạng mục | Chi phí |\n|---|---|\n| Di chuyển (xăng + phà) | 50.000–80.000đ/người |\n| Ăn uống | 110.000–200.000đ/người |\n| Tham quan vườn | 20.000–30.000đ/người |\n| **Tổng (không tính mua cây)** | **~200.000–320.000đ/người** |\n\n## Tips\n- Đến **trước Tết 2–3 tuần**: vườn đẹp nhất\n- Mang **thùng xốp** nếu mua nhiều cây giống"
+      "content": "# Làng Hoa Cái Mơn Dịp Tết – Chợ Lách, Bến Tre\n\n- **Thời gian:** 1 ngày (tháng 12 – tháng 1)\n- **Đối tượng:** Gia đình, nhóm bạn, người yêu hoa\n\n### 8:30 – Tham quan vườn ươm hoa Cái Mơn\n- Hoa cúc đại đóa, hoa hồng nhung, lan mokara nở rộ\n- Chi phí: Miễn phí tham quan; mua cây 30.000–500.000đ/cây\n\n### 10:00 – Chợ hoa Chợ Lách\n- Cây kiểng 50.000–2.000.000đ tùy loại\n\n### 12:30 – Ăn trưa đặc sản miệt vườn\n- Chi phí: 80.000–150.000đ/người\n\n### 14:00 – Làng nghề ghép cây giống Cái Mơn\n- Cây giống đặc sản 15.000–80.000đ/cây\n\n### 15:30 – Chụp ảnh cánh đồng hoa cúc\n- Chậu hoa cúc Tết 80.000–200.000đ/chậu\n\n---\n\n## Tổng chi phí\n\n| Hạng mục | Chi phí |\n|---|---|\n| Di chuyển (xăng + phà) | 50.000–80.000đ/người |\n| Ăn uống | 110.000–200.000đ/người |\n| Tham quan vườn | 20.000–30.000đ/người |\n| **Tổng (không tính mua cây)** | **~200.000–320.000đ/người** |\n\n## Tips\n- Đến **trước Tết 2–3 tuần**: vườn đẹp nhất\n- Mang **thùng xốp** nếu mua nhiều cây giống",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -38326,9 +38555,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38363,9 +38592,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38391,9 +38620,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38405,7 +38634,8 @@ var items = [
     "confidence": 1.0,
     "season": null,
     "attributes": {
-      "content": "# Bến Tre 1 Ngày – Cồn Phụng từ TP.HCM\n\n## Di chuyển\n| Chiều | Phương tiện | Giờ | Chi phí |\n|---|---|---|---|\n| TP.HCM → Bến Tre | Xe khách (Bến xe Miền Tây) | 6:00 – 8:30 | 80.000đ/chiều |\n| Bến Tre → TP.HCM | Xe khách (Bến xe Bến Tre) | 17:00 – 19:30 | 80.000đ/chiều |\n\n## Lịch Trình\n\n### 9:15 – Cồn Phụng\n- Vé vào cồn (tour): **50.000–80.000đ/người**\n\n### 10:00 – Xuồng ba lá qua kênh rạch\n- Chi phí: ~30.000đ/người\n\n### 11:00 – Xưởng kẹo dừa\n- Mua kẹo: **50.000–100.000đ/hộp 500g**\n\n### 12:00 – Ăn trưa\n- Chi phí: 50.000–70.000đ/người\n\n---\n\n## Tổng Chi Phí\n\n| Khoản | Chi phí |\n|---|---|\n| Xe khách 2 chiều | 160.000đ |\n| Xe ôm/đò ngang | 50.000đ |\n| Vé tham quan + xuồng | 80.000đ |\n| Ăn trưa + nước | 85.000đ |\n| Kẹo dừa + đặc sản | 80.000đ |\n| **Tổng** | **~455.000đ** |\n\n## Tips\n- Đặt vé xe trước 1–2 ngày\n- Đi nhóm 4–6 người: chi phí thuê xuồng rẻ hơn"
+      "content": "# Bến Tre 1 Ngày – Cồn Phụng từ TP.HCM\n\n## Di chuyển\n| Chiều | Phương tiện | Giờ | Chi phí |\n|---|---|---|---|\n| TP.HCM → Bến Tre | Xe khách (Bến xe Miền Tây) | 6:00 – 8:30 | 80.000đ/chiều |\n| Bến Tre → TP.HCM | Xe khách (Bến xe Bến Tre) | 17:00 – 19:30 | 80.000đ/chiều |\n\n## Lịch Trình\n\n### 9:15 – Cồn Phụng\n- Vé vào cồn (tour): **50.000–80.000đ/người**\n\n### 10:00 – Xuồng ba lá qua kênh rạch\n- Chi phí: ~30.000đ/người\n\n### 11:00 – Xưởng kẹo dừa\n- Mua kẹo: **50.000–100.000đ/hộp 500g**\n\n### 12:00 – Ăn trưa\n- Chi phí: 50.000–70.000đ/người\n\n---\n\n## Tổng Chi Phí\n\n| Khoản | Chi phí |\n|---|---|\n| Xe khách 2 chiều | 160.000đ |\n| Xe ôm/đò ngang | 50.000đ |\n| Vé tham quan + xuồng | 80.000đ |\n| Ăn trưa + nước | 85.000đ |\n| Kẹo dừa + đặc sản | 80.000đ |\n| **Tổng** | **~455.000đ** |\n\n## Tips\n- Đặt vé xe trước 1–2 ngày\n- Đi nhóm 4–6 người: chi phí thuê xuồng rẻ hơn",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -38422,9 +38652,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38436,7 +38666,8 @@ var items = [
     "confidence": 1.0,
     "season": null,
     "attributes": {
-      "content": "# Vĩnh Long – Lịch trình thân thiện người khuyết tật & người cao tuổi\n\n**Thời gian:** 1 ngày | **Đối tượng:** Người dùng xe lăn, người cao tuổi\n\n## Lịch trình\n\n### 7:00 – Điểm tâm sáng\n- Bún riêu Cô Tư đường Mậu Thân – vỉa hè rộng, không bậc thềm\n- Chi phí: 30.000–50.000 VNĐ\n\n### 8:00 – Chợ Vĩnh Long\n- Nền chợ phẳng, lối vào không có bậc\n- Chi phí: Miễn phí vào cổng\n\n### 9:30 – Văn Thánh Miếu Vĩnh Long\n- Sân rộng, đường đi lát gạch phẳng, xe lăn vào được\n- Chi phí: Miễn phí\n\n### 11:00 – Du thuyền sông Cổ Chiên\n- Thuyền có mạn thấp, cầu dốc nhẹ\n- Chi phí: 80.000–120.000 VNĐ/người\n\n### 12:30 – Ăn trưa (nhà hàng tầng trệt)\n- Chi phí: 80.000–120.000 VNĐ/người\n\n---\n\n## Tổng chi phí\n\n| Hạng mục | Chi phí |\n|---|---|\n| Ăn sáng | 40.000 VNĐ |\n| Thuyền sông | 100.000 VNĐ |\n| Ăn trưa | 100.000 VNĐ |\n| Di chuyển nội thành | 60.000 VNĐ |\n| Mua sắm / linh tinh | 100.000 VNĐ |\n| **Tổng** | **~400.000 VNĐ/người** |\n\n## Tips\n- Gọi điện xác nhận lối vào xe lăn trước khi đến\n- Đi vệ sinh tại nhà hàng hoặc khách sạn\n- Thời điểm lý tưởng: tháng 11 – tháng 4"
+      "content": "# Vĩnh Long – Lịch trình thân thiện người khuyết tật & người cao tuổi\n\n**Thời gian:** 1 ngày | **Đối tượng:** Người dùng xe lăn, người cao tuổi\n\n## Lịch trình\n\n### 7:00 – Điểm tâm sáng\n- Bún riêu Cô Tư đường Mậu Thân – vỉa hè rộng, không bậc thềm\n- Chi phí: 30.000–50.000 VNĐ\n\n### 8:00 – Chợ Vĩnh Long\n- Nền chợ phẳng, lối vào không có bậc\n- Chi phí: Miễn phí vào cổng\n\n### 9:30 – Văn Thánh Miếu Vĩnh Long\n- Sân rộng, đường đi lát gạch phẳng, xe lăn vào được\n- Chi phí: Miễn phí\n\n### 11:00 – Du thuyền sông Cổ Chiên\n- Thuyền có mạn thấp, cầu dốc nhẹ\n- Chi phí: 80.000–120.000 VNĐ/người\n\n### 12:30 – Ăn trưa (nhà hàng tầng trệt)\n- Chi phí: 80.000–120.000 VNĐ/người\n\n---\n\n## Tổng chi phí\n\n| Hạng mục | Chi phí |\n|---|---|\n| Ăn sáng | 40.000 VNĐ |\n| Thuyền sông | 100.000 VNĐ |\n| Ăn trưa | 100.000 VNĐ |\n| Di chuyển nội thành | 60.000 VNĐ |\n| Mua sắm / linh tinh | 100.000 VNĐ |\n| **Tổng** | **~400.000 VNĐ/người** |\n\n## Tips\n- Gọi điện xác nhận lối vào xe lăn trước khi đến\n- Đi vệ sinh tại nhà hàng hoặc khách sạn\n- Thời điểm lý tưởng: tháng 11 – tháng 4",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -38453,9 +38684,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38467,7 +38698,8 @@ var items = [
     "confidence": 0.55,
     "season": null,
     "attributes": {
-      "era": "Văn hóa Phật giáo Nam tông Khmer"
+      "era": "Văn hóa Phật giáo Nam tông Khmer",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -38485,9 +38717,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38499,7 +38731,8 @@ var items = [
     "confidence": 0.55,
     "season": null,
     "attributes": {
-      "era": "Chùa Khmer Nam Bộ, nổi tiếng với kiến trúc khảm sành sứ"
+      "era": "Chùa Khmer Nam Bộ, nổi tiếng với kiến trúc khảm sành sứ",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -38517,9 +38750,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38548,7 +38781,8 @@ var items = [
       "text": "Bò da xanh Ba Tri là sản phẩm chăn nuôi nên có thể gặp và khai thác quanh năm. Không có mùa vụ cao điểm rõ rệt."
     },
     "attributes": {
-      "price": "Giá bò hơi thường biến động theo thị trường, khoảng 70.000-90.000 VND/kg hơi"
+      "price": "Giá bò hơi thường biến động theo thị trường, khoảng 70.000-90.000 VND/kg hơi",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -38566,9 +38800,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38598,7 +38832,8 @@ var items = [
     },
     "attributes": {
       "price": "Khoảng 35.000-70.000 VND/kg tùy loại và thời điểm",
-      "weight/unit": "Bán theo kg"
+      "weight/unit": "Bán theo kg",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -38616,9 +38851,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38661,9 +38896,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38718,9 +38953,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38775,9 +39010,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38832,9 +39067,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38889,9 +39124,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38946,9 +39181,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39003,9 +39238,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39060,9 +39295,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39117,9 +39352,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39171,9 +39406,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39228,9 +39463,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39285,9 +39520,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39342,9 +39577,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39398,9 +39633,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39455,9 +39690,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39512,9 +39747,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39568,9 +39803,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39625,9 +39860,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39679,9 +39914,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39736,9 +39971,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39793,9 +40028,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39850,9 +40085,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39889,7 +40124,8 @@ var items = [
       "text": "Rừng ngập mặn Hiệp Thạnh có thể tham quan quanh năm theo con nước. Mùa khô thuận lợi nhất cho các hoạt động sinh thái ven biển, đi thuyền và quan sát cảnh quan rừng."
     },
     "attributes": {
-      "address": "Xã Hiệp Thạnh, tỉnh Trà Vinh"
+      "address": "Xã Hiệp Thạnh, tỉnh Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -39907,9 +40143,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39965,9 +40201,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39999,7 +40235,8 @@ var items = [
       "text": "Thích hợp mùa khô để quan sát thiên nhiên và di chuyển thuận tiện; cuối mùa mưa cảnh quan xanh tốt."
     },
     "attributes": {
-      "address": "Xã Đôn Châu, tỉnh Trà Vinh"
+      "address": "Xã Đôn Châu, tỉnh Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -40009,17 +40246,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.7005387,
-      106.2768829
+      9.6585227,
+      106.3665796
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40064,18 +40301,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      9.9516235,
-      106.3322332
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40130,9 +40364,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40184,9 +40418,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40241,9 +40475,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40297,9 +40531,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40354,9 +40588,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40411,9 +40645,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40443,9 +40677,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40475,9 +40709,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40507,9 +40741,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40539,9 +40773,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40596,9 +40830,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40628,9 +40862,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40655,7 +40889,8 @@ var items = [
     },
     "attributes": {
       "price": "Khoảng 35.000-70.000 VND/kg tùy mùa",
-      "weight/unit": "Bán theo kg"
+      "weight/unit": "Bán theo kg",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -40673,9 +40908,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40741,9 +40976,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40785,7 +41020,8 @@ var items = [
         "Nguồn gốc: giống bưởi do ông Trần Văn Bưởi (1918–1990) người làng Mái Dầm tìm được khi vớt trái lạ trên sông, sau đó nhân giống từ xã Phú Hữu lan ra toàn vùng ĐBSCL"
       ],
       "phone": "0366.066.139 (HTX Bưởi 5 Roi Mỹ Hòa, Giám đốc Trương Ngọc Trọng)",
-      "booking_note": "Nên liên hệ trước qua HTX hoặc chủ vườn để được hướng dẫn và sắp xếp lịch tham quan"
+      "booking_note": "Nên liên hệ trước qua HTX hoặc chủ vườn để được hướng dẫn và sắp xếp lịch tham quan",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -40795,17 +41031,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0675818,
-      105.8219716
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40872,9 +41108,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40929,9 +41165,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40977,7 +41213,8 @@ var items = [
         "Sản phẩm chủ lực: trái cây (dừa, chuối, ổi, dứa, mít, na, bưởi, cam), nông sản bán sỉ từ ghe vườn; đặc sản địa phương gồm bún bò viên, bánh tét cô Hà, bánh phồng cù lao mây."
       ],
       "phone": "0292-3819219 / 0919-444545",
-      "booking_note": "Nên đặt trước chỗ ăn và lưu trú vào dịp lễ, cuối tuần; khu du lịch chính thức hoạt động từ 30/4/2023"
+      "booking_note": "Nên đặt trước chỗ ăn và lưu trú vào dịp lễ, cuối tuần; khu du lịch chính thức hoạt động từ 30/4/2023",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -40987,17 +41224,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.9451384,
-      105.9564155
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41044,7 +41281,8 @@ var items = [
         "Di tích Lịch sử cấp Quốc gia được công nhận năm 2009",
         "Gắn liền với tiểu thuyết 'L'Amant' (Người Tình) của nhà văn Pháp Marguerite Duras",
         "Kiến trúc kết hợp Á–Âu, xây dựng năm 1895, hơn 130 năm tuổi"
-      ]
+      ],
+      "coords_approximate": true
     },
     "source": [
       {
@@ -41062,9 +41300,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41129,9 +41367,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41197,9 +41435,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41246,7 +41484,8 @@ var items = [
         "Thành lập 1995, khai trương 1997 — lưu giữ gần 1.000 hiện vật văn hóa Khmer Nam Bộ",
         "Tòa nhà 2 tầng 1.700m² trên khuôn viên 1ha, kiến trúc mái ngói nhiều tầng cong vút đặc trưng Khmer",
         "Nằm trong quần thể di tích Ao Bà Om – Chùa Âng, thuận tiện tham quan kết hợp"
-      ]
+      ],
+      "coords_approximate": true
     },
     "source": [
       {
@@ -41256,17 +41495,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.9516235,
-      106.3322332
+      9.9333987,
+      106.3121888
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41312,7 +41551,8 @@ var items = [
       "priority": "A",
       "target_segments": "Học sinh; quốc tế; văn hóa",
       "suggested_duration": "1 giờ",
-      "role": "interpretation_anchor"
+      "role": "interpretation_anchor",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -41322,17 +41562,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.9516235,
-      106.3322332
+      9.9333987,
+      106.3121888
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41395,9 +41635,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41443,7 +41683,8 @@ var items = [
       "priority": "A",
       "target_segments": "Quốc tế; gia đình; chậm",
       "suggested_duration": "30-60 phút",
-      "role": "intangible_anchor"
+      "role": "intangible_anchor",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -41461,9 +41702,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41510,7 +41751,8 @@ var items = [
         "Di tích lịch sử văn hóa cấp quốc gia, công nhận năm 1994",
         "Diện tích hơn 300ha với ao hình chữ nhật 500m x 300m và rừng cây cổ thụ nguyên sinh",
         "Là nơi tổ chức Lễ hội Ok Om Bok – lễ hội truyền thống lớn nhất của người Khmer Nam Bộ"
-      ]
+      ],
+      "coords_approximate": true
     },
     "source": [
       {
@@ -41520,17 +41762,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.9516235,
-      106.3322332
+      9.9333987,
+      106.3121888
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41600,9 +41842,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41673,9 +41915,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41739,9 +41981,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41809,9 +42051,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41869,9 +42111,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41921,7 +42163,8 @@ var items = [
         "Kinh tế: hàng trăm hộ đạt doanh thu trên 1 tỷ đồng/năm; 70%+ hộ đạt mức khá giả, không còn hộ nghèo."
       ],
       "booking_note": "Không cần đặt lịch trước. Nếu muốn chụp ảnh trong vườn, cần xin phép chủ vườn — theo quan niệm dân gian, chụp ảnh khi hoa chưa bán sẽ làm hoa mất duyên không bán được.",
-      "legacy_district": "Chợ Lách"
+      "legacy_district": "Chợ Lách",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -41939,9 +42182,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42009,9 +42252,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42036,7 +42279,8 @@ var items = [
         "Năm 2015, Hiệp hội Du lịch Đồng bằng sông Cửu Long công nhận là điểm du lịch tiêu biểu của vùng; mở cửa 7:30–17:00, miễn phí tham quan."
       ],
       "phone": "02703 971 111",
-      "booking_note": "Ban quản lý cung cấp thuyết minh viên và hướng dẫn dâng hương; cuối chuyến được thưởng thức trà và bánh dân gian. Nên liên hệ trước cho đoàn đông."
+      "booking_note": "Ban quản lý cung cấp thuyết minh viên và hướng dẫn dâng hương; cuối chuyến được thưởng thức trà và bánh dân gian. Nên liên hệ trước cho đoàn đông.",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -42046,17 +42290,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.254177,
-      105.9627693
+      10.0964974,
+      106.1854829
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42124,9 +42368,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42194,9 +42438,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42244,7 +42488,8 @@ var items = [
         "Sân chim lớn nhất tỉnh Trà Vinh với hàng ngàn con cò trắng, cò mỏ vàng, cò mỏ đen",
         "Khuôn viên rộng khoảng 3 ha, còn gọi là chùa Phnô Đôn / Wat Phnô Đôn"
       ],
-      "legacy_district": "Trà Cú"
+      "legacy_district": "Trà Cú",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -42254,17 +42499,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.7005387,
-      106.2768829
+      9.6284541,
+      106.2839835
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42307,9 +42552,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42376,9 +42621,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42434,9 +42679,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42498,9 +42743,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42549,7 +42794,8 @@ var items = [
       "culture_note": "Lễ cúng Trăng của đồng bào Khmer Nam Bộ, gắn Ao Bà Om, trò chơi dân gian, nghệ thuật Khmer và đua ghe Ngo.",
       "experience_note": "Tham dự không gian lễ hội, ẩm thực, biểu diễn, hội chợ, đua ghe, tìm hiểu nghi lễ cúng trăng.",
       "tour_note": "Sản phẩm mùa lễ hội quan trọng nhất của Trà Vinh; nên bán trước 60-90 ngày.",
-      "risk_note": "Cần giữ vai trò chủ thể cộng đồng Khmer; kiểm soát thương mại hóa và quá tải."
+      "risk_note": "Cần giữ vai trò chủ thể cộng đồng Khmer; kiểm soát thương mại hóa và quá tải.",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -42559,17 +42805,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.9516235,
-      106.3322332
+      9.9333987,
+      106.3121888
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42629,9 +42875,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -42691,9 +42937,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -42753,9 +42999,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -42815,9 +43061,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -42877,9 +43123,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -42920,9 +43166,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -42963,9 +43209,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43011,9 +43257,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43054,9 +43300,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43086,7 +43332,8 @@ var items = [
     },
     "attributes": {
       "price": "60.000-100.000 VND/kg",
-      "weight/unit": "kg"
+      "weight/unit": "kg",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -43104,9 +43351,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43154,9 +43401,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43179,7 +43426,8 @@ var items = [
     },
     "attributes": {
       "price": "20.000-45.000 VND/kg",
-      "weight/unit": "kg"
+      "weight/unit": "kg",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -43197,9 +43445,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43222,7 +43470,8 @@ var items = [
     },
     "attributes": {
       "price": "60.000-120.000 VND/kg",
-      "weight/unit": "kg"
+      "weight/unit": "kg",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -43240,9 +43489,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43290,9 +43539,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43340,9 +43589,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43379,9 +43628,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43434,9 +43683,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43488,9 +43737,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43542,9 +43791,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43585,9 +43834,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43631,9 +43880,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43667,7 +43916,8 @@ var items = [
     },
     "attributes": {
       "price": "40.000-100.000 VND/nải",
-      "weight/unit": "nải"
+      "weight/unit": "nải",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -43685,9 +43935,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43722,7 +43972,8 @@ var items = [
     },
     "attributes": {
       "price": "10.000-20.000 VND/trái",
-      "weight/unit": "trái"
+      "weight/unit": "trái",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -43732,17 +43983,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.5815192,
-      106.5306792
+      10.0112728,
+      106.1685114
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43778,7 +44029,8 @@ var items = [
     },
     "attributes": {
       "price": "15.000-25.000 VND/kg",
-      "weight/unit": "kg"
+      "weight/unit": "kg",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -43796,9 +44048,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43847,9 +44099,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43885,7 +44137,8 @@ var items = [
     },
     "attributes": {
       "price": "80.000-160.000 VND/kg",
-      "weight/unit": "kg"
+      "weight/unit": "kg",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -43895,17 +44148,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.5815192,
-      106.5306792
+      9.6620895,
+      106.5179466
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43958,9 +44211,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43995,7 +44248,8 @@ var items = [
     },
     "attributes": {
       "price": "600000-1000000 VND/kg",
-      "weight/unit": "kg; thường bán theo gói 100g, 250g, 500g"
+      "weight/unit": "kg; thường bán theo gói 100g, 250g, 500g",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -44013,9 +44267,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44068,9 +44322,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44130,9 +44384,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44192,9 +44446,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44254,9 +44508,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44316,9 +44570,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44378,9 +44632,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44440,9 +44694,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44502,9 +44756,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44571,9 +44825,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44633,9 +44887,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44695,9 +44949,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44750,9 +45004,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44804,9 +45058,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44835,7 +45089,8 @@ var items = [
     },
     "attributes": {
       "price": "10000-25000 VND/bó hoặc cây lẻ tùy mùa",
-      "weight/unit": "cây/bó"
+      "weight/unit": "cây/bó",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -44845,17 +45100,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.5815192,
-      106.5306792
+      9.8715789,
+      106.089896
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44883,7 +45138,8 @@ var items = [
     },
     "attributes": {
       "price": "50000-90000 VND/kg",
-      "weight/unit": "kg"
+      "weight/unit": "kg",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -44893,17 +45149,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.5815192,
-      106.5306792
+      9.7976352,
+      106.4547669
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44966,9 +45222,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45031,9 +45287,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45096,9 +45352,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45143,7 +45399,8 @@ var items = [
       "check_in": "14:00",
       "check_out": "12:00",
       "booking_note": "Khách sạn 2 sao, đường Phạm Hùng. Ước tính dựa trên hạng cơ sở",
-      "amenities": "Điều hòa, wifi, truyền hình cáp"
+      "amenities": "Điều hòa, wifi, truyền hình cáp",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -45161,9 +45418,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45226,9 +45483,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45291,9 +45548,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45338,7 +45595,8 @@ var items = [
       "check_in": "13:00",
       "check_out": "12:00",
       "booking_note": "Khách sạn 1 sao đường Hùng Vương, giá rẻ, đặt trực tiếp tại quầy. Ước tính dựa trên hạng cơ sở",
-      "amenities": "Điều hòa, quạt trần"
+      "amenities": "Điều hòa, quạt trần",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -45356,9 +45614,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45421,9 +45679,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45468,7 +45726,8 @@ var items = [
       "check_in": "13:00",
       "check_out": "12:00",
       "booking_note": "Khách sạn 1 sao đường Hùng Vương, phù hợp khách ngân sách thấp. Ước tính dựa trên hạng cơ sở",
-      "amenities": "Điều hòa, quạt"
+      "amenities": "Điều hòa, quạt",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -45486,9 +45745,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45551,9 +45810,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45598,7 +45857,8 @@ var items = [
       "check_in": "14:00",
       "check_out": "12:00",
       "booking_note": "Ước tính dựa trên hạng cơ sở. Khách sạn 1 sao hẻm nhỏ, phù hợp khách đi công tác hoặc tiết kiệm.",
-      "amenities": "Điều hòa, WC riêng, wifi"
+      "amenities": "Điều hòa, WC riêng, wifi",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -45616,9 +45876,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45663,7 +45923,8 @@ var items = [
       "check_in": "14:00",
       "check_out": "12:00",
       "booking_note": "Ước tính dựa trên hạng cơ sở. Cùng khu Hoàng Thái Hiếu với Hoa Ngọc, giá tương đương, nên gọi điện đặt trước cuối tuần.",
-      "amenities": "Điều hòa, WC riêng, wifi"
+      "amenities": "Điều hòa, WC riêng, wifi",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -45673,17 +45934,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2710172,
-      105.9541949
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45746,9 +46007,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45811,9 +46072,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45876,9 +46137,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45923,7 +46184,8 @@ var items = [
       "check_in": "14:00",
       "check_out": "12:00",
       "booking_note": "Ước tính dựa trên hạng cơ sở. Khách sạn 1 sao, thuận tiện đi lại trong TP Vĩnh Long, đặt phòng qua điện thoại.",
-      "amenities": "Điều hòa, WC riêng, wifi"
+      "amenities": "Điều hòa, WC riêng, wifi",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -45933,17 +46195,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2710172,
-      105.9541949
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45988,7 +46250,8 @@ var items = [
       "check_in": "14:00",
       "check_out": "12:00",
       "booking_note": "Ước tính dựa trên hạng cơ sở. Mặt tiền đường Hùng Vương, dễ tìm, nên đặt trước dịp lễ Tết.",
-      "amenities": "Điều hòa, WC riêng, wifi, gần trung tâm"
+      "amenities": "Điều hòa, WC riêng, wifi, gần trung tâm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -46006,9 +46269,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46071,9 +46334,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46136,9 +46399,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46183,7 +46446,8 @@ var items = [
       "check_in": "14:00",
       "check_out": "12:00",
       "booking_note": "Ước tính dựa trên hạng cơ sở. Nằm hẻm Phạm Hùng, yên tĩnh, giá bình dân, liên hệ đặt phòng trực tiếp.",
-      "amenities": "Điều hòa, WC riêng, wifi cơ bản"
+      "amenities": "Điều hòa, WC riêng, wifi cơ bản",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -46193,17 +46457,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2710172,
-      105.9541949
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46266,9 +46530,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46331,9 +46595,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46396,9 +46660,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46461,9 +46725,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46526,9 +46790,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46591,9 +46855,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46656,9 +46920,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46703,7 +46967,8 @@ var items = [
       "check_in": "14:00",
       "check_out": "11:00",
       "booking_note": "Khách sạn 1 sao dạng nhà nghỉ bình dân, hẻm Phó Cơ Điều. Ước tính dựa trên hạng cơ sở.",
-      "amenities": "Điều hòa, TV"
+      "amenities": "Điều hòa, TV",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -46713,17 +46978,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2710172,
-      105.9541949
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46786,9 +47051,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46851,9 +47116,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46898,7 +47163,8 @@ var items = [
       "check_in": "13:00",
       "check_out": "11:00",
       "booking_note": "Khách sạn 1 sao dạng nhà nghỉ gia đình, hẻm nhỏ Phó Cơ Điều. Ước tính dựa trên hạng cơ sở.",
-      "amenities": "Điều hòa, quạt, TV"
+      "amenities": "Điều hòa, quạt, TV",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -46908,17 +47174,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2710172,
-      105.9541949
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46981,9 +47247,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47046,9 +47312,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47111,9 +47377,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47158,7 +47424,8 @@ var items = [
       "check_in": "14:00",
       "check_out": "12:00",
       "booking_note": "Khách sạn 1 sao khu vực cù lao An Bình, gần bến đò. Liên hệ trực tiếp để đặt phòng. Ước tính dựa trên hạng cơ sở.",
-      "amenities": "Điều hòa, WiFi, gần sông"
+      "amenities": "Điều hòa, WiFi, gần sông",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -47168,17 +47435,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2710172,
-      105.9541949
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47241,9 +47508,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47306,9 +47573,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47371,9 +47638,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47436,9 +47703,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47501,9 +47768,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47566,9 +47833,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47631,9 +47898,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47696,9 +47963,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47761,9 +48028,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47826,9 +48093,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47885,9 +48152,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47926,7 +48193,8 @@ var items = [
     "attributes": {
       "hạng": "1 sao",
       "phone": "02703719777",
-      "address": "Ấp Mỹ An, xã Bình Ninh"
+      "address": "Ấp Mỹ An, xã Bình Ninh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -47936,17 +48204,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2710172,
-      105.9541949
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47985,7 +48253,8 @@ var items = [
     "attributes": {
       "hạng": "2 sao",
       "phone": "0916244442",
-      "address": "Số 5115 ấp Đông Hậu, phường Bình Minh, TX Bình Minh"
+      "address": "Số 5115 ấp Đông Hậu, phường Bình Minh, TX Bình Minh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -47995,17 +48264,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0675818,
-      105.8219716
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48044,7 +48313,8 @@ var items = [
     "attributes": {
       "hạng": "1 sao",
       "phone": "0703741646",
-      "address": "Số 5938/1, Phường Bình Minh, TX Bình Minh"
+      "address": "Số 5938/1, Phường Bình Minh, TX Bình Minh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -48054,17 +48324,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2710172,
-      105.9541949
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48121,9 +48391,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48162,7 +48432,8 @@ var items = [
     "attributes": {
       "hạng": "1 sao",
       "phone": "0703770246",
-      "address": "Số 20A Gia Long, Khu I, xã Trà Ôn"
+      "address": "Số 20A Gia Long, Khu I, xã Trà Ôn",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -48172,17 +48443,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2710172,
-      105.9541949
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48239,9 +48510,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48298,9 +48569,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48357,9 +48628,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48398,7 +48669,8 @@ var items = [
     "attributes": {
       "hạng": "nhà nghỉ",
       "phone": "0359275252",
-      "address": "Số 17/22 đường 19/5, phường Trà Vinh, TP Trà Vinh"
+      "address": "Số 17/22 đường 19/5, phường Trà Vinh, TP Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -48408,17 +48680,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2710172,
-      105.9541949
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48475,9 +48747,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48516,7 +48788,8 @@ var items = [
     "attributes": {
       "hạng": "nhà nghỉ",
       "phone": "02943737999",
-      "address": "Số 419 Đồng Khởi, phường Trà Vinh, TP Trà Vinh"
+      "address": "Số 419 Đồng Khởi, phường Trà Vinh, TP Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -48534,9 +48807,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48593,9 +48866,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48652,9 +48925,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48711,9 +48984,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48752,7 +49025,8 @@ var items = [
     "attributes": {
       "hạng": "nhà nghỉ",
       "phone": "0972676499",
-      "address": "Số 69 Võ Văn Kiệt, Phường Nguyệt Hóa, TP Trà Vinh"
+      "address": "Số 69 Võ Văn Kiệt, Phường Nguyệt Hóa, TP Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -48762,17 +49036,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2710172,
-      105.9541949
+      9.9333987,
+      106.3121888
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48829,9 +49103,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48888,9 +49162,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48947,9 +49221,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48988,7 +49262,8 @@ var items = [
     "attributes": {
       "hạng": "nhà nghỉ",
       "phone": "0972320378",
-      "address": "Số 14 đường 2/9, phường Duyên Hải, TP Trà Vinh"
+      "address": "Số 14 đường 2/9, phường Duyên Hải, TP Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -48998,17 +49273,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2710172,
-      105.9541949
+      9.6620895,
+      106.5179466
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49047,7 +49322,8 @@ var items = [
     "attributes": {
       "hạng": "nhà nghỉ",
       "phone": "0916093059",
-      "address": "Số 140A QL53, Phường Duyên Hải, TP Trà Vinh"
+      "address": "Số 140A QL53, Phường Duyên Hải, TP Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -49057,17 +49333,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2710172,
-      105.9541949
+      9.6620895,
+      106.5179466
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49106,7 +49382,8 @@ var items = [
     "attributes": {
       "hạng": "nhà nghỉ",
       "phone": "02943590999",
-      "address": "Số 135 đường 3/2, phường Duyên Hải, TP Trà Vinh"
+      "address": "Số 135 đường 3/2, phường Duyên Hải, TP Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -49116,17 +49393,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2710172,
-      105.9541949
+      9.6620895,
+      106.5179466
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49186,9 +49463,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49227,7 +49504,8 @@ var items = [
     "attributes": {
       "hạng": "nhà nghỉ",
       "phone": "02753617617",
-      "address": "69c Đồng Văn Cống, phường Bến Tre, TP Bến Tre"
+      "address": "69c Đồng Văn Cống, phường Bến Tre, TP Bến Tre",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -49237,17 +49515,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2710172,
-      105.9541949
+      10.2361217,
+      106.3763684
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49304,9 +49582,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49363,9 +49641,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49422,9 +49700,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49463,7 +49741,8 @@ var items = [
     "attributes": {
       "hạng": "homestay",
       "phone": "0902566516",
-      "address": "Ấp Hòa Trung, xã Sơn Hòa"
+      "address": "Ấp Hòa Trung, xã Sơn Hòa",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -49481,9 +49760,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49540,9 +49819,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49597,9 +49876,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49654,9 +49933,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49713,9 +49992,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49751,7 +50030,8 @@ var items = [
     "attributes": {
       "phone": "0978304031",
       "email": "leminhnhi01012987@gmail.com",
-      "address": "Ấp Phú Xuân, xã An Bình"
+      "address": "Ấp Phú Xuân, xã An Bình",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -49769,9 +50049,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49828,9 +50108,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49886,9 +50166,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49928,7 +50208,8 @@ var items = [
       "phone": "0973272777",
       "email": "longthanhnguyen199@gmail.com",
       "address": "34 Trưng Nữ Vương, Phường Long Châu, TP Vĩnh Long",
-      "stars": "2 sao"
+      "stars": "2 sao",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -49946,9 +50227,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50006,9 +50287,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50066,9 +50347,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50126,9 +50407,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50175,9 +50456,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50224,9 +50505,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50274,9 +50555,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50323,9 +50604,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50372,9 +50653,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50421,9 +50702,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50470,9 +50751,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50527,9 +50808,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50576,9 +50857,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50633,9 +50914,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50664,7 +50945,8 @@ var items = [
       "text": "Cửa hàng đặc sản, trái cây và quà tặng hoạt động quanh năm. Nguồn hàng trái cây thay đổi theo từng mùa thu hoạch trong năm."
     },
     "attributes": {
-      "address": "92 Nguyễn Thị Minh Khai, Phường Long Châu, TP Vĩnh Long"
+      "address": "92 Nguyễn Thị Minh Khai, Phường Long Châu, TP Vĩnh Long",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -50682,9 +50964,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50713,7 +50995,8 @@ var items = [
       "text": "Cửa hàng thực phẩm an toàn và nông sản sạch phục vụ quanh năm. Mặt hàng nông sản có thể thay đổi theo mùa thu hoạch địa phương."
     },
     "attributes": {
-      "address": "72A Nguyễn Huệ, Phường Long Châu, TP Vĩnh Long"
+      "address": "72A Nguyễn Huệ, Phường Long Châu, TP Vĩnh Long",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -50731,9 +51014,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50781,9 +51064,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50812,7 +51095,8 @@ var items = [
     },
     "attributes": {
       "price": "30000-60000 VND/kg",
-      "weight/unit": "kg"
+      "weight/unit": "kg",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -50830,9 +51114,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50862,7 +51146,8 @@ var items = [
     },
     "attributes": {
       "price": "5000-15000 VND/cái",
-      "weight/unit": "cái"
+      "weight/unit": "cái",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -50880,9 +51165,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50920,7 +51205,8 @@ var items = [
     },
     "attributes": {
       "address": "Vĩnh Long",
-      "products": "giỏ, túi xách, thảm, khay, đồ gia dụng và hàng thủ công từ lục bình"
+      "products": "giỏ, túi xách, thảm, khay, đồ gia dụng và hàng thủ công từ lục bình",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -50938,9 +51224,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50977,7 +51263,8 @@ var items = [
       "text": "Làng nghề chế tác mặt nạ Khmer có thể trải nghiệm quanh năm. Giai đoạn mùa khô từ tháng 10 đến tháng 4 thuận tiện nhất cho tham quan làng nghề tại Trà Vinh."
     },
     "attributes": {
-      "address": "Phường Nguyệt Hóa, TP Trà Vinh"
+      "address": "Phường Nguyệt Hóa, TP Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -50995,9 +51282,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51035,7 +51322,8 @@ var items = [
     },
     "attributes": {
       "company": "Thiên Ý Thành",
-      "duration": "1 ngày"
+      "duration": "1 ngày",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -51053,9 +51341,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51093,7 +51381,8 @@ var items = [
     },
     "attributes": {
       "company": "Thiên Ý Thành",
-      "duration": "1 ngày"
+      "duration": "1 ngày",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -51111,9 +51400,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51151,7 +51440,8 @@ var items = [
     },
     "attributes": {
       "company": "Mekong Travel",
-      "duration": "1 ngày"
+      "duration": "1 ngày",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -51169,9 +51459,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51209,7 +51499,8 @@ var items = [
     },
     "attributes": {
       "company": "Mekong Travel",
-      "duration": "1 ngày"
+      "duration": "1 ngày",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -51227,9 +51518,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51263,7 +51554,8 @@ var items = [
     },
     "attributes": {
       "company": "Mekong Travel",
-      "duration": "1 ngày"
+      "duration": "1 ngày",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -51281,9 +51573,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51314,9 +51606,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51372,9 +51664,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51421,18 +51713,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0729285,
-      106.5976522
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51479,18 +51768,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.1673217,
-      106.6970838
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51517,7 +51803,8 @@ var items = [
     },
     "attributes": {
       "address": "Xã Bảo Thạnh, Bến Tre",
-      "province_old": "Bến Tre"
+      "province_old": "Bến Tre",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -51535,9 +51822,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51596,9 +51883,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51654,9 +51941,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51713,9 +52000,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51770,9 +52057,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51820,9 +52107,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51878,9 +52165,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51936,9 +52223,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51994,9 +52281,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52034,7 +52321,8 @@ var items = [
     },
     "attributes": {
       "address": "Xã Phú Lễ, Bến Tre",
-      "province_old": "Bến Tre"
+      "province_old": "Bến Tre",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -52052,9 +52340,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52085,9 +52373,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52125,7 +52413,8 @@ var items = [
     },
     "attributes": {
       "price": "600000-1500000 VND/phòng/đêm",
-      "address": "Cù lao An Bình, Vĩnh Long"
+      "address": "Cù lao An Bình, Vĩnh Long",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -52143,9 +52432,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52201,9 +52490,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52259,9 +52548,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52291,9 +52580,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52331,7 +52620,8 @@ var items = [
     },
     "attributes": {
       "address": "Ấp Vàm Rây, xã Hàm Thuận, Trà Vinh",
-      "province_old": "Trà Vinh"
+      "province_old": "Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -52341,17 +52631,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.7005387,
-      106.2768829
+      9.6577851,
+      106.2652117
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52389,7 +52679,8 @@ var items = [
     },
     "attributes": {
       "address": "Xã An Phú Tân, Trà Vinh",
-      "province_old": "Trà Vinh"
+      "province_old": "Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -52399,17 +52690,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.5815192,
-      106.5306792
+      9.8626639,
+      106.0262415
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52447,7 +52738,8 @@ var items = [
     },
     "attributes": {
       "address": "Ấp Định An, xã Đông Hải, Trà Vinh",
-      "province_old": "Trà Vinh"
+      "province_old": "Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -52465,9 +52757,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52523,9 +52815,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52580,9 +52872,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52595,7 +52887,8 @@ var items = [
     "season": null,
     "attributes": {
       "address": "Khóm 4, phường 8, thành phố Trà Vinh — trong khu di tích Ao Bà Om",
-      "province_old": "Trà Vinh"
+      "province_old": "Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -52605,17 +52898,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.9516235,
-      106.3322332
+      9.9333987,
+      106.3121888
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52646,9 +52939,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52687,9 +52980,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52702,7 +52995,8 @@ var items = [
     "season": null,
     "attributes": {
       "address": "1 Lê Lợi, phường 1, thành phố Trà Vinh",
-      "province_old": "Trà Vinh"
+      "province_old": "Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -52720,9 +53014,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52775,9 +53069,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52816,18 +53110,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      9.5815192,
-      106.5306792
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52875,9 +53166,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52916,18 +53207,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      9.5815192,
-      106.5306792
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52980,9 +53268,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53030,9 +53318,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53070,7 +53358,8 @@ var items = [
     },
     "attributes": {
       "address": "Ấp Chợ, Cà Hom, Bến Bạ, xã Hàm Tân, Trà Vinh",
-      "province_old": "Trà Vinh"
+      "province_old": "Trà Vinh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -53080,17 +53369,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.7005387,
-      106.2768829
+      9.6577851,
+      106.2652117
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53142,9 +53431,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53200,9 +53489,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53256,9 +53545,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53296,7 +53585,8 @@ var items = [
     },
     "attributes": {
       "address": "Xã Bình Thạnh, Bến Tre",
-      "province_old": "Bến Tre"
+      "province_old": "Bến Tre",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -53306,17 +53596,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.3276125,
-      106.3512572
+      9.9576517,
+      106.5265588
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53347,9 +53637,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53404,9 +53694,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53444,7 +53734,8 @@ var items = [
     },
     "attributes": {
       "address": "Các xã An Điền, Thạnh Phong, Thạnh Hải, Bến Tre",
-      "province_old": "Bến Tre"
+      "province_old": "Bến Tre",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -53454,17 +53745,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.932093,
-      106.561003
+      9.6147395,
+      106.3900486
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53477,7 +53768,8 @@ var items = [
     "season": null,
     "attributes": {
       "address": "Ấp Tân Thới Đông B, xã Minh Đức, Bến Tre",
-      "province_old": "Bến Tre"
+      "province_old": "Bến Tre",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -53495,9 +53787,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53544,18 +53836,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0711288,
-      106.3585429
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53611,9 +53900,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53669,9 +53958,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53709,7 +53998,8 @@ var items = [
     },
     "attributes": {
       "address": "Xã An Định, Bến Tre",
-      "province_old": "Bến Tre"
+      "province_old": "Bến Tre",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -53727,9 +54017,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53785,9 +54075,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53835,9 +54125,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53883,9 +54173,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53940,9 +54230,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53998,9 +54288,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54048,9 +54338,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54098,9 +54388,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54143,9 +54433,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54198,9 +54488,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54247,9 +54537,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54305,9 +54595,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54363,9 +54653,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54403,40 +54693,8 @@ var items = [
     },
     "attributes": {
       "address": "Huyện Trà Ôn, Vĩnh Long",
-      "province_old": "Vĩnh Long"
-    },
-    "source": [
-      {
-        "title": "mytour.vn / mia.vn (Vĩnh Long)",
-        "url": "https://mytour.vn/"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      9.9451384,
-      105.9564155
-    ],
-    "area": "vinh-long",
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
-    "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
-    "verifiedAt": "2026-06-10T00:00:00Z"
-  },
-  {
-    "id": "chua-ky-son-khmer-loan-my",
-    "type": "history",
-    "name": "Chùa Kỳ Sơn Khmer Loan Mỹ",
-    "summary": "Di tích kiến trúc Khmer Nam Bộ xây dựng cách đây khoảng 200 năm, công nhận di tích cấp tỉnh năm 2007. Là minh chứng cho sự hiện diện và văn hóa Khmer tại vùng đất Tam Bình, Vĩnh Long.",
-    "placeId": "xa-ngai-tu",
-    "confidence": 0.75,
-    "season": null,
-    "attributes": {
-      "address": "Ấp Sóc Rừng, xã Loan Mỹ, Vĩnh Long",
-      "province_old": "Vĩnh Long"
+      "province_old": "Vĩnh Long",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -54454,9 +54712,43 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
+    "verifiedAt": "2026-06-10T00:00:00Z"
+  },
+  {
+    "id": "chua-ky-son-khmer-loan-my",
+    "type": "history",
+    "name": "Chùa Kỳ Sơn Khmer Loan Mỹ",
+    "summary": "Di tích kiến trúc Khmer Nam Bộ xây dựng cách đây khoảng 200 năm, công nhận di tích cấp tỉnh năm 2007. Là minh chứng cho sự hiện diện và văn hóa Khmer tại vùng đất Tam Bình, Vĩnh Long.",
+    "placeId": "xa-ngai-tu",
+    "confidence": 0.75,
+    "season": null,
+    "attributes": {
+      "address": "Ấp Sóc Rừng, xã Loan Mỹ, Vĩnh Long",
+      "province_old": "Vĩnh Long",
+      "coords_approximate": true
+    },
+    "source": [
+      {
+        "title": "mytour.vn / mia.vn (Vĩnh Long)",
+        "url": "https://mytour.vn/"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.254177,
+      105.9627693
+    ],
+    "area": "vinh-long",
+    "level": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-10T00:00:00Z",
+    "created_at": "2026-06-22 04:58:45",
+    "description": "",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54494,7 +54786,8 @@ var items = [
     },
     "attributes": {
       "address": "Xã Tường Lộc, Vĩnh Long",
-      "province_old": "Vĩnh Long"
+      "province_old": "Vĩnh Long",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -54512,9 +54805,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54552,7 +54845,8 @@ var items = [
     },
     "attributes": {
       "address": "Xã Ngãi Tứ và Bình Ninh, Vĩnh Long",
-      "province_old": "Vĩnh Long"
+      "province_old": "Vĩnh Long",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -54570,9 +54864,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54613,9 +54907,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54653,7 +54947,8 @@ var items = [
     },
     "attributes": {
       "address": "Ấp Bình Thủy, xã Quới Thiện, Vĩnh Long",
-      "province_old": "Vĩnh Long"
+      "province_old": "Vĩnh Long",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -54671,9 +54966,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54726,9 +55021,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54766,7 +55061,8 @@ var items = [
     },
     "attributes": {
       "address": "Ấp Phước Ngươn A, xã Phước Hậu, Vĩnh Long",
-      "province_old": "Vĩnh Long"
+      "province_old": "Vĩnh Long",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -54784,9 +55080,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54824,7 +55120,8 @@ var items = [
     },
     "attributes": {
       "address": "Quốc lộ 57, Vĩnh Long",
-      "province_old": "Vĩnh Long"
+      "province_old": "Vĩnh Long",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -54834,17 +55131,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.3276125,
-      106.3512572
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54900,9 +55197,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54950,9 +55247,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54993,9 +55290,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55051,9 +55348,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55109,9 +55406,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55141,9 +55438,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55190,9 +55487,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55222,9 +55519,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55262,7 +55559,8 @@ var items = [
     },
     "attributes": {
       "price": "500.000-1.200.000 VND/phòng/đêm",
-      "address": "Tỉnh Bến Tre"
+      "address": "Tỉnh Bến Tre",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -55280,9 +55578,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55338,9 +55636,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55397,9 +55695,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55456,9 +55754,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55515,9 +55813,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55574,9 +55872,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55616,7 +55914,8 @@ var items = [
       "address": "81b/6b ấp An Thới B, xã An Khánh, Bến Tre",
       "province_old": "Bến Tre",
       "legacy_district": "Châu Thành",
-      "legacy_ward": "An Khánh"
+      "legacy_ward": "An Khánh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -55626,17 +55925,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.3276125,
-      106.3512572
+      10.2946542,
+      106.3018701
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55676,7 +55975,8 @@ var items = [
       "address": "Ấp Mỹ An, xã An Khánh, Bến Tre",
       "province_old": "Bến Tre",
       "legacy_district": "Châu Thành",
-      "legacy_ward": "An Khánh"
+      "legacy_ward": "An Khánh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -55686,17 +55986,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.3276125,
-      106.3512572
+      10.2946542,
+      106.3018701
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55754,9 +56054,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55814,9 +56114,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55874,9 +56174,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55927,9 +56227,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55962,9 +56262,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56022,9 +56322,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56074,9 +56374,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56133,9 +56433,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56167,9 +56467,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56205,7 +56505,8 @@ var items = [
     "attributes": {
       "address": "Xã Vĩnh Thành, Bến Tre",
       "province_old": "Bến Tre",
-      "legacy_district": "Chợ Lách"
+      "legacy_district": "Chợ Lách",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -56223,9 +56524,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56278,9 +56579,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56327,9 +56628,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56380,18 +56681,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2237865,
-      106.1914491
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56449,9 +56747,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56484,9 +56782,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56527,9 +56825,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56582,9 +56880,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56628,9 +56926,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56688,9 +56986,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56734,18 +57032,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2237865,
-      106.1914491
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56778,9 +57073,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56813,9 +57108,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56873,9 +57168,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56918,18 +57213,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0711288,
-      106.3585429
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56981,9 +57273,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57035,9 +57327,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57076,7 +57368,8 @@ var items = [
     "attributes": {
       "address": "Xã An Định, Bến Tre",
       "province_old": "Bến Tre",
-      "legacy_district": "Mỏ Cày Nam"
+      "legacy_district": "Mỏ Cày Nam",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -57094,9 +57387,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57150,9 +57443,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57189,7 +57482,8 @@ var items = [
       "address": "Xã An Định, Bến Tre",
       "province_old": "Bến Tre",
       "ocop": "3 sao",
-      "legacy_district": "Mỏ Cày Nam"
+      "legacy_district": "Mỏ Cày Nam",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -57207,9 +57501,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57249,7 +57543,8 @@ var items = [
       "address": "Xã Hương Mỹ, Bến Tre",
       "province_old": "Bến Tre",
       "ocop": "3 sao",
-      "legacy_district": "Mỏ Cày Nam"
+      "legacy_district": "Mỏ Cày Nam",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -57267,9 +57562,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57301,7 +57596,8 @@ var items = [
       "address": "Xã Hương Mỹ, Bến Tre",
       "province_old": "Bến Tre",
       "ocop": "3 sao",
-      "legacy_district": "Mỏ Cày Nam"
+      "legacy_district": "Mỏ Cày Nam",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -57319,9 +57615,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57379,9 +57675,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57439,9 +57735,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57498,9 +57794,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57540,7 +57836,8 @@ var items = [
       "address": "Ấp Thành Long, xã Thành Thới A, tỉnh Bến Tre",
       "province_old": "Bến Tre",
       "legacy_district": "Mỏ Cày Nam",
-      "legacy_ward": "Thành Thới A"
+      "legacy_ward": "Thành Thới A",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -57550,17 +57847,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.3276125,
-      106.3512572
+      10.0527561,
+      106.3145932
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57608,18 +57905,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0711288,
-      106.3585429
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57671,9 +57965,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57701,7 +57995,8 @@ var items = [
     "attributes": {
       "address": "Xã Bảo Thạnh, tỉnh Bến Tre",
       "province_old": "Bến Tre",
-      "legacy_district": "Ba Tri"
+      "legacy_district": "Ba Tri",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -57719,9 +58014,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57749,7 +58044,8 @@ var items = [
     "attributes": {
       "address": "Xã Bảo Thạnh, tỉnh Bến Tre",
       "province_old": "Bến Tre",
-      "legacy_district": "Ba Tri"
+      "legacy_district": "Ba Tri",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -57767,9 +58063,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57815,9 +58111,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57874,9 +58170,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57890,7 +58186,8 @@ var items = [
     "attributes": {
       "address": "Xã Bảo Thạnh, tỉnh Bến Tre",
       "province_old": "Bến Tre",
-      "legacy_district": "Ba Tri"
+      "legacy_district": "Ba Tri",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -57908,9 +58205,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57942,9 +58239,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57958,7 +58255,8 @@ var items = [
     "attributes": {
       "address": "Xã Tân Xuân, tỉnh Bến Tre",
       "province_old": "Bến Tre",
-      "legacy_district": "Ba Tri"
+      "legacy_district": "Ba Tri",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -57976,9 +58274,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57992,7 +58290,8 @@ var items = [
     "attributes": {
       "address": "Ấp Tân Hòa, xã Tân Xuân, tỉnh Bến Tre",
       "province_old": "Bến Tre",
-      "legacy_district": "Ba Tri"
+      "legacy_district": "Ba Tri",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -58010,9 +58309,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58060,18 +58359,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0729285,
-      106.5976522
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58117,18 +58413,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0729285,
-      106.5976522
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58160,9 +58453,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58194,9 +58487,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58251,9 +58544,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58286,9 +58579,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58303,7 +58596,8 @@ var items = [
       "address": "Phường 8, TP Trà Vinh, Trà Vinh",
       "province_old": "Trà Vinh",
       "legacy_district": "TP Trà Vinh",
-      "legacy_ward": "Phường 8"
+      "legacy_ward": "Phường 8",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -58313,17 +58607,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.9516235,
-      106.3322332
+      9.9333987,
+      106.3121888
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58355,9 +58649,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58415,9 +58709,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58431,7 +58725,8 @@ var items = [
     "attributes": {
       "address": "Thị trấn Cầu Kè, tỉnh Trà Vinh",
       "province_old": "Trà Vinh",
-      "legacy_district": "Cầu Kè"
+      "legacy_district": "Cầu Kè",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -58441,17 +58736,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.8555412,
-      106.081416
+      9.8715789,
+      106.089896
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58483,9 +58778,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58539,9 +58834,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58594,9 +58889,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58632,7 +58927,8 @@ var items = [
     "attributes": {
       "address": "Xã An Phú Tân, tỉnh Trà Vinh",
       "province_old": "Trà Vinh",
-      "legacy_district": "Cầu Kè"
+      "legacy_district": "Cầu Kè",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -58642,17 +58938,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.8555412,
-      106.081416
+      9.8626639,
+      106.0262415
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58701,9 +58997,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58736,9 +59032,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58753,7 +59049,8 @@ var items = [
       "address": "Ấp Rùm Sóc, xã Châu Điền, tỉnh Trà Vinh (cách trung tâm thị trấn Cầu Kè khoảng 9 km về phía đông nam)",
       "province_old": "Trà Vinh",
       "legacy_district": "Cầu Kè",
-      "legacy_ward": "Châu Điền"
+      "legacy_ward": "Châu Điền",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -58763,17 +59060,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.8555412,
-      106.081416
+      9.8715789,
+      106.089896
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58811,7 +59108,8 @@ var items = [
       "province_old": "Trà Vinh",
       "ward": "Thạnh Phú",
       "ocop": "5 sao",
-      "legacy_district": "Cầu Kè"
+      "legacy_district": "Cầu Kè",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -58821,17 +59119,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.8555412,
-      106.081416
+      9.9180921,
+      106.0460744
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58888,9 +59186,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58943,9 +59241,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58980,7 +59278,8 @@ var items = [
     "attributes": {
       "address": "Xã An Phú Tân, tỉnh Trà Vinh",
       "province_old": "Trà Vinh",
-      "legacy_district": "Cầu Kè"
+      "legacy_district": "Cầu Kè",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -58990,17 +59289,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.8555412,
-      106.081416
+      9.8626639,
+      106.0262415
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59055,9 +59354,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59093,7 +59392,8 @@ var items = [
       "address": "Ấp An Lộc, xã Hòa Tân, tỉnh Trà Vinh",
       "province_old": "Trà Vinh",
       "legacy_district": "Cầu Kè",
-      "legacy_ward": "Hòa Tân"
+      "legacy_ward": "Hòa Tân",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -59103,17 +59403,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.8555412,
-      106.081416
+      9.8626639,
+      106.0262415
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59144,7 +59444,8 @@ var items = [
     "attributes": {
       "address": "Ấp An Trại, xã An Phú Tân, tỉnh Trà Vinh",
       "province_old": "Trà Vinh",
-      "legacy_district": "Cầu Kè"
+      "legacy_district": "Cầu Kè",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -59154,17 +59455,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.3276125,
-      106.3512572
+      9.8626639,
+      106.0262415
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59201,7 +59502,8 @@ var items = [
       "address": "Xã Hòa Tân, tỉnh Trà Vinh",
       "province_old": "Trà Vinh",
       "legacy_district": "Cầu Kè",
-      "legacy_ward": "Hòa Tân"
+      "legacy_ward": "Hòa Tân",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -59211,17 +59513,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.8555412,
-      106.081416
+      9.8626639,
+      106.0262415
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59259,7 +59561,8 @@ var items = [
     "attributes": {
       "address": "Khóm 2, thị trấn Cầu Kè, tỉnh Trà Vinh",
       "province_old": "Trà Vinh",
-      "legacy_district": "Cầu Kè"
+      "legacy_district": "Cầu Kè",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -59269,17 +59572,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.8555412,
-      106.081416
+      9.8715789,
+      106.089896
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59309,7 +59612,8 @@ var items = [
       "address": "Ấp Trà Kháo, xã Hòa Ân, tỉnh Trà Vinh",
       "province_old": "Trà Vinh",
       "legacy_district": "Cầu Kè",
-      "legacy_ward": "Hòa Ân"
+      "legacy_ward": "Hòa Ân",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -59319,17 +59623,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.8555412,
-      106.081416
+      9.8715789,
+      106.089896
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59361,9 +59665,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59412,9 +59716,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59468,9 +59772,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59509,7 +59813,8 @@ var items = [
       "province_old": "Trà Vinh",
       "ocop": "5 sao",
       "legacy_district": "Tiểu Cần",
-      "legacy_ward": "Phú Cần"
+      "legacy_ward": "Phú Cần",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -59527,9 +59832,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59584,9 +59889,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59619,9 +59924,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59654,9 +59959,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59711,9 +60016,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59745,9 +60050,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59797,9 +60102,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59853,9 +60158,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59888,9 +60193,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59939,9 +60244,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59996,9 +60301,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60046,9 +60351,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60102,9 +60407,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60158,9 +60463,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60210,9 +60515,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60244,9 +60549,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60294,9 +60599,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60353,9 +60658,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60404,9 +60709,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60463,9 +60768,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60480,7 +60785,8 @@ var items = [
       "address": "Xã Tân Hiệp, tỉnh Trà Vinh",
       "province_old": "Trà Vinh",
       "legacy_district": "Trà Cú",
-      "legacy_ward": "Tân Hiệp"
+      "legacy_ward": "Tân Hiệp",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -60490,17 +60796,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.7005387,
-      106.2768829
+      9.7168274,
+      106.3566307
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60540,7 +60846,8 @@ var items = [
       "address": "Xã Hàm Tân, tỉnh Trà Vinh",
       "province_old": "Trà Vinh",
       "legacy_district": "Trà Cú",
-      "legacy_ward": "Hàm Tân"
+      "legacy_ward": "Hàm Tân",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -60550,17 +60857,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.7005387,
-      106.2768829
+      9.6577851,
+      106.2652117
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60600,7 +60907,8 @@ var items = [
       "address": "Xã Hàm Giang, tỉnh Trà Vinh",
       "province_old": "Trà Vinh",
       "ocop": "4 sao",
-      "legacy_district": "Trà Cú"
+      "legacy_district": "Trà Cú",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -60610,17 +60918,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.7005387,
-      106.2768829
+      9.6577851,
+      106.2652117
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60659,7 +60967,8 @@ var items = [
     "attributes": {
       "address": "Xã Đại An, tỉnh Trà Vinh",
       "province_old": "Trà Vinh",
-      "legacy_district": "Trà Cú"
+      "legacy_district": "Trà Cú",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -60669,17 +60978,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.7005387,
-      106.2768829
+      9.6284541,
+      106.2839835
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60693,7 +61002,8 @@ var items = [
     "attributes": {
       "address": "Xã Đại An, Trà Vinh",
       "province_old": "Trà Vinh",
-      "legacy_district": "Trà Cú"
+      "legacy_district": "Trà Cú",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -60703,17 +61013,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.7005387,
-      106.2768829
+      9.6284541,
+      106.2839835
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60770,9 +61080,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60811,7 +61121,8 @@ var items = [
     "attributes": {
       "address": "Xã Đại An, Trà Vinh",
       "province_old": "Trà Vinh",
-      "legacy_district": "Trà Cú"
+      "legacy_district": "Trà Cú",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -60821,17 +61132,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.7005387,
-      106.2768829
+      9.6284541,
+      106.2839835
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60889,9 +61200,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60940,18 +61251,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      9.7005387,
-      106.2768829
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60990,7 +61298,8 @@ var items = [
     "attributes": {
       "address": "Ấp Giồng Lớn B, xã Đại An, tỉnh Trà Vinh",
       "province_old": "Trà Vinh",
-      "legacy_district": "Trà Cú"
+      "legacy_district": "Trà Cú",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -61000,17 +61309,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.7005387,
-      106.2768829
+      9.6284541,
+      106.2839835
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61043,7 +61352,8 @@ var items = [
       "address": "An Quảng Hữu, Trà Cú, Trà Vinh",
       "province_old": "Trà Vinh",
       "legacy_district": "Trà Cú",
-      "legacy_ward": "An Quảng Hữu"
+      "legacy_ward": "An Quảng Hữu",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -61061,9 +61371,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61092,7 +61402,8 @@ var items = [
       "address": "Ấp Vàm, An Quảng Hữu, Trà Cú, Trà Vinh",
       "province_old": "Trà Vinh",
       "legacy_district": "Trà Cú",
-      "legacy_ward": "An Quảng Hữu"
+      "legacy_ward": "An Quảng Hữu",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -61110,9 +61421,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61152,7 +61463,8 @@ var items = [
       "address": "Hàm Giang, Trà Cú, Trà Vinh",
       "province_old": "Trà Vinh",
       "ocop": "4 sao",
-      "legacy_district": "Trà Cú"
+      "legacy_district": "Trà Cú",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -61170,9 +61482,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61187,7 +61499,8 @@ var items = [
       "address": "Xã Ngãi Xuyên, tỉnh Trà Vinh",
       "province_old": "Trà Vinh",
       "legacy_district": "Trà Cú",
-      "legacy_ward": "Ngãi Xuyên"
+      "legacy_ward": "Ngãi Xuyên",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -61197,17 +61510,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.7005387,
-      106.2768829
+      9.6997244,
+      106.2732243
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61239,9 +61552,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61289,9 +61602,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61324,9 +61637,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61383,9 +61696,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61424,7 +61737,8 @@ var items = [
     "attributes": {
       "address": "Cù Lao Mây, Trà Ôn, Vĩnh Long",
       "province_old": "Vĩnh Long",
-      "legacy_district": "Trà Ôn"
+      "legacy_district": "Trà Ôn",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -61434,17 +61748,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.9451384,
-      105.9564155
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61477,9 +61791,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61512,9 +61826,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61553,7 +61867,8 @@ var items = [
     "attributes": {
       "address": "Cù Lao Mây",
       "province_old": "Vĩnh Long",
-      "legacy_district": "Trà Ôn"
+      "legacy_district": "Trà Ôn",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -61563,17 +61878,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.9451384,
-      105.9564155
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61629,9 +61944,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61689,9 +62004,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61731,7 +62046,8 @@ var items = [
       "address": "Xã Mỹ Hòa, TX Bình Minh, Vĩnh Long",
       "province_old": "Vĩnh Long",
       "legacy_district": "TX Bình Minh",
-      "legacy_ward": "Mỹ Hòa"
+      "legacy_ward": "Mỹ Hòa",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -61741,17 +62057,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.3276125,
-      106.3512572
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61783,9 +62099,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61843,9 +62159,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61903,9 +62219,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61935,7 +62251,8 @@ var items = [
       "province_old": "Vĩnh Long",
       "ward": "Xã Đông Thành",
       "ocop": "4 sao",
-      "legacy_district": "TX Bình Minh"
+      "legacy_district": "TX Bình Minh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -61953,9 +62270,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62013,9 +62330,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62055,7 +62372,8 @@ var items = [
       "address": "Phường Cái Vồn, TX Bình Minh, Vĩnh Long",
       "province_old": "Vĩnh Long",
       "ward": "Phường Cái Vồn",
-      "legacy_district": "TX Bình Minh"
+      "legacy_district": "TX Bình Minh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -62073,9 +62391,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62126,9 +62444,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62183,9 +62501,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62222,7 +62540,8 @@ var items = [
       "province_old": "Vĩnh Long",
       "ocop": "4 sao",
       "legacy_district": "TX Bình Minh",
-      "legacy_ward": "Đông Bình"
+      "legacy_ward": "Đông Bình",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -62240,9 +62559,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62300,9 +62619,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62360,9 +62679,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62395,9 +62714,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62452,9 +62771,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62487,9 +62806,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62547,9 +62866,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62589,7 +62908,8 @@ var items = [
       "address": "Xã Tân Thành, Vĩnh Long",
       "province_old": "Vĩnh Long",
       "legacy_district": "Bình Tân",
-      "legacy_ward": "Tân Thành"
+      "legacy_ward": "Tân Thành",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -62607,9 +62927,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62664,9 +62984,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62722,9 +63042,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62761,7 +63081,8 @@ var items = [
     "attributes": {
       "address": "Huyện Bình Tân, Vĩnh Long",
       "province_old": "Vĩnh Long",
-      "legacy_district": "Bình Tân"
+      "legacy_district": "Bình Tân",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -62779,9 +63100,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62829,9 +63150,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62860,7 +63181,8 @@ var items = [
       "address": "Huyện Bình Tân, Vĩnh Long",
       "province_old": "Vĩnh Long",
       "ocop": "OCOP",
-      "legacy_district": "Bình Tân"
+      "legacy_district": "Bình Tân",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -62878,9 +63200,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62909,7 +63231,8 @@ var items = [
       "address": "Huyện Bình Tân, Vĩnh Long",
       "province_old": "Vĩnh Long",
       "ocop": "OCOP",
-      "legacy_district": "Bình Tân"
+      "legacy_district": "Bình Tân",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -62927,9 +63250,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62968,7 +63291,8 @@ var items = [
       "province_old": "Vĩnh Long",
       "ocop": "OCOP",
       "legacy_district": "Bình Tân",
-      "legacy_ward": "Tân Thành"
+      "legacy_ward": "Tân Thành",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -62978,17 +63302,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.3276125,
-      106.3512572
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63013,7 +63337,8 @@ var items = [
     },
     "attributes": {
       "price": "40.000-90.000 VND/kg",
-      "weight/unit": "kg"
+      "weight/unit": "kg",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -63031,9 +63356,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63087,9 +63412,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63125,7 +63450,8 @@ var items = [
     },
     "attributes": {
       "price": "8.000-15.000 VND/trái",
-      "weight/unit": "trái"
+      "weight/unit": "trái",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -63135,17 +63461,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.5815192,
-      106.5306792
+      9.8432052,
+      106.3356274
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63178,9 +63504,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63213,9 +63539,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63248,9 +63574,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63291,7 +63617,8 @@ var items = [
       "province_old": "Vĩnh Long",
       "ocop": "OCOP",
       "legacy_district": "TP Vĩnh Long",
-      "legacy_ward": "Phường 1"
+      "legacy_ward": "Phường 1",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -63309,9 +63636,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63344,9 +63671,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63396,9 +63723,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63443,9 +63770,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63503,9 +63830,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63545,7 +63872,8 @@ var items = [
       "address": "Phường 1, TP Vĩnh Long, tỉnh Vĩnh Long",
       "province_old": "Vĩnh Long",
       "legacy_district": "TP Vĩnh Long",
-      "legacy_ward": "Phường 1"
+      "legacy_ward": "Phường 1",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -63563,9 +63891,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63598,9 +63926,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63633,9 +63961,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63668,9 +63996,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63728,9 +64056,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63788,9 +64116,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63823,9 +64151,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63883,9 +64211,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63943,9 +64271,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63996,9 +64324,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64055,9 +64383,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64115,9 +64443,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64170,9 +64498,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64213,7 +64541,8 @@ var items = [
       "province_old": "Vĩnh Long",
       "ocop": "3 sao",
       "legacy_district": "TP Vĩnh Long",
-      "legacy_ward": "Phường 9"
+      "legacy_ward": "Phường 9",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -64231,9 +64560,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64266,9 +64595,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64301,9 +64630,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64361,9 +64690,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64414,9 +64743,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64449,7 +64778,8 @@ var items = [
       "province_old": "Vĩnh Long",
       "ocop": "4 sao",
       "legacy_district": "TP Vĩnh Long",
-      "legacy_ward": "Trường An"
+      "legacy_ward": "Trường An",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -64467,9 +64797,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64523,9 +64853,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64558,9 +64888,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64593,9 +64923,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64635,7 +64965,8 @@ var items = [
       "address": "Ấp Phước Ngươn A, xã Phước Hậu, tỉnh Vĩnh Long",
       "province_old": "Vĩnh Long",
       "ward": "TT Long Hồ",
-      "legacy_district": "Long Hồ"
+      "legacy_district": "Long Hồ",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -64653,9 +64984,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64710,9 +65041,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64768,9 +65099,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64826,9 +65157,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64868,7 +65199,8 @@ var items = [
       "address": "Thị trấn Long Hồ, tỉnh Vĩnh Long",
       "province_old": "Vĩnh Long",
       "ward": "TT Long Hồ",
-      "legacy_district": "Long Hồ"
+      "legacy_district": "Long Hồ",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -64886,9 +65218,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64935,9 +65267,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64995,9 +65327,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65036,7 +65368,8 @@ var items = [
       "province_old": "Vĩnh Long",
       "ward": "Phước Hậu",
       "ocop": "OCOP",
-      "legacy_district": "Long Hồ"
+      "legacy_district": "Long Hồ",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -65054,9 +65387,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65114,9 +65447,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65174,9 +65507,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65233,9 +65566,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65290,9 +65623,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65332,7 +65665,8 @@ var items = [
       "address": "Xã Thanh Đức, tỉnh Vĩnh Long",
       "province_old": "Vĩnh Long",
       "ward": "Thanh Đức",
-      "legacy_district": "Long Hồ"
+      "legacy_district": "Long Hồ",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -65350,9 +65684,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65385,9 +65719,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65420,9 +65754,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65437,7 +65771,8 @@ var items = [
       "address": "Ấp Long Thuận A, xã Long Phước, tỉnh Vĩnh Long",
       "province_old": "Vĩnh Long",
       "legacy_district": "Long Hồ",
-      "legacy_ward": "Đồng Phú"
+      "legacy_ward": "Đồng Phú",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -65455,9 +65790,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65497,7 +65832,8 @@ var items = [
       "address": "Các xã An Bình, Bình Hòa Phước, Hòa Ninh, Đồng Phú, tỉnh Vĩnh Long",
       "province_old": "Vĩnh Long",
       "legacy_district": "Long Hồ",
-      "legacy_ward": "Đồng Phú"
+      "legacy_ward": "Đồng Phú",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -65515,9 +65851,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65575,9 +65911,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65633,9 +65969,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65668,9 +66004,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65716,9 +66052,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65751,9 +66087,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65790,7 +66126,8 @@ var items = [
       "province_old": "Vĩnh Long",
       "ocop": "OCOP",
       "legacy_district": "Mang Thít",
-      "legacy_ward": "TT Mang Thít"
+      "legacy_ward": "TT Mang Thít",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -65808,9 +66145,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65868,9 +66205,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65885,7 +66222,8 @@ var items = [
       "address": "Xã Mỹ An, Mỹ Phước, Nhơn Phú, Hòa Tịnh",
       "province_old": "Vĩnh Long",
       "legacy_district": "Mang Thít",
-      "legacy_ward": "Mỹ An"
+      "legacy_ward": "Mỹ An",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -65903,9 +66241,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65942,7 +66280,8 @@ var items = [
       "province_old": "Vĩnh Long",
       "ocop": "4 sao",
       "legacy_district": "Mang Thít",
-      "legacy_ward": "Mỹ An"
+      "legacy_ward": "Mỹ An",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -65960,9 +66299,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66002,7 +66341,8 @@ var items = [
       "address": "Dọc kênh Thầy Cai và sông Cổ Chiên, tỉnh Vĩnh Long",
       "province_old": "Vĩnh Long",
       "legacy_district": "Mang Thít",
-      "legacy_ward": "Tân Long"
+      "legacy_ward": "Tân Long",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -66020,9 +66360,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66080,9 +66420,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66140,9 +66480,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66157,7 +66497,8 @@ var items = [
       "address": "Xã Mỹ Phước, Mỹ An, Nhơn Phú, Hòa Tịnh, Vĩnh Long",
       "province_old": "Vĩnh Long",
       "legacy_district": "Mang Thít",
-      "legacy_ward": "Chánh An"
+      "legacy_ward": "Chánh An",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -66175,9 +66516,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66217,7 +66558,8 @@ var items = [
       "address": "Huyện Mang Thít, Vĩnh Long",
       "province_old": "Vĩnh Long",
       "legacy_district": "Mang Thít",
-      "legacy_ward": "Chánh An"
+      "legacy_ward": "Chánh An",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -66235,9 +66577,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66287,9 +66629,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66347,9 +66689,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66382,9 +66724,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66399,7 +66741,8 @@ var items = [
       "address": "Huyện Mang Thít, Vĩnh Long",
       "province_old": "Vĩnh Long",
       "legacy_district": "Mang Thít",
-      "legacy_ward": "Chánh An"
+      "legacy_ward": "Chánh An",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -66417,9 +66760,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66457,7 +66800,8 @@ var items = [
       "address": "Xuất phát TP Vĩnh Long, đi qua huyện Mang Thít, Vĩnh Long",
       "province_old": "Vĩnh Long",
       "legacy_district": "Mang Thít",
-      "legacy_ward": "Chánh An"
+      "legacy_ward": "Chánh An",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -66475,9 +66819,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66535,9 +66879,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66570,9 +66914,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66630,9 +66974,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66672,7 +67016,8 @@ var items = [
       "address": "Ấp Phú Hòa, xã Nhơn Phú, tỉnh Vĩnh Long",
       "province_old": "Vĩnh Long",
       "legacy_district": "Mang Thít",
-      "legacy_ward": "Hòa Tịnh"
+      "legacy_ward": "Hòa Tịnh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -66690,9 +67035,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66732,7 +67077,8 @@ var items = [
       "address": "Dọc kênh Thầy Cai và kênh Cổ Chiên, tỉnh Vĩnh Long",
       "province_old": "Vĩnh Long",
       "legacy_district": "Mang Thít",
-      "legacy_ward": "Hòa Tịnh"
+      "legacy_ward": "Hòa Tịnh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -66750,9 +67096,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66785,9 +67131,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66802,7 +67148,8 @@ var items = [
       "address": "Cù Lao Dài, Vĩnh Long",
       "province_old": "Vĩnh Long",
       "ward": "TT Vũng Liêm",
-      "legacy_district": "Vũng Liêm"
+      "legacy_district": "Vũng Liêm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -66820,9 +67167,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66837,7 +67184,8 @@ var items = [
       "address": "Huyện Vũng Liêm, Vĩnh Long",
       "province_old": "Vĩnh Long",
       "ward": "TT Vũng Liêm",
-      "legacy_district": "Vũng Liêm"
+      "legacy_district": "Vũng Liêm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -66855,9 +67203,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66897,7 +67245,8 @@ var items = [
       "address": "Huyện Vũng Liêm, Vĩnh Long",
       "province_old": "Vĩnh Long",
       "ward": "TT Vũng Liêm",
-      "legacy_district": "Vũng Liêm"
+      "legacy_district": "Vũng Liêm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -66915,9 +67264,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66954,7 +67303,8 @@ var items = [
       "province_old": "Vĩnh Long",
       "ward": "TT Vũng Liêm",
       "ocop": "OCOP",
-      "legacy_district": "Vũng Liêm"
+      "legacy_district": "Vũng Liêm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -66964,17 +67314,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.254177,
-      105.9627693
+      10.0964974,
+      106.1854829
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67032,9 +67382,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67049,7 +67399,8 @@ var items = [
       "address": "Ngã ba An Nhơn, thị trấn Vũng Liêm, Vĩnh Long",
       "province_old": "Vĩnh Long",
       "legacy_district": "Vũng Liêm",
-      "legacy_ward": "Trung An"
+      "legacy_ward": "Trung An",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -67059,17 +67410,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.254177,
-      105.9627693
+      10.0964974,
+      106.1854829
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67109,7 +67460,8 @@ var items = [
       "address": "Xã Trung Thành Đông và Trung Thành Tây, Vĩnh Long",
       "province_old": "Vĩnh Long",
       "legacy_district": "Vũng Liêm",
-      "legacy_ward": "Trung An"
+      "legacy_ward": "Trung An",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -67127,9 +67479,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67187,9 +67539,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67226,7 +67578,8 @@ var items = [
       "province_old": "Vĩnh Long",
       "ocop": "OCOP",
       "legacy_district": "Vũng Liêm",
-      "legacy_ward": "Trung An"
+      "legacy_ward": "Trung An",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -67244,9 +67597,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67261,7 +67614,8 @@ var items = [
       "address": "Xã Quới Thiện, tỉnh Vĩnh Long",
       "province_old": "Vĩnh Long",
       "ward": "Quới Thiện",
-      "legacy_district": "Vũng Liêm"
+      "legacy_district": "Vũng Liêm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -67279,9 +67633,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67321,7 +67675,8 @@ var items = [
       "address": "Xã Trung Thành Đông, tỉnh Vĩnh Long",
       "province_old": "Vĩnh Long",
       "ward": "Quới Thiện",
-      "legacy_district": "Vũng Liêm"
+      "legacy_district": "Vũng Liêm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -67339,9 +67694,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67398,9 +67753,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67455,9 +67810,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67511,9 +67866,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67546,9 +67901,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67603,9 +67958,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67659,9 +68014,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67676,7 +68031,8 @@ var items = [
       "address": "Xã Thanh Bình",
       "province_old": "Vĩnh Long",
       "legacy_district": "Vũng Liêm",
-      "legacy_ward": "Thanh Bình"
+      "legacy_ward": "Thanh Bình",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -67694,9 +68050,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67711,7 +68067,8 @@ var items = [
       "address": "Huyện Vũng Liêm, tỉnh Vĩnh Long",
       "province_old": "Vĩnh Long",
       "legacy_district": "Vũng Liêm",
-      "legacy_ward": "Thanh Bình"
+      "legacy_ward": "Thanh Bình",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -67729,9 +68086,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67771,7 +68128,8 @@ var items = [
       "province_old": "Vĩnh Long",
       "ocop": "OCOP",
       "legacy_district": "Vũng Liêm",
-      "legacy_ward": "Thanh Bình"
+      "legacy_ward": "Thanh Bình",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -67789,9 +68147,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67831,7 +68189,8 @@ var items = [
       "address": "Xã Thanh Bình và Quới Thiện",
       "province_old": "Vĩnh Long",
       "legacy_district": "Vũng Liêm",
-      "legacy_ward": "Thanh Bình"
+      "legacy_ward": "Thanh Bình",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -67849,9 +68208,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67909,9 +68268,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67950,7 +68309,8 @@ var items = [
       "address": "Xã Hiếu Nghĩa, tỉnh Vĩnh Long",
       "province_old": "Vĩnh Long",
       "legacy_district": "Vũng Liêm",
-      "legacy_ward": "Hiếu Nghĩa"
+      "legacy_ward": "Hiếu Nghĩa",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -67968,9 +68328,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68028,9 +68388,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68088,9 +68448,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68141,9 +68501,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68194,9 +68554,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68235,7 +68595,8 @@ var items = [
       "address": "Huyện Tam Bình, Vĩnh Long",
       "province_old": "Vĩnh Long",
       "ward": "TT Tam Bình",
-      "legacy_district": "Tam Bình"
+      "legacy_district": "Tam Bình",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -68253,9 +68614,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68313,9 +68674,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68373,9 +68734,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68416,7 +68777,8 @@ var items = [
       "province_old": "Vĩnh Long",
       "ocop": "3 sao",
       "legacy_district": "Tam Bình",
-      "legacy_ward": "Loan Mỹ"
+      "legacy_ward": "Loan Mỹ",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -68434,9 +68796,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68469,7 +68831,8 @@ var items = [
       "province_old": "Vĩnh Long",
       "ocop": "4 sao",
       "legacy_district": "Tam Bình",
-      "legacy_ward": "Loan Mỹ"
+      "legacy_ward": "Loan Mỹ",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -68487,9 +68850,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68522,9 +68885,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68557,9 +68920,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68610,9 +68973,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68652,7 +69015,8 @@ var items = [
       "address": "Ấp Mỹ Phú Tân, xã Mỹ Thạnh Trung, tỉnh Vĩnh Long",
       "province_old": "Vĩnh Long",
       "ward": "Song Phú",
-      "legacy_district": "Tam Bình"
+      "legacy_district": "Tam Bình",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -68662,17 +69026,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.3276125,
-      106.3512572
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68730,9 +69094,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68746,7 +69110,8 @@ var items = [
     "attributes": {
       "address": "Ấp Giồng Thanh Bạch, xã Thiện Mỹ, tỉnh Vĩnh Long",
       "province_old": "Vĩnh Long",
-      "legacy_district": "Trà Ôn"
+      "legacy_district": "Trà Ôn",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -68756,17 +69121,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.9451384,
-      105.9564155
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68780,7 +69145,8 @@ var items = [
     "attributes": {
       "address": "Xã Thiện Mỹ, tỉnh Vĩnh Long",
       "province_old": "Vĩnh Long",
-      "legacy_district": "Trà Ôn"
+      "legacy_district": "Trà Ôn",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -68790,17 +69156,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.9451384,
-      105.9564155
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68842,7 +69208,8 @@ var items = [
     "attributes": {
       "address": "Ấp Phú Xuân, xã Phú Thành, tỉnh Vĩnh Long",
       "province_old": "Vĩnh Long",
-      "legacy_district": "Trà Ôn"
+      "legacy_district": "Trà Ôn",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -68852,17 +69219,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.3276125,
-      106.3512572
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68916,9 +69283,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68973,9 +69340,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69017,9 +69384,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69059,7 +69426,8 @@ var items = [
       "address": "Ấp Long Hưng, xã Lục Sĩ Thành, tỉnh Vĩnh Long",
       "province_old": "Vĩnh Long",
       "ward": "Lục Sĩ Thành",
-      "legacy_district": "Trà Ôn"
+      "legacy_district": "Trà Ôn",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -69069,17 +69437,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.9451384,
-      105.9564155
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69137,9 +69505,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69177,7 +69545,8 @@ var items = [
       "address": "Xã Lục Sĩ Thành, tỉnh Vĩnh Long",
       "province_old": "Vĩnh Long",
       "ward": "Lục Sĩ Thành",
-      "legacy_district": "Trà Ôn"
+      "legacy_district": "Trà Ôn",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -69187,17 +69556,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.9451384,
-      105.9564155
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69253,9 +69622,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69313,9 +69682,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69348,9 +69717,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69383,9 +69752,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69431,18 +69800,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0729285,
-      106.5976522
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69489,18 +69855,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0729285,
-      106.5976522
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69555,9 +69918,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69606,18 +69969,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.0729285,
-      106.5976522
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69650,9 +70010,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69689,7 +70049,8 @@ var items = [
     "attributes": {
       "address": "Xã Hưng Nhượng, tỉnh Bến Tre",
       "province_old": "Bến Tre",
-      "legacy_district": "Giồng Trôm"
+      "legacy_district": "Giồng Trôm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -69707,9 +70068,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69758,18 +70119,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.1466808,
-      106.4613646
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69825,9 +70183,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69885,9 +70243,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69945,9 +70303,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69980,9 +70338,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70015,9 +70373,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70061,9 +70419,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70096,9 +70454,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70156,9 +70514,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70215,9 +70573,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70275,9 +70633,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70310,9 +70668,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70368,9 +70726,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70427,9 +70785,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70468,7 +70826,8 @@ var items = [
       "address": "Xã Thạnh Hải, tỉnh Bến Tre",
       "province_old": "Bến Tre",
       "ocop": "OCOP",
-      "legacy_district": "Thạnh Phú"
+      "legacy_district": "Thạnh Phú",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -70478,17 +70837,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.932093,
-      106.561003
+      9.6147395,
+      106.3900486
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70536,18 +70895,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      9.932093,
-      106.561003
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70585,18 +70941,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.1671098,
-      106.2916967
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70645,18 +70998,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      9.932093,
-      106.561003
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70714,9 +71064,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70749,9 +71099,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70809,9 +71159,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70858,18 +71208,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      9.932093,
-      106.561003
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70925,9 +71272,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70983,9 +71330,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71017,9 +71364,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71033,7 +71380,8 @@ var items = [
     "attributes": {
       "address": "Xã Đại Điền, tỉnh Bến Tre",
       "province_old": "Bến Tre",
-      "legacy_district": "Thạnh Phú"
+      "legacy_district": "Thạnh Phú",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -71043,17 +71391,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.932093,
-      106.561003
+      10.0033116,
+      106.4434966
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71093,7 +71441,8 @@ var items = [
       "address": "Xã Mỹ An, tỉnh Bến Tre",
       "province_old": "Bến Tre",
       "ward": "Đại Điền",
-      "legacy_district": "Thạnh Phú"
+      "legacy_district": "Thạnh Phú",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -71103,17 +71452,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.932093,
-      106.561003
+      9.9576517,
+      106.5265588
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71148,7 +71497,8 @@ var items = [
     "attributes": {
       "address": "Giồng Luông, xã Đại Điền, tỉnh Bến Tre",
       "province_old": "Bến Tre",
-      "legacy_district": "Thạnh Phú"
+      "legacy_district": "Thạnh Phú",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -71158,17 +71508,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.932093,
-      106.561003
+      10.0033116,
+      106.4434966
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71215,18 +71565,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.1671098,
-      106.2916967
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71283,9 +71630,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71334,18 +71681,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.1671098,
-      106.2916967
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71378,9 +71722,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71413,9 +71757,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71448,9 +71792,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71508,9 +71852,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71567,9 +71911,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71623,9 +71967,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71682,9 +72026,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71717,9 +72061,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71777,9 +72121,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71833,9 +72177,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71893,9 +72237,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71951,9 +72295,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71986,9 +72330,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72046,9 +72390,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72104,9 +72448,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72153,18 +72497,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.1673217,
-      106.6970838
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72209,18 +72550,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.1673217,
-      106.6970838
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72278,9 +72616,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72313,9 +72651,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72355,7 +72693,8 @@ var items = [
       "address": "Ấp Phước Hòa, xã Thạnh Phước, tỉnh Bến Tre",
       "province_old": "Bến Tre",
       "legacy_district": "Bình Đại",
-      "legacy_ward": "Bình Thắng"
+      "legacy_ward": "Bình Thắng",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -72373,9 +72712,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72433,9 +72772,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72493,9 +72832,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72542,18 +72881,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.1673217,
-      106.6970838
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72585,9 +72921,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72637,9 +72973,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72672,9 +73008,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72732,9 +73068,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72784,9 +73120,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72818,9 +73154,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72852,9 +73188,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72912,9 +73248,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72961,18 +73297,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.1673217,
-      106.6970838
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73019,9 +73352,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73054,9 +73387,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73113,9 +73446,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73156,18 +73489,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.1673217,
-      106.6970838
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73225,9 +73555,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73285,9 +73615,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73342,9 +73672,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73377,7 +73707,8 @@ var items = [
       "province_old": "Bến Tre",
       "ocop": "OCOP",
       "legacy_district": "Mỏ Cày Bắc",
-      "legacy_ward": "Khánh Thạnh Tân"
+      "legacy_ward": "Khánh Thạnh Tân",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -73387,17 +73718,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.1671098,
-      106.2916967
+      10.1245898,
+      106.2556223
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73437,7 +73768,8 @@ var items = [
       "address": "Ven sông Thom, xã Khánh Thạnh Tân, tỉnh Bến Tre",
       "province_old": "Bến Tre",
       "legacy_district": "Mỏ Cày Bắc",
-      "legacy_ward": "Khánh Thạnh Tân"
+      "legacy_ward": "Khánh Thạnh Tân",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -73447,17 +73779,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.1671098,
-      106.2916967
+      10.1245898,
+      106.2556223
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73511,9 +73843,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73528,7 +73860,8 @@ var items = [
       "address": "Xã Tân Phú Tây, Tỉnh Bến Tre",
       "province_old": "Bến Tre",
       "legacy_district": "Mỏ Cày Bắc",
-      "legacy_ward": "Thanh Tân"
+      "legacy_ward": "Thanh Tân",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -73538,17 +73871,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.1671098,
-      106.2916967
+      10.1786779,
+      106.2581577
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73590,18 +73923,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.1671098,
-      106.2916967
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73616,7 +73946,8 @@ var items = [
       "address": "Xã Tân Phú Tây, Bến Tre",
       "province_old": "Bến Tre",
       "ward": "Tân Thành Bình",
-      "legacy_district": "Mỏ Cày Bắc"
+      "legacy_district": "Mỏ Cày Bắc",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -73626,17 +73957,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.1671098,
-      106.2916967
+      10.1786779,
+      106.2581577
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73675,7 +74006,8 @@ var items = [
     "attributes": {
       "address": "Ấp Thành Hóa 1, xã Tân Thành Bình, Bến Tre",
       "province_old": "Bến Tre",
-      "legacy_district": "Mỏ Cày Bắc"
+      "legacy_district": "Mỏ Cày Bắc",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -73685,17 +74017,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.1671098,
-      106.2916967
+      10.1729205,
+      106.3155356
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73746,9 +74078,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73780,9 +74112,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73839,9 +74171,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73855,7 +74187,8 @@ var items = [
     "attributes": {
       "address": "Ấp Phước Trung, thị trấn Phước Mỹ Trung, tỉnh Bến Tre",
       "province_old": "Bến Tre",
-      "legacy_district": "Mỏ Cày Bắc"
+      "legacy_district": "Mỏ Cày Bắc",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -73865,17 +74198,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.1671098,
-      106.2916967
+      10.1786779,
+      106.2581577
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73924,18 +74257,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.1671098,
-      106.2916967
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73975,7 +74305,8 @@ var items = [
       "address": "Xã Hàm Giang, tỉnh Trà Vinh",
       "province_old": "Trà Vinh",
       "ocop": "4 sao",
-      "legacy_district": "Trà Cú"
+      "legacy_district": "Trà Cú",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -73985,17 +74316,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.7005387,
-      106.2768829
+      9.6577851,
+      106.2652117
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74034,7 +74365,8 @@ var items = [
     "attributes": {
       "address": "Xã Hàm Tân, tỉnh Trà Vinh",
       "province_old": "Trà Vinh",
-      "legacy_district": "Trà Cú"
+      "legacy_district": "Trà Cú",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -74044,17 +74376,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.7005387,
-      106.2768829
+      9.6577851,
+      106.2652117
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74086,7 +74418,8 @@ var items = [
       "address": "Xã Hàm Giang, tỉnh Trà Vinh",
       "province_old": "Trà Vinh",
       "ocop": "4 sao",
-      "legacy_district": "Trà Cú"
+      "legacy_district": "Trà Cú",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -74096,17 +74429,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.7005387,
-      106.2768829
+      9.6577851,
+      106.2652117
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74151,9 +74484,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74167,7 +74500,8 @@ var items = [
     "attributes": {
       "address": "Ấp Lưu Cừ II, xã Lưu Nghiệp Anh, tỉnh Trà Vinh",
       "province_old": "Trà Vinh",
-      "legacy_district": "Trà Cú"
+      "legacy_district": "Trà Cú",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -74185,9 +74519,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74226,7 +74560,8 @@ var items = [
     "attributes": {
       "address": "Ấp Chợ, xã Phước Hưng, tỉnh Trà Vinh",
       "province_old": "Trà Vinh",
-      "legacy_district": "Trà Cú"
+      "legacy_district": "Trà Cú",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -74236,17 +74571,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.7127327,
-      106.1924537
+      9.7571241,
+      106.2841663
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74300,9 +74635,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74334,9 +74669,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74351,7 +74686,8 @@ var items = [
       "address": "Ấp Cồn Tàu, xã Trường Long Hòa, thị xã Duyên Hải, Trà Vinh",
       "province_old": "Trà Vinh",
       "ward": "TT Duyên Hải",
-      "legacy_district": "Duyên Hải"
+      "legacy_district": "Duyên Hải",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -74369,9 +74705,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74403,7 +74739,8 @@ var items = [
       "address": "Phường 1, thị xã Duyên Hải, Trà Vinh",
       "province_old": "Trà Vinh",
       "ocop": "4 sao",
-      "legacy_district": "Duyên Hải"
+      "legacy_district": "Duyên Hải",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -74421,9 +74758,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74478,9 +74815,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74519,7 +74856,8 @@ var items = [
     "attributes": {
       "address": "Thị xã Duyên Hải, Trà Vinh",
       "province_old": "Trà Vinh",
-      "legacy_district": "Duyên Hải"
+      "legacy_district": "Duyên Hải",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -74537,9 +74875,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74572,9 +74910,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74632,9 +74970,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74649,7 +74987,8 @@ var items = [
       "address": "Phường Trường Long Hòa, Thị xã Duyên Hải, Tỉnh Trà Vinh",
       "province_old": "Trà Vinh",
       "legacy_district": "Duyên Hải",
-      "legacy_ward": "Trường Long Hòa"
+      "legacy_ward": "Trường Long Hòa",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -74667,9 +75006,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74702,9 +75041,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74737,9 +75076,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74790,9 +75129,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74807,7 +75146,8 @@ var items = [
       "address": "Ấp Ba Động, xã Trường Long Hòa, thị xã Duyên Hải, tỉnh Trà Vinh",
       "province_old": "Trà Vinh",
       "legacy_district": "Duyên Hải",
-      "legacy_ward": "Long Khánh"
+      "legacy_ward": "Long Khánh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -74825,9 +75165,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74877,9 +75217,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74937,9 +75277,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74984,9 +75324,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75042,9 +75382,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75068,18 +75408,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      9.6147395,
-      106.3900486
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75094,7 +75431,8 @@ var items = [
       "address": "Cồn Trứng, thị xã Duyên Hải, Trà Vinh",
       "province_old": "Trà Vinh",
       "ward": "Long Vĩnh",
-      "legacy_district": "Duyên Hải"
+      "legacy_district": "Duyên Hải",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -75112,9 +75450,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75171,9 +75509,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75213,7 +75551,8 @@ var items = [
       "address": "Các xã vùng đảo, thị xã Duyên Hải, Trà Vinh",
       "province_old": "Trà Vinh",
       "ward": "Long Vĩnh",
-      "legacy_district": "Duyên Hải"
+      "legacy_district": "Duyên Hải",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -75231,9 +75570,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75266,9 +75605,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75301,9 +75640,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75318,7 +75657,8 @@ var items = [
       "address": "Ấp Cây Da, xã Đôn Xuân, Trà Vinh",
       "province_old": "Trà Vinh",
       "ward": "TT Long Thành",
-      "legacy_district": "Duyên Hải"
+      "legacy_district": "Duyên Hải",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -75336,9 +75676,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75375,7 +75715,8 @@ var items = [
       "province_old": "Trà Vinh",
       "ocop": "3 sao",
       "legacy_district": "Trà Cú",
-      "legacy_ward": "TT Định An"
+      "legacy_ward": "TT Định An",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -75385,17 +75726,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.7005387,
-      106.2768829
+      9.7571241,
+      106.2841663
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75425,7 +75766,8 @@ var items = [
       "address": "Ấp Vàm, xã An Quảng Hữu, tỉnh Trà Vinh",
       "province_old": "Trà Vinh",
       "legacy_district": "Trà Cú",
-      "legacy_ward": "TT Định An"
+      "legacy_ward": "TT Định An",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -75435,17 +75777,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.7005387,
-      106.2768829
+      9.7127327,
+      106.1924537
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75487,9 +75829,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75530,9 +75872,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75588,9 +75930,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75648,9 +75990,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75708,9 +76050,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75748,7 +76090,8 @@ var items = [
     },
     "attributes": {
       "address": "Long Đức, thành phố Trà Vinh, tỉnh Trà Vinh",
-      "products": "Tượng gỗ, đồ thờ, sản phẩm chạm khắc gỗ"
+      "products": "Tượng gỗ, đồ thờ, sản phẩm chạm khắc gỗ",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -75766,9 +76109,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75825,9 +76168,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75884,9 +76227,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75925,7 +76268,8 @@ var items = [
     "attributes": {
       "hạng": "homestay",
       "phone": "0939299278",
-      "address": "22/2 ấp Bà My, xã Cầu Kè"
+      "address": "22/2 ấp Bà My, xã Cầu Kè",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -75943,9 +76287,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76002,9 +76346,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76061,9 +76405,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76111,18 +76455,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.1673217,
-      106.6970838
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76161,7 +76502,8 @@ var items = [
     "attributes": {
       "hạng": "homestay",
       "phone": "09190020505",
-      "address": "Tổ 9, ấp 1, xã Phú Thuận"
+      "address": "Tổ 9, ấp 1, xã Phú Thuận",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -76179,9 +76521,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76238,9 +76580,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76279,7 +76621,8 @@ var items = [
     "attributes": {
       "hạng": "homestay",
       "phone": "0903962257",
-      "address": "66 ấp Tân Phước"
+      "address": "66 ấp Tân Phước",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -76297,9 +76640,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76354,9 +76697,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76402,18 +76745,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2237865,
-      106.1914491
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76471,9 +76811,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76528,9 +76868,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76585,9 +76925,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76642,9 +76982,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76699,9 +77039,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76757,9 +77097,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76809,9 +77149,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76863,9 +77203,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76889,7 +77229,8 @@ var items = [
       "text": "Sầu riêng Cái Mơn vào vụ chính khoảng tháng 5-8. Tháng 6-7 thường là thời điểm rộ, trái nhiều và chất lượng ngon nhất."
     },
     "attributes": {
-      "province_old": "Bến Tre"
+      "province_old": "Bến Tre",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -76907,9 +77248,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76951,9 +77292,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77007,9 +77348,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77053,9 +77394,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77112,9 +77453,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77156,9 +77497,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77196,7 +77537,8 @@ var items = [
     "attributes": {
       "address": "Xã Phú Phụng",
       "province_old": "Bến Tre",
-      "legacy_district": "Chợ Lách"
+      "legacy_district": "Chợ Lách",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -77214,9 +77556,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77255,7 +77597,8 @@ var items = [
     "attributes": {
       "address": "Cồn Phú Bình, Xã Phú Phụng",
       "province_old": "Bến Tre",
-      "legacy_district": "Chợ Lách"
+      "legacy_district": "Chợ Lách",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -77273,9 +77616,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77289,7 +77632,8 @@ var items = [
     "attributes": {
       "address": "Ấp Chợ, Xã Phú Phụng",
       "province_old": "Bến Tre",
-      "legacy_district": "Chợ Lách"
+      "legacy_district": "Chợ Lách",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -77307,9 +77651,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77362,9 +77706,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77396,9 +77740,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77447,9 +77791,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77486,7 +77830,8 @@ var items = [
       "address": "Cồn Phú Đa, xã Vĩnh Bình",
       "province_old": "Bến Tre",
       "legacy_district": "Chợ Lách",
-      "legacy_ward": "Vĩnh Bình"
+      "legacy_ward": "Vĩnh Bình",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -77504,9 +77849,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77533,7 +77878,8 @@ var items = [
       "address": "Xã Vĩnh Bình",
       "province_old": "Bến Tre",
       "legacy_district": "Chợ Lách",
-      "legacy_ward": "Vĩnh Bình"
+      "legacy_ward": "Vĩnh Bình",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -77551,9 +77897,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77598,9 +77944,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77645,18 +77991,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2237865,
-      106.1914491
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77710,9 +78053,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77744,9 +78087,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77785,7 +78128,8 @@ var items = [
     "attributes": {
       "address": "9/16 Thanh Tân, xã Tân Thiềng",
       "province_old": "Bến Tre",
-      "legacy_district": "Chợ Lách"
+      "legacy_district": "Chợ Lách",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -77803,9 +78147,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77849,9 +78193,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77899,18 +78243,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      10.2237865,
-      106.1914491
-    ],
+    "coordinates": null,
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77950,7 +78291,8 @@ var items = [
       "address": "Xã Phú Lễ",
       "province_old": "Bến Tre",
       "legacy_district": "Ba Tri",
-      "legacy_ward": "Phú Lễ"
+      "legacy_ward": "Phú Lễ",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -77968,9 +78310,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77985,7 +78327,8 @@ var items = [
       "address": "Xã An Đức",
       "province_old": "Bến Tre",
       "legacy_district": "Ba Tri",
-      "legacy_ward": "An Đức"
+      "legacy_ward": "An Đức",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -78003,9 +78346,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78045,7 +78388,8 @@ var items = [
       "address": "Xã An Đức",
       "province_old": "Bến Tre",
       "legacy_district": "Ba Tri",
-      "legacy_ward": "An Đức"
+      "legacy_ward": "An Đức",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -78063,9 +78407,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78123,9 +78467,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78181,9 +78525,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78237,9 +78581,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78294,9 +78638,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78354,9 +78698,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78411,9 +78755,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78463,9 +78807,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78518,9 +78862,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78552,9 +78896,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78593,7 +78937,8 @@ var items = [
     "attributes": {
       "address": "Ấp An Trại, xã An Phú Tân",
       "province_old": "Trà Vinh",
-      "legacy_district": "Cầu Kè"
+      "legacy_district": "Cầu Kè",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -78603,17 +78948,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.3276125,
-      106.3512572
+      9.8626639,
+      106.0262415
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78645,9 +78990,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78662,7 +79007,8 @@ var items = [
       "address": "QL60, Hiếu Tử, Tiểu Cần",
       "province_old": "Trà Vinh",
       "legacy_district": "Tiểu Cần",
-      "legacy_ward": "Hiếu Tử"
+      "legacy_ward": "Hiếu Tử",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -78680,9 +79026,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78696,7 +79042,8 @@ var items = [
     "attributes": {
       "address": "Tập Ngãi, Tiểu Cần",
       "province_old": "Trà Vinh",
-      "legacy_district": "Tiểu Cần"
+      "legacy_district": "Tiểu Cần",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -78714,9 +79061,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78756,7 +79103,8 @@ var items = [
       "address": "Ấp Cây Hẹ, xã Phú Cần, Tiểu Cần",
       "province_old": "Trà Vinh",
       "legacy_district": "Tiểu Cần",
-      "legacy_ward": "Phú Cần"
+      "legacy_ward": "Phú Cần",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -78774,9 +79122,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78834,9 +79182,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78894,9 +79242,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78928,9 +79276,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78975,9 +79323,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79035,9 +79383,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79070,9 +79418,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79111,7 +79459,8 @@ var items = [
       "province_old": "Trà Vinh",
       "ward": "Đông Hải",
       "ocop": "3 sao",
-      "legacy_district": "Duyên Hải"
+      "legacy_district": "Duyên Hải",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -79129,9 +79478,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79158,7 +79507,8 @@ var items = [
       "date_start": "2026-02-05",
       "date_end": "2026-02-15",
       "category": "su-kien",
-      "legacy_district": "Chợ Lách"
+      "legacy_district": "Chợ Lách",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -79176,9 +79526,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79224,9 +79574,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79272,9 +79622,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79302,7 +79652,8 @@ var items = [
       "date_end": "2026-11-16",
       "category": "le-hoi",
       "lunar_date": "16–17 tháng 10 âm lịch",
-      "legacy_district": "TP Vĩnh Long"
+      "legacy_district": "TP Vĩnh Long",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -79320,9 +79671,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79368,9 +79719,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79397,7 +79748,8 @@ var items = [
       "category": "le-hoi",
       "lunar_date": "15 tháng 6 âm lịch",
       "legacy_district": "TP Vĩnh Long",
-      "legacy_ward": "Phường 4"
+      "legacy_ward": "Phường 4",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -79415,9 +79767,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79472,9 +79824,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79501,7 +79853,8 @@ var items = [
       "category": "le-hoi",
       "lunar_date": "Rằm tháng Giêng âm lịch",
       "legacy_district": "Duyên Hải",
-      "legacy_ward": "Trường Long Hòa"
+      "legacy_ward": "Trường Long Hòa",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -79519,9 +79872,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79548,7 +79901,8 @@ var items = [
       "category": "le-hoi",
       "lunar_date": "15–16 tháng 2 âm lịch",
       "legacy_district": "Thạnh Phú",
-      "legacy_ward": "Thạnh Phong"
+      "legacy_ward": "Thạnh Phong",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -79558,17 +79912,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.932093,
-      106.561003
+      9.6147395,
+      106.3900486
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79611,9 +79965,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79658,9 +80012,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79699,18 +80053,15 @@ var items = [
       }
     ],
     "images": [],
-    "coordinates": [
-      9.7005387,
-      106.2768829
-    ],
+    "coordinates": null,
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79737,7 +80088,8 @@ var items = [
       "date_end": "2026-07-30",
       "category": "le-hoi",
       "lunar_date": "16 tháng 6 âm lịch",
-      "legacy_district": "Bình Đại"
+      "legacy_district": "Bình Đại",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -79755,9 +80107,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79784,7 +80136,8 @@ var items = [
       "category": "le-hoi",
       "lunar_date": "Rằm tháng 2 âm lịch",
       "legacy_district": "Duyên Hải",
-      "legacy_ward": "Long Khánh"
+      "legacy_ward": "Long Khánh",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -79802,9 +80155,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79832,7 +80185,8 @@ var items = [
       "category": "le-hoi",
       "lunar_date": "16–17 tháng 3 âm lịch",
       "legacy_district": "TP Vĩnh Long",
-      "legacy_ward": "Phường 3"
+      "legacy_ward": "Phường 3",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -79850,9 +80204,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79881,7 +80235,8 @@ var items = [
       "suggested_duration": "1-2 giờ",
       "role": "festival_asset",
       "legacy_district": "Ba Tri",
-      "legacy_ward": "Phú Lễ"
+      "legacy_ward": "Phú Lễ",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -79899,9 +80254,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79925,7 +80280,8 @@ var items = [
       "date_end": "2026-04-28",
       "category": "le-hoi",
       "lunar_date": "10–12 tháng 3 âm lịch",
-      "legacy_district": "Duyên Hải"
+      "legacy_district": "Duyên Hải",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -79943,9 +80299,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79973,7 +80329,8 @@ var items = [
       "date_end": "2026-04-27",
       "category": "le-hoi",
       "lunar_date": "10–11 tháng 3 âm lịch",
-      "legacy_district": "Duyên Hải"
+      "legacy_district": "Duyên Hải",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -79991,9 +80348,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -80031,7 +80388,8 @@ var items = [
     },
     "attributes": {
       "hours": "thường tham quan ban ngày",
-      "admission": "có thể tính phí tham quan/dịch vụ tùy tuyến"
+      "admission": "có thể tính phí tham quan/dịch vụ tùy tuyến",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -80049,9 +80407,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -80108,9 +80466,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -80166,9 +80524,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -80216,9 +80574,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80265,9 +80623,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80321,9 +80679,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80371,9 +80729,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80402,7 +80760,8 @@ var items = [
       "text": ""
     },
     "attributes": {
-      "duration": "45–60 phút"
+      "duration": "45–60 phút",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -80420,9 +80779,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80451,7 +80810,8 @@ var items = [
       "text": ""
     },
     "attributes": {
-      "duration": "nửa ngày"
+      "duration": "nửa ngày",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -80469,9 +80829,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80518,9 +80878,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80567,9 +80927,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80599,7 +80959,8 @@ var items = [
     },
     "attributes": {
       "price": "từ 250.000đ/khách",
-      "duration": "cả ngày"
+      "duration": "cả ngày",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -80617,9 +80978,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80666,9 +81027,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80697,7 +81058,8 @@ var items = [
       "text": ""
     },
     "attributes": {
-      "thoidiem": "5h–6h sáng"
+      "thoidiem": "5h–6h sáng",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -80715,9 +81077,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80759,9 +81121,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80801,7 +81163,8 @@ var items = [
       "hours": "6:00–17:00",
       "admission": "miễn phí",
       "duration": "1–2 giờ",
-      "highlight": "hàng ngàn lò gạch cổ ven sông"
+      "highlight": "hàng ngàn lò gạch cổ ven sông",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -80819,9 +81182,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80878,9 +81241,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80917,7 +81280,8 @@ var items = [
     "attributes": {
       "hours": "7:00–17:00",
       "admission": "miễn phí, mua kẹo từ 20.000đ/gói",
-      "highlight": "xem làm kẹo dừa thủ công"
+      "highlight": "xem làm kẹo dừa thủ công",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -80935,9 +81299,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80994,9 +81358,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81052,9 +81416,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81111,9 +81475,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81147,7 +81511,8 @@ var items = [
       "priority": "A",
       "target_segments": "Văn hóa; tâm linh; quốc tế",
       "suggested_duration": "1 giờ",
-      "role": "culture_anchor"
+      "role": "culture_anchor",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -81165,9 +81530,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81224,9 +81589,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81238,7 +81603,8 @@ var items = [
     "confidence": 0.6,
     "season": null,
     "attributes": {
-      "hours": "8:00–17:00"
+      "hours": "8:00–17:00",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -81248,17 +81614,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.9451384,
-      105.9564155
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81288,9 +81654,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81337,9 +81703,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81387,9 +81753,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81440,9 +81806,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81472,7 +81838,8 @@ var items = [
     "attributes": {
       "hours": "7:00–17:00",
       "admission": "miễn phí",
-      "best_time": "sáng sớm hoặc chiều mát"
+      "best_time": "sáng sớm hoặc chiều mát",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -81482,17 +81849,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.3276125,
-      106.3512572
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81530,7 +81897,8 @@ var items = [
     },
     "attributes": {
       "hours": "4:00–9:00",
-      "admission": "thuê đò ~80.000đ/chuyến"
+      "admission": "thuê đò ~80.000đ/chuyến",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -81540,17 +81908,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.3276125,
-      106.3512572
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81598,9 +81966,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81661,9 +82029,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81720,9 +82088,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81770,9 +82138,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81828,9 +82196,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81887,9 +82255,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81946,9 +82314,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82005,9 +82373,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82064,9 +82432,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82123,9 +82491,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82182,9 +82550,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82217,9 +82585,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82276,9 +82644,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82309,9 +82677,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82342,9 +82710,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82401,9 +82769,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82436,9 +82804,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82471,9 +82839,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82530,9 +82898,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82562,9 +82930,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82597,9 +82965,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82638,7 +83006,8 @@ var items = [
     "attributes": {
       "hours": "7:00–17:00",
       "admission": "miễn phí",
-      "best_time": "sáng sớm hoặc chiều mát"
+      "best_time": "sáng sớm hoặc chiều mát",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -82656,9 +83025,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82688,9 +83057,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82720,9 +83089,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82752,9 +83121,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82784,9 +83153,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82816,9 +83185,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82878,9 +83247,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82910,9 +83279,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82942,9 +83311,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82974,9 +83343,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83006,9 +83375,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83020,7 +83389,8 @@ var items = [
     "confidence": 0.8,
     "season": null,
     "attributes": {
-      "role": "nhân vật lịch sử"
+      "role": "nhân vật lịch sử",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -83030,17 +83400,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.5815192,
-      106.5306792
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83070,9 +83440,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83084,7 +83454,8 @@ var items = [
     "confidence": 0.8,
     "season": null,
     "attributes": {
-      "role": "nhân vật lịch sử"
+      "role": "nhân vật lịch sử",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -83102,9 +83473,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83134,9 +83505,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83166,9 +83537,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83180,7 +83551,8 @@ var items = [
     "confidence": 0.78,
     "season": null,
     "attributes": {
-      "role": "nhân vật lịch sử"
+      "role": "nhân vật lịch sử",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -83198,9 +83570,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83230,9 +83602,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83282,9 +83654,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83332,9 +83704,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83373,7 +83745,8 @@ var items = [
     "attributes": {
       "hours": "7:00–17:00",
       "admission": "miễn phí (tham quan); 50.000đ (trải nghiệm)",
-      "duration": "1–2 giờ"
+      "duration": "1–2 giờ",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -83391,9 +83764,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83424,7 +83797,8 @@ var items = [
     "attributes": {
       "hours": "7:00–17:00",
       "admission": "miễn phí",
-      "best_time": "sáng sớm hoặc chiều mát"
+      "best_time": "sáng sớm hoặc chiều mát",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -83442,9 +83816,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83475,7 +83849,8 @@ var items = [
     "attributes": {
       "hours": "7:00–17:00",
       "admission": "miễn phí",
-      "best_time": "sáng sớm hoặc chiều mát"
+      "best_time": "sáng sớm hoặc chiều mát",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -83493,9 +83868,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83526,7 +83901,8 @@ var items = [
     "attributes": {
       "hours": "7:00–17:00",
       "admission": "miễn phí",
-      "best_time": "sáng sớm hoặc chiều mát"
+      "best_time": "sáng sớm hoặc chiều mát",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -83544,9 +83920,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83595,9 +83971,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83646,9 +84022,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83697,9 +84073,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83748,9 +84124,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83781,7 +84157,8 @@ var items = [
     "attributes": {
       "hours": "7:00–17:00",
       "admission": "miễn phí",
-      "best_time": "sáng sớm hoặc chiều mát"
+      "best_time": "sáng sớm hoặc chiều mát",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -83799,9 +84176,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83850,9 +84227,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83891,7 +84268,8 @@ var items = [
     "attributes": {
       "hours": "7:00–17:00",
       "admission": "miễn phí",
-      "best_time": "sáng sớm hoặc chiều mát"
+      "best_time": "sáng sớm hoặc chiều mát",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -83909,9 +84287,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83959,9 +84337,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84018,9 +84396,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84077,9 +84455,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84133,9 +84511,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84189,9 +84567,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84235,9 +84613,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84291,9 +84669,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84329,7 +84707,8 @@ var items = [
     "attributes": {
       "hours": "7:00–17:00",
       "admission": "miễn phí",
-      "best_time": "sáng sớm hoặc chiều mát"
+      "best_time": "sáng sớm hoặc chiều mát",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -84347,9 +84726,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84380,9 +84759,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84439,9 +84818,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84495,9 +84874,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84528,9 +84907,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84586,9 +84965,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84627,7 +85006,8 @@ var items = [
     "attributes": {
       "hours": "7:00–17:00",
       "admission": "miễn phí (tham quan); 50.000đ (trải nghiệm)",
-      "duration": "1–2 giờ"
+      "duration": "1–2 giờ",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -84637,17 +85017,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0675818,
-      105.8219716
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84703,9 +85083,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84740,7 +85120,8 @@ var items = [
     "attributes": {
       "hours": "7:00–17:00",
       "admission": "miễn phí",
-      "best_time": "sáng sớm hoặc chiều mát"
+      "best_time": "sáng sớm hoặc chiều mát",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -84750,17 +85131,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.3276125,
-      106.3512572
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84799,7 +85180,8 @@ var items = [
     "attributes": {
       "hours": "7:00–17:00",
       "admission": "miễn phí",
-      "best_time": "sáng sớm hoặc chiều mát"
+      "best_time": "sáng sớm hoặc chiều mát",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -84817,9 +85199,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84858,7 +85240,8 @@ var items = [
     "attributes": {
       "hours": "7:00–17:00",
       "admission": "miễn phí",
-      "best_time": "sáng sớm hoặc chiều mát"
+      "best_time": "sáng sớm hoặc chiều mát",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -84876,9 +85259,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84917,7 +85300,8 @@ var items = [
     "attributes": {
       "hours": "7:00–17:00",
       "admission": "miễn phí",
-      "best_time": "sáng sớm hoặc chiều mát"
+      "best_time": "sáng sớm hoặc chiều mát",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -84935,9 +85319,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84994,9 +85378,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85052,9 +85436,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85102,9 +85486,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85147,9 +85531,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85202,9 +85586,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85252,9 +85636,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85292,7 +85676,8 @@ var items = [
     },
     "attributes": {
       "price": "5.000–8.000đ/cuốn",
-      "where": "Homestay, quán ăn cù lao"
+      "where": "Homestay, quán ăn cù lao",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -85310,9 +85695,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85365,9 +85750,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85415,9 +85800,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85470,9 +85855,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85525,9 +85910,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85575,9 +85960,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85622,9 +86007,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85668,9 +86053,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85706,7 +86091,8 @@ var items = [
     },
     "attributes": {
       "price": "300.000–500.000đ/kg",
-      "where": "Nhà hàng, homestay ven sông"
+      "where": "Nhà hàng, homestay ven sông",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -85724,9 +86110,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85774,9 +86160,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85813,7 +86199,8 @@ var items = [
     },
     "attributes": {
       "price": "40.000–70.000đ/phần",
-      "where": "Quán nhậu, xe đẩy TP Vĩnh Long"
+      "where": "Quán nhậu, xe đẩy TP Vĩnh Long",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -85831,9 +86218,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85881,9 +86268,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85937,9 +86324,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85992,9 +86379,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86017,7 +86404,8 @@ var items = [
     },
     "attributes": {
       "price": "50.000–100.000đ/đòn",
-      "where": "Chợ Trà Vinh, cửa hàng đặc sản"
+      "where": "Chợ Trà Vinh, cửa hàng đặc sản",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -86035,9 +86423,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86090,9 +86478,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86140,9 +86528,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86167,7 +86555,8 @@ var items = [
     },
     "attributes": {
       "price": "60.000–100.000đ/phần",
-      "where": "Quán ăn miệt vườn, nhà dân"
+      "where": "Quán ăn miệt vườn, nhà dân",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -86185,9 +86574,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86240,9 +86629,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86288,9 +86677,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86343,9 +86732,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86399,9 +86788,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86431,7 +86820,8 @@ var items = [
     },
     "attributes": {
       "price": "10.000–20.000đ/ly",
-      "where": "Quán chè, chợ Bến Tre"
+      "where": "Quán chè, chợ Bến Tre",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -86449,9 +86839,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86503,9 +86893,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86561,9 +86951,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86619,9 +87009,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86676,9 +87066,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86734,9 +87124,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86781,9 +87171,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86839,9 +87229,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86882,7 +87272,8 @@ var items = [
       "duration": "2–3 giờ, bắt đầu 5h sáng",
       "hours": "4:00–10:00 (nhộn nhịp nhất 5:00–7:00)",
       "admission": "miễn phí (thuê xuồng ~100.000đ/chuyến)",
-      "best_time": "sáng sớm"
+      "best_time": "sáng sớm",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -86900,9 +87291,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86958,9 +87349,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87005,9 +87396,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87063,9 +87454,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87089,7 +87480,8 @@ var items = [
     },
     "attributes": {
       "price": "miễn phí (dịp lễ hội)",
-      "duration": "1–3 giờ"
+      "duration": "1–3 giờ",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -87107,9 +87499,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87165,9 +87557,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87213,9 +87605,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87265,9 +87657,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87305,7 +87697,8 @@ var items = [
     },
     "attributes": {
       "price": "50.000–100.000đ/người",
-      "duration": "1–2 giờ"
+      "duration": "1–2 giờ",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -87323,9 +87716,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87363,7 +87756,8 @@ var items = [
     },
     "attributes": {
       "price": "100.000–200.000đ/người",
-      "duration": "2–3 giờ"
+      "duration": "2–3 giờ",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -87381,9 +87775,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87426,9 +87820,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87466,7 +87860,8 @@ var items = [
     },
     "attributes": {
       "price": "tùy món ăn (20.000–100.000đ)",
-      "duration": "1–2 giờ buổi tối"
+      "duration": "1–2 giờ buổi tối",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -87484,9 +87879,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87524,7 +87919,8 @@ var items = [
     },
     "attributes": {
       "price": "50.000–100.000đ/người",
-      "duration": "1–2 giờ"
+      "duration": "1–2 giờ",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -87542,9 +87938,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87599,9 +87995,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87649,9 +88045,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87663,7 +88059,8 @@ var items = [
     "confidence": 0.74,
     "season": null,
     "attributes": {
-      "hours": "8:00–17:00"
+      "hours": "8:00–17:00",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -87681,9 +88078,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87721,7 +88118,8 @@ var items = [
     },
     "attributes": {
       "best_time": "sáng sớm",
-      "admission": "miễn phí"
+      "admission": "miễn phí",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -87731,17 +88129,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.3276125,
-      106.3512572
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87798,9 +88196,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87856,9 +88254,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87915,9 +88313,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87976,9 +88374,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88033,9 +88431,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88066,9 +88464,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88125,9 +88523,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88184,9 +88582,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88243,9 +88641,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88283,7 +88681,8 @@ var items = [
     },
     "attributes": {
       "price": "5.000–10.000đ/người (20.000–50.000đ/xe)",
-      "duration": "15–30 phút"
+      "duration": "15–30 phút",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -88301,9 +88700,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88329,7 +88728,8 @@ var items = [
       "admission": "miễn phí",
       "date_start": "2026-09-15",
       "date_end": "2026-09-17",
-      "category": "su-kien"
+      "category": "su-kien",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -88339,17 +88739,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0675818,
-      105.8219716
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88372,7 +88772,8 @@ var items = [
       "admission": "miễn phí",
       "date_start": "2026-11-20",
       "date_end": "2026-11-24",
-      "category": "su-kien"
+      "category": "su-kien",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -88382,17 +88783,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.5815192,
-      106.5306792
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88420,7 +88821,8 @@ var items = [
       "heritage": "Di sản VHPVTQG (QĐ 261/2020); Di tích LSVH cấp QG (1996)",
       "highlight": "Lễ hội giao thoa 3 dân tộc Kinh–Hoa–Khmer hiếm có — hát bội, nhạc ngũ âm, múa Sa-dăm và Tùa Lầu Cấu cùng hội ngộ đầu xuân.",
       "address": "Ấp Giồng Thanh Bạch, xã Thiện Mỹ, tỉnh Vĩnh Long",
-      "category": "le-hoi"
+      "category": "le-hoi",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -88438,9 +88840,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88479,9 +88881,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88520,9 +88922,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88567,9 +88969,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88596,7 +88998,8 @@ var items = [
       "thang": "Tháng 8–11 hàng năm",
       "date_start": "2026-08-01",
       "date_end": "2026-11-30",
-      "category": "mua"
+      "category": "mua",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -88614,9 +89017,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88639,7 +89042,8 @@ var items = [
       "admission": "miễn phí",
       "date_start": "2026-12-10",
       "date_end": "2026-12-15",
-      "category": "su-kien"
+      "category": "su-kien",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -88657,9 +89061,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88702,9 +89106,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88743,9 +89147,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88785,9 +89189,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88829,9 +89233,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88853,7 +89257,8 @@ var items = [
     "attributes": {
       "thang": "5/5 Âm lịch (tháng 6 Dương lịch)",
       "category": "le-hoi",
-      "lunar_date": "Mùng 5 tháng 5 âm lịch"
+      "lunar_date": "Mùng 5 tháng 5 âm lịch",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -88871,9 +89276,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88914,9 +89319,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88957,9 +89362,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89002,9 +89407,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89044,9 +89449,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89071,7 +89476,8 @@ var items = [
       "date_start": "2026-10-09",
       "date_end": "2026-10-11",
       "category": "le-hoi",
-      "lunar_date": "29 tháng 8 – 1 tháng 9 âm lịch"
+      "lunar_date": "29 tháng 8 – 1 tháng 9 âm lịch",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -89089,9 +89495,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89131,9 +89537,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89188,9 +89594,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89213,7 +89619,8 @@ var items = [
     },
     "attributes": {
       "where": "chợ địa phương, vườn trái cây",
-      "season_note": "tháng 5–8"
+      "season_note": "tháng 5–8",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -89231,9 +89638,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89276,9 +89683,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89301,7 +89708,8 @@ var items = [
     },
     "attributes": {
       "where": "chợ địa phương, vườn trái cây",
-      "season_note": "tháng 5–8"
+      "season_note": "tháng 5–8",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -89311,17 +89719,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0675818,
-      105.8219716
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89369,9 +89777,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89419,9 +89827,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89462,9 +89870,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89488,7 +89896,8 @@ var items = [
     "attributes": {
       "price": "từ 50.000đ/khách",
       "duration": "1–2 giờ",
-      "season_note": "tháng 5–7"
+      "season_note": "tháng 5–7",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -89506,9 +89915,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89535,7 +89944,8 @@ var items = [
     "attributes": {
       "duration": "nửa ngày",
       "price": "30.000đ/người (ăn thoải mái) + mua thêm 20.000đ/kg",
-      "season_note": "tháng 11–2"
+      "season_note": "tháng 11–2",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -89545,17 +89955,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.9451384,
-      105.9564155
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89586,7 +89996,8 @@ var items = [
     "attributes": {
       "price": "từ 80.000đ/khách",
       "duration": "1–2 giờ",
-      "booking_note": "đặt trước qua cơ sở kẹo dừa"
+      "booking_note": "đặt trước qua cơ sở kẹo dừa",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -89604,9 +90015,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89665,9 +90076,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89702,7 +90113,8 @@ var items = [
     },
     "attributes": {
       "where": "chợ địa phương, vườn trái cây",
-      "season_note": "tháng 5–8"
+      "season_note": "tháng 5–8",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -89720,9 +90132,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89751,7 +90163,8 @@ var items = [
     "attributes": {
       "duration": "2–3 giờ",
       "price": "100.000–200.000đ/người",
-      "booking_note": "liên hệ trước qua homestay"
+      "booking_note": "liên hệ trước qua homestay",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -89769,9 +90182,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89797,7 +90210,8 @@ var items = [
     "attributes": {
       "duration": "2–3 giờ",
       "price": "100.000–200.000đ/người",
-      "booking_note": "liên hệ trước qua homestay"
+      "booking_note": "liên hệ trước qua homestay",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -89815,9 +90229,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89857,7 +90271,8 @@ var items = [
       "price_range": "250.000–450.000đ/đêm",
       "phone": "0270 382 xxxx",
       "rooms": "20 phòng",
-      "facilities": "WiFi, máy lạnh, bãi xe"
+      "facilities": "WiFi, máy lạnh, bãi xe",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -89875,9 +90290,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89934,9 +90349,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89975,7 +90390,8 @@ var items = [
     "attributes": {
       "price_range": "300.000–600.000đ/đêm",
       "check_in": "14:00",
-      "check_out": "12:00"
+      "check_out": "12:00",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -89993,9 +90409,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90052,9 +90468,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90111,9 +90527,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90170,9 +90586,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90211,7 +90627,8 @@ var items = [
     "attributes": {
       "duration": "2–3 giờ",
       "price": "100.000–200.000đ/người",
-      "booking_note": "liên hệ trước qua homestay"
+      "booking_note": "liên hệ trước qua homestay",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -90229,9 +90646,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90270,7 +90687,8 @@ var items = [
     "attributes": {
       "duration": "2–3 giờ",
       "price": "100.000–200.000đ/người",
-      "booking_note": "liên hệ trước qua homestay"
+      "booking_note": "liên hệ trước qua homestay",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -90288,9 +90706,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90347,9 +90765,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90372,7 +90790,8 @@ var items = [
     "attributes": {
       "duration": "2–3 giờ",
       "price": "100.000–200.000đ/người",
-      "booking_note": "liên hệ trước qua homestay"
+      "booking_note": "liên hệ trước qua homestay",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -90390,9 +90809,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90419,7 +90838,8 @@ var items = [
     },
     "attributes": {
       "where": "chợ địa phương, vườn trái cây",
-      "season_note": "tháng 5–8"
+      "season_note": "tháng 5–8",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -90437,9 +90857,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90470,7 +90890,8 @@ var items = [
     "attributes": {
       "duration": "2–3 giờ",
       "price": "100.000–200.000đ/người",
-      "booking_note": "liên hệ trước qua homestay"
+      "booking_note": "liên hệ trước qua homestay",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -90488,9 +90909,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90539,9 +90960,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90572,7 +90993,8 @@ var items = [
     "attributes": {
       "duration": "2–3 giờ",
       "price": "100.000–200.000đ/người",
-      "booking_note": "liên hệ trước qua homestay"
+      "booking_note": "liên hệ trước qua homestay",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -90590,9 +91012,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90640,9 +91062,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90663,7 +91085,8 @@ var items = [
       "priority": "A",
       "target_segments": "Foodie; gia đình",
       "suggested_duration": "Nửa ngày",
-      "role": "food_asset"
+      "role": "food_asset",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -90681,9 +91104,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90709,7 +91132,8 @@ var items = [
     "attributes": {
       "duration": "2–3 giờ",
       "price": "100.000–200.000đ/người",
-      "booking_note": "liên hệ trước qua homestay"
+      "booking_note": "liên hệ trước qua homestay",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -90727,9 +91151,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90786,9 +91210,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90827,7 +91251,8 @@ var items = [
     "attributes": {
       "duration": "2–3 giờ",
       "price": "100.000–200.000đ/người",
-      "booking_note": "liên hệ trước qua homestay"
+      "booking_note": "liên hệ trước qua homestay",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -90845,9 +91270,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90904,9 +91329,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90945,7 +91370,8 @@ var items = [
     "attributes": {
       "duration": "2–3 giờ",
       "price": "100.000–200.000đ/người",
-      "booking_note": "liên hệ trước qua homestay"
+      "booking_note": "liên hệ trước qua homestay",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -90963,9 +91389,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91004,7 +91430,8 @@ var items = [
     "attributes": {
       "duration": "2–3 giờ",
       "price": "100.000–200.000đ/người",
-      "booking_note": "liên hệ trước qua homestay"
+      "booking_note": "liên hệ trước qua homestay",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -91022,9 +91449,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91063,7 +91490,8 @@ var items = [
     "attributes": {
       "duration": "2–3 giờ",
       "price": "100.000–200.000đ/người",
-      "booking_note": "liên hệ trước qua homestay"
+      "booking_note": "liên hệ trước qua homestay",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -91081,9 +91509,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91122,7 +91550,8 @@ var items = [
     "attributes": {
       "duration": "2–3 giờ",
       "price": "100.000–200.000đ/người",
-      "booking_note": "liên hệ trước qua homestay"
+      "booking_note": "liên hệ trước qua homestay",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -91140,9 +91569,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91181,7 +91610,8 @@ var items = [
     "attributes": {
       "duration": "2–3 giờ",
       "price": "100.000–200.000đ/người",
-      "booking_note": "liên hệ trước qua homestay"
+      "booking_note": "liên hệ trước qua homestay",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -91191,17 +91621,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0675818,
-      105.8219716
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91240,7 +91670,8 @@ var items = [
     "attributes": {
       "duration": "2–3 giờ",
       "price": "100.000–200.000đ/người",
-      "booking_note": "liên hệ trước qua homestay"
+      "booking_note": "liên hệ trước qua homestay",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -91258,9 +91689,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91299,7 +91730,8 @@ var items = [
     "attributes": {
       "duration": "2–3 giờ",
       "price": "100.000–200.000đ/người",
-      "booking_note": "liên hệ trước qua homestay"
+      "booking_note": "liên hệ trước qua homestay",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -91317,9 +91749,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91344,7 +91776,8 @@ var items = [
     "attributes": {
       "duration": "2–3 giờ",
       "price": "100.000–200.000đ/người",
-      "booking_note": "liên hệ trước qua homestay"
+      "booking_note": "liên hệ trước qua homestay",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -91362,9 +91795,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91422,9 +91855,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91482,9 +91915,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91542,9 +91975,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91602,9 +92035,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91662,9 +92095,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91725,9 +92158,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91785,9 +92218,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91827,7 +92260,8 @@ var items = [
       "price_range": "600.000–1.200.000đ/đêm",
       "phone": "0294 3862 xxx",
       "rooms": 50,
-      "facilities": "Nhà hàng, bar, phòng họp, Wi-Fi"
+      "facilities": "Nhà hàng, bar, phòng họp, Wi-Fi",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -91837,17 +92271,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.5815192,
-      106.5306792
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91905,9 +92339,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91947,7 +92381,8 @@ var items = [
       "price_range": "200.000–350.000đ/đêm",
       "phone": "0294 xxx xxx",
       "rooms": 3,
-      "facilities": "Sân vườn, bếp chung, xe đạp"
+      "facilities": "Sân vườn, bếp chung, xe đạp",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -91957,17 +92392,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.5815192,
-      106.5306792
+      9.8432052,
+      106.3356274
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92025,9 +92460,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92085,9 +92520,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92142,9 +92577,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92182,7 +92617,8 @@ var items = [
       "price_range": "250.000–450.000đ/đêm",
       "phone": "0270 386x xxx",
       "rooms": 12,
-      "facilities": "Máy lạnh, Wi-Fi, bãi xe"
+      "facilities": "Máy lạnh, Wi-Fi, bãi xe",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -92192,17 +92628,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0675818,
-      105.8219716
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92243,9 +92679,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92283,7 +92719,8 @@ var items = [
       "price_range": "600.000–1.500.000đ/đêm",
       "phone": "0294 xxx xxx",
       "rooms": 20,
-      "facilities": "Hồ bơi, nhà hàng, xe đạp, bãi biển"
+      "facilities": "Hồ bơi, nhà hàng, xe đạp, bãi biển",
+      "coords_approximate": true
     },
     "source": [
       {
@@ -92301,9 +92738,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92360,9 +92797,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92412,9 +92849,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:54:59",
+    "created_at": "2026-06-22 04:58:45",
     "description": "",
-    "createdAt": "2026-06-22T04:54:59Z",
+    "createdAt": "2026-06-22T04:58:45Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   }
 ];
@@ -149186,7 +149623,7 @@ var itineraries = [
         "note": "Nghỉ đêm"
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "xu-dua-ben-tre",
@@ -149213,7 +149650,7 @@ var itineraries = [
         "note": "OCOP 4 sao"
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "di-san-mang-thit-tra-vinh",
@@ -149248,7 +149685,7 @@ var itineraries = [
         "note": "Đặc sản hiếm"
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "tp-vinh-long-nua-ngay",
@@ -149274,7 +149711,7 @@ var itineraries = [
         "id": "cam-sanh-tam-binh"
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "mien-tay-3-ngay",
@@ -149322,7 +149759,7 @@ var itineraries = [
         "id": "bun-nuoc-leo-tra-vinh"
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "food-tour-vinh-long-1-ngay",
@@ -149362,7 +149799,7 @@ var itineraries = [
         "note": "Chè bưởi Bình Minh"
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "food-tour-ben-tre-1-ngay",
@@ -149397,7 +149834,7 @@ var itineraries = [
         "note": "Chè chuối nướng"
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "vinh-long-ben-tre-2-ngay",
@@ -149447,7 +149884,7 @@ var itineraries = [
         "note": "Kẹo dừa Mỏ Cày"
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "dbscl-3-ngay-day-du",
@@ -149512,7 +149949,7 @@ var itineraries = [
         "note": "Mua đặc sản Trà Vinh"
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "tra-vinh-khmer-1-ngay",
@@ -149552,7 +149989,7 @@ var itineraries = [
         "note": "Bánh tét lá cẩm"
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "thien-nhien-phieu-luu-2-ngay",
@@ -149602,7 +150039,7 @@ var itineraries = [
         "note": "Tắm sông"
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "lang-nghe-thu-cong-1-ngay",
@@ -149637,7 +150074,7 @@ var itineraries = [
         "note": "Làng tàu hủ ky Mỹ Hòa"
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "cho-sang-nau-an-nua-ngay",
@@ -149662,7 +150099,7 @@ var itineraries = [
         "note": "Thưởng thức thành phẩm"
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "lang-man-2-ngay",
@@ -149707,7 +150144,7 @@ var itineraries = [
         "note": "Cơm trưa miệt vườn"
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "gia-dinh-vui-1-ngay",
@@ -149742,7 +150179,7 @@ var itineraries = [
         "note": "Khu du lịch Vĩnh Sang"
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "ba-lo-budget-3-ngay",
@@ -149807,7 +150244,7 @@ var itineraries = [
         "note": "Chùa Khmer (miễn phí)"
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "nhiep-anh-1-ngay",
@@ -149847,7 +150284,7 @@ var itineraries = [
         "note": "Sunset cầu Mỹ Thuận"
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "wellness-2-ngay",
@@ -149892,7 +150329,7 @@ var itineraries = [
         "note": "Tắm sông thư giãn"
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "dap-xe-1-ngay",
@@ -149932,7 +150369,7 @@ var itineraries = [
         "note": "Dừa tươi giải khát"
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "cuoi-tuan-2-ngay",
@@ -149977,7 +150414,7 @@ var itineraries = [
         "note": "Mua quà về Sài Gòn"
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "ben-tre-tong-tai-romantic-2day-001",
@@ -150048,7 +150485,7 @@ var itineraries = [
         "note": "~2,5–3 tiếng"
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "tour-p01",
@@ -150088,7 +150525,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "tour-p02",
@@ -150118,7 +150555,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "tour-p03",
@@ -150153,7 +150590,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "tour-p04",
@@ -150178,7 +150615,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "tour-p05",
@@ -150208,7 +150645,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "tour-p06",
@@ -150223,7 +150660,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "tour-p07",
@@ -150248,7 +150685,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "tour-p08",
@@ -150278,7 +150715,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "tour-p09",
@@ -150293,7 +150730,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "tour-p10",
@@ -150323,7 +150760,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "tour-p11",
@@ -150348,7 +150785,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   },
   {
     "id": "tour-p12",
@@ -150378,7 +150815,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:54:59"
+    "created_at": "2026-06-22 04:58:45"
   }
 ];
 window.VL_DATA = {
