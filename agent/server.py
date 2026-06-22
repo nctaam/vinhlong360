@@ -425,8 +425,8 @@ def call_tool(name: str, args: dict) -> str:
             hours = attrs.get("hours") or attrs.get("open_hours")
             if hours:
                 card["hours"] = hours
-            if attrs.get("admission_fee"):
-                card["admission_fee"] = attrs["admission_fee"]
+            if attrs.get("admission_fee") or attrs.get("admission"):
+                card["admission_fee"] = attrs.get("admission_fee") or attrs.get("admission")
             if attrs.get("best_time"):
                 card["best_time"] = attrs["best_time"]
             if attrs.get("key_facts"):
@@ -464,7 +464,7 @@ def call_tool(name: str, args: dict) -> str:
             }
             hours = attrs.get("hours") or attrs.get("open_hours")
             if hours:                      card["hours"] = hours
-            if attrs.get("admission_fee"): card["admission_fee"] = attrs["admission_fee"]
+            if attrs.get("admission_fee") or attrs.get("admission"): card["admission_fee"] = attrs.get("admission_fee") or attrs.get("admission")
             if attrs.get("best_time"):     card["best_time"] = attrs["best_time"]
             if attrs.get("ocop"):          card["ocop"] = attrs["ocop"]
             if e.get("coords"):            card["coords"] = e["coords"]
@@ -525,7 +525,7 @@ def call_tool(name: str, args: dict) -> str:
             card = dict(item)
             hours = attrs.get("hours") or attrs.get("open_hours")
             if hours:                      card["hours"] = hours
-            if attrs.get("admission_fee"): card["admission_fee"] = attrs["admission_fee"]
+            if attrs.get("admission_fee") or attrs.get("admission"): card["admission_fee"] = attrs.get("admission_fee") or attrs.get("admission")
             if attrs.get("ocop"):          card["ocop"] = attrs["ocop"]
             if e.get("coords"):            card["coords"] = e["coords"]
             enriched_nearby.append(card)
@@ -576,7 +576,7 @@ def call_tool(name: str, args: dict) -> str:
                 "province": attrs.get("province_old", ""),
                 "address": attrs.get("address", ""),
             }
-            if attrs.get("admission_fee"): card["price"] = attrs["admission_fee"]
+            if attrs.get("admission_fee") or attrs.get("admission"): card["price"] = attrs.get("admission_fee") or attrs.get("admission")
             if attrs.get("phone"):         card["phone"] = attrs["phone"]
             if e.get("coords"):            card["coords"] = e["coords"]
             # Sort key: star desc
@@ -627,8 +627,8 @@ def call_tool(name: str, args: dict) -> str:
                 "province": attrs.get("province_old", ""),
                 "address": attrs.get("address", ""),
             }
-            if attrs.get("admission_fee") or attrs.get("price_range"):
-                card["price"] = attrs.get("admission_fee") or attrs.get("price_range")
+            if attrs.get("admission_fee") or attrs.get("admission") or attrs.get("price_range"):
+                card["price"] = attrs.get("admission_fee") or attrs.get("admission") or attrs.get("price_range")
             if attrs.get("phone"):         card["phone"] = attrs["phone"]
             hours = attrs.get("hours") or attrs.get("open_hours")
             if hours:                      card["check_in"] = hours
