@@ -285,10 +285,11 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 > Khi phát hiện việc đáng làm ngoài roadmap, ghi vào đây kèm ngày + lý do, rồi tiếp tục task hiện tại.
 
 - **(2026-06-22) 🔬 AUDIT SÂU 3 LƯỢT ĐA-AGENT → `docs/audit-findings-20260622.md`** (110 finding verified: 3 crit, 26 high, 46 med, 35 low + audit-3 scan-only). Đã FIX: ARCH-001 (province area). Lộ trình sửa đề xuất theo rủi-ro:
-  - **P0 vận hành/bất-biến:** CONC-001 (sync OpenAI in event loop §4) · CLP-01 memory_graph LLM no-gate (§B8) · EH-01/02 generate_followups+json.loads no-timeout/guard · SEC-001 OTP leak · SEC-002 XFF spoof · /graph no-auth. (server.py chat = blind-spot §B3 → viết test trước.)
-  - **P1 dữ liệu §1.4:** admission_fee alias · 16 dup entity · 9 transposed coords · 68 summary/37 address sai tỉnh · 169 orphan.
-  - **P2 DB/script:** replace_from_json atomic + description (test trước §B3) · guard optimize_data.py + gỡ bịa produced_in.
-  - **P3 perf/FE/deploy:** maplibre lazy→fix build OOM→deploy FE note · PG pool · N+1 · FE null-safety coords · SEO/CWV.
+  - **P0 vận hành/bất-biến:** ✅CLP-01 memory_graph gate (§B8, +test) · ✅SEC-001 OTP leak · ✅SEC-002 XFF spoof · /graph no-auth = KHÔNG sửa (KB public theo thiết kế). CÒN: CONC-001 (sync OpenAI in event loop §4 — cần refactor async + test) · EH-01/02 generate_followups+json.loads no-timeout/guard.
+  - **P1 dữ liệu §1.4:** ✅admission_fee alias · ✅9 transposed coords (+49 ngoài-bbox → null) · ✅siết bbox validator. CÒN: 16 dup entity · 68 summary/37 address sai tỉnh · 169 orphan.
+  - **P2 DB/script:** ✅guard optimize_data.py + gỡ bịa produced_in. CÒN: replace_from_json atomic + description round-trip (test trước §B3) · ETL-03/04 migrate_sap_nhap+fix_audit_safe key.
+  - **P3 perf/FE/deploy:** ✅maplibre lazy→build OOM fix→ĐÃ deploy FE note. CÒN: PG pool · N+1 places_in_area · FE null-safety coords (xa-phuong/lich-trinh) · SEO breadcrumb/ogImage/CWV.
+  - **ĐÃ DEPLOY prod (2026-06-22):** 9 nhóm fix trên (commit f2e5658→7727b02) + data 1791e/9306r.
   - DƯƠNG-TÍNH-GIẢ (KHÔNG sửa): GS-02 (ward BT/TV→vinh-long là đúng sau sáp nhập); audit-3 .env-leak (đã verify gitignore đúng).
 
 - **(2026-06-20) 🌟 WORLD-CLASS HARDENING** (audit 10 chiều, 5.5/10 → memory `project-worldclass-roadmap`). Verdict: KHÔNG "thô sơ" mà thiếu nội dung + vài bug data-shape. Lộ trình 5 phase; mỗi phase build+test+preview+**prod-verify** (không deploy mù).
