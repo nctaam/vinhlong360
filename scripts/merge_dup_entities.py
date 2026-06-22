@@ -6,10 +6,22 @@ import json, sys, collections
 from pathlib import Path
 ROOT=Path(__file__).resolve().parent.parent; DATA=ROOT/"web/data.json"
 APPLY="--apply" in sys.argv
-# dup_id -> canonical_id (đã verify tay: cùng thực thể, khác id)
+# dup_id -> canonical_id (đã verify tay: cùng thực thể, khác id). Canonical = bản giàu
+# summary nhất + placeId đúng. Landmark tên-riêng rõ ràng (KHÔNG gộp 'chợ'/'khách sạn'
+# generic — chúng là nơi KHÁC nhau).
 MERGE = {
+    # đợt 1 (đã chạy — id cũ đã mất, script tự bỏ qua)
     "khu-luu-niem-giao-su-vien-si-tran-dai-nghia": "khu-luu-niem-tran-dai-nghia-vinh-long",
     "cu-lao-may-tra-on-vinh-long": "cu-lao-may-tra-on",
+    # đợt 2 — name-variant dups (chùa/đình/cồn/cửa hàng — cùng 1 nơi, gộp vào bản giàu nhất)
+    "chua-phuoc-hau": "chua-phuoc-hau-ngai-tu",                 # 0c → 536c (vườn kinh đá, Ngãi Tứ)
+    "chua-phuoc-hau-vinh-long": "chua-phuoc-hau-ngai-tu",       # 164c → 536c
+    "chua-tien-chau": "chua-tien-chau-tien-chau-tu",            # 0c → 296c (cù lao An Bình)
+    "chua-tien-chau-di-da-tu": "chua-tien-chau-tien-chau-tu",   # 167c → 296c
+    "chua-tien-chau-vinh-long": "chua-tien-chau-tien-chau-tu",  # 178c → 296c
+    "dinh-long-thanh-vinh-long": "dinh-long-thanh-long-thanh-vo-mieu",  # 115c → 266c
+    "con-nhan": "con-nhan-bien-ba-tri-ben-tre",                 # 70c → 191c
+    "cua-hang-ocop-tra-vinh": "cua-hang-ocop-tra-vinh-trung-tam-xuc-tien-thuong-mai-tinh-tra-vinh",  # 45c → 276c
 }
 d=json.load(open(DATA,encoding="utf-8")); ents=d["entities"]; byid={e["id"]:e for e in ents}
 # 1. gộp field từ dup vào canonical (giữ canonical, lấy summary DÀI hơn, fill thiếu)
