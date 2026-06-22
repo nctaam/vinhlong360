@@ -117,6 +117,23 @@ def test_validate_flags_relationship_fanout(tmp_path: Path) -> None:
     assert stats["relationship_fanout_over_limit"] == 1
     assert "relationship_fanout" in {issue.code for issue in issues}
 
+def test_validate_excludes_hierarchical_from_fanout(tmp_path: Path) -> None:
+    # located_in (phân-cấp) KHÔNG tính vào ngưỡng fanout-120: một tỉnh chứa
+    # >120 xã/phường là hợp lệ, không phải nhiễu "liên quan/gần đây".
+    entities = [{"id": "tinh", "type": "place", "name": "Tinh", "summary": "T", "area": "vinh-long", "coordinates": [10.25, 106.0]}]
+    relationships = []
+    for index in range(validate_data.MAX_DIRECT_RELATIONSHIPS + 5):
+        wid = f"w-{index}"
+        entities.append({"id": wid, "type": "place", "name": wid, "summary": wid, "area": "vinh-long", "coordinates": [10.26, 106.01]})
+        relationships.append({"from": wid, "to": "tinh", "type": "located_in"})
+    data = {"entities": entities, "relationships": relationships, "itineraries": []}
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["relationship_fanout_over_limit"] == 0
+    assert "relationship_fanout" not in {issue.code for issue in issues}
+
+
 def test_validate_flags_produced_in_area_conflicts(tmp_path: Path) -> None:
     data = {
         "entities": [

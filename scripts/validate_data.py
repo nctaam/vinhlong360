@@ -18,6 +18,9 @@ MEKONG_LAT_RANGE = (8.0, 11.5)
 MEKONG_LNG_RANGE = (104.0, 107.5)
 MAX_NEAR_DISTANCE_KM = 50.0
 MAX_DIRECT_RELATIONSHIPS = 120
+# Quan hệ phân-cấp (chứa-đựng) — không tính vào ngưỡng fanout-120 (vốn để chặn
+# nhiễu "liên quan/gần đây" trên UI). located_in: entity→xã, xã→tỉnh.
+HIERARCHICAL_REL_TYPES = {"located_in", "part_of"}
 # Placeholder summaries from failed LLM enrichment — must never ship to users.
 # Phase 0 quarantined these (blanked to ""); this guard stops them returning.
 import re  # noqa: E402
@@ -361,8 +364,12 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         kind = str(kind)
         relationship_type_counts[kind] += 1
         duplicate_relationships[(src, dst, kind)] += 1
-        relationship_fanout[src] += 1
-        relationship_fanout[dst] += 1
+        # Quan hệ PHÂN-CẤP (located_in/part_of) là chứa-đựng cấu trúc, KHÔNG phải
+        # fanout kiểu "liên quan/gần đây" mà ngưỡng 120 muốn chặn — một tỉnh chứa
+        # ~124 xã/phường là hợp lệ. Chỉ tính fanout cho quan hệ phi-phân-cấp.
+        if kind not in HIERARCHICAL_REL_TYPES:
+            relationship_fanout[src] += 1
+            relationship_fanout[dst] += 1
         if src not in id_set or dst not in id_set:
             broken_relationships += 1
             continue
