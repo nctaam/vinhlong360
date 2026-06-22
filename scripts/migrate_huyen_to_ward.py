@@ -72,6 +72,7 @@ CROSSWALK = {
  "Phú Phụng": ["Sơn Định", "Vĩnh Bình", "Phú Phụng"],
  "Phú Khương": ["Phú Hưng", "Nhơn Thạnh", "Phú Khương"], "Bến Tre": ["Bình Phú", "Thanh Tân", "Bến Tre"],
  "Sơn Đông": ["Sơn Đông", "Tam Phước"], "Phú Tân": ["Hữu Định", "Phước Thạnh", "Phú Tân"],
+ "An Hội": ["Mỹ Thạnh An", "Phú Nhuận", "Sơn Phú"],  # verbatim NQ k116 (xác minh 2026-06-22)
  "Chợ Lách": ["Hòa Nghĩa", "Chợ Lách"], "Vĩnh Thành": ["Phú Sơn", "Tân Thiềng", "Vĩnh Thành"],
  "Hưng Khánh Trung": ["Vĩnh Hòa", "Hưng Khánh Trung A", "Hưng Khánh Trung B"],
  "Phước Mỹ Trung": ["Phú Mỹ", "Thạnh Ngãi", "Tân Phú Tây", "Phước Mỹ Trung"],
@@ -110,6 +111,10 @@ NUMBERED = { (norm(c), norm("Phường " + str(n))): w for c, n, w in [
     ("Vĩnh Long",3,"Phước Hậu"),("Vĩnh Long",4,"Phước Hậu"),("Vĩnh Long",8,"Tân Hạnh"),
 ]}
 
+# Override theo entity-id cho ca địa-chỉ-gõ-nhầm đã xác minh verbatim NQ (KHÔNG đoán):
+# chua-vam-ray ghi "xã Hàm Thuận" (không tồn tại) — thực là Hàm Tân → Hàm Giang (k53).
+ENTITY_OVERRIDE = {"chua-vam-ray-wat-samrong": "xa-ham-giang"}
+
 d = json.load(open(DATA, encoding="utf-8"))
 ents = d["entities"]
 places = [e for e in ents if e.get("type") == "place"]
@@ -145,6 +150,10 @@ reassign, detach, table = {}, [], []
 for e in mis:
     a = attrs(e); addr = " ".join(str(a.get(k,"")) for k in ("address","diaChi","dia_chi")).strip()
     area = e.get("area")
+    if e["id"] in ENTITY_OVERRIDE:                # ca verbatim-verified riêng (typo địa chỉ)
+        reassign[e["id"]] = ENTITY_OVERRIDE[e["id"]]; stats["override (verbatim NQ)"] += 1
+        table.append((e["id"], area, "(override typo)", "→", ENTITY_OVERRIDE[e["id"]], "override"))
+        continue
     # Bắt MỌI xã/phường/thị trấn trong địa chỉ (đa-đơn-vị sau merger thường về cùng 1 ward).
     wids = set(); how = None
     for raw in COMMUNE.findall(addr):
