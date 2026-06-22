@@ -33,9 +33,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-21T17:04:47Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-21T17:04:47Z"
   },
   {
@@ -63,9 +63,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": null,
     "updatedAt": "2026-06-18T06:12:14.388505Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-18T06:12:14.388505Z"
   },
   {
@@ -93,9 +93,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Vĩnh Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -123,9 +123,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Vĩnh Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -153,9 +153,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Vĩnh Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -183,9 +183,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Vĩnh Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -213,16 +213,16 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Vĩnh Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "p-binh-minh",
     "type": "place",
     "name": "Phường Bình Minh",
-    "summary": "Phường Bình Minh là phường thuộc khu vực Vĩnh Long. Thông tin phân vùng hiện có trong dữ liệu: TX Bình Minh. Bản ghi này đóng vai trò mốc hành chính để liên kết các điểm đến, sản phẩm và trải nghiệm địa phương trong vinhlong360.",
+    "summary": "Phường Bình Minh là phường thuộc khu vực Vĩnh Long. Thông tin phân vùng hiện có trong dữ liệu: Bình Minh. Bản ghi này đóng vai trò mốc hành chính để liên kết các điểm đến, sản phẩm và trải nghiệm địa phương trong vinhlong360.",
     "placeId": "p-long-chau",
     "confidence": 0.7,
     "season": null,
@@ -243,16 +243,16 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TX Bình Minh",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "p-cai-von",
     "type": "place",
     "name": "Phường Cái Vồn",
-    "summary": "Phường Cái Vồn là phường thuộc khu vực Vĩnh Long. Thông tin phân vùng hiện có trong dữ liệu: TX Bình Minh. Bản ghi này đóng vai trò mốc hành chính để liên kết các điểm đến, sản phẩm và trải nghiệm địa phương trong vinhlong360.",
+    "summary": "Phường Cái Vồn là phường thuộc khu vực Vĩnh Long. Thông tin phân vùng hiện có trong dữ liệu: Bình Minh. Bản ghi này đóng vai trò mốc hành chính để liên kết các điểm đến, sản phẩm và trải nghiệm địa phương trong vinhlong360.",
     "placeId": "p-long-chau",
     "confidence": 0.7,
     "season": null,
@@ -273,16 +273,16 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TX Bình Minh",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "p-dong-thanh",
     "type": "place",
     "name": "Phường Đông Thành",
-    "summary": "Phường Đông Thành là phường thuộc khu vực Vĩnh Long. Thông tin phân vùng hiện có trong dữ liệu: TX Bình Minh. Bản ghi này đóng vai trò mốc hành chính để liên kết các điểm đến, sản phẩm và trải nghiệm địa phương trong vinhlong360.",
+    "summary": "Phường Đông Thành là phường thuộc khu vực Vĩnh Long. Thông tin phân vùng hiện có trong dữ liệu: Bình Minh. Bản ghi này đóng vai trò mốc hành chính để liên kết các điểm đến, sản phẩm và trải nghiệm địa phương trong vinhlong360.",
     "placeId": "p-long-chau",
     "confidence": 0.7,
     "season": null,
@@ -303,9 +303,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TX Bình Minh",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -333,9 +333,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mang Thít",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -363,9 +363,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mang Thít",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -393,9 +393,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mang Thít",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -423,9 +423,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mang Thít",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -453,9 +453,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Long Hồ",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -483,9 +483,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Long Hồ",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -513,9 +513,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -543,9 +543,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -573,9 +573,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -603,9 +603,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -633,9 +633,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -663,9 +663,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -693,9 +693,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -723,9 +723,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -753,9 +753,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tam Bình",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -783,9 +783,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Trà Ôn",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -813,9 +813,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tam Bình",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -843,9 +843,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tam Bình",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -873,9 +873,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tam Bình",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -903,9 +903,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tam Bình",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -933,9 +933,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tam Bình",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -963,9 +963,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Tân",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -993,9 +993,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Tân",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1027,9 +1027,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1062,9 +1062,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1092,9 +1092,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Long Hồ",
     "updatedAt": "2026-06-18T06:12:14.384018Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-18T06:12:14.384018Z"
   },
   {
@@ -1122,9 +1122,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tam Bình",
     "updatedAt": "2026-06-18T06:12:14.386370Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-18T06:12:14.386370Z"
   },
   {
@@ -1152,9 +1152,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Tân",
     "updatedAt": "2026-06-18T06:12:14.386804Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-18T06:12:14.386804Z"
   },
   {
@@ -1182,9 +1182,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Trà Ôn",
     "updatedAt": "2026-06-18T06:12:14.387185Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-18T06:12:14.387185Z"
   },
   {
@@ -1221,9 +1221,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1260,9 +1260,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1299,9 +1299,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1346,9 +1346,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1385,9 +1385,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1432,9 +1432,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1471,9 +1471,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1510,9 +1510,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1549,9 +1549,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1588,9 +1588,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1627,9 +1627,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1666,9 +1666,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1705,9 +1705,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1744,9 +1744,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1774,9 +1774,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1804,9 +1804,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Trà Vinh",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1834,9 +1834,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Trà Vinh",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1864,9 +1864,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Trà Vinh",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1894,9 +1894,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Trà Vinh",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1924,9 +1924,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TX Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1954,9 +1954,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TX Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1984,9 +1984,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2014,9 +2014,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Càng Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2044,9 +2044,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Càng Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2074,9 +2074,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Càng Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2104,9 +2104,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Càng Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2134,9 +2134,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Châu Thành",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2164,9 +2164,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Châu Thành",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2194,9 +2194,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Châu Thành",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2224,9 +2224,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Kè",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2254,9 +2254,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Kè",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2284,9 +2284,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Kè",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2314,9 +2314,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Kè",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2344,9 +2344,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Ngang",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2374,9 +2374,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Ngang",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2404,9 +2404,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Ngang",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2434,9 +2434,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Ngang",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2464,9 +2464,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Ngang",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2494,9 +2494,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Trà Cú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2524,9 +2524,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Trà Cú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2554,9 +2554,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Trà Cú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2584,9 +2584,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Trà Cú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2614,9 +2614,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Trà Cú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2644,9 +2644,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Trà Cú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2674,9 +2674,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2704,9 +2704,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2734,9 +2734,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2764,9 +2764,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2794,9 +2794,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2824,9 +2824,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2858,9 +2858,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2888,9 +2888,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Bến Tre",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2918,9 +2918,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Bến Tre",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2948,9 +2948,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Bến Tre",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2978,9 +2978,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Bến Tre",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3008,9 +3008,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Bến Tre",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3038,9 +3038,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Châu Thành",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3068,9 +3068,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Châu Thành",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3098,9 +3098,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Chợ Lách",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3138,9 +3138,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Chợ Lách",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3168,9 +3168,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Chợ Lách",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3198,9 +3198,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Chợ Lách",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3228,9 +3228,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Bắc",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3258,9 +3258,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Bắc",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3288,9 +3288,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Bắc",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3318,9 +3318,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Nam",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3348,9 +3348,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Nam",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3378,9 +3378,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Nam",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3408,9 +3408,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Nam",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3438,9 +3438,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Thạnh Phú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3468,9 +3468,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Thạnh Phú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3498,9 +3498,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Thạnh Phú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3528,9 +3528,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Thạnh Phú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3558,9 +3558,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Thạnh Phú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3588,9 +3588,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Ba Tri",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3618,9 +3618,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Ba Tri",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3648,9 +3648,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Ba Tri",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3678,9 +3678,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Ba Tri",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3708,9 +3708,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Ba Tri",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3738,9 +3738,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Giồng Trôm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3768,9 +3768,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Giồng Trôm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3798,9 +3798,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Giồng Trôm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3828,9 +3828,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Giồng Trôm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3858,9 +3858,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Giồng Trôm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3888,9 +3888,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Giồng Trôm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3918,9 +3918,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Giồng Trôm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3948,9 +3948,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Đại",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3978,9 +3978,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Đại",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -4008,9 +4008,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Đại",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -4038,9 +4038,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Đại",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -4068,9 +4068,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Đại",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -4098,16 +4098,16 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Đại",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "cho-cau-ke",
     "type": "place",
     "name": "Chợ Cầu Kè",
-    "summary": "Chợ trung tâm thị trấn Cầu Kè, nơi mua sắm đặc sản địa phương phong phú và đa dạng, bao gồm dừa sáp, xá pấu, các loại thủ công mỹ nghệ và món ăn đặc trưng của vùng đất ba dân tộc Kinh - Khmer - Hoa. Đánh giá Google đạt 4.2/5.",
+    "summary": "Chợ trung tâm Cầu Kè, nơi mua sắm đặc sản địa phương phong phú và đa dạng, bao gồm dừa sáp, xá pấu, các loại thủ công mỹ nghệ và món ăn đặc trưng của vùng đất ba dân tộc Kinh - Khmer - Hoa. Đánh giá Google đạt 4.2/5.",
     "placeId": "xa-tan-an",
     "confidence": 0.7,
     "season": null,
@@ -4133,9 +4133,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -4163,9 +4163,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Ba Tri",
     "updatedAt": "2026-06-18T06:12:14.389180Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-18T06:12:14.389180Z"
   },
   {
@@ -4193,9 +4193,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Đại",
     "updatedAt": "2026-06-18T06:12:14.389945Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-18T06:12:14.389945Z"
   },
   {
@@ -4223,9 +4223,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Nam",
     "updatedAt": "2026-06-18T06:12:14.390479Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-18T06:12:14.390479Z"
   },
   {
@@ -4262,9 +4262,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Châu Thành",
     "updatedAt": "2026-06-18T06:12:14.391234Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-18T06:12:14.391234Z"
   },
   {
@@ -4292,9 +4292,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Châu Thành",
     "updatedAt": "2026-06-18T06:12:14.391688Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-18T06:12:14.391688Z"
   },
   {
@@ -4322,9 +4322,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Ba Tri",
     "updatedAt": "2026-06-18T06:12:14.392074Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-18T06:12:14.392074Z"
   },
   {
@@ -4352,9 +4352,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Càng Long",
     "updatedAt": "2026-06-18T06:12:14.392513Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-18T06:12:14.392513Z"
   },
   {
@@ -4382,9 +4382,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tiểu Cần",
     "updatedAt": "2026-06-18T06:12:14.392980Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-18T06:12:14.392980Z"
   },
   {
@@ -4412,9 +4412,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tiểu Cần",
     "updatedAt": "2026-06-18T06:12:14.393240Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-18T06:12:14.393240Z"
   },
   {
@@ -4442,9 +4442,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tiểu Cần",
     "updatedAt": "2026-06-18T06:12:14.393555Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-18T06:12:14.393555Z"
   },
   {
@@ -4472,9 +4472,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tiểu Cần",
     "updatedAt": "2026-06-18T06:12:14.393883Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-18T06:12:14.393883Z"
   },
   {
@@ -4524,16 +4524,16 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "ben-pha-an-binh-vinh-long",
     "type": "place",
     "name": "Bến Phà An Bình",
-    "summary": "Bến phà. tại Phường 2, TP. Vĩnh Long (bến tạm từ 15/9/2024, cách bến cũ ~460m về phía thượng nguồn sông Cổ Chiên). Tuyến: TP. Vĩnh Long ↔ Cù lao An Bình (4 xã: An Bình, Bình Hòa Phước, Đồng Phú, Hòa Ninh – huyện Long Hồ). Giờ: 5:00–22:00 hàng ngày. Giá: 5.000–15.000đ/người tùy phương tiện (xe máy ~10.000đ).",
+    "summary": "Bến phà. tại Phường 2, TP. Vĩnh Long (bến tạm từ 15/9/2024, cách bến cũ ~460m về phía thượng nguồn sông Cổ Chiên). Tuyến: TP. Vĩnh Long ↔ Cù lao An Bình (4 xã: An Bình, Bình Hòa Phước, Đồng Phú, Hòa Ninh – Long Hồ). Giờ: 5:00–22:00 hàng ngày. Giá: 5.000–15.000đ/người tùy phương tiện (xe máy ~10.000đ).",
     "placeId": "p-long-chau",
     "confidence": 0.7,
     "season": null,
@@ -4566,9 +4566,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4610,9 +4610,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4650,9 +4650,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4690,9 +4690,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4730,9 +4730,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4770,9 +4770,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4810,9 +4810,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4850,9 +4850,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4891,9 +4891,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4934,9 +4934,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4976,9 +4976,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -5018,9 +5018,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -5060,9 +5060,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -5102,9 +5102,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -5144,9 +5144,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -5186,9 +5186,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -5228,9 +5228,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -5273,9 +5273,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   }
 ];
@@ -5322,9 +5322,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-21T17:04:47Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-21T17:04:47Z"
   },
   {
@@ -5372,9 +5372,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5422,9 +5422,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5472,9 +5472,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5522,9 +5522,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5572,9 +5572,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5622,9 +5622,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5672,9 +5672,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5722,9 +5722,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5772,9 +5772,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5822,9 +5822,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5879,9 +5879,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5936,9 +5936,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5986,9 +5986,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6043,9 +6043,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6093,9 +6093,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6148,9 +6148,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6198,9 +6198,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6255,9 +6255,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6305,9 +6305,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6355,9 +6355,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6409,9 +6409,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6466,9 +6466,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6516,9 +6516,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6572,9 +6572,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6626,9 +6626,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6683,9 +6683,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6739,9 +6739,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6795,9 +6795,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6845,9 +6845,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6899,9 +6899,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6956,9 +6956,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7006,9 +7006,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7064,9 +7064,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7122,9 +7122,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7180,9 +7180,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7238,9 +7238,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7292,9 +7292,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7348,9 +7348,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7398,9 +7398,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7456,9 +7456,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7510,9 +7510,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7566,9 +7566,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7621,9 +7621,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7671,9 +7671,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7727,9 +7727,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7783,9 +7783,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7839,9 +7839,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7896,9 +7896,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7954,9 +7954,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8004,9 +8004,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8054,9 +8054,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8112,9 +8112,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8166,9 +8166,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8219,9 +8219,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8277,9 +8277,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8327,9 +8327,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8381,9 +8381,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8431,9 +8431,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8481,9 +8481,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8531,9 +8531,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8589,9 +8589,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8643,9 +8643,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8701,9 +8701,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8754,9 +8754,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8812,9 +8812,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8870,9 +8870,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8920,9 +8920,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8970,9 +8970,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9020,9 +9020,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9070,9 +9070,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9120,9 +9120,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9174,9 +9174,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9232,9 +9232,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9282,9 +9282,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9332,9 +9332,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9382,9 +9382,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9432,9 +9432,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9482,9 +9482,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9532,9 +9532,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9582,9 +9582,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9632,9 +9632,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9682,9 +9682,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9737,9 +9737,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9787,9 +9787,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9837,9 +9837,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9887,9 +9887,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9945,9 +9945,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9995,9 +9995,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10045,9 +10045,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10095,9 +10095,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10145,9 +10145,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10195,9 +10195,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10245,9 +10245,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10295,9 +10295,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10350,9 +10350,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10400,9 +10400,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10450,9 +10450,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10508,9 +10508,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10558,9 +10558,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10616,9 +10616,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10666,9 +10666,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10724,9 +10724,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10774,9 +10774,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10824,9 +10824,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10874,9 +10874,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10932,9 +10932,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10982,9 +10982,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11032,9 +11032,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11086,9 +11086,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11136,9 +11136,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11189,9 +11189,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11239,9 +11239,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11289,9 +11289,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11339,9 +11339,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11397,9 +11397,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11447,9 +11447,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11502,9 +11502,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11552,9 +11552,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11602,9 +11602,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11652,9 +11652,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11710,9 +11710,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11760,9 +11760,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11810,9 +11810,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11868,9 +11868,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11926,9 +11926,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11984,9 +11984,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -12042,9 +12042,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -12101,9 +12101,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-17T00:00:00Z"
   },
   {
@@ -12160,9 +12160,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12205,9 +12205,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12266,9 +12266,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12323,9 +12323,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12380,9 +12380,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12412,16 +12412,16 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
     "id": "khu-di-tich-dong-khoi-ben-tre",
     "type": "history",
     "name": "Khu di tích Đồng Khởi Bến Tre (Khu di tích lịch sử Đồng Khởi)",
-    "summary": "Sep 24, 2025 · Khu di tích Đồng Khởi Bến Tre tọa lạc xã Định Thủy thuộc huyện Mỏ Cày Nam, nằm cách trung tâm thành phố khoảng 24km. Đầu những năm 1960, đây là nơi phát tiếng súng mở đầu cho phong trào Đồng Khởi và cách mạng miền Nam Việt Nam.",
+    "summary": "Sep 24, 2025 · Khu di tích Đồng Khởi Bến Tre tọa lạc xã Định Thủy, nằm cách trung tâm thành phố khoảng 24km. Đầu những năm 1960, đây là nơi phát tiếng súng mở đầu cho phong trào Đồng Khởi và cách mạng miền Nam Việt Nam.",
     "placeId": "xa-dong-khoi",
     "confidence": 0.7,
     "season": null,
@@ -12444,9 +12444,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12501,9 +12501,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12533,9 +12533,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12565,9 +12565,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12597,9 +12597,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12629,9 +12629,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12661,9 +12661,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12693,16 +12693,16 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
     "id": "lang-mo-va-dinh-phan-thanh-gian",
     "type": "history",
     "name": "Lăng mộ và Đình Phan Thanh Giản",
-    "summary": "Jan 29, 2016 · Về H.Ba Tri (tỉnh Bến Tre), ngoài khu lăng mộ Nguyễn Đình Chiểu ở thị trấn Ba Tri, tại xã Bảo Thạnh ven biển còn có khu mộ của đại thần Phan Thanh Giản, một nhân vật lịch sử triều Nguyễn gây nhiều tranh luận cho hậu thế.",
+    "summary": "Jan 29, 2016 · Về Ba Tri (tỉnh Vĩnh Long), ngoài khu lăng mộ Nguyễn Đình Chiểu ở thị trấn Ba Tri, tại xã Bảo Thạnh ven biển còn có khu mộ của đại thần Phan Thanh Giản, một nhân vật lịch sử triều Nguyễn gây nhiều tranh luận cho hậu thế.",
     "placeId": "xa-bao-thanh",
     "confidence": 0.7,
     "season": null,
@@ -12725,9 +12725,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12757,9 +12757,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12789,9 +12789,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12847,9 +12847,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12897,9 +12897,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12947,9 +12947,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13001,9 +13001,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13059,9 +13059,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13104,9 +13104,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13160,9 +13160,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13218,9 +13218,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13250,9 +13250,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13282,9 +13282,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13339,9 +13339,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13395,9 +13395,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13438,9 +13438,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13487,9 +13487,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13544,9 +13544,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13602,9 +13602,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13660,9 +13660,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13718,9 +13718,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13752,9 +13752,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -13814,9 +13814,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -13876,9 +13876,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -13909,9 +13909,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -13942,9 +13942,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -13975,9 +13975,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14036,9 +14036,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14069,9 +14069,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14102,9 +14102,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14163,9 +14163,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14222,9 +14222,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14283,9 +14283,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14344,9 +14344,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14384,9 +14384,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14445,9 +14445,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14478,9 +14478,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14511,9 +14511,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14544,9 +14544,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14577,9 +14577,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14638,9 +14638,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14693,9 +14693,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14726,9 +14726,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14773,9 +14773,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14832,9 +14832,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14893,9 +14893,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14954,9 +14954,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14987,9 +14987,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15028,16 +15028,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "mo-va-khu-luu-niem-nha-giao-vo-truong-toan",
     "type": "history",
     "name": "Mộ và Khu lưu niệm nhà giáo Võ Trường Toản",
-    "summary": "Võ Trường Toản không để lại sách vở, nhưng để lại cả một thế hệ học trò kiệt xuất đã dựng nên nước — Nguyễn Đình Chiểu, Phan Thanh Giản, Ngô Nhân Tịnh... Khu mộ và lưu niệm nhà giáo Võ Trường Toản tại tỉnh Bến Tre là nơi hậu thế tri ân người thầy đã thắp ngọn đèn tri thức cho đất phương Nam từ hơn hai thế kỷ trước. Khuôn viên yên tĩnh, xanh mát với những tán cây cổ thụ che phủ lăng mộ tạo không gian trang nghiêm và đầy suy tư.",
+    "summary": "Võ Trường Toản không để lại sách vở, nhưng để lại cả một thế hệ học trò kiệt xuất đã dựng nên nước — Nguyễn Đình Chiểu, Phan Thanh Giản, Ngô Nhân Tịnh... Khu mộ và lưu niệm nhà giáo Võ Trường Toản tại tỉnh Vĩnh Long là nơi hậu thế tri ân người thầy đã thắp ngọn đèn tri thức cho đất phương Nam từ hơn hai thế kỷ trước. Khuôn viên yên tĩnh, xanh mát với những tán cây cổ thụ che phủ lăng mộ tạo không gian trang nghiêm và đầy suy tư.",
     "placeId": "xa-bao-thanh",
     "confidence": 0.5,
     "season": null,
@@ -15061,9 +15061,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15120,9 +15120,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15153,9 +15153,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15186,9 +15186,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15219,9 +15219,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15268,9 +15268,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15301,9 +15301,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15334,9 +15334,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15367,9 +15367,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15400,9 +15400,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15433,9 +15433,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15466,9 +15466,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15527,9 +15527,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15588,9 +15588,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15647,9 +15647,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15707,9 +15707,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15754,9 +15754,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15811,9 +15811,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15870,9 +15870,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15929,9 +15929,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15990,9 +15990,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16023,9 +16023,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16056,9 +16056,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16117,9 +16117,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16178,9 +16178,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16239,9 +16239,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16300,9 +16300,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16361,9 +16361,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16394,9 +16394,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16427,9 +16427,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16488,9 +16488,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16548,9 +16548,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16605,9 +16605,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16666,9 +16666,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16727,9 +16727,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16781,9 +16781,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16842,9 +16842,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16900,9 +16900,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16933,9 +16933,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16966,9 +16966,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17032,9 +17032,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17093,9 +17093,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17153,9 +17153,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17186,9 +17186,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17219,9 +17219,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17252,9 +17252,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17285,9 +17285,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17318,9 +17318,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17351,9 +17351,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17384,9 +17384,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17417,9 +17417,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17450,9 +17450,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17483,9 +17483,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17528,9 +17528,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17561,9 +17561,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17594,9 +17594,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17627,9 +17627,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17660,9 +17660,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17705,9 +17705,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17738,9 +17738,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17771,9 +17771,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17804,9 +17804,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17837,9 +17837,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17870,9 +17870,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17903,9 +17903,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17936,9 +17936,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17969,9 +17969,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18034,9 +18034,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18095,9 +18095,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18156,9 +18156,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18217,9 +18217,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18275,9 +18275,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18333,9 +18333,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18391,9 +18391,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18450,9 +18450,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18509,9 +18509,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18568,9 +18568,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18627,9 +18627,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18687,9 +18687,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18746,9 +18746,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18805,9 +18805,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18864,9 +18864,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18924,9 +18924,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18984,9 +18984,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19043,9 +19043,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19102,16 +19102,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "ca-chay-tra-on-rim-kho",
     "type": "dish",
     "name": "Cá cháy Trà Ôn rim/kho",
-    "summary": "Cá cháy là loài cá quý hiếm sống ở sông Hậu, thân dài dẹp, vảy trắng bạc, nhiều xương nhưng thịt cực kỳ ngọt và béo. Con cá cháy cái với cặp trứng béo ngậy là phần được săn đón nhất. Cá thường được rim hoặc kho đậm đà để giữ nguyên độ ngọt tự nhiên, gia vị thấm đều từng thớ thịt, ăn rất bắt cơm trắng. Ngày càng khan hiếm do khai thác quá mức, có tiền chưa chắc mua được. Thưởng thức tốt nhất vào mùa gió chướng, trước và sau Tết Nguyên Đán khoảng một tháng tại các nhà hàng đặc sản huyện Trà Ôn.",
+    "summary": "Cá cháy là loài cá quý hiếm sống ở sông Hậu, thân dài dẹp, vảy trắng bạc, nhiều xương nhưng thịt cực kỳ ngọt và béo. Con cá cháy cái với cặp trứng béo ngậy là phần được săn đón nhất. Cá thường được rim hoặc kho đậm đà để giữ nguyên độ ngọt tự nhiên, gia vị thấm đều từng thớ thịt, ăn rất bắt cơm trắng. Ngày càng khan hiếm do khai thác quá mức, có tiền chưa chắc mua được. Thưởng thức tốt nhất vào mùa gió chướng, trước và sau Tết Nguyên Đán khoảng một tháng tại các nhà hàng đặc sản Trà Ôn.",
     "placeId": "xa-nhon-phu",
     "confidence": 0.75,
     "season": {
@@ -19150,9 +19150,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19213,9 +19213,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19273,9 +19273,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19333,9 +19333,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19389,9 +19389,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19439,9 +19439,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19485,16 +19485,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "banh-trang-nem-cu-lao-luc-si",
     "type": "product",
     "name": "Bánh tráng nem cù lao Lục Sĩ",
-    "summary": "Làng nghề bánh tráng Lục Sĩ Thành, huyện Trà Ôn tự hào hơn 70 năm kinh nghiệm làm thủ công 100% từ bột gạo nguyên chất, hoàn toàn không hóa chất bảo quản. Bánh mỏng đều tay, mềm dẻo đặc trưng, vị mặn vừa phải và dai dai thỏa mãn. Đa dạng sản phẩm gồm bánh tráng nem, bánh tráng ớt cay, bánh tráng sữa béo thơm và bánh tráng ngọt. Phù hợp cuốn đủ loại nhân từ hải sản đến rau củ, hoặc ăn trực tiếp nướng than. Là món quà biếu được du khách mua nhiều nhất khi rời Vĩnh Long, đạt OCOP 3 sao.",
+    "summary": "Làng nghề bánh tráng Lục Sĩ Thành, Trà Ôn tự hào hơn 70 năm kinh nghiệm làm thủ công 100% từ bột gạo nguyên chất, hoàn toàn không hóa chất bảo quản. Bánh mỏng đều tay, mềm dẻo đặc trưng, vị mặn vừa phải và dai dai thỏa mãn. Đa dạng sản phẩm gồm bánh tráng nem, bánh tráng ớt cay, bánh tráng sữa béo thơm và bánh tráng ngọt. Phù hợp cuốn đủ loại nhân từ hải sản đến rau củ, hoặc ăn trực tiếp nướng than. Là món quà biếu được du khách mua nhiều nhất khi rời Vĩnh Long, đạt OCOP 3 sao.",
     "placeId": "xa-luc-si-thanh",
     "confidence": 0.75,
     "season": {
@@ -19545,9 +19545,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19601,16 +19601,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "chao-dua-thuan-duyen-tam-binh",
     "type": "product",
     "name": "Chao dừa Thuận Duyên Tam Bình",
-    "summary": "Sản phẩm OCOP 4 sao độc đáo của Vĩnh Long do công ty Thuận Duyên, huyện Tam Bình sản xuất. Đậu hủ được ủ lên men truyền thống theo phương pháp gia truyền, điểm khác biệt hoàn toàn là ngâm trong nước cốt dừa Tam Bình béo thơm thay nước muối thông thường, tạo nên hương vị ngậy dịu đặc trưng không nơi nào có được. Đa dạng sản phẩm gồm chao môn, chao béo nhất và chao pha sẵn tiện lợi. Dùng để chấm rau củ, nấu lẩu đậm đà hoặc ăn chay thuần túy. Là món quà biếu lý tưởng từ vùng đất dừa Tam Bình.",
+    "summary": "Sản phẩm OCOP 4 sao độc đáo của Vĩnh Long do công ty Thuận Duyên, Tam Bình sản xuất. Đậu hủ được ủ lên men truyền thống theo phương pháp gia truyền, điểm khác biệt hoàn toàn là ngâm trong nước cốt dừa Tam Bình béo thơm thay nước muối thông thường, tạo nên hương vị ngậy dịu đặc trưng không nơi nào có được. Đa dạng sản phẩm gồm chao môn, chao béo nhất và chao pha sẵn tiện lợi. Dùng để chấm rau củ, nấu lẩu đậm đà hoặc ăn chay thuần túy. Là món quà biếu lý tưởng từ vùng đất dừa Tam Bình.",
     "placeId": "xa-nhon-phu",
     "confidence": 0.75,
     "season": {
@@ -19657,9 +19657,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19710,9 +19710,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19764,9 +19764,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19823,16 +19823,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "mam-chung-chuoi-dap",
     "type": "dish",
     "name": "Mắm chưng chuối đập",
-    "summary": "Món ăn dân dã mang đậm hồn quê Cù lao An Bình, huyện Long Hồ. Mắm cá sặc hoặc mắm cá linh được chưng hấp cách thủy cùng trứng gà và thịt heo xay, tạo thành tầng mắm vàng óng mặn ngậy béo thơm trên mặt. Ăn kèm chuối chát đập dập còn xanh tươi giòn, rau sống các loại xanh mát. Sự tương phản giữa vị mặn ngậy của mắm chưng và vị chát của chuối cùng vị tươi của rau tạo nên hương vị đặc biệt không thể nhầm lẫn, là trải nghiệm ẩm thực dân dã nhất trên Cù lao An Bình.",
+    "summary": "Món ăn dân dã mang đậm hồn quê Cù lao An Bình, Long Hồ. Mắm cá sặc hoặc mắm cá linh được chưng hấp cách thủy cùng trứng gà và thịt heo xay, tạo thành tầng mắm vàng óng mặn ngậy béo thơm trên mặt. Ăn kèm chuối chát đập dập còn xanh tươi giòn, rau sống các loại xanh mát. Sự tương phản giữa vị mặn ngậy của mắm chưng và vị chát của chuối cùng vị tươi của rau tạo nên hương vị đặc biệt không thể nhầm lẫn, là trải nghiệm ẩm thực dân dã nhất trên Cù lao An Bình.",
     "placeId": "xa-an-binh",
     "confidence": 0.75,
     "season": {
@@ -19882,9 +19882,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19933,9 +19933,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19991,9 +19991,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20043,9 +20043,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20093,9 +20093,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20153,9 +20153,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20205,9 +20205,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20260,9 +20260,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20323,9 +20323,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20386,9 +20386,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20449,9 +20449,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20504,9 +20504,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20567,9 +20567,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20617,9 +20617,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20664,9 +20664,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20719,9 +20719,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20769,9 +20769,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20828,9 +20828,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20890,9 +20890,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20952,9 +20952,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21012,9 +21012,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21076,9 +21076,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21131,9 +21131,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21191,9 +21191,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21249,9 +21249,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21303,9 +21303,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21365,9 +21365,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21420,9 +21420,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21472,16 +21472,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "mam-bo-hoc-prohok",
     "type": "product",
     "name": "Mắm bò hóc (Prohok)",
-    "summary": "Linh hồn ẩm thực Khmer Nam Bộ, Prohok làm từ cá nước ngọt như cá sặc, cá chốt, cá hủn hỉn ướp muối, cơm nguội, rượu và thính gạo, rồi ủ kín trong hũ sành từ 4-6 tháng. Mùi nồng đặc trưng ban đầu có thể lạ lẫm với người lần đầu thử, nhưng hậu vị ngọt đậm đà quyến rũ và rất nghiện. Là gia vị không thể thiếu trong bún nước lèo và nhiều món ăn truyền thống Khmer khác. Không chỉ là thực phẩm, Prohok còn là sản phẩm văn hóa tinh thần gắn bó sâu sắc với đời sống cộng đồng Khmer khắp tỉnh Trà Vinh.",
+    "summary": "Linh hồn ẩm thực Khmer Nam Bộ, Prohok làm từ cá nước ngọt như cá sặc, cá chốt, cá hủn hỉn ướp muối, cơm nguội, rượu và thính gạo, rồi ủ kín trong hũ sành từ 4-6 tháng. Mùi nồng đặc trưng ban đầu có thể lạ lẫm với người lần đầu thử, nhưng hậu vị ngọt đậm đà quyến rũ và rất nghiện. Là gia vị không thể thiếu trong bún nước lèo và nhiều món ăn truyền thống Khmer khác. Không chỉ là thực phẩm, Prohok còn là sản phẩm văn hóa tinh thần gắn bó sâu sắc với đời sống cộng đồng Khmer khắp tỉnh Vĩnh Long.",
     "placeId": "xa-nhi-long",
     "confidence": 0.75,
     "season": {
@@ -21531,9 +21531,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21579,9 +21579,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21638,9 +21638,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21696,9 +21696,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21758,9 +21758,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21812,16 +21812,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "cua-com-duyen-hai",
     "type": "dish",
     "name": "Cua cốm (cua cơ bắp) Duyên Hải",
-    "summary": "Đặc sản nuôi trồng nổi bật của thị xã Duyên Hải, là cua biển được thu hoạch đúng giai đoạn vừa lột vỏ. Nhờ cơ bắp phát triển mạnh sau khi lột, thịt cua đặc chắc, ngọt thanh và mềm mại hơn cua thông thường rõ rệt. Chế biến đa dạng: hấp gừng giữ nguyên vị ngọt, rang muối ớt thơm lừng, nấu canh bầu mát lành. Thưởng thức kèm nước chấm gừng muối hoặc muối tiêu chanh. Đã được công nhận sản phẩm OCOP 3 sao cấp tỉnh, giúp nâng tầm thương hiệu nông sản địa phương và trở thành đặc sản không thể bỏ qua khi đến Duyên Hải.",
+    "summary": "Đặc sản nuôi trồng nổi bật của Duyên Hải, là cua biển được thu hoạch đúng giai đoạn vừa lột vỏ. Nhờ cơ bắp phát triển mạnh sau khi lột, thịt cua đặc chắc, ngọt thanh và mềm mại hơn cua thông thường rõ rệt. Chế biến đa dạng: hấp gừng giữ nguyên vị ngọt, rang muối ớt thơm lừng, nấu canh bầu mát lành. Thưởng thức kèm nước chấm gừng muối hoặc muối tiêu chanh. Đã được công nhận sản phẩm OCOP 3 sao cấp tỉnh, giúp nâng tầm thương hiệu nông sản địa phương và trở thành đặc sản không thể bỏ qua khi đến Duyên Hải.",
     "placeId": "xa-nhi-long",
     "confidence": 0.75,
     "season": {
@@ -21873,9 +21873,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21912,9 +21912,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21951,9 +21951,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21990,9 +21990,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22029,9 +22029,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22068,9 +22068,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22107,9 +22107,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22146,9 +22146,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22185,9 +22185,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22224,9 +22224,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22263,9 +22263,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22302,9 +22302,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22341,9 +22341,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22380,9 +22380,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22419,9 +22419,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22458,9 +22458,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22497,9 +22497,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22536,9 +22536,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22575,9 +22575,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22639,9 +22639,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22703,9 +22703,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22767,16 +22767,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "shop-luu-niem-ben-ninh-kieu-gian-hang-vinh-long-vinh-long",
     "type": "attraction",
     "name": "Shop Lưu Niệm Bến Ninh Kiều - Gian hàng Vĩnh Long",
-    "summary": "shop lưu niệm tại Khu du lịch Cù lao An Bình, huyện Long Hồ, Vĩnh Long. Mở cửa 08:00 - 17:30. Nên mua: Đồ thủ công mỹ nghệ lục bình (bình hoa, túi xách), đồ gỗ chạm khắc, tranh lá dừa, sản phẩm từ cây dừa, mô hình ghe thuyền, áo thổ cẩm. Giá: 30.000 - 500.000 VND. Thanh toán: tiền mặt/QR.",
+    "summary": "shop lưu niệm tại Khu du lịch Cù lao An Bình, Long Hồ, Vĩnh Long. Mở cửa 08:00 - 17:30. Nên mua: Đồ thủ công mỹ nghệ lục bình (bình hoa, túi xách), đồ gỗ chạm khắc, tranh lá dừa, sản phẩm từ cây dừa, mô hình ghe thuyền, áo thổ cẩm. Giá: 30.000 - 500.000 VND. Thanh toán: tiền mặt/QR.",
     "placeId": "xa-nhon-phu",
     "confidence": 0.7,
     "season": {
@@ -22831,16 +22831,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "lang-nghe-thu-cong-my-nghe-luc-binh-my-an-vinh-long",
     "type": "craft_village",
     "name": "Làng nghề thủ công mỹ nghệ lục bình Mỹ An",
-    "summary": "shop lưu niệm tại Xã Mỹ An, huyện Mang Thít, tỉnh Vĩnh Long. Mở cửa 08:00 - 17:00. Nên mua: Sản phẩm đan lát từ lục bình: giỏ xách, rổ, thảm, bình hoa, đèn lồng thủ công — mua tại xưởng giá gốc rẻ hơn 30-50% so với phố. Giá: 50.000 - 800.000 VND. Thanh toán: tiền mặt.",
+    "summary": "shop lưu niệm tại Xã Mỹ An, Mang Thít, tỉnh Vĩnh Long. Mở cửa 08:00 - 17:00. Nên mua: Sản phẩm đan lát từ lục bình: giỏ xách, rổ, thảm, bình hoa, đèn lồng thủ công — mua tại xưởng giá gốc rẻ hơn 30-50% so với phố. Giá: 50.000 - 800.000 VND. Thanh toán: tiền mặt.",
     "placeId": "xa-nhon-phu",
     "confidence": 0.7,
     "season": {
@@ -22894,16 +22894,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "cua-hang-ocop-tinh-ben-tre-trung-tam-xuc-tien-dau-tu-ho-tro-doanh-nghiep-ben-tre",
     "type": "attraction",
     "name": "Cửa hàng OCOP tỉnh Bến Tre (Trung tâm Xúc tiến Đầu tư & Hỗ trợ Doanh nghiệp)",
-    "summary": "cửa hàng OCOP tại Số 7 Cách Mạng Tháng Tám, Phường 3, TP. Bến Tre, tỉnh Bến Tre. Mở cửa 07:30 - 11:30 và 13:30 - 17:00 (thứ 2 - thứ 6). Nên mua: Sản phẩm OCOP 3-4 sao: kẹo dừa, dầu dừa, than hoạt tính dừa, cacao Bến Tre, nước cốt dừa đóng hộp, thạch dừa. Giá: 30.000 - 300.000 VND. Thanh toán: tiền mặt/QR.",
+    "summary": "cửa hàng OCOP tại Số 7 Cách Mạng Tháng Tám, Phường 3, TP. Bến Tre, tỉnh Vĩnh Long. Mở cửa 07:30 - 11:30 và 13:30 - 17:00 (thứ 2 - thứ 6). Nên mua: Sản phẩm OCOP 3-4 sao: kẹo dừa, dầu dừa, than hoạt tính dừa, cacao Bến Tre, nước cốt dừa đóng hộp, thạch dừa. Giá: 30.000 - 300.000 VND. Thanh toán: tiền mặt/QR.",
     "placeId": "p-phu-khuong",
     "confidence": 0.7,
     "season": {
@@ -22958,16 +22958,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "co-so-keo-dua-thanh-long-ben-tre",
     "type": "attraction",
     "name": "Cơ sở Kẹo Dừa Thanh Long",
-    "summary": "cửa hàng đặc sản tại 73 Nguyễn Đình Chiểu, Phường 1, TP. Bến Tre, tỉnh Bến Tre. Mở cửa 07:00 - 20:00 hàng ngày. Nên mua: Kẹo dừa thô, kẹo dừa sầu riêng, kẹo dừa lá dứa, kẹo dừa ca cao, bánh tráng dừa, kẹo dừa sô cô la. Giá: 50.000 - 200.000 VND/hộp. Thanh toán: tiền mặt/QR.",
+    "summary": "cửa hàng đặc sản tại 73 Nguyễn Đình Chiểu, Phường 1, TP. Bến Tre, tỉnh Vĩnh Long. Mở cửa 07:00 - 20:00 hàng ngày. Nên mua: Kẹo dừa thô, kẹo dừa sầu riêng, kẹo dừa lá dứa, kẹo dừa ca cao, bánh tráng dừa, kẹo dừa sô cô la. Giá: 50.000 - 200.000 VND/hộp. Thanh toán: tiền mặt/QR.",
     "placeId": "p-phu-khuong",
     "confidence": 0.7,
     "season": {
@@ -23022,16 +23022,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "cua-hang-dac-san-dua-ben-tre-cong-ty-tnhh-dong-a-ben-tre",
     "type": "attraction",
     "name": "Cửa hàng Đặc Sản Dừa Bến Tre - Công ty TNHH Đông Á",
-    "summary": "cửa hàng đặc sản tại 61 Đồng Khởi, Phường 3, TP. Bến Tre, tỉnh Bến Tre. Mở cửa 07:00 - 21:00 hàng ngày. Nên mua: Kẹo dừa Đông Á, dầu dừa nguyên chất, nước tương dừa, giấm dừa, cơm dừa sấy, than dừa mỹ phẩm. Giá: 40.000 - 400.000 VND. Thanh toán: tiền mặt/thẻ/QR.",
+    "summary": "cửa hàng đặc sản tại 61 Đồng Khởi, Phường 3, TP. Bến Tre, tỉnh Vĩnh Long. Mở cửa 07:00 - 21:00 hàng ngày. Nên mua: Kẹo dừa Đông Á, dầu dừa nguyên chất, nước tương dừa, giấm dừa, cơm dừa sấy, than dừa mỹ phẩm. Giá: 40.000 - 400.000 VND. Thanh toán: tiền mặt/thẻ/QR.",
     "placeId": "p-phu-khuong",
     "confidence": 0.7,
     "season": {
@@ -23086,16 +23086,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "cho-ben-tre-cho-trung-tam-ben-tre",
     "type": "attraction",
     "name": "Chợ Bến Tre (chợ trung tâm)",
-    "summary": "chợ đặc sản tại Đường Trưng Trắc, Phường 1, TP. Bến Tre, tỉnh Bến Tre. Mở cửa 04:00 - 19:00 hàng ngày. Nên mua: Dừa tươi, mắm tôm chà Bình Đại, bánh phồng tôm, khô cá lóc, tép rang dừa, trái cây miền Tây, kẹo dừa thô chưa đóng gói. Giá: 20.000 - 200.000 VND. Thanh toán: tiền mặt.",
+    "summary": "chợ đặc sản tại Đường Trưng Trắc, Phường 1, TP. Bến Tre, tỉnh Vĩnh Long. Mở cửa 04:00 - 19:00 hàng ngày. Nên mua: Dừa tươi, mắm tôm chà Bình Đại, bánh phồng tôm, khô cá lóc, tép rang dừa, trái cây miền Tây, kẹo dừa thô chưa đóng gói. Giá: 20.000 - 200.000 VND. Thanh toán: tiền mặt.",
     "placeId": "p-phu-khuong",
     "confidence": 0.7,
     "season": {
@@ -23150,9 +23150,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23214,9 +23214,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23278,9 +23278,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23342,9 +23342,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23406,9 +23406,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23470,9 +23470,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23534,9 +23534,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23598,9 +23598,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23662,9 +23662,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23729,16 +23729,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "song-long-ho-vinh-long",
     "type": "nature",
     "name": "Sông Long Hồ",
-    "summary": "Sông Long Hồ (sông, 28 km). Chảy qua huyện Long Hồ và tiếp giáp thành phố Vĩnh Long. Tên gọi gắn liền với vùng đất Long Hồ Dinh – trung tâm hành chính của đàng Trong thế kỷ 18. Là trục giao thông thủy nội địa kết nối các xã vườn cù lao. Điểm ngắm cảnh đẹp: Bến đò Long Hồ và đoạn qua xã Phước Hậu nhìn ra vườn bưởi da xanh. Đánh giá cảnh quan: 4/5.",
+    "summary": "Sông Long Hồ (sông, 28 km). Chảy qua Long Hồ và tiếp giáp thành phố Vĩnh Long. Tên gọi gắn liền với vùng đất Long Hồ Dinh – trung tâm hành chính của đàng Trong thế kỷ 18. Là trục giao thông thủy nội địa kết nối các xã vườn cù lao. Điểm ngắm cảnh đẹp: Bến đò Long Hồ và đoạn qua xã Phước Hậu nhìn ra vườn bưởi da xanh. Đánh giá cảnh quan: 4/5.",
     "placeId": "p-thanh-duc",
     "confidence": 0.7,
     "season": {
@@ -23794,9 +23794,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23859,9 +23859,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23924,9 +23924,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23998,9 +23998,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24063,16 +24063,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "kenh-thay-cai-vinh-long",
     "type": "nature",
     "name": "Kênh Thầy Cai",
-    "summary": "Kênh Thầy Cai (kênh, 22 km). Kênh đào thời Pháp nối thị xã Bình Minh với vùng nội đồng huyện Bình Minh – Tam Bình, phục vụ tiêu thoát lũ và canh tác bưởi Năm Roi. Tên 'Thầy Cai' gắn với một vị cai tổng địa phương có công khai khẩn vùng đất này. Hiện là tuyến giao thông thủy nội đồng của nông dân. Điểm ngắm cảnh đẹp: Đoạn qua vườn bưởi Năm Roi xã Mỹ Hòa, huyện Bình Minh. Đánh giá cảnh quan: 3/5.",
+    "summary": "Kênh Thầy Cai (kênh, 22 km). Kênh đào thời Pháp nối Bình Minh với vùng nội đồng Bình Minh – Tam Bình, phục vụ tiêu thoát lũ và canh tác bưởi Năm Roi. Tên 'Thầy Cai' gắn với một vị cai tổng địa phương có công khai khẩn vùng đất này. Hiện là tuyến giao thông thủy nội đồng của nông dân. Điểm ngắm cảnh đẹp: Đoạn qua vườn bưởi Năm Roi xã Mỹ Hòa, Bình Minh. Đánh giá cảnh quan: 3/5.",
     "placeId": "xa-nhon-phu",
     "confidence": 0.7,
     "season": {
@@ -24128,9 +24128,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24193,9 +24193,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24258,9 +24258,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24318,9 +24318,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24383,9 +24383,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24448,16 +24448,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "cua-dai-cua-song-my-thosong-tien-ben-tre",
     "type": "nature",
     "name": "Cửa Đại (cửa sông Mỹ Tho/sông Tiền)",
-    "summary": "Cửa Đại (cửa sông Mỹ Tho/sông Tiền) (cửa biển, 6 km). Cửa biển lớn nhất phía bắc tỉnh Bến Tre (giáp Tiền Giang), nơi sông Tiền đổ ra Biển Đông. Vùng cửa sông rộng lớn, hệ sinh thái ngập mặn đa dạng, là bãi đẻ và nuôi dưỡng nhiều loài thủy sản. Điểm xuất phát tour biển đảo. Điểm ngắm cảnh đẹp: Mũi Cửa Đại, xã Thừa Đức (huyện Bình Đại) – nhìn ra biển, thấy tàu thuyền ra vào. Đánh giá cảnh quan: 4/5.",
+    "summary": "Cửa Đại (cửa sông Mỹ Tho/sông Tiền) (cửa biển, 6 km). Cửa biển lớn nhất phía bắc tỉnh Vĩnh Long (giáp Tiền Giang), nơi sông Tiền đổ ra Biển Đông. Vùng cửa sông rộng lớn, hệ sinh thái ngập mặn đa dạng, là bãi đẻ và nuôi dưỡng nhiều loài thủy sản. Điểm xuất phát tour biển đảo. Điểm ngắm cảnh đẹp: Mũi Cửa Đại, xã Thừa Đức, Bình Đại – nhìn ra biển, thấy tàu thuyền ra vào. Đánh giá cảnh quan: 4/5.",
     "placeId": "p-phu-khuong",
     "confidence": 0.7,
     "season": {
@@ -24513,16 +24513,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "kenh-cho-lach-ben-tre",
     "type": "nature",
     "name": "Kênh Chợ Lách",
-    "summary": "Kênh Chợ Lách (kênh, 18 km). Tuyến kênh đào nối liền các xã vùng hoa kiểng và cây giống nổi tiếng của huyện Chợ Lách. Hai bên bờ kênh là vườn bonsai, hoa lan, cây giống xuất khẩu – nét độc đáo không nơi nào có được. Mỗi dịp Tết, kênh nhộn nhịp thuyền chở hoa. Điểm ngắm cảnh đẹp: Đoạn kênh qua xã Vĩnh Hòa và xã Long Thới (huyện Chợ Lách) – mùa Tết rực rỡ hoa kiểng hai bờ. Đánh giá cảnh quan: 5/5.",
+    "summary": "Kênh Chợ Lách (kênh, 18 km). Tuyến kênh đào nối liền các xã vùng hoa kiểng và cây giống nổi tiếng của Chợ Lách. Hai bên bờ kênh là vườn bonsai, hoa lan, cây giống xuất khẩu – nét độc đáo không nơi nào có được. Mỗi dịp Tết, kênh nhộn nhịp thuyền chở hoa. Điểm ngắm cảnh đẹp: Đoạn kênh qua xã Vĩnh Hòa và xã Long Thới, Chợ Lách – mùa Tết rực rỡ hoa kiểng hai bờ. Đánh giá cảnh quan: 5/5.",
     "placeId": "p-phu-khuong",
     "confidence": 0.7,
     "season": {
@@ -24578,16 +24578,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "song-thom-rach-thom-ben-tre",
     "type": "nature",
     "name": "Sông Thom (rạch Thom)",
-    "summary": "Sông Thom (rạch Thom) (rạch, 22 km). Tuyến đường thủy nội địa quan trọng của huyện Mỏ Cày Bắc và Mỏ Cày Nam, chảy qua vùng vườn dừa lâu năm. Gắn với nghề thủ công truyền thống: kẹo dừa, chỉ xơ dừa. Các hộ làm nghề dừa nằm sát bờ rạch, có thể quan sát trực tiếp. Điểm ngắm cảnh đẹp: Đoạn qua thị trấn Mỏ Cày và xã Thành Thới A – xưởng chế biến dừa ngay bờ rạch, mùi thơm kẹo dừa. Đánh giá cảnh quan: 4/5.",
+    "summary": "Sông Thom (rạch Thom) (rạch, 22 km). Tuyến đường thủy nội địa quan trọng của Mỏ Cày Bắc và Mỏ Cày Nam, chảy qua vùng vườn dừa lâu năm. Gắn với nghề thủ công truyền thống: kẹo dừa, chỉ xơ dừa. Các hộ làm nghề dừa nằm sát bờ rạch, có thể quan sát trực tiếp. Điểm ngắm cảnh đẹp: Đoạn qua Mỏ Cày và xã Thành Thới A – xưởng chế biến dừa ngay bờ rạch, mùi thơm kẹo dừa. Đánh giá cảnh quan: 4/5.",
     "placeId": "p-phu-khuong",
     "confidence": 0.7,
     "season": {
@@ -24643,16 +24643,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "song-hau-doan-cua-dinh-an-tra-vinh",
     "type": "nature",
     "name": "Sông Hậu đoạn cửa Định An",
-    "summary": "Sông Hậu đoạn cửa Định An (cửa biển, 25 km). Cửa biển lớn nhất tỉnh Trà Vinh, nơi sông Hậu đổ ra Biển Đông. Lịch sử là tuyến đường thủy xuất khẩu gạo thời Pháp thuộc. Là bãi đẻ và sinh trưởng của nhiều loài cá biển, tôm; hệ sinh thái cửa sông điển hình vùng Đồng bằng sông Cửu Long. Điểm ngắm cảnh đẹp: Mũi Cồn Cát thuộc xã Trường Long Hòa, huyện Duyên Hải — ngắm tàu thuyền ra vào và vùng ngập mặn ven cửa sông. Đánh giá cảnh quan: 4/5.",
+    "summary": "Sông Hậu đoạn cửa Định An (cửa biển, 25 km). Cửa biển lớn nhất tỉnh Vĩnh Long, nơi sông Hậu đổ ra Biển Đông. Lịch sử là tuyến đường thủy xuất khẩu gạo thời Pháp thuộc. Là bãi đẻ và sinh trưởng của nhiều loài cá biển, tôm; hệ sinh thái cửa sông điển hình vùng Đồng bằng sông Cửu Long. Điểm ngắm cảnh đẹp: Mũi Cồn Cát thuộc xã Trường Long Hòa, Duyên Hải — ngắm tàu thuyền ra vào và vùng ngập mặn ven cửa sông. Đánh giá cảnh quan: 4/5.",
     "placeId": "xa-nhi-long",
     "confidence": 0.7,
     "season": {
@@ -24708,16 +24708,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "kenh-tra-vinh-tra-cu-tra-vinh",
     "type": "nature",
     "name": "Kênh Trà Vinh - Trà Cú",
-    "summary": "Kênh Trà Vinh - Trà Cú (kênh, 42 km). Kênh đào thời Pháp (đầu thế kỷ 20) kết nối thành phố Trà Vinh với huyện Trà Cú, chạy song song với các trục lộ quan trọng. Đóng vai trò huyết mạch tưới tiêu và giao thông nội tỉnh; hai bên bờ có nhiều chùa Khmer truyền thống. Điểm ngắm cảnh đẹp: Đoạn qua thị trấn Trà Cú, nơi có chùa Âng (Angkorwat thu nhỏ) nhìn ra kênh. Đánh giá cảnh quan: 3/5.",
+    "summary": "Kênh Trà Vinh - Trà Cú (kênh, 42 km). Kênh đào thời Pháp (đầu thế kỷ 20) kết nối thành phố Trà Vinh với Trà Cú, chạy song song với các trục lộ quan trọng. Đóng vai trò huyết mạch tưới tiêu và giao thông nội tỉnh; hai bên bờ có nhiều chùa Khmer truyền thống. Điểm ngắm cảnh đẹp: Đoạn qua Trà Cú, nơi có chùa Âng (Angkorwat thu nhỏ) nhìn ra kênh. Đánh giá cảnh quan: 3/5.",
     "placeId": "xa-nhi-long",
     "confidence": 0.7,
     "season": {
@@ -24773,16 +24773,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "cua-cung-hau-tra-vinh",
     "type": "nature",
     "name": "Cửa Cung Hầu",
-    "summary": "Cửa Cung Hầu (cửa biển, 18 km). Cửa biển phía Bắc tỉnh Trà Vinh, nơi nhánh sông Cổ Chiên đổ ra biển. Là ngư trường khai thác thủy sản ven bờ quan trọng; khu vực có rừng ngập mặn Cồn Bần được bảo vệ với hệ sinh thái đặc trưng cửa sông. Điểm ngắm cảnh đẹp: Cồn Bần xã Hiệp Thạnh, huyện Duyên Hải — đi thuyền qua rừng bần ven cửa sông. Đánh giá cảnh quan: 3/5.",
+    "summary": "Cửa Cung Hầu (cửa biển, 18 km). Cửa biển phía Bắc tỉnh Vĩnh Long, nơi nhánh sông Cổ Chiên đổ ra biển. Là ngư trường khai thác thủy sản ven bờ quan trọng; khu vực có rừng ngập mặn Cồn Bần được bảo vệ với hệ sinh thái đặc trưng cửa sông. Điểm ngắm cảnh đẹp: Cồn Bần xã Hiệp Thạnh, Duyên Hải — đi thuyền qua rừng bần ven cửa sông. Đánh giá cảnh quan: 3/5.",
     "placeId": "xa-nhi-long",
     "confidence": 0.7,
     "season": {
@@ -24838,16 +24838,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "song-lang-the-tra-vinh",
     "type": "nature",
     "name": "Sông Láng Thé",
-    "summary": "Sông Láng Thé (sông, 30 km). Sông nội địa chảy qua trung tâm tỉnh, kết nối thành phố Trà Vinh với huyện Châu Thành. Hai bờ có nhiều phum sóc Khmer và vườn dừa lâu đời. Từng là tuyến giao thông chính của người Khmer địa phương trước khi có đường bộ. Điểm ngắm cảnh đẹp: Đoạn chảy qua xã Song Lộc, huyện Châu Thành — vườn dừa xanh phản chiếu mặt nước, thuyền gỗ truyền thống. Đánh giá cảnh quan: 4/5.",
+    "summary": "Sông Láng Thé (sông, 30 km). Sông nội địa chảy qua trung tâm tỉnh, kết nối thành phố Trà Vinh với Châu Thành. Hai bờ có nhiều phum sóc Khmer và vườn dừa lâu đời. Từng là tuyến giao thông chính của người Khmer địa phương trước khi có đường bộ. Điểm ngắm cảnh đẹp: Đoạn chảy qua xã Song Lộc, Châu Thành — vườn dừa xanh phản chiếu mặt nước, thuyền gỗ truyền thống. Đánh giá cảnh quan: 4/5.",
     "placeId": "xa-nhi-long",
     "confidence": 0.7,
     "season": {
@@ -24903,16 +24903,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "kenh-bong-bot-tra-vinh",
     "type": "nature",
     "name": "Kênh Bông Bót",
-    "summary": "Kênh Bông Bót (kênh, 22 km). Kênh đào quan trọng trong hệ thống thủy lợi huyện Cầu Kè, tên gắn liền với địa danh lịch sử kháng chiến chống Pháp trong vùng. Kết nối vùng trồng lúa và vườn cây ăn trái với các chợ đầu mối, là tuyến vận chuyển trái cây đặc sản địa phương. Điểm ngắm cảnh đẹp: Chợ nổi nhỏ đầu kênh gần thị trấn Cầu Kè vào buổi sáng sớm. Đánh giá cảnh quan: 3/5.",
+    "summary": "Kênh Bông Bót (kênh, 22 km). Kênh đào quan trọng trong hệ thống thủy lợi Cầu Kè, tên gắn liền với địa danh lịch sử kháng chiến chống Pháp trong vùng. Kết nối vùng trồng lúa và vườn cây ăn trái với các chợ đầu mối, là tuyến vận chuyển trái cây đặc sản địa phương. Điểm ngắm cảnh đẹp: Chợ nổi nhỏ đầu kênh gần Cầu Kè vào buổi sáng sớm. Đánh giá cảnh quan: 3/5.",
     "placeId": "xa-nhi-long",
     "confidence": 0.7,
     "season": {
@@ -24968,9 +24968,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25033,16 +25033,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "cua-ben-gia-my-thanh-tra-vinh",
     "type": "nature",
     "name": "Cửa Bến Giá (Mỹ Thanh)",
-    "summary": "Cửa Bến Giá (Mỹ Thanh) (cửa biển, 12 km). Cửa sông nhỏ phía Nam tỉnh thuộc huyện Duyên Hải, tiếp giáp vùng biển Sóc Trăng. Có bãi bồi phát triển nhanh với rừng ngập mặn non, là nơi sinh sản của chim di trú theo mùa. Ngư dân khai thác nghêu và cá ven bờ truyền thống. Điểm ngắm cảnh đẹp: Bãi bồi phía Đông Mỹ Long Nam, huyện Cầu Ngang — quan sát đàn chim và rừng ngập mặn vào mùa khô. Đánh giá cảnh quan: 3/5.",
+    "summary": "Cửa Bến Giá (Mỹ Thanh) (cửa biển, 12 km). Cửa sông nhỏ phía Nam tỉnh thuộc Duyên Hải, tiếp giáp vùng biển Sóc Trăng. Có bãi bồi phát triển nhanh với rừng ngập mặn non, là nơi sinh sản của chim di trú theo mùa. Ngư dân khai thác nghêu và cá ven bờ truyền thống. Điểm ngắm cảnh đẹp: Bãi bồi phía Đông Mỹ Long Nam, Cầu Ngang — quan sát đàn chim và rừng ngập mặn vào mùa khô. Đánh giá cảnh quan: 3/5.",
     "placeId": "xa-nhi-long",
     "confidence": 0.7,
     "season": {
@@ -25098,16 +25098,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "quan-tom-cang-xanh-hai-lua-cu-lao-an-binh-vinh-long",
     "type": "attraction",
     "name": "Quán Tôm Càng Xanh Hai Lúa (cù lao An Bình)",
-    "summary": "Quán tôm càng xanh nổi tiếng tại cù lao An Bình, huyện Long Hồ – phải qua phà từ TP. Vĩnh Long. Chuyên tôm càng xanh đặc sản sông Tiền: nướng muối ớt, hấp bia gừng. Không gian bờ sông mát mẻ, có chỗ đậu xe. Giá 200.000–500.000 VNĐ/người, mở 9:00–21:00.",
+    "summary": "Quán tôm càng xanh nổi tiếng tại cù lao An Bình, Long Hồ – phải qua phà từ TP. Vĩnh Long. Chuyên tôm càng xanh đặc sản sông Tiền: nướng muối ớt, hấp bia gừng. Không gian bờ sông mát mẻ, có chỗ đậu xe. Giá 200.000–500.000 VNĐ/người, mở 9:00–21:00.",
     "placeId": "xa-an-binh",
     "confidence": 0.65,
     "season": {
@@ -25165,9 +25165,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25231,9 +25231,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25299,9 +25299,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25367,9 +25367,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25435,9 +25435,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25503,9 +25503,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25571,9 +25571,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25639,9 +25639,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25707,9 +25707,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25775,9 +25775,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25843,9 +25843,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25910,9 +25910,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25977,16 +25977,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "hai-san-ngoc-hiep-binh-dai-ben-tre",
     "type": "attraction",
     "name": "Hải Sản Ngọc Hiệp Bình Đại",
-    "summary": "Hải Sản Ngọc Hiệp Bình Đại. chuyên Cua biển, tôm biển, mực, bạch tuộc tươi từ biển Bình Đại. Địa chỉ: Đường Lê Hoàng Chiếu, huyện Bình Đại, tỉnh Bến Tre. Giá: 150.000 - 300.000 VNĐ/người",
+    "summary": "Hải Sản Ngọc Hiệp Bình Đại. chuyên Cua biển, tôm biển, mực, bạch tuộc tươi từ biển Bình Đại. Địa chỉ: Đường Lê Hoàng Chiếu, tỉnh Vĩnh Long. Giá: 150.000 - 300.000 VNĐ/người",
     "placeId": "p-phu-khuong",
     "confidence": 0.65,
     "season": {
@@ -26044,9 +26044,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26111,16 +26111,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "nha-hang-hai-san-song-tra-binh-dai-ben-tre",
     "type": "attraction",
     "name": "Nhà hàng Hải Sản Sông Trà (Bình Đại)",
-    "summary": "Nhà hàng Hải Sản Sông Trà (Bình Đại). chuyên Cá sông, tôm càng xanh, cua đồng, tép bạc từ sông Trà. Địa chỉ: Xã Thạnh Ngãi, huyện Bình Đại, tỉnh Bến Tre (bờ sông Trà). Giá: 100.000 - 250.000 VNĐ/người",
+    "summary": "Nhà hàng Hải Sản Sông Trà (Bình Đại). chuyên Cá sông, tôm càng xanh, cua đồng, tép bạc từ sông Trà. Địa chỉ: Xã Thạnh Ngãi, tỉnh Vĩnh Long (bờ sông Trà). Giá: 100.000 - 250.000 VNĐ/người",
     "placeId": "p-phu-khuong",
     "confidence": 0.65,
     "season": {
@@ -26178,9 +26178,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26245,9 +26245,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26312,9 +26312,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26379,9 +26379,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26446,9 +26446,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26513,9 +26513,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26580,9 +26580,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26643,9 +26643,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26710,9 +26710,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26777,9 +26777,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26849,9 +26849,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26918,16 +26918,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "nha-hang-ben-nuoc-khu-du-lich-my-hoa-vinh-long",
     "type": "attraction",
     "name": "Nhà hàng Bến Nước (khu du lịch Mỹ Hòa)",
-    "summary": "Nhà hàng Bến Nước trong khu du lịch Mỹ Hòa, xã Mỹ Hòa, huyện Bình Minh, Vĩnh Long. Cá sông Tiền tươi sống: cá điêu hồng, cá bông lau, tôm sú. View sông đẹp, có bãi đậu xe. Món đặc sắc: cá bông lau hấp gừng sả, cá điêu hồng chiên xù. Giá 180.000-450.000 VNĐ/người.",
+    "summary": "Nhà hàng Bến Nước trong khu du lịch Mỹ Hòa, xã Mỹ Hòa, Vĩnh Long. Cá sông Tiền tươi sống: cá điêu hồng, cá bông lau, tôm sú. View sông đẹp, có bãi đậu xe. Món đặc sắc: cá bông lau hấp gừng sả, cá điêu hồng chiên xù. Giá 180.000-450.000 VNĐ/người.",
     "placeId": "xa-nhon-phu",
     "confidence": 0.65,
     "season": {
@@ -26987,16 +26987,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "quan-co-tu-lau-mam-xa-hoa-ninh-vinh-long",
     "type": "attraction",
     "name": "Quán Cô Tư Lẩu Mắm (xã Hòa Ninh)",
-    "summary": "Quán Cô Tư Lẩu Mắm tại xã Hòa Ninh, huyện Long Hồ, Vĩnh Long. Bên bờ sông với view đẹp, chuyên lẩu mắm miền Tây đậm đà. Nguyên liệu cá linh, cá sặc, tôm đất, tép bạc đồng tươi. Món đặc sắc: lẩu mắm cá linh bông điên điển. Giá 120.000-250.000 VNĐ/người, mở 10:30-21:00.",
+    "summary": "Quán Cô Tư Lẩu Mắm tại xã Hòa Ninh, tỉnh Vĩnh Long. Bên bờ sông với view đẹp, chuyên lẩu mắm miền Tây đậm đà. Nguyên liệu cá linh, cá sặc, tôm đất, tép bạc đồng tươi. Món đặc sắc: lẩu mắm cá linh bông điên điển. Giá 120.000-250.000 VNĐ/người, mở 10:30-21:00.",
     "placeId": "xa-nhon-phu",
     "confidence": 0.65,
     "season": {
@@ -27056,16 +27056,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "quan-an-song-hau-ben-do-tra-on-vinh-long",
     "type": "attraction",
     "name": "Quán Ăn Sông Hậu (bến đò Trà Ôn)",
-    "summary": "Quán Ăn Sông Hậu tại bến đò Trà Ôn, thị trấn Trà Ôn, huyện Trà Ôn, Vĩnh Long. Bên bờ sông Hậu với cá tươi sống: cá tra, cá hú, cá chép. Món đặc sắc: cá hú kho tộ, canh chua cá chép bông so đũa. View sông rộng, có bãi đậu xe. Giá 100.000-280.000 VNĐ/người.",
+    "summary": "Quán Ăn Sông Hậu tại bến đò Trà Ôn, tỉnh Vĩnh Long. Bên bờ sông Hậu với cá tươi sống: cá tra, cá hú, cá chép. Món đặc sắc: cá hú kho tộ, canh chua cá chép bông so đũa. View sông rộng, có bãi đậu xe. Giá 100.000-280.000 VNĐ/người.",
     "placeId": "p-tra-on",
     "confidence": 0.65,
     "season": {
@@ -27125,9 +27125,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27194,16 +27194,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "quan-oc-co-ba-gan-cau-my-thuan-phia-vinh-long",
     "type": "attraction",
     "name": "Quán Ốc Cô Ba (gần cầu Mỹ Thuận phía Vĩnh Long)",
-    "summary": "Quán Ốc Cô Ba trên Quốc lộ 1A, xã Tân Hòa, huyện Long Hồ gần đầu cầu Mỹ Thuận phía Vĩnh Long. Chuyên ốc sông, hến, trai nước ngọt, nghêu. View bờ sông, có bãi đậu xe. Món đặc sắc: ốc len xào dừa, hến xào lăn, trai nấu gừng. Giá 80.000-180.000 VNĐ/người, mở chiều tối 15:00-23:00.",
+    "summary": "Quán Ốc Cô Ba trên Quốc lộ 1A, xã Tân Hòa, gần đầu cầu Mỹ Thuận phía Vĩnh Long. Chuyên ốc sông, hến, trai nước ngọt, nghêu. View bờ sông, có bãi đậu xe. Món đặc sắc: ốc len xào dừa, hến xào lăn, trai nấu gừng. Giá 80.000-180.000 VNĐ/người, mở chiều tối 15:00-23:00.",
     "placeId": "xa-nhon-phu",
     "confidence": 0.65,
     "season": {
@@ -27263,16 +27263,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "quan-lau-ca-keo-chu-tam-huyen-vung-liem-vinh-long",
     "type": "attraction",
     "name": "Quán Lẩu Cá Kèo Chú Tám (huyện Vũng Liêm)",
-    "summary": "Quán Lẩu Cá Kèo Chú Tám tại thị trấn Vũng Liêm, huyện Vũng Liêm, Vĩnh Long. Chuyên cá kèo đồng nội, cá bống dừa, tép rong Vũng Liêm tươi sống. Món đặc sắc: lẩu cá kèo bần chua, cá bống dừa kho tiêu. Có bãi đậu xe. Giá 90.000-200.000 VNĐ/người, mở 10:00-21:00.",
+    "summary": "Quán Lẩu Cá Kèo Chú Tám tại Vũng Liêm, tỉnh Vĩnh Long. Chuyên cá kèo đồng nội, cá bống dừa, tép rong Vũng Liêm tươi sống. Món đặc sắc: lẩu cá kèo bần chua, cá bống dừa kho tiêu. Có bãi đậu xe. Giá 90.000-200.000 VNĐ/người, mở 10:00-21:00.",
     "placeId": "p-vung-liem",
     "confidence": 0.65,
     "season": {
@@ -27332,16 +27332,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "nha-hang-phuong-nam-ven-song-long-ho-vinh-long",
     "type": "attraction",
     "name": "Nhà hàng Phương Nam (ven sông Long Hồ)",
-    "summary": "Nhà hàng Phương Nam ven bờ sông Long Hồ, huyện Long Hồ, Vĩnh Long. Đặc sản dân dã: cá sặc bướm, cá rô đồng, ếch đồng, rắn nước tươi sống. View sông đẹp, có bãi đậu xe. Món đặc sắc: cá rô đồng chiên giòn chấm mắm me, ếch chiên sả ớt. Giá 130.000-300.000 VNĐ/người.",
+    "summary": "Nhà hàng Phương Nam ven bờ sông Long Hồ, tỉnh Vĩnh Long. Đặc sản dân dã: cá sặc bướm, cá rô đồng, ếch đồng, rắn nước tươi sống. View sông đẹp, có bãi đậu xe. Món đặc sắc: cá rô đồng chiên giòn chấm mắm me, ếch chiên sả ớt. Giá 130.000-300.000 VNĐ/người.",
     "placeId": "xa-nhon-phu",
     "confidence": 0.65,
     "season": {
@@ -27401,9 +27401,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27468,9 +27468,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27535,9 +27535,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27602,9 +27602,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27669,9 +27669,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27736,9 +27736,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27803,9 +27803,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27870,9 +27870,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27937,9 +27937,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28004,9 +28004,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28071,9 +28071,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28138,9 +28138,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28205,9 +28205,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28272,9 +28272,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28339,9 +28339,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28406,9 +28406,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28473,9 +28473,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28539,9 +28539,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28606,9 +28606,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28673,9 +28673,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28740,9 +28740,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28807,9 +28807,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28874,9 +28874,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28941,9 +28941,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29008,9 +29008,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29075,9 +29075,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29142,9 +29142,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29209,9 +29209,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29276,9 +29276,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29343,9 +29343,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29410,9 +29410,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29477,9 +29477,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29544,9 +29544,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29611,9 +29611,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29678,9 +29678,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29745,9 +29745,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29812,9 +29812,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29879,9 +29879,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29946,9 +29946,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30013,9 +30013,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30080,9 +30080,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30147,9 +30147,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30214,9 +30214,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30281,9 +30281,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30348,9 +30348,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30415,9 +30415,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30482,9 +30482,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30549,9 +30549,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30616,9 +30616,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30683,9 +30683,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30750,9 +30750,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30817,9 +30817,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30884,9 +30884,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30951,9 +30951,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31018,9 +31018,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31085,9 +31085,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31152,9 +31152,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31201,9 +31201,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31253,9 +31253,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31299,9 +31299,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31353,9 +31353,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31402,9 +31402,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31450,9 +31450,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31499,9 +31499,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31578,9 +31578,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31649,9 +31649,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31719,9 +31719,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31762,9 +31762,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31843,9 +31843,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31927,9 +31927,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32000,9 +32000,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32061,9 +32061,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32104,16 +32104,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "ben-xe-tra-on-tich-thien-vinh-long",
     "type": "facility",
     "name": "Bến Xe Trà Ôn / Tích Thiện",
-    "summary": "Bến xe. tại Thị trấn Tích Thiện (hoặc gần TT Trà Ôn), Huyện Trà Ôn, Vĩnh Long. Tuyến: Trà Ôn ↔ Vĩnh Long (TP) theo QL53 + ĐT904 + QL54, Trà Ôn ↔ Cần Thơ, Trà Ôn ↔ Sóc Trăng. Giờ: 7:00–17:00 hàng ngày. Giá: Trà Ôn–Vĩnh Long ~25.000–35.000đ; Trà Ôn–Cần Thơ ~50.000đ.",
+    "summary": "Bến xe. tại Thị trấn Tích Thiện (hoặc gần TT Trà Ôn), Vĩnh Long. Tuyến: Trà Ôn ↔ Vĩnh Long (TP) theo QL53 + ĐT904 + QL54, Trà Ôn ↔ Cần Thơ, Trà Ôn ↔ Sóc Trăng. Giờ: 7:00–17:00 hàng ngày. Giá: Trà Ôn–Vĩnh Long ~25.000–35.000đ; Trà Ôn–Cần Thơ ~50.000đ.",
     "placeId": "xa-nhon-phu",
     "confidence": 0.7,
     "season": null,
@@ -32148,9 +32148,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32190,16 +32190,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "ben-pha-tran-phu-can-tho-vinh-long-vinh-long",
     "type": "facility",
     "name": "Bến Phà Trần Phú (Cần Thơ – Vĩnh Long)",
-    "summary": "Bến phà. tại Khu vực bờ Vĩnh Long thuộc Cái Vồn, TX. Bình Minh, Vĩnh Long (đối diện bến Cần Thơ qua sông Hậu). Tuyến: Vĩnh Long (Bình Minh/Cái Vồn) ↔ Cần Thơ (Thốt Nốt) qua sông Hậu. Giờ: 16:00–21:00 hàng ngày (lịch vận hành có thể thay đổi, nên xác nhận trước). Giá: Người đi bộ: 5.000đ; xe máy: 10.000đ; ô tô: 20.000–40.000đ tùy loại.",
+    "summary": "Bến phà. tại Khu vực bờ Vĩnh Long thuộc Cái Vồn, Bình Minh, Vĩnh Long (đối diện bến Cần Thơ qua sông Hậu). Tuyến: Vĩnh Long (Bình Minh/Cái Vồn) ↔ Cần Thơ (Thốt Nốt) qua sông Hậu. Giờ: 16:00–21:00 hàng ngày (lịch vận hành có thể thay đổi, nên xác nhận trước). Giá: Người đi bộ: 5.000đ; xe máy: 10.000đ; ô tô: 20.000–40.000đ tùy loại.",
     "placeId": "xa-nhon-phu",
     "confidence": 0.7,
     "season": null,
@@ -32232,9 +32232,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32272,9 +32272,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32312,9 +32312,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32352,9 +32352,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32392,9 +32392,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32432,9 +32432,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32472,9 +32472,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32512,9 +32512,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32552,9 +32552,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32592,9 +32592,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32632,16 +32632,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "tuyen-xe-buyt-noi-tinh-tra-vinh-cac-tuyen-tp-tra-vinh-di-huyen-tra-vinh",
     "type": "facility",
     "name": "Tuyến xe buýt nội tỉnh Trà Vinh (các tuyến TP. Trà Vinh đi huyện)",
-    "summary": "Trạm xe buýt. tại Điểm xuất phát chính tại Bến xe Trà Vinh (559 QL54, P.9, TP. Trà Vinh); các nhà chờ dọc Quốc lộ 53, Quốc lộ 54, trục Hùng Vương - Lý Thường Kiệt nội thành. Tuyến: Tuyến Trà Vinh - Mỹ Long (qua QL53 đến TT Mỹ Long, Cầu Ngang); Tuyến Trà Vinh - Mỹ Quý; Tuyến Cảng Trà Vinh - Giồng Lức - Cầu Quan (qua QL53 và QL60); Tuyến nội tỉnh đến Càng Long, Tiểu Cần, Châu Thành. Giờ: Khoảng 5:30 - 18:00 (tùy tuyến). Giá: 5.000 - 15.000đ/lượt trong nội thành; 15.000 - 40.000đ cho các tuyến ra huyện.",
+    "summary": "Trạm xe buýt. tại Điểm xuất phát chính tại Bến xe Trà Vinh (559 QL54, P.9, TP. Trà Vinh); các nhà chờ dọc Quốc lộ 53, Quốc lộ 54, trục Hùng Vương - Lý Thường Kiệt nội thành. Tuyến: Tuyến Trà Vinh - Mỹ Long (qua QL53 đến Mỹ Long, Cầu Ngang); Tuyến Trà Vinh - Mỹ Quý; Tuyến Cảng Trà Vinh - Giồng Lức - Cầu Quan (qua QL53 và QL60); Tuyến nội tỉnh đến Càng Long, Tiểu Cần, Châu Thành. Giờ: Khoảng 5:30 - 18:00 (tùy tuyến). Giá: 5.000 - 15.000đ/lượt trong nội thành; 15.000 - 40.000đ cho các tuyến đi xa.",
     "placeId": "p-tra-vinh",
     "confidence": 0.7,
     "season": null,
@@ -32672,9 +32672,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32712,9 +32712,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32779,9 +32779,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32846,9 +32846,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32913,9 +32913,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32980,9 +32980,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33047,9 +33047,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33114,9 +33114,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33181,9 +33181,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33248,9 +33248,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33315,9 +33315,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33382,9 +33382,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33449,9 +33449,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33516,9 +33516,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33583,9 +33583,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33650,9 +33650,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33717,9 +33717,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33784,9 +33784,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33851,9 +33851,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33918,9 +33918,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33985,9 +33985,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34052,9 +34052,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34120,9 +34120,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34188,16 +34188,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "ca-phe-vuon-cau-khu-con-phung-con-phuoc-vinh-long",
     "type": "attraction",
     "name": "Cà phê Vườn Cau (khu Cồn Phụng – Cồn Phước)",
-    "summary": "Cà phê sân vườn tại Cồn Phước (Cồn Lát), xã Bình Hòa Phước, huyện Long Hồ. Không gian vườn dừa yên tĩnh, ghe chèo qua lại xung quanh. Cà phê đen phin truyền thống, giá 20.000–40.000 đ, mở 7:00–18:00, thích hợp buổi sáng.",
+    "summary": "Cà phê sân vườn tại Cồn Phước (Cồn Lát), xã Bình Hòa Phước, Long Hồ. Không gian vườn dừa yên tĩnh, ghe chèo qua lại xung quanh. Cà phê đen phin truyền thống, giá 20.000–40.000 đ, mở 7:00–18:00, thích hợp buổi sáng.",
     "placeId": "xa-nhon-phu",
     "confidence": 0.65,
     "season": {
@@ -34256,16 +34256,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "hu-tieu-ca-phe-cho-cai-be-quan-truoc-cong-cho-cai-be-vinh-long",
     "type": "attraction",
     "name": "Hủ Tiếu – Cà Phê Chợ Cái Bè (quán trước cổng chợ Cái Bè)",
-    "summary": "Quán cà phê vợt truyền thống và hủ tiếu trước cổng chợ Cái Bè, huyện Cái Bè. Cổ điển, bình dân, đậm chất miền Tây. Chỉ mở buổi sáng 5:00–11:00, giá 15.000–30.000 đ. Phù hợp ghé điểm tâm khi tham quan chợ nổi Cái Bè.",
+    "summary": "Quán cà phê vợt truyền thống và hủ tiếu trước cổng chợ Cái Bè. Cổ điển, bình dân, đậm chất miền Tây. Chỉ mở buổi sáng 5:00–11:00, giá 15.000–30.000 đ. Phù hợp ghé điểm tâm khi tham quan chợ nổi Cái Bè.",
     "placeId": "xa-nhon-phu",
     "confidence": 0.65,
     "season": {
@@ -34324,9 +34324,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34392,9 +34392,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34460,16 +34460,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "banh-uot-banh-beo-cho-vung-liem-vinh-long",
     "type": "attraction",
     "name": "Bánh Ướt – Bánh Bèo Chợ Vũng Liêm",
-    "summary": "Quán bánh ướt và bánh bèo truyền thống tại khu chợ Vũng Liêm, huyện Vũng Liêm. Đặc sản bánh bèo nước cốt dừa và bánh ướt nhân tôm thịt. Chỉ mở buổi sáng 6:00–11:00, giá 15.000–25.000 đ. Bình dân, cổ điển.",
+    "summary": "Quán bánh ướt và bánh bèo truyền thống tại khu chợ Vũng Liêm. Đặc sản bánh bèo nước cốt dừa và bánh ướt nhân tôm thịt. Chỉ mở buổi sáng 6:00–11:00, giá 15.000–25.000 đ. Bình dân, cổ điển.",
     "placeId": "p-vung-liem",
     "confidence": 0.65,
     "season": {
@@ -34528,9 +34528,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34596,9 +34596,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34664,9 +34664,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34732,9 +34732,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34797,9 +34797,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34862,9 +34862,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34927,9 +34927,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34992,9 +34992,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35057,9 +35057,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35125,9 +35125,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35193,9 +35193,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35261,9 +35261,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35329,9 +35329,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35397,9 +35397,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35465,9 +35465,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35533,9 +35533,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35601,9 +35601,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35669,9 +35669,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35737,9 +35737,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35802,9 +35802,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35867,9 +35867,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35932,9 +35932,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35997,9 +35997,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36062,9 +36062,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36127,9 +36127,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36192,9 +36192,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36247,9 +36247,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36305,9 +36305,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36359,9 +36359,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36417,9 +36417,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36474,9 +36474,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36528,9 +36528,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36582,9 +36582,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36636,9 +36636,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36690,9 +36690,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36744,9 +36744,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36798,9 +36798,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36860,9 +36860,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36914,9 +36914,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36968,9 +36968,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37024,9 +37024,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37078,9 +37078,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37132,9 +37132,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37186,9 +37186,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37240,9 +37240,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37294,9 +37294,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37348,9 +37348,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37405,9 +37405,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37462,9 +37462,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37517,9 +37517,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37567,9 +37567,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37628,9 +37628,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37687,9 +37687,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37720,9 +37720,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37778,9 +37778,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37833,9 +37833,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37865,9 +37865,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37897,9 +37897,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37952,9 +37952,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37991,9 +37991,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38022,9 +38022,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38059,9 +38059,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38096,9 +38096,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38127,9 +38127,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38158,9 +38158,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38195,9 +38195,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38226,9 +38226,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38264,9 +38264,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38295,9 +38295,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38326,9 +38326,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38363,9 +38363,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38391,9 +38391,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38422,9 +38422,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38453,9 +38453,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38485,9 +38485,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38517,9 +38517,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38566,9 +38566,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38616,9 +38616,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38661,9 +38661,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38718,9 +38718,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38775,16 +38775,16 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "cu-lao-dai-song-co-chien-vung-liem",
     "type": "nature",
     "name": "Cù Lao Dài (Sông Cổ Chiên, Vũng Liêm)",
-    "summary": "Để góp phần khai thác tốt ... Dài – là một dải đất phù sa nằm trên sông Cổ Chiên thuộc địa phận hai xã Thanh Bình và Quới Thiện, huyện Vũng Liêm, chỉ cách thành phố Vĩnh Long hơn 30 km...",
+    "summary": "Để góp phần khai thác tốt ... Dài – là một dải đất phù sa nằm trên sông Cổ Chiên thuộc địa phận hai xã Thanh Bình và Quới Thiện, Vũng Liêm, chỉ cách thành phố Vĩnh Long hơn 30 km...",
     "placeId": "xa-quoi-thien",
     "confidence": 0.7,
     "season": {
@@ -38832,9 +38832,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38889,9 +38889,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38946,9 +38946,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39003,9 +39003,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39060,9 +39060,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39117,9 +39117,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39171,9 +39171,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39228,9 +39228,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39285,9 +39285,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39342,9 +39342,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39398,9 +39398,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39455,9 +39455,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39512,9 +39512,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39568,9 +39568,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39625,9 +39625,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39679,9 +39679,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39736,9 +39736,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39793,9 +39793,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39850,9 +39850,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39907,9 +39907,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39965,9 +39965,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40017,9 +40017,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40073,9 +40073,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40130,9 +40130,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40184,9 +40184,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40241,9 +40241,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40297,9 +40297,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40354,9 +40354,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40411,9 +40411,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40443,9 +40443,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40475,9 +40475,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40507,16 +40507,16 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "can-cu-cach-mang-cai-ngang-vinh-long",
     "type": "history",
     "name": "Khu Di tích Lịch sử Căn cứ Cách mạng Cái Ngang",
-    "summary": "Kính thưa quý khách, Khu di tích Lịch sử Cách mạng Cái Ngang tọa lạc tại ấp 4, xã Phú Lộc, huyện Tam Bình, tỉnh Vĩnh Long với tổng diện tích là 10,3 ha. Đây là căn cứ của Tỉnh ủy Vĩnh Long giai đoạn từ năm 1966 – 1975.",
+    "summary": "Kính thưa quý khách, Khu di tích Lịch sử Cách mạng Cái Ngang tọa lạc tại ấp 4, xã Phú Lộc, Tam Bình, tỉnh Vĩnh Long với tổng diện tích là 10,3 ha. Đây là căn cứ của Tỉnh ủy Vĩnh Long giai đoạn từ năm 1966 – 1975.",
     "placeId": "p-tam-binh",
     "confidence": 0.7,
     "season": null,
@@ -40539,9 +40539,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40596,9 +40596,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40628,9 +40628,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40673,16 +40673,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "cam-sanh-tam-binh",
     "type": "product",
     "name": "Cam sành Tam Bình",
-    "summary": "Cam Sành Tam Bình là đặc sản nông nghiệp nổi tiếng của huyện Tam Bình, tỉnh Vĩnh Long, được trồng chủ yếu tại vùng Gò Găng (xã Bình Ninh) và các xã Trà Côn, Tân Mỹ, Thuận Thới, Hựu Thành, Thới Hòa trên nền đất phù sa giàu dinh dưỡng ven sông. Quả cam có vỏ dày sần (3–5 mm), trọng lượng trung bình 275 g/trái, ruột vàng cam mọng nước, vị ngọt đậm xen chút chua nhẹ và ít hạt, được canh tác theo tiêu chuẩn VietGAP trên diện tích gần 40 ha. Thương hiệu Cam Sành Tam Bình đã được đăng ký nhãn hiệu từ năm 2003 và là đặc sản OCOP tiêu biểu của tỉnh Vĩnh Long, thu hoạch rộ vào tháng 8–9 âm lịch (khoảng tháng 9–10 dương lịch).",
+    "summary": "Cam Sành Tam Bình là đặc sản nông nghiệp nổi tiếng của Tam Bình, tỉnh Vĩnh Long, được trồng chủ yếu tại vùng Gò Găng (xã Bình Ninh) và các xã Trà Côn, Tân Mỹ, Thuận Thới, Hựu Thành, Thới Hòa trên nền đất phù sa giàu dinh dưỡng ven sông. Quả cam có vỏ dày sần (3–5 mm), trọng lượng trung bình 275 g/trái, ruột vàng cam mọng nước, vị ngọt đậm xen chút chua nhẹ và ít hạt, được canh tác theo tiêu chuẩn VietGAP trên diện tích gần 40 ha. Thương hiệu Cam Sành Tam Bình đã được đăng ký nhãn hiệu từ năm 2003 và là đặc sản OCOP tiêu biểu của tỉnh Vĩnh Long, thu hoạch rộ vào tháng 8–9 âm lịch (khoảng tháng 9–10 dương lịch).",
     "placeId": "p-tam-binh",
     "confidence": 0.88,
     "season": {
@@ -40741,16 +40741,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "buoi-nam-roi-binh-minh",
     "type": "product",
     "name": "Bưởi Năm Roi Bình Minh",
-    "summary": "Bưởi Năm Roi Bình Minh là đặc sản nổi tiếng của xã Mỹ Hòa, thị xã Bình Minh, tỉnh Vĩnh Long — được mệnh danh là \"nữ hoàng của các loại bưởi\" với đặc điểm hình quả lê, vỏ mỏng dưới 15mm, múi vàng nhạt mọng nước, vị ngọt thanh hơi chua nhẹ và hầu như không hạt. Giống bưởi được công nhận Chỉ dẫn địa lý quốc gia từ ngày 2/7/2008 và là sản phẩm OCOP tiêu biểu của tỉnh Vĩnh Long, với tổng diện tích canh tác khoảng 1.900 ha tập trung chủ yếu tại xã cù lao Mỹ Hòa, chiếm trên 80% đất sản xuất của vùng với sản lượng khoảng 40.000 tấn/năm.",
+    "summary": "Bưởi Năm Roi Bình Minh là đặc sản nổi tiếng của xã Mỹ Hòa, Bình Minh, tỉnh Vĩnh Long — được mệnh danh là \\\"nữ hoàng của các loại bưởi\\\" với đặc điểm hình quả lê, vỏ mỏng dưới 15mm, múi vàng nhạt mọng nước, vị ngọt thanh hơi chua nhẹ và hầu như không hạt. Giống bưởi được công nhận Chỉ dẫn địa lý quốc gia từ ngày 2/7/2008 và là sản phẩm OCOP tiêu biểu của tỉnh Vĩnh Long, với tổng diện tích canh tác khoảng 1.900 ha tập trung chủ yếu tại xã cù lao Mỹ Hòa, chiếm trên 80% đất sản xuất của vùng với sản lượng khoảng 40.000 tấn/năm.",
     "placeId": "p-binh-minh",
     "confidence": 0.92,
     "season": {
@@ -40803,9 +40803,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40872,9 +40872,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40929,16 +40929,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "cho-noi-tra-on",
     "type": "experience",
     "name": "Đi chợ nổi Trà Ôn lúc rạng sáng",
-    "summary": "Chợ nổi Trà Ôn là chợ nổi cuối cùng trên sông Hậu trước khi đổ ra biển, tọa lạc tại ngã ba sông Hậu và sông Mang Thít, huyện Trà Ôn, tỉnh Vĩnh Long, có lịch sử hoạt động hơn một thế kỷ. Điểm độc đáo so với các chợ nổi khác là chợ nhóm họp theo con nước (không cố định buổi sáng), trải dài hơn 300m trên sông Hậu với hàng trăm ghe thuyền từ nhiều tỉnh lân cận. Ngày 30/4/2023, Khu Du lịch Chợ nổi Trà Ôn chính thức đi vào hoạt động tại ấp Long Hưng, xã Lục Sĩ Thành, với diện tích khoảng 2 ha, tổng đầu tư gần 20 tỷ đồng, vé vào cổng 60.000 đồng/người.",
+    "summary": "Chợ nổi Trà Ôn là chợ nổi cuối cùng trên sông Hậu trước khi đổ ra biển, tọa lạc tại ngã ba sông Hậu và sông Mang Thít, tỉnh Vĩnh Long, có lịch sử hoạt động hơn một thế kỷ. Điểm độc đáo so với các chợ nổi khác là chợ nhóm họp theo con nước (không cố định buổi sáng), trải dài hơn 300m trên sông Hậu với hàng trăm ghe thuyền từ nhiều tỉnh lân cận. Ngày 30/4/2023, Khu Du lịch Chợ nổi Trà Ôn chính thức đi vào hoạt động tại ấp Long Hưng, xã Lục Sĩ Thành, với diện tích khoảng 2 ha, tổng đầu tư gần 20 tỷ đồng, vé vào cổng 60.000 đồng/người.",
     "placeId": "p-tra-on",
     "confidence": 0.92,
     "season": {
@@ -40995,9 +40995,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41062,9 +41062,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41129,9 +41129,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41197,9 +41197,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41264,9 +41264,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41330,9 +41330,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41395,9 +41395,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41461,9 +41461,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41528,16 +41528,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "cu-lao-an-binh",
     "type": "nature",
     "name": "Cù lao An Bình",
-    "summary": "Cù lao An Bình (còn gọi là cù lao Minh) là một cù lao rộng hơn 60 km² nằm giữa sông Tiền và sông Cổ Chiên, thuộc huyện Long Hồ, tỉnh Vĩnh Long, bao gồm 4 xã: An Bình, Bình Hòa Phước, Hòa Ninh và Đồng Phú. Nơi đây nổi tiếng với du lịch sinh thái miệt vườn, hệ thống kênh rạch chằng chịt, vườn cây ăn trái trĩu quả và chùa Tiên Châu hơn 250 năm tuổi được công nhận di tích lịch sử - văn hóa quốc gia. Du khách từ trung tâm Vĩnh Long chỉ cần đi phà khoảng 15 phút là đến nơi, phí vào vườn tham quan dao động 30.000–50.000 đồng/người tùy địa điểm.",
+    "summary": "Cù lao An Bình (còn gọi là cù lao Minh) là một cù lao rộng hơn 60 km² nằm giữa sông Tiền và sông Cổ Chiên, thuộc tỉnh Vĩnh Long, bao gồm 4 xã: An Bình, Bình Hòa Phước, Hòa Ninh và Đồng Phú. Nơi đây nổi tiếng với du lịch sinh thái miệt vườn, hệ thống kênh rạch chằng chịt, vườn cây ăn trái trĩu quả và chùa Tiên Châu hơn 250 năm tuổi được công nhận di tích lịch sử - văn hóa quốc gia. Du khách từ trung tâm Vĩnh Long chỉ cần đi phà khoảng 15 phút là đến nơi, phí vào vườn tham quan dao động 30.000–50.000 đồng/người tùy địa điểm.",
     "placeId": "xa-an-binh",
     "confidence": 0.9,
     "season": {
@@ -41600,9 +41600,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41673,9 +41673,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41739,9 +41739,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41809,9 +41809,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41869,9 +41869,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41939,16 +41939,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "chua-phuoc-hau-ngai-tu",
     "type": "attraction",
     "name": "Chùa Phước Hậu Ngãi Tứ",
-    "summary": "Chùa Phước Hậu (Tổ đình Phước Hậu) tọa lạc tại ấp Đông Hậu, xã Ngãi Tứ, huyện Tam Bình, tỉnh Vĩnh Long, bên bờ sông Hậu, được xây dựng năm 1894 và đổi tên thành Phước Hậu năm 1910. Đây là ngôi cổ tự thuộc dòng Lâm Tế phái Chúc Thánh, được Bộ Văn hóa Thông tin công nhận là Di tích lịch sử cách mạng cấp quốc gia theo Quyết định 152-QĐ/BT ngày 25/1/1994. Chùa nổi tiếng với vườn kinh bằng đá độc nhất Việt Nam gồm 213 phiến đá xanh khắc 423 bài Kinh Pháp Cú trên 2 mặt, sắp xếp theo hình 8 lá bồ đề tượng trưng cho bát chánh đạo, được khởi tạo năm 2014.",
+    "summary": "Chùa Phước Hậu (Tổ đình Phước Hậu) tọa lạc tại ấp Đông Hậu, xã Ngãi Tứ, tỉnh Vĩnh Long, bên bờ sông Hậu, được xây dựng năm 1894 và đổi tên thành Phước Hậu năm 1910. Đây là ngôi cổ tự thuộc dòng Lâm Tế phái Chúc Thánh, được Bộ Văn hóa Thông tin công nhận là Di tích lịch sử cách mạng cấp quốc gia theo Quyết định 152-QĐ/BT ngày 25/1/1994. Chùa nổi tiếng với vườn kinh bằng đá độc nhất Việt Nam gồm 213 phiến đá xanh khắc 423 bài Kinh Pháp Cú trên 2 mặt, sắp xếp theo hình 8 lá bồ đề tượng trưng cho bát chánh đạo, được khởi tạo năm 2014.",
     "placeId": "xa-ngai-tu",
     "confidence": 0.92,
     "season": {
@@ -42009,16 +42009,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "khu-luu-niem-thu-tuong-vo-van-kiet",
     "type": "history",
     "name": "Khu Lưu Niệm Thủ tướng Võ Văn Kiệt",
-    "summary": "Khu Lưu Niệm Thủ tướng Chính phủ Võ Văn Kiệt tọa lạc tại số 10 đường Nam Kỳ Khởi Nghĩa, thị trấn Vũng Liêm, huyện Vũng Liêm, tỉnh Vĩnh Long, được xây dựng năm 2010 và khánh thành năm 2012 để tri ân cố Thủ tướng Võ Văn Kiệt (1922–2008). Khu lưu niệm rộng 1,7 ha gồm nhà trưng bày \"Vườn ông Sáu Dân\" (khai trương ngày 17/11/2022), khu thờ, nhà làm việc và không gian cảnh quan, trưng bày 8 chủ đề về cuộc đời và sự nghiệp cách mạng của ông. Ngày 17/11/2022, nhân kỷ niệm 100 năm ngày sinh cố Thủ tướng, khu lưu niệm được Bộ Văn hóa, Thể thao và Du lịch xếp hạng Di tích Lịch sử Quốc gia.",
+    "summary": "Khu Lưu Niệm Thủ tướng Chính phủ Võ Văn Kiệt tọa lạc tại số 10 đường Nam Kỳ Khởi Nghĩa, Vũng Liêm, tỉnh Vĩnh Long, được xây dựng năm 2010 và khánh thành năm 2012 để tri ân cố Thủ tướng Võ Văn Kiệt (1922–2008). Khu lưu niệm rộng 1,7 ha gồm nhà trưng bày \"Vườn ông Sáu Dân\" (khai trương ngày 17/11/2022), khu thờ, nhà làm việc và không gian cảnh quan, trưng bày 8 chủ đề về cuộc đời và sự nghiệp cách mạng của ông. Ngày 17/11/2022, nhân kỷ niệm 100 năm ngày sinh cố Thủ tướng, khu lưu niệm được Bộ Văn hóa, Thể thao và Du lịch xếp hạng Di tích Lịch sử Quốc gia.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.92,
     "season": null,
@@ -42054,16 +42054,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "chua-shanghamangala-khmer-vung-liem",
     "type": "attraction",
     "name": "Chùa Hạnh Phúc Tăng (Sanghamangala)",
-    "summary": "Chùa Hạnh Phúc Tăng (Sanghamangala) là ngôi chùa Khmer lâu đời nhất tỉnh Vĩnh Long, được xây dựng từ năm 632 dương lịch (thế kỷ VII), tọa lạc tại ấp Trung Trạch, xã Trung Thành, huyện Vũng Liêm. Chùa có khuôn viên rộng khoảng 3 ha với kiến trúc độc đáo kết hợp phong cách Khmer, Ấn Độ và Thái Lan, mái ngói 3 cấp và hoa văn chạm trổ tinh xảo, là biểu tượng văn hóa tín ngưỡng của đồng bào Khmer vùng đồng bằng sông Cửu Long.",
+    "summary": "Chùa Hạnh Phúc Tăng (Sanghamangala) là ngôi chùa Khmer lâu đời nhất tỉnh Vĩnh Long, được xây dựng từ năm 632 dương lịch (thế kỷ VII), tọa lạc tại ấp Trung Trạch, xã Trung Thành, tỉnh Vĩnh Long. Chùa có khuôn viên rộng khoảng 3 ha với kiến trúc độc đáo kết hợp phong cách Khmer, Ấn Độ và Thái Lan, mái ngói 3 cấp và hoa văn chạm trổ tinh xảo, là biểu tượng văn hóa tín ngưỡng của đồng bào Khmer vùng đồng bằng sông Cửu Long.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.92,
     "season": {
@@ -42124,16 +42124,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "cu-lao-dai-vung-liem",
     "type": "nature",
     "name": "Cù Lao Dài Vũng Liêm",
-    "summary": "Cù Lao Dài là dải đất phù sa dài khoảng 20 km nằm trên sông Cổ Chiên, thuộc hai xã Thanh Bình và Quới Thiện, huyện Vũng Liêm, tỉnh Vĩnh Long, cách thành phố Vĩnh Long hơn 30 km. Vùng đất này gắn liền với danh thần Thoại Ngọc Hầu — người có công khai phá từ thời vua Gia Long, với quần thể mộ thân nhân được xếp hạng di tích lịch sử văn hóa cấp tỉnh năm 2017. Nơi đây nổi tiếng với làng nghề dệt chiếu từ cây lác, đặc sản xoài cát núm, bánh xèo nấu bằng nước lác độc đáo và các hoạt động du lịch miệt vườn mang đậm bản sắc đồng bằng sông Cửu Long.",
+    "summary": "Cù Lao Dài là dải đất phù sa dài khoảng 20 km nằm trên sông Cổ Chiên, thuộc hai xã Thanh Bình và Quới Thiện, tỉnh Vĩnh Long, cách thành phố Vĩnh Long hơn 30 km. Vùng đất này gắn liền với danh thần Thoại Ngọc Hầu — người có công khai phá từ thời vua Gia Long, với quần thể mộ thân nhân được xếp hạng di tích lịch sử văn hóa cấp tỉnh năm 2017. Nơi đây nổi tiếng với làng nghề dệt chiếu từ cây lác, đặc sản xoài cát núm, bánh xèo nấu bằng nước lác độc đáo và các hoạt động du lịch miệt vườn mang đậm bản sắc đồng bằng sông Cửu Long.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.9,
     "season": {
@@ -42194,9 +42194,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42262,9 +42262,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42307,9 +42307,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42376,9 +42376,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42434,9 +42434,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42498,9 +42498,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42567,9 +42567,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42629,9 +42629,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -42691,9 +42691,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -42753,9 +42753,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -42815,9 +42815,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -42877,9 +42877,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -42920,9 +42920,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -42963,9 +42963,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43011,9 +43011,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43054,9 +43054,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43104,9 +43104,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43154,9 +43154,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43197,9 +43197,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43240,9 +43240,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43290,9 +43290,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43340,9 +43340,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43379,9 +43379,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43434,9 +43434,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43488,9 +43488,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43542,9 +43542,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43585,9 +43585,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43631,9 +43631,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43685,9 +43685,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43740,9 +43740,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43796,9 +43796,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43847,9 +43847,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43903,9 +43903,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43958,9 +43958,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44013,9 +44013,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44068,9 +44068,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44130,9 +44130,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44192,9 +44192,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44254,9 +44254,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44316,9 +44316,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44378,9 +44378,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44440,9 +44440,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44502,9 +44502,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44571,9 +44571,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44633,9 +44633,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44695,9 +44695,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44750,9 +44750,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44804,9 +44804,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44853,9 +44853,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44901,9 +44901,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44966,9 +44966,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45031,9 +45031,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45096,9 +45096,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45161,9 +45161,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45226,9 +45226,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45291,9 +45291,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45356,9 +45356,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45421,9 +45421,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45486,9 +45486,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45551,9 +45551,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45616,9 +45616,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45681,9 +45681,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45746,9 +45746,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45811,9 +45811,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45876,9 +45876,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45941,9 +45941,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46006,9 +46006,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46071,9 +46071,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46136,9 +46136,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46201,9 +46201,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46266,9 +46266,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46331,9 +46331,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46396,9 +46396,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46461,9 +46461,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46526,9 +46526,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46591,9 +46591,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46656,9 +46656,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46721,9 +46721,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46786,9 +46786,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46851,9 +46851,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46916,9 +46916,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46981,9 +46981,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47046,9 +47046,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47111,16 +47111,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "khach-san-vinh-sang",
     "type": "accommodation",
     "name": "Khách sạn Vinh Sang",
-    "summary": "Khách sạn Vinh Sang (1 sao), Ấp An Thuận, xã An Bình, huyện Long Hồ",
+    "summary": "Khách sạn Vinh Sang (1 sao), Ấp An Thuận, xã An Bình, tỉnh Vĩnh Long",
     "placeId": "xa-an-binh",
     "confidence": 0.75,
     "season": {
@@ -47176,9 +47176,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47241,9 +47241,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47306,9 +47306,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47371,16 +47371,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "khach-san-anh-duc",
     "type": "accommodation",
     "name": "Khách sạn Anh Đức",
-    "summary": "Khách sạn Anh Đức (1 sao), Số 7/5, xã Tân Hạnh, huyện Long Hồ",
+    "summary": "Khách sạn Anh Đức (1 sao), Số 7/5, xã Tân Hạnh, tỉnh Vĩnh Long",
     "placeId": "p-tan-hanh",
     "confidence": 0.75,
     "season": {
@@ -47436,16 +47436,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "riverside-park-eco-resort",
     "type": "accommodation",
     "name": "Riverside Park Eco Resort",
-    "summary": "Riverside Park Eco Resort (resort), Số 283 Bình Hòa II, Bình Hòa Phước, huyện Long Hồ",
+    "summary": "Riverside Park Eco Resort (resort), Số 283 Bình Hòa II, Bình Hòa Phước, tỉnh Vĩnh Long",
     "placeId": "p-long-ho",
     "confidence": 0.75,
     "season": {
@@ -47501,16 +47501,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "nam-thanh-homestay",
     "type": "accommodation",
     "name": "Năm Thành Homestay",
-    "summary": "Năm Thành Homestay (homestay), Số 172/9 ấp Bình Lương, xã An Bình, huyện Long Hồ",
+    "summary": "Năm Thành Homestay (homestay), Số 172/9 ấp Bình Lương, xã An Bình, tỉnh Vĩnh Long",
     "placeId": "xa-an-binh",
     "confidence": 0.75,
     "season": {
@@ -47566,9 +47566,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47631,9 +47631,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47696,9 +47696,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47761,9 +47761,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47826,16 +47826,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "khach-san-anh-hong-mang-thit",
     "type": "accommodation",
     "name": "Khách sạn Ánh Hồng (Mang Thít)",
-    "summary": "Khách sạn Ánh Hồng (Mang Thít) (1 sao), Khóm 1, xã Cái Nhum, huyện Mang Thít",
+    "summary": "Khách sạn Ánh Hồng (Mang Thít) (1 sao), Khóm 1, xã Cái Nhum, tỉnh Vĩnh Long",
     "placeId": "xa-cai-nhum",
     "confidence": 0.75,
     "season": {
@@ -47885,16 +47885,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "khach-san-nghia-hiep",
     "type": "accommodation",
     "name": "Khách sạn Nghĩa Hiệp",
-    "summary": "Khách sạn Nghĩa Hiệp (1 sao), Ấp Mỹ An, xã Bình Ninh, huyện Tam Bình",
+    "summary": "Khách sạn Nghĩa Hiệp (1 sao), Ấp Mỹ An, xã Bình Ninh, tỉnh Vĩnh Long",
     "placeId": "p-tam-binh",
     "confidence": 0.75,
     "season": {
@@ -47944,16 +47944,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "khach-san-khoi-hoa",
     "type": "accommodation",
     "name": "Khách sạn Khôi Hoa",
-    "summary": "Khách sạn Khôi Hoa (2 sao), Số 5115 ấp Đông Hậu, phường Bình Minh, TX Bình Minh",
+    "summary": "Khách sạn Khôi Hoa (2 sao), Số 5115 ấp Đông Hậu, phường Bình Minh, tỉnh Vĩnh Long",
     "placeId": "p-binh-minh",
     "confidence": 0.75,
     "season": {
@@ -48003,16 +48003,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "khach-san-duc-dao",
     "type": "accommodation",
     "name": "Khách sạn Đức Đào",
-    "summary": "Khách sạn Đức Đào (1 sao), Số 5938/1, Phường Bình Minh, TX Bình Minh",
+    "summary": "Khách sạn Đức Đào (1 sao), Số 5938/1, Phường Bình Minh, tỉnh Vĩnh Long",
     "placeId": "p-binh-minh",
     "confidence": 0.75,
     "season": {
@@ -48062,9 +48062,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48121,9 +48121,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48180,9 +48180,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48239,16 +48239,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "khach-san-tan-thanh-6",
     "type": "accommodation",
     "name": "Khách sạn Tân Thành 6",
-    "summary": "Khách sạn Tân Thành 6 (1 sao), Số 162 Nam Kỳ Khởi Nghĩa, xã Trung Thành, huyện Trà Ôn",
+    "summary": "Khách sạn Tân Thành 6 (1 sao), Số 162 Nam Kỳ Khởi Nghĩa, xã Trung Thành",
     "placeId": "p-tra-on",
     "confidence": 0.75,
     "season": {
@@ -48298,16 +48298,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "coco-riverside-lodge",
     "type": "accommodation",
     "name": "Coco Riverside Lodge",
-    "summary": "Coco Riverside Lodge (lodge), Ấp Phú Ân, xã Trung Nghĩa, huyện Trà Ôn",
+    "summary": "Coco Riverside Lodge (lodge), Ấp Phú Ân, xã Trung Nghĩa",
     "placeId": "p-tra-on",
     "confidence": 0.75,
     "season": {
@@ -48357,9 +48357,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48416,9 +48416,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48475,9 +48475,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48534,9 +48534,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48593,9 +48593,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48652,9 +48652,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48711,9 +48711,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48770,9 +48770,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48829,9 +48829,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48888,9 +48888,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48947,9 +48947,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49006,9 +49006,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49065,9 +49065,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49124,9 +49124,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49186,9 +49186,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49245,9 +49245,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49304,9 +49304,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49363,9 +49363,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49422,16 +49422,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "cocohut-homestay",
     "type": "accommodation",
     "name": "Cocohut Homestay",
-    "summary": "Cocohut Homestay (homestay), Ấp Hòa Trung, xã Sơn Hòa, huyện Châu Thành (BT)",
+    "summary": "Cocohut Homestay (homestay), Ấp Hòa Trung, xã Sơn Hòa",
     "placeId": "xa-an-binh",
     "confidence": 0.75,
     "season": {
@@ -49481,16 +49481,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "homestay-lang-be",
     "type": "accommodation",
     "name": "Homestay Làng Bè",
-    "summary": "Homestay Làng Bè (homestay), 81B/6B Ấp An Thới B, xã An Khánh, huyện Châu Thành (BT)",
+    "summary": "Homestay Làng Bè (homestay), 81B/6B Ấp An Thới B, xã An Khánh",
     "placeId": "xa-an-binh",
     "confidence": 0.75,
     "season": {
@@ -49540,9 +49540,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49597,9 +49597,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49654,9 +49654,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49713,9 +49713,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49769,9 +49769,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49828,9 +49828,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49886,9 +49886,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49946,9 +49946,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50006,9 +50006,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50066,9 +50066,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50126,9 +50126,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50175,9 +50175,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50224,9 +50224,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50274,9 +50274,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50323,9 +50323,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50372,9 +50372,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50421,9 +50421,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50470,9 +50470,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50527,9 +50527,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50576,9 +50576,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50633,9 +50633,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50682,9 +50682,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50731,9 +50731,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50781,9 +50781,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50830,9 +50830,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50880,9 +50880,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50938,9 +50938,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50995,9 +50995,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51053,9 +51053,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51111,9 +51111,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51169,9 +51169,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51227,9 +51227,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51281,9 +51281,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51314,16 +51314,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "con-bung",
     "type": "nature",
     "name": "Cồn Bửng",
-    "summary": "Khu du lịch sinh thái ven biển trên cù lao Thạnh Hải, huyện Thạnh Phú, với bãi cát và rừng ngập mặn.",
+    "summary": "Khu du lịch sinh thái ven biển trên cù lao Thạnh Hải, với bãi cát và rừng ngập mặn.",
     "placeId": "xa-thanh-hai",
     "confidence": 0.75,
     "season": {
@@ -51372,9 +51372,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51430,9 +51430,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51488,9 +51488,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51535,9 +51535,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51596,9 +51596,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51654,9 +51654,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51713,9 +51713,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51770,9 +51770,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51820,9 +51820,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51878,9 +51878,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51936,9 +51936,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51994,16 +51994,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lang-nghe-truyen-thong-phu-le",
     "type": "craft_village",
     "name": "Làng nghề truyền thống Phú Lễ",
-    "summary": "Làng nghề nổi tiếng với rượu nếp Phú Lễ và nghề đan lán. Có Đình Phú Lễ xây dựng năm 1826 là di tích lịch sử. Nằm tại huyện Ba Tri, đặc sản rượu nếp Phú Lễ nổi tiếng cả miền Nam.",
+    "summary": "Làng nghề nổi tiếng với rượu nếp Phú Lễ và nghề đan lán. Có Đình Phú Lễ xây dựng năm 1826 là di tích lịch sử. Nằm tại Ba Tri, đặc sản rượu nếp Phú Lễ nổi tiếng cả miền Nam.",
     "placeId": "xa-tan-xuan",
     "confidence": 0.75,
     "season": {
@@ -52052,9 +52052,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52085,9 +52085,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52143,9 +52143,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52201,9 +52201,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52259,9 +52259,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52291,16 +52291,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "chua-vam-ray-wat-samrong",
     "type": "attraction",
     "name": "Chùa Vàm Ray (Wat Samrong)",
-    "summary": "Ngôi chùa Khmer lớn nhất Việt Nam tọa lạc tại huyện Trà Cú, nổi bật với tượng Phật ngoài trời cao 54m — lớn nhất cả nước. Kiến trúc rực rỡ màu vàng đặc trưng Khmer với họa tiết điêu khắc đại diện các vị thần ở mái vòm, tường và cột; khuôn viên rộng lớn thu hút hàng vạn phật tử.",
+    "summary": "Ngôi chùa Khmer lớn nhất Việt Nam tọa lạc tại Trà Cú, nổi bật với tượng Phật ngoài trời cao 54m — lớn nhất cả nước. Kiến trúc rực rỡ màu vàng đặc trưng Khmer với họa tiết điêu khắc đại diện các vị thần ở mái vòm, tường và cột; khuôn viên rộng lớn thu hút hàng vạn phật tử.",
     "placeId": "xa-ham-giang",
     "confidence": 0.75,
     "season": {
@@ -52349,16 +52349,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "cu-lao-tan-quy-cau-ke",
     "type": "nature",
     "name": "Cù Lao Tân Quy Cầu Kè",
-    "summary": "Cù lao xanh diện tích 929ha nằm giữa sông Hậu thuộc xã An Phú Tân, huyện Cầu Kè, cách TP Trà Vinh 45km. Nổi tiếng là vương quốc trái cây miền Tây với vườn trái cây trĩu cành; du khách đạp xe, tắm sông, chèo thuyền, hái trái cây và thưởng thức đặc sản miệt vườn.",
+    "summary": "Cù lao xanh diện tích 929ha nằm giữa sông Hậu thuộc xã An Phú Tân, cách TP Trà Vinh 45km. Nổi tiếng là vương quốc trái cây miền Tây với vườn trái cây trĩu cành; du khách đạp xe, tắm sông, chèo thuyền, hái trái cây và thưởng thức đặc sản miệt vườn.",
     "placeId": "xa-an-phu-tan",
     "confidence": 0.75,
     "season": {
@@ -52407,16 +52407,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "canh-dong-dien-gio-duyen-hai",
     "type": "attraction",
     "name": "Cánh đồng Điện Gió Duyên Hải",
-    "summary": "Cụm điện gió lớn tại huyện Duyên Hải với hàng chục trụ turbine khổng lồ dọc bờ biển và ngoài khơi. Cây cầu dẫn ra khu vận hành là điểm check-in nổi tiếng mạng xã hội với nền trời xanh và màu trắng của turbine; kết hợp tham quan cùng Bãi biển Ba Động liền kề.",
+    "summary": "Cụm điện gió lớn tại Duyên Hải với hàng chục trụ turbine khổng lồ dọc bờ biển và ngoài khơi. Cây cầu dẫn ra khu vận hành là điểm check-in nổi tiếng mạng xã hội với nền trời xanh và màu trắng của turbine; kết hợp tham quan cùng Bãi biển Ba Động liền kề.",
     "placeId": "xa-dong-hai",
     "confidence": 0.75,
     "season": {
@@ -52465,16 +52465,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "nha-tho-mac-bac-tieu-can",
     "type": "attraction",
     "name": "Nhà thờ Mặc Bắc Tiểu Cần",
-    "summary": "Nhà thờ Công giáo kiến trúc La Mã – Pháp độc đáo, khuôn viên rộng hơn 1ha tại thị trấn Cầu Quan, huyện Tiểu Cần. Là một trong những nhà thờ lớn và có kiến trúc đặc sắc nhất Đồng bằng sông Cửu Long, pha trộn Đông – Tây.",
+    "summary": "Nhà thờ Công giáo kiến trúc La Mã – Pháp độc đáo, khuôn viên rộng hơn 1ha tại Cầu Quan, Tiểu Cần. Là một trong những nhà thờ lớn và có kiến trúc đặc sắc nhất Đồng bằng sông Cửu Long, pha trộn Đông – Tây.",
     "placeId": "p-tan-hoa",
     "confidence": 0.75,
     "season": {
@@ -52523,9 +52523,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52580,9 +52580,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52613,9 +52613,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52646,9 +52646,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52687,9 +52687,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52720,9 +52720,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52775,9 +52775,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52825,9 +52825,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52875,9 +52875,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52925,9 +52925,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52980,9 +52980,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53030,16 +53030,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lang-det-chieu-ca-hom-ham-tan",
     "type": "craft_village",
     "name": "Làng Dệt Chiếu Cà Hom Hàm Tân",
-    "summary": "Làng nghề dệt chiếu cổ truyền gần 100 năm của người Khmer tại xã Hàm Tân, huyện Trà Cú; Bộ VHTTDL công nhận Di sản Văn hóa Phi vật thể Quốc gia năm 2024. Chiếu Cà Hom đặc sắc với 5 màu chủ đạo; hơn 200 hộ gia đình sản xuất gần 5.000 chiếu/năm.",
+    "summary": "Làng nghề dệt chiếu cổ truyền gần 100 năm của người Khmer tại xã Hàm Tân, Trà Cú; Bộ VHTTDL công nhận Di sản Văn hóa Phi vật thể Quốc gia năm 2024. Chiếu Cà Hom đặc sắc với 5 màu chủ đạo; hơn 200 hộ gia đình sản xuất gần 5.000 chiếu/năm.",
     "placeId": "xa-ham-giang",
     "confidence": 0.75,
     "season": {
@@ -53088,9 +53088,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53142,16 +53142,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lang-dan-lat-duc-my-cang-long",
     "type": "craft_village",
     "name": "Làng Đan Lát Đức Mỹ Càng Long",
-    "summary": "Làng nghề tiểu thủ công nghiệp tại xã Đức Mỹ, huyện Càng Long, chuyên đan lát thủ công truyền thống từ tre, lát và các vật liệu tự nhiên. Sản phẩm đa dạng gồm giỏ, thúng, sọt và đồ gia dụng; là nguồn thu nhập chính và điểm tham quan làng nghề trong tour địa phương.",
+    "summary": "Làng nghề tiểu thủ công nghiệp tại xã Đức Mỹ, Càng Long, chuyên đan lát thủ công truyền thống từ tre, lát và các vật liệu tự nhiên. Sản phẩm đa dạng gồm giỏ, thúng, sọt và đồ gia dụng; là nguồn thu nhập chính và điểm tham quan làng nghề trong tour địa phương.",
     "placeId": "xa-nhi-long",
     "confidence": 0.75,
     "season": {
@@ -53200,16 +53200,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "bien-con-bung-thanh-phu",
     "type": "nature",
     "name": "Biển Cồn Bửng Thạnh Phú",
-    "summary": "Bãi biển hoang sơ nằm tại xã Thạnh Hải, huyện Thạnh Phú, dài hơn 25km bờ biển. Khi thủy triều xuống xuất hiện 3 hồ nước tự nhiên do dòng xoáy hải lưu tạo thành, rất phù hợp tắm biển. Hàng năm tổ chức Lễ hội Nghinh Ông Nam Hải vào ngày 15–16 tháng Giêng âm lịch.",
+    "summary": "Bãi biển hoang sơ nằm tại xã Thạnh Hải, dài hơn 25km bờ biển. Khi thủy triều xuống xuất hiện 3 hồ nước tự nhiên do dòng xoáy hải lưu tạo thành, rất phù hợp tắm biển. Hàng năm tổ chức Lễ hội Nghinh Ông Nam Hải vào ngày 15–16 tháng Giêng âm lịch.",
     "placeId": "xa-thanh-hai",
     "confidence": 0.75,
     "season": {
@@ -53256,16 +53256,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "khu-du-lich-sinh-thai-chin-song-thanh-phu",
     "type": "attraction",
     "name": "Khu Du Lịch Sinh Thái Chín Sông Thạnh Phú",
-    "summary": "Khu du lịch sinh thái tại xã Bình Thạnh, huyện Thạnh Phú, mở cửa 7h–22h. Cung cấp các hoạt động trải nghiệm miệt vườn: tát mương bắt cá, ngồi thuyền vỏ lãi, câu tôm, đu dây giăng, đi cầu khỉ và chạy mô tô nước. Được đánh giá 4.3/5 sao.",
+    "summary": "Khu du lịch sinh thái tại xã Bình Thạnh, mở cửa 7h–22h. Cung cấp các hoạt động trải nghiệm miệt vườn: tát mương bắt cá, ngồi thuyền vỏ lãi, câu tôm, đu dây giăng, đi cầu khỉ và chạy mô tô nước. Được đánh giá 4.3/5 sao.",
     "placeId": "xa-thanh-phu",
     "confidence": 0.75,
     "season": {
@@ -53314,9 +53314,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53347,9 +53347,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53404,9 +53404,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53462,9 +53462,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53495,9 +53495,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53553,9 +53553,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53611,9 +53611,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53669,9 +53669,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53727,9 +53727,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53785,9 +53785,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53835,9 +53835,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53883,9 +53883,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53940,9 +53940,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53998,9 +53998,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54048,9 +54048,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54098,9 +54098,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54143,9 +54143,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54198,9 +54198,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54247,16 +54247,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "cu-lao-may-tra-on",
     "type": "nature",
     "name": "Cù Lao Mây Trà Ôn",
-    "summary": "Cù lao rộng khoảng 4.000ha nằm trên sông Hậu thuộc huyện Trà Ôn, nổi tiếng với vườn cam sành, bưởi, chôm chôm trải dài. Du khách đạp xe khám phá đường làng, hái trái cây, chèo xuồng trên kênh rạch, tát mương bắt cá. Mùa thu hoạch trái cây từ tháng 5 đến tháng 10.",
+    "summary": "Cù lao rộng khoảng 4.000ha nằm trên sông Hậu thuộc Trà Ôn, nổi tiếng với vườn cam sành, bưởi, chôm chôm trải dài. Du khách đạp xe khám phá đường làng, hái trái cây, chèo xuồng trên kênh rạch, tát mương bắt cá. Mùa thu hoạch trái cây từ tháng 5 đến tháng 10.",
     "placeId": "p-tra-on",
     "confidence": 0.75,
     "season": {
@@ -54305,9 +54305,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54363,9 +54363,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54421,9 +54421,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54454,16 +54454,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lang-banh-trang-giay-tuong-loc",
     "type": "craft_village",
     "name": "Làng Bánh Tráng Giấy Tường Lộc",
-    "summary": "Làng nghề truyền thống sản xuất bánh tráng giấy mỏng, giòn tan, thơm ngon đặc trưng của xã Tường Lộc, huyện Tam Bình. Du khách tham quan quy trình tráng thủ công trên bếp lửa và mua về làm quà đặc sản.",
+    "summary": "Làng nghề truyền thống sản xuất bánh tráng giấy mỏng, giòn tan, thơm ngon đặc trưng của xã Tường Lộc, Tam Bình. Du khách tham quan quy trình tráng thủ công trên bếp lửa và mua về làm quà đặc sản.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.75,
     "season": {
@@ -54512,9 +54512,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54570,16 +54570,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "nhan-an-binh-tam-binh",
     "type": "product",
     "name": "Nhãn An Bình Tam Bình",
-    "summary": "Nhãn trồng trên cù lao An Bình thuộc huyện Tam Bình nổi tiếng thơm ngọt với nhiều giống: nhãn long, nhãn Ido, nhãn tiêu da bò. Mùa thu hoạch từ tháng 6 đến tháng 8, du khách có thể vào vườn hái tận tay.",
+    "summary": "Nhãn trồng trên cù lao An Bình thuộc Tam Bình nổi tiếng thơm ngọt với nhiều giống: nhãn long, nhãn Ido, nhãn tiêu da bò. Mùa thu hoạch từ tháng 6 đến tháng 8, du khách có thể vào vườn hái tận tay.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.75,
     "season": {
@@ -54613,9 +54613,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54671,9 +54671,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54726,16 +54726,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "khu-sinh-thai-nha-xua-long-ho",
     "type": "experience",
     "name": "Khu Sinh Thái Nhà Xưa Long Hồ",
-    "summary": "Khu du lịch sinh thái kiến trúc nhà ba gian truyền thống miền Tây Nam Bộ, tọa lạc bên kênh Ông Mê, xã Phước Hậu, huyện Long Hồ. Bao quanh bởi vườn cây ăn trái, hoa và cây xanh quanh năm; nội thất gỗ chạm khắc tinh xảo mang hơi thở xưa.",
+    "summary": "Khu du lịch sinh thái kiến trúc nhà ba gian truyền thống miền Tây Nam Bộ, tọa lạc bên kênh Ông Mê, xã Phước Hậu, Long Hồ. Bao quanh bởi vườn cây ăn trái, hoa và cây xanh quanh năm; nội thất gỗ chạm khắc tinh xảo mang hơi thở xưa.",
     "placeId": "p-long-chau",
     "confidence": 0.75,
     "season": {
@@ -54784,9 +54784,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54842,16 +54842,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "khu-du-lich-truong-huy-long-ho",
     "type": "experience",
     "name": "Khu Du Lịch Trường Huy Long Hồ",
-    "summary": "Khu sinh thái diện tích 35ha tại xã Thanh Đức, huyện Long Hồ, cách cầu Mỹ Thuận hơn 5km. Không gian xanh tự nhiên với các hoạt động dân gian (tát mương bắt cá, cầu khỉ, đạp xe) và thể thao nước (chèo thuyền kayak, thuyền pedal). Phù hợp cho gia đình và nhóm bạn.",
+    "summary": "Khu sinh thái diện tích 35ha tại xã Thanh Đức, Long Hồ, cách cầu Mỹ Thuận hơn 5km. Không gian xanh tự nhiên với các hoạt động dân gian (tát mương bắt cá, cầu khỉ, đạp xe) và thể thao nước (chèo thuyền kayak, thuyền pedal). Phù hợp cho gia đình và nhóm bạn.",
     "placeId": "p-long-chau",
     "confidence": 0.75,
     "season": {
@@ -54900,9 +54900,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54950,9 +54950,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54993,9 +54993,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55051,9 +55051,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55109,9 +55109,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55141,9 +55141,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55190,9 +55190,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55222,9 +55222,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55280,9 +55280,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55338,9 +55338,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55397,9 +55397,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55456,9 +55456,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55515,9 +55515,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55574,9 +55574,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55634,16 +55634,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lang-be-an-khanh",
     "type": "attraction",
     "name": "Làng Bè An Khánh",
-    "summary": "Làng Bè nằm tại ấp Mỹ An, xã An Khánh, huyện Châu Thành, là điểm tham quan miễn phí với khung cảnh sông nước miệt vườn đặc trưng vùng đồng bằng sông Cửu Long. Mở cửa từ 8 giờ sáng đến 9 giờ tối hàng ngày.",
+    "summary": "Làng Bè nằm tại ấp Mỹ An, xã An Khánh, Châu Thành, là điểm tham quan miễn phí với khung cảnh sông nước miệt vườn đặc trưng vùng đồng bằng sông Cửu Long. Mở cửa từ 8 giờ sáng đến 9 giờ tối hàng ngày.",
     "placeId": "p-phu-tuc",
     "confidence": 0.7,
     "season": {
@@ -55694,9 +55694,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55754,9 +55754,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55814,9 +55814,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55874,9 +55874,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55927,9 +55927,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55962,9 +55962,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56022,9 +56022,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56074,9 +56074,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56133,9 +56133,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56167,9 +56167,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56223,9 +56223,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56278,9 +56278,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56327,9 +56327,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56389,9 +56389,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56449,9 +56449,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56484,9 +56484,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56527,9 +56527,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56582,9 +56582,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56628,9 +56628,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56688,9 +56688,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56743,9 +56743,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56778,9 +56778,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56813,16 +56813,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "con-thanh-long",
     "type": "nature",
     "name": "Cồn Thành Long",
-    "summary": "Khu du lịch sinh thái rộng 111 hecta với vườn dừa xanh mát và nhiều vườn cây ăn trái trù phú, nằm giữa sông nước miền Tây. Là điểm tham quan thiên nhiên hấp dẫn của huyện Mỏ Cày Nam, thích hợp cho du khách muốn trải nghiệm không gian sông nước và vườn cây đặc trưng vùng đồng bằng sông Cửu Long.",
+    "summary": "Khu du lịch sinh thái rộng 111 hecta với vườn dừa xanh mát và nhiều vườn cây ăn trái trù phú, nằm giữa sông nước miền Tây. Là điểm tham quan thiên nhiên hấp dẫn của Mỏ Cày Nam, thích hợp cho du khách muốn trải nghiệm không gian sông nước và vườn cây đặc trưng vùng đồng bằng sông Cửu Long.",
     "placeId": "xa-thanh-thoi",
     "confidence": 0.7,
     "season": {
@@ -56873,9 +56873,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56927,9 +56927,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56981,9 +56981,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57035,9 +57035,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57094,9 +57094,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57150,9 +57150,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57207,16 +57207,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "tranh-dua-cocohand",
     "type": "product",
     "name": "Tranh dừa Cocohand",
-    "summary": "Sản phẩm thủ công mỹ nghệ tranh dừa (gồm tranh dừa hộp kiếng và tranh dừa ốp nia tre) của hộ kinh doanh Cocohand, được chứng nhận OCOP 3 sao đợt 1 năm 2024 tại huyện Mỏ Cày Nam. Sản phẩm tận dụng nguyên liệu cây dừa địa phương để tạo ra các tác phẩm nghệ thuật trang trí độc đáo.",
+    "summary": "Sản phẩm thủ công mỹ nghệ tranh dừa (gồm tranh dừa hộp kiếng và tranh dừa ốp nia tre) của hộ kinh doanh Cocohand, được chứng nhận OCOP 3 sao đợt 1 năm 2024 tại Mỏ Cày Nam. Sản phẩm tận dụng nguyên liệu cây dừa địa phương để tạo ra các tác phẩm nghệ thuật trang trí độc đáo.",
     "placeId": "xa-huong-my",
     "confidence": 0.7,
     "season": {
@@ -57267,16 +57267,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "dong-trung-ha-thao-say-thang-hoa-drc",
     "type": "product",
     "name": "Đông trùng hạ thảo sấy thăng hoa DRC",
-    "summary": "Sản phẩm đông trùng hạ thảo sấy thăng hoa của Công ty TNHH Nấm sinh học DRC, được chứng nhận OCOP 3 sao đợt 1 năm 2024 tại huyện Mỏ Cày Nam. Sản phẩm nông nghiệp công nghệ cao ứng dụng kỹ thuật nuôi cấy nấm sinh học tại địa phương.",
+    "summary": "Sản phẩm đông trùng hạ thảo sấy thăng hoa của Công ty TNHH Nấm sinh học DRC, được chứng nhận OCOP 3 sao đợt 1 năm 2024 tại Mỏ Cày Nam. Sản phẩm nông nghiệp công nghệ cao ứng dụng kỹ thuật nuôi cấy nấm sinh học tại địa phương.",
     "placeId": "xa-huong-my",
     "confidence": 0.7,
     "season": {
@@ -57319,9 +57319,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57379,9 +57379,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57439,9 +57439,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57498,9 +57498,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57558,9 +57558,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57617,9 +57617,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57671,16 +57671,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "canh-dong-muoi-bao-thanh",
     "type": "nature",
     "name": "Cánh đồng muối Bảo Thạnh",
-    "summary": "Cánh đồng muối trắng xóa trải dài tại xã Bảo Thạnh, huyện Ba Tri - cảnh tượng hiếm thấy ở vùng Tây Nam Bộ, nơi hàng trăm diêm dân gắn bó với nghề làm muối qua nhiều thế hệ.",
+    "summary": "Cánh đồng muối trắng xóa trải dài tại xã Bảo Thạnh, Ba Tri - cảnh tượng hiếm thấy ở vùng Tây Nam Bộ, nơi hàng trăm diêm dân gắn bó với nghề làm muối qua nhiều thế hệ.",
     "placeId": "xa-bao-thanh",
     "confidence": 0.7,
     "season": {
@@ -57719,16 +57719,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lang-nghe-san-xuat-muoi-bao-thanh",
     "type": "craft_village",
     "name": "Làng nghề sản xuất muối Bảo Thạnh",
-    "summary": "Làng nghề làm muối truyền thống tại xã Bảo Thạnh, huyện Ba Tri. Muối Bảo Thạnh là đặc sản nổi tiếng, có giá trị kinh tế và văn hóa cao, gắn liền với nghề diêm dân lâu đời của địa phương.",
+    "summary": "Làng nghề làm muối truyền thống tại xã Bảo Thạnh, Ba Tri. Muối Bảo Thạnh là đặc sản nổi tiếng, có giá trị kinh tế và văn hóa cao, gắn liền với nghề diêm dân lâu đời của địa phương.",
     "placeId": "xa-bao-thanh",
     "confidence": 0.7,
     "season": {
@@ -57767,9 +57767,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57815,9 +57815,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57874,9 +57874,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57908,9 +57908,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57942,16 +57942,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "di-tich-cay-da-doi",
     "type": "history",
     "name": "Di tích Cây Da Đôi",
-    "summary": "Di tích lịch sử quốc gia tại xã Tân Xuân, huyện Ba Tri, được Bộ Văn hóa Thông tin công nhận ngày 7/5/1997. Nơi đây vào tháng 5/1930, Chi bộ Đảng Cộng sản Đông Dương đầu tiên của tỉnh Bến Tre đã tổ chức cuộc mít tinh nhân ngày Quốc tế Lao động, sau đó biến thành cuộc biểu tình tuần hành thu hút hơn 200 người tham gia.",
+    "summary": "Di tích lịch sử quốc gia tại xã Tân Xuân, Ba Tri, được Bộ Văn hóa Thông tin công nhận ngày 7/5/1997. Nơi đây vào tháng 5/1930, Chi bộ Đảng Cộng sản Đông Dương đầu tiên của tỉnh Vĩnh Long đã tổ chức cuộc mít tinh nhân ngày Quốc tế Lao động, sau đó biến thành cuộc biểu tình tuần hành thu hút hơn 200 người tham gia.",
     "placeId": "xa-tan-xuan",
     "confidence": 0.7,
     "season": null,
@@ -57976,16 +57976,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "nha-ong-nguyen-van-cung-dia-diem-thanh-lap-chi-bo-dang-dau-tien-ben-tre",
     "type": "history",
     "name": "Nhà ông Nguyễn Văn Cung - địa điểm thành lập Chi bộ Đảng đầu tiên Bến Tre",
-    "summary": "Căn nhà tại ấp Tân Hòa, xã Tân Xuân, nơi cuối tháng 4 năm 1930, chi bộ Đảng Cộng sản Đông Dương đầu tiên của tỉnh Bến Tre được thành lập. Đây là địa điểm mang ý nghĩa lịch sử cách mạng quan trọng của huyện Ba Tri.",
+    "summary": "Căn nhà tại ấp Tân Hòa, xã Tân Xuân, nơi cuối tháng 4 năm 1930, chi bộ Đảng Cộng sản Đông Dương đầu tiên của tỉnh Vĩnh Long được thành lập. Đây là địa điểm mang ý nghĩa lịch sử cách mạng quan trọng của Ba Tri.",
     "placeId": "xa-tan-xuan",
     "confidence": 0.7,
     "season": null,
@@ -58010,9 +58010,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58069,9 +58069,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58126,9 +58126,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58160,9 +58160,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58194,9 +58194,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58251,9 +58251,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58286,9 +58286,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58321,9 +58321,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58355,9 +58355,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58415,16 +58415,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "chua-sam-pua",
     "type": "history",
     "name": "Chùa Săm Pua",
-    "summary": "Chùa Khmer đầu tiên của huyện Cầu Kè, lưu giữ bia đá xanh cổ dài khoảng 1,7m được coi là di vật thời Phù Nam. Đây là công trình tâm linh quan trọng của cộng đồng người Khmer địa phương, mang giá trị lịch sử và khảo cổ học đặc biệt.",
+    "summary": "Chùa Khmer đầu tiên của Cầu Kè, lưu giữ bia đá xanh cổ dài khoảng 1,7m được coi là di vật thời Phù Nam. Đây là công trình tâm linh quan trọng của cộng đồng người Khmer địa phương, mang giá trị lịch sử và khảo cổ học đặc biệt.",
     "placeId": "xa-cau-ke",
     "confidence": 0.7,
     "season": null,
@@ -58449,9 +58449,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58483,16 +58483,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "vuon-dua-sap-ba-thuy",
     "type": "attraction",
     "name": "Vườn Dừa Sáp Ba Thúy",
-    "summary": "Vườn dừa sáp nổi tiếng tại thị trấn Cầu Kè, nơi du khách có thể quan sát cây dừa sáp và tìm hiểu quy trình trồng trọt, chăm sóc loại dừa đặc sản quý hiếm bậc nhất Việt Nam. Huyện Cầu Kè được mệnh danh là 'thủ phủ dừa sáp' từ những năm 1960. Đánh giá Google đạt 4.8/5.",
+    "summary": "Vườn dừa sáp nổi tiếng tại Cầu Kè, nơi du khách có thể quan sát cây dừa sáp và tìm hiểu quy trình trồng trọt, chăm sóc loại dừa đặc sản quý hiếm bậc nhất Việt Nam. Cầu Kè được mệnh danh là 'thủ phủ dừa sáp' từ những năm 1960. Đánh giá Google đạt 4.8/5.",
     "placeId": "xa-cau-ke",
     "confidence": 0.7,
     "season": {
@@ -58539,9 +58539,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58594,9 +58594,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58650,9 +58650,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58701,9 +58701,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58736,9 +58736,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58771,16 +58771,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "vicosap-keo-dua-sap-ocop-5-sao",
     "type": "product",
     "name": "Vicosap - Kẹo dừa sáp OCOP 5 sao",
-    "summary": "Công ty TNHH Chế biến dừa sáp Cầu Kè (Vicosap) sản xuất kẹo dừa sáp nguyên chất, kẹo dừa sáp vị lá dứa, kẹo dừa sáp vị cacao và dừa sáp sợi - đều đạt OCOP 5 sao quốc gia, chiếm 4 trong 6 sản phẩm OCOP 5 sao của tỉnh Trà Vinh. Xuất khẩu chính ngạch sang Nhật Bản, Anh, Mỹ, Hong Kong, Đài Loan. Có trên 15 nhóm sản phẩm với hơn 80 SKU.",
+    "summary": "Công ty TNHH Chế biến dừa sáp Cầu Kè (Vicosap) sản xuất kẹo dừa sáp nguyên chất, kẹo dừa sáp vị lá dứa, kẹo dừa sáp vị cacao và dừa sáp sợi - đều đạt OCOP 5 sao quốc gia, chiếm 4 trong 6 sản phẩm OCOP 5 sao của tỉnh Vĩnh Long. Xuất khẩu chính ngạch sang Nhật Bản, Anh, Mỹ, Hong Kong, Đài Loan. Có trên 15 nhóm sản phẩm với hơn 80 SKU.",
     "placeId": "xa-tam-ngai",
     "confidence": 0.7,
     "season": {
@@ -58829,16 +58829,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "mut-dua-sap-cam-hang",
     "type": "product",
     "name": "Mứt dừa sáp Cẩm Hằng",
-    "summary": "Cơ sở sản xuất mứt dừa sáp truyền thống tại thị trấn Cầu Kè, có sản phẩm kẹo chuối dừa sáp đạt OCOP 3 sao năm 2024. Nằm trong số trên 70% sản phẩm kẹo, mứt dừa sáp đạt OCOP từ 3 đến 5 sao trên địa bàn huyện Cầu Kè.",
+    "summary": "Cơ sở sản xuất mứt dừa sáp truyền thống tại Cầu Kè, có sản phẩm kẹo chuối dừa sáp đạt OCOP 3 sao năm 2024. Nằm trong số trên 70% sản phẩm kẹo, mứt dừa sáp đạt OCOP từ 3 đến 5 sao trên địa bàn Cầu Kè.",
     "placeId": "xa-cau-ke",
     "confidence": 0.7,
     "season": {
@@ -58888,16 +58888,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "con-tan-qui",
     "type": "nature",
     "name": "Cồn Tân Qui",
-    "summary": "Cồn nằm trên sông, có vườn trái cây với nhiều loại đặc trưng miền Tây như vú sữa, chôm chôm, sầu riêng, măng cụt. Du khách có thể ăn trái cây tại vườn và trải nghiệm cuộc sống sông nước. Là một trong 5 địa điểm du lịch hút khách nhất huyện Cầu Kè.",
+    "summary": "Cồn nằm trên sông, có vườn trái cây với nhiều loại đặc trưng miền Tây như vú sữa, chôm chôm, sầu riêng, măng cụt. Du khách có thể ăn trái cây tại vườn và trải nghiệm cuộc sống sông nước. Là một trong 5 địa điểm du lịch hút khách nhất Cầu Kè.",
     "placeId": "xa-an-phu-tan",
     "confidence": 0.7,
     "season": {
@@ -58943,9 +58943,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58998,9 +58998,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59055,16 +59055,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "cu-lao-an-loc",
     "type": "nature",
     "name": "Cù lao An Lộc",
-    "summary": "Cù lao An Lộc là một ấp thuộc xã Hòa Tân, huyện Cầu Kè, cách đất liền khoảng 800m. Điểm tham quan thiên nhiên với thảm thực vật xanh mướt và trái cây đa dạng giữa sông Hậu.",
+    "summary": "Cù lao An Lộc là một ấp thuộc xã Hòa Tân, Cầu Kè, cách đất liền khoảng 800m. Điểm tham quan thiên nhiên với thảm thực vật xanh mướt và trái cây đa dạng giữa sông Hậu.",
     "placeId": "xa-an-phu-tan",
     "confidence": 0.7,
     "season": {
@@ -59111,16 +59111,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "du-lich-sinh-thai-nam-son",
     "type": "experience",
     "name": "Du lịch sinh thái Nam Sơn",
-    "summary": "Khu du lịch sinh thái diện tích 3,8ha tại ấp An Trại, xã An Phú Tân, huyện Cầu Kè. Có khách sạn 17 phòng, 11 phòng nghỉ homestay, nhà hàng, du thuyền và ca nô tham quan trên tuyến sông Hậu.",
+    "summary": "Khu du lịch sinh thái diện tích 3,8ha tại ấp An Trại, xã An Phú Tân, Cầu Kè. Có khách sạn 17 phòng, 11 phòng nghỉ homestay, nhà hàng, du thuyền và ca nô tham quan trên tuyến sông Hậu.",
     "placeId": "xa-an-phu-tan",
     "confidence": 0.7,
     "season": {
@@ -59162,16 +59162,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "dua-sap-hoa-tan",
     "type": "product",
     "name": "Dừa sáp Hòa Tân",
-    "summary": "Đặc sản dừa sáp nổi tiếng của xã Hòa Tân, huyện Cầu Kè, do Hợp tác xã Dừa sáp Hòa Tân sản xuất. Sản phẩm đã được công nhận đạt 4 sao OCOP cấp tỉnh Trà Vinh.",
+    "summary": "Đặc sản dừa sáp nổi tiếng của xã Hòa Tân, Cầu Kè, do Hợp tác xã Dừa sáp Hòa Tân sản xuất. Sản phẩm đã được công nhận đạt 4 sao OCOP cấp tỉnh Vĩnh Long.",
     "placeId": "xa-an-phu-tan",
     "confidence": 0.7,
     "season": {
@@ -59219,16 +59219,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "mut-dua-sap-cau-ke",
     "type": "dish",
     "name": "Mứt dừa sáp Cầu Kè",
-    "summary": "Mứt và kẹo làm từ dừa sáp đặc sản của huyện Cầu Kè, là sản phẩm OCOP nổi bật. Cơ sở mứt dừa sáp Cẩm Hằng tại khóm 2, thị trấn Cầu Kè sản xuất trên 3 tấn mứt dịp Tết.",
+    "summary": "Mứt và kẹo làm từ dừa sáp đặc sản của Cầu Kè, là sản phẩm OCOP nổi bật. Cơ sở mứt dừa sáp Cẩm Hằng tại khóm 2, Cầu Kè sản xuất trên 3 tấn mứt dịp Tết.",
     "placeId": "xa-cau-ke",
     "confidence": 0.7,
     "season": {
@@ -59277,9 +59277,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59327,9 +59327,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59361,16 +59361,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "cong-vien-dan-chu",
     "type": "nature",
     "name": "Công viên Dân Chủ",
-    "summary": "Công viên nằm ven hồ Ngã Năm tại trung tâm thị trấn Tiểu Cần, có cây xanh bóng mát, thiết bị thể dục thể thao và không gian đi bộ thư giãn, đẹp về đêm với hệ thống đèn chiếu sáng.",
+    "summary": "Công viên nằm ven hồ Ngã Năm tại trung tâm Tiểu Cần, có cây xanh bóng mát, thiết bị thể dục thể thao và không gian đi bộ thư giãn, đẹp về đêm với hệ thống đèn chiếu sáng.",
     "placeId": "p-tieu-can",
     "confidence": 0.7,
     "season": {
@@ -59412,16 +59412,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "keo-dau-phong-du-tan-loi",
     "type": "product",
     "name": "Kẹo Đậu Phộng Dư Tấn Lợi",
-    "summary": "Sản phẩm kẹo đậu phộng truyền thống đạt chứng nhận OCOP 3 sao năm 2022, do hộ kinh doanh Dư Tấn Lợi sản xuất tại thị trấn Tiểu Cần.",
+    "summary": "Sản phẩm kẹo đậu phộng truyền thống đạt chứng nhận OCOP 3 sao năm 2022, do hộ kinh doanh Dư Tấn Lợi sản xuất tại Tiểu Cần.",
     "placeId": "p-tieu-can",
     "confidence": 0.7,
     "season": {
@@ -59468,16 +59468,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "mat-hoa-dua-va-duong-hoa-dua-tra-vinh-ocop-5-sao",
     "type": "product",
     "name": "Mật hoa dừa và đường hoa dừa Trà Vinh (OCOP 5 sao)",
-    "summary": "Sản phẩm OCOP đạt 5 sao cấp quốc gia của tỉnh Trà Vinh, được sản xuất từ hoa dừa theo quy trình truyền thống. Bao gồm mật hoa dừa và đường hoa dừa, được bày bán tại Homestay SokFram xã Phú Cần và các điểm du lịch trong huyện Tiểu Cần.",
+    "summary": "Sản phẩm OCOP đạt 5 sao cấp quốc gia của tỉnh Vĩnh Long, được sản xuất từ hoa dừa theo quy trình truyền thống. Bao gồm mật hoa dừa và đường hoa dừa, được bày bán tại Homestay SokFram xã Phú Cần và các điểm du lịch trong vùng Tiểu Cần.",
     "placeId": "p-tieu-can",
     "confidence": 0.7,
     "season": {
@@ -59527,9 +59527,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59584,16 +59584,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "chua-hang-cha-lo",
     "type": "history",
     "name": "Chùa Hang (Chà Lô)",
-    "summary": "Ngôi chùa Khmer cổ tọa lạc tại xã Nguyệt Hóa, huyện Châu Thành, tỉnh Trà Vinh. Là một trong các ngôi chùa Khmer cổ mang giá trị lịch sử và văn hóa của cộng đồng người Khmer ở Nam Bộ.",
+    "summary": "Ngôi chùa Khmer cổ tọa lạc tại xã Nguyệt Hóa, tỉnh Vĩnh Long. Là một trong các ngôi chùa Khmer cổ mang giá trị lịch sử và văn hóa của cộng đồng người Khmer ở Nam Bộ.",
     "placeId": "p-nguyet-hoa",
     "confidence": 0.7,
     "season": null,
@@ -59619,9 +59619,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59654,16 +59654,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "mam-tep-du-du-thuy-nguyen",
     "type": "product",
     "name": "Mắm Tép Đu Đủ Thúy Nguyễn",
-    "summary": "Sản phẩm mắm tép đu đủ truyền thống do hộ kinh doanh Thúy Nguyễn sản xuất tại thị trấn Châu Thành, được công nhận đạt chuẩn OCOP 3 sao theo Quyết định số 1693/QĐ-UBND ngày 22 tháng 8 năm 2022 của UBND tỉnh Trà Vinh. Đây là sản phẩm đại diện duy nhất của thị trấn Châu Thành trong chương trình OCOP huyện Châu Thành.",
+    "summary": "Sản phẩm mắm tép đu đủ truyền thống do hộ kinh doanh Thúy Nguyễn sản xuất tại Châu Thành, được công nhận đạt chuẩn OCOP 3 sao theo Quyết định số 1693/QĐ-UBND ngày 22 tháng 8 năm 2022 của UBND tỉnh Vĩnh Long. Đây là sản phẩm đại diện duy nhất của Châu Thành trong chương trình OCOP.",
     "placeId": "xa-chau-thanh",
     "confidence": 0.7,
     "season": {
@@ -59711,9 +59711,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59745,16 +59745,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "xa-kim-hoa-diem-du-lich-sinh-thai-song-nuoc",
     "type": "nature",
     "name": "Xã Kim Hòa - Điểm du lịch sinh thái sông nước",
-    "summary": "Xã Kim Hòa nằm ở phía bắc huyện Cầu Ngang, cách trung tâm thị trấn Cầu Ngang 13km. Vùng có tiềm năng phát triển du lịch sinh thái và kinh tế biển, là nơi tập trung các làng nghề truyền thống và đặc sản địa phương.",
+    "summary": "Xã Kim Hòa nằm ở phía bắc vùng Cầu Ngang, cách trung tâm Cầu Ngang 13km. Vùng có tiềm năng phát triển du lịch sinh thái và kinh tế biển, là nơi tập trung các làng nghề truyền thống và đặc sản địa phương.",
     "placeId": "xa-vinh-kim",
     "confidence": 0.7,
     "season": {
@@ -59797,9 +59797,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59853,16 +59853,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "chua-can-snom-can-nom",
     "type": "history",
     "name": "Chùa Can Snom (Căn Nom)",
-    "summary": "Chùa Khmer được xây dựng năm 1747 (Phật lịch 2291), tọa lạc trong khuôn viên 74.658 m². Là trung tâm sinh hoạt tín ngưỡng và văn hóa lâu đời của người Khmer, đồng thời từng là căn cứ cách mạng thời kháng chiến chống Pháp. Được UBND tỉnh Trà Vinh công nhận di tích lịch sử cấp tỉnh theo Quyết định số 1127 ngày 13/6/2013.",
+    "summary": "Chùa Khmer được xây dựng năm 1747 (Phật lịch 2291), tọa lạc trong khuôn viên 74.658 m². Là trung tâm sinh hoạt tín ngưỡng và văn hóa lâu đời của người Khmer, đồng thời từng là căn cứ cách mạng thời kháng chiến chống Pháp. Được UBND tỉnh Vĩnh Long công nhận di tích lịch sử cấp tỉnh theo Quyết định số 1127 ngày 13/6/2013.",
     "placeId": "xa-nhi-truong",
     "confidence": 0.7,
     "season": null,
@@ -59888,16 +59888,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "con-ngheu-my-long",
     "type": "nature",
     "name": "Cồn Nghêu Mỹ Long",
-    "summary": "Cồn cát dài khoảng 5 km được phù sa sông Cổ Chiên bồi đắp, chỉ xuất hiện khi thủy triều rút, cách bờ biển Mỹ Long khoảng 10 phút đi ca nô. Nổi tiếng là 'mỏ nghêu' của Trà Vinh, du khách có thể tự tay bắt nghêu, thưởng thức hải sản tươi tại chỗ, chèo xuồng, đạp vịt. Nằm trong quy hoạch Khu du lịch sinh thái Mỹ Long 20 ha của tỉnh Trà Vinh.",
+    "summary": "Cồn cát dài khoảng 5 km được phù sa sông Cổ Chiên bồi đắp, chỉ xuất hiện khi thủy triều rút, cách bờ biển Mỹ Long khoảng 10 phút đi ca nô. Nổi tiếng là 'mỏ nghêu' của vùng Trà Vinh, du khách có thể tự tay bắt nghêu, thưởng thức hải sản tươi tại chỗ, chèo xuồng, đạp vịt. Nằm trong quy hoạch Khu du lịch sinh thái Mỹ Long 20 ha của tỉnh Vĩnh Long.",
     "placeId": "xa-my-long",
     "confidence": 0.7,
     "season": {
@@ -59939,9 +59939,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59996,9 +59996,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60046,9 +60046,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60102,16 +60102,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "banh-tet-tu-quy-hai-ly",
     "type": "product",
     "name": "Bánh tét Tứ Quý (Hai Lý)",
-    "summary": "Sản phẩm OCOP 4 sao của hộ kinh doanh Mai Hoàng Lý, được công nhận theo Quyết định số 2489/QĐ-UBND ngày 30/12/2023. Là sản phẩm bánh tét truyền thống đạt tiêu chuẩn chất lượng cao nhất trong các sản phẩm OCOP của huyện Cầu Ngang.",
+    "summary": "Sản phẩm OCOP 4 sao của hộ kinh doanh Mai Hoàng Lý, được công nhận theo Quyết định số 2489/QĐ-UBND ngày 30/12/2023. Là sản phẩm bánh tét truyền thống đạt tiêu chuẩn chất lượng cao nhất trong các sản phẩm OCOP của vùng Cầu Ngang.",
     "placeId": "xa-vinh-kim",
     "confidence": 0.7,
     "season": {
@@ -60158,9 +60158,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60210,16 +60210,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "di-tich-lich-su-dong-khoi-my-long",
     "type": "history",
     "name": "Di tích lịch sử Đồng Khởi Mỹ Long",
-    "summary": "Di tích lịch sử cấp tỉnh được công nhận năm 2019, ghi dấu phong trào Đồng Khởi tại địa phương. Nằm tại Khu phố 1, thị trấn Mỹ Long, là địa điểm giáo dục truyền thống cách mạng cho thế hệ trẻ huyện Cầu Ngang.",
+    "summary": "Di tích lịch sử cấp tỉnh được công nhận năm 2019, ghi dấu phong trào Đồng Khởi tại địa phương. Nằm tại Khu phố 1, Mỹ Long, là địa điểm giáo dục truyền thống cách mạng cho thế hệ trẻ vùng Cầu Ngang.",
     "placeId": "xa-my-long",
     "confidence": 0.7,
     "season": null,
@@ -60244,9 +60244,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60294,16 +60294,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "tom-xe-hiep-my-dong",
     "type": "product",
     "name": "Tôm xẻ Hiệp Mỹ Đông",
-    "summary": "Sản phẩm OCOP 3 sao do hộ sản xuất Nguyễn Thị Trúc Phương chế biến. Tôm tươi được ướp gia vị rồi phơi nắng một ngày, giữ nguyên hương vị tự nhiên của tôm biển. Khai thác lợi thế vùng nuôi tôm nước lợ rộng lớn của huyện Cầu Ngang.",
+    "summary": "Sản phẩm OCOP 3 sao do hộ sản xuất Nguyễn Thị Trúc Phương chế biến. Tôm tươi được ướp gia vị rồi phơi nắng một ngày, giữ nguyên hương vị tự nhiên của tôm biển. Khai thác lợi thế vùng nuôi tôm nước lợ rộng lớn của vùng Cầu Ngang.",
     "placeId": "xa-hiep-my",
     "confidence": 0.7,
     "season": {
@@ -60353,9 +60353,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60404,16 +60404,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "chua-vam-ray-chua-phat-nam",
     "type": "attraction",
     "name": "Chùa Vàm Ray (Chùa Phật Nằm)",
-    "summary": "Ngôi chùa Khmer lớn nhất Việt Nam, nổi tiếng với kiến trúc độc đáo và tượng Phật nằm ngoài trời lớn nhất cả nước. Là biểu tượng văn hóa Khmer của huyện Trà Cú. Vào cửa miễn phí.",
+    "summary": "Ngôi chùa Khmer lớn nhất Việt Nam, nổi tiếng với kiến trúc độc đáo và tượng Phật nằm ngoài trời lớn nhất cả nước. Là biểu tượng văn hóa Khmer của vùng Trà Cú. Vào cửa miễn phí.",
     "placeId": "xa-ham-giang",
     "confidence": 0.7,
     "season": {
@@ -60463,16 +60463,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "chua-troprasbat-chua-chong-bat",
     "type": "history",
     "name": "Chùa Trôprasbat (Chùa Chông Bát)",
-    "summary": "Chùa Khmer xây dựng năm 1646, mang kiến trúc và nghệ thuật trang trí đặc sắc của người Khmer Nam Bộ. Là một trong những di tích kiến trúc nghệ thuật tiêu biểu của huyện Trà Cú.",
+    "summary": "Chùa Khmer xây dựng năm 1646, mang kiến trúc và nghệ thuật trang trí đặc sắc của người Khmer Nam Bộ. Là một trong những di tích kiến trúc nghệ thuật tiêu biểu của vùng Trà Cú.",
     "placeId": "xa-long-hiep",
     "confidence": 0.7,
     "season": null,
@@ -60498,9 +60498,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60558,9 +60558,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60618,9 +60618,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60677,9 +60677,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60711,9 +60711,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60770,9 +60770,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60829,9 +60829,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60889,9 +60889,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60949,16 +60949,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "nha-nghi-nha-co-dai-an",
     "type": "accommodation",
     "name": "Nhà nghỉ Nhà Cổ Đại An",
-    "summary": "Cơ sở lưu trú nằm trong khuôn viên khu du lịch Nhà Cổ Đại An, cho phép du khách nghỉ ngơi và trải nghiệm không gian nhà cổ truyền thống Nam Bộ ngay tại xã Đại An, huyện Trà Cú.",
+    "summary": "Cơ sở lưu trú nằm trong khuôn viên khu du lịch Nhà Cổ Đại An, cho phép du khách nghỉ ngơi và trải nghiệm không gian nhà cổ truyền thống Nam Bộ ngay tại xã Đại An.",
     "placeId": "xa-dai-an",
     "confidence": 0.7,
     "season": {
@@ -61008,9 +61008,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61061,16 +61061,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "bot-nua-bot-khoai-mon-an-quang-huu",
     "type": "product",
     "name": "Bột nưa (bột khoai môn) An Quảng Hữu",
-    "summary": "Đặc sản địa phương được chế biến từ củ môn nưa, loại cây thân thảo trồng chủ yếu ở ấp Vàm, xã An Quảng Hữu, huyện Trà Cú. Sản phẩm mang giá trị kinh tế nông nghiệp truyền thống của vùng.",
+    "summary": "Đặc sản địa phương được chế biến từ củ môn nưa, loại cây thân thảo trồng chủ yếu ở ấp Vàm, xã An Quảng Hữu. Sản phẩm mang giá trị kinh tế nông nghiệp truyền thống của vùng.",
     "placeId": "p-tra-vinh",
     "confidence": 0.7,
     "season": {
@@ -61110,9 +61110,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61170,16 +61170,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "chua-krapoumchhouk-chral-chua-cha",
     "type": "history",
     "name": "Chùa Krapoumchhouk Chral (Chùa Chà)",
-    "summary": "Chùa Khmer có truyền thống cách mạng phong phú, đã đóng góp cho sự nghiệp giải phóng dân tộc. Chùa gắn liền với lịch sử vũ trang nhân dân xã Ngãi Xuyên và các xã lân cận thuộc huyện Trà Cú.",
+    "summary": "Chùa Khmer có truyền thống cách mạng phong phú, đã đóng góp cho sự nghiệp giải phóng dân tộc. Chùa gắn liền với lịch sử vũ trang nhân dân xã Ngãi Xuyên và các xã lân cận thuộc vùng Trà Cú.",
     "placeId": "xa-tra-cu",
     "confidence": 0.7,
     "season": null,
@@ -61205,9 +61205,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61239,9 +61239,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61289,9 +61289,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61324,9 +61324,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61383,9 +61383,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61442,16 +61442,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "dinh-vinh-xuan",
     "type": "history",
     "name": "Đình Vĩnh Xuân",
-    "summary": "Di tích lịch sử văn hóa cấp tỉnh, tọa lạc tại ấp Vĩnh Trinh, xã Vĩnh Xuân, huyện Trà Ôn, cách trung tâm thị trấn Trà Ôn 12km về phía đông. Được hình thành vào đầu thế kỷ 19, là nơi tổ chức các hoạt động văn hóa tâm linh của người dân địa phương, đồng thời từng là địa điểm họp mặt của cán bộ cách mạng trong hai cuộc kháng chiến chống Pháp và chống Mỹ.",
+    "summary": "Di tích lịch sử văn hóa cấp tỉnh, tọa lạc tại ấp Vĩnh Trinh, xã Vĩnh Xuân, cách trung tâm Trà Ôn 12km về phía đông. Được hình thành vào đầu thế kỷ 19, là nơi tổ chức các hoạt động văn hóa tâm linh của người dân địa phương, đồng thời từng là địa điểm họp mặt của cán bộ cách mạng trong hai cuộc kháng chiến chống Pháp và chống Mỹ.",
     "placeId": "xa-vinh-xuan",
     "confidence": 0.7,
     "season": null,
@@ -61477,16 +61477,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "di-tich-ao-ho-co-vinh-xuan",
     "type": "history",
     "name": "Di tích ao hồ cổ Vĩnh Xuân",
-    "summary": "Dấu tích ao hồ cổ tại xã Vĩnh Xuân, huyện Trà Ôn, là bằng chứng về một nền văn hóa cổ đại từng tồn tại ở vùng đất này vào những thế kỷ đầu Công nguyên.",
+    "summary": "Dấu tích ao hồ cổ tại xã Vĩnh Xuân là bằng chứng về một nền văn hóa cổ đại từng tồn tại ở vùng đất này vào những thế kỷ đầu Công nguyên.",
     "placeId": "xa-vinh-xuan",
     "confidence": 0.7,
     "season": null,
@@ -61512,16 +61512,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "banh-trang-ngot-le-hang",
     "type": "product",
     "name": "Bánh tráng Ngọt Lệ Hằng",
-    "summary": "Sản phẩm bánh tráng OCOP cấp tỉnh từ làng nghề Cù Lao Mây, huyện Trà Ôn, Vĩnh Long. Được xuất khẩu sang Nhật Bản, Pháp, Mỹ và Đài Loan, là một trong những đặc sản tiêu biểu của tỉnh Vĩnh Long.",
+    "summary": "Sản phẩm bánh tráng OCOP cấp tỉnh từ làng nghề Cù Lao Mây, Vĩnh Long. Được xuất khẩu sang Nhật Bản, Pháp, Mỹ và Đài Loan, là một trong những đặc sản tiêu biểu của tỉnh Vĩnh Long.",
     "placeId": "p-tra-on",
     "confidence": 0.7,
     "season": {
@@ -61571,16 +61571,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "hop-tac-xa-cam-phuong-thuy",
     "type": "product",
     "name": "Hợp tác xã cam Phương Thúy",
-    "summary": "Sản phẩm cam OCOP 3 sao được công nhận năm 2021, trồng theo tiêu chuẩn VietGAP và hữu cơ tại huyện Trà Ôn, Vĩnh Long. Là một trong những sản phẩm nông nghiệp tiêu biểu của địa phương.",
+    "summary": "Sản phẩm cam OCOP 3 sao được công nhận năm 2021, trồng theo tiêu chuẩn VietGAP và hữu cơ tại Vĩnh Long. Là một trong những sản phẩm nông nghiệp tiêu biểu của địa phương.",
     "placeId": "p-tra-on",
     "confidence": 0.7,
     "season": {
@@ -61629,16 +61629,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "tau-hu-ky-my-hoa-binh-minh",
     "type": "product",
     "name": "Tàu hủ ky Mỹ Hòa - Bình Minh",
-    "summary": "Đặc sản tàu hủ ky làm từ 100% đậu nành sạch, không dùng hóa chất, có nhiều loại: miếng lớn, sợi khô, ngâm muối. Được công nhận nhãn hiệu tập thể năm 2013, đạt giải sản phẩm tiêu biểu vùng ĐBSCL năm 2017. Là sản phẩm OCOP đặc trưng của xã Mỹ Hòa, TX Bình Minh.",
+    "summary": "Đặc sản tàu hủ ky làm từ 100% đậu nành sạch, không dùng hóa chất, có nhiều loại: miếng lớn, sợi khô, ngâm muối. Được công nhận nhãn hiệu tập thể năm 2013, đạt giải sản phẩm tiêu biểu vùng ĐBSCL năm 2017. Là sản phẩm OCOP đặc trưng của xã Mỹ Hòa, Bình Minh.",
     "placeId": "xa-an-binh",
     "confidence": 0.7,
     "season": {
@@ -61689,9 +61689,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61749,16 +61749,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "chua-khmer-phu-ly",
     "type": "history",
     "name": "Chùa Khmer Phù Ly",
-    "summary": "Ngôi chùa Khmer khoảng 400 năm tuổi, kiến trúc độc đáo pha trộn văn hóa Ấn Độ, Campuchia và Thái Lan, thể hiện vẻ đẹp cổ kính và hiện đại. Là di tích văn hóa tôn giáo đặc trưng của cộng đồng Khmer tại TX Bình Minh.",
+    "summary": "Ngôi chùa Khmer khoảng 400 năm tuổi, kiến trúc độc đáo pha trộn văn hóa Ấn Độ, Campuchia và Thái Lan, thể hiện vẻ đẹp cổ kính và hiện đại. Là di tích văn hóa tôn giáo đặc trưng của cộng đồng Khmer tại Bình Minh.",
     "placeId": "xa-an-binh",
     "confidence": 0.7,
     "season": null,
@@ -61783,16 +61783,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "buoi-nam-roi-my-hoa",
     "type": "product",
     "name": "Bưởi năm roi Mỹ Hòa",
-    "summary": "Sản phẩm bưởi năm roi đặc trưng của xã Mỹ Hòa, TX Bình Minh, đạt chứng nhận OCOP 4 sao. Là một trong 36 sản phẩm OCOP 4 sao được tỉnh Vĩnh Long công nhận.",
+    "summary": "Sản phẩm bưởi năm roi đặc trưng của xã Mỹ Hòa, Bình Minh, đạt chứng nhận OCOP 4 sao. Là một trong 36 sản phẩm OCOP 4 sao được tỉnh Vĩnh Long công nhận.",
     "placeId": "xa-an-binh",
     "confidence": 0.7,
     "season": {
@@ -61843,16 +61843,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "tau-hu-ky-cai-von",
     "type": "product",
     "name": "Tàu hủ ky Cái Vồn",
-    "summary": "Sản phẩm tàu hủ ky truyền thống làm từ đậu nành, được sản xuất bằng phương pháp thủ công lâu đời. Sản phẩm gồm tàu hủ ky miếng lớn, cọng khô, ướp muối. Đây là sản phẩm OCOP của TX Bình Minh, hiện nhu cầu thị trường vượt quá năng lực cung ứng.",
+    "summary": "Sản phẩm tàu hủ ky truyền thống làm từ đậu nành, được sản xuất bằng phương pháp thủ công lâu đời. Sản phẩm gồm tàu hủ ky miếng lớn, cọng khô, ướp muối. Đây là sản phẩm OCOP của Bình Minh, hiện nhu cầu thị trường vượt quá năng lực cung ứng.",
     "placeId": "p-cai-von",
     "confidence": 0.7,
     "season": {
@@ -61903,16 +61903,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "vuon-thanh-tra-dong-thanh",
     "type": "nature",
     "name": "Vườn thanh trà Đông Thành",
-    "summary": "Vùng trồng thanh trà ngọt đặc hữu chỉ có chất lượng tốt khi trồng trên đất Đông Thành ven rạch Cái Vồn. Diện tích khoảng 40 ha, mỗi hộ vườn thu nhập 200-300 triệu đồng/năm. Thanh trà ngọt là sản phẩm OCOP 4 sao của TX Bình Minh.",
+    "summary": "Vùng trồng thanh trà ngọt đặc hữu chỉ có chất lượng tốt khi trồng trên đất Đông Thành ven rạch Cái Vồn. Diện tích khoảng 40 ha, mỗi hộ vườn thu nhập 200-300 triệu đồng/năm. Thanh trà ngọt là sản phẩm OCOP 4 sao của Bình Minh.",
     "placeId": "p-dong-thanh",
     "confidence": 0.7,
     "season": {
@@ -61953,9 +61953,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62013,9 +62013,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62073,16 +62073,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "tra-kho-qua-rung-cai-von",
     "type": "product",
     "name": "Trà khổ qua rừng Cái Vồn",
-    "summary": "Sản phẩm trà khổ qua rừng túi lọc và trà khổ qua rừng xắt lát sản xuất tại phường Cái Vồn, là sản phẩm OCOP 4 sao của TX Bình Minh. Sản phẩm dùng nguyên liệu khổ qua rừng tự nhiên, tốt cho sức khỏe.",
+    "summary": "Sản phẩm trà khổ qua rừng túi lọc và trà khổ qua rừng xắt lát sản xuất tại phường Cái Vồn, là sản phẩm OCOP 4 sao của Bình Minh. Sản phẩm dùng nguyên liệu khổ qua rừng tự nhiên, tốt cho sức khỏe.",
     "placeId": "p-cai-von",
     "confidence": 0.7,
     "season": {
@@ -62126,16 +62126,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "tra-gung-mat-ong-dong-binh",
     "type": "product",
     "name": "Trà gừng mật ong Đông Bình",
-    "summary": "Sản phẩm trà gừng mật ong sản xuất tại phường Đông Bình, TX Bình Minh, là sản phẩm OCOP 4 sao của địa phương. Kết hợp gừng và mật ong tự nhiên theo phương pháp truyền thống.",
+    "summary": "Sản phẩm trà gừng mật ong sản xuất tại phường Đông Bình, Bình Minh, là sản phẩm OCOP 4 sao của địa phương. Kết hợp gừng và mật ong tự nhiên theo phương pháp truyền thống.",
     "placeId": "xa-an-binh",
     "confidence": 0.7,
     "season": {
@@ -62183,16 +62183,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "tra-gung-mat-ong-nguyen-chat-gingo",
     "type": "product",
     "name": "Trà gừng mật ong nguyên chất Gingo",
-    "summary": "Sản phẩm trà gừng mật ong nguyên chất mang thương hiệu Gingo, đạt chứng nhận OCOP 4 sao, là đặc sản nổi bật của xã Đông Bình, TX Bình Minh, Vĩnh Long.",
+    "summary": "Sản phẩm trà gừng mật ong nguyên chất mang thương hiệu Gingo, đạt chứng nhận OCOP 4 sao, là đặc sản nổi bật của xã Đông Bình, Bình Minh, Vĩnh Long.",
     "placeId": "xa-an-binh",
     "confidence": 0.7,
     "season": {
@@ -62240,16 +62240,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "cong-vien-29-tan-quoi",
     "type": "attraction",
     "name": "Công viên 2/9 Tân Quới",
-    "summary": "Công viên nằm ở trung tâm thị trấn Tân Quới, có không gian xanh mát với nhiều cây xanh và hoa kiểng, thường tổ chức các hoạt động văn hóa và thể thao cho cộng đồng địa phương.",
+    "summary": "Công viên nằm ở trung tâm Tân Quới, có không gian xanh mát với nhiều cây xanh và hoa kiểng, thường tổ chức các hoạt động văn hóa và thể thao cho cộng đồng địa phương.",
     "placeId": "p-tan-quoi",
     "confidence": 0.7,
     "season": {
@@ -62300,9 +62300,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62360,9 +62360,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62395,16 +62395,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "khoai-lang-say-binh-tan",
     "type": "product",
     "name": "Khoai lang sấy Bình Tân",
-    "summary": "Sản phẩm OCOP đặc trưng của huyện Bình Tân, gồm khoai lang tím sấy và khoai lang vàng sấy, được đề xuất lên Trung ương đánh giá 5 sao OCOP, sản xuất bởi Công ty TNHH MTV Chế biến thực phẩm Miền Tây.",
+    "summary": "Sản phẩm OCOP đặc trưng của Bình Tân, gồm khoai lang tím sấy và khoai lang vàng sấy, được đề xuất lên Trung ương đánh giá 5 sao OCOP, sản xuất bởi Công ty TNHH MTV Chế biến thực phẩm Miền Tây.",
     "placeId": "xa-an-binh",
     "confidence": 0.7,
     "season": {
@@ -62452,16 +62452,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "chua-ong",
     "type": "history",
     "name": "Chùa Ông",
-    "summary": "Ngôi chùa cổ xây theo kiểu chữ Tam, thờ Thiên Hậu Thánh Mẫu. Là điểm du lịch tâm linh thu hút đông đảo du khách hành hương hàng năm tại huyện Bình Tân.",
+    "summary": "Ngôi chùa cổ xây theo kiểu chữ Tam, thờ Thiên Hậu Thánh Mẫu. Là điểm du lịch tâm linh thu hút đông đảo du khách hành hương hàng năm tại Bình Tân.",
     "placeId": "xa-an-binh",
     "confidence": 0.7,
     "season": null,
@@ -62487,16 +62487,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "cong-vien-29",
     "type": "attraction",
     "name": "Công viên 2/9",
-    "summary": "Công viên rộng rãi nằm ở trung tâm thị trấn Tân Quới với không gian xanh mát, nhiều cây xanh và hoa kiểng. Thường xuyên tổ chức các hoạt động văn hóa, thể thao và thu hút người dân vào buổi tối.",
+    "summary": "Công viên rộng rãi nằm ở trung tâm Tân Quới với không gian xanh mát, nhiều cây xanh và hoa kiểng. Thường xuyên tổ chức các hoạt động văn hóa, thể thao và thu hút người dân vào buổi tối.",
     "placeId": "xa-an-binh",
     "confidence": 0.7,
     "season": {
@@ -62547,16 +62547,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "cho-tan-thanh",
     "type": "attraction",
     "name": "Chợ Tân Thành",
-    "summary": "Chợ lớn xây dựng từ năm 1994 với diện tích khoảng 1,5 ha, là một trong những chợ lớn nhất huyện Bình Tân. Tập trung buôn bán nông sản, thực phẩm và hàng tiêu dùng, đông khách nhất vào buổi sáng.",
+    "summary": "Chợ lớn xây dựng từ năm 1994 với diện tích khoảng 1,5 ha, là một trong những chợ lớn nhất Bình Tân. Tập trung buôn bán nông sản, thực phẩm và hàng tiêu dùng, đông khách nhất vào buổi sáng.",
     "placeId": "xa-an-binh",
     "confidence": 0.7,
     "season": {
@@ -62607,16 +62607,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "man-an-phuoc-ocop",
     "type": "product",
     "name": "Mận An Phước (OCOP)",
-    "summary": "Sản phẩm mận An Phước đạt chứng nhận OCOP 4 sao của HTX Cây ăn trái An Thới, xã Tân An Thạnh. Là đặc sản trái cây nổi bật của huyện Bình Tân, được nâng hạng từ 3 sao lên 4 sao OCOP.",
+    "summary": "Sản phẩm mận An Phước đạt chứng nhận OCOP 4 sao của HTX Cây ăn trái An Thới, xã Tân An Thạnh. Là đặc sản trái cây nổi bật của Bình Tân, được nâng hạng từ 3 sao lên 4 sao OCOP.",
     "placeId": "xa-an-binh",
     "confidence": 0.7,
     "season": {
@@ -62664,9 +62664,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62722,16 +62722,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "khoai-lang-say-gion-mien-tay",
     "type": "product",
     "name": "Khoai lang sấy giòn Miền Tây",
-    "summary": "Sản phẩm khoai lang sấy giòn đạt chứng nhận OCOP của Công ty TNHH MTV Chế biến thực phẩm Miền Tây, là một trong những sản phẩm đặc trưng của vùng trồng khoai lang huyện Bình Tân.",
+    "summary": "Sản phẩm khoai lang sấy giòn đạt chứng nhận OCOP của Công ty TNHH MTV Chế biến thực phẩm Miền Tây, là một trong những sản phẩm đặc trưng của vùng trồng khoai lang Bình Tân.",
     "placeId": "xa-an-binh",
     "confidence": 0.7,
     "season": {
@@ -62779,16 +62779,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "dua-hau-tan-hung-ocop",
     "type": "product",
     "name": "Dưa hấu Tân Hưng (OCOP)",
-    "summary": "Sản phẩm dưa hấu đạt chứng nhận OCOP của HTX Nông nghiệp - Cây ăn trái Tân Hưng, xã Tân Hưng. Là nông sản đặc trưng của huyện Bình Tân được chuẩn hóa theo tiêu chuẩn OCOP.",
+    "summary": "Sản phẩm dưa hấu đạt chứng nhận OCOP của HTX Nông nghiệp - Cây ăn trái Tân Hưng, xã Tân Hưng. Là nông sản đặc trưng của Bình Tân được chuẩn hóa theo tiêu chuẩn OCOP.",
     "placeId": "xa-an-binh",
     "confidence": 0.7,
     "season": {
@@ -62829,16 +62829,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "vu-sua-hoang-kim-thanh-binh-ocop",
     "type": "product",
     "name": "Vú sữa hoàng kim Thanh Bình (OCOP)",
-    "summary": "Sản phẩm vú sữa hoàng kim đạt chứng nhận OCOP của HTX Sản xuất dịch vụ nông nghiệp Thanh Bình, huyện Bình Tân. Đặc sản trái cây của vùng Đồng bằng sông Cửu Long.",
+    "summary": "Sản phẩm vú sữa hoàng kim đạt chứng nhận OCOP của HTX Sản xuất dịch vụ nông nghiệp Thanh Bình, Bình Tân. Đặc sản trái cây của vùng Đồng bằng sông Cửu Long.",
     "placeId": "xa-an-binh",
     "confidence": 0.7,
     "season": {
@@ -62878,16 +62878,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "cu-cai-non-muoi-chua-bui-thi-thanh-thao-ocop",
     "type": "product",
     "name": "Củ cải non muối chua Bùi Thị Thanh Thảo (OCOP)",
-    "summary": "Sản phẩm củ cải non muối chua đạt chứng nhận OCOP của hộ kinh doanh Bùi Thị Thanh Thảo, huyện Bình Tân. Là sản phẩm thực phẩm chế biến truyền thống được chuẩn hóa.",
+    "summary": "Sản phẩm củ cải non muối chua đạt chứng nhận OCOP của hộ kinh doanh Bùi Thị Thanh Thảo, Bình Tân. Là sản phẩm thực phẩm chế biến truyền thống được chuẩn hóa.",
     "placeId": "xa-an-binh",
     "confidence": 0.7,
     "season": {
@@ -62927,16 +62927,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "khoai-lang-tan-thanh-ocop",
     "type": "product",
     "name": "Khoai lang Tân Thành (OCOP)",
-    "summary": "Sản phẩm khoai lang tươi đạt chứng nhận OCOP của HTX Tân Thành, huyện Bình Tân. Bình Tân là vùng trồng khoai lang lớn nhất tỉnh Vĩnh Long, nổi tiếng với khoai lang tím, khoai lang vàng.",
+    "summary": "Sản phẩm khoai lang tươi đạt chứng nhận OCOP của HTX Tân Thành, Bình Tân. Bình Tân là vùng trồng khoai lang lớn nhất tỉnh Vĩnh Long, nổi tiếng với khoai lang tím, khoai lang vàng.",
     "placeId": "xa-an-binh",
     "confidence": 0.7,
     "season": {
@@ -62986,9 +62986,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63031,9 +63031,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63087,9 +63087,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63143,9 +63143,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63178,9 +63178,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63213,9 +63213,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63248,9 +63248,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63309,9 +63309,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63344,9 +63344,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63396,9 +63396,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63443,9 +63443,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63503,9 +63503,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63563,9 +63563,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63598,9 +63598,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63633,9 +63633,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63668,9 +63668,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63728,9 +63728,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63788,9 +63788,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63823,9 +63823,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63883,9 +63883,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63943,9 +63943,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63996,9 +63996,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64055,9 +64055,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64115,9 +64115,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64170,9 +64170,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64231,9 +64231,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64266,9 +64266,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64301,9 +64301,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64361,9 +64361,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64414,9 +64414,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64467,9 +64467,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64523,16 +64523,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "khu-di-tich-luu-niem-chu-tich-pham-hung",
     "type": "history",
     "name": "Khu di tích lưu niệm Chủ tịch Phạm Hùng",
-    "summary": "Khu di tích tưởng niệm Chủ tịch Hội đồng Bộ trưởng Phạm Hùng, người con của huyện Long Hồ, Vĩnh Long. Là điểm du lịch về nguồn nổi bật, được xếp hạng di tích lịch sử văn hóa cấp tỉnh, thu hút nhiều đoàn tham quan.",
+    "summary": "Khu di tích tưởng niệm Chủ tịch Hội đồng Bộ trưởng Phạm Hùng, người con của Long Hồ, Vĩnh Long. Là điểm du lịch về nguồn nổi bật, được xếp hạng di tích lịch sử văn hóa cấp tỉnh, thu hút nhiều đoàn tham quan.",
     "placeId": "p-long-chau",
     "confidence": 0.7,
     "season": null,
@@ -64558,9 +64558,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64593,9 +64593,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64653,16 +64653,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "vuon-cay-an-trai-miet-vuon-long-ho",
     "type": "nature",
     "name": "Vườn cây ăn trái miệt vườn Long Hồ",
-    "summary": "Vùng miệt vườn trù phú với nhiều loại cây ăn trái đặc sản như chôm chôm, nhãn, sầu riêng trải dài trên các cù lao và xã ven sông thuộc huyện Long Hồ. Là điểm tham quan trải nghiệm hái trái cây kết hợp du lịch sinh thái.",
+    "summary": "Vùng miệt vườn trù phú với nhiều loại cây ăn trái đặc sản như chôm chôm, nhãn, sầu riêng trải dài trên các cù lao và xã ven sông thuộc Long Hồ. Là điểm tham quan trải nghiệm hái trái cây kết hợp du lịch sinh thái.",
     "placeId": "p-long-chau",
     "confidence": 0.7,
     "season": {
@@ -64710,16 +64710,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "sau-rieng-say-thang-hoa-sau-ri",
     "type": "product",
     "name": "Sầu riêng sấy thăng hoa Sáu Ri",
-    "summary": "Sản phẩm sầu riêng sấy thăng hoa OCOP 5 sao của Công ty TNHH Sáu Ri, huyện Long Hồ. Đây là một trong hai sản phẩm OCOP 5 sao của tỉnh Vĩnh Long, chế biến từ sầu riêng địa phương bằng công nghệ sấy thăng hoa giữ nguyên hương vị.",
+    "summary": "Sản phẩm sầu riêng sấy thăng hoa OCOP 5 sao của Công ty TNHH Sáu Ri, Long Hồ. Đây là một trong hai sản phẩm OCOP 5 sao của tỉnh Vĩnh Long, chế biến từ sầu riêng địa phương bằng công nghệ sấy thăng hoa giữ nguyên hương vị.",
     "placeId": "p-long-chau",
     "confidence": 0.7,
     "season": {
@@ -64768,16 +64768,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "dua-ngo-luc-binh-thanh-quoi",
     "type": "product",
     "name": "Dưa ngó lục bình Thạnh Quới",
-    "summary": "Sản phẩm OCOP 3 sao đặc trưng của xã Thạnh Quới, huyện Long Hồ, chế biến từ ngó lục bình (bèo tây) tươi muối dưa theo phương pháp truyền thống, là sản phẩm độc đáo mang bản sắc ẩm thực vùng sông nước.",
+    "summary": "Sản phẩm OCOP 3 sao đặc trưng của xã Thạnh Quới, Long Hồ, chế biến từ ngó lục bình (bèo tây) tươi muối dưa theo phương pháp truyền thống, là sản phẩm độc đáo mang bản sắc ẩm thực vùng sông nước.",
     "placeId": "p-long-chau",
     "confidence": 0.7,
     "season": {
@@ -64826,16 +64826,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lang-nghe-dan-non-la-tt-long-ho",
     "type": "craft_village",
     "name": "Làng nghề đan nón lá TT Long Hồ",
-    "summary": "Làng nghề truyền thống đan nón lá tại thị trấn Long Hồ, tồn tại hàng trăm năm. Du khách có thể trải nghiệm tham quan và tự tay làm nón lá theo phương pháp thủ công truyền thống của người dân địa phương.",
+    "summary": "Làng nghề truyền thống đan nón lá tại Long Hồ, tồn tại hàng trăm năm. Du khách có thể trải nghiệm tham quan và tự tay làm nón lá theo phương pháp thủ công truyền thống của người dân địa phương.",
     "placeId": "p-long-ho",
     "confidence": 0.7,
     "season": {
@@ -64886,16 +64886,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lang-hoa-mai-binh-hoa-phuoc",
     "type": "craft_village",
     "name": "Làng hoa mai Bình Hòa Phước",
-    "summary": "Làng hoa mai vàng tại xã Bình Hòa Phước, huyện Long Hồ, được mệnh danh là thủ phủ hoa mai vàng miền Tây với hơn 60 năm lịch sử. Được công nhận là làng nghề truyền thống từ năm 2009.",
+    "summary": "Làng hoa mai vàng tại xã Bình Hòa Phước, Long Hồ, được mệnh danh là thủ phủ hoa mai vàng miền Tây với hơn 60 năm lịch sử. Được công nhận là làng nghề truyền thống từ năm 2009.",
     "placeId": "p-long-chau",
     "confidence": 0.7,
     "season": {
@@ -64935,16 +64935,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lang-gach-gom-long-ho",
     "type": "craft_village",
     "name": "Làng gạch gốm Long Hồ",
-    "summary": "Làng nghề gạch gốm truyền thống dọc sông Cổ Chiên thuộc huyện Long Hồ, với hàng trăm lò gạch kéo dài hàng chục km. Là một trong những làng nghề đặc trưng nổi bật của Vĩnh Long.",
+    "summary": "Làng nghề gạch gốm truyền thống dọc sông Cổ Chiên thuộc Long Hồ, với hàng trăm lò gạch kéo dài hàng chục km. Là một trong những làng nghề đặc trưng nổi bật của Vĩnh Long.",
     "placeId": "p-long-chau",
     "confidence": 0.7,
     "season": {
@@ -64995,16 +64995,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "rau-thom-ocop-hop-tac-xa-phuoc-hau",
     "type": "product",
     "name": "Rau thơm OCOP Hợp tác xã Phước Hậu",
-    "summary": "Sản phẩm OCOP rau thơm, rau ngò gai, rau tía tô do Hợp tác xã sản xuất và tiêu thụ rau an toàn Phước Hậu sản xuất, với 35 thành viên, canh tác 15,5 ha, năng suất khoảng 850 tấn/năm. Đây là sản phẩm OCOP tiêu biểu của xã Phước Hậu, huyện Long Hồ.",
+    "summary": "Sản phẩm OCOP rau thơm, rau ngò gai, rau tía tô do Hợp tác xã sản xuất và tiêu thụ rau an toàn Phước Hậu sản xuất, với 35 thành viên, canh tác 15,5 ha, năng suất khoảng 850 tấn/năm. Đây là sản phẩm OCOP tiêu biểu của xã Phước Hậu, Long Hồ.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -65054,16 +65054,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "diem-du-lich-nha-dua-cocohome",
     "type": "accommodation",
     "name": "Điểm du lịch nhà dừa CocoHome",
-    "summary": "Điểm du lịch sinh thái nhà dừa CocoHome tại xã Hòa Ninh, huyện Long Hồ, đạt chứng nhận OCOP. Là điểm trải nghiệm du lịch sinh thái đặc trưng của huyện Long Hồ, Vĩnh Long.",
+    "summary": "Điểm du lịch sinh thái nhà dừa CocoHome tại xã Hòa Ninh, Long Hồ, đạt chứng nhận OCOP. Là điểm trải nghiệm du lịch sinh thái đặc trưng của Long Hồ, Vĩnh Long.",
     "placeId": "p-long-chau",
     "confidence": 0.7,
     "season": {
@@ -65114,16 +65114,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "mekong-pottery-homestay",
     "type": "accommodation",
     "name": "Mekong Pottery Homestay",
-    "summary": "Homestay độc đáo tại xã Thanh Đức, huyện Long Hồ, thiết kế sử dụng chủ yếu chất liệu gạch và đất nung truyền thống. Nơi đây kết hợp lưu trú với trải nghiệm tìm hiểu nghề gốm truyền thống Vĩnh Long và thưởng thức đặc sản địa phương, thể hiện sự kết hợp hài hòa giữa nét truyền thống và hiện đại.",
+    "summary": "Homestay độc đáo tại xã Thanh Đức, Long Hồ, thiết kế sử dụng chủ yếu chất liệu gạch và đất nung truyền thống. Nơi đây kết hợp lưu trú với trải nghiệm tìm hiểu nghề gốm truyền thống Vĩnh Long và thưởng thức đặc sản địa phương, thể hiện sự kết hợp hài hòa giữa nét truyền thống và hiện đại.",
     "placeId": "p-long-chau",
     "confidence": 0.7,
     "season": {
@@ -65174,16 +65174,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "thanh-long-vang-thanh-duc-ocop-3-sao",
     "type": "product",
     "name": "Thanh long vàng Thanh Đức (OCOP 3 sao)",
-    "summary": "Sản phẩm thanh long vàng của hộ kinh doanh Thiên An 3 tại xã Thanh Đức, huyện Long Hồ, được chứng nhận OCOP 3 sao vào cuối năm 2022. Sản phẩm đặc trưng của vùng đất Long Hồ, đã tham gia nhiều hội chợ xúc tiến thương mại trong và ngoài tỉnh.",
+    "summary": "Sản phẩm thanh long vàng của hộ kinh doanh Thiên An 3 tại xã Thanh Đức, Long Hồ, được chứng nhận OCOP 3 sao vào cuối năm 2022. Sản phẩm đặc trưng của vùng đất Long Hồ, đã tham gia nhiều hội chợ xúc tiến thương mại trong và ngoài tỉnh.",
     "placeId": "p-thanh-duc",
     "confidence": 0.7,
     "season": {
@@ -65233,9 +65233,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65290,9 +65290,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65350,16 +65350,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "khu-luu-niem-pham-hung",
     "type": "history",
     "name": "Khu lưu niệm Phạm Hùng",
-    "summary": "Khu lưu niệm tưởng nhớ đồng chí Phạm Hùng, nguyên Chủ tịch Hội đồng Bộ trưởng nước Cộng hòa XHCN Việt Nam, người con nổi tiếng của huyện Long Hồ, Vĩnh Long. Là điểm giáo dục truyền thống cách mạng của địa phương.",
+    "summary": "Khu lưu niệm tưởng nhớ đồng chí Phạm Hùng, nguyên Chủ tịch Hội đồng Bộ trưởng nước Cộng hòa XHCN Việt Nam, người con nổi tiếng của Long Hồ, Vĩnh Long. Là điểm giáo dục truyền thống cách mạng của địa phương.",
     "placeId": "p-long-chau",
     "confidence": 0.7,
     "season": null,
@@ -65385,9 +65385,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65420,9 +65420,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65455,9 +65455,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65515,16 +65515,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lang-nghe-cham-non-la-long-ho",
     "type": "craft_village",
     "name": "Làng nghề chằm nón lá Long Hồ",
-    "summary": "Làng nghề truyền thống có lịch sử lâu đời tại thị trấn Long Hồ, do người từ Huế truyền nghề cho dân địa phương. Sản phẩm nón lá được làm thủ công qua nhiều công đoạn: làm khung, tạo vành, xếp lá, chằm nón. Hiện còn khoảng 40 hộ duy trì nghề, chủ yếu là người cao tuổi.",
+    "summary": "Làng nghề truyền thống có lịch sử lâu đời tại Long Hồ, do người từ Huế truyền nghề cho dân địa phương. Sản phẩm nón lá được làm thủ công qua nhiều công đoạn: làm khung, tạo vành, xếp lá, chằm nón. Hiện còn khoảng 40 hộ duy trì nghề, chủ yếu là người cao tuổi.",
     "placeId": "p-long-ho",
     "confidence": 0.7,
     "season": {
@@ -65575,9 +65575,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65633,16 +65633,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "pham-hung-pham-van-thien",
     "type": "person",
     "name": "Phạm Hùng (Phạm Văn Thiện)",
-    "summary": "Nhà cách mạng lão thành, Chủ tịch Hội đồng Bộ trưởng Việt Nam (1987-1988), sinh ngày 11/6/1912 tại xã Long Phước, huyện Long Hồ, tỉnh Vĩnh Long. Tham gia cách mạng từ rất sớm, từng bị thực dân Pháp kết án tử hình (sau đổi thành chung thân) và đày ra Côn Đảo. Khu lưu niệm của ông được công nhận Di tích lịch sử - văn hóa cấp quốc gia năm 2012.",
+    "summary": "Nhà cách mạng lão thành, Chủ tịch Hội đồng Bộ trưởng Việt Nam (1987-1988), sinh ngày 11/6/1912 tại xã Long Phước, tỉnh Vĩnh Long. Tham gia cách mạng từ rất sớm, từng bị thực dân Pháp kết án tử hình (sau đổi thành chung thân) và đày ra Côn Đảo. Khu lưu niệm của ông được công nhận Di tích lịch sử - văn hóa cấp quốc gia năm 2012.",
     "placeId": "p-long-chau",
     "confidence": 0.7,
     "season": null,
@@ -65668,16 +65668,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "chom-chom-binh-hoa-phuoc-rambutan",
     "type": "product",
     "name": "Chôm chôm Bình Hòa Phước (Rambutan)",
-    "summary": "Trái chôm chôm đặc sản trồng trên cù lao An Bình, thuộc xã Bình Hòa Phước. Hợp tác xã chôm chôm Bình Hòa Phước đã được chứng nhận sản phẩm OCOP 4 sao. Là một trong những sản phẩm nông nghiệp tiêu biểu của huyện Long Hồ, được xuất khẩu và tiêu thụ rộng rãi.",
+    "summary": "Trái chôm chôm đặc sản trồng trên cù lao An Bình, thuộc xã Bình Hòa Phước. Hợp tác xã chôm chôm Bình Hòa Phước đã được chứng nhận sản phẩm OCOP 4 sao. Là một trong những sản phẩm nông nghiệp tiêu biểu của tỉnh Vĩnh Long, được xuất khẩu và tiêu thụ rộng rãi.",
     "placeId": "p-long-chau",
     "confidence": 0.7,
     "season": {
@@ -65716,9 +65716,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65751,16 +65751,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "cuu-long-my-tuu-ruou-ocop-mang-thit",
     "type": "product",
     "name": "Cửu Long Mỹ Tửu (rượu OCOP Mang Thít)",
-    "summary": "Các sản phẩm rượu truyền thống đạt chứng nhận OCOP của huyện Mang Thít bao gồm Hoàng Hoa Tửu, Tây Dương Sâm Tửu, Ba Kích Tửu, Minh Mạng Tửu và rượu ngâm Cửu Long, được sản xuất tại thị trấn Cái Nhum, là sản phẩm đặc trưng của địa phương.",
+    "summary": "Các sản phẩm rượu truyền thống đạt chứng nhận OCOP của vùng Mang Thít bao gồm Hoàng Hoa Tửu, Tây Dương Sâm Tửu, Ba Kích Tửu, Minh Mạng Tửu và rượu ngâm Cửu Long, được sản xuất tại Cái Nhum, là sản phẩm đặc trưng của địa phương.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -65808,16 +65808,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "khu-du-lich-somo-farm-cuu-long",
     "type": "accommodation",
     "name": "Khu du lịch Somo Farm Cửu Long",
-    "summary": "Điểm du lịch sinh thái tại huyện Mang Thít đạt chứng nhận OCOP, nằm trong vùng di sản lò gạch gốm Mang Thít, kết hợp trải nghiệm nông nghiệp và tham quan cảnh quan sông nước miền Tây.",
+    "summary": "Điểm du lịch sinh thái tại vùng Mang Thít đạt chứng nhận OCOP, nằm trong vùng di sản lò gạch gốm Mang Thít, kết hợp trải nghiệm nông nghiệp và tham quan cảnh quan sông nước miền Tây.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -65868,9 +65868,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65903,9 +65903,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65960,16 +65960,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lang-nghe-gach-gom-mang-thit-vuong-quoc-do",
     "type": "craft_village",
     "name": "Làng Nghề Gạch Gốm Mang Thít (Vương Quốc Đỏ)",
-    "summary": "Làng nghề gạch gốm truyền thống hơn 200 năm tuổi trải dài khoảng 30 km dọc sông Cổ Chiên và kênh Thầy Cai thuộc huyện Mang Thít. Thời hoàng kim có hơn 3.000 lò hoạt động, sản phẩm xuất khẩu ra nước ngoài. Được mệnh danh là 'Vương quốc lò gạch' của đồng bằng sông Cửu Long, hiện đang được quy hoạch thành Di sản đương đại Mang Thít thu hút du lịch.",
+    "summary": "Làng nghề gạch gốm truyền thống hơn 200 năm tuổi trải dài khoảng 30 km dọc sông Cổ Chiên và kênh Thầy Cai thuộc vùng Mang Thít. Thời hoàng kim có hơn 3.000 lò hoạt động, sản phẩm xuất khẩu ra nước ngoài. Được mệnh danh là 'Vương quốc lò gạch' của đồng bằng sông Cửu Long, hiện đang được quy hoạch thành Di sản đương đại Mang Thít thu hút du lịch.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -66020,9 +66020,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66080,16 +66080,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lo-gach-hung-loi",
     "type": "attraction",
     "name": "Lò gạch Hưng Lợi",
-    "summary": "Một trong những lò gạch cổ nổi tiếng tại huyện Mang Thít, thu hút khách du lịch đến tham quan, chụp ảnh với phông nền kiến trúc vòm lò đỏ độc đáo. Là điểm check-in hấp dẫn trong hành trình khám phá 'Vương quốc gạch gốm' Mang Thít.",
+    "summary": "Một trong những lò gạch cổ nổi tiếng tại vùng Mang Thít, thu hút khách du lịch đến tham quan, chụp ảnh với phông nền kiến trúc vòm lò đỏ độc đáo. Là điểm check-in hấp dẫn trong hành trình khám phá 'Vương quốc gạch gốm' Mang Thít.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -66140,9 +66140,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66175,9 +66175,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66235,9 +66235,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66287,16 +66287,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "song-co-chien-doan-mang-thit",
     "type": "nature",
     "name": "Sông Cổ Chiên đoạn Mang Thít",
-    "summary": "Đoạn sông Cổ Chiên chảy qua huyện Mang Thít là trục cảnh quan chính của 'Vương quốc lò gạch', hai bờ san sát lò gạch gốm cổ tạo cảnh quan độc đáo. Đây cũng là tuyến đường thủy để du khách đi thuyền ngắm cảnh và tiếp cận các làng nghề truyền thống.",
+    "summary": "Đoạn sông Cổ Chiên chảy qua vùng Mang Thít là trục cảnh quan chính của 'Vương quốc lò gạch', hai bờ san sát lò gạch gốm cổ tạo cảnh quan độc đáo. Đây cũng là tuyến đường thủy để du khách đi thuyền ngắm cảnh và tiếp cận các làng nghề truyền thống.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -66347,16 +66347,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "chau-van-sanh-cong-tu-loi",
     "type": "person",
     "name": "Châu Văn Sanh (Công tử Lời)",
-    "summary": "Danh nhân cách mạng sinh ngày 3/4/1911 tại xã Chánh Hội (nay là thị trấn Cái Nhum), huyện Mang Thít, Vĩnh Long. Tham gia cách mạng từ 1929-1930, hy sinh ngày 25/7/1943 và được chôn cất tại nghĩa trang Hàng Dương, Côn Đảo. Là biểu tượng của tinh thần yêu nước tại địa phương.",
+    "summary": "Danh nhân cách mạng sinh ngày 3/4/1911 tại xã Chánh Hội (nay là Cái Nhum), tỉnh Vĩnh Long. Tham gia cách mạng từ 1929-1930, hy sinh ngày 25/7/1943 và được chôn cất tại nghĩa trang Hàng Dương, Côn Đảo. Là biểu tượng của tinh thần yêu nước tại địa phương.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": null,
@@ -66382,9 +66382,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66417,16 +66417,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "tour-dap-xe-kham-pha-lo-gach-mang-thit",
     "type": "experience",
     "name": "Tour đạp xe khám phá lò gạch Mang Thít",
-    "summary": "Hành trình đạp xe dài 40-50km (từ 5h00 đến 19h00), xuất phát từ TP Vĩnh Long theo QL53, rẽ vào DT903, DT902 dọc sông Cổ Chiên qua các làng nghề gạch gốm và xã Chánh An huyện Mang Thít. Chi phí khoảng 950.000đ/tour, liên hệ hướng dẫn viên địa phương.",
+    "summary": "Hành trình đạp xe dài 40-50km (từ 5h00 đến 19h00), xuất phát từ TP Vĩnh Long theo QL53, rẽ vào DT903, DT902 dọc sông Cổ Chiên qua các làng nghề gạch gốm và xã Chánh An vùng Mang Thít. Chi phí khoảng 950.000đ/tour, liên hệ hướng dẫn viên địa phương.",
     "placeId": "p-long-chau",
     "confidence": 0.7,
     "season": {
@@ -66475,9 +66475,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66535,9 +66535,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66570,9 +66570,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66630,9 +66630,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66690,9 +66690,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66750,16 +66750,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "chua-shanghamangala-hanh-phuc-tang",
     "type": "history",
     "name": "Chùa Shanghamangala (Hạnh Phúc Tăng)",
-    "summary": "Chùa Khmer cổ xưa nhất tỉnh Vĩnh Long, được xây dựng từ năm 632, mang đậm kiến trúc Khmer. Khuôn viên rộng khoảng 3 ha, xung quanh bao phủ bởi cây cổ thụ tạo không gian trầm mặc. Là điểm tham quan tâm linh và văn hóa đặc sắc của huyện Vũng Liêm.",
+    "summary": "Chùa Khmer cổ xưa nhất tỉnh Vĩnh Long, được xây dựng từ năm 632, mang đậm kiến trúc Khmer. Khuôn viên rộng khoảng 3 ha, xung quanh bao phủ bởi cây cổ thụ tạo không gian trầm mặc. Là điểm tham quan tâm linh và văn hóa đặc sắc của vùng Vũng Liêm.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": null,
@@ -66785,9 +66785,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66820,16 +66820,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "tuong-dai-doc-binh-le-can-nguyen-giao",
     "type": "history",
     "name": "Tượng đài Đốc binh Lê Cẩn - Nguyễn Giao",
-    "summary": "Tượng đài tưởng niệm hai vị anh hùng chống Pháp Lê Cẩn và Nguyễn Giao tại huyện Vũng Liêm. Là công trình văn hóa - lịch sử quan trọng ghi dấu tinh thần yêu nước của người dân địa phương.",
+    "summary": "Tượng đài tưởng niệm hai vị anh hùng chống Pháp Lê Cẩn và Nguyễn Giao tại vùng Vũng Liêm. Là công trình văn hóa - lịch sử quan trọng ghi dấu tinh thần yêu nước của người dân địa phương.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": null,
@@ -66855,16 +66855,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lang-nghe-det-chieu-vung-liem",
     "type": "craft_village",
     "name": "Làng nghề dệt chiếu Vũng Liêm",
-    "summary": "Làng nghề truyền thống dệt chiếu tại huyện Vũng Liêm, được đưa vào tour du lịch kết hợp tham quan Khu lưu niệm Võ Văn Kiệt và Cù Lao Dài. Du khách có thể học nghề và trải nghiệm văn hóa làng nghề đặc trưng của vùng đồng bằng sông Cửu Long.",
+    "summary": "Làng nghề truyền thống dệt chiếu tại vùng Vũng Liêm, được đưa vào tour du lịch kết hợp tham quan Khu lưu niệm Võ Văn Kiệt và Cù Lao Dài. Du khách có thể học nghề và trải nghiệm văn hóa làng nghề đặc trưng của vùng đồng bằng sông Cửu Long.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -66915,16 +66915,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "cua-hang-ocop-vung-liem",
     "type": "product",
     "name": "Cửa hàng OCOP Vũng Liêm",
-    "summary": "Cửa hàng giới thiệu và bán sản phẩm OCOP - đặc sản huyện Vũng Liêm tại chợ Vũng Liêm, trưng bày hơn 35 sản phẩm đặc sản trong đó có 17 sản phẩm đạt chứng nhận OCOP (4 sản phẩm đạt 4 sao). Các sản phẩm tiêu biểu gồm: chả lụa Thành Công, gạo hữu cơ Tấn Đạt, mứt dừa lá dứa Đức Đạt, cốm gạo Hoàng Trang, lạp xưởng Hiệp Ký.",
+    "summary": "Cửa hàng giới thiệu và bán sản phẩm OCOP - đặc sản vùng Vũng Liêm tại chợ Vũng Liêm, trưng bày hơn 35 sản phẩm đặc sản trong đó có 17 sản phẩm đạt chứng nhận OCOP (4 sản phẩm đạt 4 sao). Các sản phẩm tiêu biểu gồm: chả lụa Thành Công, gạo hữu cơ Tấn Đạt, mứt dừa lá dứa Đức Đạt, cốm gạo Hoàng Trang, lạp xưởng Hiệp Ký.",
     "placeId": "p-vung-liem",
     "confidence": 0.7,
     "season": {
@@ -66972,16 +66972,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "homestay-hai-cuong",
     "type": "accommodation",
     "name": "Homestay Hai Cường",
-    "summary": "Homestay sinh thái tại huyện Vũng Liêm, được đưa vào tour du lịch chính thức kết hợp tham quan Khu lưu niệm Võ Văn Kiệt, chùa Hạnh Phúc Tăng, làng nghề dệt chiếu và vườn cây ăn trái Cù Lao Dài. Là điểm lưu trú phổ biến cho khách tham quan huyện Vũng Liêm.",
+    "summary": "Homestay sinh thái tại vùng Vũng Liêm, được đưa vào tour du lịch chính thức kết hợp tham quan Khu lưu niệm Võ Văn Kiệt, chùa Hạnh Phúc Tăng, làng nghề dệt chiếu và vườn cây ăn trái Cù Lao Dài. Là điểm lưu trú phổ biến cho khách tham quan vùng Vũng Liêm.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -67032,16 +67032,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "tuong-dai-doc-binh-le-can-nguyen-giao-va-di-tich-ho-vung-linh",
     "type": "history",
     "name": "Tượng đài Đốc binh Lê Cẩn - Nguyễn Giao và Di tích Hồ Vũng Linh",
-    "summary": "Quần thể tượng đài tưởng niệm hai anh hùng chống Pháp Đốc binh Lê Cẩn và Nguyễn Giao, kết hợp với di tích hồ Vũng Linh bi tráng nơi tưởng niệm hơn 500 người bị thảm sát. Công trình được xây dựng năm 2004, khánh thành năm 2005, diện tích 2 ha, tọa lạc tại ngã ba An Nhơn, thị trấn Vũng Liêm.",
+    "summary": "Quần thể tượng đài tưởng niệm hai anh hùng chống Pháp Đốc binh Lê Cẩn và Nguyễn Giao, kết hợp với di tích hồ Vũng Linh bi tráng nơi tưởng niệm hơn 500 người bị thảm sát. Công trình được xây dựng năm 2004, khánh thành năm 2005, diện tích 2 ha, tọa lạc tại ngã ba An Nhơn, Vũng Liêm.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": null,
@@ -67067,16 +67067,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lang-se-loi-lac-va-dan-lat-vung-liem",
     "type": "craft_village",
     "name": "Làng se lõi lác và đan lát Vũng Liêm",
-    "summary": "Làng nghề truyền thống trồng và se lõi lác, đan lát tập trung tại các xã Trung Thành Đông và Trung Thành Tây, huyện Vũng Liêm. Ngoài ra còn có nghề dệt chiếu và đan lục bình (bèo tây) đặc trưng của vùng sông nước đồng bằng sông Cửu Long, mang lại thu nhập ổn định cho người dân địa phương.",
+    "summary": "Làng nghề truyền thống trồng và se lõi lác, đan lát tập trung tại các xã Trung Thành Đông và Trung Thành Tây, vùng Vũng Liêm. Ngoài ra còn có nghề dệt chiếu và đan lục bình (bèo tây) đặc trưng của vùng sông nước đồng bằng sông Cửu Long, mang lại thu nhập ổn định cho người dân địa phương.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -67127,16 +67127,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "cu-lao-dai-cu-lao-thanh-binh-quoi-thien",
     "type": "nature",
     "name": "Cù lao Dài (Cù lao Thanh Bình - Quới Thiện)",
-    "summary": "Dải cù lao phù sa màu mỡ nằm giữa sông Cổ Chiên, trải dài qua hai xã Thanh Bình và Quới Thiện, huyện Vũng Liêm, cách thành phố Vĩnh Long khoảng 30 km. Điểm đến sinh thái miệt vườn với vườn sầu riêng, xoài, bưởi; các làng nghề truyền thống; di tích khu mộ thân nhân Thoại Ngọc Hầu và trải nghiệm homestay ven sông đặc sắc.",
+    "summary": "Dải cù lao phù sa màu mỡ nằm giữa sông Cổ Chiên, trải dài qua hai xã Thanh Bình và Quới Thiện, vùng Vũng Liêm, cách thành phố Vĩnh Long khoảng 30 km. Điểm đến sinh thái miệt vườn với vườn sầu riêng, xoài, bưởi; các làng nghề truyền thống; di tích khu mộ thân nhân Thoại Ngọc Hầu và trải nghiệm homestay ven sông đặc sắc.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -67187,16 +67187,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "san-pham-ocop-vung-liem-cha-lua-thanh-cong-gao-huu-co-tan-dat-mut-dua-la-dua-duc",
     "type": "product",
     "name": "Sản phẩm OCOP Vũng Liêm (chả lụa Thành Công, gạo hữu cơ Tấn Đạt, mứt dừa lá dứa Đức Đạt, cốm gạo Hoàng Trang, lạp xưởng Hiệp Ký)",
-    "summary": "Nhóm các sản phẩm OCOP đặc trưng của huyện Vũng Liêm, tổng cộng 17 sản phẩm đạt chứng nhận OCOP trong đó 4 sản phẩm đạt 4 sao. Nổi bật có chả lụa Thành Công, gạo hữu cơ ST25 Tấn Đạt (xã Trung Ngãi), mứt dừa lá dứa Đức Đạt, cốm gạo Hoàng Trang và lạp xưởng Hiệp Ký. Được bày bán tại cửa hàng OCOP đặt tại khu lưu niệm Võ Văn Kiệt, thị trấn Vũng Liêm.",
+    "summary": "Nhóm các sản phẩm OCOP đặc trưng của Vũng Liêm, tổng cộng 17 sản phẩm đạt chứng nhận OCOP trong đó 4 sản phẩm đạt 4 sao. Nổi bật có chả lụa Thành Công, gạo hữu cơ ST25 Tấn Đạt (xã Trung Ngãi), mứt dừa lá dứa Đức Đạt, cốm gạo Hoàng Trang và lạp xưởng Hiệp Ký. Được bày bán tại cửa hàng OCOP đặt tại khu lưu niệm Võ Văn Kiệt, Vũng Liêm.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -67244,9 +67244,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67279,16 +67279,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lang-nghe-trong-lac-trung-thanh-dong",
     "type": "craft_village",
     "name": "Làng nghề trồng lác Trung Thành Đông",
-    "summary": "Làng nghề truyền thống trồng và chế biến cây lác (cói) tại xã Trung Thành Đông, huyện Vũng Liêm. Người dân biến những sợi lác thành các sản phẩm thủ công tinh tế. Những cánh đồng lác xanh mướt là nét đặc trưng của vùng quê này.",
+    "summary": "Làng nghề truyền thống trồng và chế biến cây lác (cói) tại xã Trung Thành Đông, Vũng Liêm. Người dân biến những sợi lác thành các sản phẩm thủ công tinh tế. Những cánh đồng lác xanh mướt là nét đặc trưng của vùng quê này.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -67339,16 +67339,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "gao-huu-co-tan-dat",
     "type": "product",
     "name": "Gạo hữu cơ Tấn Đạt",
-    "summary": "Sản phẩm gạo hữu cơ ST25 đạt chứng nhận OCOP của huyện Vũng Liêm, sản xuất tại xã Trung Ngãi. Là một trong những sản phẩm OCOP tiêu biểu của huyện, đảm bảo chất lượng, nguồn gốc rõ ràng và an toàn vệ sinh thực phẩm.",
+    "summary": "Sản phẩm gạo hữu cơ ST25 đạt chứng nhận OCOP của Vũng Liêm, sản xuất tại xã Trung Ngãi. Là một trong những sản phẩm OCOP tiêu biểu của địa phương, đảm bảo chất lượng, nguồn gốc rõ ràng và an toàn vệ sinh thực phẩm.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -67398,16 +67398,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "mut-dua-la-dua-duc-dat",
     "type": "product",
     "name": "Mứt dừa lá dứa Đức Đạt",
-    "summary": "Sản phẩm mứt dừa lá dứa đạt chứng nhận OCOP 4 sao của huyện Vũng Liêm, tỉnh Vĩnh Long. Hiện phân phối tại hơn 50 tỉnh thành trên cả nước. Là một trong 4 sản phẩm đạt 4 sao của huyện, mang đậm bản sắc địa phương.",
+    "summary": "Sản phẩm mứt dừa lá dứa đạt chứng nhận OCOP 4 sao của Vũng Liêm, tỉnh Vĩnh Long. Hiện phân phối tại hơn 50 tỉnh thành trên cả nước. Là một trong 4 sản phẩm đạt 4 sao của địa phương, mang đậm bản sắc địa phương.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -67455,9 +67455,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67511,16 +67511,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "thoai-ngoc-hau",
     "type": "person",
     "name": "Thoại Ngọc Hầu",
-    "summary": "Danh thần nổi tiếng thời Nguyễn, có thân nhân (thân mẫu và em gái) chôn cất tại xã Quới Thiện, huyện Vũng Liêm. Gắn liền với lịch sử khẩn hoang vùng đất Nam Bộ. Khu mộ thân nhân của ông là di tích lịch sử văn hóa được bảo tồn tại Cù Lao Dài.",
+    "summary": "Danh thần nổi tiếng thời Nguyễn, có thân nhân (thân mẫu và em gái) chôn cất tại xã Quới Thiện, Vũng Liêm. Gắn liền với lịch sử khẩn hoang vùng đất Nam Bộ. Khu mộ thân nhân của ông là di tích lịch sử văn hóa được bảo tồn tại Cù Lao Dài.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": null,
@@ -67546,16 +67546,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "vuon-trai-cay-cu-lao-dai",
     "type": "nature",
     "name": "Vườn trái cây Cù Lao Dài",
-    "summary": "Vùng vườn trái cây đặc sản phong phú trên Cù Lao Dài, huyện Vũng Liêm, với các loại trái cây nổi tiếng như sầu riêng, chôm chôm, măng cụt. Du khách được tham quan vườn, thưởng thức trái cây tươi ngon và trải nghiệm cuộc sống miệt vườn sông nước.",
+    "summary": "Vùng vườn trái cây đặc sản phong phú trên Cù Lao Dài, Vũng Liêm, với các loại trái cây nổi tiếng như sầu riêng, chôm chôm, măng cụt. Du khách được tham quan vườn, thưởng thức trái cây tươi ngon và trải nghiệm cuộc sống miệt vườn sông nước.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -67603,9 +67603,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67659,9 +67659,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67694,9 +67694,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67729,16 +67729,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "mut-xoai-cat-num-foodo-ocop",
     "type": "product",
     "name": "Mứt xoài cát núm Foodo (OCOP)",
-    "summary": "Sản phẩm mứt xoài từ giống xoài cát núm đặc trưng địa phương, mang thương hiệu Foodo của hộ kinh doanh Nguyễn Hoàng Khang tại huyện Vũng Liêm. Sản phẩm khởi nghiệp tiêu biểu khai thác đặc sản xoài cát núm vùng Vũng Liêm.",
+    "summary": "Sản phẩm mứt xoài từ giống xoài cát núm đặc trưng địa phương, mang thương hiệu Foodo của hộ kinh doanh Nguyễn Hoàng Khang tại Vũng Liêm. Sản phẩm khởi nghiệp tiêu biểu khai thác đặc sản xoài cát núm vùng Vũng Liêm.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -67789,9 +67789,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67849,16 +67849,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "homestay-cu-lao-dai",
     "type": "accommodation",
     "name": "Homestay Cù Lao Dài",
-    "summary": "Các mô hình homestay sinh thái tại Cù Lao Dài (xã Thanh Bình, Quới Thiện, huyện Vũng Liêm) phục vụ du khách trong và ngoài nước. Khách được nghỉ ngơi trong nhà dân, tham quan vườn cây ăn trái, trải nghiệm đời sống miệt vườn sông nước và thưởng thức đặc sản địa phương.",
+    "summary": "Các mô hình homestay sinh thái tại Cù Lao Dài (xã Thanh Bình, Quới Thiện, Vũng Liêm) phục vụ du khách trong và ngoài nước. Khách được nghỉ ngơi trong nhà dân, tham quan vườn cây ăn trái, trải nghiệm đời sống miệt vườn sông nước và thưởng thức đặc sản địa phương.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -67909,16 +67909,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "bot-rau-ma-hoang-gia",
     "type": "product",
     "name": "Bột rau má Hoàng Gia",
-    "summary": "Sản phẩm OCOP từ cây rau má và các loại thảo mộc (diếp cá, tía tô, cần tây) được trồng sạch tại trang trại 14 ha ở xã Hiếu Nghĩa. Sản phẩm của Công ty TNHH Thảo Dược Hoàng Gia do ông Đỗ Quốc Chính làm Giám đốc, được đánh giá là sản phẩm OCOP tiêu biểu của huyện Vũng Liêm, đang được phân phối qua sàn thương mại điện tử.",
+    "summary": "Sản phẩm OCOP từ cây rau má và các loại thảo mộc (diếp cá, tía tô, cần tây) được trồng sạch tại trang trại 14 ha ở xã Hiếu Nghĩa. Sản phẩm của Công ty TNHH Thảo Dược Hoàng Gia do ông Đỗ Quốc Chính làm Giám đốc, được đánh giá là sản phẩm OCOP tiêu biểu của Vũng Liêm, đang được phân phối qua sàn thương mại điện tử.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -67968,16 +67968,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "coco-riverside-lodge-trung-nghia",
     "type": "accommodation",
     "name": "Coco Riverside Lodge Trung Nghĩa",
-    "summary": "Homestay sinh thái được thành lập năm 2013 tại ấp Trung Nghĩa, huyện Vũng Liêm, do ông Hữu Lê sáng lập. Kiến trúc nhà truyền thống ba gian mái ngói dưới bóng dừa, mang đậm phong vị miền Tây. Hoạt động theo mô hình xanh không rác thải nhựa; trích một phần lợi nhuận hàng tháng lập quỹ học bổng và xây dựng cơ sở vật chất trường học cho trẻ em xã Trung Nghĩa.",
+    "summary": "Homestay sinh thái được thành lập năm 2013 tại ấp Trung Nghĩa, Vũng Liêm, do ông Hữu Lê sáng lập. Kiến trúc nhà truyền thống ba gian mái ngói dưới bóng dừa, mang đậm phong vị miền Tây. Hoạt động theo mô hình xanh không rác thải nhựa; trích một phần lợi nhuận hàng tháng lập quỹ học bổng và xây dựng cơ sở vật chất trường học cho trẻ em xã Trung Nghĩa.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -68028,9 +68028,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68088,16 +68088,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "san-pham-ocop-chao-thuan-duyen",
     "type": "product",
     "name": "Sản phẩm OCOP chao Thuận Duyên",
-    "summary": "Các sản phẩm chao (gia vị lên men) của Công ty Thực phẩm Thuận Duyên tại xã Tân Phú, huyện Tam Bình, gồm chao dừa, chao rau thơm, chao ăn liền và chao béo. Có 4 sản phẩm đạt chứng nhận OCOP 4 sao và 2 sản phẩm OCOP 3 sao, là thương hiệu đặc trưng của huyện Tam Bình.",
+    "summary": "Các sản phẩm chao (gia vị lên men) của Công ty Thực phẩm Thuận Duyên tại xã Tân Phú, Tam Bình, gồm chao dừa, chao rau thơm, chao ăn liền và chao béo. Có 4 sản phẩm đạt chứng nhận OCOP 4 sao và 2 sản phẩm OCOP 3 sao, là thương hiệu đặc trưng của Tam Bình.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -68141,16 +68141,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "bun-tuoi-sau-thanh",
     "type": "product",
     "name": "Bún tươi Sáu Thạnh",
-    "summary": "Sản phẩm bún tươi và bánh hủ tiếu tươi/khô của cơ sở Sáu Thạnh tại huyện Tam Bình, đạt chứng nhận OCOP 4 sao. Là một trong những sản phẩm tiêu biểu góp phần vào 28 sản phẩm OCOP được công nhận của huyện Tam Bình tính đến năm 2024.",
+    "summary": "Sản phẩm bún tươi và bánh hủ tiếu tươi/khô của cơ sở Sáu Thạnh tại Tam Bình, đạt chứng nhận OCOP 4 sao. Là một trong những sản phẩm tiêu biểu góp phần vào 28 sản phẩm OCOP được công nhận của Tam Bình tính đến năm 2024.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -68194,16 +68194,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lang-nghe-banh-trang-tam-binh",
     "type": "craft_village",
     "name": "Làng nghề bánh tráng Tam Bình",
-    "summary": "Làng nghề làm bánh tráng (bánh đa) truyền thống tại huyện Tam Bình, Vĩnh Long. Là nghề thủ công lâu đời của người dân địa phương, sản phẩm bánh tráng được phơi nắng và sản xuất theo phương pháp truyền thống, là đặc trưng văn hóa ẩm thực của vùng.",
+    "summary": "Làng nghề làm bánh tráng (bánh đa) truyền thống tại Tam Bình, Vĩnh Long. Là nghề thủ công lâu đời của người dân địa phương, sản phẩm bánh tráng được phơi nắng và sản xuất theo phương pháp truyền thống, là đặc trưng văn hóa ẩm thực của vùng.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -68253,16 +68253,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "homestay-hoa-thanh",
     "type": "accommodation",
     "name": "Homestay Hoà Thạnh",
-    "summary": "Điểm lưu trú homestay sinh thái tại huyện Tam Bình, Vĩnh Long, nơi du khách có thể trải nghiệm cuộc sống nông thôn miền Tây, tham quan vườn trái cây, chèo xuồng trên kênh rạch và thưởng thức ẩm thực địa phương trong không gian gần gũi thiên nhiên.",
+    "summary": "Điểm lưu trú homestay sinh thái tại Tam Bình, Vĩnh Long, nơi du khách có thể trải nghiệm cuộc sống nông thôn miền Tây, tham quan vườn trái cây, chèo xuồng trên kênh rạch và thưởng thức ẩm thực địa phương trong không gian gần gũi thiên nhiên.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -68313,16 +68313,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "gao-tan-tien",
     "type": "product",
     "name": "Gạo Tân Tiến",
-    "summary": "Sản phẩm gạo Tân Tiến và gạo sấy Nhật Quỳnh của huyện Tam Bình đạt chứng nhận OCOP 4 sao. Là sản phẩm nông nghiệp chủ lực thể hiện thế mạnh sản xuất lúa gạo của vùng đồng bằng sông Cửu Long tại địa phương Tam Bình, Vĩnh Long.",
+    "summary": "Sản phẩm gạo Tân Tiến và gạo sấy Nhật Quỳnh của Tam Bình đạt chứng nhận OCOP 4 sao. Là sản phẩm nông nghiệp chủ lực thể hiện thế mạnh sản xuất lúa gạo của vùng đồng bằng sông Cửu Long tại địa phương Tam Bình, Vĩnh Long.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -68373,16 +68373,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lang-nghe-dan-luc-binh-ngai-tu-binh-ninh",
     "type": "craft_village",
     "name": "Làng nghề đan lục bình Ngãi Tứ – Bình Ninh",
-    "summary": "Làng nghề truyền thống đan lát sản phẩm từ lục bình (bèo tây) tại các xã Ngãi Tứ và Bình Ninh, huyện Tam Bình. Một trong các sản phẩm từ nghề này đã đạt chứng nhận OCOP 3 sao (túi xách lục bình công nghệ cao).",
+    "summary": "Làng nghề truyền thống đan lát sản phẩm từ lục bình (bèo tây) tại các xã Ngãi Tứ và Bình Ninh, Tam Bình. Một trong các sản phẩm từ nghề này đã đạt chứng nhận OCOP 3 sao (túi xách lục bình công nghệ cao).",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -68434,16 +68434,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "san-pham-chao-dua-chao-chanh-day-thuan-duyen-ocop-4-sao",
     "type": "product",
     "name": "Sản phẩm chao dừa – chao chanh dây Thuận Duyên (OCOP 4 sao)",
-    "summary": "Các sản phẩm chao dừa và chao chanh dây của cơ sở Thuận Duyên tại huyện Tam Bình đã đạt chứng nhận OCOP 4 sao. Bộ sản phẩm gồm: chao dừa, chao chanh dây, nước chanh dây pha sẵn và chanh dây nhiều thịt, là sản phẩm đặc trưng nổi bật của địa phương.",
+    "summary": "Các sản phẩm chao dừa và chao chanh dây của cơ sở Thuận Duyên tại Tam Bình đã đạt chứng nhận OCOP 4 sao. Bộ sản phẩm gồm: chao dừa, chao chanh dây, nước chanh dây pha sẵn và chanh dây nhiều thịt, là sản phẩm đặc trưng nổi bật của địa phương.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -68487,16 +68487,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "tran-dai-nghia-pham-quang-le",
     "type": "person",
     "name": "Trần Đại Nghĩa (Phạm Quang Lễ)",
-    "summary": "Giáo sư, Viện sĩ, Thiếu tướng, Anh hùng Lao động Trần Đại Nghĩa (1913–1997), tên thật Phạm Quang Lễ, sinh tại xã Tường Lộc, huyện Tam Bình. Ông học tại Pháp (École Polytechnique), theo Hồ Chí Minh về nước năm 1946, trở thành cha đẻ của ngành vũ khí Việt Nam, người sáng chế súng bazooka và nhiều vũ khí phục vụ kháng chiến.",
+    "summary": "Giáo sư, Viện sĩ, Thiếu tướng, Anh hùng Lao động Trần Đại Nghĩa (1913–1997), tên thật Phạm Quang Lễ, sinh tại xã Tường Lộc, Tam Bình. Ông học tại Pháp (École Polytechnique), theo Hồ Chí Minh về nước năm 1946, trở thành cha đẻ của ngành vũ khí Việt Nam, người sáng chế súng bazooka và nhiều vũ khí phục vụ kháng chiến.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": null,
@@ -68522,9 +68522,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68557,16 +68557,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "bun-tuoi-va-hu-tieu-sau-thanh",
     "type": "product",
     "name": "Bún tươi và hủ tiếu Sáu Thạnh",
-    "summary": "Sản phẩm OCOP 4 sao của huyện Tam Bình, bao gồm bún tươi Sáu Thạnh, hủ tiếu tươi Sáu Thạnh và hủ tiếu khô Sáu Thạnh. Đây là nhóm sản phẩm đạt hạng cao nhất trong 28 sản phẩm OCOP được chứng nhận của huyện Tam Bình tính đến năm 2024.",
+    "summary": "Sản phẩm OCOP 4 sao của Tam Bình, bao gồm bún tươi Sáu Thạnh, hủ tiếu tươi Sáu Thạnh và hủ tiếu khô Sáu Thạnh. Đây là nhóm sản phẩm đạt hạng cao nhất trong 28 sản phẩm OCOP được chứng nhận của Tam Bình tính đến năm 2024.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -68610,9 +68610,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68670,16 +68670,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "mekong-homestay-viet-nam",
     "type": "accommodation",
     "name": "Mekong Homestay Việt Nam",
-    "summary": "Homestay tại huyện Tam Bình chuyên phục vụ du khách với ẩm thực Việt truyền thống. Sức chứa 50 người, có hồ bơi, WiFi, điều hoà, phòng riêng, bãi đậu xe miễn phí và bữa sáng miễn phí. Giá phòng 200.000–700.000 đồng. Phù hợp cho gia đình và nhóm du khách khám phá miền Tây.",
+    "summary": "Homestay tại Tam Bình chuyên phục vụ du khách với ẩm thực Việt truyền thống. Sức chứa 50 người, có hồ bơi, WiFi, điều hoà, phòng riêng, bãi đậu xe miễn phí và bữa sáng miễn phí. Giá phòng 200.000–700.000 đồng. Phù hợp cho gia đình và nhóm du khách khám phá miền Tây.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -68730,9 +68730,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68764,9 +68764,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68798,9 +68798,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68860,9 +68860,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68916,16 +68916,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "cam-sanh-tra-on",
     "type": "product",
     "name": "Cam sành Trà Ôn",
-    "summary": "Đặc sản trái cây nổi tiếng của huyện Trà Ôn, trồng chủ yếu ở các vườn dọc sông Hậu và trên Cù Lao Mây. Quả có vị ngọt đậm, nhiều nước, là sản phẩm OCOP đặc trưng của địa phương (thương hiệu Cam sành Thắm Tài xã Thiện Mỹ đạt chuẩn OCOP).",
+    "summary": "Đặc sản trái cây nổi tiếng của Trà Ôn, trồng chủ yếu ở các vườn dọc sông Hậu và trên Cù Lao Mây. Quả có vị ngọt đậm, nhiều nước, là sản phẩm OCOP đặc trưng của địa phương (thương hiệu Cam sành Thắm Tài xã Thiện Mỹ đạt chuẩn OCOP).",
     "placeId": "p-tra-on",
     "confidence": 0.7,
     "season": {
@@ -68973,9 +68973,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69017,9 +69017,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69077,16 +69077,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "cu-lao-may-cu-lao-luc-si-thanh",
     "type": "nature",
     "name": "Cù Lao Mây (Cù Lao Lục Sĩ Thành)",
-    "summary": "Cù lao nằm giữa sông Hậu, bao gồm hai xã Lục Sĩ Thành (phía Nam) và Phú Thành (phía Bắc) của huyện Trà Ôn. Đây là điểm du lịch sinh thái miệt vườn nổi bật, tiếp giáp Cần Thơ, Hậu Giang và Trà Vinh, nổi tiếng với vườn cây ăn trái và làng nghề bánh tráng truyền thống.",
+    "summary": "Cù lao nằm giữa sông Hậu, bao gồm hai xã Lục Sĩ Thành (phía Nam) và Phú Thành (phía Bắc) của Trà Ôn. Đây là điểm du lịch sinh thái miệt vườn nổi bật, tiếp giáp Cần Thơ, Hậu Giang và Trà Vinh, nổi tiếng với vườn cây ăn trái và làng nghề bánh tráng truyền thống.",
     "placeId": "p-tra-on",
     "confidence": 0.7,
     "season": {
@@ -69137,9 +69137,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69195,9 +69195,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69253,16 +69253,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "homestay-cu-lao-may",
     "type": "accommodation",
     "name": "Homestay Cù Lao Mây",
-    "summary": "Mô hình homestay sinh thái phát triển tại xã Lục Sĩ Thành, được khai trương năm 2023 như một trong hai điểm du lịch mới của huyện Trà Ôn. Du khách được trải nghiệm cuộc sống miệt vườn, tham quan vườn cây ăn trái, tham gia làm bánh tráng truyền thống, tạo công ăn việc làm cho hàng trăm lao động địa phương.",
+    "summary": "Mô hình homestay sinh thái phát triển tại xã Lục Sĩ Thành, được khai trương năm 2023 như một trong hai điểm du lịch mới của Trà Ôn. Du khách được trải nghiệm cuộc sống miệt vườn, tham quan vườn cây ăn trái, tham gia làm bánh tráng truyền thống, tạo công ăn việc làm cho hàng trăm lao động địa phương.",
     "placeId": "p-tra-on",
     "confidence": 0.7,
     "season": {
@@ -69313,9 +69313,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69348,9 +69348,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69383,9 +69383,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69440,9 +69440,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69498,9 +69498,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69555,9 +69555,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69615,9 +69615,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69650,9 +69650,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69707,9 +69707,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69767,9 +69767,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69825,9 +69825,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69885,16 +69885,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "maison-du-pays-de-ben-tre",
     "type": "accommodation",
     "name": "Maison du Pays de Bến Tre",
-    "summary": "Homestay sinh thái nằm sâu trong vùng thôn quê yên bình tại xã Thạnh Phú Đông, huyện Giồng Trôm, cách thành phố Bến Tre khoảng 19 km về phía đông. Mô hình lưu trú kết hợp trải nghiệm văn hóa miệt vườn sông nước Nam Bộ.",
+    "summary": "Homestay sinh thái nằm sâu trong vùng thôn quê yên bình tại xã Thạnh Phú Đông, Giồng Trôm, cách thành phố Bến Tre khoảng 19 km về phía đông. Mô hình lưu trú kết hợp trải nghiệm văn hóa miệt vườn sông nước Nam Bộ.",
     "placeId": "xa-tan-hao",
     "confidence": 0.7,
     "season": {
@@ -69945,9 +69945,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69980,9 +69980,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70015,9 +70015,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70061,9 +70061,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70096,9 +70096,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70156,9 +70156,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70215,16 +70215,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lang-nghe-thu-cong-dua-phuoc-long",
     "type": "craft_village",
     "name": "Làng Nghề Thủ Công Dừa Phước Long",
-    "summary": "Làng nghề thủ công nhỏ tại Phước Long, huyện Giồng Trôm, chuyên sản xuất các sản phẩm từ nguyên liệu dừa như giỏ xách, sợi dừa, đồ trang trí và vật dụng sinh hoạt. Là một trong những làng nghề thủ công mỹ nghệ dừa đặc trưng của vùng xứ dừa Bến Tre.",
+    "summary": "Làng nghề thủ công nhỏ tại Phước Long, Giồng Trôm, chuyên sản xuất các sản phẩm từ nguyên liệu dừa như giỏ xách, sợi dừa, đồ trang trí và vật dụng sinh hoạt. Là một trong những làng nghề thủ công mỹ nghệ dừa đặc trưng của vùng xứ dừa Bến Tre.",
     "placeId": "xa-phuoc-long",
     "confidence": 0.7,
     "season": {
@@ -70275,9 +70275,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70310,9 +70310,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70368,9 +70368,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70427,9 +70427,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70486,9 +70486,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70545,9 +70545,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70594,9 +70594,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70654,9 +70654,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70714,9 +70714,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70749,9 +70749,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70809,9 +70809,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70867,9 +70867,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70925,9 +70925,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70983,9 +70983,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71017,9 +71017,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71051,9 +71051,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71111,16 +71111,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "banh-dua-giong-luong",
     "type": "dish",
     "name": "Bánh dừa Giồng Luông",
-    "summary": "Đặc sản nổi tiếng của xã Đại Điền, huyện Thạnh Phú, mang đậm hương vị xứ dừa Nam Bộ. Bánh được bán rộng rãi từ địa phương đến Thành phố Hồ Chí Minh và khắp miền Tây Nam Bộ, là sản vật không thể thiếu khi ghé thăm vùng đất Thạnh Phú.",
+    "summary": "Đặc sản nổi tiếng của xã Đại Điền, Thạnh Phú, mang đậm hương vị xứ dừa Nam Bộ. Bánh được bán rộng rãi từ địa phương đến Thành phố Hồ Chí Minh và khắp miền Tây Nam Bộ, là sản vật không thể thiếu khi ghé thăm vùng đất Thạnh Phú.",
     "placeId": "xa-dai-dien",
     "confidence": 0.7,
     "season": {
@@ -71166,9 +71166,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71224,9 +71224,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71283,9 +71283,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71343,9 +71343,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71378,16 +71378,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "di-tich-chien-thang-gia-the",
     "type": "history",
     "name": "Di tích chiến thắng Giá Thẻ",
-    "summary": "Di tích lịch sử cấp tỉnh ghi dấu chiến thắng Giá Thẻ, nằm tại xã An Nhơn, huyện Thạnh Phú. Là minh chứng cho truyền thống đấu tranh cách mạng của nhân dân địa phương.",
+    "summary": "Di tích lịch sử cấp tỉnh ghi dấu chiến thắng Giá Thẻ, nằm tại xã An Nhơn, Thạnh Phú. Là minh chứng cho truyền thống đấu tranh cách mạng của nhân dân địa phương.",
     "placeId": "xa-an-qui",
     "confidence": 0.7,
     "season": null,
@@ -71413,16 +71413,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "dinh-an-qui",
     "type": "history",
     "name": "Đình An Qui",
-    "summary": "Ngôi đình thần có lịch sử hình thành từ năm 1840 bởi các bô lão trong làng, là công trình tín ngưỡng dân gian lâu đời của người dân huyện Thạnh Phú.",
+    "summary": "Ngôi đình thần có lịch sử hình thành từ năm 1840 bởi các bô lão trong làng, là công trình tín ngưỡng dân gian lâu đời của người dân địa phương.",
     "placeId": "xa-an-qui",
     "confidence": 0.7,
     "season": null,
@@ -71448,9 +71448,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71508,9 +71508,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71567,9 +71567,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71623,9 +71623,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71682,9 +71682,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71717,9 +71717,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71777,16 +71777,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "chua-phuoc-khanh-chua-phat",
     "type": "attraction",
     "name": "Chùa Phước Khánh (Chùa Phật)",
-    "summary": "Ngôi chùa lớn nhất và có khuôn viên rộng rãi nhất tại thị trấn Thạnh Phú, tọa lạc gần bến xe Thạnh Phú, là điểm sinh hoạt tâm linh chính của cư dân địa phương.",
+    "summary": "Ngôi chùa lớn nhất và có khuôn viên rộng rãi nhất tại Thạnh Phú, tọa lạc gần bến xe Thạnh Phú, là điểm sinh hoạt tâm linh chính của cư dân địa phương.",
     "placeId": "xa-thanh-phu",
     "confidence": 0.7,
     "season": {
@@ -71833,9 +71833,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71893,9 +71893,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71951,16 +71951,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "dinh-long-thanh-w3",
     "type": "history",
     "name": "Đình Long Thạnh",
-    "summary": "Ngôi đình cổ tại xã Long Định, huyện Bình Đại, diện tích khoảng 2.580m2, kiến trúc 3 gian 2 chái với rường cột kèo bằng gỗ, nền lát gạch hoa tàu, mái ngói vảy cá xen ngói âm dương. Đình đã được trùng tu nhiều lần, gồm Võ ca, Võ quy, Tiền điện, Chánh điện, miếu Ngũ hành và miếu Thổ Thần.",
+    "summary": "Ngôi đình cổ tại xã Long Định, diện tích khoảng 2.580m2, kiến trúc 3 gian 2 chái với rường cột kèo bằng gỗ, nền lát gạch hoa tàu, mái ngói vảy cá xen ngói âm dương. Đình đã được trùng tu nhiều lần, gồm Võ ca, Võ quy, Tiền điện, Chánh điện, miếu Ngũ hành và miếu Thổ Thần.",
     "placeId": "xa-phu-thuan",
     "confidence": 0.7,
     "season": null,
@@ -71986,9 +71986,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72046,9 +72046,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72104,9 +72104,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72162,9 +72162,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72218,16 +72218,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "homestay-con-ba-tu",
     "type": "accommodation",
     "name": "Homestay Cồn Bà Tư",
-    "summary": "Homestay sinh thái nổi bật tại xã Thới Thuận, huyện Bình Đại, tọa lạc trên cồn sông nước, địa chỉ số 85 ấp Thới Hòa 2, cho phép du khách trải nghiệm cuộc sống miền sông nước và thiên nhiên hoang sơ.",
+    "summary": "Homestay sinh thái nổi bật tại xã Thới Thuận, tọa lạc trên cồn sông nước, địa chỉ số 85 ấp Thới Hòa 2, cho phép du khách trải nghiệm cuộc sống miền sông nước và thiên nhiên hoang sơ.",
     "placeId": "xa-thoi-thuan",
     "confidence": 0.7,
     "season": {
@@ -72278,16 +72278,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lang-ong-nam-hai-binh-thang",
     "type": "history",
     "name": "Lăng Ông Nam Hải Bình Thắng",
-    "summary": "Lăng thờ Cá Ông (Nam Hải Đại Vương) của cộng đồng ngư dân xã Bình Thắng, gắn liền với tín ngưỡng thờ cúng cá voi truyền thống của ngư dân ven biển miền Nam. Đây là trung tâm tổ chức Lễ hội Nghinh Ông Nam Hải hàng năm, một trong những lễ hội đặc trưng lớn nhất tỉnh Bến Tre.",
+    "summary": "Lăng thờ Cá Ông (Nam Hải Đại Vương) của cộng đồng ngư dân xã Bình Thắng, gắn liền với tín ngưỡng thờ cúng cá voi truyền thống của ngư dân ven biển miền Nam. Đây là trung tâm tổ chức Lễ hội Nghinh Ông Nam Hải hàng năm, một trong những lễ hội đặc trưng lớn nhất tỉnh Vĩnh Long.",
     "placeId": "p-binh-dai",
     "confidence": 0.7,
     "season": null,
@@ -72313,9 +72313,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72373,9 +72373,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72433,16 +72433,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "bien-binh-dai",
     "type": "nature",
     "name": "Biển Bình Đại",
-    "summary": "Bãi biển hoang sơ tại huyện Bình Đại, trong đó bãi biển Thừa Đức kéo dài khoảng 8km với cát trắng và hàng dừa xanh mát. Đây là điểm trốn nóng lý tưởng, mang vẻ đẹp tự nhiên chưa bị khai thác thương mại nhiều, phù hợp cho du lịch nghỉ dưỡng và khám phá.",
+    "summary": "Bãi biển hoang sơ tại Bình Đại, trong đó bãi biển Thừa Đức kéo dài khoảng 8km với cát trắng và hàng dừa xanh mát. Đây là điểm trốn nóng lý tưởng, mang vẻ đẹp tự nhiên chưa bị khai thác thương mại nhiều, phù hợp cho du lịch nghỉ dưỡng và khám phá.",
     "placeId": "xa-thoi-thuan",
     "confidence": 0.7,
     "season": {
@@ -72493,9 +72493,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72551,16 +72551,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "bia-chien-thang-thanh-phuoc",
     "type": "history",
     "name": "Bia chiến thắng Thạnh Phước",
-    "summary": "Bia chiến thắng được huyện Bình Đại xây dựng tại xã Thạnh Phước, ghi dấu trận đánh tại ngã tư Thạnh Tân trong lịch sử kháng chiến. Đây là một trong 3 bia chiến thắng được xây dựng trong giai đoạn 2014 đến nay, thuộc hệ thống di tích lịch sử văn hóa được bảo tồn và phát huy giá trị tại huyện Bình Đại.",
+    "summary": "Bia chiến thắng được xây dựng tại xã Thạnh Phước, ghi dấu trận đánh tại ngã tư Thạnh Tân trong lịch sử kháng chiến. Đây là một trong 3 bia chiến thắng được xây dựng trong giai đoạn 2014 đến nay, thuộc hệ thống di tích lịch sử văn hóa được bảo tồn và phát huy giá trị tại Bình Đại.",
     "placeId": "xa-thanh-phuoc",
     "confidence": 0.7,
     "season": null,
@@ -72585,9 +72585,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72637,16 +72637,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "dinh-long-phung",
     "type": "history",
     "name": "Đình Long Phụng",
-    "summary": "Đình làng cổ truyền tại xã Long Định với kiến trúc gạch tường mái ngói truyền thống đặc trưng Nam Bộ. Được đánh giá 4.5/5 trên Google, là điểm tham quan văn hóa tín ngưỡng nổi bật của huyện Bình Đại, lưu giữ các giá trị kiến trúc và văn hóa truyền thống đất Nam Bộ.",
+    "summary": "Đình làng cổ truyền tại xã Long Định với kiến trúc gạch tường mái ngói truyền thống đặc trưng Nam Bộ. Được đánh giá 4.5/5 trên Google, là điểm tham quan văn hóa tín ngưỡng nổi bật của Bình Đại, lưu giữ các giá trị kiến trúc và văn hóa truyền thống đất Nam Bộ.",
     "placeId": "xa-phu-thuan",
     "confidence": 0.7,
     "season": null,
@@ -72672,9 +72672,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72732,9 +72732,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72784,9 +72784,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72818,16 +72818,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "bia-chien-thang-loc-thuan",
     "type": "history",
     "name": "Bia chiến thắng Lộc Thuận",
-    "summary": "Công trình bia chiến thắng được xây dựng tại xã Lộc Thuận nhằm ghi dấu thành tích lịch sử kháng chiến của địa phương. Đây là một trong các bia chiến thắng được huyện Bình Đại xây dựng và bảo tồn trong giai đoạn 2014 đến nay.",
+    "summary": "Công trình bia chiến thắng được xây dựng tại xã Lộc Thuận nhằm ghi dấu thành tích lịch sử kháng chiến của địa phương. Đây là một trong các bia chiến thắng được xây dựng và bảo tồn tại Bình Đại trong giai đoạn 2014 đến nay.",
     "placeId": "xa-loc-thuan",
     "confidence": 0.7,
     "season": null,
@@ -72852,9 +72852,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72912,9 +72912,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72970,9 +72970,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73019,9 +73019,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73054,9 +73054,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73113,9 +73113,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73165,9 +73165,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73225,9 +73225,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73285,9 +73285,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73342,16 +73342,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "san-pham-xa-bong-dua-va-tranh-dua-ocop-khanh-thanh-tan",
     "type": "product",
     "name": "Sản phẩm xà bông dừa và tranh dừa OCOP Khánh Thạnh Tân",
-    "summary": "Sản phẩm thủ công mỹ nghệ từ dừa gồm xà bông dừa và tranh dừa, đạt chứng nhận OCOP hạng 3 sao, được sản xuất tại làng nghề chỉ xơ dừa xã Khánh Thạnh Tân, huyện Mỏ Cày Bắc. Là sản phẩm đặc trưng kết hợp giá trị thủ công mỹ nghệ và kinh tế nông thôn.",
+    "summary": "Sản phẩm thủ công mỹ nghệ từ dừa gồm xà bông dừa và tranh dừa, đạt chứng nhận OCOP hạng 3 sao, được sản xuất tại làng nghề chỉ xơ dừa xã Khánh Thạnh Tân, Mỏ Cày Bắc. Là sản phẩm đặc trưng kết hợp giá trị thủ công mỹ nghệ và kinh tế nông thôn.",
     "placeId": "xa-nhuan-phu-tan",
     "confidence": 0.7,
     "season": {
@@ -73395,9 +73395,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73455,16 +73455,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lang-nghe-hoa-kieng-thanh-tan",
     "type": "craft_village",
     "name": "Làng nghề hoa kiểng Thanh Tân",
-    "summary": "Một trong 2 làng nghề trồng cây giống và hoa kiểng lớn nhất tỉnh Bến Tre, nằm tại xã Thanh Tân, huyện Mỏ Cày Bắc. Làng nghề thu hút du khách đến tham quan, mua sắm cây kiểng và trải nghiệm không gian xanh đặc trưng vùng sông nước.",
+    "summary": "Một trong 2 làng nghề trồng cây giống và hoa kiểng lớn nhất tỉnh Vĩnh Long, nằm tại xã Thanh Tân, Mỏ Cày Bắc. Làng nghề thu hút du khách đến tham quan, mua sắm cây kiểng và trải nghiệm không gian xanh đặc trưng vùng sông nước.",
     "placeId": "p-ben-tre",
     "confidence": 0.7,
     "season": {
@@ -73511,9 +73511,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73546,9 +73546,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73599,9 +73599,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73634,9 +73634,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73693,9 +73693,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73746,9 +73746,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73780,9 +73780,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73839,9 +73839,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73873,9 +73873,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73933,16 +73933,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lang-nghe-tieu-thu-cong-nghiep-tre-ham-giang-co-so-tri-canh",
     "type": "craft_village",
     "name": "Làng nghề tiểu thủ công nghiệp tre Hàm Giang (cơ sở Trì Cảnh)",
-    "summary": "Làng nghề thủ công hơn 100 năm tuổi chuyên sản xuất đồ tre tại xã Hàm Giang, một trong 13 làng nghề của tỉnh Trà Vinh. Tận dụng vùng nguyên liệu 87 ha tre địa phương, sản xuất đa dạng từ giường, bàn ghế đến bộ salon tre trang trí. Bộ salon tre của cơ sở Trì Cảnh đạt OCOP 4 sao, tiêu thụ mạnh tại Lâm Đồng, TP.HCM, Phú Quốc phục vụ ngành du lịch và resort.",
+    "summary": "Làng nghề thủ công hơn 100 năm tuổi chuyên sản xuất đồ tre tại xã Hàm Giang, một trong 13 làng nghề của tỉnh Vĩnh Long. Tận dụng vùng nguyên liệu 87 ha tre địa phương, sản xuất đa dạng từ giường, bàn ghế đến bộ salon tre trang trí. Bộ salon tre của cơ sở Trì Cảnh đạt OCOP 4 sao, tiêu thụ mạnh tại Lâm Đồng, TP.HCM, Phú Quốc phục vụ ngành du lịch và resort.",
     "placeId": "xa-ham-giang",
     "confidence": 0.7,
     "season": {
@@ -73993,16 +73993,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lang-nghe-det-chieu-ca-hom",
     "type": "craft_village",
     "name": "Làng nghề dệt chiếu Cà Hom",
-    "summary": "Làng nghề dệt chiếu truyền thống của đồng bào Khmer hình thành từ cuối thế kỷ 19, tập trung tại các ấp Cà Hom, Chợ, Bến Bạ thuộc xã Hàm Tân, huyện Trà Cú. Ngày 9/8/2024, Bộ Văn hóa - Thể thao - Du lịch ban hành Quyết định 2321/QĐ-BVHTTDL công nhận là Di sản văn hóa phi vật thể quốc gia - đây là nghề thủ công truyền thống đầu tiên của Trà Vinh được công nhận cấp quốc gia. Chiếu Cà Hom nổi tiếng từ những năm 1960 với hoa văn sơn màu đặc trưng văn hóa Khmer.",
+    "summary": "Làng nghề dệt chiếu truyền thống của đồng bào Khmer hình thành từ cuối thế kỷ 19, tập trung tại các ấp Cà Hom, Chợ, Bến Bạ thuộc xã Hàm Tân, Trà Cú. Ngày 9/8/2024, Bộ Văn hóa - Thể thao - Du lịch ban hành Quyết định 2321/QĐ-BVHTTDL công nhận là Di sản văn hóa phi vật thể quốc gia - đây là nghề thủ công truyền thống đầu tiên của Trà Vinh được công nhận cấp quốc gia. Chiếu Cà Hom nổi tiếng từ những năm 1960 với hoa văn sơn màu đặc trưng văn hóa Khmer.",
     "placeId": "xa-ham-giang",
     "confidence": 0.7,
     "season": {
@@ -74052,16 +74052,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "bo-salon-tre-ocop-tri-canh",
     "type": "product",
     "name": "Bộ salon tre OCOP Trì Cảnh",
-    "summary": "Sản phẩm thủ công làm từ tre tự nhiên do cơ sở Trì Cảnh sản xuất tại xã Hàm Giang, đạt chứng nhận OCOP 4 sao của UBND tỉnh Trà Vinh. Từng đoạt giải nhất cấp tỉnh và giải ba khu vực đồng bằng sông Cửu Long hạng mục sản phẩm công nghiệp nông thôn tiêu biểu. Được ưa chuộng trang trí resort, homestay du lịch khắp cả nước.",
+    "summary": "Sản phẩm thủ công làm từ tre tự nhiên do cơ sở Trì Cảnh sản xuất tại xã Hàm Giang, đạt chứng nhận OCOP 4 sao cấp tỉnh Vĩnh Long. Từng đoạt giải nhất cấp tỉnh và giải ba khu vực đồng bằng sông Cửu Long hạng mục sản phẩm công nghiệp nông thôn tiêu biểu. Được ưa chuộng trang trí resort, homestay du lịch khắp cả nước.",
     "placeId": "xa-ham-giang",
     "confidence": 0.7,
     "season": {
@@ -74104,9 +74104,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74151,16 +74151,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "di-tich-khao-co-luu-cu-ii",
     "type": "history",
     "name": "Di tích khảo cổ Lưu Cừ II",
-    "summary": "Phế tích kiến trúc tôn giáo Bà La Môn thuộc văn hóa Óc Eo - Phù Nam, diện tích hơn 530m², cấu trúc theo kiểu Manduka Mandala thờ thần Shiva. Khai quật năm 1986-1987, được công nhận Di tích lịch sử văn hóa cấp quốc gia năm 1990. Tại đây phát hiện cặp Linga và Yoni được Thủ tướng Chính phủ công nhận là Bảo vật quốc gia. Là điểm nghiên cứu khảo cổ học và du lịch văn hóa - tâm linh nổi bật của tỉnh Trà Vinh.",
+    "summary": "Phế tích kiến trúc tôn giáo Bà La Môn thuộc văn hóa Óc Eo - Phù Nam, diện tích hơn 530m², cấu trúc theo kiểu Manduka Mandala thờ thần Shiva. Khai quật năm 1986-1987, được công nhận Di tích lịch sử văn hóa cấp quốc gia năm 1990. Tại đây phát hiện cặp Linga và Yoni được Thủ tướng Chính phủ công nhận là Bảo vật quốc gia. Là điểm nghiên cứu khảo cổ học và du lịch văn hóa - tâm linh nổi bật của tỉnh Vĩnh Long.",
     "placeId": "xa-luu-nghiep-anh",
     "confidence": 0.7,
     "season": null,
@@ -74185,9 +74185,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74244,16 +74244,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "dua-sap-tra-vinh",
     "type": "product",
     "name": "Dừa sáp Trà Vinh",
-    "summary": "Đặc sản nổi tiếng của tỉnh Trà Vinh, còn gọi là dừa kem, cơm dừa dày mềm như kem gần lấp đầy lòng trái. Được trồng tại nhiều huyện trong đó có Trà Cú, tổng diện tích toàn tỉnh hơn 1.277 ha. Gắn liền với cuộc sống cộng đồng người Khmer Trà Vinh và là sản phẩm OCOP đặc trưng của tỉnh.",
+    "summary": "Đặc sản nổi tiếng của tỉnh Vĩnh Long, còn gọi là dừa kem, cơm dừa dày mềm như kem gần lấp đầy lòng trái. Được trồng tại nhiều địa phương trong đó có Trà Cú, tổng diện tích toàn tỉnh hơn 1.277 ha. Gắn liền với cuộc sống cộng đồng người Khmer Trà Vinh và là sản phẩm OCOP đặc trưng của tỉnh.",
     "placeId": "xa-luu-nghiep-anh",
     "confidence": 0.7,
     "season": {
@@ -74300,9 +74300,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74334,9 +74334,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74369,16 +74369,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "nuoc-khoang-thien-nhien-sao-bien-starfiwa",
     "type": "product",
     "name": "Nước khoáng thiên nhiên Sao Biển (Starfiwa)",
-    "summary": "Nước khoáng thiên nhiên đóng chai thương hiệu Sao Biển (Starfiwa) do Công ty Green Sea Food sản xuất tại thị xã Duyên Hải. Đạt chứng nhận OCOP 4 sao cấp tỉnh Trà Vinh, là sản phẩm công nghiệp chế biến tiêu biểu của địa phương.",
+    "summary": "Nước khoáng thiên nhiên đóng chai thương hiệu Sao Biển (Starfiwa) do Công ty Green Sea Food sản xuất tại Duyên Hải. Đạt chứng nhận OCOP 4 sao cấp tỉnh Vĩnh Long, là sản phẩm công nghiệp chế biến tiêu biểu của địa phương.",
     "placeId": "p-duyen-hai",
     "confidence": 0.7,
     "season": {
@@ -74421,9 +74421,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74478,9 +74478,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74537,9 +74537,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74572,9 +74572,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74632,9 +74632,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74667,9 +74667,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74702,9 +74702,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74737,9 +74737,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74790,9 +74790,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74825,9 +74825,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74877,9 +74877,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74937,9 +74937,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74984,9 +74984,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75042,9 +75042,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75077,16 +75077,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "dinh-mieu-con-trung",
     "type": "history",
     "name": "Đình Miếu Cồn Trứng",
-    "summary": "Di tích lịch sử cấp quốc gia tại khu vực Cồn Trứng, thị xã Duyên Hải. Được Bộ Văn hóa, Thể thao và Du lịch công nhận di tích quốc gia cuối tháng 12 năm 2015 cùng với Lăng Ông Cồn Tàu, là nơi sinh hoạt tín ngưỡng, văn hóa của cộng đồng địa phương.",
+    "summary": "Di tích lịch sử cấp quốc gia tại khu vực Cồn Trứng, Duyên Hải. Được Bộ Văn hóa, Thể thao và Du lịch công nhận di tích quốc gia cuối tháng 12 năm 2015 cùng với Lăng Ông Cồn Tàu, là nơi sinh hoạt tín ngưỡng, văn hóa của cộng đồng địa phương.",
     "placeId": "p-duyen-hai",
     "confidence": 0.7,
     "season": null,
@@ -75112,16 +75112,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "vung-giong-cat-long-vinh",
     "type": "nature",
     "name": "Vùng giồng cát Long Vĩnh",
-    "summary": "Hệ thống giồng cát hình cung chạy song song với bờ biển đặc trưng của xã Long Vĩnh, huyện Duyên Hải. Các giồng cát này tạo nên cảnh quan độc đáo và là nơi trồng các loại cây đặc sản như khoai lang, đậu phộng, dưa hấu của vùng đảo Duyên Hải.",
+    "summary": "Hệ thống giồng cát hình cung chạy song song với bờ biển đặc trưng của xã Long Vĩnh, Duyên Hải. Các giồng cát này tạo nên cảnh quan độc đáo và là nơi trồng các loại cây đặc sản như khoai lang, đậu phộng, dưa hấu của vùng đảo Duyên Hải.",
     "placeId": "xa-long-vinh",
     "confidence": 0.7,
     "season": {
@@ -75171,16 +75171,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "khu-du-lich-sinh-thai-vung-dao-duyen-hai",
     "type": "nature",
     "name": "Khu du lịch sinh thái vùng đảo Duyên Hải",
-    "summary": "Vùng đảo gồm 4 xã thuộc huyện Duyên Hải với tổng diện tích tự nhiên khoảng 21.159 ha, dân số 36.368 người. Khu vực có bờ biển dài 55 km, rừng ngập mặn còn khá nguyên vẹn, tiềm năng phát triển du lịch sinh thái kết hợp nghỉ dưỡng biển và tham quan di tích lịch sử.",
+    "summary": "Vùng đảo gồm 4 xã thuộc Duyên Hải với tổng diện tích tự nhiên khoảng 21.159 ha, dân số 36.368 người. Khu vực có bờ biển dài 55 km, rừng ngập mặn còn khá nguyên vẹn, tiềm năng phát triển du lịch sinh thái kết hợp nghỉ dưỡng biển và tham quan di tích lịch sử.",
     "placeId": "p-duyen-hai",
     "confidence": 0.7,
     "season": {
@@ -75231,9 +75231,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75266,9 +75266,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75301,9 +75301,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75336,16 +75336,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lap-xuong-ngoc-huong",
     "type": "product",
     "name": "Lạp xưởng Ngọc Hương",
-    "summary": "Sản phẩm lạp xưởng truyền thống đặc trưng của huyện Trà Cú, được công nhận OCOP 3 sao tỉnh Trà Vinh năm 2022. Sản xuất bởi hộ kinh doanh Dư Ngọc Hương tại xã Tập Sơn.",
+    "summary": "Sản phẩm lạp xưởng truyền thống đặc trưng của Trà Cú, được công nhận OCOP 3 sao tỉnh Vĩnh Long năm 2022. Sản xuất bởi hộ kinh doanh Dư Ngọc Hương tại xã Tập Sơn.",
     "placeId": "xa-tap-son",
     "confidence": 0.7,
     "season": {
@@ -75393,16 +75393,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "bot-nua-tra-cu",
     "type": "product",
     "name": "Bột nưa Trà Cú",
-    "summary": "Sản phẩm bột làm từ củ nưa (konjac) - đặc sản nông nghiệp độc đáo của huyện Trà Cú, đã thu hút sự quan tâm nghiên cứu của các đoàn chuyên gia Nhật Bản. Được xác định là nông sản đặc trưng tiềm năng trong phát triển sản phẩm du lịch của huyện.",
+    "summary": "Sản phẩm bột làm từ củ nưa (konjac) - đặc sản nông nghiệp độc đáo của Trà Cú, đã thu hút sự quan tâm nghiên cứu của các đoàn chuyên gia Nhật Bản. Được xác định là nông sản đặc trưng tiềm năng trong phát triển sản phẩm du lịch của vùng.",
     "placeId": "xa-luu-nghiep-anh",
     "confidence": 0.7,
     "season": {
@@ -75443,16 +75443,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "com-dep-ngoc-bien",
     "type": "dish",
     "name": "Cốm dẹp Ngọc Biên",
-    "summary": "Món ăn truyền thống Khmer đặc trưng làm từ lúa nếp non, do 33 hộ dân tại 3 ấp Giồng Cao, Sà Vần A và Rạch Bót sản xuất. Là nông sản đặc trưng của huyện Trà Cú được định hướng phát triển thành sản phẩm du lịch, thường xuất hiện trong lễ hội Ok Om Bok của người Khmer.",
+    "summary": "Món ăn truyền thống Khmer đặc trưng làm từ lúa nếp non, do 33 hộ dân tại 3 ấp Giồng Cao, Sà Vần A và Rạch Bót sản xuất. Là nông sản đặc trưng của Trà Cú được định hướng phát triển thành sản phẩm du lịch, thường xuất hiện trong lễ hội Ok Om Bok của người Khmer.",
     "placeId": "xa-long-hiep",
     "confidence": 0.7,
     "season": {
@@ -75487,9 +75487,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75530,16 +75530,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "gao-huu-co-long-hoa-hoa-minh-ocop-4-sao",
     "type": "product",
     "name": "Gạo hữu cơ Long Hòa – Hòa Minh (OCOP 4 sao)",
-    "summary": "Sản phẩm gạo hữu cơ của Hợp tác xã Tiến Thành, được UBND tỉnh Trà Vinh công nhận đạt chuẩn OCOP 4 sao năm 2022. Sản xuất theo quy trình hữu cơ bền vững, là sản phẩm tiêu biểu của huyện Châu Thành.",
+    "summary": "Sản phẩm gạo hữu cơ của Hợp tác xã Tiến Thành, được UBND tỉnh Vĩnh Long công nhận đạt chuẩn OCOP 4 sao năm 2022. Sản xuất theo quy trình hữu cơ bền vững, là sản phẩm tiêu biểu của vùng Châu Thành.",
     "placeId": "xa-long-hoa",
     "confidence": 0.7,
     "season": {
@@ -75588,16 +75588,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "homestay-bep-nam-bo-xua-con-chim",
     "type": "accommodation",
     "name": "Homestay Bếp Nam Bộ Xưa (Cồn Chim)",
-    "summary": "Homestay nằm trên Cồn Chim, xã Hòa Minh, huyện Châu Thành, cung cấp không gian nghỉ ngơi mộc mạc yên tĩnh và trải nghiệm ẩm thực Nam Bộ truyền thống. Địa chỉ tại số 11, ấp Cồn Chim.",
+    "summary": "Homestay nằm trên Cồn Chim, xã Hòa Minh, Châu Thành, cung cấp không gian nghỉ ngơi mộc mạc yên tĩnh và trải nghiệm ẩm thực Nam Bộ truyền thống. Địa chỉ tại số 11, ấp Cồn Chim.",
     "placeId": "xa-hoa-minh",
     "confidence": 0.7,
     "season": {
@@ -75648,16 +75648,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "homestay-tu-pha-con-chim",
     "type": "accommodation",
     "name": "Homestay Tư Pha (Cồn Chim)",
-    "summary": "Homestay sinh thái nằm tại ấp Cồn Chim, xã Hòa Minh, huyện Châu Thành, được nhiều du khách yêu thích nhờ vị trí gần thiên nhiên và các trải nghiệm đời sống nông thôn sông nước đặc trưng vùng đồng bằng sông Cửu Long.",
+    "summary": "Homestay sinh thái nằm tại ấp Cồn Chim, xã Hòa Minh, Châu Thành, được nhiều du khách yêu thích nhờ vị trí gần thiên nhiên và các trải nghiệm đời sống nông thôn sông nước đặc trưng vùng đồng bằng sông Cửu Long.",
     "placeId": "xa-hoa-minh",
     "confidence": 0.7,
     "season": {
@@ -75708,9 +75708,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75766,16 +75766,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "le-ngan-homestay",
     "type": "accommodation",
     "name": "Lê Ngân Homestay",
-    "summary": "Lê Ngân Homestay (homestay), Ấp Lê Văn Quới, xã Tập Ngãi, huyện Tiểu Cần",
+    "summary": "Lê Ngân Homestay (homestay), Ấp Lê Văn Quới, xã Tập Ngãi, Tiểu Cần",
     "placeId": "p-tap-ngai",
     "confidence": 0.75,
     "season": {
@@ -75825,16 +75825,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "ks-nha-co-cau-ke",
     "type": "accommodation",
     "name": "KS nhà cổ Cầu Kè",
-    "summary": "KS nhà cổ Cầu Kè (nhà nghỉ), Khóm 2, xã Cầu Kè, huyện Cầu Kè",
+    "summary": "KS nhà cổ Cầu Kè (nhà nghỉ), Khóm 2, xã Cầu Kè, Cầu Kè",
     "placeId": "xa-cau-ke",
     "confidence": 0.75,
     "season": {
@@ -75884,16 +75884,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "suonsia-homestay",
     "type": "accommodation",
     "name": "SuonSia Homestay",
-    "summary": "SuonSia Homestay (homestay), 22/2 ấp Bà My, xã Cầu Kè, huyện Cầu Kè",
+    "summary": "SuonSia Homestay (homestay), 22/2 ấp Bà My, xã Cầu Kè, Cầu Kè",
     "placeId": "xa-cau-ke",
     "confidence": 0.75,
     "season": {
@@ -75943,16 +75943,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "nh-ks-sy-dien",
     "type": "accommodation",
     "name": "NH-KS Sỹ Điền",
-    "summary": "NH-KS Sỹ Điền (nhà nghỉ), 19A Hương Lộ 32, ấp Bà My, xã Cầu Kè, huyện Cầu Kè",
+    "summary": "NH-KS Sỹ Điền (nhà nghỉ), 19A Hương Lộ 32, ấp Bà My, xã Cầu Kè, Cầu Kè",
     "placeId": "xa-cau-ke",
     "confidence": 0.75,
     "season": {
@@ -76002,16 +76002,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "mekong-garden-homestay",
     "type": "accommodation",
     "name": "Mekong Garden Homestay",
-    "summary": "Mekong Garden Homestay (homestay), Ấp Đon, xã Nhị Long, huyện Cầu Kè",
+    "summary": "Mekong Garden Homestay (homestay), Ấp Đon, xã Nhị Long, Cầu Kè",
     "placeId": "xa-nhi-long",
     "confidence": 0.75,
     "season": {
@@ -76061,9 +76061,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76120,16 +76120,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "homestay-ut-trinh-con-tam-hiep",
     "type": "accommodation",
     "name": "Homestay Út Trinh (Cồn Tam Hiệp)",
-    "summary": "Homestay Út Trinh (Cồn Tam Hiệp) (homestay), Tổ 9, ấp 1, xã Phú Thuận, huyện Bình Đại (BT)",
+    "summary": "Homestay Út Trinh (Cồn Tam Hiệp) (homestay), Tổ 9, ấp 1, xã Phú Thuận, Bình Đại",
     "placeId": "xa-phu-thuan",
     "confidence": 0.75,
     "season": {
@@ -76179,16 +76179,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "homestay-nguoi-giu-rung",
     "type": "accommodation",
     "name": "Homestay Người Giữ Rừng",
-    "summary": "Homestay Người Giữ Rừng (homestay), Ấp Tân An, xã Thạnh Phước, huyện Thạnh Phú (BT)",
+    "summary": "Homestay Người Giữ Rừng (homestay), Ấp Tân An, xã Thạnh Phước, Thạnh Phú",
     "placeId": "xa-thanh-phuoc",
     "confidence": 0.75,
     "season": {
@@ -76238,16 +76238,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "coconut-homestay",
     "type": "accommodation",
     "name": "Coconut Homestay",
-    "summary": "Coconut Homestay (homestay), 66 ấp Tân Phước, huyện Mỏ Cày (BT)",
+    "summary": "Coconut Homestay (homestay), 66 ấp Tân Phước, Mỏ Cày",
     "placeId": "xa-tan-phu",
     "confidence": 0.75,
     "season": {
@@ -76297,9 +76297,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76354,9 +76354,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76411,9 +76411,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76471,9 +76471,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76528,9 +76528,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76585,9 +76585,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76642,9 +76642,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76699,9 +76699,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76757,9 +76757,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76809,9 +76809,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76863,16 +76863,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "sau-rieng-cai-mon",
     "type": "product",
     "name": "Sầu riêng Cái Mơn",
-    "summary": "Sầu riêng đặc sản trồng tại xã Vĩnh Thành, huyện Chợ Lách - vùng chuyên canh nổi tiếng khắp ĐBSCL, giống sầu riêng Cái Mơn là giống uy tín nhất Nam Bộ.",
+    "summary": "Sầu riêng đặc sản trồng tại xã Vĩnh Thành - vùng chuyên canh nổi tiếng khắp ĐBSCL, giống sầu riêng Cái Mơn là giống uy tín nhất Nam Bộ.",
     "placeId": "xa-vinh-thanh",
     "confidence": 0.75,
     "season": {
@@ -76907,9 +76907,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76951,9 +76951,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77007,9 +77007,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77053,9 +77053,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77112,9 +77112,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77156,16 +77156,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "vuon-xoai-tu-quy-thanh-son",
     "type": "attraction",
     "name": "Vườn xoài tứ quý Thanh Sơn",
-    "summary": "Vườn xoài tứ quý (xoài cho trái quanh năm) nằm gần khu bảo tồn ốc gạo Phú Đa. Điểm tham quan nông nghiệp đặc trưng của xã Phú Phụng, huyện Chợ Lách, thu hút khách du lịch trải nghiệm vườn cây ăn trái miền Tây.",
+    "summary": "Vườn xoài tứ quý (xoài cho trái quanh năm) nằm gần khu bảo tồn ốc gạo Phú Đa. Điểm tham quan nông nghiệp đặc trưng của xã Phú Phụng, thu hút khách du lịch trải nghiệm vườn cây ăn trái miền Tây.",
     "placeId": "xa-phu-phung",
     "confidence": 0.7,
     "season": {
@@ -77214,16 +77214,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "bai-tam-con-phu-binh",
     "type": "nature",
     "name": "Bãi tắm cồn Phú Bình",
-    "summary": "Bãi tắm tự nhiên trên cồn Phú Bình, một trong 8 điểm du lịch thuộc cụm Sơn Định - Vĩnh Bình - Phú Phụng, huyện Chợ Lách. Điểm vui chơi, tắm sông và nghỉ dưỡng ven sông Cổ Chiên.",
+    "summary": "Bãi tắm tự nhiên trên cồn Phú Bình, một trong 8 điểm du lịch thuộc cụm Sơn Định - Vĩnh Bình - Phú Phụng. Điểm vui chơi, tắm sông và nghỉ dưỡng ven sông Cổ Chiên.",
     "placeId": "xa-phu-phung",
     "confidence": 0.7,
     "season": {
@@ -77273,16 +77273,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "chua-quang-minh-phu-phung",
     "type": "history",
     "name": "Chùa Quang Minh Phú Phụng",
-    "summary": "Chùa Quang Minh tọa lạc tại ấp Chợ, xã Phú Phụng, huyện Chợ Lách. Là điểm tham quan tín ngưỡng, tâm linh của người dân địa phương và du khách khi đến thăm xã Phú Phụng.",
+    "summary": "Chùa Quang Minh tọa lạc tại ấp Chợ, xã Phú Phụng. Là điểm tham quan tín ngưỡng, tâm linh của người dân địa phương và du khách khi đến thăm xã Phú Phụng.",
     "placeId": "xa-phu-phung",
     "confidence": 0.7,
     "season": null,
@@ -77307,9 +77307,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77362,9 +77362,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77396,9 +77396,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77447,16 +77447,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "diem-du-lich-ba-ngoi-con-phu-da",
     "type": "attraction",
     "name": "Điểm du lịch Ba Ngói - Cồn Phú Đa",
-    "summary": "Điểm du lịch sinh thái Ba Ngói nằm ở cồn Phú Đa, xã Vĩnh Bình, huyện Chợ Lách, với vườn cây trái trĩu cành nhiều chủng loại, thu hút du khách đến tham quan và trải nghiệm miệt vườn sông nước.",
+    "summary": "Điểm du lịch sinh thái Ba Ngói nằm ở cồn Phú Đa, xã Vĩnh Bình, với vườn cây trái trĩu cành nhiều chủng loại, thu hút du khách đến tham quan và trải nghiệm miệt vườn sông nước.",
     "placeId": "xa-phu-phung",
     "confidence": 0.7,
     "season": {
@@ -77504,9 +77504,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77551,9 +77551,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77598,9 +77598,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77654,9 +77654,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77710,9 +77710,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77744,9 +77744,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77803,9 +77803,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77849,9 +77849,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77908,16 +77908,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "lang-nghe-dan-lat-may-tre-phu-le",
     "type": "craft_village",
     "name": "Làng nghề đan lát mây tre Phú Lễ",
-    "summary": "Làng nghề thủ công truyền thống đan đát mây tre hơn trăm năm tuổi tại xã Phú Lễ, huyện Ba Tri. Các sản phẩm đa dạng gồm hơn mười loại như bội, bung, rổ, rế, sọt, lờ, lọp, nơm cá với nguyên liệu chủ yếu là tre, trúc, tầm vông. Làng nghề đang được bảo tồn và phát triển bền vững gắn với du lịch trải nghiệm.",
+    "summary": "Làng nghề thủ công truyền thống đan đát mây tre hơn trăm năm tuổi tại xã Phú Lễ. Các sản phẩm đa dạng gồm hơn mười loại như bội, bung, rổ, rế, sọt, lờ, lọp, nơm cá với nguyên liệu chủ yếu là tre, trúc, tầm vông. Làng nghề đang được bảo tồn và phát triển bền vững gắn với du lịch trải nghiệm.",
     "placeId": "xa-tan-xuan",
     "confidence": 0.7,
     "season": {
@@ -77968,9 +77968,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78003,9 +78003,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78063,9 +78063,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78123,9 +78123,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78181,9 +78181,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78237,9 +78237,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78294,9 +78294,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78354,9 +78354,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78411,9 +78411,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78463,9 +78463,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78518,9 +78518,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78552,16 +78552,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "khu-du-lich-sinh-thai-nam-son",
     "type": "accommodation",
     "name": "Khu Du Lịch Sinh Thái Nam Sơn",
-    "summary": "Khu du lịch sinh thái rộng 3,8 héc-ta tại ấp An Trại, xã An Phú Tân, huyện Cầu Kè. Có khách sạn 17 phòng, 11 phòng homestay, nhà hàng, xe điện, ca nô và xuồng tham quan sông Hậu. Là điểm lưu trú và trải nghiệm sinh thái miệt vườn gắn với cù lao Tân Quy.",
+    "summary": "Khu du lịch sinh thái rộng 3,8 héc-ta tại ấp An Trại, xã An Phú Tân. Có khách sạn 17 phòng, 11 phòng homestay, nhà hàng, xe điện, ca nô và xuồng tham quan sông Hậu. Là điểm lưu trú và trải nghiệm sinh thái miệt vườn gắn với cù lao Tân Quy.",
     "placeId": "xa-an-phu-tan",
     "confidence": 0.7,
     "season": {
@@ -78611,16 +78611,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "mieu-ba-chua-xu-tan-quy",
     "type": "history",
     "name": "Miếu Bà Chúa Xứ Tân Quy",
-    "summary": "Miếu thờ Bà Chúa Xứ tọa lạc tại ấp Tân Quy 1, xã An Phú Tân, huyện Cầu Kè, tỉnh Trà Vinh. Đây là di tích tín ngưỡng dân gian của cộng đồng cư dân trên cù lao Tân Quy, gắn với đời sống văn hóa tâm linh của người dân địa phương.",
+    "summary": "Miếu thờ Bà Chúa Xứ tọa lạc tại ấp Tân Quy 1, xã An Phú Tân, tỉnh Vĩnh Long. Đây là di tích tín ngưỡng dân gian của cộng đồng cư dân trên cù lao Tân Quy, gắn với đời sống văn hóa tâm linh của người dân địa phương.",
     "placeId": "xa-an-phu-tan",
     "confidence": 0.7,
     "season": null,
@@ -78645,9 +78645,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78680,9 +78680,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78714,9 +78714,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78774,9 +78774,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78834,9 +78834,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78894,16 +78894,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "chua-o-chhuc",
     "type": "history",
     "name": "Chùa Ô Chhuc",
-    "summary": "Ngôi chùa Phật giáo Nam tông Khmer tọa lạc tại ấp Ngãi Hòa, xã Tập Ngãi, huyện Tiểu Cần. Là một trong 15 ngôi chùa Nam tông Khmer trên địa bàn huyện, mang kiến trúc và nghệ thuật trang trí đặc trưng của văn hóa Khmer Nam Bộ.",
+    "summary": "Ngôi chùa Phật giáo Nam tông Khmer tọa lạc tại ấp Ngãi Hòa, xã Tập Ngãi. Là một trong 15 ngôi chùa Nam tông Khmer trên địa bàn, mang kiến trúc và nghệ thuật trang trí đặc trưng của văn hóa Khmer Nam Bộ.",
     "placeId": "p-tap-ngai",
     "confidence": 0.7,
     "season": null,
@@ -78928,9 +78928,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78975,16 +78975,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "thien-vien-truc-lam-duyen-hai",
     "type": "attraction",
     "name": "Thiền viện Trúc Lâm Duyên Hải",
-    "summary": "Thiền viện Phật giáo thuộc Thiền phái Trúc Lâm Yên Tử, xây dựng năm 2016 trên diện tích khoảng 100ha, kiến trúc truyền thống Phật giáo Việt Nam. Tọa lạc ven biển, là điểm tâm linh nổi tiếng với view toàn cảnh thị xã Duyên Hải, đánh giá 4.6/5.",
+    "summary": "Thiền viện Phật giáo thuộc Thiền phái Trúc Lâm Yên Tử, xây dựng năm 2016 trên diện tích khoảng 100ha, kiến trúc truyền thống Phật giáo Việt Nam. Tọa lạc ven biển, là điểm tâm linh nổi tiếng với view toàn cảnh Duyên Hải, đánh giá 4.6/5.",
     "placeId": "p-truong-long-hoa",
     "confidence": 0.7,
     "season": {
@@ -79035,9 +79035,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79070,16 +79070,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "tom-kho-cham-mam-chua-ngot-duyen-hai",
     "type": "product",
     "name": "Tôm khô chấm mắm chua ngọt Duyên Hải",
-    "summary": "Sản phẩm tôm khô kèm nước chấm mắm chua ngọt đặc trưng của vùng biển Duyên Hải, đạt chứng nhận OCOP 3 sao năm 2024. Do hộ kinh doanh Lâm Thị Kim Quyên sản xuất tại Phường 2. Là một trong 9 sản phẩm OCOP được công nhận trong đợt 1 năm 2024 của thị xã Duyên Hải.",
+    "summary": "Sản phẩm tôm khô kèm nước chấm mắm chua ngọt đặc trưng của vùng biển Duyên Hải, đạt chứng nhận OCOP 3 sao năm 2024. Do hộ kinh doanh Lâm Thị Kim Quyên sản xuất tại Phường 2. Là một trong 9 sản phẩm OCOP được công nhận trong đợt 1 năm 2024 của Duyên Hải.",
     "placeId": "p-truong-long-hoa",
     "confidence": 0.7,
     "season": {
@@ -79129,16 +79129,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "hoi-cho-thuong-mai-cay-giong-hoa-kieng-cho-lach",
     "type": "event",
     "name": "Hội Chợ Thương Mại Cây Giống Hoa Kiểng Chợ Lách",
-    "summary": "Hội chợ thương mại thường niên chuyên về cây giống và hoa kiểng của huyện Chợ Lách, quy tụ các nhà vườn trong và ngoài huyện trưng bày, mua bán cây giống, hoa kiểng, sản phẩm nông nghiệp đặc trưng của vùng 'Vương quốc cây giống và hoa kiểng'.",
+    "summary": "Hội chợ thương mại thường niên chuyên về cây giống và hoa kiểng của Chợ Lách, quy tụ các nhà vườn trong và ngoài vùng trưng bày, mua bán cây giống, hoa kiểng, sản phẩm nông nghiệp đặc trưng của vùng 'Vương quốc cây giống và hoa kiểng'.",
     "placeId": "xa-cho-lach",
     "confidence": 0.7,
     "season": {
@@ -79176,9 +79176,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79224,9 +79224,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79272,9 +79272,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79320,9 +79320,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79368,9 +79368,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79415,9 +79415,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79472,9 +79472,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79519,9 +79519,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79566,9 +79566,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79611,16 +79611,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "le-hoi-chol-chnam-thmay-tai-chua-ky-son",
     "type": "event",
     "name": "Lễ hội Chol Chnam Thmay tại chùa Kỳ Son",
-    "summary": "Lễ Tết Năm mới của người Khmer tổ chức hàng năm từ ngày 13 đến 15 tháng 4 tại chùa Kỳ Son. Ngoài ra còn có lễ Sen Dolta (29-30 tháng 8 âm lịch) và lễ Oóc-Om-Bóc (rằm tháng 10 âm lịch). Đây là các lễ hội truyền thống quan trọng nhất của cộng đồng người Khmer huyện Tam Bình.",
+    "summary": "Lễ Tết Năm mới của người Khmer tổ chức hàng năm từ ngày 13 đến 15 tháng 4 tại chùa Kỳ Son. Ngoài ra còn có lễ Sen Dolta (29-30 tháng 8 âm lịch) và lễ Oóc-Om-Bóc (rằm tháng 10 âm lịch). Đây là các lễ hội truyền thống quan trọng nhất của cộng đồng người Khmer Tam Bình.",
     "placeId": "p-phuoc-hau",
     "confidence": 0.7,
     "season": {
@@ -79658,9 +79658,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79708,16 +79708,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "le-hoi-nghinh-ong-binh-thang",
     "type": "event",
     "name": "Lễ hội Nghinh Ông Bình Thắng",
-    "summary": "Lễ hội Nghinh Ông lớn nhất huyện Bình Đại tổ chức hàng năm vào ngày 16 tháng 6 âm lịch tại Lăng Ông xã Bình Thắng. Trong ngày hội, tàu thuyền đánh cá tập trung neo đậu để tế lễ, vui chơi, là lễ hội truyền thống của ngư dân vùng biển.",
+    "summary": "Lễ hội Nghinh Ông lớn nhất Bình Đại tổ chức hàng năm vào ngày 16 tháng 6 âm lịch tại Lăng Ông xã Bình Thắng. Trong ngày hội, tàu thuyền đánh cá tập trung neo đậu để tế lễ, vui chơi, là lễ hội truyền thống của ngư dân vùng biển.",
     "placeId": "p-binh-dai",
     "confidence": 0.7,
     "season": {
@@ -79755,9 +79755,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79802,9 +79802,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79850,9 +79850,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79899,16 +79899,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
     "id": "le-hoi-nghinh-ong-duyen-hai",
     "type": "event",
     "name": "Lễ hội Nghinh Ông Duyên Hải",
-    "summary": "Lễ hội tín ngưỡng dân gian của ngư dân ven biển Duyên Hải, thờ cúng Cá Ông (cá voi) - vị thần bảo hộ ngư dân trên biển. Tổ chức hằng năm vào ngày 20-21 tháng 2 âm lịch với nghi lễ rước linh vị Cá Ông ra biển, đoàn thuyền rực rỡ cờ hoa, cùng các hoạt động đua thuyền và văn nghệ dân gian. Đây là di sản văn hóa phi vật thể tiêu biểu của tỉnh Trà Vinh.",
+    "summary": "Lễ hội tín ngưỡng dân gian của ngư dân ven biển Duyên Hải, thờ cúng Cá Ông (cá voi) - vị thần bảo hộ ngư dân trên biển. Tổ chức hằng năm vào ngày 20-21 tháng 2 âm lịch với nghi lễ rước linh vị Cá Ông ra biển, đoàn thuyền rực rỡ cờ hoa, cùng các hoạt động đua thuyền và văn nghệ dân gian. Đây là di sản văn hóa phi vật thể tiêu biểu của tỉnh Vĩnh Long.",
     "placeId": "p-duyen-hai",
     "confidence": 0.7,
     "season": {
@@ -79943,9 +79943,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79991,9 +79991,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -80049,9 +80049,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -80108,9 +80108,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -80166,9 +80166,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -80216,9 +80216,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80265,9 +80265,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80321,9 +80321,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80371,9 +80371,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80420,9 +80420,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80469,9 +80469,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80518,9 +80518,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80567,9 +80567,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80617,9 +80617,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80666,9 +80666,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80715,9 +80715,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80759,9 +80759,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80819,9 +80819,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80878,9 +80878,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80935,9 +80935,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80994,9 +80994,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81052,9 +81052,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81111,9 +81111,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81165,9 +81165,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81224,9 +81224,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81256,9 +81256,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81288,9 +81288,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81337,9 +81337,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81387,9 +81387,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81440,9 +81440,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81490,9 +81490,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81548,9 +81548,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81598,9 +81598,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81661,9 +81661,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81720,9 +81720,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81770,9 +81770,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81828,9 +81828,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81887,9 +81887,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81946,9 +81946,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82005,9 +82005,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82064,9 +82064,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82123,9 +82123,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82182,9 +82182,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82217,9 +82217,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82276,9 +82276,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82309,9 +82309,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82342,9 +82342,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82401,9 +82401,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82436,9 +82436,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82471,9 +82471,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82530,9 +82530,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82562,9 +82562,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82597,9 +82597,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82656,9 +82656,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82688,9 +82688,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82720,9 +82720,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82752,9 +82752,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82784,9 +82784,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82816,9 +82816,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82878,9 +82878,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82910,9 +82910,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82942,9 +82942,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82974,9 +82974,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83006,9 +83006,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83038,9 +83038,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83070,9 +83070,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83102,9 +83102,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83134,9 +83134,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83166,9 +83166,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83198,9 +83198,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83230,9 +83230,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83282,9 +83282,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83332,16 +83332,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
     "id": "lang-nghe-gom-do-mang-thit",
     "type": "craft_village",
     "name": "Làng nghề gốm đỏ Mang Thít",
-    "summary": "Làng nghề gốm đỏ nổi tiếng ở huyện Mang Thít, tỉnh Vĩnh Long, nằm dọc bờ sông Cổ Chiên. Đây là khu vực sản xuất gạch ngói và gốm đỏ quy mô lớn, được xem là điểm tham quan đặc trưng của Vĩnh Long.",
+    "summary": "Làng nghề gốm đỏ nổi tiếng ở Mang Thít, tỉnh Vĩnh Long, nằm dọc bờ sông Cổ Chiên. Đây là khu vực sản xuất gạch ngói và gốm đỏ quy mô lớn, được xem là điểm tham quan đặc trưng của Vĩnh Long.",
     "placeId": "xa-nhon-phu",
     "confidence": 0.9,
     "season": {
@@ -83391,9 +83391,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83442,9 +83442,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83493,9 +83493,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83544,9 +83544,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83595,9 +83595,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83646,9 +83646,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83697,9 +83697,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83748,9 +83748,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83799,9 +83799,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83850,9 +83850,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83909,9 +83909,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83959,9 +83959,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84018,9 +84018,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84077,9 +84077,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84133,9 +84133,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84189,9 +84189,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84235,9 +84235,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84291,9 +84291,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84347,9 +84347,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84380,9 +84380,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84439,9 +84439,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84495,9 +84495,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84528,9 +84528,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84586,16 +84586,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
     "id": "lang-nghe-lam-tau-hu-ky",
     "type": "craft_village",
     "name": "Làng nghề làm tàu hủ ky",
-    "summary": "Làng nghề truyền thống được ghi danh di sản văn hóa phi vật thể quốc gia tại xã Mỹ Hòa, TX Bình Minh, tỉnh Vĩnh Long. Đây là một nghề thủ công gắn với ẩm thực địa phương.",
+    "summary": "Làng nghề truyền thống được ghi danh di sản văn hóa phi vật thể quốc gia tại xã Mỹ Hòa, Bình Minh, tỉnh Vĩnh Long. Đây là một nghề thủ công gắn với ẩm thực địa phương.",
     "placeId": "p-binh-minh",
     "confidence": 0.9,
     "season": {
@@ -84645,16 +84645,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
     "id": "cu-lao-may",
     "type": "nature",
     "name": "Cù lao Mây",
-    "summary": "Khu vực cù lao thuộc huyện Trà Ôn, Vĩnh Long, được bài viết gọi là “đảo ngọc” và là một lợi thế lớn để phát triển du lịch sinh thái miệt vườn. Đây là điểm tự nhiên gắn với hệ sinh thái sông nước và vườn cây trái của địa phương.",
+    "summary": "Khu vực cù lao thuộc Trà Ôn, Vĩnh Long, được bài viết gọi là \"đảo ngọc\" và là một lợi thế lớn để phát triển du lịch sinh thái miệt vườn. Đây là điểm tự nhiên gắn với hệ sinh thái sông nước và vườn cây trái của địa phương.",
     "placeId": "p-long-chau",
     "confidence": 0.9,
     "season": {
@@ -84703,9 +84703,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84758,9 +84758,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84817,9 +84817,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84876,16 +84876,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
     "id": "khu-du-lich-sinh-thai-miet-vuon-vinh-sang",
     "type": "attraction",
     "name": "Khu du lịch sinh thái miệt vườn Vinh Sang",
-    "summary": "Điểm du lịch sinh thái miệt vườn nằm ở ấp An Thuận, xã An Bình, huyện Long Hồ, tỉnh Vĩnh Long. Bài viết mô tả nơi này là một khu vườn rộng lớn ven sông Cổ Chiên, có các hoạt động sông nước và tham quan miệt vườn.",
+    "summary": "Điểm du lịch sinh thái miệt vườn nằm ở ấp An Thuận, xã An Bình, Long Hồ, tỉnh Vĩnh Long. Bài viết mô tả nơi này là một khu vườn rộng lớn ven sông Cổ Chiên, có các hoạt động sông nước và tham quan miệt vườn.",
     "placeId": "p-long-chau",
     "confidence": 0.9,
     "season": {
@@ -84935,9 +84935,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84994,9 +84994,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85052,9 +85052,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85102,9 +85102,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85147,9 +85147,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85202,9 +85202,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85252,9 +85252,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85310,9 +85310,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85365,9 +85365,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85415,9 +85415,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85470,9 +85470,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85525,9 +85525,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85575,9 +85575,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85622,9 +85622,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85668,9 +85668,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85724,9 +85724,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85774,9 +85774,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85831,9 +85831,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85881,9 +85881,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85937,9 +85937,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85992,9 +85992,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86035,9 +86035,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86090,9 +86090,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86140,9 +86140,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86185,9 +86185,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86240,9 +86240,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86288,9 +86288,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86343,9 +86343,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86399,9 +86399,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86449,9 +86449,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86503,9 +86503,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86561,9 +86561,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86619,9 +86619,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86676,9 +86676,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86734,9 +86734,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86781,9 +86781,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86839,9 +86839,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86900,9 +86900,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86958,9 +86958,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87005,9 +87005,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87063,9 +87063,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87107,9 +87107,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87165,9 +87165,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87213,9 +87213,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87265,9 +87265,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87323,9 +87323,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87381,9 +87381,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87426,9 +87426,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87484,9 +87484,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87542,9 +87542,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87599,9 +87599,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87649,9 +87649,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87681,9 +87681,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87739,9 +87739,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87798,9 +87798,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87856,9 +87856,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87915,9 +87915,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87976,9 +87976,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88033,9 +88033,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88066,9 +88066,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88125,9 +88125,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88184,9 +88184,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88243,9 +88243,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88301,16 +88301,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
     "id": "ngay-hoi-thanh-tra",
     "type": "event",
     "name": "Ngày hội Thanh trà",
-    "summary": "Sự kiện quảng bá đặc sản thanh trà được tổ chức trước thềm Tuần lễ Văn hóa, thể thao và du lịch tỉnh Vĩnh Long. Bài viết nêu đây là hoạt động diễn ra tại TX Bình Minh, Vĩnh Long.",
+    "summary": "Sự kiện quảng bá đặc sản thanh trà được tổ chức trước thềm Tuần lễ Văn hóa, thể thao và du lịch tỉnh Vĩnh Long. Bài viết nêu đây là hoạt động diễn ra tại Bình Minh, Vĩnh Long.",
     "placeId": "p-binh-minh",
     "confidence": 0.9,
     "season": {
@@ -88347,9 +88347,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88390,16 +88390,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
     "id": "lang-ong-tien-quan-thong-che-dieu-bat-tuong-quan-nguyen-van-",
     "type": "event",
     "name": "Lễ hội Lăng Ông Tiền quân Thống chế Điều bát Nguyễn Văn Tồn",
-    "summary": "Lễ hội truyền thống hằng năm vào mùng 3–4 tháng Giêng âm lịch tại Lăng Ông, ấp Giồng Thanh Bạch, xã Thiện Mỹ, huyện Trà Ôn, tỉnh Vĩnh Long. Tưởng nhớ Nguyễn Văn Tồn (Thạch Duồng, 1763–1820), danh tướng gốc Khmer phục vụ chúa Nguyễn Ánh, được phong Tiền quân Thống chế Điều bát, có công khai khẩn vùng Trà Ôn–Mân Thít và đào kênh Vĩnh Tế. Lễ hội gồm lễ Túc Yết, lễ Chánh tế, xây chầu đại bội, hát bội, nhạc ngũ âm Khmer, múa Sa-dăm, múa lân và Tùa Lầu Cấu — hiếm hoi hội tụ cả ba nền văn hóa Kinh–Hoa–Khmer trong cùng một lễ hội. Di sản văn hóa phi vật thể quốc gia (QĐ 261/QĐ-BVHTTDL, 22/01/2020). Khu lăng rộng khoảng 8.000 m², là di tích lịch sử–văn hóa cấp quốc gia từ 1996. Hàng chục ngàn người từ Vĩnh Long, Trà Vinh và các tỉnh lân cận về dự mỗi năm.",
+    "summary": "Lễ hội truyền thống hằng năm vào mùng 3–4 tháng Giêng âm lịch tại Lăng Ông, ấp Giồng Thanh Bạch, xã Thiện Mỹ, Trà Ôn, tỉnh Vĩnh Long. Tưởng nhớ Nguyễn Văn Tồn (Thạch Duồng, 1763–1820), danh tướng gốc Khmer phục vụ chúa Nguyễn Ánh, được phong Tiền quân Thống chế Điều bát, có công khai khẩn vùng Trà Ôn–Mân Thít và đào kênh Vĩnh Tế. Lễ hội gồm lễ Túc Yết, lễ Chánh tế, xây chầu đại bội, hát bội, nhạc ngũ âm Khmer, múa Sa-dăm, múa lân và Tùa Lầu Cấu — hiếm hoi hội tụ cả ba nền văn hóa Kinh–Hoa–Khmer trong cùng một lễ hội. Di sản văn hóa phi vật thể quốc gia (QĐ 261/QĐ-BVHTTDL, 22/01/2020). Khu lăng rộng khoảng 8.000 m², là di tích lịch sử–văn hóa cấp quốc gia từ 1996. Hàng chục ngàn người từ Vĩnh Long, Trà Vinh và các tỉnh lân cận về dự mỗi năm.",
     "placeId": "p-long-chau",
     "confidence": 0.9,
     "season": {
@@ -88438,9 +88438,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88479,9 +88479,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88520,9 +88520,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88567,9 +88567,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88614,9 +88614,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88657,9 +88657,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88702,9 +88702,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88743,9 +88743,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88785,9 +88785,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88829,9 +88829,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88871,9 +88871,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88914,9 +88914,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88957,9 +88957,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89002,9 +89002,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89044,9 +89044,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89089,9 +89089,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89131,16 +89131,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
     "id": "khoai-lang-binh-tan",
     "type": "product",
     "name": "Khoai lang tím Nhật Bình Tân",
-    "summary": "Khoai lang tím Nhật Bình Tân ruột tím đậm, vị ngọt bùi, giàu chất chống oxy hóa. Trồng trên đất phù sa màu mỡ huyện Bình Tân, thu hoạch sau 4 tháng. Sản phẩm OCOP 4 sao, xuất khẩu Nhật Bản, Hàn Quốc.",
+    "summary": "Khoai lang tím Nhật Bình Tân ruột tím đậm, vị ngọt bùi, giàu chất chống oxy hóa. Trồng trên đất phù sa màu mỡ Bình Tân, thu hoạch sau 4 tháng. Sản phẩm OCOP 4 sao, xuất khẩu Nhật Bản, Hàn Quốc.",
     "placeId": "p-tan-quoi",
     "confidence": 0.75,
     "season": {
@@ -89188,9 +89188,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89231,9 +89231,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89276,9 +89276,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89319,9 +89319,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89369,9 +89369,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89419,9 +89419,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89462,9 +89462,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89506,9 +89506,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89553,9 +89553,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89604,9 +89604,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89665,9 +89665,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89720,9 +89720,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89769,9 +89769,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89815,9 +89815,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89875,9 +89875,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89934,9 +89934,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89993,9 +89993,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90052,9 +90052,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90111,9 +90111,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90170,9 +90170,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90229,9 +90229,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90288,9 +90288,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90347,9 +90347,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90390,9 +90390,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90437,9 +90437,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90488,9 +90488,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90539,9 +90539,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90590,9 +90590,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90640,9 +90640,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90681,9 +90681,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90727,9 +90727,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90786,9 +90786,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90845,16 +90845,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
     "id": "cau-lac-bo-don-ca-tai-tu-huyen-vung-liem",
     "type": "experience",
     "name": "Câu lạc bộ đờn ca tài tử huyện Vũng Liêm",
-    "summary": "Một câu lạc bộ đờn ca tài tử tiêu biểu tại huyện Vũng Liêm, tỉnh Vĩnh Long, được nêu là nơi sinh hoạt thường xuyên của nhiều nghệ nhân và tài tử.",
+    "summary": "Một câu lạc bộ đờn ca tài tử tiêu biểu tại Vũng Liêm, tỉnh Vĩnh Long, được nêu là nơi sinh hoạt thường xuyên của nhiều nghệ nhân và tài tử.",
     "placeId": "xa-trung-thanh",
     "confidence": 0.9,
     "season": {
@@ -90904,16 +90904,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
     "id": "cau-lac-bo-don-ca-tai-tu-huyen-long-ho",
     "type": "experience",
     "name": "Câu lạc bộ đờn ca tài tử huyện Long Hồ",
-    "summary": "Câu lạc bộ đờn ca tài tử ở huyện Long Hồ, tỉnh Vĩnh Long, được liệt kê là một trong các điểm sinh hoạt đờn ca tài tử của địa phương.",
+    "summary": "Câu lạc bộ đờn ca tài tử ở Long Hồ, tỉnh Vĩnh Long, được liệt kê là một trong các điểm sinh hoạt đờn ca tài tử của địa phương.",
     "placeId": "p-long-chau",
     "confidence": 0.9,
     "season": {
@@ -90963,16 +90963,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
     "id": "cau-lac-bo-don-ca-tai-tu-huyen-tam-binh",
     "type": "experience",
     "name": "Câu lạc bộ đờn ca tài tử huyện Tam Bình",
-    "summary": "Câu lạc bộ đờn ca tài tử tại huyện Tam Bình, tỉnh Vĩnh Long, được nhắc đến trong thống kê các câu lạc bộ của tỉnh.",
+    "summary": "Câu lạc bộ đờn ca tài tử tại Tam Bình, tỉnh Vĩnh Long, được nhắc đến trong thống kê các câu lạc bộ của tỉnh.",
     "placeId": "p-long-chau",
     "confidence": 0.9,
     "season": {
@@ -91022,16 +91022,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
     "id": "cau-lac-bo-don-ca-tai-tu-huyen-tra-on",
     "type": "experience",
     "name": "Câu lạc bộ đờn ca tài tử huyện Trà Ôn",
-    "summary": "Câu lạc bộ đờn ca tài tử ở huyện Trà Ôn, tỉnh Vĩnh Long, là một trong các đơn vị sinh hoạt nghệ thuật được bài viết đề cập.",
+    "summary": "Câu lạc bộ đờn ca tài tử ở Trà Ôn, tỉnh Vĩnh Long, là một trong các đơn vị sinh hoạt nghệ thuật được bài viết đề cập.",
     "placeId": "p-long-chau",
     "confidence": 0.9,
     "season": {
@@ -91081,16 +91081,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
     "id": "cau-lac-bo-don-ca-tai-tu-huyen-mang-thit",
     "type": "experience",
     "name": "Câu lạc bộ đờn ca tài tử huyện Mang Thít",
-    "summary": "Câu lạc bộ đờn ca tài tử tại huyện Mang Thít, tỉnh Vĩnh Long, được nêu như một điểm sinh hoạt nghệ thuật tiêu biểu.",
+    "summary": "Câu lạc bộ đờn ca tài tử tại Mang Thít, tỉnh Vĩnh Long, được nêu như một điểm sinh hoạt nghệ thuật tiêu biểu.",
     "placeId": "xa-nhon-phu",
     "confidence": 0.9,
     "season": {
@@ -91140,16 +91140,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
     "id": "cau-lac-bo-don-ca-tai-tu-thi-xa-binh-minh",
     "type": "experience",
     "name": "Câu lạc bộ đờn ca tài tử thị xã Bình Minh",
-    "summary": "Câu lạc bộ đờn ca tài tử tại thị xã Bình Minh, tỉnh Vĩnh Long, được liệt kê trong danh sách các câu lạc bộ của tỉnh.",
+    "summary": "Câu lạc bộ đờn ca tài tử tại Bình Minh, tỉnh Vĩnh Long, được liệt kê trong danh sách các câu lạc bộ của tỉnh.",
     "placeId": "p-binh-minh",
     "confidence": 0.9,
     "season": {
@@ -91199,9 +91199,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91258,9 +91258,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91317,9 +91317,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91362,9 +91362,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91422,9 +91422,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91482,9 +91482,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91542,9 +91542,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91602,9 +91602,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91662,9 +91662,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91725,9 +91725,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91785,9 +91785,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91845,9 +91845,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91905,9 +91905,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91965,9 +91965,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92025,9 +92025,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92085,9 +92085,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92142,16 +92142,16 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
     "id": "khach-san-binh-minh",
     "type": "accommodation",
     "name": "Khách sạn Bình Minh",
-    "summary": "Khách sạn nhỏ tại TX Bình Minh, phòng sạch sẽ gần chợ và vùng trồng bưởi Năm Roi. Phù hợp khách muốn tham quan vườn bưởi và thưởng thức chè bưởi Bình Minh.",
+    "summary": "Khách sạn nhỏ tại Bình Minh, phòng sạch sẽ gần chợ và vùng trồng bưởi Năm Roi. Phù hợp khách muốn tham quan vườn bưởi và thưởng thức chè bưởi Bình Minh.",
     "placeId": "p-binh-minh",
     "confidence": 0.6,
     "season": {
@@ -92200,9 +92200,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92243,9 +92243,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92301,9 +92301,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92360,9 +92360,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92412,9 +92412,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 04:20:22",
+    "created_at": "2026-06-22 04:44:02",
     "description": "",
-    "createdAt": "2026-06-22T04:20:22Z",
+    "createdAt": "2026-06-22T04:44:02Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   }
 ];
@@ -149186,7 +149186,7 @@ var itineraries = [
         "note": "Nghỉ đêm"
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "xu-dua-ben-tre",
@@ -149213,7 +149213,7 @@ var itineraries = [
         "note": "OCOP 4 sao"
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "di-san-mang-thit-tra-vinh",
@@ -149248,7 +149248,7 @@ var itineraries = [
         "note": "Đặc sản hiếm"
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "tp-vinh-long-nua-ngay",
@@ -149274,7 +149274,7 @@ var itineraries = [
         "id": "cam-sanh-tam-binh"
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "mien-tay-3-ngay",
@@ -149322,7 +149322,7 @@ var itineraries = [
         "id": "bun-nuoc-leo-tra-vinh"
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "food-tour-vinh-long-1-ngay",
@@ -149362,7 +149362,7 @@ var itineraries = [
         "note": "Chè bưởi Bình Minh"
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "food-tour-ben-tre-1-ngay",
@@ -149397,7 +149397,7 @@ var itineraries = [
         "note": "Chè chuối nướng"
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "vinh-long-ben-tre-2-ngay",
@@ -149447,7 +149447,7 @@ var itineraries = [
         "note": "Kẹo dừa Mỏ Cày"
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "dbscl-3-ngay-day-du",
@@ -149512,7 +149512,7 @@ var itineraries = [
         "note": "Mua đặc sản Trà Vinh"
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "tra-vinh-khmer-1-ngay",
@@ -149552,7 +149552,7 @@ var itineraries = [
         "note": "Bánh tét lá cẩm"
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "thien-nhien-phieu-luu-2-ngay",
@@ -149602,7 +149602,7 @@ var itineraries = [
         "note": "Tắm sông"
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "lang-nghe-thu-cong-1-ngay",
@@ -149637,7 +149637,7 @@ var itineraries = [
         "note": "Làng tàu hủ ky Mỹ Hòa"
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "cho-sang-nau-an-nua-ngay",
@@ -149662,7 +149662,7 @@ var itineraries = [
         "note": "Thưởng thức thành phẩm"
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "lang-man-2-ngay",
@@ -149707,7 +149707,7 @@ var itineraries = [
         "note": "Cơm trưa miệt vườn"
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "gia-dinh-vui-1-ngay",
@@ -149742,7 +149742,7 @@ var itineraries = [
         "note": "Khu du lịch Vĩnh Sang"
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "ba-lo-budget-3-ngay",
@@ -149807,7 +149807,7 @@ var itineraries = [
         "note": "Chùa Khmer (miễn phí)"
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "nhiep-anh-1-ngay",
@@ -149847,7 +149847,7 @@ var itineraries = [
         "note": "Sunset cầu Mỹ Thuận"
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "wellness-2-ngay",
@@ -149892,7 +149892,7 @@ var itineraries = [
         "note": "Tắm sông thư giãn"
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "dap-xe-1-ngay",
@@ -149932,7 +149932,7 @@ var itineraries = [
         "note": "Dừa tươi giải khát"
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "cuoi-tuan-2-ngay",
@@ -149977,7 +149977,7 @@ var itineraries = [
         "note": "Mua quà về Sài Gòn"
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "ben-tre-tong-tai-romantic-2day-001",
@@ -150048,7 +150048,7 @@ var itineraries = [
         "note": "~2,5–3 tiếng"
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "tour-p01",
@@ -150088,7 +150088,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "tour-p02",
@@ -150118,7 +150118,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "tour-p03",
@@ -150153,7 +150153,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "tour-p04",
@@ -150178,7 +150178,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "tour-p05",
@@ -150208,7 +150208,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "tour-p06",
@@ -150223,7 +150223,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "tour-p07",
@@ -150248,7 +150248,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "tour-p08",
@@ -150278,7 +150278,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "tour-p09",
@@ -150293,7 +150293,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "tour-p10",
@@ -150323,7 +150323,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "tour-p11",
@@ -150348,7 +150348,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   },
   {
     "id": "tour-p12",
@@ -150378,7 +150378,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 04:20:22"
+    "created_at": "2026-06-22 04:44:02"
   }
 ];
 window.VL_DATA = {
