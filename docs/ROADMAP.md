@@ -241,14 +241,21 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 ### 🔬 Audit dữ liệu đa-agent (2026-06-22) — 24 agent, 9 chiều + verify + critic + round2
 **ĐÃ FIX & DEPLOY (commit gói safe-fix, deploy 20260622-101033):** gói tự-sửa-an-toàn (suy nội bộ, KHÔNG bịa, B1 backup, dry-run): con-phung→con-phung-con-ong-dao-dua (3 itinerary, gỡ dead-end); p-vung-liem.parentId→vinh-long; `attributes.district`→`legacy_district` (465, FE không render); address bỏ ", huyện X" (447, bảo thủ — chừa "Huyện Lộ", giữ thị trấn/TX); **sinh located_in backbone** entity→xã (1354)+xã→tỉnh (124)=+1478 rel (fix graph mồ côi); **validate refine** (B4+test): located_in/part_of không tính fanout-120. rels 9934→11412, validate 0, baseline 1190.
-**CÒN NỢ (theo severity, từ audit — chưa làm):**
-- 🔴 **Toạ độ placeholder**: 1303 entity dùng chung centroid + 58 ngoài bbox + 126 lệch tỉnh → cần geocode từ nguồn (§1.4 không bịa). near-check hiện là dương-tính-giả do centroid.
-- 🟠 **produced_in rác**: 1987/2390 cạnh Descartes (fanout đều 22, tự-sinh) + 592 dish→craft_village sai-loại → cắt cần LUẬT rõ + duyệt (xoá-hàng-loạt, không safe-auto). HOÃN.
-- 🟠 **Graph ngữ nghĩa thưa**: 717 entity không quan hệ ngữ-nghĩa (located_in đã fix phần backbone; còn related_to/associated_with theo cụm chủ đề — bán-tự-động).
-- 🟠 **CTA (§1.4)**: 0 Zalo, product 217/218 không kênh liên hệ, 33 facility (gồm SĐT cấp cứu) source='curated' → cần nguồn/schema. Quick-win: parse `booking_note` trích phone/web có-sẵn (H9); FE tách website vs source (H10).
-- 🟡 **§1.4/dead-link cần người (§4)**: 6 summary SAI tỉnh (scrape nhầm); 16 itinerary-entity split-brain (15/16 trả 404); record rác prov-1 + 5 ghost → xoá cần duyệt.
-- 🟡 **Stale-admin còn**: 259 attributes.ward + 68 address-commune≠placeId-ward → cần crosswalk NQ1687; 728 summary nhắc đơn vị cũ → viết lại.
-- 🟢 **Đối chứng (KHÔNG lỗi)**: 0 dangling/self-loop/dup-triple; DB↔json khớp 100%; near cấu trúc sạch; 0% ảnh=GĐ8; 162 product area-level=đúng.
+**✅ PASS-2 dọn nợ an-toàn (2026-06-22, commit 86904d3 + a8c4a1a + 8735b3b — CHƯA deploy):**
+- Ghost: xoá `prov-1` ("Quán mới X") + `test` ("TEST") + 7 rel (5 ghost trước đã sạch; dangling=0, itinerary-stop hỏng=0 → 16 split-brain đã fix các vòng trước).
+- `attributes.ward`: drop 87 trùng placeId; rename 203 tên-xã-CŨ-giải-thể → `legacy_ward` (giữ provenance, không che lỗi); giữ 115 (xã hiện-tại≠placeId → soát). Address NFC 4.
+- **placeId bulk-default 36** (bằng chứng 3-lớp: address-ward = đúng 1 xã hiện-tại cùng vùng + token trong id/name): Nhị Long 13/Long Châu 8/An Bình 5/Nhơn Phú 4... bị gán nhầm.
+- **placeId phường-số 138** (crosswalk NGUYÊN VĂN NQ1687, cross-check 2× khớp 100%; chỉ map khi address ghi 'TP <tỉnh>' → loại 7 case TX Duyên Hải): VL P1,9→Long Châu/P3,4→Phước Hậu/P5→Thanh Đức/P8→Tân Hạnh; BT P8→Phú Khương/P7→Bến Tre/P6→Sơn Đông; TV P1,3,9→Trà Vinh/P4→Long Đức/P7,8→Nguyệt Hoá/P5→Hoà Thuận. `missing_place_id` 262→199. validate exit 0.
+
+**CÒN NỢ (cần nguồn/duyệt — KHÔNG tự bịa):**
+- 🔴 **Toạ độ placeholder**: 1303 entity dùng chung centroid + 58 ngoài bbox + 126 lệch tỉnh → cần geocode từ nguồn (§1.4 không bịa).
+- 🔴 **199 thiếu placeId**: ĐỀU không có address (cafe/quán ingest thiếu) → 0 suy được, cần nguồn gốc/geocode.
+- 🟠 **13 placeId trỏ non-ward**: phần lớn sông/rạch/cồn (tuyến tính, không thuộc 1 xã) + vài quán trỏ Co.opmart/bến xe → cần xử riêng (không đoán).
+- 🟠 **produced_in rác**: 1987/2390 cạnh Descartes → cắt cần LUẬT rõ + duyệt. HOÃN.
+- 🟠 **CTA (§1.4)**: 0 Zalo, product 217/218 không kênh liên hệ → cần nguồn/schema (H9/H10).
+- 🟡 **~94 address≠placeId "cả hai xã hiện tại" + 115 attributes.ward giữ-soát**: phần lớn placeId VỐN ĐÚNG (address ghi tên cũ); phần nghi sai cần NQ1687 per-case.
+- 🟡 **384 summary nhắc 'huyện X' (giải thể)**: viết lại cần LLM (§B8-gated) hoặc tay — chờ duyệt cách làm.
+- 🟢 **Đối chứng (KHÔNG lỗi)**: 0 dangling/self-loop/dup-triple; DB↔json khớp 100%; near cấu trúc sạch.
 
 ## VERIFY TỔNG THỂ (sau toàn bộ)
 
