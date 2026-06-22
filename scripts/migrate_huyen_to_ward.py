@@ -127,7 +127,8 @@ for w in wards:
 DEFUNCT = re.compile(r"^(huyện|thành phố|thị xã|quận)\b", re.IGNORECASE)
 defunct = [p for p in places if not p.get("level") and DEFUNCT.search(p.get("name","") or "")]
 defunct_ids = {p["id"] for p in defunct}
-mis = [e for e in ents if (e.get("placeId") in defunct_ids) or (e.get("placeId") and e["placeId"] not in place_ids)]
+mis = [e for e in ents if e.get("type") != "place" and (
+        (not e.get("placeId")) or (e.get("placeId") in defunct_ids) or (e["placeId"] not in place_ids))]
 
 def attrs(e):
     a = e.get("attributes") or {}
@@ -136,7 +137,7 @@ def attrs(e):
         except Exception: a = {}
     return a
 
-COMMUNE = re.compile(r"(?:xã|phường|thị trấn)\s+([A-Za-zÀ-ỹ0-9\s]+?)(?:,|$|\s+huyện|\s+TX|\s+thị xã|\s+thành phố|\s+tỉnh)", re.IGNORECASE)
+COMMUNE = re.compile(r"(?:xã|phường|thị trấn)\s+([A-Za-zÀ-ỹ0-9\s]+?)(?:\s*[,–\-]|\s+và\b|$|\s+huyện|\s+TX\b|\s+thị xã|\s+thành phố|\s+tỉnh)", re.IGNORECASE)
 CITY = re.compile(r"(?:thành phố|TP|thị xã|TX)\.?\s+([A-Za-zÀ-ỹ\s]+?)(?:,|$|\s+tỉnh)", re.IGNORECASE)
 
 stats = collections.Counter()
@@ -144,24 +145,25 @@ reassign, detach, table = {}, [], []
 for e in mis:
     a = attrs(e); addr = " ".join(str(a.get(k,"")) for k in ("address","diaChi","dia_chi")).strip()
     area = e.get("area")
-    cands = set(); how = None      # tập tên ward-mới ứng viên
-    m = COMMUNE.search(addr)
-    if m:
-        raw = m.group(1).strip(); cn = norm(raw)
+    # Bắt MỌI xã/phường/thị trấn trong địa chỉ (đa-đơn-vị sau merger thường về cùng 1 ward).
+    wids = set(); how = None
+    for raw in COMMUNE.findall(addr):
+        raw = raw.strip(); cn = norm(raw)
+        if not cn:
+            continue
         if re.fullmatch(r"\d+", raw):          # "phường N" -> cần (thành phố, phường N)
             cm = CITY.search(addr); city = norm(cm.group(1)) if cm else ""
             nk = (city, norm("Phường " + raw))
-            if nk in NUMBERED: cands, how = {NUMBERED[nk]}, "numbered"
-        elif cn in OLD2NEW:
-            cands, how = OLD2NEW[cn], "crosswalk"
-        elif cn in ward_by_name:               # tên xã == 1 ward hiện tại
-            cands, how = {raw}, "direct"
-    # resolve ứng viên -> ward id, LỌC theo area của entity (khử nhập nhằng cùng-tên-khác-vùng)
-    wids = set()
-    for nm in cands:
-        wid = ward_idx.get((norm(re.sub(r"^(xã|phường)\s+", "", nm, flags=re.I)), area))
-        if wid: wids.add(wid)
-    if len(wids) == 1:                          # duy nhất 1 ward khớp area -> an toàn
+            if nk in NUMBERED:
+                w = ward_idx.get((norm(NUMBERED[nk]), area))
+                if w: wids.add(w); how = how or "numbered"
+        else:
+            names = OLD2NEW.get(cn, set()) | ({raw} if cn in ward_by_name else set())
+            for nm in names:
+                w = ward_idx.get((norm(re.sub(r"^(xã|phường)\s+", "", nm, flags=re.I)), area))
+                if w:
+                    wids.add(w); how = how or ("crosswalk" if cn in OLD2NEW else "direct")
+    if len(wids) == 1:                          # mọi đơn-vị-cũ hội tụ đúng 1 ward khớp area -> an toàn
         wid = next(iter(wids)); reassign[e["id"]] = wid; stats[how] += 1
         table.append((e["id"], area, addr[:45], "→", wid, how))
     else:                                       # 0 hoặc >1 (nhập nhằng) -> detach, KHÔNG đoán
