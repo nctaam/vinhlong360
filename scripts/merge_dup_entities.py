@@ -24,6 +24,8 @@ MERGE = {
     "cua-hang-ocop-tra-vinh": "cua-hang-ocop-tra-vinh-trung-tam-xuc-tien-thuong-mai-tinh-tra-vinh",  # 45c → 276c
     # đợt 3 — cùng 1 chùa Ông Mẹt (Wat Kompong) TP Trà Vinh; bản kompong giàu hơn (di tích QG 2009)
     "chua-ong-met": "chua-kompong-ong-met",                    # boilerplate → di tích QG, Bodhisàlaràja
+    # đợt 4 — cùng 1 đình Long Thanh (Long Thanh Miếu Vũ) P5 Vĩnh Long; bản đủ là -long-thanh-vo-mieu
+    "dinh-long-thanh": "dinh-long-thanh-long-thanh-vo-mieu",   # rỗng → di tích QG 1991
 }
 d=json.load(open(DATA,encoding="utf-8")); ents=d["entities"]; byid={e["id"]:e for e in ents}
 # 1. gộp field từ dup vào canonical (giữ canonical, lấy summary DÀI hơn, fill thiếu)
