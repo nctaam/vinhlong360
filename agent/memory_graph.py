@@ -604,13 +604,18 @@ class MemoryGraph:
         """
         Extract (subject, relation, object) triples from a conversation turn.
 
-        Attempts LLM-based extraction first; falls back to keyword heuristics.
+        §B8: LLM-based extraction là LLM-call TỰ ĐỘNG (mỗi chat turn) → CHỈ chạy khi
+        agent nền được opt-in (AUTONOMOUS_AGENT_ENABLED) VÀ còn trong cap/ngày. Mặc định
+        OFF → dùng heuristic keyword, KHÔNG gọi LLM tự động (tránh rò chi phí 24/7).
         Returns list of (subject, relation, object) tuples.
         """
         try:
-            return self._extract_facts_llm(message, reply)
+            from autonomous_budget import enabled as _ab_enabled, try_consume as _ab_consume
+            if _ab_enabled() and _ab_consume(1):
+                return self._extract_facts_llm(message, reply)
         except Exception:
-            return self._extract_facts_keywords(message, reply)
+            pass
+        return self._extract_facts_keywords(message, reply)
 
     def _extract_facts_llm(self, message: str, reply: str) -> list[tuple[str, str, str]]:
         """
@@ -648,6 +653,7 @@ class MemoryGraph:
             messages=[{"role": "user", "content": prompt}],
             temperature=0,
             max_tokens=500,
+            timeout=8,
         )
 
         text = response.choices[0].message.content.strip()

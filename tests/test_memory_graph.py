@@ -334,3 +334,45 @@ class TestDataclasses:
         restored = MemoryEdge.from_dict(d)
         assert restored.source == "a"
         assert restored.weight == 2.5
+
+
+# ---- §B8 gate: LLM fact-extraction phải opt-in ----
+
+
+class TestExtractFactsB8Gate:
+    def test_default_off_does_not_call_llm(self, graph, monkeypatch):
+        """Mặc định (AUTONOMOUS_AGENT_ENABLED unset) → extract_facts KHÔNG gọi LLM."""
+        monkeypatch.delenv("AUTONOMOUS_AGENT_ENABLED", raising=False)
+
+        def _boom(*a, **k):
+            raise AssertionError("LLM không được gọi khi autonomous OFF")
+
+        monkeypatch.setattr(graph, "_extract_facts_llm", _boom)
+        facts = graph.extract_facts("Chùa Ông ở Vĩnh Long", "Đúng vậy")
+        assert isinstance(facts, list)  # fallback keyword, không raise
+
+    def test_opt_in_within_cap_calls_llm(self, graph, monkeypatch):
+        """Opt-in (AUTONOMOUS_AGENT_ENABLED=true) + còn cap → có gọi _extract_facts_llm."""
+        monkeypatch.setenv("AUTONOMOUS_AGENT_ENABLED", "true")
+        import autonomous_budget
+        monkeypatch.setattr(autonomous_budget, "try_consume", lambda n=1: True)
+        called = {"llm": False}
+
+        def _stub(*a, **k):
+            called["llm"] = True
+            return [("a", "near", "b")]
+
+        monkeypatch.setattr(graph, "_extract_facts_llm", _stub)
+        facts = graph.extract_facts("x", "y")
+        assert called["llm"] is True
+        assert facts == [("a", "near", "b")]
+
+    def test_opt_in_over_cap_falls_back(self, graph, monkeypatch):
+        """Opt-in nhưng VƯỢT cap (try_consume=False) → KHÔNG gọi LLM, fallback keyword."""
+        monkeypatch.setenv("AUTONOMOUS_AGENT_ENABLED", "true")
+        import autonomous_budget
+        monkeypatch.setattr(autonomous_budget, "try_consume", lambda n=1: False)
+        monkeypatch.setattr(graph, "_extract_facts_llm",
+                            lambda *a, **k: (_ for _ in ()).throw(AssertionError("vượt cap không được gọi LLM")))
+        facts = graph.extract_facts("x", "y")
+        assert isinstance(facts, list)
