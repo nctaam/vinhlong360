@@ -16,11 +16,14 @@ Tuân thủ NĐ 147/2024: xác thực SĐT VN trước khi cho đăng bài/bình
 import base64
 import hashlib
 import hmac
+import logging
 import os
 import re
 import secrets
 import time
 from datetime import datetime, timedelta, timezone
+
+logger = logging.getLogger("auth")
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -203,9 +206,10 @@ async def request_otp(body: OTPRequest, request: Request):
         wait = int(OTP_RATE_LIMIT_SECONDS - (now - last))
         raise HTTPException(429, f"Vui lòng đợi {wait}s trước khi gửi lại OTP")
 
-    # GĐ4.7: chặn SMS-pump theo IP (xoay nhiều số). XFF lấy IP gốc nếu sau proxy.
-    ip = (request.headers.get("x-forwarded-for", "").split(",")[0].strip()
-          or (request.client.host if request.client else "unknown"))
+    # GĐ4.7: chặn SMS-pump theo IP. SEC-002: dùng get_client_ip (chỉ tin XFF từ
+    # TRUSTED_PROXIES) — tránh giả mạo X-Forwarded-For để vượt rate-limit.
+    from middleware import get_client_ip
+    ip = get_client_ip(request)
     hits = [t for t in _otp_ip_rate.get(ip, []) if now - t < OTP_IP_WINDOW]
     if len(hits) >= OTP_IP_LIMIT:
         raise HTTPException(429, "Quá nhiều yêu cầu OTP từ IP này. Vui lòng thử lại sau.")
@@ -227,11 +231,15 @@ async def request_otp(body: OTPRequest, request: Request):
     message = f"Ma OTP cua ban la {code}. Het han sau {OTP_EXPIRE_MINUTES} phut."
     sent = await _send_sms(phone, message)
 
+    # SEC-001: KHÔNG BAO GIỜ trả OTP trong HTTP response (auth-bypass nếu prod thiếu
+    # ESMS_API_KEY). Khi chưa cấu hình SMS provider (dev), in ra log server để dev đọc.
+    if not ESMS_API_KEY:
+        logger.warning("[DEV] OTP cho %s: %s (chưa cấu hình ESMS_API_KEY)", phone, code)
+
     return {
         "success": True,
         "message": "OTP đã được gửi" if sent else "Không gửi được SMS, thử lại sau",
         "expires_in": OTP_EXPIRE_MINUTES * 60,
-        "dev_code": code if not ESMS_API_KEY else None,
     }
 
 
