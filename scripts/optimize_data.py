@@ -7,6 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "web" / "data.json"
+APPLY = "--apply" in sys.argv  # ETL-01: mặc định DRY-RUN, --apply mới ghi (+ backup B1)
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -140,29 +141,13 @@ for e in entities:
     if e["type"] == "place" and e.get("area"):
         area_places[e["area"]].append(e)
 
-# Find orphan non-place entities that have area or placeId
+# ĐÃ VÔ HIỆU (ETL-02, §1.4): trước đây tự gán produced_in cho orphan về placeId hoặc
+# "place đầu tiên theo area" — quan hệ BỊA không bằng chứng (món/sản phẩm KHÔNG thật sự
+# 'produced_in' phường đầu danh sách). Orphan nên giải bằng crosswalk có bằng chứng
+# (migrate_huyen_to_ward / fix_placeid_crosswalk), KHÔNG tự sinh produced_in.
 orphans = [e for e in entities if e["id"] not in rel_ids and e["type"] != "place"]
-linked = 0
-new_rels = []
-for e in orphans:
-    area = e.get("area")
-    pid = e.get("placeId")
-
-    # If has placeId and the place exists, add produced_in
-    if pid and pid in by_id:
-        new_rels.append({"from": e["id"], "to": pid, "type": "produced_in"})
-        linked += 1
-        continue
-
-    # If has area, link to the area's main place (first match)
-    if area and area in area_places:
-        target = area_places[area][0]
-        new_rels.append({"from": e["id"], "to": target["id"], "type": "produced_in"})
-        linked += 1
-
-data["relationships"].extend(new_rels)
-fixes["orphan_linked"] = linked
-print(f"  Linked orphans: {linked}")
+print(f"  Orphan non-place: {len(orphans)} (KHÔNG tự gán produced_in — §1.4)")
+fixes["orphan_linked"] = 0
 
 # ── 8. Enrich short summaries ──
 print("\n── 8. Very short summaries (<30 chars) ──")
@@ -179,10 +164,15 @@ for k, v in fixes.most_common():
     print(f"  {k}: {v}")
 print(f"  TOTAL CHANGES: {total_fixes}")
 
-# Save
-with DATA.open("w", encoding="utf-8") as f:
-    json.dump(data, f, ensure_ascii=False, indent=None, separators=(",", ":"))
-print(f"\n✅ Saved: {len(entities)} entities, {len(data['relationships'])} rels")
+# Save — ETL-01: chỉ ghi khi --apply, BẮT BUỘC backup B1 trước (§B1)
+if APPLY:
+    import subprocess
+    subprocess.run([sys.executable, str(ROOT / "scripts" / "backup_data.py")], check=False)
+    with DATA.open("w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    print(f"\n✅ Saved: {len(entities)} entities, {len(data['relationships'])} rels")
+else:
+    print(f"\n(DRY-RUN — chưa ghi. Thêm --apply để ghi, sẽ tự backup trước.)")
 
 # File size
 size_kb = DATA.stat().st_size / 1024
