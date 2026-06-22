@@ -195,7 +195,7 @@ if (post.value) {
     ogTitle: `${postTitle} — vinhlong360`,
     ogDescription: postDesc,
     ogImage: p.images?.[0] || '/icons/icon-512.png',
-    robots: 'noindex,follow',
+    // SEO-04: robots đã set ở useHead (vô-điều-kiện) → bỏ ở đây tránh thẻ trùng
   })
 
   const articleLd: Record<string, any> = {

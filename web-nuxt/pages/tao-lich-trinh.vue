@@ -268,15 +268,9 @@ function getTypeMeta(type: string) {
   return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }
 }
 
-function extractCoords(entity: Entity): [number, number] | undefined {
-  let c = entity.coordinates
-  if (!c) return undefined
-  if (typeof c === 'string') {
-    try { c = JSON.parse(c) } catch { return undefined }
-  }
-  if (Array.isArray(c) && c.length >= 2) return [c[0], c[1]]
-  if (c.lat && c.lng) return [c.lat, c.lng]
-  return undefined
+// F4: dùng chuẩn chung normalizeCoords (validate + hoán đổi lat/lng đảo)
+function extractCoords(entity: Entity): [number, number] | null {
+  return normalizeCoords(entity.coordinates)
 }
 
 function addStop(entity: Entity) {

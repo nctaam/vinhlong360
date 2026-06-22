@@ -770,7 +770,7 @@ if (entity.value && !entity.value.error) {
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-      { '@type': 'ListItem', position: 2, name: typeMeta.value.label, item: `https://vinhlong360.vn/du-lich` },
+      { '@type': 'ListItem', position: 2, name: typeMeta.value.label, item: `https://vinhlong360.vn${typeBreadcrumbUrl.value}` },
       { '@type': 'ListItem', position: 3, name: e.name },
     ],
   }

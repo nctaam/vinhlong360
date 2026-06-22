@@ -172,7 +172,7 @@ const totalContent = computed(() => {
 })
 
 const mapUrl = computed(() => {
-  const c = data.value?.place?.coordinates
+  const c = normalizeCoords(data.value?.place?.coordinates)
   if (!c) return '/ban-do'
   return `/ban-do?lat=${c[0]}&lng=${c[1]}&zoom=15`
 })
@@ -215,8 +215,9 @@ function allEntities() {
 const mapLoadError = ref(false)
 const mapReady = ref(false)
 watch(mapEl, async (el) => {
-  if (!el || !data.value?.place?.coordinates) return
-  const coords = data.value.place.coordinates
+  const center = normalizeCoords(data.value?.place?.coordinates)
+  if (!el || !center) return
+  const coords = center  // [lat, lng] đã chuẩn hoá (chống NaN khi coords là chuỗi/đảo)
   let map: any, maplibregl: any
   try {
     const r = await createMap(el, { center: [coords[1], coords[0]], zoom: 14 })
@@ -246,8 +247,8 @@ watch(mapEl, async (el) => {
   const entities = allEntities()
 
   for (const ent of entities) {
-    const c = ent.coordinates
-    if (!c || !c[0] || !c[1]) continue
+    const c = normalizeCoords(ent.coordinates)
+    if (!c) continue
     const meta = TYPE_META[ent.type] || { emoji: '📍', label: '' }
     const el = document.createElement('div')
     el.className = 'wp-marker'

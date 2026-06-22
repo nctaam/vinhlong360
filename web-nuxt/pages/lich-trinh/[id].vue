@@ -157,13 +157,9 @@ let mapInstance: unknown = null
 let maplibre: unknown = null
 let markers: unknown[] = []
 
-function extractCoords(raw: any): [number, number] | undefined {
-  let c = raw
-  if (!c) return undefined
-  if (typeof c === 'string') { try { c = JSON.parse(c) } catch { return undefined } }
-  if (Array.isArray(c) && c.length >= 2) return [c[0], c[1]]
-  if (c.lat && c.lng) return [c.lat, c.lng]
-  return undefined
+// F3: dùng chuẩn chung normalizeCoords (validate hữu hạn + tự hoán đổi lat/lng đảo)
+function extractCoords(raw: any): [number, number] | null {
+  return normalizeCoords(raw)
 }
 
 function loadCoords() {
