@@ -33,9 +33,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-21T17:04:47Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-21T17:04:47Z"
   },
   {
@@ -63,9 +63,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": null,
     "updatedAt": "2026-06-18T06:12:14.388505Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-18T06:12:14.388505Z"
   },
   {
@@ -85,17 +85,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.2437815,
-      106.0044454
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "phuong",
     "parentId": "vinh-long",
     "legacyArea": "TP Vĩnh Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -123,9 +123,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Vĩnh Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -145,17 +145,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "phuong",
     "parentId": "vinh-long",
     "legacyArea": "TP Vĩnh Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -175,17 +175,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.2307589,
-      105.933592
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "phuong",
     "parentId": "vinh-long",
     "legacyArea": "TP Vĩnh Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -205,17 +205,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.2526336,
-      105.9033586
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "phuong",
     "parentId": "vinh-long",
     "legacyArea": "TP Vĩnh Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -235,17 +235,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.0675818,
-      105.8219716
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "phuong",
     "parentId": "vinh-long",
     "legacyArea": "TX Bình Minh",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -265,17 +265,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.018573,
-      105.8315299
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "phuong",
     "parentId": "vinh-long",
     "legacyArea": "TX Bình Minh",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -295,17 +295,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.0357184,
-      105.8631047
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "phuong",
     "parentId": "vinh-long",
     "legacyArea": "TX Bình Minh",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -325,17 +325,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.1979974,
-      106.1182091
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Mang Thít",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -355,17 +355,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.1394328,
-      106.0716419
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Mang Thít",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -385,17 +385,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.2226817,
-      106.0677181
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Mang Thít",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -415,17 +415,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.1938991,
-      106.0395304
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Mang Thít",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -445,17 +445,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Long Hồ",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -475,17 +475,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.173236,
-      105.9213496
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Long Hồ",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -505,17 +505,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.1125464,
-      106.2262822
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -535,17 +535,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.0686207,
-      106.1664348
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -565,17 +565,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.0916931,
-      106.5448581
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -595,17 +595,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.1368913,
-      106.1639807
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -625,17 +625,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.1107503,
-      106.1231266
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -655,17 +655,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.0593458,
-      106.1112017
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -685,17 +685,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      9.9903825,
-      106.1029649
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -715,17 +715,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      9.940562,
-      105.9177584
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Vũng Liêm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -745,17 +745,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.0159094,
-      106.0063012
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Tam Bình",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -775,17 +775,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      9.9659183,
-      106.0312441
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Trà Ôn",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -805,17 +805,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.0335457,
-      106.0632915
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Tam Bình",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -835,17 +835,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.1109701,
-      106.036736
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Tam Bình",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -865,17 +865,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.0106504,
-      105.9313007
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Tam Bình",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -895,17 +895,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.102614,
-      105.8911636
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Tam Bình",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -925,17 +925,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.1173628,
-      105.9663582
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Tam Bình",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -955,17 +955,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.1607991,
-      105.7360005
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Bình Tân",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -985,17 +985,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.1333801,
-      105.8187729
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Bình Tân",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1027,9 +1027,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1062,9 +1062,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1084,17 +1084,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.1834173,
-      105.9984948
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "phuong",
     "parentId": "vinh-long",
     "legacyArea": "Long Hồ",
     "updatedAt": "2026-06-18T06:12:14.384018Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-18T06:12:14.384018Z"
   },
   {
@@ -1114,17 +1114,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.0597234,
-      105.9710483
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "phuong",
     "parentId": "vinh-long",
     "legacyArea": "Tam Bình",
     "updatedAt": "2026-06-18T06:12:14.386370Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-18T06:12:14.386370Z"
   },
   {
@@ -1144,17 +1144,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.1017078,
-      105.7634388
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "phuong",
     "parentId": "vinh-long",
     "legacyArea": "Bình Tân",
     "updatedAt": "2026-06-18T06:12:14.386804Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-18T06:12:14.386804Z"
   },
   {
@@ -1174,17 +1174,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      9.9451384,
-      105.9564155
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": "phuong",
     "parentId": "vinh-long",
     "legacyArea": "Trà Ôn",
     "updatedAt": "2026-06-18T06:12:14.387185Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-18T06:12:14.387185Z"
   },
   {
@@ -1221,9 +1221,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1260,9 +1260,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1299,9 +1299,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1346,9 +1346,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1385,9 +1385,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1432,9 +1432,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1471,9 +1471,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1502,17 +1502,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      10.0527561,
+      106.3145932
     ],
     "area": null,
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1549,9 +1549,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1588,9 +1588,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1627,9 +1627,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1666,9 +1666,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1705,9 +1705,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1736,17 +1736,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      10.0527561,
+      106.3145932
     ],
     "area": null,
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -1774,9 +1774,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1804,9 +1804,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Trà Vinh",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1834,9 +1834,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Trà Vinh",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1864,9 +1864,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Trà Vinh",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1894,9 +1894,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Trà Vinh",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1924,9 +1924,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TX Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1954,9 +1954,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TX Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -1984,9 +1984,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2014,9 +2014,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Càng Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2044,9 +2044,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Càng Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2074,9 +2074,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Càng Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2104,9 +2104,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Càng Long",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2134,9 +2134,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Châu Thành",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2164,9 +2164,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Châu Thành",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2194,9 +2194,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Châu Thành",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2224,9 +2224,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Kè",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2254,9 +2254,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Kè",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2284,9 +2284,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Kè",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2314,9 +2314,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Kè",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2344,9 +2344,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Ngang",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2374,9 +2374,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Ngang",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2404,9 +2404,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Ngang",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2434,9 +2434,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Ngang",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2464,9 +2464,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Cầu Ngang",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2494,9 +2494,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Trà Cú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2524,9 +2524,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Trà Cú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2554,9 +2554,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Trà Cú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2584,9 +2584,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Trà Cú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2614,9 +2614,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Trà Cú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2644,9 +2644,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Trà Cú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2674,9 +2674,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2704,9 +2704,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2734,9 +2734,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2764,9 +2764,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2794,9 +2794,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2824,9 +2824,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2858,9 +2858,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Duyên Hải",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2888,9 +2888,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Bến Tre",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2918,9 +2918,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Bến Tre",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2948,9 +2948,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Bến Tre",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -2978,9 +2978,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Bến Tre",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3008,9 +3008,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "TP Bến Tre",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3038,9 +3038,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Châu Thành",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3068,9 +3068,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Châu Thành",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3098,9 +3098,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Chợ Lách",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3138,9 +3138,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Chợ Lách",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3168,9 +3168,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Chợ Lách",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3198,9 +3198,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Chợ Lách",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3228,9 +3228,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Bắc",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3258,9 +3258,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Bắc",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3288,9 +3288,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Bắc",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3318,9 +3318,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Nam",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3348,9 +3348,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Nam",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3378,9 +3378,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Nam",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3408,9 +3408,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Nam",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3438,9 +3438,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Thạnh Phú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3468,9 +3468,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Thạnh Phú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3498,9 +3498,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Thạnh Phú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3528,9 +3528,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Thạnh Phú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3558,9 +3558,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Thạnh Phú",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3588,9 +3588,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Ba Tri",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3618,9 +3618,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Ba Tri",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3648,9 +3648,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Ba Tri",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3670,17 +3670,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.0916931,
-      106.5448581
+      10.254177,
+      105.9627693
     ],
     "area": "ben-tre",
     "level": "xa",
     "parentId": "vinh-long",
     "legacyArea": "Ba Tri",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3708,9 +3708,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Ba Tri",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3738,9 +3738,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Giồng Trôm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3768,9 +3768,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Giồng Trôm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3798,9 +3798,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Giồng Trôm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3828,9 +3828,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Giồng Trôm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3858,9 +3858,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Giồng Trôm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3888,9 +3888,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Giồng Trôm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3918,9 +3918,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Giồng Trôm",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3948,9 +3948,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Đại",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -3978,9 +3978,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Đại",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -4008,9 +4008,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Đại",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -4038,9 +4038,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Đại",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -4068,9 +4068,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Đại",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -4098,9 +4098,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Đại",
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -4133,9 +4133,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -4163,9 +4163,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Ba Tri",
     "updatedAt": "2026-06-18T06:12:14.389180Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-18T06:12:14.389180Z"
   },
   {
@@ -4193,9 +4193,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Bình Đại",
     "updatedAt": "2026-06-18T06:12:14.389945Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-18T06:12:14.389945Z"
   },
   {
@@ -4223,9 +4223,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Mỏ Cày Nam",
     "updatedAt": "2026-06-18T06:12:14.390479Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-18T06:12:14.390479Z"
   },
   {
@@ -4262,9 +4262,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Châu Thành",
     "updatedAt": "2026-06-18T06:12:14.391234Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-18T06:12:14.391234Z"
   },
   {
@@ -4292,9 +4292,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Châu Thành",
     "updatedAt": "2026-06-18T06:12:14.391688Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-18T06:12:14.391688Z"
   },
   {
@@ -4322,9 +4322,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Ba Tri",
     "updatedAt": "2026-06-18T06:12:14.392074Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-18T06:12:14.392074Z"
   },
   {
@@ -4352,9 +4352,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Càng Long",
     "updatedAt": "2026-06-18T06:12:14.392513Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-18T06:12:14.392513Z"
   },
   {
@@ -4382,9 +4382,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tiểu Cần",
     "updatedAt": "2026-06-18T06:12:14.392980Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-18T06:12:14.392980Z"
   },
   {
@@ -4412,9 +4412,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tiểu Cần",
     "updatedAt": "2026-06-18T06:12:14.393240Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-18T06:12:14.393240Z"
   },
   {
@@ -4442,9 +4442,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tiểu Cần",
     "updatedAt": "2026-06-18T06:12:14.393555Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-18T06:12:14.393555Z"
   },
   {
@@ -4472,9 +4472,9 @@ var places = [
     "parentId": "vinh-long",
     "legacyArea": "Tiểu Cần",
     "updatedAt": "2026-06-18T06:12:14.393883Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-18T06:12:14.393883Z"
   },
   {
@@ -4524,9 +4524,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4566,9 +4566,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4610,9 +4610,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4650,9 +4650,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4690,9 +4690,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4730,9 +4730,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4770,9 +4770,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4810,9 +4810,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4850,9 +4850,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4891,9 +4891,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4926,17 +4926,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      10.0527561,
+      106.3145932
     ],
     "area": null,
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -4976,9 +4976,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -5018,9 +5018,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -5060,9 +5060,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -5094,17 +5094,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      10.0527561,
+      106.3145932
     ],
     "area": null,
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -5144,9 +5144,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -5178,17 +5178,17 @@ var places = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      10.0527561,
+      106.3145932
     ],
     "area": null,
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -5228,9 +5228,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -5273,9 +5273,9 @@ var places = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   }
 ];
@@ -5322,9 +5322,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-21T17:04:47Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-21T17:04:47Z"
   },
   {
@@ -5344,9 +5344,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-20T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-20T00:00:00Z"
   },
   {
@@ -5394,9 +5394,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5444,9 +5444,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5494,9 +5494,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5544,9 +5544,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5594,9 +5594,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5644,9 +5644,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5694,9 +5694,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5744,9 +5744,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5794,9 +5794,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5844,9 +5844,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5893,17 +5893,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.1834173,
+      105.9984948
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -5958,9 +5958,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6008,9 +6008,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6065,9 +6065,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6115,9 +6115,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6170,9 +6170,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6220,9 +6220,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6277,9 +6277,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6327,9 +6327,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6377,9 +6377,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6431,9 +6431,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6488,9 +6488,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6530,17 +6530,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.0357184,
+      105.8631047
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6594,9 +6594,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6648,9 +6648,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6705,9 +6705,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6761,9 +6761,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6817,9 +6817,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6867,9 +6867,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6921,9 +6921,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -6978,9 +6978,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7028,9 +7028,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7086,9 +7086,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7144,9 +7144,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7202,9 +7202,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7260,9 +7260,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7314,9 +7314,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7370,9 +7370,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7420,9 +7420,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7478,9 +7478,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7532,9 +7532,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7588,9 +7588,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7643,9 +7643,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7693,9 +7693,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7749,9 +7749,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7805,9 +7805,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7861,9 +7861,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7918,9 +7918,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -7976,9 +7976,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8026,9 +8026,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8076,9 +8076,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8134,9 +8134,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8188,9 +8188,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8241,9 +8241,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8299,9 +8299,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8349,9 +8349,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8403,9 +8403,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8453,9 +8453,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8503,9 +8503,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8553,9 +8553,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8603,17 +8603,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2946542,
+      106.3018701
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8665,9 +8665,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8723,9 +8723,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8776,9 +8776,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8834,9 +8834,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8884,17 +8884,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2946542,
+      106.3018701
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8942,9 +8942,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -8984,17 +8984,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.1466808,
+      106.4613646
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9042,9 +9042,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9092,9 +9092,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9142,9 +9142,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9196,9 +9196,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9254,9 +9254,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9296,17 +9296,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2009202,
+      106.3727946
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9354,9 +9354,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9404,9 +9404,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9446,17 +9446,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2714275,
+      106.3393737
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9504,9 +9504,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9554,9 +9554,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9596,17 +9596,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2714275,
+      106.3393737
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9654,9 +9654,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9704,9 +9704,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9759,9 +9759,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9809,9 +9809,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9859,9 +9859,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9909,9 +9909,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -9967,9 +9967,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10017,9 +10017,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10067,9 +10067,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10117,9 +10117,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10167,9 +10167,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10217,9 +10217,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10267,9 +10267,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10317,9 +10317,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10372,9 +10372,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10422,9 +10422,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10472,9 +10472,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10530,9 +10530,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10580,9 +10580,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10638,9 +10638,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10688,9 +10688,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10746,9 +10746,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10796,9 +10796,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10846,9 +10846,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10896,9 +10896,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -10954,9 +10954,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11004,9 +11004,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11054,9 +11054,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11108,9 +11108,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11158,9 +11158,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11211,9 +11211,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11261,9 +11261,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11311,9 +11311,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11361,9 +11361,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11419,9 +11419,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11469,9 +11469,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11524,9 +11524,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11574,9 +11574,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11616,17 +11616,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      9.6620895,
+      106.5179466
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11674,9 +11674,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11732,9 +11732,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11782,9 +11782,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11832,9 +11832,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11890,9 +11890,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -11948,9 +11948,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -12006,9 +12006,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -12064,9 +12064,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:29:05Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:29:05Z"
   },
   {
@@ -12123,9 +12123,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-17T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-17T00:00:00Z"
   },
   {
@@ -12182,9 +12182,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12227,9 +12227,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12288,9 +12288,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12345,9 +12345,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12402,9 +12402,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12434,9 +12434,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12466,9 +12466,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12523,9 +12523,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12555,9 +12555,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12587,9 +12587,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12619,9 +12619,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12651,9 +12651,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12683,9 +12683,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12715,9 +12715,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12747,9 +12747,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12779,9 +12779,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12811,9 +12811,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12869,9 +12869,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12919,9 +12919,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -12969,9 +12969,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13023,9 +13023,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13081,9 +13081,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13126,9 +13126,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13182,9 +13182,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13240,9 +13240,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13272,9 +13272,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13304,9 +13304,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13361,9 +13361,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13417,9 +13417,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13460,9 +13460,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13509,9 +13509,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13566,9 +13566,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13624,9 +13624,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13682,9 +13682,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13740,9 +13740,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-12T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-12T00:00:00Z"
   },
   {
@@ -13774,9 +13774,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -13836,9 +13836,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -13898,9 +13898,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -13931,9 +13931,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -13964,9 +13964,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -13997,9 +13997,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14058,9 +14058,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14091,9 +14091,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14124,9 +14124,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14185,9 +14185,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14244,9 +14244,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14305,9 +14305,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14366,9 +14366,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14406,9 +14406,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14467,9 +14467,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14500,9 +14500,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14533,9 +14533,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14566,9 +14566,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14599,9 +14599,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14660,9 +14660,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14715,9 +14715,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14748,9 +14748,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14795,9 +14795,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14854,9 +14854,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14915,9 +14915,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -14976,9 +14976,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15009,9 +15009,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15050,9 +15050,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15083,9 +15083,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15142,9 +15142,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15175,9 +15175,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15208,9 +15208,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15241,9 +15241,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15290,9 +15290,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15323,9 +15323,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15356,9 +15356,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15389,9 +15389,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15422,9 +15422,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15455,9 +15455,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15488,9 +15488,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15549,9 +15549,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15610,9 +15610,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15669,9 +15669,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15729,9 +15729,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15776,9 +15776,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15833,9 +15833,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15892,9 +15892,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -15951,9 +15951,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16012,9 +16012,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16045,9 +16045,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16078,9 +16078,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16139,9 +16139,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16200,9 +16200,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16261,9 +16261,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16322,9 +16322,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16383,9 +16383,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16416,9 +16416,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16449,9 +16449,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16510,9 +16510,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16570,9 +16570,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16627,9 +16627,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16688,9 +16688,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16749,9 +16749,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16803,9 +16803,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16864,9 +16864,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16922,9 +16922,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16955,9 +16955,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -16988,9 +16988,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17054,9 +17054,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17115,9 +17115,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17175,9 +17175,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17208,9 +17208,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17241,9 +17241,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17274,9 +17274,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17307,9 +17307,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17340,9 +17340,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17373,9 +17373,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17406,9 +17406,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17439,9 +17439,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17472,9 +17472,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17505,9 +17505,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17550,9 +17550,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17583,9 +17583,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17616,9 +17616,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17649,9 +17649,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17682,9 +17682,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17727,9 +17727,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17760,9 +17760,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17793,9 +17793,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17826,9 +17826,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17859,9 +17859,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17892,9 +17892,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17925,9 +17925,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17958,9 +17958,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -17991,9 +17991,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18056,9 +18056,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18117,9 +18117,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18178,9 +18178,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18239,9 +18239,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18297,9 +18297,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18347,17 +18347,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18405,17 +18405,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      9.9451384,
+      105.9564155
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18472,9 +18472,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18531,9 +18531,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18590,9 +18590,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18641,17 +18641,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2729336,
-      106.2511426
+      10.1834173,
+      105.9984948
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18709,9 +18709,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18768,9 +18768,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18819,17 +18819,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18886,9 +18886,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -18946,9 +18946,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19006,9 +19006,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19065,9 +19065,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19124,9 +19124,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19164,17 +19164,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19227,17 +19227,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19287,17 +19287,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19347,17 +19347,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19403,17 +19403,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19461,9 +19461,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19507,9 +19507,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19567,9 +19567,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19615,17 +19615,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19671,17 +19671,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19724,17 +19724,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19778,17 +19778,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19837,17 +19837,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19896,17 +19896,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -19947,17 +19947,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20005,17 +20005,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20065,9 +20065,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20107,17 +20107,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20175,9 +20175,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20227,9 +20227,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20274,17 +20274,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20337,17 +20337,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20400,17 +20400,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20463,17 +20463,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20526,9 +20526,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20581,17 +20581,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20639,9 +20639,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20686,9 +20686,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20733,17 +20733,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20791,9 +20791,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20850,9 +20850,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20912,9 +20912,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -20974,9 +20974,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21026,17 +21026,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21090,17 +21090,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21145,17 +21145,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21205,17 +21205,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21263,17 +21263,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21317,17 +21317,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21379,17 +21379,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21442,9 +21442,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21494,9 +21494,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21545,17 +21545,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21593,17 +21593,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21652,17 +21652,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21710,17 +21710,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21780,9 +21780,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21826,17 +21826,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21887,17 +21887,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21926,17 +21926,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -21965,17 +21965,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22004,17 +22004,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22043,17 +22043,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22082,17 +22082,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22121,17 +22121,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22160,17 +22160,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22199,17 +22199,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22238,17 +22238,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22277,17 +22277,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22316,17 +22316,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22355,17 +22355,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22394,17 +22394,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22433,17 +22433,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22472,17 +22472,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22511,17 +22511,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22550,17 +22550,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22589,17 +22589,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22653,17 +22653,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22717,17 +22717,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22781,17 +22781,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22845,17 +22845,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22908,17 +22908,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -22972,17 +22972,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23036,17 +23036,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23100,17 +23100,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23164,17 +23164,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23228,17 +23228,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23292,17 +23292,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23356,17 +23356,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23420,17 +23420,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23484,17 +23484,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23548,17 +23548,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23612,17 +23612,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23676,17 +23676,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23751,9 +23751,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23816,9 +23816,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23881,9 +23881,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -23938,17 +23938,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24020,9 +24020,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24077,17 +24077,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24142,17 +24142,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24207,17 +24207,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24280,9 +24280,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24340,9 +24340,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24405,9 +24405,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24462,17 +24462,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24527,17 +24527,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24592,17 +24592,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24657,17 +24657,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24722,17 +24722,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24787,17 +24787,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24852,17 +24852,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24925,9 +24925,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -24982,17 +24982,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25047,17 +25047,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25112,17 +25112,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25179,17 +25179,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25245,17 +25245,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25313,17 +25313,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25381,17 +25381,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25449,17 +25449,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25517,17 +25517,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25585,17 +25585,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25653,17 +25653,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25721,17 +25721,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25789,17 +25789,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25857,17 +25857,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25924,17 +25924,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -25991,17 +25991,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26058,17 +26058,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26125,17 +26125,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26192,17 +26192,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26259,17 +26259,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26326,17 +26326,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26393,17 +26393,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26460,17 +26460,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26527,17 +26527,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26594,17 +26594,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26657,17 +26657,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26724,17 +26724,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26791,17 +26791,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26863,17 +26863,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -26932,17 +26932,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27001,17 +27001,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27070,17 +27070,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27139,17 +27139,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27208,17 +27208,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27277,17 +27277,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27346,17 +27346,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27415,17 +27415,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27482,17 +27482,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27549,17 +27549,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27616,17 +27616,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27683,17 +27683,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27750,17 +27750,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27817,17 +27817,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27884,17 +27884,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -27951,17 +27951,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28018,17 +28018,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28085,17 +28085,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28152,17 +28152,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28219,17 +28219,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28286,17 +28286,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28353,17 +28353,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28420,17 +28420,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28487,17 +28487,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28553,17 +28553,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28620,17 +28620,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28687,17 +28687,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28754,17 +28754,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28821,17 +28821,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28888,17 +28888,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -28955,17 +28955,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29022,17 +29022,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29089,17 +29089,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29156,17 +29156,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29223,17 +29223,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29290,17 +29290,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29357,17 +29357,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29424,17 +29424,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29491,17 +29491,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29558,17 +29558,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29625,17 +29625,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29692,17 +29692,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29759,17 +29759,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29826,17 +29826,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29893,17 +29893,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -29960,17 +29960,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30027,17 +30027,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30094,17 +30094,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30161,17 +30161,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30228,17 +30228,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30295,17 +30295,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30362,17 +30362,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30429,17 +30429,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30496,17 +30496,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30563,17 +30563,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30630,17 +30630,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30697,17 +30697,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30764,17 +30764,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30831,17 +30831,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30898,17 +30898,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -30965,17 +30965,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31032,17 +31032,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31099,17 +31099,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31166,17 +31166,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31223,9 +31223,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31275,9 +31275,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31321,9 +31321,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31375,9 +31375,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31424,9 +31424,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31472,9 +31472,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31521,9 +31521,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31600,9 +31600,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31671,9 +31671,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31741,9 +31741,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31784,9 +31784,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31865,9 +31865,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -31949,9 +31949,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32022,9 +32022,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32083,9 +32083,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32118,17 +32118,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32162,17 +32162,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32204,17 +32204,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32246,17 +32246,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32286,17 +32286,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32326,17 +32326,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32366,17 +32366,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32406,17 +32406,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32446,17 +32446,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32486,17 +32486,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32526,17 +32526,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32566,17 +32566,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32606,17 +32606,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32646,17 +32646,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32686,17 +32686,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32726,17 +32726,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32793,17 +32793,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32868,9 +32868,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32927,17 +32927,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -32994,17 +32994,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33061,17 +33061,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33128,17 +33128,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33195,17 +33195,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33262,17 +33262,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33337,9 +33337,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33396,17 +33396,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33463,17 +33463,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33530,17 +33530,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33597,17 +33597,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33672,9 +33672,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33739,9 +33739,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33806,9 +33806,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33865,17 +33865,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -33932,17 +33932,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34007,9 +34007,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34066,17 +34066,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34134,17 +34134,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34202,17 +34202,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34270,17 +34270,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34338,17 +34338,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34406,17 +34406,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34474,17 +34474,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34542,17 +34542,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34610,17 +34610,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34678,17 +34678,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34746,17 +34746,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34811,17 +34811,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34876,17 +34876,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -34941,17 +34941,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35006,17 +35006,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35071,17 +35071,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35139,17 +35139,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35207,17 +35207,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35275,17 +35275,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35343,17 +35343,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35411,17 +35411,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35479,17 +35479,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35547,17 +35547,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35615,17 +35615,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35683,17 +35683,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35751,17 +35751,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35816,17 +35816,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35881,17 +35881,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -35946,17 +35946,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36011,17 +36011,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36076,17 +36076,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36141,17 +36141,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36206,17 +36206,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36261,17 +36261,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36319,17 +36319,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36373,17 +36373,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36431,17 +36431,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36488,17 +36488,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36542,17 +36542,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36596,17 +36596,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36650,17 +36650,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36704,17 +36704,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36758,17 +36758,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36820,9 +36820,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36874,17 +36874,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36928,17 +36928,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -36982,17 +36982,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37038,17 +37038,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37092,17 +37092,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37146,17 +37146,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37200,17 +37200,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37254,17 +37254,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37308,17 +37308,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37362,17 +37362,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37419,17 +37419,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37476,17 +37476,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37539,9 +37539,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37589,9 +37589,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37650,9 +37650,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37709,9 +37709,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37742,9 +37742,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37792,17 +37792,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37855,9 +37855,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37887,9 +37887,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37919,9 +37919,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -37974,9 +37974,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38005,17 +38005,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38036,17 +38036,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38081,9 +38081,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38118,9 +38118,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38141,17 +38141,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38172,17 +38172,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38217,9 +38217,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38240,17 +38240,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0007,
-      106.3124
+      10.0260222,
+      106.2929946
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38278,17 +38278,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38309,17 +38309,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38340,17 +38340,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38385,9 +38385,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38413,9 +38413,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38436,17 +38436,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38467,17 +38467,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2399,
-      106.0862
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38507,9 +38507,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38539,9 +38539,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38588,9 +38588,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38638,9 +38638,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38683,9 +38683,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38740,9 +38740,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38797,9 +38797,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38854,9 +38854,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38911,9 +38911,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -38968,9 +38968,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39025,9 +39025,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39082,9 +39082,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39139,9 +39139,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39193,9 +39193,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39250,9 +39250,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Tây Nam Bộ - Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39307,9 +39307,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39364,9 +39364,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39420,9 +39420,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39477,9 +39477,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39534,9 +39534,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39590,9 +39590,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39647,9 +39647,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39701,9 +39701,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39758,9 +39758,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39815,9 +39815,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39872,9 +39872,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Miền Tây Nam Bộ",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39921,17 +39921,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.6620895,
-      106.5179466
+      9.703934,
+      106.532933
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -39987,9 +39987,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40039,9 +40039,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40095,9 +40095,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40152,9 +40152,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40206,9 +40206,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40263,9 +40263,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40319,9 +40319,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40376,9 +40376,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40433,9 +40433,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long - Duyên hải miền Tây",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40465,9 +40465,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40497,9 +40497,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40529,9 +40529,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40561,9 +40561,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40618,9 +40618,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40650,9 +40650,9 @@ var items = [
     "parentId": null,
     "legacyArea": "Đồng bằng sông Cửu Long",
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40695,9 +40695,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40763,9 +40763,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40825,9 +40825,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40894,9 +40894,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -40951,9 +40951,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41017,9 +41017,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41084,9 +41084,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41151,9 +41151,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41219,9 +41219,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41286,9 +41286,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41352,9 +41352,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41417,9 +41417,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41475,17 +41475,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41550,9 +41550,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41622,9 +41622,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41695,9 +41695,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41761,9 +41761,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41831,9 +41831,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41891,9 +41891,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -41953,17 +41953,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2237865,
-      106.1914491
+      10.2081048,
+      106.174861
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42031,9 +42031,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42068,17 +42068,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42146,9 +42146,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42216,9 +42216,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42285,9 +42285,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42330,9 +42330,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42400,9 +42400,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42458,9 +42458,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42522,9 +42522,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42583,17 +42583,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
@@ -42653,9 +42653,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -42715,9 +42715,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -42777,9 +42777,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -42839,9 +42839,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -42901,9 +42901,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -42944,9 +42944,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -42987,9 +42987,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43035,9 +43035,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43078,9 +43078,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43120,17 +43120,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43178,9 +43178,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43221,9 +43221,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43264,9 +43264,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43314,9 +43314,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43364,9 +43364,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43403,9 +43403,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43458,9 +43458,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43512,9 +43512,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43566,9 +43566,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43609,9 +43609,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43655,9 +43655,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43709,9 +43709,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43764,9 +43764,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43820,9 +43820,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43871,9 +43871,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43927,9 +43927,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -43982,9 +43982,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44029,17 +44029,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.8554586,
-      106.4422421
+      9.7976352,
+      106.4547669
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44092,9 +44092,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44154,9 +44154,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44216,9 +44216,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44278,9 +44278,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44340,9 +44340,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44402,9 +44402,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44464,9 +44464,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44526,9 +44526,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44595,9 +44595,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44657,9 +44657,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44719,9 +44719,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44774,9 +44774,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44828,9 +44828,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44877,9 +44877,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44925,9 +44925,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -44990,9 +44990,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45055,9 +45055,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45120,9 +45120,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45185,9 +45185,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45250,9 +45250,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45315,9 +45315,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45380,9 +45380,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45445,9 +45445,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45510,9 +45510,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45575,9 +45575,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45640,9 +45640,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45705,9 +45705,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45770,9 +45770,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45835,9 +45835,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45900,9 +45900,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -45965,9 +45965,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46030,9 +46030,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46095,9 +46095,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46160,9 +46160,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46225,9 +46225,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46290,9 +46290,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46355,9 +46355,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46420,9 +46420,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46485,9 +46485,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46550,9 +46550,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46615,9 +46615,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46680,9 +46680,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46745,9 +46745,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46810,9 +46810,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46875,9 +46875,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -46940,9 +46940,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47005,9 +47005,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47070,9 +47070,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47135,9 +47135,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47200,9 +47200,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47265,9 +47265,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47322,17 +47322,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0998236,
-      106.6266181
+      10.1834173,
+      105.9984948
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47395,9 +47395,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47460,9 +47460,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47525,9 +47525,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47590,9 +47590,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47655,9 +47655,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47720,9 +47720,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47785,9 +47785,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47850,9 +47850,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47909,9 +47909,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -47968,9 +47968,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48027,9 +48027,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48086,9 +48086,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48145,9 +48145,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48204,9 +48204,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48263,9 +48263,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48322,9 +48322,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48381,9 +48381,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48440,9 +48440,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48499,9 +48499,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48558,9 +48558,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48617,9 +48617,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48676,9 +48676,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48735,9 +48735,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48794,9 +48794,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48853,9 +48853,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48912,9 +48912,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -48971,9 +48971,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49030,9 +49030,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49089,9 +49089,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49148,9 +49148,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49210,9 +49210,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49269,9 +49269,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49328,9 +49328,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49387,9 +49387,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49446,9 +49446,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49497,17 +49497,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49564,9 +49564,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49621,9 +49621,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49678,9 +49678,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49737,9 +49737,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49785,17 +49785,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49852,9 +49852,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49910,9 +49910,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -49962,17 +49962,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50030,9 +50030,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50090,9 +50090,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50150,9 +50150,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50199,9 +50199,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50248,9 +50248,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50298,9 +50298,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50347,9 +50347,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50396,9 +50396,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50445,9 +50445,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50494,9 +50494,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50551,9 +50551,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50600,9 +50600,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50657,9 +50657,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50706,9 +50706,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50755,9 +50755,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50805,9 +50805,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50846,17 +50846,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50904,9 +50904,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -50962,9 +50962,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51019,9 +51019,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51077,9 +51077,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51127,17 +51127,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51193,9 +51193,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51251,9 +51251,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51305,9 +51305,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51338,9 +51338,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51396,9 +51396,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51454,9 +51454,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51512,9 +51512,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51551,17 +51551,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0729285,
-      106.5976522
+      10.0638833,
+      106.6711052
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51620,9 +51620,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51678,9 +51678,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51737,9 +51737,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51794,9 +51794,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51844,9 +51844,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51902,9 +51902,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -51960,9 +51960,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52018,9 +52018,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52068,17 +52068,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0729285,
-      106.5976522
+      10.0998236,
+      106.6266181
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52109,9 +52109,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52159,17 +52159,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52225,9 +52225,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52283,9 +52283,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52315,9 +52315,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52373,9 +52373,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52431,9 +52431,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52481,17 +52481,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.6147395,
-      106.3900486
+      9.5646282,
+      106.4500071
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52547,9 +52547,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52604,9 +52604,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52637,9 +52637,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52670,9 +52670,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52711,9 +52711,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52744,9 +52744,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52799,9 +52799,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52849,9 +52849,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52899,9 +52899,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -52949,9 +52949,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53004,9 +53004,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53054,9 +53054,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53112,9 +53112,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53166,9 +53166,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53224,9 +53224,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53280,9 +53280,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53338,9 +53338,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53371,9 +53371,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53428,9 +53428,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53486,9 +53486,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53511,17 +53511,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0711288,
-      106.3585429
+      10.06418,
+      106.4059938
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53577,9 +53577,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53635,9 +53635,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53693,9 +53693,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53743,17 +53743,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0711288,
-      106.3585429
+      10.06418,
+      106.4059938
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53809,9 +53809,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53859,9 +53859,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53907,9 +53907,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -53964,9 +53964,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54022,9 +54022,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54072,9 +54072,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54122,9 +54122,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54167,9 +54167,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54222,9 +54222,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54271,9 +54271,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54329,9 +54329,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54387,9 +54387,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54445,9 +54445,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54470,17 +54470,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54528,17 +54528,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54586,17 +54586,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54637,9 +54637,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54687,17 +54687,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54750,9 +54750,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54808,9 +54808,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54866,9 +54866,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54924,9 +54924,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -54974,9 +54974,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55017,9 +55017,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55075,9 +55075,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55133,9 +55133,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55165,9 +55165,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55214,9 +55214,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55246,9 +55246,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55296,17 +55296,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      10.2009202,
+      106.3727946
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55362,9 +55362,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55422,9 +55422,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55482,9 +55482,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55542,9 +55542,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55602,9 +55602,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55662,9 +55662,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55722,9 +55722,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55782,9 +55782,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55842,9 +55842,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55902,9 +55902,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55956,9 +55956,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -55991,9 +55991,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56051,9 +56051,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56103,9 +56103,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56162,9 +56162,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56197,9 +56197,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56246,17 +56246,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2237865,
-      106.1914491
+      10.2081048,
+      106.174861
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56309,9 +56309,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56358,9 +56358,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56420,9 +56420,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56480,9 +56480,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56515,9 +56515,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56558,9 +56558,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56613,9 +56613,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56659,9 +56659,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56719,9 +56719,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56774,9 +56774,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56809,9 +56809,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56844,9 +56844,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56904,9 +56904,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -56958,9 +56958,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57012,9 +57012,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57066,9 +57066,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57118,17 +57118,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0711288,
-      106.3585429
+      10.06418,
+      106.4059938
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57182,9 +57182,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57232,17 +57232,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0711288,
-      106.3585429
+      10.06418,
+      106.4059938
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57293,17 +57293,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0711288,
-      106.3585429
+      10.0150814,
+      106.3801351
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57346,17 +57346,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0711288,
-      106.3585429
+      10.0150814,
+      106.3801351
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57415,9 +57415,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57476,9 +57476,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57536,9 +57536,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57596,9 +57596,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57655,9 +57655,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57709,9 +57709,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57750,17 +57750,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0729285,
-      106.5976522
+      10.0638833,
+      106.6711052
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57799,17 +57799,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0729285,
-      106.5976522
+      10.0638833,
+      106.6711052
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57856,9 +57856,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57915,9 +57915,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57942,17 +57942,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0729285,
-      106.5976522
+      10.0638833,
+      106.6711052
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -57985,9 +57985,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58012,17 +58012,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0729285,
-      106.5976522
+      10.0998236,
+      106.6266181
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58047,17 +58047,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0729285,
-      106.5976522
+      10.0998236,
+      106.6266181
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58114,9 +58114,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58171,9 +58171,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58205,9 +58205,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58239,9 +58239,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58296,9 +58296,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58331,9 +58331,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58366,9 +58366,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58401,9 +58401,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58461,9 +58461,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58496,9 +58496,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58530,9 +58530,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58587,9 +58587,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58642,9 +58642,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58698,9 +58698,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58749,9 +58749,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58784,9 +58784,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58819,9 +58819,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58877,9 +58877,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58937,9 +58937,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -58993,9 +58993,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59049,9 +59049,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59106,9 +59106,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59162,9 +59162,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59214,9 +59214,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59271,9 +59271,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59329,9 +59329,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59379,9 +59379,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59414,9 +59414,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59466,9 +59466,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59523,9 +59523,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59582,9 +59582,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59639,9 +59639,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59674,9 +59674,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59709,9 +59709,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59767,9 +59767,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59801,9 +59801,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59853,9 +59853,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59909,9 +59909,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59944,9 +59944,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -59996,9 +59996,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60053,9 +60053,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60103,9 +60103,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60159,9 +60159,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60216,9 +60216,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60268,9 +60268,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60303,9 +60303,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60353,9 +60353,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60412,9 +60412,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60463,9 +60463,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60523,9 +60523,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60558,9 +60558,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60618,9 +60618,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60679,9 +60679,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60739,9 +60739,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60774,9 +60774,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60833,9 +60833,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60893,9 +60893,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -60953,9 +60953,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61013,9 +61013,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61073,9 +61073,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61126,9 +61126,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61175,9 +61175,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61236,9 +61236,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61271,9 +61271,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61305,9 +61305,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61355,9 +61355,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61390,9 +61390,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61449,9 +61449,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61508,9 +61508,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61543,9 +61543,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61578,9 +61578,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61637,9 +61637,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61695,9 +61695,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61755,9 +61755,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61815,9 +61815,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61849,9 +61849,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61909,9 +61909,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -61969,9 +61969,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62011,17 +62011,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62079,9 +62079,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62131,17 +62131,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62192,9 +62192,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62249,9 +62249,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62298,17 +62298,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62366,9 +62366,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62426,9 +62426,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62461,9 +62461,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62518,9 +62518,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62553,9 +62553,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62613,9 +62613,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62665,17 +62665,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.1729205,
-      106.3155356
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62730,9 +62730,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62788,9 +62788,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62837,17 +62837,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62895,9 +62895,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62936,17 +62936,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -62985,17 +62985,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63052,9 +63052,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63089,17 +63089,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2237865,
-      106.1914491
+      10.2630429,
+      106.0765875
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63153,9 +63153,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63209,9 +63209,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63244,9 +63244,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63279,9 +63279,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63314,9 +63314,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63375,9 +63375,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63410,9 +63410,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63462,9 +63462,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63509,9 +63509,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63569,9 +63569,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63629,9 +63629,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63664,9 +63664,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63699,9 +63699,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63734,9 +63734,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63794,9 +63794,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63854,9 +63854,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63889,9 +63889,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -63949,9 +63949,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64009,9 +64009,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64062,9 +64062,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64121,9 +64121,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64181,9 +64181,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64236,9 +64236,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64297,9 +64297,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64332,9 +64332,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64367,9 +64367,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64427,9 +64427,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64480,9 +64480,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64533,9 +64533,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64589,9 +64589,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64624,9 +64624,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64659,9 +64659,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64719,9 +64719,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64776,9 +64776,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64834,9 +64834,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64892,9 +64892,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -64952,9 +64952,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65001,9 +65001,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65061,9 +65061,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65120,9 +65120,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65180,9 +65180,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65240,9 +65240,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65299,9 +65299,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65356,9 +65356,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65416,9 +65416,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65451,9 +65451,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65486,9 +65486,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65521,9 +65521,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65581,9 +65581,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65641,9 +65641,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65699,9 +65699,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65734,9 +65734,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65782,9 +65782,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65817,9 +65817,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65866,17 +65866,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65934,9 +65934,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -65961,17 +65961,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66018,17 +66018,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66078,17 +66078,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66146,9 +66146,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66206,9 +66206,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66233,17 +66233,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66293,17 +66293,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66353,9 +66353,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66413,9 +66413,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66448,9 +66448,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66475,17 +66475,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66541,9 +66541,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66601,9 +66601,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66636,9 +66636,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66696,9 +66696,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66748,17 +66748,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66808,17 +66808,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66851,9 +66851,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66878,17 +66878,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66913,17 +66913,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -66973,17 +66973,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67030,17 +67030,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67098,9 +67098,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67125,17 +67125,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67185,17 +67185,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67253,9 +67253,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67302,17 +67302,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67337,17 +67337,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67397,17 +67397,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67464,9 +67464,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67521,9 +67521,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67577,9 +67577,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67612,9 +67612,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67669,9 +67669,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67725,9 +67725,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67752,17 +67752,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67787,17 +67787,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67847,17 +67847,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67907,17 +67907,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -67975,9 +67975,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68026,17 +68026,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68094,9 +68094,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68154,9 +68154,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68207,9 +68207,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68260,9 +68260,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68311,17 +68311,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68379,9 +68379,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68439,9 +68439,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68492,17 +68492,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68545,17 +68545,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2223543,
-      105.963435
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68588,9 +68588,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68623,9 +68623,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68676,9 +68676,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68736,9 +68736,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68796,9 +68796,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68831,9 +68831,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68866,9 +68866,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68929,9 +68929,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -68986,9 +68986,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69044,9 +69044,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69089,9 +69089,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69149,9 +69149,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69209,9 +69209,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69267,9 +69267,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69325,9 +69325,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69385,9 +69385,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69420,9 +69420,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69455,9 +69455,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69512,9 +69512,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69570,9 +69570,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69627,9 +69627,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69687,9 +69687,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69722,9 +69722,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69772,17 +69772,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.1466808,
-      106.4613646
+      10.0882474,
+      106.4841665
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69840,9 +69840,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69898,9 +69898,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -69958,9 +69958,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70018,9 +70018,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70053,9 +70053,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70088,9 +70088,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70134,9 +70134,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70169,9 +70169,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70229,9 +70229,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70288,9 +70288,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70348,9 +70348,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70383,9 +70383,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70441,9 +70441,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70501,9 +70501,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70561,9 +70561,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70620,9 +70620,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70669,9 +70669,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70729,9 +70729,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70789,9 +70789,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70824,9 +70824,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70884,9 +70884,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -70942,9 +70942,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71000,9 +71000,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71058,9 +71058,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71093,9 +71093,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71128,9 +71128,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71188,9 +71188,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71244,9 +71244,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71302,9 +71302,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71361,9 +71361,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71421,9 +71421,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71456,9 +71456,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71491,9 +71491,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71526,9 +71526,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71586,9 +71586,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71645,9 +71645,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71701,9 +71701,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71760,9 +71760,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71795,9 +71795,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71855,9 +71855,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71912,9 +71912,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -71972,9 +71972,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72030,9 +72030,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72065,9 +72065,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72125,9 +72125,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72183,9 +72183,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72241,9 +72241,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72297,9 +72297,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72357,9 +72357,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72392,9 +72392,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72444,17 +72444,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.1673217,
-      106.6970838
+      10.1372457,
+      106.6944906
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72512,9 +72512,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72572,9 +72572,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72630,9 +72630,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72665,9 +72665,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72718,9 +72718,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72753,9 +72753,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72813,9 +72813,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72866,9 +72866,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72901,9 +72901,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72936,9 +72936,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -72996,9 +72996,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73054,9 +73054,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73103,9 +73103,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73138,9 +73138,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73197,9 +73197,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73249,9 +73249,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73309,9 +73309,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73369,9 +73369,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73426,9 +73426,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73479,9 +73479,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73539,9 +73539,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73595,9 +73595,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73630,9 +73630,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73683,9 +73683,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73718,9 +73718,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73778,9 +73778,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73831,9 +73831,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73866,9 +73866,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73926,9 +73926,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -73961,9 +73961,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74021,9 +74021,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74082,9 +74082,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74142,9 +74142,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74195,9 +74195,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74242,9 +74242,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74277,9 +74277,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74337,9 +74337,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74394,9 +74394,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74429,9 +74429,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74456,17 +74456,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.6620895,
-      106.5179466
+      9.6427206,
+      106.5489482
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74517,9 +74517,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74575,9 +74575,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74635,9 +74635,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74670,9 +74670,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74730,9 +74730,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74757,17 +74757,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.6620895,
-      106.5179466
+      9.6427206,
+      106.5489482
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74800,9 +74800,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74835,9 +74835,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74888,9 +74888,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74915,17 +74915,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.6620895,
-      106.5179466
+      9.6427206,
+      106.5489482
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -74975,9 +74975,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75035,9 +75035,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75082,9 +75082,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75140,9 +75140,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75175,9 +75175,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75210,9 +75210,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75270,9 +75270,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75330,9 +75330,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75365,9 +75365,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75400,9 +75400,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75427,17 +75427,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.6147395,
-      106.3900486
+      9.6585227,
+      106.3665796
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75492,9 +75492,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75542,9 +75542,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75586,9 +75586,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75629,9 +75629,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75688,9 +75688,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75748,9 +75748,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75808,9 +75808,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75866,9 +75866,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75925,9 +75925,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -75984,9 +75984,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76035,17 +76035,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      9.8715789,
+      106.089896
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76102,9 +76102,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76161,9 +76161,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76220,9 +76220,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76271,17 +76271,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.1673217,
-      106.6970838
+      10.2797233,
+      106.485345
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76338,9 +76338,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76389,17 +76389,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      10.1245898,
+      106.2556223
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76454,9 +76454,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76511,9 +76511,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76571,9 +76571,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76628,9 +76628,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76685,9 +76685,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76742,9 +76742,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76799,9 +76799,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76857,9 +76857,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76909,9 +76909,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -76963,9 +76963,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77007,9 +77007,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77051,9 +77051,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77107,9 +77107,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77153,9 +77153,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77212,9 +77212,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77256,9 +77256,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77306,17 +77306,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2237865,
-      106.1914491
+      10.2630429,
+      106.0765875
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77365,17 +77365,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2237865,
-      106.1914491
+      10.2630429,
+      106.0765875
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77399,17 +77399,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2237865,
-      106.1914491
+      10.2630429,
+      106.0765875
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77462,9 +77462,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77496,9 +77496,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77547,9 +77547,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77596,17 +77596,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2237865,
-      106.1914491
+      10.2630429,
+      106.0765875
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77643,17 +77643,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2237865,
-      106.1914491
+      10.2630429,
+      106.0765875
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77698,9 +77698,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77754,9 +77754,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77810,9 +77810,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77844,9 +77844,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77895,17 +77895,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2237865,
-      106.1914491
+      10.2081048,
+      106.174861
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -77949,9 +77949,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78008,9 +78008,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78060,17 +78060,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0729285,
-      106.5976522
+      10.0998236,
+      106.6266181
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78103,9 +78103,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78163,9 +78163,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78223,9 +78223,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78281,9 +78281,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78337,9 +78337,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78395,9 +78395,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78455,9 +78455,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78512,9 +78512,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78564,9 +78564,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78619,9 +78619,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78653,9 +78653,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78713,9 +78713,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78748,9 +78748,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78783,9 +78783,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78818,9 +78818,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78878,9 +78878,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78938,9 +78938,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -78998,9 +78998,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79033,9 +79033,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79081,9 +79081,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79141,9 +79141,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79176,9 +79176,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79227,17 +79227,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.6620895,
-      106.5179466
+      9.6427206,
+      106.5489482
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79283,9 +79283,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79331,9 +79331,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79379,9 +79379,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79427,9 +79427,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79475,9 +79475,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79522,9 +79522,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79579,9 +79579,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79618,17 +79618,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.6620895,
-      106.5179466
+      9.6427206,
+      106.5489482
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79673,9 +79673,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79718,9 +79718,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79765,9 +79765,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79815,9 +79815,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79863,9 +79863,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79902,17 +79902,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.6620895,
-      106.5179466
+      9.6427206,
+      106.5489482
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79958,9 +79958,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -79999,17 +79999,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.0729285,
-      106.5976522
+      10.0998236,
+      106.6266181
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -80052,9 +80052,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -80092,17 +80092,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.6620895,
-      106.5179466
+      9.6427206,
+      106.5489482
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -80158,9 +80158,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -80217,9 +80217,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -80275,9 +80275,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
@@ -80325,9 +80325,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80374,9 +80374,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80430,9 +80430,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80480,9 +80480,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80521,17 +80521,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80570,17 +80570,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80627,9 +80627,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80676,9 +80676,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80718,17 +80718,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80775,9 +80775,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80816,17 +80816,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80868,9 +80868,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80920,17 +80920,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2226817,
-      106.0677181
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -80987,9 +80987,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81044,9 +81044,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81103,9 +81103,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81161,9 +81161,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81220,9 +81220,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81266,17 +81266,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      9.9762521,
+      106.3445798
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81333,9 +81333,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81365,9 +81365,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81397,9 +81397,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81446,9 +81446,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81496,9 +81496,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81549,9 +81549,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81599,9 +81599,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81657,9 +81657,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81707,9 +81707,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81770,9 +81770,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81829,9 +81829,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81879,9 +81879,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81937,9 +81937,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -81996,9 +81996,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82055,9 +82055,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82114,9 +82114,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82173,9 +82173,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82232,9 +82232,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82291,9 +82291,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82326,9 +82326,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82385,9 +82385,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82410,17 +82410,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2355694,
-      106.574291
+      10.0597234,
+      105.9710483
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82451,9 +82451,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82510,9 +82510,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82545,9 +82545,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82580,9 +82580,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82639,9 +82639,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82671,9 +82671,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82706,9 +82706,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82765,9 +82765,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82797,9 +82797,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82829,9 +82829,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82861,9 +82861,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82893,9 +82893,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82925,9 +82925,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -82987,9 +82987,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83019,9 +83019,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83051,9 +83051,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83083,9 +83083,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83115,9 +83115,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83147,9 +83147,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83179,9 +83179,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83211,9 +83211,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83243,9 +83243,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83275,9 +83275,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83307,9 +83307,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83339,9 +83339,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83391,9 +83391,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83441,9 +83441,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83492,17 +83492,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2226817,
-      106.0677181
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83551,9 +83551,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83602,9 +83602,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83653,9 +83653,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83704,9 +83704,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83755,9 +83755,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83806,9 +83806,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83857,9 +83857,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83908,9 +83908,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -83959,9 +83959,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84010,17 +84010,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84068,9 +84068,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84127,9 +84127,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84186,9 +84186,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84242,9 +84242,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84298,9 +84298,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84344,9 +84344,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84400,9 +84400,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84456,9 +84456,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84489,9 +84489,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84548,9 +84548,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84604,9 +84604,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84637,9 +84637,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84695,9 +84695,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84754,9 +84754,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84812,9 +84812,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84867,9 +84867,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84926,9 +84926,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -84985,9 +84985,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85044,9 +85044,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85103,9 +85103,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85161,9 +85161,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85211,9 +85211,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85256,9 +85256,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85311,9 +85311,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85361,9 +85361,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85411,17 +85411,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85474,9 +85474,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85524,9 +85524,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85579,9 +85579,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85634,9 +85634,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85684,9 +85684,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85723,17 +85723,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      10.1125464,
+      106.2262822
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85777,9 +85777,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85825,17 +85825,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85883,9 +85883,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85940,9 +85940,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -85990,9 +85990,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86046,9 +86046,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86101,9 +86101,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86144,9 +86144,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86199,9 +86199,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86249,9 +86249,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86286,17 +86286,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86349,9 +86349,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86397,9 +86397,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86452,9 +86452,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86508,9 +86508,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86558,9 +86558,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86612,9 +86612,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86670,9 +86670,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86728,9 +86728,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86785,9 +86785,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86843,9 +86843,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86890,9 +86890,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -86948,9 +86948,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87001,17 +87001,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87067,9 +87067,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87114,9 +87114,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87172,9 +87172,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87216,9 +87216,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87274,9 +87274,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87322,9 +87322,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87374,9 +87374,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87432,9 +87432,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87490,9 +87490,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87535,9 +87535,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87593,9 +87593,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87643,17 +87643,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87708,9 +87708,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87758,9 +87758,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87782,17 +87782,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87848,9 +87848,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87907,9 +87907,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -87965,9 +87965,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88024,9 +88024,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88085,9 +88085,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88142,9 +88142,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88175,9 +88175,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88234,9 +88234,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88293,9 +88293,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88352,9 +88352,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88402,17 +88402,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2468,
-      106.4204
+      10.2272245,
+      106.4071974
     ],
     "area": "ben-tre",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88448,17 +88448,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.9516235,
-      106.3322332
+      10.0675818,
+      105.8219716
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88499,9 +88499,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88547,9 +88547,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88588,9 +88588,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88629,9 +88629,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88676,9 +88676,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88715,17 +88715,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88758,17 +88758,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88811,9 +88811,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88852,9 +88852,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88894,9 +88894,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88938,9 +88938,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -88980,9 +88980,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89023,9 +89023,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89066,9 +89066,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89111,9 +89111,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89153,9 +89153,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89190,17 +89190,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89240,9 +89240,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89297,9 +89297,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89332,17 +89332,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89385,9 +89385,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89428,9 +89428,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89478,9 +89478,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89528,9 +89528,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89571,9 +89571,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89607,17 +89607,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89662,9 +89662,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89713,9 +89713,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89774,9 +89774,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89829,9 +89829,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89870,17 +89870,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89916,17 +89916,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2943765,
-      105.9852361
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -89984,9 +89984,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90043,9 +90043,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90102,9 +90102,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90161,9 +90161,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90220,9 +90220,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90279,9 +90279,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90338,9 +90338,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90397,9 +90397,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90456,9 +90456,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90499,9 +90499,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90538,17 +90538,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      9.9516235,
-      106.3322332
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90597,9 +90597,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90648,9 +90648,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90699,9 +90699,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90749,9 +90749,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90782,17 +90782,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90841,17 +90841,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90895,9 +90895,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -90954,9 +90954,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91013,9 +91013,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91072,9 +91072,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91131,9 +91131,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91190,9 +91190,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91249,9 +91249,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91300,17 +91300,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.2226817,
-      106.0677181
+      10.254177,
+      105.9627693
     ],
     "area": "vinh-long",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91367,9 +91367,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91426,9 +91426,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91485,9 +91485,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91522,17 +91522,17 @@ var items = [
     ],
     "images": [],
     "coordinates": [
-      10.046765,
-      106.2947443
+      9.9516235,
+      106.3322332
     ],
     "area": "tra-vinh",
     "level": null,
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91590,9 +91590,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91650,9 +91650,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91710,9 +91710,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91770,9 +91770,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91830,9 +91830,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91893,9 +91893,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -91953,9 +91953,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92013,9 +92013,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92073,9 +92073,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92133,9 +92133,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92193,9 +92193,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92253,9 +92253,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92310,9 +92310,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92368,9 +92368,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92411,9 +92411,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92469,9 +92469,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92528,9 +92528,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   },
   {
@@ -92580,9 +92580,9 @@ var items = [
     "parentId": null,
     "legacyArea": null,
     "updatedAt": "2026-06-09T00:00:00Z",
-    "created_at": "2026-06-22 03:06:31",
+    "created_at": "2026-06-22 03:43:47",
     "description": "",
-    "createdAt": "2026-06-22T03:06:31Z",
+    "createdAt": "2026-06-22T03:43:47Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
   }
 ];
@@ -94605,17 +94605,17 @@ var relationships = [
   {
     "from": "keo-dua-mo-cay-dish",
     "to": "lang-keo-dua-mo-cay",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "che-buoi-vinh-long",
     "to": "lang-nghe-lam-tau-hu-ky",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nuoc-dua-tuoi-ben-tre",
     "to": "lang-keo-dua-mo-cay",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chom-chom-an-binh",
@@ -95255,12 +95255,12 @@ var relationships = [
   {
     "from": "keo-dua-mo-cay-dish",
     "to": "lang-nghe-san-xuat-chi-xo-dua-an-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nuoc-dua-tuoi-ben-tre",
     "to": "lang-nghe-san-xuat-chi-xo-dua-an-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tran-dai-nghia",
@@ -95970,47 +95970,47 @@ var relationships = [
   {
     "from": "banh-canh-ben-tre",
     "to": "lang-nghe-nau-ruou-phu-le",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-ben-tre",
     "to": "cong-ty-co-phan-xuat-nhap-khau-ben-tre-betrimex",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-ben-tre",
     "to": "cong-ty-tnhh-che-bien-dua-luong-quoi",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-ben-tre",
     "to": "cong-ty-tnhh-ca-cao-thanh-dat",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "che-buoi-vinh-long",
     "to": "hop-tac-xa-buoi-nam-roi-my-hoa",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "che-chuoi-nuong",
     "to": "lang-nghe-nau-ruou-phu-le",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "che-chuoi-nuong",
     "to": "cong-ty-co-phan-xuat-nhap-khau-ben-tre-betrimex",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "che-chuoi-nuong",
     "to": "cong-ty-tnhh-che-bien-dua-luong-quoi",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "che-chuoi-nuong",
     "to": "cong-ty-tnhh-ca-cao-thanh-dat",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mang-cut-binh-hoa-phuoc",
@@ -96860,52 +96860,52 @@ var relationships = [
   {
     "from": "banh-xeo-mien-tay",
     "to": "lo-com-cuu-long-vlt",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-mien-tay",
     "to": "lo-com-cuu-long-vlt",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "goi-cuon-tom-thit",
     "to": "lo-com-cuu-long-vlt",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-ca-loc-rau-dang",
     "to": "lo-com-cuu-long-vlt",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "ca-keo-kho-to",
     "to": "lo-com-cuu-long-vlt",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tom-cang-xanh-nuong",
     "to": "lo-com-cuu-long-vlt",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "ca-loc-nuong-trui",
     "to": "lo-com-cuu-long-vlt",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "canh-chua-ca-linh",
     "to": "lo-com-cuu-long-vlt",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-cu-lao",
     "to": "lo-com-cuu-long-vlt",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tom-rang-muoi-ot",
     "to": "lo-com-cuu-long-vlt",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "muoi-ba-tri",
@@ -97145,7 +97145,7 @@ var relationships = [
   {
     "from": "bun-nuoc-leo-tra-vinh",
     "to": "lang-nghe-bun-suong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "dua-sap",
@@ -97155,22 +97155,22 @@ var relationships = [
   {
     "from": "cha-gio-chay",
     "to": "lang-nghe-bun-suong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-cong-soc-trang",
     "to": "lang-nghe-bun-suong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-tet-la-cam",
     "to": "lang-nghe-bun-suong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-bo-nuong-tra-vinh",
     "to": "lang-nghe-bun-suong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "muoi-ba-tri",
@@ -97190,12 +97190,12 @@ var relationships = [
   {
     "from": "khu-pho-am-thuc-bo-ho",
     "to": "dong-muoi-bao-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "khu-pho-am-thuc-bo-ho",
     "to": "lang-nghe-truyen-thong-phu-le",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "pham-hung",
@@ -97350,62 +97350,62 @@ var relationships = [
   {
     "from": "nha-hang-huong-sen",
     "to": "lang-banh-trang-giay-tuong-loc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-huong-sen",
     "to": "lang-dan-luc-binh-ngai-tu",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-huong-sen",
     "to": "lang-det-chieu-cu-lao-dai",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-am-thuc-pho",
     "to": "lang-banh-trang-giay-tuong-loc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-am-thuc-pho",
     "to": "lang-dan-luc-binh-ngai-tu",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-am-thuc-pho",
     "to": "lang-det-chieu-cu-lao-dai",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-ngan-vinh",
     "to": "lang-banh-trang-giay-tuong-loc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-ngan-vinh",
     "to": "lang-dan-luc-binh-ngai-tu",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-ngan-vinh",
     "to": "lang-det-chieu-cu-lao-dai",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-thien-tan",
     "to": "lang-banh-trang-giay-tuong-loc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-thien-tan",
     "to": "lang-dan-luc-binh-ngai-tu",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-thien-tan",
     "to": "lang-det-chieu-cu-lao-dai",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "muoi-ba-tri",
@@ -97425,57 +97425,57 @@ var relationships = [
   {
     "from": "khu-pho-am-thuc-bo-ho",
     "to": "lang-hoa-kieng-cai-mon-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "khu-pho-am-thuc-bo-ho",
     "to": "lang-nghe-dong-ghe-xuong-an-dinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "khu-pho-am-thuc-bo-ho",
     "to": "lang-keo-dua-phuong-7-ben-tre",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-suong-tra-vinh",
     "to": "lang-nghe-che-tac-mat-na-khmer-nguyet-hoa",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-suong-tra-vinh",
     "to": "lang-det-chieu-ca-hom-ham-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-suong-tra-vinh",
     "to": "lang-hoa-kieng-long-duc-tra-vinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-suong-tra-vinh",
     "to": "lang-dan-lat-duc-my-cang-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-am-tra-vinh",
     "to": "lang-nghe-che-tac-mat-na-khmer-nguyet-hoa",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-am-tra-vinh",
     "to": "lang-det-chieu-ca-hom-ham-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-am-tra-vinh",
     "to": "lang-hoa-kieng-long-duc-tra-vinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-am-tra-vinh",
     "to": "lang-dan-lat-duc-my-cang-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "keo-dua-thu-cong-ben-tre",
@@ -97580,127 +97580,127 @@ var relationships = [
   {
     "from": "hu-tieu-pate-ben-tre",
     "to": "dong-muoi-bao-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-pate-ben-tre",
     "to": "lang-nghe-truyen-thong-phu-le",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-pate-ben-tre",
     "to": "lang-hoa-kieng-cai-mon-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-pate-ben-tre",
     "to": "lang-nghe-dong-ghe-xuong-an-dinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-pate-ben-tre",
     "to": "lang-keo-dua-phuong-7-ben-tre",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-bot-xat-ben-tre",
     "to": "dong-muoi-bao-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-bot-xat-ben-tre",
     "to": "lang-nghe-truyen-thong-phu-le",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-bot-xat-ben-tre",
     "to": "lang-hoa-kieng-cai-mon-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-bot-xat-ben-tre",
     "to": "lang-nghe-dong-ghe-xuong-an-dinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-bot-xat-ben-tre",
     "to": "lang-keo-dua-phuong-7-ben-tre",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-oc-gao-phu-da",
     "to": "dong-muoi-bao-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-oc-gao-phu-da",
     "to": "lang-nghe-truyen-thong-phu-le",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-oc-gao-phu-da",
     "to": "lang-hoa-kieng-cai-mon-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-oc-gao-phu-da",
     "to": "lang-nghe-dong-ghe-xuong-an-dinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-oc-gao-phu-da",
     "to": "lang-keo-dua-phuong-7-ben-tre",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-ben-tre",
     "to": "dong-muoi-bao-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-ben-tre",
     "to": "lang-nghe-truyen-thong-phu-le",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-ben-tre",
     "to": "lang-hoa-kieng-cai-mon-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-ben-tre",
     "to": "lang-nghe-dong-ghe-xuong-an-dinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-ben-tre",
     "to": "lang-keo-dua-phuong-7-ben-tre",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-cua-dong-ben-tre",
     "to": "dong-muoi-bao-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-cua-dong-ben-tre",
     "to": "lang-nghe-truyen-thong-phu-le",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-cua-dong-ben-tre",
     "to": "lang-hoa-kieng-cai-mon-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-cua-dong-ben-tre",
     "to": "lang-nghe-dong-ghe-xuong-an-dinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-cua-dong-ben-tre",
     "to": "lang-keo-dua-phuong-7-ben-tre",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nhan-an-binh-tam-binh",
@@ -97720,17 +97720,17 @@ var relationships = [
   {
     "from": "banh-xeo-hen-cu-lao-dai",
     "to": "lang-banh-trang-giay-tuong-loc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-hen-cu-lao-dai",
     "to": "lang-dan-luc-binh-ngai-tu",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-hen-cu-lao-dai",
     "to": "lang-det-chieu-cu-lao-dai",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tran-dai-nghia",
@@ -98590,47 +98590,47 @@ var relationships = [
   {
     "from": "khu-pho-am-thuc-bo-ho",
     "to": "co-so-keo-dua-hong-van",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "khu-pho-am-thuc-bo-ho",
     "to": "lang-nghe-thu-cong-my-nghe-tu-dua-tai-tan-thach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "khu-pho-am-thuc-bo-ho",
     "to": "lang-nghe-thu-cong-my-nghe-tu-dua-quoi-son",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "khu-pho-am-thuc-bo-ho",
     "to": "lang-nghe-cay-giong-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "khu-pho-am-thuc-bo-ho",
     "to": "lang-nghe-dong-thuyen-an-dinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "khu-pho-am-thuc-bo-ho",
     "to": "lang-nghe-thu-cong-my-nghe-dua-mo-cay-nam",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "khu-pho-am-thuc-bo-ho",
     "to": "lang-nghe-san-xuat-muoi-bao-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "khu-pho-am-thuc-bo-ho",
     "to": "lang-nghe-dan-dat-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "khu-pho-am-thuc-bo-ho",
     "to": "lang-nghe-tre-truc-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-gao-con-phu-da",
@@ -98650,72 +98650,72 @@ var relationships = [
   {
     "from": "bun-suong-tra-vinh",
     "to": "lang-nghe-tieu-thu-cong-nghiep-duc-my",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-suong-tra-vinh",
     "to": "htx-nong-nghiep-thong-hoa-dua-sap",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-suong-tra-vinh",
     "to": "lang-nghe-det-chieu-ham-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-suong-tra-vinh",
     "to": "lang-nghe-tieu-thu-cong-nghiep-ham-giang-tre-truc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-suong-tra-vinh",
     "to": "lang-nghe-dan-dat-dai-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-suong-tra-vinh",
     "to": "lang-nghe-may-tre-dan-dai-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-suong-tra-vinh",
     "to": "lang-nghe-do-go-tre-ham-giang",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-am-tra-vinh",
     "to": "lang-nghe-tieu-thu-cong-nghiep-duc-my",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-am-tra-vinh",
     "to": "htx-nong-nghiep-thong-hoa-dua-sap",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-am-tra-vinh",
     "to": "lang-nghe-det-chieu-ham-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-am-tra-vinh",
     "to": "lang-nghe-tieu-thu-cong-nghiep-ham-giang-tre-truc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-am-tra-vinh",
     "to": "lang-nghe-dan-dat-dai-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-am-tra-vinh",
     "to": "lang-nghe-may-tre-dan-dai-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-am-tra-vinh",
     "to": "lang-nghe-do-go-tre-ham-giang",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "keo-dua-thu-cong-ben-tre",
@@ -98900,227 +98900,227 @@ var relationships = [
   {
     "from": "hu-tieu-pate-ben-tre",
     "to": "co-so-keo-dua-hong-van",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-pate-ben-tre",
     "to": "lang-nghe-thu-cong-my-nghe-tu-dua-tai-tan-thach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-pate-ben-tre",
     "to": "lang-nghe-thu-cong-my-nghe-tu-dua-quoi-son",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-pate-ben-tre",
     "to": "lang-nghe-cay-giong-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-pate-ben-tre",
     "to": "lang-nghe-dong-thuyen-an-dinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-pate-ben-tre",
     "to": "lang-nghe-thu-cong-my-nghe-dua-mo-cay-nam",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-pate-ben-tre",
     "to": "lang-nghe-san-xuat-muoi-bao-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-pate-ben-tre",
     "to": "lang-nghe-dan-dat-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-pate-ben-tre",
     "to": "lang-nghe-tre-truc-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-bot-xat-ben-tre",
     "to": "co-so-keo-dua-hong-van",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-bot-xat-ben-tre",
     "to": "lang-nghe-thu-cong-my-nghe-tu-dua-tai-tan-thach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-bot-xat-ben-tre",
     "to": "lang-nghe-thu-cong-my-nghe-tu-dua-quoi-son",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-bot-xat-ben-tre",
     "to": "lang-nghe-cay-giong-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-bot-xat-ben-tre",
     "to": "lang-nghe-dong-thuyen-an-dinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-bot-xat-ben-tre",
     "to": "lang-nghe-thu-cong-my-nghe-dua-mo-cay-nam",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-bot-xat-ben-tre",
     "to": "lang-nghe-san-xuat-muoi-bao-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-bot-xat-ben-tre",
     "to": "lang-nghe-dan-dat-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-bot-xat-ben-tre",
     "to": "lang-nghe-tre-truc-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-oc-gao-phu-da",
     "to": "co-so-keo-dua-hong-van",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-oc-gao-phu-da",
     "to": "lang-nghe-thu-cong-my-nghe-tu-dua-tai-tan-thach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-oc-gao-phu-da",
     "to": "lang-nghe-thu-cong-my-nghe-tu-dua-quoi-son",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-oc-gao-phu-da",
     "to": "lang-nghe-cay-giong-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-oc-gao-phu-da",
     "to": "lang-nghe-dong-thuyen-an-dinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-oc-gao-phu-da",
     "to": "lang-nghe-thu-cong-my-nghe-dua-mo-cay-nam",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-oc-gao-phu-da",
     "to": "lang-nghe-san-xuat-muoi-bao-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-oc-gao-phu-da",
     "to": "lang-nghe-dan-dat-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-oc-gao-phu-da",
     "to": "lang-nghe-tre-truc-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-ben-tre",
     "to": "co-so-keo-dua-hong-van",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-ben-tre",
     "to": "lang-nghe-thu-cong-my-nghe-tu-dua-tai-tan-thach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-ben-tre",
     "to": "lang-nghe-thu-cong-my-nghe-tu-dua-quoi-son",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-ben-tre",
     "to": "lang-nghe-cay-giong-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-ben-tre",
     "to": "lang-nghe-dong-thuyen-an-dinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-ben-tre",
     "to": "lang-nghe-thu-cong-my-nghe-dua-mo-cay-nam",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-ben-tre",
     "to": "lang-nghe-san-xuat-muoi-bao-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-ben-tre",
     "to": "lang-nghe-dan-dat-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-ben-tre",
     "to": "lang-nghe-tre-truc-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-cua-dong-ben-tre",
     "to": "co-so-keo-dua-hong-van",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-cua-dong-ben-tre",
     "to": "lang-nghe-thu-cong-my-nghe-tu-dua-tai-tan-thach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-cua-dong-ben-tre",
     "to": "lang-nghe-thu-cong-my-nghe-tu-dua-quoi-son",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-cua-dong-ben-tre",
     "to": "lang-nghe-cay-giong-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-cua-dong-ben-tre",
     "to": "lang-nghe-dong-thuyen-an-dinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-cua-dong-ben-tre",
     "to": "lang-nghe-thu-cong-my-nghe-dua-mo-cay-nam",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-cua-dong-ben-tre",
     "to": "lang-nghe-san-xuat-muoi-bao-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-cua-dong-ben-tre",
     "to": "lang-nghe-dan-dat-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-cua-dong-ben-tre",
     "to": "lang-nghe-tre-truc-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "keo-dua-tan-thach",
@@ -99195,142 +99195,142 @@ var relationships = [
   {
     "from": "com-hap-trai-dua",
     "to": "dong-muoi-bao-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-hap-trai-dua",
     "to": "lang-nghe-truyen-thong-phu-le",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-hap-trai-dua",
     "to": "lang-hoa-kieng-cai-mon-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-hap-trai-dua",
     "to": "lang-nghe-dong-ghe-xuong-an-dinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-hap-trai-dua",
     "to": "lang-keo-dua-phuong-7-ben-tre",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-hap-trai-dua",
     "to": "co-so-keo-dua-hong-van",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-hap-trai-dua",
     "to": "lang-nghe-thu-cong-my-nghe-tu-dua-tai-tan-thach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-hap-trai-dua",
     "to": "lang-nghe-thu-cong-my-nghe-tu-dua-quoi-son",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-hap-trai-dua",
     "to": "lang-nghe-cay-giong-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-hap-trai-dua",
     "to": "lang-nghe-dong-thuyen-an-dinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-hap-trai-dua",
     "to": "lang-nghe-thu-cong-my-nghe-dua-mo-cay-nam",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-hap-trai-dua",
     "to": "lang-nghe-san-xuat-muoi-bao-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-hap-trai-dua",
     "to": "lang-nghe-dan-dat-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-hap-trai-dua",
     "to": "lang-nghe-tre-truc-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tep-rang-dua",
     "to": "dong-muoi-bao-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tep-rang-dua",
     "to": "lang-nghe-truyen-thong-phu-le",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tep-rang-dua",
     "to": "lang-hoa-kieng-cai-mon-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tep-rang-dua",
     "to": "lang-nghe-dong-ghe-xuong-an-dinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tep-rang-dua",
     "to": "lang-keo-dua-phuong-7-ben-tre",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tep-rang-dua",
     "to": "co-so-keo-dua-hong-van",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tep-rang-dua",
     "to": "lang-nghe-thu-cong-my-nghe-tu-dua-tai-tan-thach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tep-rang-dua",
     "to": "lang-nghe-thu-cong-my-nghe-tu-dua-quoi-son",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tep-rang-dua",
     "to": "lang-nghe-cay-giong-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tep-rang-dua",
     "to": "lang-nghe-dong-thuyen-an-dinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tep-rang-dua",
     "to": "lang-nghe-thu-cong-my-nghe-dua-mo-cay-nam",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tep-rang-dua",
     "to": "lang-nghe-san-xuat-muoi-bao-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tep-rang-dua",
     "to": "lang-nghe-dan-dat-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tep-rang-dua",
     "to": "lang-nghe-tre-truc-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "sau-rieng-cho-lach",
@@ -99405,47 +99405,47 @@ var relationships = [
   {
     "from": "oc-gao-phu-da",
     "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-gao-phu-da",
     "to": "lang-nghe-dan-lat-may-tre-phu-le",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-gao-phu-da",
     "to": "lang-nghe-dan-lat-an-duc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-ba-phu",
     "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-ba-phu",
     "to": "lang-nghe-dan-lat-may-tre-phu-le",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-ba-phu",
     "to": "lang-nghe-dan-lat-an-duc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-gao-vinh-binh",
     "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-gao-vinh-binh",
     "to": "lang-nghe-dan-lat-may-tre-phu-le",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-gao-vinh-binh",
     "to": "lang-nghe-dan-lat-an-duc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "sau-rieng-cap-dong-cho-lach",
@@ -100435,7 +100435,7 @@ var relationships = [
   {
     "from": "bun-nuoc-leo-cang-long",
     "to": "lang-nghe-dan-chapay-phu-can",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mut-dua-sap-cam-hang",
@@ -100550,57 +100550,57 @@ var relationships = [
   {
     "from": "mut-dua-sap-cau-ke",
     "to": "lang-nghe-che-tac-mat-na-khmer-nguyet-hoa",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mut-dua-sap-cau-ke",
     "to": "lang-det-chieu-ca-hom-ham-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mut-dua-sap-cau-ke",
     "to": "lang-hoa-kieng-long-duc-tra-vinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mut-dua-sap-cau-ke",
     "to": "lang-dan-lat-duc-my-cang-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mut-dua-sap-cau-ke",
     "to": "lang-nghe-tieu-thu-cong-nghiep-duc-my",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mut-dua-sap-cau-ke",
     "to": "htx-nong-nghiep-thong-hoa-dua-sap",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mut-dua-sap-cau-ke",
     "to": "lang-nghe-det-chieu-ham-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mut-dua-sap-cau-ke",
     "to": "lang-nghe-tieu-thu-cong-nghiep-ham-giang-tre-truc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mut-dua-sap-cau-ke",
     "to": "lang-nghe-dan-dat-dai-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mut-dua-sap-cau-ke",
     "to": "lang-nghe-may-tre-dan-dai-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mut-dua-sap-cau-ke",
     "to": "lang-nghe-do-go-tre-ham-giang",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "cu-cai-muoi-chit-sa",
@@ -100770,57 +100770,57 @@ var relationships = [
   {
     "from": "bun-nuoc-leo-tieu-can",
     "to": "lang-nghe-che-tac-mat-na-khmer-nguyet-hoa",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tieu-can",
     "to": "lang-det-chieu-ca-hom-ham-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tieu-can",
     "to": "lang-hoa-kieng-long-duc-tra-vinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tieu-can",
     "to": "lang-dan-lat-duc-my-cang-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tieu-can",
     "to": "lang-nghe-tieu-thu-cong-nghiep-duc-my",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tieu-can",
     "to": "htx-nong-nghiep-thong-hoa-dua-sap",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tieu-can",
     "to": "lang-nghe-det-chieu-ham-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tieu-can",
     "to": "lang-nghe-tieu-thu-cong-nghiep-ham-giang-tre-truc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tieu-can",
     "to": "lang-nghe-dan-dat-dai-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tieu-can",
     "to": "lang-nghe-may-tre-dan-dai-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tieu-can",
     "to": "lang-nghe-do-go-tre-ham-giang",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "san-pham-ocop-cau-ngang",
@@ -100880,57 +100880,57 @@ var relationships = [
   {
     "from": "hu-tieu-soi-no-cong",
     "to": "lang-nghe-che-tac-mat-na-khmer-nguyet-hoa",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-soi-no-cong",
     "to": "lang-det-chieu-ca-hom-ham-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-soi-no-cong",
     "to": "lang-hoa-kieng-long-duc-tra-vinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-soi-no-cong",
     "to": "lang-dan-lat-duc-my-cang-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-soi-no-cong",
     "to": "lang-nghe-tieu-thu-cong-nghiep-duc-my",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-soi-no-cong",
     "to": "htx-nong-nghiep-thong-hoa-dua-sap",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-soi-no-cong",
     "to": "lang-nghe-det-chieu-ham-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-soi-no-cong",
     "to": "lang-nghe-tieu-thu-cong-nghiep-ham-giang-tre-truc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-soi-no-cong",
     "to": "lang-nghe-dan-dat-dai-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-soi-no-cong",
     "to": "lang-nghe-may-tre-dan-dai-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-soi-no-cong",
     "to": "lang-nghe-do-go-tre-ham-giang",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mat-ong-rung-ban-nguyen-van-bao",
@@ -103610,17 +103610,17 @@ var relationships = [
   {
     "from": "ca-tai-tuong-chien-xu",
     "to": "nghe-det-luc-binh-vinh-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lo-com-cuu-long",
     "to": "nghe-det-luc-binh-vinh-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-suong",
     "to": "lang-nghe-dan-chapay-phu-can",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "thanh-tra",
@@ -103630,7 +103630,7 @@ var relationships = [
   {
     "from": "mam-song-khoai-lang",
     "to": "nghe-det-luc-binh-vinh-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mam-tep-chua",
@@ -103650,67 +103650,67 @@ var relationships = [
   {
     "from": "pho-91",
     "to": "nghe-det-luc-binh-vinh-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-my-tho",
     "to": "nghe-det-luc-binh-vinh-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-tam-suon-bi-cha",
     "to": "nghe-det-luc-binh-vinh-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-mam-mien-tay",
     "to": "nghe-det-luc-binh-vinh-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nem-nuong-vinh-long",
     "to": "nghe-det-luc-binh-vinh-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bo-nuong-la-lot",
     "to": "nghe-det-luc-binh-vinh-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "xoi-vi-mien-tay",
     "to": "nghe-det-luc-binh-vinh-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mam-tom-cha-vinh-long",
     "to": "nghe-det-luc-binh-vinh-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bo-to-vinh-long",
     "to": "nghe-det-luc-binh-vinh-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-phu-the-vinh-long",
     "to": "nghe-det-luc-binh-vinh-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-phuong-thuy",
     "to": "nghe-det-luc-binh-vinh-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-sau-tu",
     "to": "nghe-det-luc-binh-vinh-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-song-thao",
     "to": "nghe-det-luc-binh-vinh-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "xoai-cat-num-vung-liem",
@@ -103785,52 +103785,52 @@ var relationships = [
   {
     "from": "ca-tai-tuong-chien-xu",
     "to": "lang-nghe-dan-non-la-tt-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "ca-tai-tuong-chien-xu",
     "to": "lang-hoa-mai-binh-hoa-phuoc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "ca-tai-tuong-chien-xu",
     "to": "lang-gach-gom-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "ca-tai-tuong-chien-xu",
     "to": "lang-nghe-gom-truyen-thong-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "ca-tai-tuong-chien-xu",
     "to": "lang-nghe-cham-non-la-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lo-com-cuu-long",
     "to": "lang-nghe-dan-non-la-tt-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lo-com-cuu-long",
     "to": "lang-hoa-mai-binh-hoa-phuoc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lo-com-cuu-long",
     "to": "lang-gach-gom-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lo-com-cuu-long",
     "to": "lang-nghe-gom-truyen-thong-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lo-com-cuu-long",
     "to": "lang-nghe-cham-non-la-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "thanh-tra",
@@ -103860,567 +103860,567 @@ var relationships = [
   {
     "from": "mam-song-khoai-lang",
     "to": "lang-nghe-dan-non-la-tt-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mam-song-khoai-lang",
     "to": "lang-hoa-mai-binh-hoa-phuoc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mam-song-khoai-lang",
     "to": "lang-gach-gom-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mam-song-khoai-lang",
     "to": "lang-nghe-gom-truyen-thong-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mam-song-khoai-lang",
     "to": "lang-nghe-cham-non-la-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-tam-co-tuyet",
     "to": "lang-nghe-dan-non-la-tt-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-tam-co-tuyet",
     "to": "lang-hoa-mai-binh-hoa-phuoc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-tam-co-tuyet",
     "to": "lang-gach-gom-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-tam-co-tuyet",
     "to": "lang-nghe-gom-truyen-thong-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-tam-co-tuyet",
     "to": "lang-nghe-cham-non-la-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-mam-co-ba",
     "to": "lang-nghe-dan-non-la-tt-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-mam-co-ba",
     "to": "lang-hoa-mai-binh-hoa-phuoc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-mam-co-ba",
     "to": "lang-gach-gom-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-mam-co-ba",
     "to": "lang-nghe-gom-truyen-thong-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-mam-co-ba",
     "to": "lang-nghe-cham-non-la-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "pho-91",
     "to": "lang-nghe-dan-non-la-tt-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "pho-91",
     "to": "lang-hoa-mai-binh-hoa-phuoc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "pho-91",
     "to": "lang-gach-gom-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "pho-91",
     "to": "lang-nghe-gom-truyen-thong-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "pho-91",
     "to": "lang-nghe-cham-non-la-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-my-tho",
     "to": "lang-nghe-dan-non-la-tt-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-my-tho",
     "to": "lang-hoa-mai-binh-hoa-phuoc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-my-tho",
     "to": "lang-gach-gom-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-my-tho",
     "to": "lang-nghe-gom-truyen-thong-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-my-tho",
     "to": "lang-nghe-cham-non-la-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-tam-suon-bi-cha",
     "to": "lang-nghe-dan-non-la-tt-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-tam-suon-bi-cha",
     "to": "lang-hoa-mai-binh-hoa-phuoc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-tam-suon-bi-cha",
     "to": "lang-gach-gom-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-tam-suon-bi-cha",
     "to": "lang-nghe-gom-truyen-thong-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-tam-suon-bi-cha",
     "to": "lang-nghe-cham-non-la-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-mam-mien-tay",
     "to": "lang-nghe-dan-non-la-tt-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-mam-mien-tay",
     "to": "lang-hoa-mai-binh-hoa-phuoc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-mam-mien-tay",
     "to": "lang-gach-gom-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-mam-mien-tay",
     "to": "lang-nghe-gom-truyen-thong-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-mam-mien-tay",
     "to": "lang-nghe-cham-non-la-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nem-nuong-vinh-long",
     "to": "lang-nghe-dan-non-la-tt-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nem-nuong-vinh-long",
     "to": "lang-hoa-mai-binh-hoa-phuoc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nem-nuong-vinh-long",
     "to": "lang-gach-gom-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nem-nuong-vinh-long",
     "to": "lang-nghe-gom-truyen-thong-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nem-nuong-vinh-long",
     "to": "lang-nghe-cham-non-la-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bo-nuong-la-lot",
     "to": "lang-nghe-dan-non-la-tt-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bo-nuong-la-lot",
     "to": "lang-hoa-mai-binh-hoa-phuoc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bo-nuong-la-lot",
     "to": "lang-gach-gom-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bo-nuong-la-lot",
     "to": "lang-nghe-gom-truyen-thong-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bo-nuong-la-lot",
     "to": "lang-nghe-cham-non-la-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "xoi-vi-mien-tay",
     "to": "lang-nghe-dan-non-la-tt-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "xoi-vi-mien-tay",
     "to": "lang-hoa-mai-binh-hoa-phuoc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "xoi-vi-mien-tay",
     "to": "lang-gach-gom-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "xoi-vi-mien-tay",
     "to": "lang-nghe-gom-truyen-thong-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "xoi-vi-mien-tay",
     "to": "lang-nghe-cham-non-la-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mam-tom-cha-vinh-long",
     "to": "lang-nghe-dan-non-la-tt-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mam-tom-cha-vinh-long",
     "to": "lang-hoa-mai-binh-hoa-phuoc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mam-tom-cha-vinh-long",
     "to": "lang-gach-gom-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mam-tom-cha-vinh-long",
     "to": "lang-nghe-gom-truyen-thong-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mam-tom-cha-vinh-long",
     "to": "lang-nghe-cham-non-la-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bo-to-vinh-long",
     "to": "lang-nghe-dan-non-la-tt-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bo-to-vinh-long",
     "to": "lang-hoa-mai-binh-hoa-phuoc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bo-to-vinh-long",
     "to": "lang-gach-gom-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bo-to-vinh-long",
     "to": "lang-nghe-gom-truyen-thong-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bo-to-vinh-long",
     "to": "lang-nghe-cham-non-la-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-phu-the-vinh-long",
     "to": "lang-nghe-dan-non-la-tt-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-phu-the-vinh-long",
     "to": "lang-hoa-mai-binh-hoa-phuoc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-phu-the-vinh-long",
     "to": "lang-gach-gom-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-phu-the-vinh-long",
     "to": "lang-nghe-gom-truyen-thong-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-phu-the-vinh-long",
     "to": "lang-nghe-cham-non-la-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-huong-sen",
     "to": "lang-nghe-gach-gom-mang-thit-vuong-quoc-do",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-huong-sen",
     "to": "lang-nghe-det-chieu-vung-liem",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-huong-sen",
     "to": "lang-se-loi-lac-va-dan-lat-vung-liem",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-huong-sen",
     "to": "lang-nghe-trong-lac-trung-thanh-dong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-huong-sen",
     "to": "lang-nghe-dan-chieu-va-lam-banh-xe-may-tre",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-huong-sen",
     "to": "lang-nghe-banh-trang-tam-binh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-huong-sen",
     "to": "lang-nghe-dan-luc-binh-ngai-tu-binh-ninh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-am-thuc-pho",
     "to": "lang-nghe-gach-gom-mang-thit-vuong-quoc-do",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-am-thuc-pho",
     "to": "lang-nghe-det-chieu-vung-liem",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-am-thuc-pho",
     "to": "lang-se-loi-lac-va-dan-lat-vung-liem",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-am-thuc-pho",
     "to": "lang-nghe-trong-lac-trung-thanh-dong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-am-thuc-pho",
     "to": "lang-nghe-dan-chieu-va-lam-banh-xe-may-tre",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-am-thuc-pho",
     "to": "lang-nghe-banh-trang-tam-binh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-am-thuc-pho",
     "to": "lang-nghe-dan-luc-binh-ngai-tu-binh-ninh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-ngan-vinh",
     "to": "lang-nghe-gach-gom-mang-thit-vuong-quoc-do",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-ngan-vinh",
     "to": "lang-nghe-det-chieu-vung-liem",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-ngan-vinh",
     "to": "lang-se-loi-lac-va-dan-lat-vung-liem",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-ngan-vinh",
     "to": "lang-nghe-trong-lac-trung-thanh-dong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-ngan-vinh",
     "to": "lang-nghe-dan-chieu-va-lam-banh-xe-may-tre",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-ngan-vinh",
     "to": "lang-nghe-banh-trang-tam-binh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-ngan-vinh",
     "to": "lang-nghe-dan-luc-binh-ngai-tu-binh-ninh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-phuong-thuy",
     "to": "lang-nghe-dan-non-la-tt-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-phuong-thuy",
     "to": "lang-hoa-mai-binh-hoa-phuoc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-phuong-thuy",
     "to": "lang-gach-gom-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-phuong-thuy",
     "to": "lang-nghe-gom-truyen-thong-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-phuong-thuy",
     "to": "lang-nghe-cham-non-la-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-sau-tu",
     "to": "lang-nghe-dan-non-la-tt-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-sau-tu",
     "to": "lang-hoa-mai-binh-hoa-phuoc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-sau-tu",
     "to": "lang-gach-gom-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-sau-tu",
     "to": "lang-nghe-gom-truyen-thong-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-sau-tu",
     "to": "lang-nghe-cham-non-la-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-song-thao",
     "to": "lang-nghe-dan-non-la-tt-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-song-thao",
     "to": "lang-hoa-mai-binh-hoa-phuoc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-song-thao",
     "to": "lang-gach-gom-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-song-thao",
     "to": "lang-nghe-gom-truyen-thong-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-song-thao",
     "to": "lang-nghe-cham-non-la-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-thien-tan",
     "to": "lang-nghe-gach-gom-mang-thit-vuong-quoc-do",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-thien-tan",
     "to": "lang-nghe-det-chieu-vung-liem",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-thien-tan",
     "to": "lang-se-loi-lac-va-dan-lat-vung-liem",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-thien-tan",
     "to": "lang-nghe-trong-lac-trung-thanh-dong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-thien-tan",
     "to": "lang-nghe-dan-chieu-va-lam-banh-xe-may-tre",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-thien-tan",
     "to": "lang-nghe-banh-trang-tam-binh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nha-hang-thien-tan",
     "to": "lang-nghe-dan-luc-binh-ngai-tu-binh-ninh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tau-nha-hang-sai-gon-vinh-long",
     "to": "lang-nghe-dan-non-la-tt-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tau-nha-hang-sai-gon-vinh-long",
     "to": "lang-hoa-mai-binh-hoa-phuoc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tau-nha-hang-sai-gon-vinh-long",
     "to": "lang-gach-gom-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tau-nha-hang-sai-gon-vinh-long",
     "to": "lang-nghe-gom-truyen-thong-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tau-nha-hang-sai-gon-vinh-long",
     "to": "lang-nghe-cham-non-la-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "xoai-cat-num-vung-liem",
@@ -104525,62 +104525,62 @@ var relationships = [
   {
     "from": "khu-pho-am-thuc-bo-ho",
     "to": "lang-nghe-keo-dua-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "khu-pho-am-thuc-bo-ho",
     "to": "lang-nghe-dan-gio-cong-dua-hung-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "khu-pho-am-thuc-bo-ho",
     "to": "lang-nghe-thach-dua-hung-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "khu-pho-am-thuc-bo-ho",
     "to": "lang-nghe-thu-cong-dua-phuoc-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "khu-pho-am-thuc-bo-ho",
     "to": "lang-nghe-che-bien-hai-san-kho-thanh-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "khu-pho-am-thuc-bo-ho",
     "to": "lang-nghe-bo-choi-my-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "khu-pho-am-thuc-bo-ho",
     "to": "lang-nghe-chi-xo-dua-khanh-thanh-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "khu-pho-am-thuc-bo-ho",
     "to": "lang-nghe-hoa-kieng-thanh-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-suong-tra-vinh",
     "to": "lang-nghe-tieu-thu-cong-nghiep-tre-ham-giang-co-so-tri-canh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-suong-tra-vinh",
     "to": "lang-nghe-det-chieu-ca-hom",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-am-tra-vinh",
     "to": "lang-nghe-tieu-thu-cong-nghiep-tre-ham-giang-co-so-tri-canh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-am-tra-vinh",
     "to": "lang-nghe-det-chieu-ca-hom",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "keo-dua-thu-cong-ben-tre",
@@ -104745,202 +104745,202 @@ var relationships = [
   {
     "from": "hu-tieu-pate-ben-tre",
     "to": "lang-nghe-keo-dua-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-pate-ben-tre",
     "to": "lang-nghe-dan-gio-cong-dua-hung-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-pate-ben-tre",
     "to": "lang-nghe-thach-dua-hung-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-pate-ben-tre",
     "to": "lang-nghe-thu-cong-dua-phuoc-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-pate-ben-tre",
     "to": "lang-nghe-che-bien-hai-san-kho-thanh-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-pate-ben-tre",
     "to": "lang-nghe-bo-choi-my-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-pate-ben-tre",
     "to": "lang-nghe-chi-xo-dua-khanh-thanh-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-pate-ben-tre",
     "to": "lang-nghe-hoa-kieng-thanh-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-bot-xat-ben-tre",
     "to": "lang-nghe-keo-dua-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-bot-xat-ben-tre",
     "to": "lang-nghe-dan-gio-cong-dua-hung-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-bot-xat-ben-tre",
     "to": "lang-nghe-thach-dua-hung-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-bot-xat-ben-tre",
     "to": "lang-nghe-thu-cong-dua-phuoc-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-bot-xat-ben-tre",
     "to": "lang-nghe-che-bien-hai-san-kho-thanh-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-bot-xat-ben-tre",
     "to": "lang-nghe-bo-choi-my-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-bot-xat-ben-tre",
     "to": "lang-nghe-chi-xo-dua-khanh-thanh-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-bot-xat-ben-tre",
     "to": "lang-nghe-hoa-kieng-thanh-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-oc-gao-phu-da",
     "to": "lang-nghe-keo-dua-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-oc-gao-phu-da",
     "to": "lang-nghe-dan-gio-cong-dua-hung-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-oc-gao-phu-da",
     "to": "lang-nghe-thach-dua-hung-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-oc-gao-phu-da",
     "to": "lang-nghe-thu-cong-dua-phuoc-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-oc-gao-phu-da",
     "to": "lang-nghe-che-bien-hai-san-kho-thanh-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-oc-gao-phu-da",
     "to": "lang-nghe-bo-choi-my-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-oc-gao-phu-da",
     "to": "lang-nghe-chi-xo-dua-khanh-thanh-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-oc-gao-phu-da",
     "to": "lang-nghe-hoa-kieng-thanh-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-ben-tre",
     "to": "lang-nghe-keo-dua-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-ben-tre",
     "to": "lang-nghe-dan-gio-cong-dua-hung-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-ben-tre",
     "to": "lang-nghe-thach-dua-hung-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-ben-tre",
     "to": "lang-nghe-thu-cong-dua-phuoc-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-ben-tre",
     "to": "lang-nghe-che-bien-hai-san-kho-thanh-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-ben-tre",
     "to": "lang-nghe-bo-choi-my-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-ben-tre",
     "to": "lang-nghe-chi-xo-dua-khanh-thanh-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-mam-ben-tre",
     "to": "lang-nghe-hoa-kieng-thanh-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-cua-dong-ben-tre",
     "to": "lang-nghe-keo-dua-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-cua-dong-ben-tre",
     "to": "lang-nghe-dan-gio-cong-dua-hung-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-cua-dong-ben-tre",
     "to": "lang-nghe-thach-dua-hung-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-cua-dong-ben-tre",
     "to": "lang-nghe-thu-cong-dua-phuoc-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-cua-dong-ben-tre",
     "to": "lang-nghe-che-bien-hai-san-kho-thanh-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-cua-dong-ben-tre",
     "to": "lang-nghe-bo-choi-my-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-cua-dong-ben-tre",
     "to": "lang-nghe-chi-xo-dua-khanh-thanh-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chao-cua-dong-ben-tre",
     "to": "lang-nghe-hoa-kieng-thanh-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "nhan-an-binh-tam-binh",
@@ -104980,37 +104980,37 @@ var relationships = [
   {
     "from": "banh-xeo-hen-cu-lao-dai",
     "to": "lang-nghe-gach-gom-mang-thit-vuong-quoc-do",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-hen-cu-lao-dai",
     "to": "lang-nghe-det-chieu-vung-liem",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-hen-cu-lao-dai",
     "to": "lang-se-loi-lac-va-dan-lat-vung-liem",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-hen-cu-lao-dai",
     "to": "lang-nghe-trong-lac-trung-thanh-dong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-hen-cu-lao-dai",
     "to": "lang-nghe-dan-chieu-va-lam-banh-xe-may-tre",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-hen-cu-lao-dai",
     "to": "lang-nghe-banh-trang-tam-binh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-hen-cu-lao-dai",
     "to": "lang-nghe-dan-luc-binh-ngai-tu-binh-ninh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "keo-dua-tan-thach",
@@ -105055,82 +105055,82 @@ var relationships = [
   {
     "from": "com-hap-trai-dua",
     "to": "lang-nghe-keo-dua-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-hap-trai-dua",
     "to": "lang-nghe-dan-gio-cong-dua-hung-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-hap-trai-dua",
     "to": "lang-nghe-thach-dua-hung-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-hap-trai-dua",
     "to": "lang-nghe-thu-cong-dua-phuoc-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-hap-trai-dua",
     "to": "lang-nghe-che-bien-hai-san-kho-thanh-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-hap-trai-dua",
     "to": "lang-nghe-bo-choi-my-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-hap-trai-dua",
     "to": "lang-nghe-chi-xo-dua-khanh-thanh-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-hap-trai-dua",
     "to": "lang-nghe-hoa-kieng-thanh-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tep-rang-dua",
     "to": "lang-nghe-keo-dua-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tep-rang-dua",
     "to": "lang-nghe-dan-gio-cong-dua-hung-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tep-rang-dua",
     "to": "lang-nghe-thach-dua-hung-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tep-rang-dua",
     "to": "lang-nghe-thu-cong-dua-phuoc-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tep-rang-dua",
     "to": "lang-nghe-che-bien-hai-san-kho-thanh-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tep-rang-dua",
     "to": "lang-nghe-bo-choi-my-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tep-rang-dua",
     "to": "lang-nghe-chi-xo-dua-khanh-thanh-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tep-rang-dua",
     "to": "lang-nghe-hoa-kieng-thanh-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "sau-rieng-cho-lach",
@@ -105725,12 +105725,12 @@ var relationships = [
   {
     "from": "mut-dua-sap-cau-ke",
     "to": "lang-nghe-tieu-thu-cong-nghiep-tre-ham-giang-co-so-tri-canh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mut-dua-sap-cau-ke",
     "to": "lang-nghe-det-chieu-ca-hom",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "cu-cai-muoi-chit-sa",
@@ -105765,12 +105765,12 @@ var relationships = [
   {
     "from": "bun-nuoc-leo-tieu-can",
     "to": "lang-nghe-tieu-thu-cong-nghiep-tre-ham-giang-co-so-tri-canh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tieu-can",
     "to": "lang-nghe-det-chieu-ca-hom",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "san-pham-ocop-cau-ngang",
@@ -105785,12 +105785,12 @@ var relationships = [
   {
     "from": "hu-tieu-soi-no-cong",
     "to": "lang-nghe-tieu-thu-cong-nghiep-tre-ham-giang-co-so-tri-canh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-soi-no-cong",
     "to": "lang-nghe-det-chieu-ca-hom",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "mat-ong-rung-ban-nguyen-van-bao",
@@ -105925,62 +105925,62 @@ var relationships = [
   {
     "from": "hu-tieu-vinh-long",
     "to": "nghe-det-luc-binh-vinh-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-vinh-long",
     "to": "lang-nghe-dan-non-la-tt-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-vinh-long",
     "to": "lang-hoa-mai-binh-hoa-phuoc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-vinh-long",
     "to": "lang-gach-gom-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-vinh-long",
     "to": "lang-nghe-gom-truyen-thong-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "hu-tieu-vinh-long",
     "to": "lang-nghe-cham-non-la-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-ca-linh-bong-dien-dien",
     "to": "nghe-det-luc-binh-vinh-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-ca-linh-bong-dien-dien",
     "to": "lang-nghe-dan-non-la-tt-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-ca-linh-bong-dien-dien",
     "to": "lang-hoa-mai-binh-hoa-phuoc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-ca-linh-bong-dien-dien",
     "to": "lang-gach-gom-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-ca-linh-bong-dien-dien",
     "to": "lang-nghe-gom-truyen-thong-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "lau-ca-linh-bong-dien-dien",
     "to": "lang-nghe-cham-non-la-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "rau-cau-vinh-quang",
@@ -106135,32 +106135,32 @@ var relationships = [
   {
     "from": "bun-mam-vinh-long",
     "to": "nghe-det-luc-binh-vinh-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-mam-vinh-long",
     "to": "lang-nghe-dan-non-la-tt-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-mam-vinh-long",
     "to": "lang-hoa-mai-binh-hoa-phuoc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-mam-vinh-long",
     "to": "lang-gach-gom-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-mam-vinh-long",
     "to": "lang-nghe-gom-truyen-thong-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-mam-vinh-long",
     "to": "lang-nghe-cham-non-la-long-ho",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "sau-rieng-say-thang-hoa-sau-ri",
@@ -106545,52 +106545,52 @@ var relationships = [
   {
     "from": "bun-nuoc-leo-vinh-long",
     "to": "lang-banh-trang-giay-tuong-loc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-vinh-long",
     "to": "lang-dan-luc-binh-ngai-tu",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-vinh-long",
     "to": "lang-det-chieu-cu-lao-dai",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-vinh-long",
     "to": "lang-nghe-gach-gom-mang-thit-vuong-quoc-do",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-vinh-long",
     "to": "lang-nghe-det-chieu-vung-liem",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-vinh-long",
     "to": "lang-se-loi-lac-va-dan-lat-vung-liem",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-vinh-long",
     "to": "lang-nghe-trong-lac-trung-thanh-dong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-vinh-long",
     "to": "lang-nghe-dan-chieu-va-lam-banh-xe-may-tre",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-vinh-long",
     "to": "lang-nghe-banh-trang-tam-binh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-vinh-long",
     "to": "lang-nghe-dan-luc-binh-ngai-tu-binh-ninh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "gach-do-truyen-thong-mang-thit",
@@ -107310,17 +107310,17 @@ var relationships = [
   {
     "from": "ca-chay-song-hau",
     "to": "vung-cam-sanh-tra-on",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "ca-chay-song-hau",
     "to": "lang-banh-trang-tra-on",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "ca-chay-song-hau",
     "to": "banh-trang-cu-lao-may-lang-nghe-banh-trang",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-trang-ngot-le-hang-htx-banh-trang-cu-lao-may",
@@ -108455,112 +108455,112 @@ var relationships = [
   {
     "from": "banh-dua-giong-luong",
     "to": "dong-muoi-bao-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-dua-giong-luong",
     "to": "lang-nghe-truyen-thong-phu-le",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-dua-giong-luong",
     "to": "lang-hoa-kieng-cai-mon-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-dua-giong-luong",
     "to": "lang-nghe-dong-ghe-xuong-an-dinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-dua-giong-luong",
     "to": "lang-keo-dua-phuong-7-ben-tre",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-dua-giong-luong",
     "to": "co-so-keo-dua-hong-van",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-dua-giong-luong",
     "to": "lang-nghe-thu-cong-my-nghe-tu-dua-tai-tan-thach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-dua-giong-luong",
     "to": "lang-nghe-thu-cong-my-nghe-tu-dua-quoi-son",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-dua-giong-luong",
     "to": "lang-nghe-cay-giong-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-dua-giong-luong",
     "to": "lang-nghe-dong-thuyen-an-dinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-dua-giong-luong",
     "to": "lang-nghe-thu-cong-my-nghe-dua-mo-cay-nam",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-dua-giong-luong",
     "to": "lang-nghe-san-xuat-muoi-bao-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-dua-giong-luong",
     "to": "lang-nghe-dan-dat-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-dua-giong-luong",
     "to": "lang-nghe-tre-truc-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-dua-giong-luong",
     "to": "lang-nghe-keo-dua-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-dua-giong-luong",
     "to": "lang-nghe-dan-gio-cong-dua-hung-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-dua-giong-luong",
     "to": "lang-nghe-thach-dua-hung-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-dua-giong-luong",
     "to": "lang-nghe-thu-cong-dua-phuoc-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-dua-giong-luong",
     "to": "lang-nghe-che-bien-hai-san-kho-thanh-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-dua-giong-luong",
     "to": "lang-nghe-bo-choi-my-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-dua-giong-luong",
     "to": "lang-nghe-chi-xo-dua-khanh-thanh-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-dua-giong-luong",
     "to": "lang-nghe-hoa-kieng-thanh-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "kho-ca-bien-thanh-phu",
@@ -109775,112 +109775,112 @@ var relationships = [
   {
     "from": "banh-xeo-bien-binh-dai",
     "to": "dong-muoi-bao-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-bien-binh-dai",
     "to": "lang-nghe-truyen-thong-phu-le",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-bien-binh-dai",
     "to": "lang-hoa-kieng-cai-mon-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-bien-binh-dai",
     "to": "lang-nghe-dong-ghe-xuong-an-dinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-bien-binh-dai",
     "to": "lang-keo-dua-phuong-7-ben-tre",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-bien-binh-dai",
     "to": "co-so-keo-dua-hong-van",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-bien-binh-dai",
     "to": "lang-nghe-thu-cong-my-nghe-tu-dua-tai-tan-thach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-bien-binh-dai",
     "to": "lang-nghe-thu-cong-my-nghe-tu-dua-quoi-son",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-bien-binh-dai",
     "to": "lang-nghe-cay-giong-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-bien-binh-dai",
     "to": "lang-nghe-dong-thuyen-an-dinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-bien-binh-dai",
     "to": "lang-nghe-thu-cong-my-nghe-dua-mo-cay-nam",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-bien-binh-dai",
     "to": "lang-nghe-san-xuat-muoi-bao-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-bien-binh-dai",
     "to": "lang-nghe-dan-dat-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-bien-binh-dai",
     "to": "lang-nghe-tre-truc-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-bien-binh-dai",
     "to": "lang-nghe-keo-dua-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-bien-binh-dai",
     "to": "lang-nghe-dan-gio-cong-dua-hung-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-bien-binh-dai",
     "to": "lang-nghe-thach-dua-hung-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-bien-binh-dai",
     "to": "lang-nghe-thu-cong-dua-phuoc-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-bien-binh-dai",
     "to": "lang-nghe-che-bien-hai-san-kho-thanh-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-bien-binh-dai",
     "to": "lang-nghe-bo-choi-my-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-bien-binh-dai",
     "to": "lang-nghe-chi-xo-dua-khanh-thanh-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-xeo-bien-binh-dai",
     "to": "lang-nghe-hoa-kieng-thanh-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "ca-phi-sa-ot-thanh-phuoc",
@@ -110105,112 +110105,112 @@ var relationships = [
   {
     "from": "oc-viet-ben-tre",
     "to": "dong-muoi-bao-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-viet-ben-tre",
     "to": "lang-nghe-truyen-thong-phu-le",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-viet-ben-tre",
     "to": "lang-hoa-kieng-cai-mon-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-viet-ben-tre",
     "to": "lang-nghe-dong-ghe-xuong-an-dinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-viet-ben-tre",
     "to": "lang-keo-dua-phuong-7-ben-tre",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-viet-ben-tre",
     "to": "co-so-keo-dua-hong-van",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-viet-ben-tre",
     "to": "lang-nghe-thu-cong-my-nghe-tu-dua-tai-tan-thach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-viet-ben-tre",
     "to": "lang-nghe-thu-cong-my-nghe-tu-dua-quoi-son",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-viet-ben-tre",
     "to": "lang-nghe-cay-giong-cho-lach",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-viet-ben-tre",
     "to": "lang-nghe-dong-thuyen-an-dinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-viet-ben-tre",
     "to": "lang-nghe-thu-cong-my-nghe-dua-mo-cay-nam",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-viet-ben-tre",
     "to": "lang-nghe-san-xuat-muoi-bao-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-viet-ben-tre",
     "to": "lang-nghe-dan-dat-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-viet-ben-tre",
     "to": "lang-nghe-tre-truc-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-viet-ben-tre",
     "to": "lang-nghe-keo-dua-ba-tri",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-viet-ben-tre",
     "to": "lang-nghe-dan-gio-cong-dua-hung-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-viet-ben-tre",
     "to": "lang-nghe-thach-dua-hung-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-viet-ben-tre",
     "to": "lang-nghe-thu-cong-dua-phuoc-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-viet-ben-tre",
     "to": "lang-nghe-che-bien-hai-san-kho-thanh-phong",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-viet-ben-tre",
     "to": "lang-nghe-bo-choi-my-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-viet-ben-tre",
     "to": "lang-nghe-chi-xo-dua-khanh-thanh-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "oc-viet-ben-tre",
     "to": "lang-nghe-hoa-kieng-thanh-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tom-su-binh-dai",
@@ -110830,67 +110830,67 @@ var relationships = [
   {
     "from": "chu-u-rang-me",
     "to": "lang-nghe-che-tac-mat-na-khmer-nguyet-hoa",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chu-u-rang-me",
     "to": "lang-det-chieu-ca-hom-ham-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chu-u-rang-me",
     "to": "lang-hoa-kieng-long-duc-tra-vinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chu-u-rang-me",
     "to": "lang-dan-lat-duc-my-cang-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chu-u-rang-me",
     "to": "lang-nghe-tieu-thu-cong-nghiep-duc-my",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chu-u-rang-me",
     "to": "htx-nong-nghiep-thong-hoa-dua-sap",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chu-u-rang-me",
     "to": "lang-nghe-det-chieu-ham-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chu-u-rang-me",
     "to": "lang-nghe-tieu-thu-cong-nghiep-ham-giang-tre-truc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chu-u-rang-me",
     "to": "lang-nghe-dan-dat-dai-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chu-u-rang-me",
     "to": "lang-nghe-may-tre-dan-dai-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chu-u-rang-me",
     "to": "lang-nghe-do-go-tre-ham-giang",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chu-u-rang-me",
     "to": "lang-nghe-tieu-thu-cong-nghiep-tre-ham-giang-co-so-tri-canh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "chu-u-rang-me",
     "to": "lang-nghe-det-chieu-ca-hom",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "dua-sap-tra-vinh",
@@ -111355,132 +111355,132 @@ var relationships = [
   {
     "from": "com-dep-ngoc-bien",
     "to": "lang-nghe-che-tac-mat-na-khmer-nguyet-hoa",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-dep-ngoc-bien",
     "to": "lang-det-chieu-ca-hom-ham-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-dep-ngoc-bien",
     "to": "lang-hoa-kieng-long-duc-tra-vinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-dep-ngoc-bien",
     "to": "lang-dan-lat-duc-my-cang-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-dep-ngoc-bien",
     "to": "lang-nghe-tieu-thu-cong-nghiep-duc-my",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-dep-ngoc-bien",
     "to": "htx-nong-nghiep-thong-hoa-dua-sap",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-dep-ngoc-bien",
     "to": "lang-nghe-det-chieu-ham-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-dep-ngoc-bien",
     "to": "lang-nghe-tieu-thu-cong-nghiep-ham-giang-tre-truc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-dep-ngoc-bien",
     "to": "lang-nghe-dan-dat-dai-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-dep-ngoc-bien",
     "to": "lang-nghe-may-tre-dan-dai-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-dep-ngoc-bien",
     "to": "lang-nghe-do-go-tre-ham-giang",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-dep-ngoc-bien",
     "to": "lang-nghe-tieu-thu-cong-nghiep-tre-ham-giang-co-so-tri-canh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-dep-ngoc-bien",
     "to": "lang-nghe-det-chieu-ca-hom",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tra-cu",
     "to": "lang-nghe-che-tac-mat-na-khmer-nguyet-hoa",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tra-cu",
     "to": "lang-det-chieu-ca-hom-ham-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tra-cu",
     "to": "lang-hoa-kieng-long-duc-tra-vinh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tra-cu",
     "to": "lang-dan-lat-duc-my-cang-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tra-cu",
     "to": "lang-nghe-tieu-thu-cong-nghiep-duc-my",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tra-cu",
     "to": "htx-nong-nghiep-thong-hoa-dua-sap",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tra-cu",
     "to": "lang-nghe-det-chieu-ham-tan",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tra-cu",
     "to": "lang-nghe-tieu-thu-cong-nghiep-ham-giang-tre-truc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tra-cu",
     "to": "lang-nghe-dan-dat-dai-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tra-cu",
     "to": "lang-nghe-may-tre-dan-dai-an",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tra-cu",
     "to": "lang-nghe-do-go-tre-ham-giang",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tra-cu",
     "to": "lang-nghe-tieu-thu-cong-nghiep-tre-ham-giang-co-so-tri-canh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-nuoc-leo-tra-cu",
     "to": "lang-nghe-det-chieu-ca-hom",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tran-dai-nghia",
@@ -115640,7 +115640,7 @@ var relationships = [
   {
     "from": "bun-nuoc-leo-tra-vinh",
     "to": "lang-nghe-tac-tuong-go-long-duc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "dua-sap",
@@ -115650,22 +115650,22 @@ var relationships = [
   {
     "from": "cha-gio-chay",
     "to": "lang-nghe-tac-tuong-go-long-duc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-cong-soc-trang",
     "to": "lang-nghe-tac-tuong-go-long-duc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-tet-la-cam",
     "to": "lang-nghe-tac-tuong-go-long-duc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-bo-nuong-tra-vinh",
     "to": "lang-nghe-tac-tuong-go-long-duc",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tom-su-sinh-thai-tra-vinh",
@@ -118870,17 +118870,17 @@ var relationships = [
   {
     "from": "bun-nuoc-leo-tra-vinh",
     "to": "quyt-duong-cau-ke",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "com-tam-co-tuyet",
     "to": "nghe-det-luc-binh-vinh-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "bun-mam-co-ba",
     "to": "nghe-det-luc-binh-vinh-long",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "keo-dua-ben-tre",
@@ -118895,32 +118895,32 @@ var relationships = [
   {
     "from": "cha-gio-chay",
     "to": "quyt-duong-cau-ke",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-cong-soc-trang",
     "to": "quyt-duong-cau-ke",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-canh-ben-tre",
     "to": "vung-buoi-da-xanh-chau-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-tet-la-cam",
     "to": "quyt-duong-cau-ke",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "che-chuoi-nuong",
     "to": "vung-buoi-da-xanh-chau-thanh",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "banh-bo-nuong-tra-vinh",
     "to": "quyt-duong-cau-ke",
-    "type": "produced_in"
+    "type": "associated_with"
   },
   {
     "from": "tom-su-sinh-thai-tra-vinh",
@@ -122463,11 +122463,6 @@ var relationships = [
     "type": "near"
   },
   {
-    "from": "thanh-tra",
-    "to": "banh-phu-the-vinh-long",
-    "type": "near"
-  },
-  {
     "from": "oasis-hotel",
     "to": "ben-tre-farm-stay",
     "type": "near"
@@ -122558,11 +122553,6 @@ var relationships = [
     "type": "near"
   },
   {
-    "from": "thanh-ton",
-    "to": "thanh-tra",
-    "type": "near"
-  },
-  {
     "from": "bun-mam-vinh-long",
     "to": "chua-tien-chau-di-da-tu",
     "type": "near"
@@ -122595,11 +122585,6 @@ var relationships = [
   {
     "from": "phuong-thao-homestay",
     "to": "nam-thanh-homestay",
-    "type": "near"
-  },
-  {
-    "from": "vo-van-kiet",
-    "to": "thanh-tra",
     "type": "near"
   },
   {
@@ -122945,11 +122930,6 @@ var relationships = [
   {
     "from": "tuan-le-van-hoa-am-thuc-an-hoi-2026",
     "to": "nha-hang-phuong-thuy-1",
-    "type": "near"
-  },
-  {
-    "from": "chua-long-khanh",
-    "to": "thanh-tra",
     "type": "near"
   },
   {
@@ -123578,11 +123558,6 @@ var relationships = [
     "type": "near"
   },
   {
-    "from": "sieu-thi-coop-mart-vinh-long",
-    "to": "thanh-tra",
-    "type": "near"
-  },
-  {
     "from": "cho-cai-von",
     "to": "chua-bo-de",
     "type": "near"
@@ -123700,11 +123675,6 @@ var relationships = [
   {
     "from": "vuon-chom-chom-thay-ha",
     "to": "buoi-nam-roi-my-hoa",
-    "type": "near"
-  },
-  {
-    "from": "thanh-tra",
-    "to": "banh-phong-khoai-lang-nhat-ngoc",
     "type": "near"
   },
   {
@@ -123880,11 +123850,6 @@ var relationships = [
   {
     "from": "homestay-lang-be",
     "to": "oc-gao-vinh-binh",
-    "type": "near"
-  },
-  {
-    "from": "thanh-tra",
-    "to": "den-tho-bac-ho",
     "type": "near"
   },
   {
@@ -125543,21 +125508,6 @@ var relationships = [
     "type": "near"
   },
   {
-    "from": "den-tho-bac-ho",
-    "to": "one-hotel",
-    "type": "near"
-  },
-  {
-    "from": "don-ca-tai-tu-nam-bo",
-    "to": "den-tho-bac-ho",
-    "type": "near"
-  },
-  {
-    "from": "pho-an-vat-bo-ke",
-    "to": "den-tho-bac-ho",
-    "type": "near"
-  },
-  {
     "from": "don-ca-tai-tu-nam-bo-tai-vinh-long",
     "to": "le-via-quoc-cong-tong-phuoc-hiep",
     "type": "near"
@@ -125905,11 +125855,6 @@ var relationships = [
   {
     "from": "ca-loc-nuong-trui",
     "to": "chua-hung-hue",
-    "type": "near"
-  },
-  {
-    "from": "thanh-loc",
-    "to": "thanh-tra",
     "type": "near"
   },
   {
@@ -126818,38 +126763,8 @@ var relationships = [
     "type": "near"
   },
   {
-    "from": "vo-van-kiet",
-    "to": "don-ca-tai-tu-nam-bo",
-    "type": "near"
-  },
-  {
-    "from": "vo-van-kiet",
-    "to": "one-hotel",
-    "type": "near"
-  },
-  {
     "from": "toa-thanh-cao-dai-ban-chinh-dao",
     "to": "oasis-hotel",
-    "type": "near"
-  },
-  {
-    "from": "banh-phu-the-vinh-long",
-    "to": "one-hotel",
-    "type": "near"
-  },
-  {
-    "from": "don-ca-tai-tu-nam-bo",
-    "to": "banh-phu-the-vinh-long",
-    "type": "near"
-  },
-  {
-    "from": "don-ca-tai-tu-nam-bo",
-    "to": "thanh-ton",
-    "type": "near"
-  },
-  {
-    "from": "thanh-ton",
-    "to": "one-hotel",
     "type": "near"
   },
   {
@@ -126925,16 +126840,6 @@ var relationships = [
   {
     "from": "le-hoi-ok-om-bok",
     "to": "cho-tra-vinh",
-    "type": "near"
-  },
-  {
-    "from": "chua-long-khanh",
-    "to": "pho-an-vat-bo-ke",
-    "type": "near"
-  },
-  {
-    "from": "chua-long-khanh",
-    "to": "test",
     "type": "near"
   },
   {
@@ -127070,11 +126975,6 @@ var relationships = [
   {
     "from": "lang-nghe-nau-ruou-phu-le",
     "to": "khu-du-lich-lang-be",
-    "type": "near"
-  },
-  {
-    "from": "cho-giong-trom",
-    "to": "cho-tan-thanh",
     "type": "near"
   },
   {
@@ -127248,16 +127148,6 @@ var relationships = [
     "type": "near"
   },
   {
-    "from": "sieu-thi-coop-mart-vinh-long",
-    "to": "pho-an-vat-bo-ke",
-    "type": "near"
-  },
-  {
-    "from": "sieu-thi-coop-mart-vinh-long",
-    "to": "test",
-    "type": "near"
-  },
-  {
     "from": "tom-su-nuoc-lo-tra-vinh",
     "to": "rau-mau-dat-giong-tra-vinh",
     "type": "near"
@@ -127293,23 +127183,8 @@ var relationships = [
     "type": "near"
   },
   {
-    "from": "chua-kompongnigrodha",
-    "to": "con-cu",
-    "type": "near"
-  },
-  {
     "from": "suonsia-homestay",
     "to": "con-cu",
-    "type": "near"
-  },
-  {
-    "from": "pho-an-vat-bo-ke",
-    "to": "banh-phong-khoai-lang-nhat-ngoc",
-    "type": "near"
-  },
-  {
-    "from": "test",
-    "to": "banh-phong-khoai-lang-nhat-ngoc",
     "type": "near"
   },
   {
@@ -127343,33 +127218,13 @@ var relationships = [
     "type": "near"
   },
   {
-    "from": "cocohut-homestay",
-    "to": "tom-rang-muoi-ot",
-    "type": "near"
-  },
-  {
     "from": "coconut-homestay",
-    "to": "tom-rang-muoi-ot",
-    "type": "near"
-  },
-  {
-    "from": "peace-farm",
     "to": "tom-rang-muoi-ot",
     "type": "near"
   },
   {
     "from": "suonsia-homestay",
     "to": "nha-mat",
-    "type": "near"
-  },
-  {
-    "from": "tom-rang-muoi-ot",
-    "to": "cho-noi-cai-be",
-    "type": "near"
-  },
-  {
-    "from": "tom-rang-muoi-ot",
-    "to": "vinh-sang-resort",
     "type": "near"
   },
   {
@@ -127848,11 +127703,6 @@ var relationships = [
     "type": "near"
   },
   {
-    "from": "cu-lao-my-hoa",
-    "to": "ngay-hoi-thanh-tra",
-    "type": "near"
-  },
-  {
     "from": "le-chol-chhnam-thmay",
     "to": "vuon-trai-cay-be-sau",
     "type": "near"
@@ -128213,11 +128063,6 @@ var relationships = [
     "type": "near"
   },
   {
-    "from": "chua-kompongnigrodha",
-    "to": "con-chim",
-    "type": "near"
-  },
-  {
     "from": "suonsia-homestay",
     "to": "con-chim",
     "type": "near"
@@ -128270,16 +128115,6 @@ var relationships = [
   {
     "from": "nh-ks-sy-dien",
     "to": "di-tich-ao-ho-co-vinh-xuan",
-    "type": "near"
-  },
-  {
-    "from": "thanh-loc",
-    "to": "pho-an-vat-bo-ke",
-    "type": "near"
-  },
-  {
-    "from": "thanh-loc",
-    "to": "test",
     "type": "near"
   },
   {
@@ -128425,11 +128260,6 @@ var relationships = [
   {
     "from": "pham-hung",
     "to": "nha-nghi-thanh-thao",
-    "type": "near"
-  },
-  {
-    "from": "le-chol-chhnam-thmay",
-    "to": "test",
     "type": "near"
   },
   {
@@ -129688,21 +129518,6 @@ var relationships = [
     "type": "near"
   },
   {
-    "from": "cho-ba-tri",
-    "to": "peace-farm",
-    "type": "near"
-  },
-  {
-    "from": "cho-ba-tri",
-    "to": "vinh-sang-resort",
-    "type": "near"
-  },
-  {
-    "from": "cocohut-homestay",
-    "to": "cho-ba-tri",
-    "type": "near"
-  },
-  {
     "from": "coconut-homestay",
     "to": "cho-ba-tri",
     "type": "near"
@@ -130263,11 +130078,6 @@ var relationships = [
     "type": "near"
   },
   {
-    "from": "chua-toa-sen",
-    "to": "ngay-hoi-thanh-tra",
-    "type": "near"
-  },
-  {
     "from": "khach-san-nhat-phuong",
     "to": "hoi-thi-don-ca-tai-tu-cai-luong-huyen-long-ho",
     "type": "near"
@@ -130630,11 +130440,6 @@ var relationships = [
   {
     "from": "ks-nha-co-cau-ke",
     "to": "mekong-garden-homestay",
-    "type": "near"
-  },
-  {
-    "from": "hop-tac-xa-buoi-nam-roi-my-hoa",
-    "to": "ngay-hoi-thanh-tra",
     "type": "near"
   },
   {
@@ -133880,11 +133685,6 @@ var relationships = [
   {
     "from": "khach-san-nguyen-mai",
     "to": "nha-tho-chinh-toa-vinh-long",
-    "type": "near"
-  },
-  {
-    "from": "ca-tra-thuong-pham-vinh-long",
-    "to": "ngay-hoi-thanh-tra",
     "type": "near"
   },
   {
@@ -138233,11 +138033,6 @@ var relationships = [
     "type": "near"
   },
   {
-    "from": "khach-san-tan-xuan",
-    "to": "cho-ba-tri",
-    "type": "near"
-  },
-  {
     "from": "tham-lo-gach-co",
     "to": "somo-farm-cuu-long-mang-thit",
     "type": "near"
@@ -138713,11 +138508,6 @@ var relationships = [
     "type": "near"
   },
   {
-    "from": "dinh-binh-phuoc",
-    "to": "khach-san-tan-xuan",
-    "type": "near"
-  },
-  {
     "from": "nha-tho-cai-mon",
     "to": "vuon-cay-an-trai-mo-cay-bac",
     "type": "near"
@@ -138755,11 +138545,6 @@ var relationships = [
   {
     "from": "dua-sap-cau-ke",
     "to": "chua-o-mich-ratanadiparamkoskeo",
-    "type": "near"
-  },
-  {
-    "from": "khach-san-tan-xuan",
-    "to": "khach-san-binh-dai",
     "type": "near"
   },
   {
@@ -138960,11 +138745,6 @@ var relationships = [
   {
     "from": "ngay-hoi-thanh-tra",
     "to": "oc-gao-cu-lao-dai",
-    "type": "near"
-  },
-  {
-    "from": "ngay-hoi-thanh-tra",
-    "to": "tuyen-song-co-chien-hoang-hon-bo-ke-vinh-long",
     "type": "near"
   },
   {
@@ -139428,11 +139208,6 @@ var relationships = [
     "type": "near"
   },
   {
-    "from": "dinh-binh-phuoc",
-    "to": "xa-tuong-loc",
-    "type": "near"
-  },
-  {
     "from": "tham-quan-vuon-trai-cay",
     "to": "sau-rieng-say-thang-hoa-sau-ri",
     "type": "near"
@@ -139738,11 +139513,6 @@ var relationships = [
     "type": "near"
   },
   {
-    "from": "xa-tuong-loc",
-    "to": "cua-binh-dai",
-    "type": "near"
-  },
-  {
     "from": "ca-tai-tuong-chien-xu",
     "to": "can-cu-cach-mang-cai-ngang-vinh-long",
     "type": "near"
@@ -139755,11 +139525,6 @@ var relationships = [
   {
     "from": "nha-nghi-quynh-phuc",
     "to": "ruou-gia-bao",
-    "type": "near"
-  },
-  {
-    "from": "le-hoi-dom-long-neak-ta",
-    "to": "khach-san-tan-xuan",
     "type": "near"
   },
   {
@@ -139920,11 +139685,6 @@ var relationships = [
   {
     "from": "chua-khai-tuong",
     "to": "lang-nghe-che-bien-hai-san-kho-thanh-phong",
-    "type": "near"
-  },
-  {
-    "from": "khach-san-binh-dai",
-    "to": "xa-tuong-loc",
     "type": "near"
   },
   {
@@ -140105,11 +139865,6 @@ var relationships = [
   {
     "from": "chua-phap-hoa",
     "to": "tra-gung-mat-ong-dong-binh",
-    "type": "near"
-  },
-  {
-    "from": "khach-san-tan-xuan",
-    "to": "cua-binh-dai",
     "type": "near"
   },
   {
@@ -140410,11 +140165,6 @@ var relationships = [
   {
     "from": "con-ngheu",
     "to": "mo-quan-chua",
-    "type": "near"
-  },
-  {
-    "from": "le-hoi-dom-long-neak-ta",
-    "to": "xa-tuong-loc",
     "type": "near"
   },
   {
@@ -140973,16 +140723,6 @@ var relationships = [
     "type": "near"
   },
   {
-    "from": "le-hoi-dom-long-neak-ta",
-    "to": "ngay-hoi-thanh-tra",
-    "type": "near"
-  },
-  {
-    "from": "hop-tac-xa-buoi-nam-roi-my-hoa",
-    "to": "xa-tuong-loc",
-    "type": "near"
-  },
-  {
     "from": "con-ho",
     "to": "sieu-thi-go-tra-vinh",
     "type": "near"
@@ -141253,11 +140993,6 @@ var relationships = [
     "type": "near"
   },
   {
-    "from": "khach-san-tan-xuan",
-    "to": "oc-gao-con-phu-da",
-    "type": "near"
-  },
-  {
     "from": "chua-lo-gach",
     "to": "con-tan-qui",
     "type": "near"
@@ -141345,11 +141080,6 @@ var relationships = [
   {
     "from": "di-tich-lich-su-dong-khoi-my-long",
     "to": "le-cung-bien-dong-cao",
-    "type": "near"
-  },
-  {
-    "from": "cu-lao-my-hoa",
-    "to": "khach-san-tan-xuan",
     "type": "near"
   },
   {
@@ -141883,21 +141613,6 @@ var relationships = [
     "type": "near"
   },
   {
-    "from": "xa-tuong-loc",
-    "to": "man-an-phuoc-ocop",
-    "type": "near"
-  },
-  {
-    "from": "ngay-hoi-thanh-tra",
-    "to": "di-tich-ao-ho-co-vinh-xuan",
-    "type": "near"
-  },
-  {
-    "from": "xa-tuong-loc",
-    "to": "le-ha-dien-dinh-tan-hoa",
-    "type": "near"
-  },
-  {
     "from": "keo-dua-mo-cay-co-so-tuyet-phung",
     "to": "den-tho-trung-tuong-dong-van-cong",
     "type": "near"
@@ -141985,16 +141700,6 @@ var relationships = [
   {
     "from": "lang-nghe-com-dep-ba-so",
     "to": "vung-giong-cat-long-vinh",
-    "type": "near"
-  },
-  {
-    "from": "ngay-hoi-thanh-tra",
-    "to": "banh-xeo-cu-lao",
-    "type": "near"
-  },
-  {
-    "from": "ngay-hoi-thanh-tra",
-    "to": "dap-xe-cu-lao",
     "type": "near"
   },
   {
@@ -149684,7 +149389,7 @@ var itineraries = [
         "note": "Nghỉ đêm"
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "xu-dua-ben-tre",
@@ -149711,7 +149416,7 @@ var itineraries = [
         "note": "OCOP 4 sao"
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "di-san-mang-thit-tra-vinh",
@@ -149746,7 +149451,7 @@ var itineraries = [
         "note": "Đặc sản hiếm"
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "tp-vinh-long-nua-ngay",
@@ -149772,7 +149477,7 @@ var itineraries = [
         "id": "cam-sanh-tam-binh"
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "mien-tay-3-ngay",
@@ -149820,7 +149525,7 @@ var itineraries = [
         "id": "bun-nuoc-leo-tra-vinh"
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "food-tour-vinh-long-1-ngay",
@@ -149860,7 +149565,7 @@ var itineraries = [
         "note": "Chè bưởi Bình Minh"
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "food-tour-ben-tre-1-ngay",
@@ -149895,7 +149600,7 @@ var itineraries = [
         "note": "Chè chuối nướng"
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "vinh-long-ben-tre-2-ngay",
@@ -149945,7 +149650,7 @@ var itineraries = [
         "note": "Kẹo dừa Mỏ Cày"
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "dbscl-3-ngay-day-du",
@@ -150010,7 +149715,7 @@ var itineraries = [
         "note": "Mua đặc sản Trà Vinh"
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "tra-vinh-khmer-1-ngay",
@@ -150050,7 +149755,7 @@ var itineraries = [
         "note": "Bánh tét lá cẩm"
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "thien-nhien-phieu-luu-2-ngay",
@@ -150100,7 +149805,7 @@ var itineraries = [
         "note": "Tắm sông"
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "lang-nghe-thu-cong-1-ngay",
@@ -150135,7 +149840,7 @@ var itineraries = [
         "note": "Làng tàu hủ ky Mỹ Hòa"
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "cho-sang-nau-an-nua-ngay",
@@ -150160,7 +149865,7 @@ var itineraries = [
         "note": "Thưởng thức thành phẩm"
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "lang-man-2-ngay",
@@ -150205,7 +149910,7 @@ var itineraries = [
         "note": "Cơm trưa miệt vườn"
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "gia-dinh-vui-1-ngay",
@@ -150240,7 +149945,7 @@ var itineraries = [
         "note": "Khu du lịch Vĩnh Sang"
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "ba-lo-budget-3-ngay",
@@ -150305,7 +150010,7 @@ var itineraries = [
         "note": "Chùa Khmer (miễn phí)"
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "nhiep-anh-1-ngay",
@@ -150345,7 +150050,7 @@ var itineraries = [
         "note": "Sunset cầu Mỹ Thuận"
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "wellness-2-ngay",
@@ -150390,7 +150095,7 @@ var itineraries = [
         "note": "Tắm sông thư giãn"
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "dap-xe-1-ngay",
@@ -150430,7 +150135,7 @@ var itineraries = [
         "note": "Dừa tươi giải khát"
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "cuoi-tuan-2-ngay",
@@ -150475,7 +150180,7 @@ var itineraries = [
         "note": "Mua quà về Sài Gòn"
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "ben-tre-tong-tai-romantic-2day-001",
@@ -150546,7 +150251,7 @@ var itineraries = [
         "note": "~2,5–3 tiếng"
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "tour-p01",
@@ -150586,7 +150291,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "tour-p02",
@@ -150616,7 +150321,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "tour-p03",
@@ -150651,7 +150356,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "tour-p04",
@@ -150676,7 +150381,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "tour-p05",
@@ -150706,7 +150411,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "tour-p06",
@@ -150721,7 +150426,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "tour-p07",
@@ -150746,7 +150451,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "tour-p08",
@@ -150776,7 +150481,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "tour-p09",
@@ -150791,7 +150496,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "tour-p10",
@@ -150821,7 +150526,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "tour-p11",
@@ -150846,7 +150551,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   },
   {
     "id": "tour-p12",
@@ -150876,7 +150581,7 @@ var itineraries = [
         "note": ""
       }
     ],
-    "created_at": "2026-06-22 03:06:31"
+    "created_at": "2026-06-22 03:43:47"
   }
 ];
 window.VL_DATA = {
