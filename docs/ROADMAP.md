@@ -248,15 +248,19 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 - **placeId phường-số 138** (crosswalk NGUYÊN VĂN NQ1687, cross-check 2× khớp 100%; chỉ map khi address ghi 'TP <tỉnh>' → loại 7 case TX Duyên Hải): VL P1,9→Long Châu/P3,4→Phước Hậu/P5→Thanh Đức/P8→Tân Hạnh; BT P8→Phú Khương/P7→Bến Tre/P6→Sơn Đông; TV P1,3,9→Trà Vinh/P4→Long Đức/P7,8→Nguyệt Hoá/P5→Hoà Thuận. `missing_place_id` 262→199. validate exit 0.
 - **Summary 259 viết lại** (commit 61c2265): workflow đa-agent 20 batch×(rewrite→verify, sonnet) sửa summary nhắc đơn-vị-HC-cũ → 2 cấp (tỉnh Vĩnh Long). 348 changed → ACCEPT 259, REJECT 89 qua **6 lớp verify chống-bịa §1.4**: token-subset (0 bịa) + giữ năm + không cắt>40% + không-còn-huyện/tỉnh-cũ + **LLM-veto 47** (giữ thương hiệu địa-lý 'kẹo dừa Bến Tre'/'bưởi da xanh', không đổi scope 'lớn nhất tỉnh Trà Vinh', không thêm tỉnh) + **brand-guard 60** ('Bến Tre/Trà Vinh' không kèm 'tỉnh' = bản sắc/tên riêng). summary 'huyện X' 384→140 (còn lại brand-protected/không-neo, cố ý giữ). 74 entity không neo placeId-xã → không rewrite mù.
 
+**✅ PASS-2b — nguyên tắc "nghi ngờ → KHÔNG công khai" (2026-06-22, chủ duyệt):**
+- **placeId qua CROSSWALK NQ1687 122** (commit 05e41e0): tái dùng crosswalk xã-cũ→phường-mới (verbatim+chủ duyệt) — [B] 109 placeId-ward-hợp-lệ nhưng address+crosswalk hội tụ DUY NHẤT ward khác → sửa (bug "lùa vào ward trung-tâm"); [A] 2 trỏ-non-ward giải được → sửa; [A] 11 sông/rạch/trỏ-tỉnh không giải → **None (chưa phân loại)**. Chỉ sửa khi mọi đơn-vị address hội tụ 1 ward khớp area.
+- **Toạ độ re-align + cờ gần-đúng** (commit dae52fa + 51ee906): sau khi sửa placeId, re-align 227 pin sai-ward → centroid-placeId; gắn `coords_approximate=true` cho 698 entity ngồi trên centroid; **null 87** coords (placeId None) — gỡ pin giả. FE trang chi tiết hiện "📍 Vị trí: Gần đúng (trung tâm xã/phường)" khi approximate (verify dev SSR pass). missing_location 12→99 (đúng nguyên tắc).
+- Cơ chế: placeId=None = "chưa phân loại" (`/admin/unclassified` + `chua-phan-loai.vue`) — KHÔNG đoán bừa.
+
 **CÒN NỢ (cần nguồn/duyệt — KHÔNG tự bịa):**
-- 🔴 **Toạ độ placeholder**: 1303 entity dùng chung centroid + 58 ngoài bbox + 126 lệch tỉnh → cần geocode từ nguồn (§1.4 không bịa).
-- 🔴 **199 thiếu placeId**: ĐỀU không có address (cafe/quán ingest thiếu) → 0 suy được, cần nguồn gốc/geocode.
-- 🟠 **13 placeId trỏ non-ward**: phần lớn sông/rạch/cồn (tuyến tính, không thuộc 1 xã) + vài quán trỏ Co.opmart/bến xe → cần xử riêng (không đoán).
+- 🔴 **Toạ độ chính xác**: ~698 entity vẫn ở centroid-xã (đã gắn cờ approximate + FE báo rõ) → cần geocode thật để nâng cấp. KHÔNG còn pin sai-ward.
+- 🔴 **210 thiếu placeId** (+87 thiếu coords): ĐỀU không có address đủ → để None (chưa phân loại, vào /admin/unclassified). Cần nguồn/geocode hoặc admin gán tay.
 - 🟠 **produced_in rác**: 1987/2390 cạnh Descartes → cắt cần LUẬT rõ + duyệt. HOÃN.
 - 🟠 **CTA (§1.4)**: 0 Zalo, product 217/218 không kênh liên hệ → cần nguồn/schema (H9/H10).
-- 🟡 **~94 address≠placeId "cả hai xã hiện tại" + 115 attributes.ward giữ-soát**: phần lớn placeId VỐN ĐÚNG (address ghi tên cũ); phần nghi sai cần NQ1687 per-case.
-- ✅ **summary 'huyện X'**: ĐÃ viết lại 259 (LLM+verify 2 lớp). Còn 140 cố ý giữ (brand/scope/không-neo).
-- 🟢 **Đối chứng (KHÔNG lỗi)**: 0 dangling/self-loop/dup-triple; DB↔json khớp 100%; near cấu trúc sạch.
+- 🟡 **115 attributes.ward giữ-soát + ~few address-conflict không hội tụ**: phần lớn placeId VỐN ĐÚNG (address ghi tên cũ); phần nghi sai để nguyên/None.
+- ✅ **summary 'huyện X'**: ĐÃ viết lại 259. Còn 140 cố ý giữ (brand/scope/không-neo).
+- 🟢 **Đối chứng (KHÔNG lỗi)**: 0 dangling/self-loop/dup-triple; DB↔json khớp 100%; near cấu trúc sạch; placeId trỏ non-ward 13→0.
 
 ## VERIFY TỔNG THỂ (sau toàn bộ)
 
