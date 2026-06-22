@@ -89,21 +89,50 @@ class Database:
         self._initialized = False
         self._use_pg = USE_PG
         self._dsn = DATABASE_URL if USE_PG else None
+        # D02: connection pool cho PG (tái dùng connection thay vì connect/close mỗi request).
+        # Kill-switch PG_USE_POOL=false → quay lại connect-trực-tiếp. Fallback tự động nếu
+        # pool tạo lỗi (an-toàn: không pool còn hơn crash).
+        self._pg_pool = None
+        self._pg_pool_failed = False
+
+    def _get_pg_pool(self):
+        if self._pg_pool_failed or os.environ.get("PG_USE_POOL", "true").strip().lower() in ("0", "false", "no", "off"):
+            return None
+        if self._pg_pool is None:
+            with self._lock:
+                if self._pg_pool is None:
+                    try:
+                        from psycopg2.pool import ThreadedConnectionPool
+                        mx = max(2, int(os.environ.get("PG_POOL_MAX", "10")))
+                        self._pg_pool = ThreadedConnectionPool(1, mx, self._dsn)
+                    except Exception:
+                        self._pg_pool_failed = True  # fallback connect-trực-tiếp
+                        return None
+        return self._pg_pool
 
     @contextmanager
     def _conn(self):
         """Thread-safe connection context manager."""
         if self._use_pg:
-            conn = psycopg2.connect(self._dsn)
+            pool = self._get_pg_pool()
+            conn = pool.getconn() if pool else psycopg2.connect(self._dsn)
             conn.autocommit = False
+            ok = True
             try:
                 yield conn
                 conn.commit()
             except Exception:
-                conn.rollback()
+                ok = False
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
                 raise
             finally:
-                conn.close()
+                if pool:
+                    pool.putconn(conn, close=not ok)  # trả về pool; bỏ hẳn nếu lỗi (tránh poison)
+                else:
+                    conn.close()
         else:
             conn = sqlite3.connect(self.db_path, timeout=30)
             conn.row_factory = sqlite3.Row

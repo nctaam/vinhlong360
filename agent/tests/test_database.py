@@ -263,6 +263,27 @@ def test_all_itineraries(db):
     assert len(its) == 1 and its[0]["id"] == "it1" and isinstance(its[0]["stops"], list)
 
 
+# ── D02: PG connection pool — kill-switch + fallback (an-toàn, không cần PG thật) ──
+
+def test_pg_pool_kill_switch(tmp_path, monkeypatch):
+    """PG_USE_POOL=false → _get_pg_pool trả None (dùng connect-trực-tiếp)."""
+    d = Database(db_path=str(tmp_path / "t.db"))
+    d._use_pg = True
+    d._dsn = "postgresql://x@127.0.0.1:5432/x"
+    monkeypatch.setenv("PG_USE_POOL", "false")
+    assert d._get_pg_pool() is None
+
+
+def test_pg_pool_fallback_on_bad_dsn(tmp_path, monkeypatch):
+    """DSN lỗi → tạo pool raise → fallback None + đánh dấu failed (không crash)."""
+    d = Database(db_path=str(tmp_path / "t.db"))
+    d._use_pg = True
+    d._dsn = "not-a-valid-dsn"
+    monkeypatch.setenv("PG_USE_POOL", "true")
+    assert d._get_pg_pool() is None
+    assert d._pg_pool_failed is True
+
+
 # ── GĐ13.3: danh bạ hành chính (facility theo placeId) ──
 
 def test_facilities_by_place(db):
