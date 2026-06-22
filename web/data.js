@@ -1,3 +1,4 @@
+/* vinhlong360 data - auto-synced from data.json */
 (function () {
 var places = [
   {
