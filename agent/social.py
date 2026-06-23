@@ -26,6 +26,12 @@ from database import db
 from moderation import moderate_content, log_moderation
 from notifications import create_notification
 from storage import storage
+from ratelimit import check_rate
+
+# Chống spam UGC (per-user sliding-window). Đủ rộng cho dùng bình thường, chặn flood.
+RL_POST_LIMIT, RL_POST_WINDOW = 10, 600        # 10 bài / 10 phút
+RL_COMMENT_LIMIT, RL_COMMENT_WINDOW = 20, 300  # 20 bình luận / 5 phút
+RL_UPLOAD_LIMIT, RL_UPLOAD_WINDOW = 40, 600    # 40 ảnh / 10 phút
 
 
 def _require_pg():
@@ -178,6 +184,8 @@ POST_TYPE_LABELS = {
 
 @router.post("/posts")
 async def create_post(body: CreatePost, user=Depends(require_user)):
+    check_rate(f"post:{user['id']}", RL_POST_LIMIT, RL_POST_WINDOW,
+               "Bạn đăng bài quá nhanh. Vui lòng đợi ít phút rồi thử lại.")
     if body.post_type in ENTITY_LINK_REQUIRED and not body.entity_id:
         raise HTTPException(400, "Đánh giá phải gắn với một địa điểm hoặc sản phẩm")
 
@@ -549,6 +557,8 @@ async def get_comments(post_id: str):
 
 @router.post("/posts/{post_id}/comments")
 async def create_comment(post_id: str, body: CreateComment, user=Depends(require_user)):
+    check_rate(f"comment:{user['id']}", RL_COMMENT_LIMIT, RL_COMMENT_WINDOW,
+               "Bạn bình luận quá nhanh. Vui lòng đợi chút rồi thử lại.")
     # P0-7: bình luận PHẢI qua kiểm duyệt như bài viết (trước đây bỏ qua → spam/abuse public ngay).
     mod_result = await moderate_content(body.content, [])
     status = mod_result["status"]
@@ -716,6 +726,8 @@ async def get_my_bookmarks(
 
 @router.post("/upload/image")
 async def upload_image(file: UploadFile = File(...), user=Depends(require_user)):
+    check_rate(f"upload:{user['id']}", RL_UPLOAD_LIMIT, RL_UPLOAD_WINDOW,
+               "Bạn tải ảnh quá nhanh. Vui lòng đợi chút rồi thử lại.")
     data = await file.read()
     if len(data) > 5 * 1024 * 1024:
         raise HTTPException(400, "Ảnh tối đa 5MB")
