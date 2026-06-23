@@ -24,6 +24,12 @@ router = APIRouter(prefix="/api", tags=["public"])
 _place_cache: dict[str, dict] = {}
 DEFAULT_RELATIONSHIP_LIMIT = 24
 
+# Perf-P0: cache payload /homepage (endpoint nóng nhất) — trước đây scan toàn bảng entity
+# + 6×COUNT mỗi request. Curation tất định theo tháng → cache TTL ngắn, theo tháng.
+import time as _time
+_homepage_cache: dict = {"month": None, "data": None, "ts": 0.0}
+_HOMEPAGE_TTL = 120  # giây
+
 
 def _is_public(e: dict) -> bool:
     """Entity được hiển thị công khai (listing/homepage): loại entity provisional /
@@ -36,6 +42,7 @@ def invalidate_place_cache():
     """Xoá cache tên/khu-vực xã/phường — gọi sau /reload để tránh phục vụ tên cũ
     khi admin đổi/di chuyển place."""
     _place_cache.clear()
+    _homepage_cache.update(month=None, data=None, ts=0.0)  # Perf-P0: refresh homepage sau reload
 
 # GĐ13.6f: báo cáo thông tin sai / nội dung vi phạm — lưu JSONL nhẹ (free-tier),
 # admin xem qua /admin/reports để xử lý (takedown/sửa). KHÔNG dùng DB/dịch vụ trả phí.
@@ -369,6 +376,12 @@ async def homepage_curated():
     """Curated homepage: smart-scored, type/area diverse, seasonal-aware, deduped."""
     month = datetime.now().month
 
+    # Perf-P0: trả cache nếu còn hạn + cùng tháng (tránh scan toàn bảng mỗi request)
+    _now = _time.time()
+    if (_homepage_cache["data"] is not None and _homepage_cache["month"] == month
+            and _now - _homepage_cache["ts"] < _HOMEPAGE_TTL):
+        return _homepage_cache["data"]
+
     all_ents = db.list_entities(limit=100000, offset=0)
     public = [e for e in all_ents if _is_public(e) and not _event_is_past(e)]
     _enrich_place(public)
@@ -528,7 +541,7 @@ async def homepage_curated():
         e.pop("_score", None)
         e["days_until"] = e.pop("_days_until", None)
 
-    return {
+    result = {
         "seasonal": seasonal,
         "experiences": experiences,
         "products": products,
@@ -539,6 +552,8 @@ async def homepage_curated():
         "upcoming_events": upcoming_events,
         "seasonal_tagline": seasonal_tagline,
     }
+    _homepage_cache.update(month=month, data=result, ts=_now)
+    return result
 
 
 @router.get("/events")

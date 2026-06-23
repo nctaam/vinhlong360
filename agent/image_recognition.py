@@ -377,6 +377,7 @@ def recognize_image(
             messages=messages,
             max_tokens=1024,
             temperature=0.3,
+            timeout=30,  # P1-2: vision call có thể chậm — tránh treo worker
         )
 
         raw = response.choices[0].message.content.strip()

@@ -50,7 +50,7 @@ MAX_CACHE = 5000
 # ---------------------------------------------------------------------------
 
 _LLM_API_KEY = os.environ.get("LLM_API_KEY", "")
-_LLM_BASE_URL = os.environ.get("LLM_BASE_URL", "https://rnfg39r.abc-tunnel.us/v1")
+_LLM_BASE_URL = os.environ.get("LLM_BASE_URL", "")  # P1-3: KHÔNG hardcode tunnel URL chết
 _LLM_MODEL_DEFAULT = os.environ.get("LLM_MODEL_MINI", "cx/gpt-5.4-mini")
 
 # ---------------------------------------------------------------------------
@@ -290,12 +290,15 @@ class LLMJudge:
         return OpenAI(
             api_key=os.environ.get("LLM_API_KEY", _LLM_API_KEY),
             base_url=os.environ.get("LLM_BASE_URL", _LLM_BASE_URL),
+            timeout=20,  # P1-2: tránh treo nếu judge LLM chậm
         )
 
     def _can_use_llm(self) -> bool:
         api_key = os.environ.get("LLM_API_KEY", _LLM_API_KEY)
         if not api_key or api_key.startswith("test"):
             return False
+        if not os.environ.get("LLM_BASE_URL", _LLM_BASE_URL):
+            return False  # P1-3: không có base_url thật → không gọi (tránh host lạ)
         if os.environ.get("ENVIRONMENT", "").lower() == "test":
             return False
         return True

@@ -380,6 +380,16 @@ async def set_password(body: SetPassword, request: Request):
     hashed = _hash_password(body.password)
     db.update_user(str(user["id"]), password_hash=hashed)
 
+    # P1-9: đổi mật khẩu → thu hồi MỌI phiên khác (giữ phiên hiện tại), chống chiếm dụng.
+    cur = _extract_token(request)
+    cur_hash = _hash_token(cur) if cur else None
+    with db._conn() as conn:
+        if cur_hash:
+            db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph} AND token != {db._ph}",
+                        (str(user["id"]), cur_hash))
+        else:
+            db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph}", (str(user["id"]),))
+
     return {"success": True, "message": "Đã đặt mật khẩu thành công"}
 
 

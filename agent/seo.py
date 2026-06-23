@@ -436,11 +436,14 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
             ld["brand"] = {"@type": "Brand", "name": f"OCOP {attrs['ocop']}"}
 
     if schema_type == "Event":
-        date_value = attrs.get("startDate") or attrs.get("date") or entity.get("startDate")
+        # P1-6: data thực dùng date_start/date_end (public_api) — trước chỉ đọc startDate camelCase
+        date_value = (attrs.get("startDate") or attrs.get("date_start")
+                      or attrs.get("date") or entity.get("startDate"))
         if date_value:
             ld["startDate"] = date_value
-        if attrs.get("endDate") or entity.get("endDate"):
-            ld["endDate"] = attrs.get("endDate") or entity.get("endDate")
+        end_value = attrs.get("endDate") or attrs.get("date_end") or entity.get("endDate")
+        if end_value:
+            ld["endDate"] = end_value
         if place:
             ld["location"] = {"@type": "Place", "name": place.get("name"), "address": ld.get("address")}
 
@@ -571,6 +574,8 @@ def sitemap():
     seen: set[str] = set()
     for entity in data.get("entities", []):
         if not isinstance(entity, dict) or not entity.get("id") or entity.get("type") == "place":
+            continue
+        if not _is_public(entity):  # P1-7: KHÔNG đưa entity provisional/chưa-verify vào sitemap
             continue
         loc = _entity_url(str(entity["id"]))
         if loc in seen:

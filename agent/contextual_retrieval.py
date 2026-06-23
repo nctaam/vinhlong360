@@ -435,6 +435,7 @@ class LLMReranker:
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0,
                 max_tokens=100,
+                timeout=15,  # P1-2: rerank — tránh treo
             )
             ranking_text = response.choices[0].message.content.strip()
 

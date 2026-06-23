@@ -397,6 +397,16 @@ def _hybrid_rerank_search(args: dict) -> list[dict]:
 
 
 def call_tool(name: str, args: dict) -> str:
+    # P1: cô lập lỗi tool (KeyError do LLM thiếu tham số, lỗi tool…) → trả lỗi có cấu trúc
+    # thay vì propagate (trước đây args["x"] thiếu field → 500 ở serial path).
+    try:
+        return _call_tool_impl(name, args or {})
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"call_tool '{name}' lỗi: {e}")
+        return json.dumps({"error": "Không thực hiện được công cụ (thiếu hoặc sai tham số)."}, ensure_ascii=False)
+
+
+def _call_tool_impl(name: str, args: dict) -> str:
     if name == "search":
         result = _hybrid_rerank_search(args)
         # Track entity hits (wrapped to prevent analytics errors from breaking search)
@@ -1514,13 +1524,19 @@ async def chat(req: ChatRequest, request: Request):
         try:
             guard = check_input(req.message, session_id)
             if not guard.get("allowed", True):
+                # P1: log lý do chi tiết server-side, KHÔNG lộ chuỗi chẩn-đoán ra user.
                 logger.warn("Guardrails blocked input", reason=guard.get("blocked_reason", ""), session_id=session_id)
                 return ChatResponse(
-                    reply=guard.get("blocked_reason", "Tin nhan bi chan vi ly do an toan."),
+                    reply="Xin lỗi, tin nhắn này không thể xử lý vì lý do an toàn. Vui lòng diễn đạt lại.",
                     tool_calls=[], suggestions=[], session_id=session_id,
                 )
-        except Exception:
-            pass
+        except Exception as _gerr:
+            # P1: fail-CLOSED — guardrail lỗi thì KHÔNG cho qua không kiểm.
+            logger.warning(f"Guardrail check_input lỗi → fail-closed: {_gerr}")
+            return ChatResponse(
+                reply="Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút.",
+                tool_calls=[], suggestions=[], session_id=session_id,
+            )
 
     # Record user message in memory
     memory_manager.on_message(session_id, "user", req.message)
@@ -1894,15 +1910,23 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
 
     # ── Guardrails: input safety ──
     if HAS_GUARDRAILS:
+        def _safe_block_stream(msg: str):
+            async def _gen():
+                yield f"data: {json.dumps({'type': 'text', 'content': msg}, ensure_ascii=False)}\n\n"
+                yield f"data: {json.dumps({'type': 'done', 'tools': [], 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
+            return _gen
         try:
             guard = check_input(message, sid)
             if not guard.get("allowed", True):
-                async def blocked_stream():
-                    yield f"data: {json.dumps({'type': 'text', 'content': guard.get('blocked_reason', 'Input blocked.')}, ensure_ascii=False)}\n\n"
-                    yield f"data: {json.dumps({'type': 'done', 'tools': [], 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
-                return StreamingResponse(blocked_stream(), media_type="text/event-stream")
-        except Exception:
-            pass
+                # P1: ẩn blocked_reason (chẩn-đoán) khỏi user, chỉ log server-side
+                logger.warn("Guardrails blocked stream input", reason=guard.get("blocked_reason", ""), session_id=sid)
+                gen = _safe_block_stream("Xin lỗi, tin nhắn này không thể xử lý vì lý do an toàn. Vui lòng diễn đạt lại.")
+                return StreamingResponse(gen(), media_type="text/event-stream")
+        except Exception as _gerr:
+            # P1: fail-CLOSED
+            logger.warning(f"Guardrail stream check lỗi → fail-closed: {_gerr}")
+            gen = _safe_block_stream("Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút.")
+            return StreamingResponse(gen(), media_type="text/event-stream")
 
     # Record in memory
     memory_manager.on_message(sid, "user", message)
