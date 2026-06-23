@@ -145,6 +145,7 @@ CREATE TABLE IF NOT EXISTS posts (
     like_count        INTEGER DEFAULT 0,
     comment_count     INTEGER DEFAULT 0,
     mentions          JSONB DEFAULT '[]',
+    hashtags          JSONB DEFAULT '[]',
     created_at        TIMESTAMPTZ DEFAULT NOW(),
     updated_at        TIMESTAMPTZ DEFAULT NOW()
 );

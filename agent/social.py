@@ -14,6 +14,7 @@ Post types:
 
 import json
 import math
+import re
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -39,6 +40,17 @@ router = APIRouter(prefix="/api", tags=["social"], dependencies=[Depends(_requir
 
 POST_TYPES = ("review", "share", "recommend", "question")
 ENTITY_LINK_REQUIRED = ("review",)  # These types must link to an entity
+
+
+def _extract_hashtags(content: str) -> list[str]:
+    """Trích #hashtag (Unicode, tiếng Việt OK) → lowercase, dedup, cap 10."""
+    seen, out = set(), []
+    for t in re.findall(r'#(\w{1,30})', content or '', re.UNICODE):
+        tl = t.lower()
+        if tl not in seen:
+            seen.add(tl)
+            out.append(tl)
+    return out[:10]
 
 
 def _clean_mentions(raw) -> list[dict]:
@@ -132,6 +144,7 @@ class CreatePost(BaseModel):
 class CreateComment(BaseModel):
     content: str
     parent_id: Optional[str] = None
+    mentions: list[dict] = []
 
     @field_validator("content")
     @classmethod
@@ -177,17 +190,18 @@ async def create_post(body: CreatePost, user=Depends(require_user)):
     mod_result = await moderate_content(body.content, body.images)
     status = mod_result["status"]
     mentions = _clean_mentions(body.mentions)
+    hashtags = _extract_hashtags(body.content)
 
     ph = db._ph
     with db._conn() as conn:
         row = db._fetchone(conn, f"""
-            INSERT INTO posts (user_id, entity_id, content, images, post_type, rating, moderation_status, mentions)
-            VALUES ({ph}::uuid, {ph}, {ph}, {ph}::jsonb, {ph}, {ph}, {ph}, {ph}::jsonb)
+            INSERT INTO posts (user_id, entity_id, content, images, post_type, rating, moderation_status, mentions, hashtags)
+            VALUES ({ph}::uuid, {ph}, {ph}, {ph}::jsonb, {ph}, {ph}, {ph}, {ph}::jsonb, {ph}::jsonb)
             RETURNING *
         """, (
             str(user["id"]), body.entity_id, body.content,
             json.dumps(body.images), body.post_type, body.rating, status,
-            json.dumps(mentions, ensure_ascii=False),
+            json.dumps(mentions, ensure_ascii=False), json.dumps(hashtags, ensure_ascii=False),
         ))
 
     post = db._row_to_dict(row)
@@ -265,6 +279,7 @@ async def get_feed(
     post_type: Optional[str] = None,
     entity_type: Optional[str] = None,
     area: Optional[str] = None,
+    tag: Optional[str] = None,
     user=Depends(get_current_user),
 ):
     """
@@ -279,6 +294,10 @@ async def get_feed(
     if post_type and post_type in POST_TYPES:
         conditions.append(f"p.post_type = {ph}")
         params.append(post_type)
+
+    if tag:
+        conditions.append(f"p.hashtags @> {ph}::jsonb")
+        params.append(json.dumps([tag.lower().lstrip("#")]))
 
     if entity_type:
         conditions.append(f"e.type = {ph}")
@@ -389,6 +408,7 @@ async def get_entity_feed(
             WHERE p.entity_id = {ph} AND p.moderation_status = 'approved'
             ORDER BY (CASE WHEN jsonb_typeof(p.images)='array' AND jsonb_array_length(p.images) > 0
                            THEN 1 ELSE 0 END) DESC,
+                     p.like_count DESC,
                      p.created_at DESC
             LIMIT {ph} OFFSET {ph}
         """, (entity_id, limit, offset))
@@ -447,6 +467,7 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
     # P0-7: bình luận PHẢI qua kiểm duyệt như bài viết (trước đây bỏ qua → spam/abuse public ngay).
     mod_result = await moderate_content(body.content, [])
     status = mod_result["status"]
+    mentions = _clean_mentions(body.mentions)
 
     ph = db._ph
     with db._conn() as conn:
@@ -455,25 +476,28 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
             raise HTTPException(404, "Bài viết không tồn tại")
 
         row = db._fetchone(conn, f"""
-            INSERT INTO comments (post_id, user_id, parent_id, content, moderation_status)
-            VALUES ({ph}::uuid, {ph}::uuid, {ph}::uuid, {ph}, {ph})
+            INSERT INTO comments (post_id, user_id, parent_id, content, moderation_status, mentions)
+            VALUES ({ph}::uuid, {ph}::uuid, {ph}::uuid, {ph}, {ph}, {ph}::jsonb)
             RETURNING *
         """, (post_id, str(user["id"]),
               body.parent_id if body.parent_id else None,
-              body.content, status))
+              body.content, status, json.dumps(mentions, ensure_ascii=False)))
 
         post_owner = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
 
     log_moderation("comment", str(db._row_to_dict(row)["id"]), status, mod_result, auto=True)
 
-    # chỉ báo chủ bài khi bình luận được duyệt (không báo về nội dung bị giữ/ẩn)
-    if status == "approved" and post_owner and str(post_owner["user_id"]) != str(user["id"]):
-        preview = body.content[:80] + ("..." if len(body.content) > 80 else "")
-        create_notification(
-            str(post_owner["user_id"]), "comment",
-            f"{user.get('display_name', 'Ai đó')} đã bình luận bài viết của bạn",
-            body=preview, ref_type="post", ref_id=post_id,
-        )
+    if status == "approved":
+        # báo chủ bài (nếu khác người bình luận)
+        if post_owner and str(post_owner["user_id"]) != str(user["id"]):
+            preview = body.content[:80] + ("..." if len(body.content) > 80 else "")
+            create_notification(
+                str(post_owner["user_id"]), "comment",
+                f"{user.get('display_name', 'Ai đó')} đã bình luận bài viết của bạn",
+                body=preview, ref_type="post", ref_id=post_id,
+            )
+        # @-mention trong bình luận
+        _notify_mentions(mentions, str(user["id"]), user.get("display_name"), post_id, body.content)
 
     return {"comment": _format_comment(db._row_to_dict(row))}
 
@@ -720,20 +744,22 @@ def _format_post(row: dict) -> dict:
         except Exception:
             images = []
 
-    mentions = row.get("mentions", [])
-    if isinstance(mentions, str):
-        try:
-            mentions = json.loads(mentions)
-        except Exception:
-            mentions = []
-    if not isinstance(mentions, list):
-        mentions = []
+    def _jlist(val):
+        if isinstance(val, str):
+            try:
+                val = json.loads(val)
+            except Exception:
+                val = []
+        return val if isinstance(val, list) else []
+    mentions = _jlist(row.get("mentions"))
+    hashtags = _jlist(row.get("hashtags"))
 
     return {
         "id": str(row["id"]),
         "user_id": str(row.get("user_id", "")),
         "content": row["content"],
         "mentions": mentions,
+        "hashtags": hashtags,
         "post_type": row.get("post_type", "share"),
         "post_type_label": POST_TYPE_LABELS.get(row.get("post_type", "share"), "Chia sẻ"),
         "rating": row.get("rating"),
@@ -767,9 +793,16 @@ def _format_post(row: dict) -> dict:
 
 
 def _format_comment(row: dict) -> dict:
+    mentions = row.get("mentions", [])
+    if isinstance(mentions, str):
+        try:
+            mentions = json.loads(mentions)
+        except Exception:
+            mentions = []
     return {
         "id": str(row["id"]),
         "content": row["content"],
+        "mentions": mentions if isinstance(mentions, list) else [],
         "parent_id": str(row["parent_id"]) if row.get("parent_id") else None,
         "created_at": str(row.get("created_at", "")),
         "author": {
