@@ -43,6 +43,14 @@
 
 ---
 
+## ✅ Trạng thái thực thi (cập nhật 2026-06-23)
+
+**ĐÃ SỬA + DEPLOY + VERIFY prod** (commit `54910c9` FE + `96d51e0` BE, baseline 1226):
+P0-1,2,3,4,6,7,8,11,12,13,14,15,16,17,19,20 + chat `_is_error_reply` + P1-19. Tạo trang `/cai-dat`,
+`utils/safe.ts`, `useAuthModal`, migration 006 (áp prod). Verify: agent 200 · /cai-dat 200 ·
+dynamic-agent 404 · report-ugc 401 · feed 0-phone · chat 200. **P0-18 REFUTED**; **P0-5→P1, P0-9→P2, P0-10→P1**.
+**CÒN (perf-P0 nặng):** homepage cache · prerender ~1700 trang chi tiết · hero→WebP. Rồi P1/P2.
+
 ## 2. Backlog ưu tiên tổng (đã verify file:line)
 
 ### 🔴 P0 — Bug chức năng / lỗ bảo mật / vi phạm bất biến (làm trước)
