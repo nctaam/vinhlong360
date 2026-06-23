@@ -49,7 +49,9 @@
 P0-1,2,3,4,6,7,8,11,12,13,14,15,16,17,19,20 + chat `_is_error_reply` + P1-19. Tạo trang `/cai-dat`,
 `utils/safe.ts`, `useAuthModal`, migration 006 (áp prod). Verify: agent 200 · /cai-dat 200 ·
 dynamic-agent 404 · report-ugc 401 · feed 0-phone · chat 200. **P0-18 REFUTED**; **P0-5→P1, P0-9→P2, P0-10→P1**.
-**CÒN (perf-P0 nặng):** homepage cache · prerender ~1700 trang chi tiết · hero→WebP. Rồi P1/P2.
+**ĐỢT 2 — P1/P2 (2026-06-23, deploy+verify):** ✅ homepage cache (2s→5ms ~400×) · hero→WebP (212→133KB) · LLM-timeout ×4 + bỏ hardcode endpoint · guardrail fail-CLOSED + ẩn blocked_reason · call_tool wrapper (KeyError→graceful) · sitemap `_is_public` · event JSON-LD date_start · session-rotation · ChatWidget abort+Dừng · sort-clone ×3 · prerender 3 trang pháp-lý · theme-hex validation (P0-5↓) · danh-ba error-state · comment-author field · NotificationBell type · validate_data self-loop+dangling check · xoá route legacy /admincp+/admin-dashboard (P2-5). P2-12 verify=self-healing (không sửa).
+
+**CÒN LẠI (defer có lý do — KHÔNG làm tự động):** prerender ~1700 trang chi tiết (nặng/rủi-ro build 1GB, SWR đã cache on-demand) · TC-02/TC-10 chat test-matrix (integration, cần PG/full-env) · BreadcrumbList-centralize + error-helper-everywhere (refactor lớn, lợi-ích biên thấp) · confirm()→dialog (cần component mới) · hardcoded-colors 558 + admin-audit-log (lớn/feature) · catalog.css-split + @nuxt/fonts-remove (perf-cosmetic, rủi-ro vỡ giao-diện) · Track-H: NĐ147/GĐ8-ảnh/monitoring (cần người/nguồn ngoài).
 
 ## 2. Backlog ưu tiên tổng (đã verify file:line)
 
