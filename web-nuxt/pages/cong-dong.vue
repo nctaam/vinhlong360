@@ -155,6 +155,7 @@
         <div v-if="!searchMode" class="threads-filter" role="region" aria-label="Bộ lọc bảng tin">
           <button type="button" :class="['threads-tab', { active: activeTab === 'latest' }]" :aria-pressed="activeTab === 'latest'" @click="setTab('latest')">Mới nhất</button>
           <button type="button" :class="['threads-tab', { active: activeTab === 'trending' }]" :aria-pressed="activeTab === 'trending'" @click="setTab('trending')">Nổi bật</button>
+          <button type="button" v-if="isLoggedIn" :class="['threads-tab', { active: activeTab === 'following' }]" :aria-pressed="activeTab === 'following'" @click="setTab('following')">Đang theo dõi</button>
           <button type="button" v-if="isLoggedIn" :class="['threads-tab', { active: activeTab === 'bookmarks' }]" :aria-pressed="activeTab === 'bookmarks'" @click="setTab('bookmarks')">
             <svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>Đã lưu
           </button>
@@ -218,7 +219,18 @@
         />
 
         <EmptyState
-          v-else-if="activeTab !== 'bookmarks' && !posts.length && !loading && !feedError"
+          v-else-if="activeTab === 'following' && !posts.length && !loading && !feedError"
+          icon="👥" title="Chưa có bài từ người bạn theo dõi"
+          message="Theo dõi người dùng và địa điểm để xem bài viết của họ ở đây."
+          hint="Mở hồ sơ người dùng hoặc trang địa điểm rồi nhấn “Theo dõi”."
+        >
+          <template #actions>
+            <NuxtLink to="/tim-kiem" class="btn btn-outline btn-sm">Tìm người để theo dõi</NuxtLink>
+          </template>
+        </EmptyState>
+
+        <EmptyState
+          v-else-if="activeTab !== 'bookmarks' && activeTab !== 'following' && !posts.length && !loading && !feedError"
           icon="💬" title="Cộng đồng đang chờ bạn"
           message="Chưa có bài viết nào. Hãy là người đầu tiên chia sẻ!"
           hint="Chia sẻ ảnh chuyến đi, đặt câu hỏi, hay để lại đánh giá của bạn."
@@ -342,7 +354,7 @@ const userInitial = computed(() => {
 })
 
 // ── Tabs & filtering ──
-const activeTab = ref<'latest' | 'trending' | 'bookmarks'>('latest')
+const activeTab = ref<'latest' | 'trending' | 'following' | 'bookmarks'>('latest')
 const sort = computed(() => activeTab.value === 'trending' ? 'trending' : 'latest')
 const filterType = ref('')
 const activeTag = ref(String(route.query.tag || '').toLowerCase())
@@ -527,7 +539,7 @@ function removeImage(idx: number) {
   previewImages.value.splice(idx, 1)
 }
 
-function setTab(tab: 'latest' | 'trending' | 'bookmarks') {
+function setTab(tab: 'latest' | 'trending' | 'following' | 'bookmarks') {
   if (searchMode.value) clearSearch()
   if (activeTab.value === tab) return
   activeTab.value = tab
@@ -543,14 +555,16 @@ async function fetchFeed(reset = false) {
   if (reset) { page.value = 1; posts.value = []; feedError.value = false }
   loading.value = true
   try {
-    const params = new URLSearchParams({
-      page: String(page.value),
-      limit: '20',
-      sort: sort.value,
-    })
-    if (filterType.value) params.set('post_type', filterType.value)
-    if (activeTag.value) params.set('tag', activeTag.value)
-    const res = await $fetch<{ posts: Post[] }>(`/api/feed?${params}`, {
+    // Tab "Đang theo dõi" dùng endpoint riêng (bài từ người+địa-điểm mình follow)
+    const url = activeTab.value === 'following'
+      ? `/api/feed/following?page=${page.value}&limit=20`
+      : (() => {
+          const params = new URLSearchParams({ page: String(page.value), limit: '20', sort: sort.value })
+          if (filterType.value) params.set('post_type', filterType.value)
+          if (activeTag.value) params.set('tag', activeTag.value)
+          return `/api/feed?${params}`
+        })()
+    const res = await $fetch<{ posts: Post[] }>(url, {
       headers: authHeaders(),
     })
     const newPosts = res.posts || res || []
