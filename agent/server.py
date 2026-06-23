@@ -3106,25 +3106,8 @@ async def dynamic_agents_create(req: DynamicAgentCreateRequest, request: Request
     return {"status": "created", "agent": spec.to_dict()}
 
 
-# ── Admin dashboard ──
-
-@app.get("/admin-dashboard", response_class=HTMLResponse)
-async def admin_dashboard():
-    """Serve admin analytics dashboard."""
-    dashboard_path = Path(__file__).resolve().parent.parent / "web" / "admin-dashboard.html"
-    if dashboard_path.exists():
-        return HTMLResponse(dashboard_path.read_text(encoding="utf-8"))
-    return HTMLResponse("<h1>Dashboard not found</h1><p>Place admin-dashboard.html in web/</p>")
-
-
-@app.get("/admincp", response_class=HTMLResponse)
-async def admincp():
-    """Serve AdminCP — CRUD management panel."""
-    admin_path = Path(__file__).resolve().parent.parent / "web" / "admin.html"
-    if admin_path.exists():
-        return HTMLResponse(admin_path.read_text(encoding="utf-8"))
-    return HTMLResponse("<h1>AdminCP not found</h1>")
-
+# P2-5: route legacy /admin-dashboard + /admincp ĐÃ XOÁ — admin thật là Nuxt SPA /admin/*
+# (web/admin*.html không còn tồn tại; route cũ không-auth = bề mặt thừa).
 
 # ── Chat UI ──
 
@@ -3348,9 +3331,9 @@ if __name__ == "__main__":
     print("  vinhlong360 Knowledge Agent v8.2 — Level 7 Architecture")
     print("=" * 64)
     print(f"  Model:       {MODEL}")
-    print(f"  API:         {os.environ['LLM_BASE_URL']}")
+    print(f"  API:         {os.environ.get('LLM_BASE_URL', '(unset)')}")
     print(f"  Chat:        /chat, /chat/stream  (+rate limit)")
-    print(f"  Admin:       /admin/*, /admin-dashboard")
+    print(f"  Admin:       /admin/* (Nuxt SPA)")
     print(f"  Analytics:   /analytics/*  (summary, gaps, daily)")
     print(f"  System:      /system/*  (logs, errors, memory, quality)")
     print(f"  Level 5:     /system/traces, /system/handoffs, /system/memory-graph")
