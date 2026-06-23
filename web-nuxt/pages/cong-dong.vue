@@ -267,6 +267,18 @@
           </div>
         </div>
 
+        <div v-if="trendingTags.length" class="sidebar-card">
+          <h3>Hashtag thịnh hành</h3>
+          <div class="trending-tags">
+            <NuxtLink
+              v-for="t in trendingTags"
+              :key="t.tag"
+              :to="{ path: '/cong-dong', query: { tag: t.tag } }"
+              class="trending-tag"
+            >#{{ t.tag }}<span class="tt-count">{{ t.count }}</span></NuxtLink>
+          </div>
+        </div>
+
         <div class="sidebar-card">
           <h3>Cách tham gia</h3>
           <ul class="sidebar-list">
@@ -402,6 +414,15 @@ const feedStats = computed(() => ({
 }))
 async function loadCommunityStats() {
   try { communityStats.value = await $fetch('/api/community/stats') } catch { /* giữ '—' */ }
+}
+
+// ── Hashtag thịnh hành (sidebar khám phá) ──
+const trendingTags = ref<{ tag: string; count: number }[]>([])
+async function loadTrendingTags() {
+  try {
+    const res = await $fetch<{ tags: { tag: string; count: number }[] }>('/api/community/trending-tags')
+    trendingTags.value = res.tags || []
+  } catch { /* ẩn card nếu lỗi */ }
 }
 
 // ── Display posts (with type filter) ──
@@ -779,6 +800,7 @@ onMounted(() => {
   fetchReportEntity()
   fetchFeed(true)
   loadCommunityStats()
+  loadTrendingTags()
   // Trích dẫn từ trang khác điều hướng tới: ?quote=<post_id>
   const q = String(route.query.quote || '')
   if (q) {
@@ -833,6 +855,10 @@ useHead({
 .cs-clear { border: none; background: none; color: var(--muted); font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0 .25rem; }
 .cs-clear:hover { color: var(--ink); }
 .cs-go { flex-shrink: 0; }
+.trending-tags { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.trending-tag { display: inline-flex; align-items: center; gap: .35rem; padding: .25rem .6rem; background: var(--bg-alt); border: .5px solid var(--line); border-radius: var(--radius-full); font-size: var(--text-sm); color: var(--primary-fg); text-decoration: none; transition: border-color .25s var(--ease-out), background .25s var(--ease-out); }
+.trending-tag:hover { border-color: var(--primary-fg); background: rgba(var(--primary-rgb), .06); }
+.tt-count { font-size: var(--text-xs); color: var(--muted); }
 .tag-banner { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .5rem .75rem; margin-bottom: var(--space-3); background: color-mix(in srgb, var(--accent) 10%, var(--bg-alt)); border-radius: var(--radius-md); font-size: var(--text-sm); }
 .tag-clear { border: none; background: none; color: var(--primary-fg); cursor: pointer; font-size: var(--text-sm); }
 .threads-page { max-width: 960px; margin: 0 auto; }
