@@ -36,7 +36,7 @@ VI_WIKI_API = "https://vi.wikipedia.org/w/api.php"
 HEADERS = {"User-Agent": "vinhlong360/1.0 (https://vinhlong360.vn; contact@vinhlong360.vn)"}
 
 PRIORITY_TYPES = ["dish", "attraction", "nature", "experience", "craft_village",
-                  "accommodation", "product"]
+                  "accommodation", "product", "history", "event", "landmark", "culture"]
 
 AREA_KEYWORDS = {
     "vinh-long": ["vĩnh long", "cửu long", "mang thít", "long hồ", "trà ôn",
