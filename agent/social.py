@@ -563,6 +563,24 @@ async def community_stats():
     return {"posts": _c(posts), "reviews": _c(reviews), "members": _c(members)}
 
 
+@router.get("/community/trending-tags")
+async def trending_tags(limit: int = Query(10, ge=1, le=20)):
+    """Hashtag thịnh hành: đếm hashtag trên bài ĐÃ DUYỆT trong 30 ngày gần nhất."""
+    ph = db._ph
+    with db._conn() as conn:
+        rows = db._fetchall(conn, f"""
+            SELECT tag, COUNT(*) AS c
+            FROM posts p, jsonb_array_elements_text(p.hashtags) AS tag
+            WHERE p.moderation_status = 'approved'
+              AND p.created_at > NOW() - INTERVAL '30 days'
+            GROUP BY tag
+            ORDER BY c DESC, tag
+            LIMIT {ph}
+        """, (limit,))
+    tags = [{"tag": db._row_to_dict(r)["tag"], "count": int(db._row_to_dict(r)["c"])} for r in rows]
+    return {"tags": tags}
+
+
 @router.get("/entities/{entity_id}/feed")
 async def get_entity_feed(
     entity_id: str,

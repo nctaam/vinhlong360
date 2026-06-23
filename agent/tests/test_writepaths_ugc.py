@@ -286,6 +286,29 @@ def test_search_users_by_name_accent_insensitive(pg_user):
 
 
 @pg_only
+def test_trending_tags_counts_hashtag(pg_user, pg_entity):
+    """/api/community/trending-tags đếm hashtag bài đã duyệt trong 30 ngày."""
+    ph = db._ph
+    tag = "zzt" + uuid.uuid4().hex[:5]
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"""
+            INSERT INTO posts (user_id, entity_id, content, images, post_type, moderation_status, hashtags)
+            VALUES ({ph}::uuid, {ph}, {ph}, {ph}::jsonb, {ph}, 'approved', {ph}::jsonb)
+            RETURNING id
+        """, (str(pg_user["id"]), pg_entity, f"Bài có hashtag #{tag} nhé.", json.dumps([]), "share", json.dumps([tag])))
+        pid = str(row["id"])
+    try:
+        client = _client_as(pg_user)
+        r = client.get("/api/community/trending-tags?limit=20")
+        assert r.status_code == 200, r.text
+        tags = {t["tag"]: t["count"] for t in r.json()["tags"]}
+        assert tag in tags and tags[tag] >= 1
+    finally:
+        with db._conn() as conn:
+            db._execute(conn, f"DELETE FROM posts WHERE id::text = {ph}", (pid,))
+
+
+@pg_only
 def test_following_feed_shows_followed_user_posts(pg_user, pg_entity):
     """/api/feed/following chỉ hiện bài của người mình theo dõi."""
     ph = db._ph
