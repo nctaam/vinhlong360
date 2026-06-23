@@ -44,6 +44,7 @@
       ></textarea>
 
       <!-- Image attach -->
+      <p v-if="!formImages.length" class="rf-photo-hint">📸 Thêm ảnh thật để giúp cộng đồng + nhận huy hiệu <strong>Nhiếp ảnh</strong></p>
       <div class="rf-images">
         <div v-if="formImages.length" class="rf-image-grid">
           <div v-for="(img, i) in formImages" :key="img" class="rf-image-thumb">
@@ -285,6 +286,7 @@ onMounted(() => fetchReviews())
 .review-load-more { margin-top: var(--space-3); }
 
 /* Image attach */
+.rf-photo-hint { margin: var(--space-2) 0 0; font-size: var(--text-sm); color: var(--ink-700); }
 .rf-images { display: flex; flex-direction: column; gap: var(--space-2); margin-block: var(--space-2); }
 .rf-image-grid { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .rf-image-thumb { position: relative; width: 64px; height: 64px; border-radius: var(--radius-md); overflow: hidden; border: .5px solid var(--line); }

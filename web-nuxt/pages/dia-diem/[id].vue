@@ -34,6 +34,13 @@
           <ClientOnly>
             <ShareButton :title="entity.name" :text="entity.summary" />
           </ClientOnly>
+          <ClientOnly>
+            <div class="dc-trip">
+              <button type="button" :class="['trip-btn', { active: visitStatus === 'visited' }]" :aria-pressed="visitStatus === 'visited'" @click="setVisit('visited')">✓ Đã đến</button>
+              <button type="button" :class="['trip-btn', { active: visitStatus === 'want' }]" :aria-pressed="visitStatus === 'want'" @click="setVisit('want')">♡ Muốn đến</button>
+              <button type="button" :class="['trip-btn', { active: isFollowingPlace }]" :aria-pressed="isFollowingPlace" @click="toggleFollowPlace">{{ isFollowingPlace ? '🔔 Đang theo dõi' : '🔔 Theo dõi' }}</button>
+            </div>
+          </ClientOnly>
         </div>
       </div>
       <button type="button" v-if="hasEntityImages" class="dc-photo-btn" :aria-label="entity.images.length === 1 ? 'Xem ảnh' : `Xem ${entity.images.length} ảnh`" @click="openCoverLightbox">
@@ -364,6 +371,50 @@ const { get: ss } = useSiteSettings()
 const route = useRoute()
 const router = useRouter()
 const id = computed(() => String(route.params.id || ''))
+
+// ── Đã-đi/Muốn-đi + theo-dõi địa-điểm (Tier-1 MXH) ──
+const { isLoggedIn, authHeaders } = useAuth()
+const { openAuth } = useAuthModal()
+const { show: _showToast } = useToast()
+const visitStatus = ref<string | null>(null)
+const isFollowingPlace = ref(false)
+
+async function setVisit(status: 'visited' | 'want') {
+  if (!isLoggedIn.value) { openAuth(); return }
+  const prev = visitStatus.value
+  try {
+    if (visitStatus.value === status) {
+      visitStatus.value = null
+      await $fetch(`/api/me/visits/${encodeURIComponent(id.value)}`, { method: 'DELETE', headers: authHeaders() })
+    } else {
+      visitStatus.value = status
+      await $fetch('/api/me/visits', { method: 'POST', headers: authHeaders(), body: { entity_id: id.value, status } })
+      _showToast(status === 'visited' ? 'Đã đánh dấu Đã đến' : 'Đã thêm vào Muốn đến', 'success')
+    }
+  } catch { visitStatus.value = prev; _showToast('Không thể lưu, thử lại', 'error') }
+}
+
+async function toggleFollowPlace() {
+  if (!isLoggedIn.value) { openAuth(); return }
+  const prev = isFollowingPlace.value
+  isFollowingPlace.value = !prev
+  try {
+    await $fetch(`/api/follow/entity/${encodeURIComponent(id.value)}`, { method: 'POST', headers: authHeaders() })
+    if (!prev) _showToast('Đang theo dõi — sẽ báo khi có bài mới', 'success')
+  } catch { isFollowingPlace.value = prev; _showToast('Không thể theo dõi, thử lại', 'error') }
+}
+
+onMounted(async () => {
+  if (!isLoggedIn.value) return
+  try {
+    const v = await $fetch<{ status: string | null }>(`/api/me/visits/check/${encodeURIComponent(id.value)}`, { headers: authHeaders() })
+    visitStatus.value = v?.status ?? null
+  } catch { /* ignore */ }
+  try {
+    const f = await $fetch<{ following: { target_id: string }[] }>('/api/following', { headers: authHeaders() })
+    isFollowingPlace.value = (f?.following || []).some(x => String(x.target_id) === id.value)
+  } catch { /* ignore */ }
+})
 const RELATIONSHIP_BATCH_SIZE = 24
 
 function goBack() {

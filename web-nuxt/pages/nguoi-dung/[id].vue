@@ -32,6 +32,14 @@
           </NuxtLink>
         </div>
         <p v-if="profile.bio" class="profile-bio">{{ profile.bio }}</p>
+        <div v-if="profile.reputation" class="profile-reputation">
+          <span class="rep-level" :data-level="profile.reputation.level">
+            {{ levelIcon(profile.reputation.level) }} {{ profile.reputation.level_label }}
+          </span>
+          <span v-for="b in profile.reputation.badges" :key="b.id" class="rep-badge" :title="b.label">
+            {{ b.icon }} {{ b.label }}
+          </span>
+        </div>
         <div class="profile-stats">
           <div class="stat-item">
             <strong>{{ profile.post_count || 0 }}</strong>
@@ -195,6 +203,10 @@ function getSavedTypeMeta(type: string) {
   return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }
 }
 
+function levelIcon(level: number) {
+  return (['', '🌱', '🤝', '🌟', '👑'][level]) || '🌱'  // 1→4
+}
+
 const displayName = computed(() => profile.value?.display_name || profile.value?.phone || 'Người dùng')
 const emptyHint = computed(() => {
   if (isSelf.value) return 'Chia sẻ trải nghiệm của bạn với cộng đồng.'
@@ -283,6 +295,10 @@ if (profile.value) {
 </script>
 
 <style scoped>
+.profile-reputation { display: flex; flex-wrap: wrap; gap: .4rem; margin: .25rem 0 .75rem; }
+.rep-level { font-weight: var(--weight-semibold); font-size: var(--text-sm); padding: .2rem .6rem; border-radius: 999px; background: color-mix(in srgb, var(--accent) 16%, var(--bg-alt)); color: var(--accent-text, var(--ink)); }
+.rep-level[data-level="4"] { background: color-mix(in srgb, gold 28%, var(--bg-alt)); }
+.rep-badge { font-size: var(--text-xs); padding: .2rem .55rem; border-radius: 999px; background: var(--bg-alt); border: 1px solid var(--border); color: var(--ink-700); }
 .profile-loading { text-align: center; padding: var(--space-5) 0; }
 .profile-loading .spinner { margin: 0 auto; }
 
