@@ -666,14 +666,19 @@ async def get_my_bookmarks(
 
 @router.post("/upload/image")
 async def upload_image(file: UploadFile = File(...), user=Depends(require_user)):
-    if not file.content_type or not file.content_type.startswith("image/"):
-        raise HTTPException(400, "Chỉ chấp nhận file ảnh")
-
     data = await file.read()
     if len(data) > 5 * 1024 * 1024:
         raise HTTPException(400, "Ảnh tối đa 5MB")
 
-    url = await storage.upload_image(data, folder="posts", content_type=file.content_type)
+    # Không tin Content-Type client gửi — kiểm magic-byte thật (chặn SVG-script/polyglot).
+    sniffed = storage.sniff_image_type(data)
+    if not sniffed:
+        raise HTTPException(400, "File không phải ảnh hợp lệ (JPEG/PNG/GIF/WebP)")
+
+    try:
+        url = await storage.upload_image(data, folder="posts", content_type=sniffed)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     return {"url": url}
 
 

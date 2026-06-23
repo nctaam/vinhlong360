@@ -86,11 +86,40 @@ def _slugify(s: str) -> str:
     return s[:48] or "img"
 
 
+def sniff_image_type(data: bytes) -> str | None:
+    """Nhận dạng ảnh raster qua magic-byte (KHÔNG tin Content-Type client gửi).
+    Trả MIME nếu là JPEG/PNG/GIF/WebP/AVIF; None nếu không phải (vd SVG, HTML, polyglot)."""
+    if not data or len(data) < 12:
+        return None
+    if data[:3] == b"\xff\xd8\xff":
+        return "image/jpeg"
+    if data[:8] == b"\x89PNG\r\n\x1a\n":
+        return "image/png"
+    if data[:6] in (b"GIF87a", b"GIF89a"):
+        return "image/gif"
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "image/webp"
+    # AVIF/HEIF: hộp 'ftyp' với brand avif/avis/mif1
+    if data[4:8] == b"ftyp" and data[8:12] in (b"avif", b"avis", b"mif1"):
+        return "image/avif"
+    return None
+
+
+# Trần điểm-ảnh chống decompression-bomb (ảnh nhỏ-byte nhưng giải nén khổng lồ → DoS).
+MAX_IMAGE_PIXELS = 40_000_000  # ~40MP, đủ cho ảnh máy ảnh thật
+
+
 def _to_webp(data: bytes, max_w: int) -> bytes:
-    """Re-encode to WebP at <= max_w (strips EXIF, honours orientation)."""
+    """Re-encode to WebP at <= max_w (strips EXIF, honours orientation).
+    Raise ValueError nếu dữ liệu không phải ảnh hợp lệ / là bom giải-nén."""
     from PIL import Image, ImageOps
 
-    img = Image.open(io.BytesIO(data))
+    Image.MAX_IMAGE_PIXELS = MAX_IMAGE_PIXELS  # PIL raise DecompressionBombError khi vượt
+    try:
+        img = Image.open(io.BytesIO(data))
+        img.load()  # buộc giải mã ngay để bắt lỗi/bom sớm (Image.open vốn lazy)
+    except Exception as e:  # UnidentifiedImageError, DecompressionBombError, truncated...
+        raise ValueError("File ảnh không hợp lệ hoặc đã hỏng") from e
     img = ImageOps.exif_transpose(img)  # apply rotation, then EXIF is dropped on save
     has_alpha = "A" in img.getbands()
     img = img.convert("RGBA" if has_alpha else "RGB")
@@ -108,6 +137,9 @@ class Storage:
         self.use_s3 = _BACKEND in ("r2", "s3")
         if self.backend == "local":
             LOCAL_MEDIA_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Magic-byte sniff (truy cập qua instance: storage.sniff_image_type(data))
+    sniff_image_type = staticmethod(sniff_image_type)
 
     # ── low-level put ──────────────────────────────────────────────────────
     def _put(self, data: bytes, key: str, content_type: str) -> str:

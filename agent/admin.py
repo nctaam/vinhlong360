@@ -351,20 +351,23 @@ async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
     """GĐ8.4: upload file ảnh → WebP 3 cỡ → R2 (fallback đĩa) → entity.images.
     Lưu URL cỡ md (800px) làm ảnh hiển thị; sm/lg cũng được upload để dùng srcset sau."""
     from fastapi.concurrency import run_in_threadpool
-    from storage import storage, ALLOWED_TYPES, MAX_IMAGE_SIZE
+    from storage import storage, MAX_IMAGE_SIZE
 
     entity = db.get_entity(entity_id)
     if not entity:
         raise HTTPException(404, f"Entity '{entity_id}' not found")
-    if file.content_type not in ALLOWED_TYPES:
-        raise HTTPException(400, f"Định dạng không hỗ trợ: {file.content_type}")
     data = await file.read()
     if len(data) > MAX_IMAGE_SIZE:
         raise HTTPException(400, f"Ảnh quá lớn (tối đa {MAX_IMAGE_SIZE // 1024 // 1024}MB)")
+    # Không tin Content-Type client gửi — kiểm magic-byte thật.
+    if not storage.sniff_image_type(data):
+        raise HTTPException(400, "File không phải ảnh hợp lệ (JPEG/PNG/GIF/WebP)")
     if len(entity.get("images") or []) >= 10:
         raise HTTPException(400, "Tối đa 10 ảnh mỗi entity")
     try:
         urls = await run_in_threadpool(storage.upload_image_set, data, "entities", entity_id)
+    except ValueError as e:
+        raise HTTPException(400, f"Ảnh không hợp lệ: {e}")
     except Exception as e:  # noqa: BLE001
         raise HTTPException(500, f"Lỗi xử lý/upload ảnh: {e}")
 
