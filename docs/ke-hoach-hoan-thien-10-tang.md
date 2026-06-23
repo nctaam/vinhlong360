@@ -56,7 +56,8 @@ dynamic-agent 404 · report-ugc 401 · feed 0-phone · chat 200. **P0-18 REFUTED
 **THỰC SỰ CÒN LẠI — phân loại trung thực:**
 - **CẦN NGƯỜI (Track-H, không tự-động được):** NĐ147 pháp nhân/luật sư · GĐ8 ảnh (cần R2 keys + quyết định nội-dung) · monitoring (cần tài khoản UptimeRobot/Sentry).
 - **INADVISABLE tự-động (rủi-ro vỡ/hỏng):** prerender ~1700 trang (build OOM trên VPS 1GB + cần backend-at-build → dễ hỏng deploy; SWR đã cache on-demand) · catalog.css-split (rủi-ro vỡ giao-diện, lợi ~6KB gz).
-- **DEPRIORITIZE (bulk/biên thấp):** hardcoded-colors 558 (đa số admin-internal + màu map/minh-hoạ cố-ý) · admin-audit-log (feature DB+hooks) · @nuxt/fonts-remove (no-op, vô hại) · error-helper-sweep (runtime đã chạy).
+- ✅ **admin-audit-log ĐÃ LÀM** (Đợt 4): log tập trung trong require_admin → data/admin_audit.jsonl + GET /admin/audit-log (gated 401-verify). Deploy+verify.
+- **CỐ Ý KHÔNG LÀM (net-negative — churn/rủi-ro > lợi):** error-helper-sweep (40+ site `e.data?.detail` đã chạy đúng runtime; sweep = rủi-ro regression, lợi type-safety cosmetic) · @nuxt/fonts-remove (no-op, gỡ = rủi-ro build vô-ích) · catalog.css-split (rủi-ro vỡ UI nhiều trang, lợi ~6KB) · hardcoded-colors 558 (đa số admin-internal + màu minh-hoạ cố-ý). Quyết định kỹ-thuật: dừng ở đây để KHÔNG tạo regression cho giá-trị ~0 (§B5 "để hệ thống chạy được").
 
 ## 2. Backlog ưu tiên tổng (đã verify file:line)
 
