@@ -408,6 +408,56 @@ async def get_feed(
     }
 
 
+@router.get("/search/posts")
+async def search_posts(
+    q: str = Query(..., min_length=2, max_length=100),
+    page: int = Query(1, ge=1),
+    user=Depends(get_current_user),
+):
+    """Tìm bài viết cộng đồng theo nội dung (PG trigram `lower(content) LIKE`,
+    không phân biệt hoa-thường; chỉ bài ĐÃ DUYỆT). v1 phân-biệt-dấu."""
+    ph = db._ph
+    limit = 20
+    offset = (page - 1) * limit
+    pattern = "%" + q.strip().lower() + "%"
+
+    with db._conn() as conn:
+        rows = db._fetchall(conn, f"""
+            SELECT p.*, u.display_name, u.avatar_url, u.phone,
+                   e.name as entity_name, e.type as entity_type
+            FROM posts p
+            JOIN users u ON u.id = p.user_id
+            LEFT JOIN entities e ON e.id = p.entity_id
+            WHERE p.moderation_status = 'approved'
+              AND lower(p.content) LIKE {ph}
+            ORDER BY p.created_at DESC
+            LIMIT {ph} OFFSET {ph}
+        """, (pattern, limit, offset))
+
+        total = db._fetchone(conn, f"""
+            SELECT COUNT(*) as c FROM posts p
+            WHERE p.moderation_status = 'approved' AND lower(p.content) LIKE {ph}
+        """, (pattern,))
+
+    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+
+    if user:
+        post_ids = [p["id"] for p in posts]
+        if post_ids:
+            with db._conn() as conn:
+                liked = db._fetchall(conn, f"""
+                    SELECT post_id::text as pid FROM likes
+                    WHERE user_id = {ph}::uuid AND post_id::text = ANY({ph}::text[])
+                """, (str(user["id"]), post_ids))
+                liked_set = {r["pid"] for r in liked}
+                for p in posts:
+                    p["is_liked"] = p["user_liked"] = p["id"] in liked_set
+
+    total_c = total["c"] if total else 0
+    return {"posts": posts, "q": q, "total": total_c,
+            "has_more": offset + limit < total_c}
+
+
 @router.get("/community/stats")
 async def community_stats():
     """Số liệu THẬT của cộng đồng (không phải đếm 20 bài đã tải) cho sidebar /cong-dong."""

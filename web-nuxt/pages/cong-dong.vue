@@ -129,8 +129,30 @@
           </div>
         </div>
 
+        <!-- Tìm bài viết -->
+        <div class="community-search" role="search">
+          <svg class="cs-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input
+            v-model="searchInput"
+            class="cs-input"
+            type="search"
+            maxlength="100"
+            placeholder="Tìm bài viết trong cộng đồng…"
+            aria-label="Tìm bài viết trong cộng đồng"
+            @keyup.enter="runSearch"
+          />
+          <button v-if="searchMode" type="button" class="cs-clear" aria-label="Xoá tìm kiếm" @click="clearSearch">&times;</button>
+          <button type="button" class="btn btn-primary btn-sm cs-go" @click="runSearch">Tìm</button>
+        </div>
+
+        <!-- Đang xem kết quả tìm -->
+        <div v-if="searchMode" class="tag-banner" role="status">
+          <span>Kết quả cho <strong>“{{ searchQuery }}”</strong></span>
+          <button type="button" class="tag-clear" @click="clearSearch">✕ Bỏ tìm</button>
+        </div>
+
         <!-- Main tabs -->
-        <div class="threads-filter" role="region" aria-label="Bộ lọc bảng tin">
+        <div v-if="!searchMode" class="threads-filter" role="region" aria-label="Bộ lọc bảng tin">
           <button type="button" :class="['threads-tab', { active: activeTab === 'latest' }]" :aria-pressed="activeTab === 'latest'" @click="setTab('latest')">Mới nhất</button>
           <button type="button" :class="['threads-tab', { active: activeTab === 'trending' }]" :aria-pressed="activeTab === 'trending'" @click="setTab('trending')">Nổi bật</button>
           <button type="button" v-if="isLoggedIn" :class="['threads-tab', { active: activeTab === 'bookmarks' }]" :aria-pressed="activeTab === 'bookmarks'" @click="setTab('bookmarks')">
@@ -144,8 +166,8 @@
           <button type="button" class="tag-clear" @click="clearTag">✕ Bỏ lọc</button>
         </div>
 
-        <!-- Post type filter (only for feed tabs, not bookmarks) -->
-        <div v-if="activeTab !== 'bookmarks'" class="type-filter-row" role="region" aria-label="Lọc loại bài viết">
+        <!-- Post type filter (only for feed tabs, not bookmarks/search) -->
+        <div v-if="activeTab !== 'bookmarks' && !searchMode" class="type-filter-row" role="region" aria-label="Lọc loại bài viết">
           <button type="button"
             :class="['chip chip-filter', { active: filterType === '' }]"
             :aria-pressed="filterType === ''"
@@ -161,7 +183,7 @@
         </div>
 
         <!-- Posts -->
-        <SkeletonGrid v-if="(loading || bookmarksLoading) && !displayPosts.length" :count="3" />
+        <SkeletonGrid v-if="(loading || bookmarksLoading || searchLoading) && !displayPosts.length" :count="3" />
 
         <TransitionGroup name="post-list" tag="div" class="post-list-container">
           <PostCard
@@ -178,7 +200,13 @@
           />
         </TransitionGroup>
 
-        <div v-if="feedError && !displayPosts.length" class="feed-error">
+        <EmptyState
+          v-if="searchMode && !searchResults.length && !searchLoading"
+          icon="🔍" title="Không tìm thấy bài viết"
+          :message="`Không có bài viết nào khớp “${searchQuery}”.`"
+        />
+
+        <div v-else-if="feedError && !displayPosts.length" class="feed-error">
           <p>Không thể tải bảng tin.</p>
           <button type="button" class="btn btn-outline btn-sm" @click="fetchFeed(true)">Thử lại</button>
         </div>
@@ -206,7 +234,7 @@
         <button type="button" v-if="canLoadMore" class="btn btn-ghost threads-load-more" @click="loadMore">
           Xem thêm
         </button>
-        <div v-if="(loading && posts.length) || bookmarksLoading" class="feed-loading" role="status" aria-live="polite" aria-label="Đang tải bài viết"><div class="spinner"></div></div>
+        <div v-if="(loading && posts.length) || bookmarksLoading || (searchLoading && searchResults.length)" class="feed-loading" role="status" aria-live="polite" aria-label="Đang tải bài viết"><div class="spinner"></div></div>
       </div>
 
       <aside class="threads-sidebar">
@@ -323,6 +351,14 @@ const posts = ref<Entity[]>([])
 const hasMore = ref(false)
 const loading = ref(false)
 const feedError = ref(false)
+// ── Tìm bài viết cộng đồng ──
+const searchInput = ref('')
+const searchQuery = ref('')          // truy vấn đang áp dụng (rỗng = không ở chế-độ tìm)
+const searchResults = ref<Entity[]>([])
+const searchPage = ref(1)
+const searchHasMore = ref(false)
+const searchLoading = ref(false)
+const searchMode = computed(() => !!searchQuery.value)
 const newContent = ref('')
 const newType = ref('share')
 const posting = ref(false)
@@ -356,12 +392,14 @@ async function loadCommunityStats() {
 
 // ── Display posts (with type filter) ──
 const displayPosts = computed(() => {
+  if (searchMode.value) return searchResults.value
   if (activeTab.value === 'bookmarks') return bookmarks.value
   if (!filterType.value) return posts.value
   return posts.value.filter(p => p.post_type === filterType.value)
 })
 
 const canLoadMore = computed(() => {
+  if (searchMode.value) return searchHasMore.value && !searchLoading.value
   if (activeTab.value === 'bookmarks') return bookmarksHasMore.value && !bookmarksLoading.value
   return hasMore.value && !loading.value
 })
@@ -486,6 +524,7 @@ function removeImage(idx: number) {
 }
 
 function setTab(tab: 'latest' | 'trending' | 'bookmarks') {
+  if (searchMode.value) clearSearch()
   if (activeTab.value === tab) return
   activeTab.value = tab
   filterType.value = ''
@@ -545,13 +584,48 @@ async function fetchBookmarks(reset = false) {
 }
 
 function loadMore() {
-  if (activeTab.value === 'bookmarks') {
+  if (searchMode.value) {
+    searchPage.value++
+    fetchSearch()
+  } else if (activeTab.value === 'bookmarks') {
     bookmarksPage.value++
     fetchBookmarks()
   } else {
     page.value++
     fetchFeed()
   }
+}
+
+// ── Tìm bài viết ──
+async function fetchSearch(reset = false) {
+  if (reset) { searchPage.value = 1; searchResults.value = [] }
+  searchLoading.value = true
+  try {
+    const res = await $fetch<{ posts: Post[] }>(
+      `/api/search/posts?q=${encodeURIComponent(searchQuery.value)}&page=${searchPage.value}`,
+      { headers: authHeaders() },
+    )
+    const newPosts = res.posts || []
+    if (reset) searchResults.value = newPosts
+    else searchResults.value.push(...newPosts)
+    searchHasMore.value = newPosts.length === 20
+  } catch {
+    showToast('Không thể tìm bài viết', 'error')
+  }
+  searchLoading.value = false
+}
+
+function runSearch() {
+  const q = searchInput.value.trim()
+  if (q.length < 2) { showToast('Nhập ít nhất 2 ký tự để tìm', 'info'); return }
+  searchQuery.value = q
+  fetchSearch(true)
+}
+
+function clearSearch() {
+  searchInput.value = ''
+  searchQuery.value = ''
+  searchResults.value = []
 }
 
 watch(filterType, () => {
@@ -635,7 +709,7 @@ const { reportPost } = useReport()
 
 // cùng 1 post có thể nằm ở CẢ feed + tab bookmark → cập-nhật MỌI bản để không lệch.
 function _copies(postId: string) {
-  return [...posts.value, ...bookmarks.value].filter(p => p.id === postId)
+  return [...posts.value, ...bookmarks.value, ...searchResults.value].filter(p => p.id === postId)
 }
 
 async function toggleLike(postId: string) {
@@ -725,6 +799,14 @@ useHead({
 
 <style scoped>
 /* @-mention dropdown: styles dùng chung đã chuyển sang assets/css/components.css */
+.community-search { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); padding: .35rem .5rem .35rem .75rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-full); }
+.community-search:focus-within { border-color: var(--primary); }
+.cs-icon { color: var(--muted); flex-shrink: 0; }
+.cs-input { flex: 1; min-width: 0; border: none; background: none; outline: none; color: var(--ink); font-size: var(--text-sm); padding: .35rem 0; }
+.cs-input::placeholder { color: var(--muted); }
+.cs-clear { border: none; background: none; color: var(--muted); font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0 .25rem; }
+.cs-clear:hover { color: var(--ink); }
+.cs-go { flex-shrink: 0; }
 .tag-banner { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .5rem .75rem; margin-bottom: var(--space-3); background: color-mix(in srgb, var(--accent) 10%, var(--bg-alt)); border-radius: var(--radius-md); font-size: var(--text-sm); }
 .tag-clear { border: none; background: none; color: var(--primary-fg); cursor: pointer; font-size: var(--text-sm); }
 .threads-page { max-width: 960px; margin: 0 auto; }

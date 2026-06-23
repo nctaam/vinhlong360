@@ -155,6 +155,7 @@ CREATE INDEX IF NOT EXISTS idx_posts_entity ON posts(entity_id);
 CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(moderation_status);
 CREATE INDEX IF NOT EXISTS idx_posts_created ON posts(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_posts_type ON posts(post_type);
+CREATE INDEX IF NOT EXISTS idx_posts_content_trgm ON posts USING GIN (lower(content) gin_trgm_ops);
 
 CREATE TABLE IF NOT EXISTS comments (
     id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
