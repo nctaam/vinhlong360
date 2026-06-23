@@ -128,6 +128,7 @@ function dismissBeta() { showBeta.value = false; localStorage.setItem('vl360_bet
 
 const DEFAULT_NAV_GROUPS: Array<{ label: string; to?: string; children?: { to: string; label: string }[] }> = [
   { label: 'Khám phá', children: [
+    { to: '/dia-diem', label: 'Tất cả địa điểm' },
     { to: '/du-lich', label: 'Du lịch & trải nghiệm' },
     { to: '/luu-tru', label: 'Lưu trú' },
     { to: '/theo-mua', label: 'Đặc sản theo mùa' },

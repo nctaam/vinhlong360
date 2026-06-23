@@ -293,37 +293,7 @@
         </div>
         <NuxtLink :to="claimUrl" class="ns-action claim-cta">🏷️ {{ ss('labels.detail.cta_claim', 'Đây là cơ sở của tôi — đăng ký quản lý') }}</NuxtLink>
 
-        <!-- P1: Provenance — civic trust signal (Nguồn · Cập nhật · Báo sai) -->
-        <div v-if="sourceUrl || entity.updatedAt" class="provenance-block">
-          <div class="pb-head">
-            <span class="pb-shield" aria-hidden="true">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
-            </span>
-            <span class="pb-head-text">{{ ss('labels.detail.provenance_heading', 'Dữ liệu đã đối chiếu') }}</span>
-          </div>
-          <div v-if="sourceUrl" class="pb-row">
-            <span class="pb-label">{{ ss('labels.detail.provenance_source', 'Nguồn') }}</span>
-            <a class="pb-value pb-link" :href="sourceUrl" target="_blank" rel="noopener nofollow" :title="sourceUrl">{{ sourceHost }}</a>
-          </div>
-          <div v-if="entity.updatedAt" class="pb-row">
-            <span class="pb-label">{{ ss('labels.detail.provenance_updated', 'Cập nhật') }}</span>
-            <time class="pb-value" :datetime="entity.updatedAt">{{ formatDate(entity.updatedAt) }}</time>
-          </div>
-          <ClientOnly>
-            <button type="button" class="pb-row pb-report" @click="reportEntity">
-              <span class="pb-icon" aria-hidden="true">⚠️</span>
-              <span class="pb-text">{{ ss('labels.detail.provenance_report', 'Báo sai thông tin') }}</span>
-            </button>
-          </ClientOnly>
-        </div>
-
         <NuxtLink class="quality-report" :to="reportUrl">{{ ss('labels.detail.cta_report', 'Báo sai dữ liệu') }}</NuxtLink>
-        <!-- Truy xuất nguồn gốc (sản phẩm) -->
-        <div v-if="entity.type === 'product'" class="traceability">
-          <strong>🔎 {{ ss('labels.detail.traceability_heading', 'Truy xuất nguồn gốc') }}</strong>
-          <p>{{ ss('labels.detail.traceability_note', 'Xem "Nguồn dữ liệu" & quan hệ "Sản xuất tại" ở trên. Thông tin tham khảo — vui lòng kiểm chứng với cơ sở.') }}</p>
-          <small v-if="entity.updatedAt">{{ ss('labels.detail.traceability_updated', 'Cập nhật:') }} {{ entity.updatedAt }}</small>
-        </div>
 
         <NuxtErrorBoundary>
           <ClientOnly>
@@ -628,35 +598,6 @@ const qualityMissingLabels = computed(() => {
   }
   return (quality.value.missing || []).map((key: string) => labels[key] || key)
 })
-const sourceHost = computed(() => {
-  const url = quality.value.source_url
-  if (!url) return ''
-  try {
-    return new URL(url).hostname.replace(/^www\./, '')
-  } catch {
-    return url
-  }
-})
-// P1: provenance — external source URL, suppress self-references to vinhlong360.vn
-// (we don't cite ourselves as a "source"). Phase 0 fix populates quality.source_url.
-const sourceUrl = computed(() => {
-  const url = quality.value.source_url
-  if (!url || typeof url !== 'string') return ''
-  if (url.includes('vinhlong360.vn')) return ''
-  return url
-})
-// vi-VN long-form date for the "Cập nhật" row; falls back to raw string if unparsable.
-function formatDate(dateStr?: string) {
-  if (!dateStr) return ''
-  const d = new Date(dateStr)
-  if (Number.isNaN(d.getTime())) return dateStr
-  return d.toLocaleDateString('vi-VN', { year: 'numeric', month: 'long', day: 'numeric' })
-}
-// P1: in-place report modal (JS path). The SSR/no-JS fallback is the quality-report link below.
-const { openReport } = useReport()
-function reportEntity() {
-  openReport('entity', id.value)
-}
 const reportUrl = computed(() => `/cong-dong?report=${encodeURIComponent(id.value)}`)
 
 // GĐ10.4: normalizeCoords gom vào composables/useCoords.ts (Nuxt auto-import).

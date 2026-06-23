@@ -99,6 +99,7 @@ export default defineNuxtConfig({
     '/khu-vuc/**': { swr: 3600 },
     '/xa-phuong/**': { swr: 3600 },
     // Listing pages: shorter cache
+    '/dia-diem': { swr: 600 },
     '/du-lich': { swr: 600 },
     '/san-pham': { swr: 600 },
     '/ocop': { swr: 600 },
