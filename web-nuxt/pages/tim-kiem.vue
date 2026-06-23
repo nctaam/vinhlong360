@@ -28,36 +28,67 @@
     <EmptyState v-else-if="hasError" icon="⚠️" title="Lỗi tìm kiếm" message="Không thể tải kết quả. Vui lòng thử lại.">
       <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData('search-results')">Thử lại</button>
     </EmptyState>
-    <template v-else-if="results.length">
-      <div class="result-summary" aria-live="polite">
-        <p class="result-meta">
-          <strong class="result-query">"{{ q }}"</strong>
-          <span class="result-count">{{ results.length }} kết quả</span>
-        </p>
-        <ul v-if="typeBreakdown.length" class="result-types" aria-label="Phân loại kết quả">
-          <li v-for="t in typeBreakdown" :key="t.type" class="result-type-badge">
-            <span aria-hidden="true">{{ t.emoji }}</span>
-            <span>{{ t.label }}</span>
-            <span class="result-type-count">{{ t.count }}</span>
-          </li>
-        </ul>
-      </div>
-      <div class="grid">
-        <EntityCard v-for="e in results" :key="e.id" :entity="e" />
-      </div>
-    </template>
     <template v-else-if="q">
-      <EmptyState icon="🔍" title="Không tìm thấy kết quả" message="Thử từ khóa khác hoặc khám phá danh mục bên dưới.">
-        <template #actions>
-          <NuxtLink to="/du-lich" class="btn btn-outline">Khám phá du lịch</NuxtLink>
-          <NuxtLink to="/san-pham" class="btn btn-outline">Xem sản phẩm</NuxtLink>
-        </template>
-      </EmptyState>
-      <NuxtErrorBoundary>
-        <ClientOnly>
-          <AIRecommendations title="Gợi ý cho bạn" :limit="6" />
-        </ClientOnly>
-      </NuxtErrorBoundary>
+      <!-- Địa điểm / sản phẩm -->
+      <template v-if="results.length">
+        <div class="result-summary" aria-live="polite">
+          <p class="result-meta">
+            <strong class="result-query">"{{ q }}"</strong>
+            <span class="result-count">{{ results.length }} địa điểm</span>
+          </p>
+          <ul v-if="typeBreakdown.length" class="result-types" aria-label="Phân loại kết quả">
+            <li v-for="t in typeBreakdown" :key="t.type" class="result-type-badge">
+              <span aria-hidden="true">{{ t.emoji }}</span>
+              <span>{{ t.label }}</span>
+              <span class="result-type-count">{{ t.count }}</span>
+            </li>
+          </ul>
+        </div>
+        <div class="grid">
+          <EntityCard v-for="e in results" :key="e.id" :entity="e" />
+        </div>
+      </template>
+
+      <!-- Người dùng -->
+      <section v-if="userResults.length" class="block search-section reveal">
+        <div class="section-head"><h2>Người dùng</h2></div>
+        <div class="people-list">
+          <NuxtLink v-for="u in userResults" :key="u.id" :to="`/nguoi-dung/${u.id}`" class="person-chip">
+            <span class="avatar person-avatar">{{ (u.display_name || '?').charAt(0).toUpperCase() }}</span>
+            <span class="person-name">{{ u.display_name }}</span>
+            <span v-if="u.post_count" class="person-meta">{{ u.post_count }} bài</span>
+          </NuxtLink>
+        </div>
+      </section>
+
+      <!-- Bài viết cộng đồng -->
+      <section v-if="postResults.length" class="block search-section reveal">
+        <div class="section-head"><h2>Bài viết cộng đồng</h2></div>
+        <div class="search-post-list">
+          <NuxtLink v-for="p in postResults" :key="p.id" :to="`/bai-viet/${p.id}`" class="search-post-item">
+            <div class="spi-head">
+              <strong>{{ p.display_name || 'Người dùng' }}</strong>
+              <span v-if="p.post_type_label" class="spi-type">{{ p.post_type_label }}</span>
+            </div>
+            <p class="spi-content">{{ p.content }}</p>
+          </NuxtLink>
+        </div>
+      </section>
+
+      <!-- Không có kết quả nào -->
+      <template v-if="!results.length && !postResults.length && !userResults.length">
+        <EmptyState icon="🔍" title="Không tìm thấy kết quả" message="Thử từ khóa khác hoặc khám phá danh mục bên dưới.">
+          <template #actions>
+            <NuxtLink to="/du-lich" class="btn btn-outline">Khám phá du lịch</NuxtLink>
+            <NuxtLink to="/san-pham" class="btn btn-outline">Xem sản phẩm</NuxtLink>
+          </template>
+        </EmptyState>
+        <NuxtErrorBoundary>
+          <ClientOnly>
+            <AIRecommendations title="Gợi ý cho bạn" :limit="6" />
+          </ClientOnly>
+        </NuxtErrorBoundary>
+      </template>
     </template>
 
     <!-- Quick explore when no query -->
@@ -158,6 +189,20 @@ const searching = computed(() => status.value === 'pending' && !!q.value)
 const results = computed(() => data.value?.entities || [])
 const hasError = computed(() => !!searchError.value)
 
+// Tìm hợp nhất: bài viết cộng đồng + người dùng (song song, không chặn entity).
+const { data: extra } = await useAsyncData(
+  'search-extra',
+  () => q.value
+    ? Promise.all([
+        $fetch<any>(`/api/search/posts?q=${encodeURIComponent(q.value)}`).catch(() => ({ posts: [] })),
+        $fetch<any>(`/api/search/users?q=${encodeURIComponent(q.value)}`).catch(() => ({ users: [] })),
+      ]).then(([p, u]) => ({ posts: (p.posts || []).slice(0, 6), users: (u.users || []).slice(0, 8) }))
+    : Promise.resolve({ posts: [], users: [] }),
+  { watch: [q] },
+)
+const postResults = computed(() => extra.value?.posts || [])
+const userResults = computed(() => extra.value?.users || [])
+
 // SERPs-style type distribution badges (e.g. 5 Trải nghiệm · 4 Đặc sản · 3 Lưu trú).
 const typeBreakdown = computed(() => {
   const counts = new Map<string, number>()
@@ -230,6 +275,22 @@ useHead({
 
 /* Search input error feedback */
 .search-row.error input { border-color: var(--error); box-shadow: 0 0 0 3px rgba(var(--error-rgb, 217, 79, 61), .12); }
+
+/* Unified search: người dùng + bài viết */
+.search-section { margin-top: var(--space-5); }
+.people-list { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.person-chip { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-full); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle); }
+.person-chip:hover { border-color: var(--primary-fg); transform: translateY(-1px); }
+.person-avatar { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--primary-fg, #fff); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
+.person-name { font-size: var(--text-sm); font-weight: var(--weight-medium); }
+.person-meta { font-size: var(--text-xs); color: var(--muted); }
+.search-post-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.search-post-item { display: block; padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out); }
+.search-post-item:hover { border-color: var(--primary-fg); }
+.spi-head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: .2rem; }
+.spi-head strong { font-size: var(--text-sm); }
+.spi-type { font-size: var(--text-xs); color: var(--muted); background: var(--bg-alt); padding: 1px 8px; border-radius: var(--radius-full); }
+.spi-content { font-size: var(--text-sm); color: var(--ink-700); margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
 .quick-picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--space-3); }
 .quick-pick { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); text-align: center; box-shadow: var(--shadow-xs); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }

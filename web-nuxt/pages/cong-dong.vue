@@ -231,6 +231,8 @@
           </template>
         </EmptyState>
 
+        <!-- Cuộn vô hạn: observer tự nạp khi sentinel vào tầm; nút là fallback (no-JS/observer fail) -->
+        <div ref="loadSentinel" class="load-sentinel" aria-hidden="true"></div>
         <button type="button" v-if="canLoadMore" class="btn btn-ghost threads-load-more" @click="loadMore">
           Xem thêm
         </button>
@@ -432,6 +434,8 @@ const showScrollTop = ref(false)
 function onScroll() {
   showScrollTop.value = window.scrollY > 600
 }
+const loadSentinel = ref<HTMLElement | null>(null)
+let loadObserver: IntersectionObserver | null = null
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
@@ -769,10 +773,18 @@ onMounted(() => {
     router.replace({ query: rest })
   }
   window.addEventListener('scroll', onScroll, { passive: true })
+  // Cuộn vô hạn: tự nạp trang kế khi sentinel gần vào tầm nhìn
+  if (typeof IntersectionObserver !== 'undefined' && loadSentinel.value) {
+    loadObserver = new IntersectionObserver((entries) => {
+      if (entries[0]?.isIntersecting && canLoadMore.value) loadMore()
+    }, { rootMargin: '500px' })
+    loadObserver.observe(loadSentinel.value)
+  }
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', onScroll)
+  loadObserver?.disconnect()
 })
 
 useSeoMeta({
