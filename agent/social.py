@@ -291,6 +291,18 @@ async def get_feed(
     }
 
 
+@router.get("/community/stats")
+async def community_stats():
+    """Số liệu THẬT của cộng đồng (không phải đếm 20 bài đã tải) cho sidebar /cong-dong."""
+    def _c(row):
+        return int(db._row_to_dict(row)["c"]) if row else 0
+    with db._conn() as conn:
+        posts = db._fetchone(conn, "SELECT COUNT(*) c FROM posts WHERE moderation_status='approved'")
+        reviews = db._fetchone(conn, "SELECT COUNT(*) c FROM posts WHERE post_type='review' AND moderation_status='approved'")
+        members = db._fetchone(conn, "SELECT COUNT(*) c FROM users WHERE is_active=TRUE")
+    return {"posts": _c(posts), "reviews": _c(reviews), "members": _c(members)}
+
+
 @router.get("/entities/{entity_id}/feed")
 async def get_entity_feed(
     entity_id: str,
