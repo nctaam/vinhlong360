@@ -347,7 +347,11 @@ function getFavTypeMeta(type: string) {
   return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }
 }
 
-const { data: homeData, error: homeError, refresh: refreshHome } = await useAsyncData('homepage', () => $fetch<Record<string, unknown>>('/api/homepage'))
+// SSR fetch THẲNG backend (bỏ qua Nitro proxy — proxy nội-bộ 502 trong ngữ-cảnh SSR
+// render '/'); client fetch tương-đối (browser → nginx → backend).
+const ssrApiBase = import.meta.server ? (process.env.API_BASE || 'http://127.0.0.1:8360') : ''
+const { data: homeData, error: homeError, refresh: refreshHome } = await useAsyncData('homepage',
+  () => $fetch<Record<string, unknown>>('/api/homepage', ssrApiBase ? { baseURL: ssrApiBase } : {}))
 
 // Từ cộng đồng — fetch client-side (luôn tươi, không kẹt cache SWR của trang chủ)
 const { data: communityData } = await useAsyncData('home-community', async () => {
