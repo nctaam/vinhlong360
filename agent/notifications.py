@@ -12,7 +12,7 @@ Endpoints:
 
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, field_validator
 
 from auth_middleware import get_current_user, require_user
@@ -271,3 +271,39 @@ def _format_notif(row: dict) -> dict:
         "is_read": row.get("is_read", False),
         "created_at": str(row.get("created_at", "")),
     }
+
+
+# ── RSVP lễ-hội/sự-kiện: "Tôi sẽ đi" ──
+
+@router.post("/events/{entity_id}/rsvp")
+async def toggle_rsvp(entity_id: str, user=Depends(require_user)):
+    """Bật/tắt RSVP cho 1 sự-kiện. Trả {going, count}."""
+    ph = db._ph
+    uid = str(user["id"])
+    with db._conn() as conn:
+        existing = db._fetchone(conn,
+            f"SELECT 1 FROM event_rsvp WHERE user_id = {ph}::uuid AND entity_id = {ph}", (uid, entity_id))
+        if existing:
+            db._execute(conn, f"DELETE FROM event_rsvp WHERE user_id = {ph}::uuid AND entity_id = {ph}", (uid, entity_id))
+            going = False
+        else:
+            db._execute(conn, f"INSERT INTO event_rsvp (user_id, entity_id) VALUES ({ph}::uuid, {ph})", (uid, entity_id))
+            going = True
+        cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM event_rsvp WHERE entity_id = {ph}", (entity_id,))
+    return {"going": going, "count": int(db._row_to_dict(cnt)["c"]) if cnt else 0}
+
+
+@router.get("/events/{entity_id}/rsvp")
+async def get_rsvp(entity_id: str, request: Request = None):
+    """Số người RSVP + (nếu đăng nhập) trạng thái của mình."""
+    ph = db._ph
+    with db._conn() as conn:
+        cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM event_rsvp WHERE entity_id = {ph}", (entity_id,))
+        count = int(db._row_to_dict(cnt)["c"]) if cnt else 0
+        going = False
+        u = await get_current_user(request) if request else None
+        if u:
+            mine = db._fetchone(conn,
+                f"SELECT 1 FROM event_rsvp WHERE user_id = {ph}::uuid AND entity_id = {ph}", (str(u["id"]), entity_id))
+            going = bool(mine)
+    return {"count": count, "going": going}

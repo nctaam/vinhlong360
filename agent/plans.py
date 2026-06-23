@@ -46,6 +46,7 @@ def _row_plan(row) -> dict:
         "id": str(d["id"]),
         "title": d.get("title") or "Lịch trình",
         "stops": stops if isinstance(stops, list) else [],
+        "is_public": bool(d.get("is_public")),
         "savedAt": str(d.get("created_at") or ""),
     }
 
@@ -53,7 +54,7 @@ def _row_plan(row) -> dict:
 def _list(conn, uid: str) -> list[dict]:
     ph = db._ph
     rows = db._fetchall(conn, f"""
-        SELECT id, title, stops, created_at FROM user_plans
+        SELECT id, title, stops, is_public, created_at FROM user_plans
         WHERE user_id = {ph}::uuid ORDER BY created_at DESC
     """, (uid,))
     return [_row_plan(r) for r in rows]
@@ -109,3 +110,58 @@ async def merge_plans(body: MergeBody, user=Depends(require_user)):
             if p.stops:
                 _insert(conn, uid, p)
         return {"plans": _list(conn, uid)}
+
+
+class PublishBody(BaseModel):
+    is_public: bool = True
+
+
+@router.post("/{plan_id}/publish")
+async def publish_plan(plan_id: str, body: PublishBody, user=Depends(require_user)):
+    """Bật/tắt chia-sẻ công-khai 1 lịch trình (chỉ chủ sở hữu)."""
+    ph = db._ph
+    with db._conn() as conn:
+        db._execute(conn, f"""
+            UPDATE user_plans SET is_public = {ph} WHERE id::text = {ph} AND user_id = {ph}::uuid
+        """, (body.is_public, plan_id, str(user["id"])))
+    return {"is_public": body.is_public}
+
+
+# ── Public (no-auth): xem lịch trình được chia-sẻ công-khai ──
+public_router = APIRouter(prefix="/api/shared-plans", tags=["plans"], dependencies=[Depends(_require_pg)])
+
+
+@public_router.get("")
+async def list_shared(limit: int = 30):
+    ph = db._ph
+    limit = max(1, min(int(limit), 60))
+    with db._conn() as conn:
+        rows = db._fetchall(conn, f"""
+            SELECT p.id, p.title, p.stops, p.is_public, p.created_at, u.display_name AS author
+            FROM user_plans p JOIN users u ON u.id = p.user_id
+            WHERE p.is_public = TRUE ORDER BY p.created_at DESC LIMIT {ph}
+        """, (limit,))
+    out = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        plan = _row_plan(r)
+        plan["author"] = d.get("author")
+        plan["stop_count"] = len(plan["stops"])
+        out.append(plan)
+    return {"plans": out}
+
+
+@public_router.get("/{plan_id}")
+async def get_shared(plan_id: str):
+    ph = db._ph
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"""
+            SELECT p.id, p.title, p.stops, p.is_public, p.created_at, u.display_name AS author
+            FROM user_plans p JOIN users u ON u.id = p.user_id
+            WHERE p.id::text = {ph} AND p.is_public = TRUE
+        """, (plan_id,))
+    if not row:
+        raise HTTPException(404, "Lịch trình không tồn tại hoặc chưa công khai")
+    plan = _row_plan(row)
+    plan["author"] = db._row_to_dict(row).get("author")
+    return {"plan": plan}
