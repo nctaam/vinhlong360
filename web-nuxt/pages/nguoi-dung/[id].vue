@@ -108,6 +108,7 @@
               @comment="id => navigateTo(`/bai-viet/${id}`)"
               @bookmark="toggleBookmark"
               @report="reportPost"
+              @repost="repost"
             />
           </TransitionGroup>
           <Transition name="fade">
@@ -145,6 +146,7 @@ const userId = route.params.id as string
 const { isLoggedIn, authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const { reportPost } = useReport()
+const { repost } = useRepost()
 
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl(`/nguoi-dung/${userId}`) }],

@@ -165,6 +165,7 @@
             @comment="goToPost"
             @bookmark="toggleBookmark"
             @report="reportPost"
+            @repost="repostPost"
           />
         </TransitionGroup>
 
@@ -281,6 +282,10 @@ const MAX_CHARS = 500
 
 const { isLoggedIn, authHeaders, user } = useAuth()
 const { openAuth } = useAuthModal()
+const { repost } = useRepost()
+function repostPost(postId: string) {
+  repost(postId, () => { activeTab.value = 'latest'; fetchFeed(true) })
+}
 const route = useRoute()
 const router = useRouter()
 

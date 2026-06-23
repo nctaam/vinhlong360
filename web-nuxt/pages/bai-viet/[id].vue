@@ -4,7 +4,7 @@
     <h1 class="sr-only">{{ post?.display_name ? `Bài viết của ${post.display_name}` : 'Bài viết' }}</h1>
 
     <div v-if="post" class="thread-detail reveal">
-      <PostCard :post="post" :has-replies="comments.length > 0" @like="toggleLike" @comment="scrollToCompose" @bookmark="toggleBookmark" @report="reportPost" />
+      <PostCard :post="post" :has-replies="comments.length > 0" @like="toggleLike" @comment="scrollToCompose" @bookmark="toggleBookmark" @report="reportPost" @repost="repost" />
 
       <!-- Comment thread -->
       <div class="thread-comments">
@@ -96,6 +96,7 @@ const route = useRoute()
 const postId = route.params.id as string
 const { isLoggedIn, authHeaders, user } = useAuth()
 const { openAuth } = useAuthModal()
+const { repost } = useRepost()
 
 // Linkify @-mention + #hashtag trong bình luận (content escape trước → an toàn v-html)
 function renderComment(c: any): string {

@@ -535,6 +535,10 @@ a.thread-author:hover { color: var(--primary-fg); }
 .mention-link:hover { text-decoration: underline; }
 .hashtag-link { color: var(--accent-text, var(--primary-fg)); text-decoration: none; }
 .hashtag-link:hover { text-decoration: underline; }
+.thread-repost-embed { display: flex; flex-direction: column; gap: .2rem; margin: var(--space-2) 0; padding: var(--space-2) var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-alt); text-decoration: none; color: var(--ink); }
+.thread-repost-embed:hover { border-color: var(--primary); }
+.tre-head { font-size: var(--text-sm); color: var(--ink-700); }
+.tre-content { font-size: var(--text-sm); color: var(--ink); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .thread-images { display: grid; gap: 2px; border-radius: var(--radius-md); overflow: hidden; margin-top: var(--space-2); cursor: pointer; }
 .thread-images.img-grid-1 { grid-template-columns: 1fr; }
 .thread-images.img-grid-1 .thread-img-wrap { max-height: 340px; }
