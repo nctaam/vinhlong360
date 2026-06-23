@@ -109,19 +109,19 @@ def _notify_entity_followers(entity_id, author_id, author_name, post_id: str) ->
 
 
 class CreatePost(BaseModel):
-    content: str
+    content: str = ""
     entity_id: Optional[str] = None
     post_type: str = "share"
     rating: Optional[int] = None
     images: list[str] = []
     mentions: list[dict] = []
+    repost_of: Optional[str] = None  # Threads-style repost/quote
 
     @field_validator("content")
     @classmethod
     def validate_content(cls, v):
-        v = v.strip()
-        if len(v) < 10:
-            raise ValueError("Nội dung cần ít nhất 10 ký tự")
+        v = (v or "").strip()
+        # min-10 enforce ở create_post (repost rỗng được phép); ở đây chỉ chặn quá dài
         if len(v) > 5000:
             raise ValueError("Nội dung tối đa 5000 ký tự")
         return v
@@ -187,30 +187,63 @@ async def create_post(body: CreatePost, user=Depends(require_user)):
         if not entity:
             raise HTTPException(404, "Không tìm thấy địa điểm/sản phẩm")
 
+    # Repost rỗng được phép; bài thường cần ≥10 ký tự
+    if not body.repost_of and len(body.content.strip()) < 10:
+        raise HTTPException(400, "Nội dung cần ít nhất 10 ký tự")
+
+    ph = db._ph
+    repost_snapshot = None
+    orig_author_id = None
+    if body.repost_of:
+        with db._conn() as conn:
+            orig = db._fetchone(conn, f"""
+                SELECT p.id, p.content, p.user_id, p.created_at, p.repost_of, u.display_name
+                FROM posts p JOIN users u ON u.id = p.user_id
+                WHERE p.id::text = {ph} AND p.moderation_status = 'approved'
+            """, (body.repost_of,))
+        if not orig:
+            raise HTTPException(404, "Bài gốc không tồn tại")
+        od = db._row_to_dict(orig)
+        if od.get("repost_of"):
+            raise HTTPException(400, "Không thể đăng lại một bài đã là repost")
+        orig_author_id = str(od["user_id"])
+        repost_snapshot = {
+            "id": str(od["id"]), "author": od.get("display_name") or "",
+            "content": (od.get("content") or "")[:280], "created_at": str(od.get("created_at") or ""),
+        }
+
     mod_result = await moderate_content(body.content, body.images)
     status = mod_result["status"]
     mentions = _clean_mentions(body.mentions)
     hashtags = _extract_hashtags(body.content)
 
-    ph = db._ph
     with db._conn() as conn:
         row = db._fetchone(conn, f"""
-            INSERT INTO posts (user_id, entity_id, content, images, post_type, rating, moderation_status, mentions, hashtags)
-            VALUES ({ph}::uuid, {ph}, {ph}, {ph}::jsonb, {ph}, {ph}, {ph}, {ph}::jsonb, {ph}::jsonb)
+            INSERT INTO posts (user_id, entity_id, content, images, post_type, rating, moderation_status, mentions, hashtags, repost_of, repost_snapshot)
+            VALUES ({ph}::uuid, {ph}, {ph}, {ph}::jsonb, {ph}, {ph}, {ph}, {ph}::jsonb, {ph}::jsonb, {ph}, {ph}::jsonb)
             RETURNING *
         """, (
             str(user["id"]), body.entity_id, body.content,
             json.dumps(body.images), body.post_type, body.rating, status,
             json.dumps(mentions, ensure_ascii=False), json.dumps(hashtags, ensure_ascii=False),
+            body.repost_of,
+            json.dumps(repost_snapshot, ensure_ascii=False) if repost_snapshot else None,
         ))
 
     post = db._row_to_dict(row)
     log_moderation("post", str(post["id"]), status, mod_result, auto=True)
 
-    # Báo: người được @-nhắc + người theo-dõi địa-điểm (chỉ khi bài được duyệt)
+    # Báo: người được @-nhắc + người theo-dõi địa-điểm + chủ bài được đăng-lại (chỉ khi duyệt)
     if status == "approved":
         _notify_mentions(mentions, str(user["id"]), user.get("display_name"), str(post["id"]), body.content)
         _notify_entity_followers(body.entity_id, str(user["id"]), user.get("display_name"), str(post["id"]))
+        if orig_author_id and orig_author_id != str(user["id"]):
+            try:
+                create_notification(orig_author_id, "repost",
+                                    f"{user.get('display_name') or 'Ai đó'} đã đăng lại bài của bạn",
+                                    ref_type="post", ref_id=str(post["id"]))
+            except Exception:
+                pass
 
     result = _enrich_post(post, user)
     if status != "approved":
@@ -778,6 +811,14 @@ def _format_post(row: dict) -> dict:
             except Exception:
                 val = []
         return val if isinstance(val, list) else []
+
+    def _jlist_obj(val):
+        if isinstance(val, str):
+            try:
+                val = json.loads(val)
+            except Exception:
+                val = None
+        return val if isinstance(val, dict) else None
     mentions = _jlist(row.get("mentions"))
     hashtags = _jlist(row.get("hashtags"))
 
@@ -788,6 +829,8 @@ def _format_post(row: dict) -> dict:
         "mentions": mentions,
         "hashtags": hashtags,
         "best_answer_id": str(row["best_answer_id"]) if row.get("best_answer_id") else None,
+        "repost_of": str(row["repost_of"]) if row.get("repost_of") else None,
+        "repost": _jlist_obj(row.get("repost_snapshot")),
         "post_type": row.get("post_type", "share"),
         "post_type_label": POST_TYPE_LABELS.get(row.get("post_type", "share"), "Chia sẻ"),
         "rating": row.get("rating"),
