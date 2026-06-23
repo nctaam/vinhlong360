@@ -286,6 +286,40 @@ def test_search_users_by_name_accent_insensitive(pg_user):
 
 
 @pg_only
+def test_following_feed_shows_followed_user_posts(pg_user, pg_entity):
+    """/api/feed/following chỉ hiện bài của người mình theo dõi."""
+    ph = db._ph
+    author = db.create_user("09" + uuid.uuid4().hex[:8])
+    posts_created = []
+    try:
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                INSERT INTO posts (user_id, entity_id, content, images, post_type, moderation_status)
+                VALUES ({ph}::uuid, {ph}, {ph}, {ph}::jsonb, {ph}, 'approved')
+                RETURNING id
+            """, (str(author["id"]), pg_entity, "Bài của người được theo dõi.", json.dumps([]), "share"))
+            apid = str(row["id"])
+        posts_created.append(apid)
+        client = _client_as(pg_user)
+        # chưa follow → không thấy
+        before = client.get("/api/feed/following")
+        assert before.status_code == 200, before.text
+        assert apid not in [p["id"] for p in before.json()["posts"]]
+        # follow → thấy
+        with db._conn() as conn:
+            db._execute(conn, f"INSERT INTO follows (follower_id, target_type, target_id) VALUES ({ph}::uuid, 'user', {ph})",
+                        (str(pg_user["id"]), str(author["id"])))
+        after = client.get("/api/feed/following")
+        assert apid in [p["id"] for p in after.json()["posts"]]
+    finally:
+        with db._conn() as conn:
+            for pid in posts_created:
+                db._execute(conn, f"DELETE FROM posts WHERE id::text = {ph}", (pid,))
+            db._execute(conn, f"DELETE FROM follows WHERE follower_id = {ph}::uuid", (str(pg_user["id"]),))
+            db._execute(conn, f"DELETE FROM users WHERE id::text = {ph}", (str(author["id"]),))
+
+
+@pg_only
 def test_delete_post_forbidden_for_other_user(pg_user, pg_entity):
     """User B cannot delete User A's post → 403."""
     # User A creates a post directly in DB.

@@ -416,6 +416,57 @@ async def get_feed(
     }
 
 
+@router.get("/feed/following")
+async def get_following_feed(
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=50),
+    user=Depends(require_user),
+):
+    """Feed các bài từ NGƯỜI + ĐỊA ĐIỂM mình theo dõi (mới nhất trước)."""
+    ph = db._ph
+    offset = (page - 1) * limit
+    uid = str(user["id"])
+    # điều kiện: tác giả là người mình follow HOẶC bài gắn địa-điểm mình follow
+    follow_cond = f"""
+        (p.user_id IN (SELECT target_id::uuid FROM follows
+                         WHERE follower_id = {ph}::uuid AND target_type='user')
+         OR p.entity_id IN (SELECT target_id FROM follows
+                              WHERE follower_id = {ph}::uuid AND target_type='entity'))
+    """
+    with db._conn() as conn:
+        rows = db._fetchall(conn, f"""
+            SELECT p.*, u.display_name, u.avatar_url, u.phone,
+                   e.name as entity_name, e.type as entity_type
+            FROM posts p
+            JOIN users u ON u.id = p.user_id
+            LEFT JOIN entities e ON e.id = p.entity_id
+            WHERE p.moderation_status = 'approved' AND {follow_cond}
+            ORDER BY p.created_at DESC
+            LIMIT {ph} OFFSET {ph}
+        """, (uid, uid, limit, offset))
+
+        total = db._fetchone(conn, f"""
+            SELECT COUNT(*) as c FROM posts p
+            WHERE p.moderation_status = 'approved' AND {follow_cond}
+        """, (uid, uid))
+
+    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+    post_ids = [p["id"] for p in posts]
+    if post_ids:
+        with db._conn() as conn:
+            liked = db._fetchall(conn, f"""
+                SELECT post_id::text as pid FROM likes
+                WHERE user_id = {ph}::uuid AND post_id::text = ANY({ph}::text[])
+            """, (uid, post_ids))
+            liked_set = {r["pid"] for r in liked}
+            for p in posts:
+                p["is_liked"] = p["user_liked"] = p["id"] in liked_set
+
+    total_c = total["c"] if total else 0
+    return {"posts": posts, "page": page, "total": total_c,
+            "has_more": offset + limit < total_c}
+
+
 @router.get("/search/posts")
 async def search_posts(
     q: str = Query(..., min_length=2, max_length=100),
