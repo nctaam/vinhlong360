@@ -76,6 +76,12 @@ if [ "$DO_BACKEND" = 1 ]; then
   tar -czf "$TMP/vl-deploy.tar.gz" agent/*.py requirements.txt web/data.json $DATAJS
 fi
 if [ "$DO_FRONTEND" = 1 ]; then
+  # Fail-fast: build dở/ngắt (vd Bash timeout 120s) để .output/server RỖNG → ship sẽ làm
+  # vl-nuxt 502 (npm install walk-up chạy `nuxt prepare`). Chặn ship .output hỏng.
+  if [ ! -f web-nuxt/.output/server/index.mjs ] || [ ! -f web-nuxt/.output/server/package.json ]; then
+    echo "❌ .output/server thiếu index.mjs/package.json (build dở?) — abort, KHÔNG ship .output hỏng"
+    exit 1
+  fi
   echo "==> packing nuxt .output"
   tar -czf "$TMP/vl-nuxt-output.tar.gz" -C web-nuxt .output
 fi
