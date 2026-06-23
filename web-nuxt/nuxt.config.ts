@@ -119,6 +119,9 @@ export default defineNuxtConfig({
     '/api/entities': { proxy: `${apiBase}/api/entities`, swr: 120 },
     '/api/entities/**': { proxy: `${apiBase}/api/entities/**`, swr: 300 },
     '/api/itineraries': { proxy: `${apiBase}/api/itineraries`, swr: 300 },
+    // SSR trang chủ: cần rule swr-proxy TƯỜNG MINH (catch-all /api/** proxy-thường
+    // KHÔNG resolve được cho internal $fetch lúc SSR → trang chủ rỗng + fallback).
+    '/api/homepage': { proxy: `${apiBase}/api/homepage`, swr: 120 },
     '/api/**': { proxy: `${apiBase}/api/**` },
     '/auth/**': { proxy: `${apiBase}/auth/**` },
     '/chat/**': { proxy: `${apiBase}/chat/**` },
