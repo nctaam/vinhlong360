@@ -57,20 +57,41 @@ def _safe(fn, default):
 
 # ── Auth dependency ──
 
+_AUDIT_FILE = Path(__file__).resolve().parent / "data" / "admin_audit.jsonl"
+
+
+def _log_admin_audit(actor: str, method: str, path: str, ip: str) -> None:
+    """P2-7: ghi nhật ký thao tác admin (ai/làm-gì/khi-nào) — JSONL nhẹ, không chặn request."""
+    try:
+        _AUDIT_FILE.parent.mkdir(parents=True, exist_ok=True)
+        rec = {"ts": datetime.now().isoformat(timespec="seconds"), "actor": actor,
+               "method": method, "path": path, "ip": ip}
+        with open(_AUDIT_FILE, "a", encoding="utf-8") as f:
+            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+    except Exception:
+        pass  # audit không bao giờ chặn thao tác
+
+
 async def require_admin(request: Request):
-    """FastAPI dependency: verify admin auth + rate limit."""
+    """FastAPI dependency: verify admin auth + rate limit (+ audit log mọi mutation)."""
     # Rate limit
     client_ip = get_client_ip(request)
     allowed, rate_info = admin_limiter.is_allowed(client_ip)
     if not allowed:
         raise HTTPException(429, detail="Rate limit exceeded", headers={"Retry-After": str(rate_info["retry_after"])})
     # Auth: allow server-side admin key or a logged-in admin user from the frontend.
+    actor = None
     if verify_admin_key(request):
-        return
-    user = await get_current_user(request)
-    if user and user.get("role") == "admin":
-        return
-    raise HTTPException(401, detail="Invalid admin credentials. Use X-Admin-Key or an admin session.")
+        actor = "admin-key"
+    else:
+        user = await get_current_user(request)
+        if user and user.get("role") == "admin":
+            actor = f"user:{user.get('id')}"
+    if not actor:
+        raise HTTPException(401, detail="Invalid admin credentials. Use X-Admin-Key or an admin session.")
+    # P2-7: audit các thao tác THAY ĐỔI (đọc/GET không log để tránh nhiễu)
+    if request.method in ("POST", "PUT", "DELETE", "PATCH"):
+        _log_admin_audit(actor, request.method, request.url.path, client_ip)
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -1035,6 +1056,25 @@ async def get_info_reports(limit: int = Query(100, ge=1, le=500)):
     items.reverse()  # mới nhất trước
     open_count = sum(1 for r in items if r.get("status", "open") == "open")
     return {"reports": items[:limit], "total": len(items), "open": open_count}
+
+
+@router.get("/audit-log")
+async def get_audit_log(limit: int = Query(200, ge=1, le=1000)):
+    """P2-7: nhật ký thao tác admin (mutation), mới nhất trước."""
+    if not _AUDIT_FILE.exists():
+        return {"entries": [], "total": 0}
+    items = []
+    with open(_AUDIT_FILE, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                items.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue
+    items.reverse()
+    return {"entries": items[:limit], "total": len(items)}
 
 
 class ReportActionRequest(BaseModel):
