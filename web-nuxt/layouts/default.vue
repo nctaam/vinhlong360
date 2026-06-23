@@ -59,6 +59,7 @@
     </main>
 
     <AuthModal :visible="showAuth" @close="showAuth = false" />
+    <ConfirmDialog />
     <ClientOnly>
       <ScrollToTop />
     </ClientOnly>

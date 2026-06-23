@@ -197,6 +197,7 @@ interface SavedPlan {
 }
 
 const { favorites: favList, count: favCount } = useFavorites()
+const { confirmDialog } = useConfirm()
 
 const TYPES = CARD_TYPES as readonly string[]
 const typeChips = TYPES.map(t => ({
@@ -312,8 +313,8 @@ function moveStop(idx: number, dir: number) {
   stops.value[target] = temp
 }
 
-function clearPlan() {
-  if (stops.value.length && !confirm('Xóa toàn bộ điểm trong lịch trình đang tạo?')) return
+async function clearPlan() {
+  if (stops.value.length && !await confirmDialog('Xóa toàn bộ điểm trong lịch trình đang tạo?', { danger: true, confirmText: 'Xóa' })) return
   stops.value = []
   planTitle.value = ''
   routeResult.value = null
@@ -341,9 +342,9 @@ function loadPlan(idx: number) {
   stops.value = JSON.parse(JSON.stringify(plan.stops))
 }
 
-function deletePlan(idx: number) {
+async function deletePlan(idx: number) {
   const plan = savedPlans.value[idx]
-  if (!confirm(`Xóa lịch trình "${plan?.title || 'chưa đặt tên'}"?`)) return
+  if (!await confirmDialog(`Xóa lịch trình "${plan?.title || 'chưa đặt tên'}"?`, { danger: true, confirmText: 'Xóa' })) return
   savedPlans.value.splice(idx, 1)
   localStorage.setItem('vl360_plans', JSON.stringify(savedPlans.value))
   showToast('Đã xóa lịch trình', 'success')

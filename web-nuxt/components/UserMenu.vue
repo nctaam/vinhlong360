@@ -19,6 +19,8 @@
 
 <script setup lang="ts">
 const { user, logout, authHeaders } = useAuth()
+const { confirmDialog } = useConfirm()
+const { show: showToast } = useToast()
 const open = ref(false)
 const triggerRef = ref<HTMLButtonElement>()
 const menuRef = ref<HTMLElement>()
@@ -41,13 +43,13 @@ function onMenuKeydown(e: KeyboardEvent) {
 async function doDeleteAccount() {
   // GĐ5.5: quyền xoá tài khoản & dữ liệu (PDPL).
   open.value = false
-  if (!window.confirm('Xoá vĩnh viễn tài khoản và toàn bộ dữ liệu của bạn? Hành động này không thể hoàn tác.')) return
+  if (!await confirmDialog('Xoá vĩnh viễn tài khoản và toàn bộ dữ liệu của bạn? Hành động này không thể hoàn tác.', { danger: true, confirmText: 'Xoá tài khoản', title: 'Xoá tài khoản' })) return
   try {
     await $fetch('/auth/account', { method: 'DELETE', headers: authHeaders() })
     await logout()
     await navigateTo('/')
   } catch (e) {
-    window.alert('Không thể xoá tài khoản lúc này. Vui lòng thử lại hoặc liên hệ.')
+    showToast('Không thể xoá tài khoản lúc này. Vui lòng thử lại hoặc liên hệ.', 'error')
   }
 }
 

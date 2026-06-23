@@ -10,9 +10,30 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+// P1-8: opt-in BreadcrumbList JSON-LD tập trung (bật :json-ld trên trang chưa tự-chế schema,
+// vd su-kien/luu-tru) — tránh trùng với trang đã hand-roll.
+const props = defineProps<{
   items: Array<{ label: string; to?: string }>
+  jsonLd?: boolean
 }>()
+
+if (props.jsonLd) {
+  useHead(() => ({
+    script: [{
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: props.items.map((it, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: it.label,
+          ...(it.to ? { item: canonicalUrl(it.to) } : {}),
+        })),
+      }),
+    }],
+  }))
+}
 </script>
 
 <style scoped>

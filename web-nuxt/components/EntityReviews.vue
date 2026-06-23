@@ -135,6 +135,7 @@ const props = defineProps<{
 }>()
 
 const { user, authHeaders } = useAuth()
+const { confirmDialog } = useConfirm()
 
 const reviews = ref<Entity[]>([])
 const rating = ref({ avg: 0, count: 0 })
@@ -205,7 +206,7 @@ function removeImage(i: number) {
 
 async function deleteReview(r: Entity) {
   if (!isOwner(r)) return
-  if (!confirm('Xóa đánh giá này?')) return
+  if (!await confirmDialog('Xóa đánh giá này?', { danger: true, confirmText: 'Xóa' })) return
   deletingId.value = r.id
   deleteError.value = ''
   deleteErrorId.value = ''

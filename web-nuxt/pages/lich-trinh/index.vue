@@ -148,14 +148,15 @@ import { TYPE_META, AREA_META } from '~/composables/useConstants'
 useReveal()
 
 const { favorites, byType, count, clear } = useFavorites()
+const { confirmDialog } = useConfirm()
 const recentSaved = computed(() => favorites.value.slice(0, 8))
 
 function getTypeMeta(type: string) {
   return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }
 }
 
-function clearAll() {
-  if (confirm('Xóa tất cả mục đã lưu?')) clear()
+async function clearAll() {
+  if (await confirmDialog('Xóa tất cả mục đã lưu?', { danger: true, confirmText: 'Xóa' })) clear()
 }
 
 const areaFilter = ref('all')

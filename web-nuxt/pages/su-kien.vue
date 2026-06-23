@@ -1,6 +1,6 @@
 <template>
   <div class="page events-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sự kiện' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sự kiện' }]" :json-ld="true" />
 
     <!-- Hero -->
     <section class="catalog-hero cat-event">
