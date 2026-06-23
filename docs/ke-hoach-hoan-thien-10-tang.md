@@ -186,6 +186,103 @@ GĐ8 (ảnh) chạy song song bởi người duyệt từng bước (không tự
 
 ---
 
+---
+
+# PHẦN II — ĐÀO SÂU (Wave 2: verify + định lượng + line-level)
+
+> 6 agent đào sâu: adversarial-verify P0, map data-contract FE↔BE, định lượng KB, exhaustive 10-tầng top-5 trang, CWV/bundle, pipeline chat. Mọi verdict đọc code thật.
+
+## II.0 Verdict các P0 Phần I (adversarial verify)
+
+| P0 cũ | Verdict | Ghi chú |
+|---|---|---|
+| P0-1 claim flow | ✅ CONFIRMED | footer dùng `?ref=claim` đúng → chỉ CTA chi tiết vỡ |
+| P0-2 `/dang-nhap`+`/cai-dat` 404 | ✅ CONFIRMED | High — link sống trên trang đã ship |
+| P0-3 tel regex | ✅ CONFIRMED | `/\\./g` khớp backslash |
+| P0-4 role param 422 | ✅ CONFIRMED | đổi role luôn fail |
+| P0-5 theme CSS-injection | 🟡 NUANCED → P1 | admin-gated, defacement (không script-exec); radius/font_scale ĐÃ validate, chỉ 3 màu chưa |
+| P0-6 session token plaintext | ✅ CONFIRMED | High |
+| P0-7 comment bỏ kiểm duyệt | ✅ CONFIRMED | + moderation cũng "approve" khi thiếu API key → lỗ kép |
+| P0-8 phone PII | ✅ CONFIRMED (post) | `_format_comment` KHÔNG lộ — claim hơi quá ở comment |
+| P0-9 ai.vue confirm/path | 🟡 PARTIAL → P2 | **path ĐÚNG** (nuxt proxy map chuẩn); chỉ thiếu confirm (low-risk) |
+| P0-10 guard nội-dung | 🟡 MIXED → P1 | ảnh shape/count + assign_place ĐÃ validate; gap thật = itinerary stop FK + source free-form |
+
+## II.1 P0 MỚI (Wave 2 phát hiện — đều verified)
+
+| ID | Tầng | Vị trí | Vấn đề |
+|---|---|---|---|
+| **P0-11** | T1/T2 | `nguoi-dung/[id].vue:162-176` ↔ `social.py:520` | **Profile user VỠ HOÀN TOÀN**: FE đọc flat `profile.display_name/phone/post_count/avatar`, BE nest `{user:{display_name,avatar_url,bio,stats:{posts,reviews}}}` → mọi field undefined, profile trống |
+| **P0-12** | T7 | `server.py:3058` | **Tạo dynamic-agent KHÔNG auth** → ai cũng inject system_prompt + tool_whitelist vào pool agent chat (prompt-injection / đốt LLM budget) |
+| **P0-13** | T7 | `admin.py:664` | **SSRF**: `approve_image_suggestion` `httpx.get(url, follow_redirects=True)` không allowlist host → fetch `169.254.169.254`/nội bộ (admin-gated nhưng là SSRF primitive thật) |
+| **P0-14** | T1/T7 | `notifications.py:41` ↔ `init.sql:233`; `admin.py:978` ↔ `init.sql:236` | **2 lỗi DB CHECK→500**: report `target_type='entity'` không có trong CHECK; `resolve_report` set `status='resolved'` không có trong CHECK |
+| **P0-15** | T7 | `auth.py:319` | **`/auth/login` KHÔNG rate-limit** → brute-force mật khẩu (OTP thì có limit) |
+| **P0-16** | T7 | `dia-diem/[id].vue:257` | `entity.attributes.website` → `href` **không allowlist scheme** → `javascript:` URI XSS |
+| **P0-17** | T7 | `xa-phuong:259`, `tao-lich-trinh:429`, map detail | **HTML injection map popup**: tên entity/place/stop nhét raw vào `setHTML` (lặp 3 chỗ → 1 helper `escapeHtml` sửa hết) |
+| **P0-18** | T1 | `cong-dong.vue:434` | Tab bookmark đọc `res.posts` nhưng BE trả `{bookmarks}` → **bookmark luôn rỗng** |
+| **P0-19** | T1/T2 | `tao-lich-trinh.vue:247` | `FavoriteItem` không có `coordinates` → stop từ mục đã-lưu **không route/map được** |
+| **P0-20** | T1 | `server.py` (public_api ↔ notifications) | **`/api/report` route đụng nhau** (public_api thắng, notifications.py thành dead) — reorder router = đổi hành vi âm thầm |
+
+**Refuted (KHÔNG sửa):** UGC IDOR (ownership-check đủ ở delete/saved/notif), produced_in→craft_village (resolve transitively), 29-ward-rỗng (thực chất **5** + 38 business mis-type `place` là defect KHÁC).
+
+## II.2 Data-contract FE↔BE (mismatch)
+
+- **P0-11** profile (trên). **P0-20** report collision (trên).
+- **P1:** comment đọc `c.display_name`/`c.phone` nhưng BE chỉ trả `author.display_name` (`social.py:646`) → tên comment trống. `/api/me/bookmarks` key (P0-18).
+- **Error envelope 4 kiểu** (`{detail}` / `{error}` JSONResponse / `{error}` HTTP-200 ở `seo.py:461,527` / in-band `error` field FE khai mà BE không trả) — FE chỉ parse `detail` → 404 `{error:"not_found"}` mất message. **→ chuẩn hoá 1 envelope `{detail}` + HTTPException.**
+- **Pagination 4 kiểu** (`{posts,page,total,has_more}` / `{total,entities}` / `{total,limit,offset}` / `{posts}` trống) → `users/{id}/posts` + `bookmarks` không có tín hiệu hết-trang. **→ chuẩn `{items,total,page,limit,has_more}`.**
+- **P2:** `/api/search` `results` orphan (FE dùng `/api/entities?q=`), facility `source` shape (list/str/dict) FE giả định dict, SEO event-date key drift (`startDate` vs `date_start`).
+
+## II.3 KB data-graph (định lượng — số thật từ data.json)
+
+**Sạch (0 defect):** self-loop 0, dangling 0, near>50km 0, bbox-violation 0, itinerary-stop refs 0 (11 free-text §1.4), produced_in transitively-located.
+**Số liệu:** 1779 entity / 9303 rel / 33 itinerary. Coords 1625/1779 (91%); **643 coords_approximate**, 154 coordless. Summary: 5 rỗng, 336 <120c, 1275 chuẩn, 163 >400c. Source: **868 có URL thật, 911 chỉ placeholder**.
+
+**Fixable in-repo (KHÔNG cần dịch vụ trả phí):**
+| Việc | Số | Tầng |
+|---|---|---|
+| Gộp dup coord-matched (9 nhóm chắc + ~26 review) | 9–52 | T2 |
+| Re-type business gắn nhầm `type=place` (Agribank/bến xe/chợ/nhà hàng…) | 38 | T2 |
+| Tách bớt catch-all `p-long-chau` (re-assign ward suy từ address/coords có sẵn) | 247 | T2 |
+| Viết content 5 ward rỗng (an-ngai-trung, hieu-phung, my-thuan, quoi-an, song-phu) + 5 summary rỗng | 10 | T2 |
+| Bỏ field `description` chết (rỗng ×1779) hoặc tái dụng | 1779 | T1 |
+
+**Track-H (cần nguồn ngoài — KHÔNG đoán §1.4):** coords thật cho 154 coordless + hạ-cấp 643 approximate (cần geocode), ward thật cho phần dư p-long-chau địa-chỉ-mơ-hồ, citation cho 911 placeholder-source (research).
+
+## II.4 CWV / Performance (backlog có số)
+
+**P0:** (1) **Cache `/homepage`** — mỗi request scan toàn bảng entity + score + 6×COUNT (`public_api.py:367,485`), TTFB nặng trên VPS 1CPU → cache TTL 60-300s theo tháng. (2) **Prerender ~1700 trang chi tiết** — hiện SWR-only + `crawlLinks:false` (`nuxt.config.ts:98,167`) → cold-SSR mỗi cửa-sổ revalidate; feed route-list từ data.json hoặc warm-crawl sau deploy. (3) **Hero + cover → WebP/NuxtImg** — hero.jpg **217KB raw** (CSS bg, bypass weserv), cover detail raw `<img>` (`[id].vue:18`) → ↓55-65% payload LCP.
+**P1:** tách `catalog.css` (40KB) khỏi global; reserve height ClientOnly islands + beta-banner (CLS); **gỡ `@nuxt/fonts`** (0 `@font-face` emit, Inter nằm sau system-font → module chết); set `--max-old-space-size` vào `package.json` (hiện chỉ ở `deploy.sh:69`).
+**P2:** prune `base.css` 72.7KB (test-first §B3); WebP cho `/img/cat/*.jpg`.
+**Tốt rồi (giữ):** maplibre lazy-split (1.05MB chỉ load trang map), detail.css/events.css per-route, EntityCard NuxtImg, hero min-height (CLS guard), maplibre `optimizeDeps.exclude`.
+
+## II.5 Chat/AI pipeline (T8 + T10)
+
+**Resilience gaps:** (1) **stream path** không circuit-breaker/retry/KB-fallback (kém hơn `/chat`). (2) `weather`/`web_search` không breaker (breaker **định nghĩa nhưng chết** `circuit_breaker.py:399,407`); `weather` còn không timeout. (3) **guardrail fail-OPEN** (`except: pass` → input không kiểm, `server.py:1522,1896`). (4) tool args `args["x"]` → KeyError nếu LLM thiếu field (8 chỗ). (5) **`blocked_reason` lộ ra user** (chuỗi chẩn-đoán injection). (6) cost = ước-lượng, không đọc `usage` thật.
+**Correctness P0:** **`_is_error_reply` false-positive** (`server.py:1627`) — reply hợp lệ chứa "lỗi"/"sự cố" trong 60 ký tự đầu → **bị KB-fallback ghi đè** = trả "Hệ thống AI đang bảo trì" cho câu trả lời đúng.
+**Test matrix cần (lõi sản phẩm, chỉ smoke-test):** TC-02 (14 nhánh `call_tool`: search/entity_detail/seasonal/itinerary/compare/nearby/web_search-timeout/weather/followups/ocop/accommodation/community/unknown/malformed-args) + TC-10 (13 path orchestrator: specialist-fail→general, round-exhaustion synthesis, safe_llm_call fail, cap, empty-search hint, **_is_error_reply false-positive**, KB-fallback hit/abstain, guardrail-block-safe, fail-open, stream-error, circuit-open). Chi tiết trong báo cáo agent.
+
+## II.6 Checklist exhaustive per-page (top-5) — tóm tắt P0
+
+- **index.vue:** JSON-LD `addressRegion` dùng slug thay tên (`:374`); stats-bar render khi rỗng (`:47`); recentSaved `<img>` thiếu `@error`. Type `homeData` (`Record<unknown>`).
+- **dia-diem/[id].vue:** website href no-allowlist (P0-16); **SEO/meta + 404 KHÔNG cập nhật khi đổi param client** (`:672,:383` non-reactive); lightbox thiếu focus-trap; dead `qualityMissingLabels`.
+- **xa-phuong/[id].vue:** tel regex (P0-3); `hasStats` ẩn cả "số địa điểm" khi thiếu area/population (`:168`); map popup injection (P0-17).
+- **cong-dong.vue:** bookmark key (P0-18); chip↔textarea dual-bind `reportReason`; ảnh base64 ~tới 67MB POST (no downscale); `onScroll` no throttle.
+- **tao-lich-trinh.vue:** favorites coords undefined (P0-19); map `'load'` race (`:406`); popup injection (P0-17); nested `<button>` trong `role=button`; `:key` chứa idx → remount input khi reorder.
+**Xuyên suốt:** thiếu **analytics trên mọi conversion** (tap phone/Zalo/map/directory, save/share plan, post/report) — gap T10 lớn nhất của site showcase. Typing drift (tsconfig loose). Meta non-reactive ở detail (chuẩn hoá form `() =>`).
+
+## II.7 Master priority cập nhật (sau verify)
+
+**P0 (20 mục):** P0-1..4, 6, 7, 8, 11..20 (đã loại/giảm 5→P1, 9→P2, 10→P1 split). Thêm perf-P0 (homepage cache, prerender detail, hero/cover WebP) + chat-P0 (`_is_error_reply`).
+**Lộ trình cập nhật (chèn vào §4):**
+- **Đợt A (P0 FE bug):** +P0-11 profile, P0-18 bookmark, P0-19 builder-coords, P0-16 website-href, P0-17 map-escape (helper dùng chung).
+- **Đợt B (P0 bảo mật BE):** +P0-12 dynamic-agent auth, P0-13 SSRF allowlist, P0-14 DB CHECK (2), P0-15 login rate-limit (cùng session token + comment mod + phone PII).
+- **Đợt B2 (data-contract):** P0-20 report collision, comment author field, chuẩn error-envelope + pagination.
+- **Đợt D (resilience):** + chat: stream breaker/retry, wire weather/web_search breaker + timeout, guardrail fail-CLOSED + ẩn blocked_reason, `_is_error_reply` siết, tool-arg `.get` guard; +TC-02/TC-10 test.
+- **Đợt E2 (perf):** homepage cache, prerender detail pages, hero/cover WebP, tách catalog.css, gỡ @nuxt/fonts.
+- **Đợt C2 (data-graph in-repo):** gộp 9 dup, re-type 38 business, tách p-long-chau, 5 ward + 5 summary rỗng.
+
+---
+
 ## 7. Liên kết
 `docs/ROADMAP.md` (thứ tự vĩ mô + Track-H) · `docs/audit-findings-20260622.md` (110 finding gốc) ·
 `docs/architecture-decisions.md` · `docs/stabilization-plan.md` · `docs/design-system-plan.md`.
