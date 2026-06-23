@@ -376,6 +376,12 @@ const upcomingEvents = computed(() => sortByRegion(homeData.value?.upcoming_even
 const seasonalTagline = computed(() => homeData.value?.seasonal_tagline || 'Khám phá Vĩnh Long theo cách của người bản địa')
 const hasHomeContent = computed(() => !!(upcomingEvents.value.length || seasonal.value.length || itineraries.value.length || topExperiences.value.length || products.value.length))
 
+// Tự phục hồi: nếu SSR fetch lỗi/rỗng (vd backend hiccup hoặc HTML cache cũ lúc deploy),
+// client tự refetch 1 lần — khách không phải bấm "Tải lại". Chỉ chạy khi thực sự thiếu nội dung.
+onMounted(() => {
+  if (homeError.value || !hasHomeContent.value) refreshHome()
+})
+
 const areaKeys = computed(() => orderedAreaKeys(Object.keys(AREA_META)))
 const REGION_IMG: Record<string, string> = { 'vinh-long': 'attraction', 'ben-tre': 'nature', 'tra-vinh': 'history' }
 
