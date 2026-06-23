@@ -49,10 +49,10 @@
             <strong>{{ profile.review_count || 0 }}</strong>
             <span>đánh giá</span>
           </div>
-          <div class="stat-item">
+          <button type="button" class="stat-item stat-clickable" @click="openFollowModal('followers')">
             <strong>{{ followerCount }}</strong>
             <span>theo dõi</span>
-          </div>
+          </button>
           <div class="stat-item">
             <time v-if="profile.created_at" :datetime="profile.created_at"><strong>{{ joinDate }}</strong></time>
             <strong v-else>{{ joinDate }}</strong>
@@ -110,6 +110,7 @@
               @report="reportPost"
               @repost="repost"
               @quote="quote"
+              @edit="(id) => navigateTo(`/bai-viet/${id}?edit=1`)"
             />
           </TransitionGroup>
           <Transition name="fade">
@@ -135,6 +136,35 @@
       <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData(`user-${userId}`)">Thử lại</button>
     </EmptyState>
     <EmptyState v-else message="Không tìm thấy người dùng." />
+
+    <!-- Modal danh sách theo dõi -->
+    <Teleport to="body">
+      <div v-if="followModalOpen" class="fm-overlay" @click.self="followModalOpen = false">
+        <div class="fm-dialog" role="dialog" aria-modal="true" aria-label="Danh sách theo dõi">
+          <header class="fm-head">
+            <div class="fm-tabs">
+              <button type="button" :class="['fm-tab', { active: followModalTab === 'followers' }]" @click="followModalTab = 'followers'">Người theo dõi</button>
+              <button type="button" :class="['fm-tab', { active: followModalTab === 'following' }]" @click="followModalTab = 'following'">Đang theo dõi</button>
+            </div>
+            <button type="button" class="fm-close" aria-label="Đóng" @click="followModalOpen = false">&times;</button>
+          </header>
+          <div class="fm-body">
+            <div v-if="followLoadingList" class="fm-loading"><div class="spinner spinner-sm"></div></div>
+            <template v-else>
+              <ul v-if="followModalList.length" class="fm-list">
+                <li v-for="u in followModalList" :key="u.id">
+                  <NuxtLink :to="`/nguoi-dung/${u.id}`" class="fm-user" @click="followModalOpen = false">
+                    <span class="avatar fm-avatar">{{ (u.display_name || '?').charAt(0).toUpperCase() }}</span>
+                    <span class="fm-name">{{ u.display_name }}</span>
+                  </NuxtLink>
+                </li>
+              </ul>
+              <p v-else class="fm-empty">{{ followModalTab === 'followers' ? 'Chưa có người theo dõi.' : 'Chưa theo dõi ai.' }}</p>
+            </template>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </section>
 </template>
 
@@ -253,6 +283,28 @@ async function fetchFollowerCount() {
   } catch { /* non-critical */ }
 }
 
+// ── Modal danh sách follower/following ──
+const followModalOpen = ref(false)
+const followModalTab = ref<'followers' | 'following'>('followers')
+const followLists = ref<{ followers: any[] | null; following: any[] | null }>({ followers: null, following: null })
+const followLoadingList = ref(false)
+const followModalList = computed(() => followLists.value[followModalTab.value] || [])
+async function loadFollowList(which: 'followers' | 'following') {
+  if (followLists.value[which]) return  // đã tải (cache)
+  followLoadingList.value = true
+  try {
+    const res = await $fetch<any>(`/api/users/${userId}/${which}`)
+    followLists.value[which] = res.users || []
+  } catch { followLists.value[which] = [] }
+  followLoadingList.value = false
+}
+function openFollowModal(tab: 'followers' | 'following') {
+  followModalTab.value = tab
+  followModalOpen.value = true
+  loadFollowList(tab)
+}
+watch(followModalTab, (t) => loadFollowList(t))
+
 async function checkFollowing() {
   if (!isLoggedIn.value) return
   try {
@@ -326,6 +378,24 @@ if (profile.value) {
 .stat-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .stat-item strong { font-size: var(--text-lg); font-weight: var(--weight-bold); user-select: all; }
 .stat-item span { font-size: var(--text-xs); color: var(--muted); }
+.stat-clickable { cursor: pointer; font: inherit; }
+
+/* Modal follower/following */
+.fm-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; padding: var(--space-4); }
+.fm-dialog { background: var(--card); border-radius: var(--radius-lg); width: 100%; max-width: 420px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); overflow: hidden; }
+.fm-head { display: flex; align-items: center; justify-content: space-between; border-bottom: .5px solid var(--line); padding-right: var(--space-2); }
+.fm-tabs { display: flex; }
+.fm-tab { flex: 1; padding: var(--space-3) var(--space-4); border: none; background: none; cursor: pointer; font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--muted); border-bottom: 2px solid transparent; }
+.fm-tab.active { color: var(--ink); border-bottom-color: var(--primary); }
+.fm-close { border: none; background: none; font-size: 1.5rem; line-height: 1; cursor: pointer; color: var(--muted); padding: var(--space-2); }
+.fm-body { overflow-y: auto; padding: var(--space-2); }
+.fm-loading { display: flex; justify-content: center; padding: var(--space-5); }
+.fm-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
+.fm-user { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); text-decoration: none; color: var(--ink); }
+.fm-user:hover { background: var(--bg-alt); }
+.fm-avatar { width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--primary-fg, #fff); font-weight: var(--weight-semibold); flex-shrink: 0; }
+.fm-name { font-size: var(--text-sm); font-weight: var(--weight-medium); }
+.fm-empty { text-align: center; color: var(--muted); padding: var(--space-5); font-size: var(--text-sm); }
 
 .profile-tabs { display: flex; gap: var(--space-2); margin: var(--space-5) 0 var(--space-4); border-bottom: .5px solid var(--line); padding-bottom: var(--space-3); }
 .profile-tabs .chip { min-height: 44px; transition: transform .35s var(--ease-spring-gentle), background .3s var(--ease-out), color .3s var(--ease-out), border-color .3s var(--ease-out); }

@@ -198,6 +198,7 @@
             @report="reportPost"
             @repost="repostPost"
             @quote="startQuote"
+            @edit="(id) => navigateTo(`/bai-viet/${id}?edit=1`)"
           />
         </TransitionGroup>
 
@@ -265,6 +266,36 @@
               <span class="stat-label">đánh giá</span>
             </div>
           </div>
+        </div>
+
+        <div v-if="topMembers.length" class="sidebar-card">
+          <h3>Thành viên tích cực</h3>
+          <ol class="leaderboard-list">
+            <li v-for="(m, i) in topMembers" :key="m.id">
+              <NuxtLink :to="`/nguoi-dung/${m.id}`" class="lb-row">
+                <span class="lb-rank" :class="`lb-rank-${i + 1}`">{{ i + 1 }}</span>
+                <span class="avatar lb-avatar">{{ (m.display_name || '?').charAt(0).toUpperCase() }}</span>
+                <span class="lb-name">{{ m.display_name }}</span>
+                <span class="lb-points">{{ m.points }}đ</span>
+              </NuxtLink>
+            </li>
+          </ol>
+          <NuxtLink to="/bang-xep-hang" class="sidebar-more">Xem bảng xếp hạng →</NuxtLink>
+        </div>
+
+        <div v-if="isLoggedIn && suggestedUsers.length" class="sidebar-card">
+          <h3>Có thể bạn quan tâm</h3>
+          <ul class="suggest-list">
+            <li v-for="s in suggestedUsers" :key="s.id" class="suggest-row">
+              <NuxtLink :to="`/nguoi-dung/${s.id}`" class="suggest-user">
+                <span class="avatar suggest-avatar">{{ (s.display_name || '?').charAt(0).toUpperCase() }}</span>
+                <span class="suggest-name">{{ s.display_name }}</span>
+              </NuxtLink>
+              <button type="button" class="btn btn-outline btn-sm suggest-follow" :disabled="s._following" @click="followSuggested(s)">
+                {{ s._following ? 'Đã theo dõi' : 'Theo dõi' }}
+              </button>
+            </li>
+          </ul>
         </div>
 
         <div v-if="trendingTags.length" class="sidebar-card">
@@ -423,6 +454,32 @@ async function loadTrendingTags() {
     const res = await $fetch<{ tags: { tag: string; count: number }[] }>('/api/community/trending-tags')
     trendingTags.value = res.tags || []
   } catch { /* ẩn card nếu lỗi */ }
+}
+
+// ── Bảng xếp hạng đóng góp (sidebar top 5) ──
+const topMembers = ref<{ id: string; display_name: string; points: number }[]>([])
+async function loadLeaderboard() {
+  try {
+    const res = await $fetch<{ leaders: any[] }>('/api/community/leaderboard?limit=5')
+    topMembers.value = res.leaders || []
+  } catch { /* ẩn card nếu lỗi */ }
+}
+
+// ── Gợi ý người để theo dõi (logged-in) ──
+const suggestedUsers = ref<any[]>([])
+async function loadSuggested() {
+  if (!isLoggedIn.value) return
+  try {
+    const res = await $fetch<{ users: any[] }>('/api/community/suggested-follows?limit=5', { headers: authHeaders() })
+    suggestedUsers.value = res.users || []
+  } catch { /* ẩn card nếu lỗi */ }
+}
+async function followSuggested(s: any) {
+  s._following = true
+  try {
+    await $fetch(`/api/follow/user/${s.id}`, { method: 'POST', headers: authHeaders() })
+    showToast(`Đã theo dõi ${s.display_name}`, 'success')
+  } catch { s._following = false; showToast('Không thể theo dõi', 'error') }
 }
 
 // ── Display posts (with type filter) ──
@@ -801,6 +858,8 @@ onMounted(() => {
   fetchFeed(true)
   loadCommunityStats()
   loadTrendingTags()
+  loadLeaderboard()
+  loadSuggested()
   // Trích dẫn từ trang khác điều hướng tới: ?quote=<post_id>
   const q = String(route.query.quote || '')
   if (q) {
@@ -855,6 +914,22 @@ useHead({
 .cs-clear { border: none; background: none; color: var(--muted); font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0 .25rem; }
 .cs-clear:hover { color: var(--ink); }
 .cs-go { flex-shrink: 0; }
+.leaderboard-list { list-style: none; padding: 0; margin: 0 0 var(--space-2); display: flex; flex-direction: column; gap: var(--space-1); }
+.lb-row { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-2); border-radius: var(--radius-md); text-decoration: none; color: var(--ink); transition: background .2s var(--ease-out); }
+.lb-row:hover { background: var(--bg-alt); }
+.lb-rank { flex-shrink: 0; width: 18px; text-align: center; font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--muted); }
+.lb-rank-1 { color: #d4a017; } .lb-rank-2 { color: #8a8d91; } .lb-rank-3 { color: #b07b4f; }
+.lb-avatar { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--primary-fg, #fff); font-size: 11px; font-weight: var(--weight-semibold); flex-shrink: 0; }
+.lb-name { flex: 1; min-width: 0; font-size: var(--text-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lb-points { flex-shrink: 0; font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--primary-fg); }
+.sidebar-more { display: inline-block; font-size: var(--text-sm); color: var(--primary-fg); text-decoration: none; }
+.sidebar-more:hover { text-decoration: underline; }
+.suggest-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.suggest-row { display: flex; align-items: center; gap: var(--space-2); }
+.suggest-user { display: flex; align-items: center; gap: var(--space-2); flex: 1; min-width: 0; text-decoration: none; color: var(--ink); }
+.suggest-avatar { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--primary-fg, #fff); font-size: var(--text-xs); font-weight: var(--weight-semibold); flex-shrink: 0; }
+.suggest-name { font-size: var(--text-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.suggest-follow { flex-shrink: 0; padding: .2rem .6rem; }
 .trending-tags { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .trending-tag { display: inline-flex; align-items: center; gap: .35rem; padding: .25rem .6rem; background: var(--bg-alt); border: .5px solid var(--line); border-radius: var(--radius-full); font-size: var(--text-sm); color: var(--primary-fg); text-decoration: none; transition: border-color .25s var(--ease-out), background .25s var(--ease-out); }
 .trending-tag:hover { border-color: var(--primary-fg); background: rgba(var(--primary-rgb), .06); }

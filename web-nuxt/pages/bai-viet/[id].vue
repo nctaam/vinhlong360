@@ -4,7 +4,16 @@
     <h1 class="sr-only">{{ post?.display_name ? `Bài viết của ${post.display_name}` : 'Bài viết' }}</h1>
 
     <div v-if="post" class="thread-detail reveal">
-      <PostCard :post="post" :has-replies="comments.length > 0" @like="toggleLike" @comment="scrollToCompose" @bookmark="toggleBookmark" @report="reportPost" @repost="repost" @quote="quote" />
+      <div v-if="editing" class="post-edit-form">
+        <h2 class="pef-title">Sửa bài viết</h2>
+        <textarea v-model="editContent" class="textarea" maxlength="5000" rows="6" aria-label="Nội dung bài viết"></textarea>
+        <div class="pef-actions">
+          <span class="pef-count">{{ editContent.length }}/5000</span>
+          <button type="button" class="btn btn-ghost btn-sm" @click="cancelEdit">Huỷ</button>
+          <button type="button" class="btn btn-primary btn-sm" :disabled="editSaving || editContent.trim().length < 10" @click="saveEdit">{{ editSaving ? 'Đang lưu…' : 'Lưu' }}</button>
+        </div>
+      </div>
+      <PostCard v-else :post="post" :has-replies="comments.length > 0" @like="toggleLike" @comment="scrollToCompose" @bookmark="toggleBookmark" @report="reportPost" @repost="repost" @quote="quote" @edit="startEdit" />
 
       <!-- Comment thread -->
       <div class="thread-comments">
@@ -197,6 +206,36 @@ function scrollToCompose() {
   })
 }
 
+// ── Sửa bài viết (chủ bài) ──
+const editing = ref(false)
+const editContent = ref('')
+const editSaving = ref(false)
+function startEdit() {
+  if (!post.value) return
+  editContent.value = post.value.content || ''
+  editing.value = true
+}
+function cancelEdit() { editing.value = false }
+async function saveEdit() {
+  if (editContent.value.trim().length < 10 || editSaving.value) return
+  editSaving.value = true
+  try {
+    const res = await $fetch<any>(`/api/posts/${postId}`, {
+      method: 'PATCH', headers: authHeaders(), body: { content: editContent.value.trim() },
+    })
+    if (post.value && res.post) {
+      post.value.content = res.post.content
+      post.value.hashtags = res.post.hashtags
+      post.value.mentions = res.post.mentions
+    }
+    editing.value = false
+    showToast(res.moderation_status === 'pending' ? 'Đã lưu — đang chờ duyệt lại' : 'Đã cập nhật bài viết', 'success')
+  } catch (e: any) {
+    showToast(e?.data?.detail || 'Không thể lưu bài viết', 'error')
+  }
+  editSaving.value = false
+}
+
 // ── Threaded reply ──
 function startReply(c: any) {
   if (!isLoggedIn.value) { openAuth(); return }
@@ -295,7 +334,14 @@ async function toggleBookmark(id: string) {
 
 const { timeAgo } = useTimeAgo()
 
-onMounted(() => fetchComments())
+onMounted(() => {
+  fetchComments()
+  // mở editor khi điều hướng từ trang khác: /bai-viet/{id}?edit=1 (chủ bài)
+  if (route.query.edit === '1' && isLoggedIn.value && post.value
+      && String((post.value as any).user_id) === String(user.value?.id)) {
+    startEdit()
+  }
+})
 
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl(`/bai-viet/${postId}`) }],
@@ -355,6 +401,11 @@ if (post.value) {
 </script>
 
 <style scoped>
+.post-edit-form { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-4); margin-bottom: var(--space-3); }
+.pef-title { font-size: var(--text-base); margin: 0 0 var(--space-3); }
+.post-edit-form .textarea { width: 100%; resize: vertical; }
+.pef-actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-3); }
+.pef-count { margin-right: auto; font-size: var(--text-xs); color: var(--muted); }
 .qa-row { margin-top: .4rem; }
 .qa-badge { display: inline-flex; align-items: center; gap: .25rem; font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: .2rem .55rem; border-radius: 999px; background: color-mix(in srgb, var(--leaf, green) 18%, var(--bg-alt)); color: var(--leaf-fg, green); }
 .qa-pick { font-size: var(--text-xs); padding: .2rem .55rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink-700); cursor: pointer; }

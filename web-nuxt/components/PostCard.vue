@@ -23,7 +23,8 @@
         </button>
         <Transition name="menu-pop">
           <div v-if="showMenu" class="thread-menu" role="menu">
-            <button type="button" role="menuitem" @click="$emit('report', post.id); showMenu = false">Báo cáo</button>
+            <button v-if="isOwner" type="button" role="menuitem" @click="$emit('edit', post.id); showMenu = false">Sửa bài</button>
+            <button v-if="!isOwner" type="button" role="menuitem" @click="$emit('report', post.id); showMenu = false">Báo cáo</button>
           </div>
         </Transition>
       </div>
@@ -127,7 +128,12 @@ const emit = defineEmits<{
   (e: 'report', id: string): void
   (e: 'repost', id: string): void
   (e: 'quote', id: string): void
+  (e: 'edit', id: string): void
 }>()
+
+const { user: _authUser } = useAuth()
+const isOwner = computed(() =>
+  !!_authUser.value?.id && String(props.post?.user_id) === String(_authUser.value.id))
 
 const showMenu = ref(false)
 const repostMenu = ref(false)

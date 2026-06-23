@@ -39,6 +39,7 @@
             <p>Chưa có thông báo</p>
           </div>
         </div>
+        <NuxtLink to="/thong-bao" class="notif-see-all" @click="open = false">Xem tất cả</NuxtLink>
       </div>
     </Transition>
   </div>
@@ -90,6 +91,8 @@ onUnmounted(() => { stopPolling(); document.removeEventListener('keydown', onEsc
 </script>
 
 <style scoped>
+.notif-see-all { display: block; text-align: center; padding: var(--space-3); border-top: .5px solid var(--line); font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--primary-fg); text-decoration: none; }
+.notif-see-all:hover { background: var(--bg-alt); }
 .notif-error { text-align: center; padding: var(--space-5); color: var(--muted); font-size: .88rem; display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
 .notif-error-icon { font-size: 1.5rem; }
 .notif-error p { margin: 0; }
