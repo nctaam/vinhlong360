@@ -54,6 +54,12 @@
       </EmptyState>
     </section>
 
+    <!-- Skeleton khi đang nạp data (SSR-fail rồi client refetch, hoặc mạng chậm) -->
+    <section v-if="homeLoadingSkeleton" class="block reveal" aria-hidden="true">
+      <div class="section-head"><div class="sk-heading"></div></div>
+      <SkeletonGrid :count="3" />
+    </section>
+
     <!-- 2. "Đang diễn ra" — upcoming events + seasonal merged -->
     <section v-if="upcomingEvents.length || seasonal.length" class="block reveal">
       <div class="section-head">
@@ -347,12 +353,13 @@ function getFavTypeMeta(type: string) {
   return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }
 }
 
-// Data trang chủ fetch CLIENT-ONLY: SSR internal $fetch tới /api/homepage chập
-// (502/fetch-failed) trong ngữ-cảnh render '/'; đường client browser→nginx→backend
-// thì ổn định 200. Tránh SSR rỗng + fallback nhấp-nháy.
+// SSR fetch qua ORIGIN CÔNG-KHAI (đường nginx→backend ổn định 200) — KHÔNG dùng
+// internal $fetch (proxy nội-bộ Nitro 502 trong ngữ-cảnh render '/'). Có data trong
+// HTML-SSR → tốt cho SEO (JSON-LD Event/ItemList + thẻ điểm-đến crawl được).
+// Client fetch tương-đối. Nếu SSR vẫn lỗi → onMounted tự refetch (an toàn).
+const ssrBase = import.meta.server ? useRequestURL().origin : ''
 const { data: homeData, error: homeError, pending: homePending, refresh: refreshHome } = await useAsyncData('homepage',
-  () => $fetch<Record<string, unknown>>('/api/homepage'),
-  { server: false, lazy: true })
+  () => $fetch<Record<string, unknown>>('/api/homepage', ssrBase ? { baseURL: ssrBase } : {}))
 
 // Từ cộng đồng — fetch client-side (luôn tươi, không kẹt cache SWR của trang chủ)
 const { data: communityData } = await useAsyncData('home-community', async () => {
@@ -381,8 +388,12 @@ const upcomingEvents = computed(() => sortByRegion(homeData.value?.upcoming_even
 const seasonalTagline = computed(() => homeData.value?.seasonal_tagline || 'Khám phá Vĩnh Long theo cách của người bản địa')
 const hasHomeContent = computed(() => !!(upcomingEvents.value.length || seasonal.value.length || itineraries.value.length || topExperiences.value.length || products.value.length))
 
-// Chỉ coi là "lỗi/rỗng" sau khi client đã fetch xong (tránh nhấp-nháy fallback lúc đang tải).
+// Chỉ coi là "lỗi/rỗng" sau khi đã fetch xong (tránh nhấp-nháy fallback lúc đang tải).
 const homeFailed = computed(() => !homePending.value && (!!homeError.value || (!!homeData.value && !hasHomeContent.value)))
+// #3 skeleton: đang nạp mà chưa có nội dung (SSR-fail rồi client đang refetch, hoặc mạng chậm).
+const homeLoadingSkeleton = computed(() => !hasHomeContent.value && !homeFailed.value)
+// An toàn: nếu SSR fetch lỗi (hiếm), client tự refetch 1 lần — khách không thấy fallback kẹt.
+onMounted(() => { if (homeError.value || !hasHomeContent.value) refreshHome() })
 
 const areaKeys = computed(() => orderedAreaKeys(Object.keys(AREA_META)))
 const REGION_IMG: Record<string, string> = { 'vinh-long': 'attraction', 'ben-tre': 'nature', 'tra-vinh': 'history' }
@@ -900,6 +911,11 @@ html.js .home .hero-enter h1::after {
 }
 .dark .happening-label { color: var(--primary-fg-strong); }
 .happening-section { margin-top: var(--space-1); }
+
+/* ── Skeleton heading (khi đang nạp data trang chủ) ── */
+.sk-heading { height: 1.4rem; width: 180px; border-radius: var(--radius-sm); background: linear-gradient(90deg, var(--bg-alt) 25%, var(--line) 37%, var(--bg-alt) 63%); background-size: 400% 100%; animation: skShimmer 1.4s ease infinite; }
+@keyframes skShimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+@media (prefers-reduced-motion: reduce) { .sk-heading { animation: none; } }
 
 /* ── Block CTA ── */
 .block-cta { text-align: center; margin-top: var(--space-4); }

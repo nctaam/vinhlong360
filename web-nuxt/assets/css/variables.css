@@ -212,7 +212,7 @@
    Remap semantic tokens + lighten brand-foreground cho đạt WCAG trên nền tối.
    (preference 'system' → tự áp .dark theo OS; nút toggle ở header ghi đè.) ── */
 .dark {
-  --bg: #000000;
+  --bg: #0d0d0f;  /* near-black dịu hơn #000 (đỡ chói + tách card #1c1c1e rõ hơn) */
   --bg-warm: #1c1c1e;
   --bg-alt: #2c2c2e;
   --ink: #f5f5f7;
