@@ -63,6 +63,7 @@ function notifIcon(n: Notification): string {
   if (n.type === 'like') return '❤️'
   if (n.type === 'comment') return '💬'
   if (n.type === 'follow') return '👤'
+  if (n.type === 'mention') return '📣'
   return '🔔'
 }
 

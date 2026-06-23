@@ -42,7 +42,7 @@
       </div>
 
       <NuxtLink :to="`/bai-viet/${post.id}`" class="thread-body">
-        <p class="thread-content">{{ post.content }}</p>
+        <p class="thread-content" v-html="contentHtml"></p>
       </NuxtLink>
 
       <div v-if="post.images?.length" class="thread-images" :class="imgLayoutClass">
@@ -115,6 +115,25 @@ const emit = defineEmits<{
 
 const showMenu = ref(false)
 const likePop = ref(false)
+
+// @-mention: escape nội dung rồi linkify các mention (an toàn — content đã escape,
+// href dựng từ id qua encodeURIComponent + type cố định).
+const contentHtml = computed(() => {
+  let html = escapeHtml(props.post.content || '')
+  const mentions = props.post.mentions
+  if (Array.isArray(mentions) && mentions.length) {
+    const sorted = [...mentions].sort((a, b) => (b?.label?.length || 0) - (a?.label?.length || 0))
+    for (const m of sorted) {
+      if (!m?.label || !m?.id || (m.type !== 'user' && m.type !== 'entity')) continue
+      const href = m.type === 'user'
+        ? `/nguoi-dung/${encodeURIComponent(m.id)}`
+        : `/dia-diem/${encodeURIComponent(m.id)}`
+      const token = '@' + escapeHtml(m.label)
+      html = html.split(token).join(`<a class="mention-link" href="${href}">${token}</a>`)
+    }
+  }
+  return html
+})
 
 const typeLabels: Record<string, string> = {
   review: '⭐ Đánh giá',

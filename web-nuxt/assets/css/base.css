@@ -531,6 +531,8 @@ a.thread-author:hover { color: var(--primary-fg); }
 .thread-rating .star.active { color: var(--accent); }
 .thread-body { text-decoration: none; color: inherit; display: block; }
 .thread-content { margin: 0; font-size: var(--text-base); line-height: var(--leading-relaxed); color: var(--ink); white-space: pre-line; display: -webkit-box; -webkit-line-clamp: 8; -webkit-box-orient: vertical; overflow: hidden; }
+.mention-link { color: var(--primary-fg); font-weight: var(--weight-medium); text-decoration: none; }
+.mention-link:hover { text-decoration: underline; }
 .thread-images { display: grid; gap: 2px; border-radius: var(--radius-md); overflow: hidden; margin-top: var(--space-2); cursor: pointer; }
 .thread-images.img-grid-1 { grid-template-columns: 1fr; }
 .thread-images.img-grid-1 .thread-img-wrap { max-height: 340px; }
