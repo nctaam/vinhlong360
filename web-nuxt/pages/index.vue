@@ -8,13 +8,7 @@
         <span class="hero-kicker"><span class="hero-kicker-dot" aria-hidden="true"></span>Vĩnh Long · Bến Tre · Trà Vinh</span>
         <h1>{{ seasonalTagline }}</h1>
         <p class="hero-sub">{{ ss('homepage.hero_subtitle', 'Trải nghiệm miệt vườn, đặc sản theo mùa, lễ hội truyền thống — tất cả trong một bản đồ.') }}</p>
-        <form class="hero-search" role="search" aria-label="Tìm kiếm trang chủ" @submit.prevent="onHeroSearch">
-          <div class="hero-search-field">
-            <svg class="hero-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input v-model="heroQ" type="search" enterkeyhint="search" :placeholder="ss('homepage.search_placeholder', 'Tìm: chôm chôm, kẹo dừa, cù lao An Bình…')" aria-label="Tìm kiếm điểm đến, đặc sản" />
-          </div>
-          <button type="submit">Tìm</button>
-        </form>
+        <SearchAutocomplete class="hero-search hero-ac" :placeholder="ss('homepage.search_placeholder', 'Tìm: chôm chôm, kẹo dừa, cù lao An Bình…')" />
         <div class="hero-pills">
           <NuxtLink v-for="pill in heroPills" :key="pill.to" :to="pill.to" class="hero-pill">{{ pill.emoji }} {{ pill.label }}</NuxtLink>
         </div>
@@ -142,6 +136,29 @@
       </div>
     </section>
 
+    <!-- 4.5 Khám phá theo sở thích — card lớn có ảnh -->
+    <section class="block reveal">
+      <div class="section-head">
+        <h2>Khám phá theo sở thích</h2>
+      </div>
+      <div class="interest-grid">
+        <NuxtLink
+          v-for="it in interestCards"
+          :key="it.key"
+          :to="`/kham-pha/${it.key}`"
+          class="interest-card"
+          :style="{ backgroundImage: `url(/img/cat/${it.img}.jpg)` }"
+        >
+          <div class="interest-in">
+            <span class="interest-emoji">{{ it.emoji }}</span>
+            <h3>{{ it.label }}</h3>
+            <p>{{ it.description }}</p>
+            <span class="interest-cta">Khám phá →</span>
+          </div>
+        </NuxtLink>
+      </div>
+    </section>
+
     <!-- 5. Trải nghiệm nổi bật -->
     <section v-if="topExperiences.length" class="block reveal">
       <div class="section-head">
@@ -176,6 +193,15 @@
           · <strong>{{ communityStats.reviews }}</strong> đánh giá
           · <strong>{{ communityStats.members }}</strong> thành viên
         </p>
+        <div v-if="topMembers.length" class="home-leaders">
+          <span class="hl-label">🏆 Tích cực nhất:</span>
+          <NuxtLink v-for="(m, i) in topMembers" :key="m.id" :to="`/nguoi-dung/${m.id}`" class="hl-chip">
+            <span class="hl-rank" :class="`hl-rank-${i + 1}`">{{ i + 1 }}</span>
+            <span class="hl-avatar">{{ (m.display_name || '?').charAt(0).toUpperCase() }}</span>
+            <span class="hl-name">{{ m.display_name }}</span>
+          </NuxtLink>
+          <NuxtLink to="/bang-xep-hang" class="hl-more">Bảng xếp hạng →</NuxtLink>
+        </div>
         <div class="scroll-row" role="region" aria-label="Bài viết cộng đồng mới">
           <NuxtLink v-for="p in communityPosts" :key="p.id" :to="`/bai-viet/${p.id}`" class="cm-card">
             <div v-if="p.images && p.images.length" class="cm-img">
@@ -267,7 +293,7 @@
 
 <script setup lang="ts">
 import type { Itinerary, Entity} from '~/types'
-import { TYPE_META, AREA_META } from '~/composables/useConstants'
+import { TYPE_META, AREA_META, INTEREST_META } from '~/composables/useConstants'
 
 useReveal()
 const { get: ss } = useSiteSettings()
@@ -321,36 +347,43 @@ function getFavTypeMeta(type: string) {
   return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }
 }
 
-const heroQ = ref('')
-
 const { data: homeData, error: homeError, refresh: refreshHome } = await useAsyncData('homepage', () => $fetch<Record<string, unknown>>('/api/homepage'))
 
 // Từ cộng đồng — fetch client-side (luôn tươi, không kẹt cache SWR của trang chủ)
 const { data: communityData } = await useAsyncData('home-community', async () => {
-  const [feed, cstats] = await Promise.all([
+  const [feed, cstats, lb] = await Promise.all([
     $fetch<any>('/api/feed?limit=10').catch(() => ({ posts: [] })),
     $fetch<any>('/api/community/stats').catch(() => null),
+    $fetch<any>('/api/community/leaderboard?limit=3').catch(() => ({ leaders: [] })),
   ])
   const posts = (feed.posts || [])
     .filter((p: any) => ((p.content || '').trim().length > 0) || (p.images && p.images.length))
     .slice(0, 6)
-  return { posts, stats: cstats }
+  return { posts, stats: cstats, leaders: lb.leaders || [] }
 }, { server: false, lazy: true })
 const communityPosts = computed(() => communityData.value?.posts || [])
 const communityStats = computed(() => communityData.value?.stats || null)
+const topMembers = computed(() => communityData.value?.leaders || [])
 
 const currentMonth = computed(() => homeData.value?.month || (new Date().getMonth() + 1))
-const seasonal = computed(() => homeData.value?.seasonal || [])
+// Tất cả content section ưu tiên theo vùng đã chọn (sortByRegion ổn định: vùng khác vẫn giữ).
+const seasonal = computed(() => sortByRegion(homeData.value?.seasonal || []))
 const experiences = computed(() => sortByRegion(homeData.value?.experiences || []))
 const topExperiences = computed(() => experiences.value.slice(0, 6))
 const products = computed(() => sortByRegion(homeData.value?.products || []))
 const itineraries = computed(() => sortByRegion(homeData.value?.itineraries || []))
-const upcomingEvents = computed(() => homeData.value?.upcoming_events || [])
+const upcomingEvents = computed(() => sortByRegion(homeData.value?.upcoming_events || []))
 const seasonalTagline = computed(() => homeData.value?.seasonal_tagline || 'Khám phá Vĩnh Long theo cách của người bản địa')
 const hasHomeContent = computed(() => !!(upcomingEvents.value.length || seasonal.value.length || itineraries.value.length || topExperiences.value.length || products.value.length))
 
 const areaKeys = computed(() => orderedAreaKeys(Object.keys(AREA_META)))
 const REGION_IMG: Record<string, string> = { 'vinh-long': 'attraction', 'ben-tre': 'nature', 'tra-vinh': 'history' }
+
+// Khám phá theo sở thích — card lớn từ INTEREST_META + ảnh category
+const INTEREST_IMG: Record<string, string> = { 'am-thuc': 'dish', 'thien-nhien': 'nature', 'van-hoa': 'history', 'lang-nghe': 'craft', 'mua-sam': 'product' }
+const interestCards = Object.entries(INTEREST_META).map(([key, m]: [string, any]) => ({
+  key, emoji: m.emoji, label: m.label, description: m.description, img: INTEREST_IMG[key] || 'place',
+}))
 
 const areaCounts = computed(() => homeData.value?.area_counts || {})
 const stats = computed(() => homeData.value?.stats || null)
@@ -376,12 +409,6 @@ function formatEventMonth(ev: any) {
   if (!ds) return ''
   const m = parseInt(ds.split('-')[1], 10)
   return `Th${m}`
-}
-
-function onHeroSearch() {
-  if (heroQ.value.trim()) {
-    navigateTo(`/tim-kiem?q=${encodeURIComponent(heroQ.value.trim())}`)
-  }
 }
 
 function openChat() {
@@ -602,6 +629,16 @@ html.js .home .hero-enter h1::after {
 }
 .home .hero-search input { border-color: transparent; background: var(--card); }
 .home .hero-search input:focus { border-color: transparent; box-shadow: none; }
+
+/* Hero autocomplete — tái dùng glass capsule (.hero-search) cho SearchAutocomplete.
+   Không còn icon dẫn-đầu/nút Tìm: input lấp đầy, chừa chỗ phải cho nút xoá (X). */
+.home .hero .hero-ac { align-items: center; }
+.home .hero .hero-ac input {
+  flex: 1; width: 100%;
+  padding: var(--space-4) 42px var(--space-4) var(--space-5);
+  border-color: transparent; background: var(--card);
+}
+.home .hero .hero-ac .ac-dropdown { text-align: left; }
 
 /* ════════════════════════════════════════════════════════════════
    SIGNATURE: Section rhythm — each heading gets a warm accent tick +
@@ -860,8 +897,18 @@ html.js .home .hero-enter h1::after {
 .block-cta { text-align: center; margin-top: var(--space-4); }
 
 /* ── Từ cộng đồng ── */
-.community-stats-line { font-size: var(--text-sm); color: var(--muted); margin: 0 0 var(--space-4); }
+.community-stats-line { font-size: var(--text-sm); color: var(--muted); margin: 0 0 var(--space-3); }
 .community-stats-line strong { color: var(--primary-fg); font-weight: var(--weight-bold); }
+.home-leaders { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin: 0 0 var(--space-4); }
+.hl-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); }
+.hl-chip { display: inline-flex; align-items: center; gap: var(--space-1); padding: .2rem .6rem .2rem .2rem; background: var(--bg-alt); border: .5px solid var(--line); border-radius: var(--radius-full); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out); }
+.hl-chip:hover { border-color: var(--primary-fg); }
+.hl-rank { width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--muted); }
+.hl-rank-1 { color: #d4a017; } .hl-rank-2 { color: #8a8d91; } .hl-rank-3 { color: #b07b4f; }
+.hl-avatar { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--text-on-dark, #fff); font-size: 11px; font-weight: var(--weight-semibold); }
+.hl-name { font-size: var(--text-sm); font-weight: var(--weight-medium); }
+.hl-more { font-size: var(--text-sm); color: var(--primary-fg); text-decoration: none; font-weight: var(--weight-semibold); }
+.hl-more:hover { text-decoration: underline; }
 .cm-card { display: flex; flex-direction: column; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-xs); text-decoration: none; color: var(--ink); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 .cm-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .cm-card:active { transform: scale(.98); transition-duration: .1s; }
@@ -915,6 +962,48 @@ html.js .home .hero-enter h1::after {
 .region-vinh-long .region-tile-in { background: linear-gradient(135deg, rgba(var(--primary-rgb),.82) 0%, rgba(var(--primary-rgb),.55) 100%); }
 .region-ben-tre .region-tile-in { background: linear-gradient(135deg, rgba(var(--secondary-rgb),.82) 0%, rgba(var(--secondary-rgb),.55) 100%); }
 .region-tra-vinh .region-tile-in { background: linear-gradient(135deg, rgba(var(--river-rgb),.82) 0%, rgba(var(--river-rgb),.55) 100%); }
+
+/* ── Khám phá theo sở thích — card lớn có ảnh ── */
+.interest-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+.interest-card {
+  position: relative;
+  display: block;
+  min-height: 200px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  text-decoration: none;
+  box-shadow: var(--shadow-sm);
+  transition: transform .18s var(--ease-out), box-shadow .25s var(--ease-out);
+}
+.interest-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.interest-card:active { transform: scale(.98); transition-duration: .1s; }
+.interest-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.interest-in {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  background: linear-gradient(to top, rgba(var(--ink-rgb), .86) 0%, rgba(var(--ink-rgb), .35) 48%, rgba(var(--ink-rgb), .04) 100%);
+  color: #fff;
+}
+.interest-emoji { font-size: 1.7rem; line-height: 1; }
+.interest-in h3 { margin: var(--space-1) 0 0; font-size: var(--text-lg); font-weight: var(--weight-bold); letter-spacing: -.01em; }
+.interest-in p { margin: 0; font-size: var(--text-xs); opacity: .92; line-height: var(--leading-snug); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.interest-cta { margin-top: var(--space-2); font-size: var(--text-sm); font-weight: var(--weight-semibold); opacity: .9; transition: opacity .3s; }
+.interest-card:hover .interest-cta { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .interest-card:hover { transform: none; }
+  .interest-card:active { transform: none; }
+}
 
 /* ── Quick links — grid layout ── */
 .quick-grid {

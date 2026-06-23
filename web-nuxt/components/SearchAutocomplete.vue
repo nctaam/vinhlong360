@@ -6,7 +6,7 @@
         v-model="query"
         type="search"
         enterkeyhint="search"
-        placeholder="Tìm đặc sản, trải nghiệm…"
+        :placeholder="placeholder"
         aria-label="Tìm kiếm"
         role="combobox"
         aria-autocomplete="list"
@@ -126,6 +126,10 @@
 <script setup lang="ts">
 import type { Entity } from '~/types'
 import { TYPE_META } from '~/composables/useConstants'
+
+withDefaults(defineProps<{ placeholder?: string }>(), {
+  placeholder: 'Tìm đặc sản, trải nghiệm…',
+})
 
 const RECENT_KEY = 'vl360_recent_searches'
 const MAX_RECENTS = 5
