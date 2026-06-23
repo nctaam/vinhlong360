@@ -54,7 +54,7 @@
               <span v-else class="thread-author">{{ c.author?.display_name || 'Người dùng' }}</span>
               <time class="thread-time" :datetime="c.created_at">{{ timeAgo(c.created_at) }}</time>
             </div>
-            <p class="thread-content reply-text">{{ c.content }}</p>
+            <p class="thread-content reply-text" v-html="renderComment(c)"></p>
           </div>
         </div>
 
@@ -92,6 +92,20 @@ const route = useRoute()
 const postId = route.params.id as string
 const { isLoggedIn, authHeaders, user } = useAuth()
 const { openAuth } = useAuthModal()
+
+// Linkify @-mention + #hashtag trong bình luận (content escape trước → an toàn v-html)
+function renderComment(c: any): string {
+  let html = escapeHtml(c?.content || '')
+  const mentions = Array.isArray(c?.mentions) ? [...c.mentions].sort((a, b) => (b?.label?.length || 0) - (a?.label?.length || 0)) : []
+  for (const m of mentions) {
+    if (!m?.label || !m?.id || (m.type !== 'user' && m.type !== 'entity')) continue
+    const href = m.type === 'user' ? `/nguoi-dung/${encodeURIComponent(m.id)}` : `/dia-diem/${encodeURIComponent(m.id)}`
+    const token = '@' + escapeHtml(m.label)
+    html = html.split(token).join(`<a class="mention-link" href="${href}">${token}</a>`)
+  }
+  html = html.replace(/#(\w{1,30})/gu, (_m, tag) => `<a class="hashtag-link" href="/cong-dong?tag=${encodeURIComponent(tag.toLowerCase())}">#${tag}</a>`)
+  return html
+}
 const { reportPost } = useReport()
 const { show: showToast } = useToast()
 

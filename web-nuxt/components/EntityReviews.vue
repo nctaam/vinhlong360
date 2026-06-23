@@ -116,6 +116,9 @@
         <div v-if="r.images?.length" class="ri-images">
           <img v-for="(img, i) in r.images" :key="i" :src="img" :alt="`Ảnh đánh giá ${i + 1}`" loading="lazy" decoding="async" width="200" height="200" @error="(e) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
         </div>
+        <button type="button" :class="['ri-helpful', { active: r.user_liked }]" :aria-pressed="!!r.user_liked" @click="toggleHelpful(r)">
+          👍 Hữu ích<span v-if="r.likes" class="ri-helpful-count">{{ r.likes }}</span>
+        </button>
       </div>
     </div>
     <p v-else-if="fetchFailed" class="empty review-error">Không thể tải đánh giá. <button type="button" class="btn btn-outline btn-sm review-retry-btn" @click="fetchFailed = false; fetchReviews()">Thử lại</button></p>
@@ -137,6 +140,16 @@ const props = defineProps<{
 
 const { user, authHeaders } = useAuth()
 const { confirmDialog } = useConfirm()
+const { openAuth } = useAuthModal()
+
+async function toggleHelpful(r: any) {
+  if (!user.value) { openAuth(); return }
+  const flip = () => { r.user_liked = !r.user_liked; r.likes = (r.likes || 0) + (r.user_liked ? 1 : -1) }
+  flip()
+  try {
+    await $fetch(`/api/posts/${r.id}/like`, { method: 'POST', headers: authHeaders() })
+  } catch { flip() }
+}
 
 const reviews = ref<Entity[]>([])
 const rating = ref({ avg: 0, count: 0 })
@@ -287,6 +300,9 @@ onMounted(() => fetchReviews())
 
 /* Image attach */
 .rf-photo-hint { margin: var(--space-2) 0 0; font-size: var(--text-sm); color: var(--ink-700); }
+.ri-helpful { margin-top: var(--space-2); display: inline-flex; align-items: center; gap: .3rem; font-size: var(--text-sm); padding: .3rem .7rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink-700); cursor: pointer; min-height: 36px; }
+.ri-helpful.active { background: color-mix(in srgb, var(--primary) 12%, var(--bg)); border-color: var(--primary); color: var(--primary-fg); }
+.ri-helpful-count { font-weight: var(--weight-medium); }
 .rf-images { display: flex; flex-direction: column; gap: var(--space-2); margin-block: var(--space-2); }
 .rf-image-grid { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .rf-image-thumb { position: relative; width: 64px; height: 64px; border-radius: var(--radius-md); overflow: hidden; border: .5px solid var(--line); }

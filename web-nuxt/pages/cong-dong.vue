@@ -130,6 +130,12 @@
           </button>
         </div>
 
+        <!-- Đang lọc theo hashtag -->
+        <div v-if="activeTag" class="tag-banner" role="status">
+          <span>Đang xem <strong>#{{ activeTag }}</strong></span>
+          <button type="button" class="tag-clear" @click="clearTag">✕ Bỏ lọc</button>
+        </div>
+
         <!-- Post type filter (only for feed tabs, not bookmarks) -->
         <div v-if="activeTab !== 'bookmarks'" class="type-filter-row" role="region" aria-label="Lọc loại bài viết">
           <button type="button"
@@ -295,6 +301,9 @@ const userInitial = computed(() => {
 const activeTab = ref<'latest' | 'trending' | 'bookmarks'>('latest')
 const sort = computed(() => activeTab.value === 'trending' ? 'trending' : 'latest')
 const filterType = ref('')
+const activeTag = ref(String(route.query.tag || '').toLowerCase())
+watch(() => route.query.tag, (t) => { activeTag.value = String(t || '').toLowerCase(); fetchFeed(true) })
+function clearTag() { activeTag.value = ''; router.replace({ query: {} }); fetchFeed(true) }
 const page = ref(1)
 const posts = ref<Entity[]>([])
 const hasMore = ref(false)
@@ -509,6 +518,7 @@ async function fetchFeed(reset = false) {
       sort: sort.value,
     })
     if (filterType.value) params.set('post_type', filterType.value)
+    if (activeTag.value) params.set('tag', activeTag.value)
     const res = await $fetch<{ posts: Post[] }>(`/api/feed?${params}`, {
       headers: authHeaders(),
     })
@@ -733,6 +743,8 @@ useHead({
 .mention-ic { flex-shrink: 0; }
 .mention-label { font-weight: var(--weight-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mention-sub { margin-left: auto; color: var(--ink-700); font-size: .8em; flex-shrink: 0; }
+.tag-banner { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .5rem .75rem; margin-bottom: var(--space-3); background: color-mix(in srgb, var(--accent) 10%, var(--bg-alt)); border-radius: var(--radius-md); font-size: var(--text-sm); }
+.tag-clear { border: none; background: none; color: var(--primary-fg); cursor: pointer; font-size: var(--text-sm); }
 .threads-page { max-width: 960px; margin: 0 auto; }
 .threads-layout { display: grid; grid-template-columns: 1fr 280px; gap: var(--space-6); align-items: start; }
 .threads-feed { display: flex; flex-direction: column; }

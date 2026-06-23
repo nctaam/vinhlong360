@@ -132,6 +132,9 @@ const contentHtml = computed(() => {
       html = html.split(token).join(`<a class="mention-link" href="${href}">${token}</a>`)
     }
   }
+  // Hashtag #tag → link feed theo chủ-đề (content đã escape; tag chỉ \w nên an toàn)
+  html = html.replace(/#(\w{1,30})/gu, (_m, tag) =>
+    `<a class="hashtag-link" href="/cong-dong?tag=${encodeURIComponent(tag.toLowerCase())}">#${tag}</a>`)
   return html
 })
 
