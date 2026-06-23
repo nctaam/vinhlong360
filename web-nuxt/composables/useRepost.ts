@@ -18,5 +18,11 @@ export function useRepost() {
       return false
     }
   }
-  return { repost }
+  // Trích dẫn: mở composer cộng-đồng ở chế-độ quote (composer chỉ có ở /cong-dong).
+  function quote(postId: string) {
+    if (!isLoggedIn.value) { openAuth(); return }
+    navigateTo(`/cong-dong?quote=${encodeURIComponent(postId)}`)
+  }
+
+  return { repost, quote }
 }

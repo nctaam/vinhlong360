@@ -52,6 +52,14 @@
               >{{ pt.label }}</button>
             </div>
 
+            <div v-if="quotingPost" class="quote-preview">
+              <div class="quote-preview-body">
+                <span class="qp-head">✍️ Trích dẫn <strong>{{ quotingPost.author || quotingPost.display_name || 'Người dùng' }}</strong></span>
+                <span class="qp-content">{{ quotingPost.content || '(bài viết)' }}</span>
+              </div>
+              <button type="button" class="qp-remove" aria-label="Bỏ trích dẫn" @click="cancelQuote">&times;</button>
+            </div>
+
             <div class="compose-mention-wrap">
               <textarea
                 ref="composeInputEl"
@@ -166,6 +174,7 @@
             @bookmark="toggleBookmark"
             @report="reportPost"
             @repost="repostPost"
+            @quote="startQuote"
           />
         </TransitionGroup>
 
@@ -320,6 +329,7 @@ const posting = ref(false)
 const imageFiles = ref<File[]>([])
 const previewImages = ref<string[]>([])
 const charRatio = computed(() => newContent.value.length / MAX_CHARS)
+const quotingPost = ref<Record<string, any> | null>(null)
 
 // ── Bookmarks ──
 const bookmarks = ref<Entity[]>([])
@@ -373,7 +383,11 @@ const typePlaceholder = computed(() => {
   return map[newType.value] || map.share
 })
 
-const canSubmit = computed(() => newContent.value.trim().length > 0 && newContent.value.length <= MAX_CHARS)
+const canSubmit = computed(() => {
+  if (newContent.value.length > MAX_CHARS) return false
+  if (quotingPost.value) return true   // rỗng = đăng lại, có chữ = trích dẫn
+  return newContent.value.trim().length > 0
+})
 
 // ── Scroll-to-top ──
 const showScrollTop = ref(false)
@@ -392,6 +406,19 @@ function focusComposer() {
   composeEl.value?.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'center' })
   nextTick(() => composeInputEl.value?.focus())
 }
+
+// ── Trích dẫn (quote) ──
+async function startQuote(postId: string) {
+  if (!isLoggedIn.value) { openAuth(); return }
+  let p: any = posts.value.find((x: any) => x.id === postId)
+  if (!p) {
+    try { const r = await $fetch<any>(`/api/posts/${postId}`, { headers: authHeaders() }); p = r?.post } catch {}
+  }
+  quotingPost.value = p || { id: postId, content: '' }
+  activeTab.value = 'latest'
+  focusComposer()
+}
+function cancelQuote() { quotingPost.value = null }
 
 function autoGrow(e: Event) {
   const el = e.target as HTMLTextAreaElement
@@ -583,6 +610,7 @@ async function submitPost() {
       content: newContent.value.trim(),
       post_type: newType.value,
     }
+    if (quotingPost.value) body.repost_of = quotingPost.value.id
     if (previewImages.value.length) {
       body.images = previewImages.value
     }
@@ -600,7 +628,9 @@ async function submitPost() {
     previewImages.value = []
     selectedMentions.value = []
     mentionOpen.value = false
-    showToast('Đã đăng bài viết', 'success')
+    const wasQuote = !!quotingPost.value
+    quotingPost.value = null
+    showToast(wasQuote ? 'Đã đăng trích dẫn 🔁' : 'Đã đăng bài viết', 'success')
     activeTab.value = 'latest'
     await fetchFeed(true)
   } catch (e: unknown) {
@@ -702,6 +732,13 @@ onMounted(() => {
   fetchReportEntity()
   fetchFeed(true)
   loadCommunityStats()
+  // Trích dẫn từ trang khác điều hướng tới: ?quote=<post_id>
+  const q = String(route.query.quote || '')
+  if (q) {
+    startQuote(q)
+    const { quote, ...rest } = route.query
+    router.replace({ query: rest })
+  }
   window.addEventListener('scroll', onScroll, { passive: true })
 })
 

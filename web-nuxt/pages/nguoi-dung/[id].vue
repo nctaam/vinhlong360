@@ -109,6 +109,7 @@
               @bookmark="toggleBookmark"
               @report="reportPost"
               @repost="repost"
+              @quote="quote"
             />
           </TransitionGroup>
           <Transition name="fade">
@@ -146,7 +147,7 @@ const userId = route.params.id as string
 const { isLoggedIn, authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const { reportPost } = useReport()
-const { repost } = useRepost()
+const { repost, quote } = useRepost()
 
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl(`/nguoi-dung/${userId}`) }],

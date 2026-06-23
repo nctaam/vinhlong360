@@ -72,9 +72,15 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           <span v-if="post.comments_count" class="act-count">{{ post.comments_count }}</span>
         </button>
-        <button v-if="!post.repost" type="button" class="thread-act" @click="$emit('repost', post.id)" aria-label="Đăng lại">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-        </button>
+        <div v-if="!post.repost" class="thread-repost-wrap">
+          <button type="button" class="thread-act" @click="repostMenu = !repostMenu" :aria-expanded="repostMenu" aria-haspopup="true" aria-label="Đăng lại hoặc trích dẫn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          </button>
+          <div v-if="repostMenu" class="thread-repost-menu" role="menu">
+            <button type="button" role="menuitem" @click="$emit('repost', post.id); repostMenu = false">🔁 Đăng lại</button>
+            <button type="button" role="menuitem" @click="$emit('quote', post.id); repostMenu = false">✍️ Trích dẫn</button>
+          </div>
+        </div>
         <button type="button" class="thread-act" aria-label="Chia sẻ" @click="sharePost">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
         </button>
@@ -120,9 +126,11 @@ const emit = defineEmits<{
   (e: 'bookmark', id: string): void
   (e: 'report', id: string): void
   (e: 'repost', id: string): void
+  (e: 'quote', id: string): void
 }>()
 
 const showMenu = ref(false)
+const repostMenu = ref(false)
 const likePop = ref(false)
 
 // @-mention: escape nội dung rồi linkify các mention (an toàn — content đã escape,
@@ -268,7 +276,7 @@ onMounted(() => window.addEventListener('keydown', onKey))
 onUnmounted(() => window.removeEventListener('keydown', onKey))
 
 if (import.meta.client) {
-  const onClick = (e: Event) => { if (showMenu.value) showMenu.value = false }
+  const onClick = (e: Event) => { if (showMenu.value) showMenu.value = false; if (repostMenu.value) repostMenu.value = false }
   onMounted(() => document.addEventListener('click', onClick, true))
   onUnmounted(() => document.removeEventListener('click', onClick, true))
 }

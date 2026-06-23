@@ -537,6 +537,11 @@ a.thread-author:hover { color: var(--primary-fg); }
 .hashtag-link:hover { text-decoration: underline; }
 .thread-repost-embed { display: flex; flex-direction: column; gap: .2rem; margin: var(--space-2) 0; padding: var(--space-2) var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-alt); text-decoration: none; color: var(--ink); }
 .thread-repost-embed:hover { border-color: var(--primary); }
+.thread-repost-wrap { position: relative; display: inline-flex; }
+.thread-repost-menu { position: absolute; left: 0; bottom: 48px; z-index: 10; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sm); box-shadow: var(--shadow-md); padding: var(--space-1); min-width: 150px; animation: threadMenuIn .15s var(--ease-out); }
+.thread-repost-menu button { display: block; width: 100%; text-align: left; background: none; border: none; padding: var(--space-2) var(--space-3); font-size: var(--text-sm); color: var(--ink); cursor: pointer; border-radius: var(--radius-sm); min-height: 44px; transition: background .2s; }
+.thread-repost-menu button:hover { background: var(--bg-alt); }
+.thread-repost-menu button:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
 .tre-head { font-size: var(--text-sm); color: var(--ink-700); }
 .tre-content { font-size: var(--text-sm); color: var(--ink); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .thread-images { display: grid; gap: 2px; border-radius: var(--radius-md); overflow: hidden; margin-top: var(--space-2); cursor: pointer; }
