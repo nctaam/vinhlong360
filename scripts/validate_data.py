@@ -321,6 +321,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     produced_in_area_conflicts = 0
     far_near_relationships = 0
     near_missing_location = 0
+    self_loop_relationships = 0  # DI-005: rel có source==target
     relationship_type_counts: Counter[str] = Counter()
     duplicate_relationships: Counter[tuple[str, str, str]] = Counter()
     relationship_fanout: Counter[str] = Counter()
@@ -364,6 +365,9 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         src = str(src)
         dst = str(dst)
         kind = str(kind)
+        if src == dst:  # DI-005: self-loop vô nghĩa
+            self_loop_relationships += 1
+            continue
         relationship_type_counts[kind] += 1
         duplicate_relationships[(src, dst, kind)] += 1
         # Quan hệ PHÂN-CẤP (located_in/part_of) là chứa-đựng cấu trúc, KHÔNG phải
@@ -404,6 +408,21 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         issues.append(Issue("error", "far_near_relationships", f"{far_near_relationships} near relationships are farther than {MAX_NEAR_DISTANCE_KM:g} km"))
     if produced_in_area_conflicts:
         issues.append(Issue("error", "produced_in_area_conflicts", f"{produced_in_area_conflicts} produced_in relationships cross conflicting entity areas"))
+    if self_loop_relationships:
+        issues.append(Issue("error", "self_loop_relationships", f"{self_loop_relationships} relationships have source==target"))
+    # DI-005: itinerary stop trỏ entity không tồn tại (free-text stop không có id → bỏ qua)
+    dangling_stops = 0
+    for it in itineraries:
+        if not isinstance(it, dict):
+            continue
+        for stop in (it.get("stops") or []):
+            if not isinstance(stop, dict):
+                continue
+            ref = stop.get("entityId") or stop.get("id")
+            if ref and str(ref) not in id_set:
+                dangling_stops += 1
+    if dangling_stops:
+        issues.append(Issue("error", "dangling_itinerary_stops", f"{dangling_stops} itinerary stops reference missing entities"))
     if high_fanout_count:
         issues.append(Issue("error", "relationship_fanout", f"{high_fanout_count} entities have more than {MAX_DIRECT_RELATIONSHIPS} direct relationships"))
     if duplicate_rel_count:
