@@ -375,3 +375,13 @@ CREATE TABLE IF NOT EXISTS user_plans (
     created_at  TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_user_plans_user ON user_plans(user_id, created_at DESC);
+
+-- "Đã đi / Muốn đi" — bản đồ cá nhân
+CREATE TABLE IF NOT EXISTS user_visits (
+    user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    entity_id  TEXT NOT NULL,
+    status     TEXT NOT NULL CHECK (status IN ('want', 'visited')),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (user_id, entity_id)
+);
+CREATE INDEX IF NOT EXISTS idx_user_visits_user ON user_visits(user_id, status);

@@ -73,6 +73,29 @@ def _notify_mentions(mentions: list[dict], author_id: str, author_name, post_id:
             pass
 
 
+def _notify_entity_followers(entity_id, author_id, author_name, post_id: str) -> None:
+    """Báo cho người THEO DÕI địa-điểm khi có bài mới về địa-điểm đó."""
+    if not entity_id:
+        return
+    ph = db._ph
+    try:
+        with db._conn() as conn:
+            rows = db._fetchall(conn,
+                f"SELECT follower_id FROM follows WHERE target_type='entity' AND target_id = {ph}", (entity_id,))
+        for r in rows:
+            uid = str(db._row_to_dict(r)["follower_id"])
+            if uid == author_id:
+                continue
+            try:
+                create_notification(uid, "entity_post",
+                                    f"{author_name or 'Ai đó'} đã đăng về địa điểm bạn theo dõi",
+                                    ref_type="post", ref_id=post_id)
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+
 class CreatePost(BaseModel):
     content: str
     entity_id: Optional[str] = None
@@ -170,9 +193,10 @@ async def create_post(body: CreatePost, user=Depends(require_user)):
     post = db._row_to_dict(row)
     log_moderation("post", str(post["id"]), status, mod_result, auto=True)
 
-    # @-mention: báo cho người được nhắc (chỉ khi bài được duyệt; không tự-nhắc mình)
+    # Báo: người được @-nhắc + người theo-dõi địa-điểm (chỉ khi bài được duyệt)
     if status == "approved":
         _notify_mentions(mentions, str(user["id"]), user.get("display_name"), str(post["id"]), body.content)
+        _notify_entity_followers(body.entity_id, str(user["id"]), user.get("display_name"), str(post["id"]))
 
     result = _enrich_post(post, user)
     if status != "approved":
@@ -363,7 +387,9 @@ async def get_entity_feed(
             FROM posts p
             JOIN users u ON u.id = p.user_id
             WHERE p.entity_id = {ph} AND p.moderation_status = 'approved'
-            ORDER BY p.created_at DESC
+            ORDER BY (CASE WHEN jsonb_typeof(p.images)='array' AND jsonb_array_length(p.images) > 0
+                           THEN 1 ELSE 0 END) DESC,
+                     p.created_at DESC
             LIMIT {ph} OFFSET {ph}
         """, (entity_id, limit, offset))
 
@@ -549,7 +575,33 @@ async def upload_image(file: UploadFile = File(...), user=Depends(require_user))
     return {"url": url}
 
 
-# ── User profile ──
+# ── User profile + reputation (gamification) ──
+
+def _reputation(conn, user_id: str, posts: int, reviews: int) -> dict:
+    """Danh tiếng compute-on-fly từ đóng-góp ĐÃ-DUYỆT (§1.4-safe, 0 lưu trữ)."""
+    ph = db._ph
+    def _c(sql, params):
+        r = db._fetchone(conn, sql, params)
+        return int(db._row_to_dict(r)["c"]) if r else 0
+    photos = _c(f"""SELECT COUNT(*) c FROM posts WHERE user_id::text={ph} AND moderation_status='approved'
+                    AND (CASE WHEN jsonb_typeof(images)='array' THEN jsonb_array_length(images) ELSE 0 END) > 0""", (user_id,))
+    followers = _c(f"SELECT COUNT(*) c FROM follows WHERE target_type='user' AND target_id={ph}", (user_id,))
+    places = _c(f"""SELECT COUNT(DISTINCT entity_id) c FROM posts WHERE user_id::text={ph}
+                    AND moderation_status='approved' AND entity_id IS NOT NULL""", (user_id,))
+    points = reviews * 5 + max(0, posts - reviews) * 2 + photos * 3 + followers
+    if points >= 300:   level, label = 4, "Đại sứ"
+    elif points >= 100: level, label = 3, "Đóng góp tích cực"
+    elif points >= 20:  level, label = 2, "Người đóng góp"
+    else:               level, label = 1, "Người mới"
+    badges = []
+    if reviews >= 1:   badges.append({"id": "first_review", "label": "Đánh giá đầu tiên", "icon": "✍️"})
+    if reviews >= 10:  badges.append({"id": "reviewer_10", "label": "Nhà phê bình", "icon": "⭐"})
+    if photos >= 5:    badges.append({"id": "photographer", "label": "Nhiếp ảnh cộng đồng", "icon": "📸"})
+    if places >= 5:    badges.append({"id": "explorer", "label": "Người khám phá", "icon": "🧭"})
+    if followers >= 10: badges.append({"id": "popular", "label": "Được yêu thích", "icon": "💛"})
+    return {"points": points, "level": level, "level_label": label, "badges": badges,
+            "photos": photos, "followers": followers, "places": places}
+
 
 @router.get("/users/{user_id}")
 async def get_user_profile(user_id: str, user=Depends(get_current_user)):
@@ -575,6 +627,11 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
             WHERE user_id::text = {ph} AND post_type = 'review' AND moderation_status = 'approved'
         """, (user_id,))
 
+    posts_n = post_count["c"] if post_count else 0
+    reviews_n = review_count["c"] if review_count else 0
+    with db._conn() as conn:
+        reputation = _reputation(conn, user_id, posts_n, reviews_n)
+
     return {
         "user": {
             "id": str(profile["id"]),
@@ -582,10 +639,8 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
             "avatar_url": profile.get("avatar_url"),
             "bio": profile.get("bio", ""),
             "created_at": str(profile["created_at"]),
-            "stats": {
-                "posts": post_count["c"] if post_count else 0,
-                "reviews": review_count["c"] if review_count else 0,
-            },
+            "stats": {"posts": posts_n, "reviews": reviews_n},
+            "reputation": reputation,
         },
     }
 
