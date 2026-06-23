@@ -252,6 +252,14 @@ def test_repost_creates_snapshot_and_blocks_repost_of_repost(pg_user, pg_entity)
         created.append(rp["id"])
         assert rp["repost_of"] == orig_id
         assert rp["repost"] and rp["repost"]["content"].startswith("Bài gốc để đăng lại")
+        assert rp["content"] == ""  # đăng lại không kèm lời → content rỗng
+        # quote (trích dẫn) — content bình luận + snapshot cùng tồn tại
+        resp_q = client.post("/api/posts", json={"repost_of": orig_id, "content": "Bài này hay, mọi người xem nhé."})
+        assert resp_q.status_code == 200, resp_q.text
+        qp = resp_q.json()["post"]
+        created.append(qp["id"])
+        assert qp["content"].startswith("Bài này hay")
+        assert qp["repost"] and qp["repost"]["content"].startswith("Bài gốc để đăng lại")
         # repost-của-repost → 400
         resp2 = client.post("/api/posts", json={"repost_of": rp["id"], "content": ""})
         assert resp2.status_code == 400
