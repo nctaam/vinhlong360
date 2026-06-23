@@ -437,10 +437,12 @@ class Database:
 
         if q:
             if self._use_pg:
-                conditions.append(f"(e.name ILIKE {ph} OR e.summary ILIKE {ph})")
+                # không phân-biệt-dấu (f_unaccent + functional GIN trgm index, migration 015)
+                conditions.append(f"(f_unaccent(lower(e.name)) LIKE f_unaccent({ph}) OR f_unaccent(lower(e.summary)) LIKE f_unaccent({ph}))")
+                params.extend([f"%{q.lower()}%", f"%{q.lower()}%"])
             else:
                 conditions.append(f"(e.name LIKE {ph} OR e.summary LIKE {ph})")
-            params.extend([f"%{q}%", f"%{q}%"])
+                params.extend([f"%{q}%", f"%{q}%"])
 
         where = " AND ".join(conditions)
         params.append(limit)
@@ -505,10 +507,12 @@ class Database:
             params.extend([area, area])
         if q:
             if self._use_pg:
-                conditions.append(f"(e.name ILIKE {ph} OR e.summary ILIKE {ph})")
+                # không phân-biệt-dấu (f_unaccent + functional GIN trgm index, migration 015)
+                conditions.append(f"(f_unaccent(lower(e.name)) LIKE f_unaccent({ph}) OR f_unaccent(lower(e.summary)) LIKE f_unaccent({ph}))")
+                params.extend([f"%{q.lower()}%", f"%{q.lower()}%"])
             else:
                 conditions.append(f"(e.name LIKE {ph} OR e.summary LIKE {ph})")
-            params.extend([f"%{q}%", f"%{q}%"])
+                params.extend([f"%{q}%", f"%{q}%"])
 
         where = " AND ".join(conditions)
         with self._conn() as conn:

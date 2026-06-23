@@ -245,7 +245,7 @@ def test_search_posts_finds_by_content(pg_user, pg_entity):
             INSERT INTO posts (user_id, entity_id, content, images, post_type, moderation_status)
             VALUES ({ph}::uuid, {ph}, {ph}, {ph}::jsonb, {ph}, 'approved')
             RETURNING id
-        """, (str(pg_user["id"]), pg_entity, f"Trải nghiệm {token} tuyệt vời.", json.dumps([]), "share"))
+        """, (str(pg_user["id"]), pg_entity, f"Trải nghiệm {token} ở cù lao tuyệt vời.", json.dumps([]), "share"))
         pid = str(row["id"])
     try:
         client = _client_as(pg_user)
@@ -254,6 +254,9 @@ def test_search_posts_finds_by_content(pg_user, pg_entity):
         assert hit.status_code == 200, hit.text
         ids = [p["id"] for p in hit.json()["posts"]]
         assert pid in ids
+        # không phân-biệt-dấu: gõ "cu lao" (không dấu) tìm thấy "cù lao"
+        acc = client.get("/api/search/posts?q=cu lao")
+        assert acc.status_code == 200 and pid in [p["id"] for p in acc.json()["posts"]]
         # không khớp
         miss = client.get("/api/search/posts?q=khongcotunaodayxyz")
         assert miss.status_code == 200 and pid not in [p["id"] for p in miss.json()["posts"]]

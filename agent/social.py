@@ -419,7 +419,7 @@ async def search_posts(
     ph = db._ph
     limit = 20
     offset = (page - 1) * limit
-    pattern = "%" + q.strip().lower() + "%"
+    pattern = "%" + q.strip().lower() + "%"  # f_unaccent strip dấu ở SQL; lower ở đây
 
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
@@ -429,14 +429,14 @@ async def search_posts(
             JOIN users u ON u.id = p.user_id
             LEFT JOIN entities e ON e.id = p.entity_id
             WHERE p.moderation_status = 'approved'
-              AND lower(p.content) LIKE {ph}
+              AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph})
             ORDER BY p.created_at DESC
             LIMIT {ph} OFFSET {ph}
         """, (pattern, limit, offset))
 
         total = db._fetchone(conn, f"""
             SELECT COUNT(*) as c FROM posts p
-            WHERE p.moderation_status = 'approved' AND lower(p.content) LIKE {ph}
+            WHERE p.moderation_status = 'approved' AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph})
         """, (pattern,))
 
     posts = [_format_post(db._row_to_dict(r)) for r in rows]

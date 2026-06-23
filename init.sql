@@ -8,6 +8,11 @@
 -- Extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+CREATE EXTENSION IF NOT EXISTS "unaccent";
+-- f_unaccent: unaccent dạng IMMUTABLE → dùng được trong functional index (migration 015)
+CREATE OR REPLACE FUNCTION f_unaccent(text) RETURNS text
+    LANGUAGE sql IMMUTABLE PARALLEL SAFE STRICT AS
+$$ SELECT public.unaccent('public.unaccent'::regdictionary, $1) $$;
 
 -- ──────────────────────────────────────────────────────────
 -- PHASE 0: Knowledge Graph (migrated from SQLite)
@@ -38,6 +43,8 @@ CREATE INDEX IF NOT EXISTS idx_entities_type ON entities(type);
 CREATE INDEX IF NOT EXISTS idx_entities_placeid ON entities("placeId");
 CREATE INDEX IF NOT EXISTS idx_entities_name_trgm ON entities USING gin(name gin_trgm_ops);
 CREATE INDEX IF NOT EXISTS idx_entities_summary_trgm ON entities USING gin(summary gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_entities_name_unaccent ON entities USING gin(f_unaccent(lower(name)) gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_entities_summary_unaccent ON entities USING gin(f_unaccent(lower(summary)) gin_trgm_ops);
 
 CREATE TABLE IF NOT EXISTS relationships (
     from_id TEXT NOT NULL,
@@ -156,6 +163,7 @@ CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(moderation_status);
 CREATE INDEX IF NOT EXISTS idx_posts_created ON posts(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_posts_type ON posts(post_type);
 CREATE INDEX IF NOT EXISTS idx_posts_content_trgm ON posts USING GIN (lower(content) gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_posts_content_unaccent ON posts USING GIN (f_unaccent(lower(content)) gin_trgm_ops);
 
 CREATE TABLE IF NOT EXISTS comments (
     id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
