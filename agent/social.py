@@ -121,7 +121,9 @@ class CreatePost(BaseModel):
     @classmethod
     def validate_content(cls, v):
         v = (v or "").strip()
-        # min-10 enforce ở create_post (repost rỗng được phép); ở đây chỉ chặn quá dài
+        # Cho phép RỖNG (repost không kèm lời); 1-9 ký tự = quá ngắn → chặn. ≥10 OK.
+        if 0 < len(v) < 10:
+            raise ValueError("Nội dung cần ít nhất 10 ký tự")
         if len(v) > 5000:
             raise ValueError("Nội dung tối đa 5000 ký tự")
         return v
