@@ -164,6 +164,44 @@
       </div>
     </section>
 
+    <!-- 6.5 Từ cộng đồng — social proof, luôn tươi (client-only, không kẹt cache SWR) -->
+    <ClientOnly>
+      <section v-if="communityPosts.length" class="block reveal">
+        <div class="section-head">
+          <h2>Từ cộng đồng</h2>
+          <NuxtLink class="see-all" to="/cong-dong">Xem tất cả →</NuxtLink>
+        </div>
+        <p v-if="communityStats" class="community-stats-line">
+          <strong>{{ communityStats.posts }}</strong> bài viết
+          · <strong>{{ communityStats.reviews }}</strong> đánh giá
+          · <strong>{{ communityStats.members }}</strong> thành viên
+        </p>
+        <div class="scroll-row" role="region" aria-label="Bài viết cộng đồng mới">
+          <NuxtLink v-for="p in communityPosts" :key="p.id" :to="`/bai-viet/${p.id}`" class="cm-card">
+            <div v-if="p.images && p.images.length" class="cm-img">
+              <img :src="p.images[0]" alt="" loading="lazy" decoding="async" width="280" height="150" />
+            </div>
+            <div class="cm-body">
+              <div class="cm-author">
+                <span class="cm-avatar">{{ (p.display_name || '?').charAt(0).toUpperCase() }}</span>
+                <span class="cm-name">{{ p.display_name || 'Người dùng' }}</span>
+                <span v-if="p.post_type_label" class="cm-type">{{ p.post_type_label }}</span>
+              </div>
+              <p class="cm-content">{{ p.content }}</p>
+              <div class="cm-meta">
+                <span v-if="p.likes">❤️ {{ p.likes }}</span>
+                <span v-if="p.comments_count || p.comment_count">💬 {{ p.comments_count || p.comment_count }}</span>
+                <span v-if="p.entity_name" class="cm-place">📍 {{ p.entity_name }}</span>
+              </div>
+            </div>
+          </NuxtLink>
+        </div>
+        <div class="block-cta">
+          <NuxtLink to="/cong-dong" class="btn btn-outline">💬 Tham gia cộng đồng</NuxtLink>
+        </div>
+      </section>
+    </ClientOnly>
+
     <!-- 7. Cá nhân hóa — client-only (saved + AI recommendations) -->
     <ClientOnly>
       <section v-if="recentSaved.length" class="block">
@@ -286,6 +324,20 @@ function getFavTypeMeta(type: string) {
 const heroQ = ref('')
 
 const { data: homeData, error: homeError, refresh: refreshHome } = await useAsyncData('homepage', () => $fetch<Record<string, unknown>>('/api/homepage'))
+
+// Từ cộng đồng — fetch client-side (luôn tươi, không kẹt cache SWR của trang chủ)
+const { data: communityData } = await useAsyncData('home-community', async () => {
+  const [feed, cstats] = await Promise.all([
+    $fetch<any>('/api/feed?limit=10').catch(() => ({ posts: [] })),
+    $fetch<any>('/api/community/stats').catch(() => null),
+  ])
+  const posts = (feed.posts || [])
+    .filter((p: any) => ((p.content || '').trim().length > 0) || (p.images && p.images.length))
+    .slice(0, 6)
+  return { posts, stats: cstats }
+}, { server: false, lazy: true })
+const communityPosts = computed(() => communityData.value?.posts || [])
+const communityStats = computed(() => communityData.value?.stats || null)
 
 const currentMonth = computed(() => homeData.value?.month || (new Date().getMonth() + 1))
 const seasonal = computed(() => homeData.value?.seasonal || [])
@@ -806,6 +858,26 @@ html.js .home .hero-enter h1::after {
 
 /* ── Block CTA ── */
 .block-cta { text-align: center; margin-top: var(--space-4); }
+
+/* ── Từ cộng đồng ── */
+.community-stats-line { font-size: var(--text-sm); color: var(--muted); margin: 0 0 var(--space-4); }
+.community-stats-line strong { color: var(--primary-fg); font-weight: var(--weight-bold); }
+.cm-card { display: flex; flex-direction: column; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-xs); text-decoration: none; color: var(--ink); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
+.cm-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border); }
+.cm-card:active { transform: scale(.98); transition-duration: .1s; }
+.cm-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.cm-img { aspect-ratio: 16 / 9; overflow: hidden; background: var(--bg-alt); }
+.cm-img img { width: 100%; height: 100%; object-fit: cover; }
+.cm-body { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) var(--space-4) var(--space-4); }
+.cm-author { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.cm-avatar { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--text-on-dark, #fff); font-size: var(--text-xs); font-weight: var(--weight-semibold); flex-shrink: 0; }
+.cm-name { font-size: var(--text-sm); font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cm-type { margin-left: auto; font-size: var(--text-xs); color: var(--muted); background: var(--bg-alt); padding: 1px 8px; border-radius: var(--radius-full); white-space: nowrap; flex-shrink: 0; }
+.cm-content { margin: 0; font-size: var(--text-sm); color: var(--ink-700); line-height: var(--leading-snug); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.cm-meta { display: flex; flex-wrap: wrap; gap: var(--space-3); font-size: var(--text-xs); color: var(--muted); }
+.cm-place { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%; }
+.dark .cm-card { background: var(--card); border-color: var(--line); }
+.dark .cm-card:hover { border-color: rgba(255,255,255,.1); }
 
 /* ── Card grid choreography ── */
 .home .grid .card,
