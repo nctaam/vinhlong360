@@ -20,11 +20,15 @@
             <span class="avatar thread-avatar avatar-sm">{{ userInitial }}</span>
           </div>
           <div class="compose-right">
+            <div v-if="replyingTo" class="reply-context">
+              <span>Đang trả lời <strong>@{{ replyingTo.author?.display_name || 'Người dùng' }}</strong></span>
+              <button type="button" class="reply-context-x" aria-label="Huỷ trả lời" @click="cancelReply">&times;</button>
+            </div>
             <input
               v-model="commentText"
               class="compose-input-sm"
               maxlength="500"
-              :placeholder="`Trả lời ${post.display_name || 'bài viết'}…`"
+              :placeholder="replyingTo ? `Trả lời @${replyingTo.author?.display_name || 'Người dùng'}…` : `Trả lời ${post.display_name || 'bài viết'}…`"
               @keyup.enter="submitComment"
             />
             <button type="button" class="btn btn-primary btn-sm compose-send" :disabled="!commentText.trim() || submitting" @click="submitComment">
@@ -44,7 +48,7 @@
               <span class="avatar thread-avatar avatar-sm">{{ (c.author?.display_name || '?').charAt(0).toUpperCase() }}</span>
             </NuxtLink>
             <span v-else class="avatar thread-avatar avatar-sm">{{ (c.author?.display_name || '?').charAt(0).toUpperCase() }}</span>
-            <div v-if="idx < comments.length - 1" class="thread-line"></div>
+            <div v-if="idx < comments.length - 1 || (c.replies && c.replies.length)" class="thread-line"></div>
           </div>
           <div class="thread-right">
             <div class="thread-head">
@@ -55,9 +59,27 @@
               <time class="thread-time" :datetime="c.created_at">{{ timeAgo(c.created_at) }}</time>
             </div>
             <p class="thread-content reply-text" v-html="renderComment(c)"></p>
-            <div v-if="isQuestion" class="qa-row">
-              <span v-if="c.id === bestAnswerId" class="qa-badge">✓ Câu trả lời hay</span>
-              <button v-else-if="isQuestionAuthor" type="button" class="qa-pick" @click="setBestAnswer(c.id)">Chọn là câu trả lời hay</button>
+            <div class="comment-actions">
+              <button v-if="isLoggedIn" type="button" class="comment-reply-btn" @click="startReply(c)">Trả lời</button>
+              <span v-if="isQuestion && c.id === bestAnswerId" class="qa-badge">✓ Câu trả lời hay</span>
+              <button v-else-if="isQuestion && isQuestionAuthor" type="button" class="qa-pick" @click="setBestAnswer(c.id)">Chọn là câu trả lời hay</button>
+            </div>
+
+            <!-- Replies lồng (threaded, 1 cấp) -->
+            <div v-for="r in (c.replies || [])" :key="r.id" class="thread-subreply">
+              <NuxtLink v-if="r.author?.id" :to="`/nguoi-dung/${r.author?.id}`" class="thread-avatar-link">
+                <span class="avatar thread-avatar avatar-xs">{{ (r.author?.display_name || '?').charAt(0).toUpperCase() }}</span>
+              </NuxtLink>
+              <span v-else class="avatar thread-avatar avatar-xs">{{ (r.author?.display_name || '?').charAt(0).toUpperCase() }}</span>
+              <div class="subreply-body">
+                <div class="thread-head">
+                  <NuxtLink v-if="r.author?.id" :to="`/nguoi-dung/${r.author?.id}`" class="thread-author">{{ r.author?.display_name || 'Người dùng' }}</NuxtLink>
+                  <span v-else class="thread-author">{{ r.author?.display_name || 'Người dùng' }}</span>
+                  <time class="thread-time" :datetime="r.created_at">{{ timeAgo(r.created_at) }}</time>
+                </div>
+                <p class="thread-content reply-text" v-html="renderComment(r)"></p>
+                <button v-if="isLoggedIn" type="button" class="comment-reply-btn" @click="startReply(r)">Trả lời</button>
+              </div>
             </div>
           </div>
         </div>
@@ -118,6 +140,7 @@ const commentText = ref('')
 const comments = ref<Entity[]>([])
 const submitting = ref(false)
 const loading = ref(true)
+const replyingTo = ref<any | null>(null)
 
 // ── Q&A: câu trả lời hay (chủ bài hỏi chọn) ──
 const bestAnswerId = ref<string | null>(null)
@@ -141,6 +164,14 @@ function scrollToCompose() {
     input?.focus()
   })
 }
+
+// ── Threaded reply ──
+function startReply(c: any) {
+  if (!isLoggedIn.value) { openAuth(); return }
+  replyingTo.value = c
+  scrollToCompose()
+}
+function cancelReply() { replyingTo.value = null }
 
 const userInitial = computed(() => {
   const name = user.value?.display_name || user.value?.phone || '?'
@@ -173,13 +204,26 @@ async function submitComment() {
   if (!commentText.value.trim() || submitting.value) return
   submitting.value = true
   try {
+    const body: Record<string, any> = { content: commentText.value.trim() }
+    const t = replyingTo.value
+    if (t) {
+      // Threading 1 cấp: gắn vào bình-luận-gốc (cha của reply, hoặc chính nó nếu là top-level)
+      body.parent_id = t.parent_id || t.id
+      // Trả lời 1 reply → @mention tác-giả để giữ ngữ cảnh trong nhánh phẳng
+      if (t.parent_id && t.author?.id && t.author?.display_name) {
+        const label = t.author.display_name
+        if (!body.content.includes(`@${label}`)) body.content = `@${label} ${body.content}`
+        body.mentions = [{ type: 'user', id: t.author.id, label }]
+      }
+    }
     await $fetch(`/api/posts/${postId}/comments`, {
       method: 'POST',
       headers: authHeaders(),
-      body: { content: commentText.value.trim() },
+      body,
     })
     commentText.value = ''
-    showToast('Đã gửi bình luận', 'success')
+    replyingTo.value = null
+    showToast(t ? 'Đã gửi trả lời' : 'Đã gửi bình luận', 'success')
     if (post.value) post.value.comments_count = (post.value.comments_count || 0) + 1
     await fetchComments()
   } catch { showToast('Gửi bình luận thất bại', 'error') }
@@ -278,6 +322,18 @@ if (post.value) {
 .qa-badge { display: inline-flex; align-items: center; gap: .25rem; font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: .2rem .55rem; border-radius: 999px; background: color-mix(in srgb, var(--leaf, green) 18%, var(--bg-alt)); color: var(--leaf-fg, green); }
 .qa-pick { font-size: var(--text-xs); padding: .2rem .55rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink-700); cursor: pointer; }
 .qa-pick:hover { border-color: var(--primary); color: var(--primary-fg); }
+
+/* ── Comment actions + threaded replies ── */
+.comment-actions { display: flex; align-items: center; gap: var(--space-3); margin-top: .35rem; flex-wrap: wrap; }
+.comment-reply-btn { font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: .15rem .1rem; border: none; background: none; color: var(--muted); cursor: pointer; }
+.comment-reply-btn:hover { color: var(--primary-fg); }
+.thread-subreply { display: flex; gap: var(--space-2); margin-top: var(--space-3); padding-left: var(--space-2); border-left: 2px solid var(--line); }
+.subreply-body { flex: 1; min-width: 0; }
+.subreply-body .comment-reply-btn { margin-top: .25rem; }
+.avatar-xs { width: 26px; height: 26px; font-size: 11px; }
+.reply-context { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); font-size: var(--text-xs); color: var(--ink-700); background: var(--bg-alt); border-radius: var(--radius-sm); padding: .3rem .6rem; margin-bottom: var(--space-2); }
+.reply-context-x { background: none; border: none; color: var(--muted); font-size: 1.1rem; line-height: 1; cursor: pointer; }
+.reply-context-x:hover { color: var(--ink); }
 .thread-detail-page { max-width: 680px; margin: 0 auto; }
 .thread-detail { display: flex; flex-direction: column; }
 

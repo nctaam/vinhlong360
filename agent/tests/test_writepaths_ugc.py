@@ -208,6 +208,34 @@ def test_comment_on_nonexistent_post_404(pg_user):
 
 
 @pg_only
+def test_threaded_reply_nests_under_parent(pg_user, pg_entity):
+    """Trả lời (parent_id) lồng đúng dưới bình-luận-gốc trong GET comments."""
+    ph = db._ph
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"""
+            INSERT INTO posts (user_id, entity_id, content, images, post_type, moderation_status)
+            VALUES ({ph}::uuid, {ph}, {ph}, {ph}::jsonb, {ph}, 'approved')
+            RETURNING id
+        """, (str(pg_user["id"]), pg_entity, "Bài để bình luận lồng.", json.dumps([]), "share"))
+        pid = str(row["id"])
+    try:
+        client = _client_as(pg_user)
+        top = client.post(f"/api/posts/{pid}/comments", json={"content": "Bình luận gốc."})
+        assert top.status_code == 200, top.text
+        top_id = top.json()["comment"]["id"]
+        reply = client.post(f"/api/posts/{pid}/comments", json={"content": "Trả lời gốc.", "parent_id": top_id})
+        assert reply.status_code == 200, reply.text
+        assert reply.json()["comment"]["parent_id"] == top_id
+        listed = client.get(f"/api/posts/{pid}/comments").json()["comments"]
+        assert len(listed) == 1 and listed[0]["id"] == top_id
+        assert len(listed[0]["replies"]) == 1
+        assert listed[0]["replies"][0]["content"] == "Trả lời gốc."
+    finally:
+        with db._conn() as conn:
+            db._execute(conn, f"DELETE FROM posts WHERE id::text = {ph}", (pid,))
+
+
+@pg_only
 def test_delete_post_forbidden_for_other_user(pg_user, pg_entity):
     """User B cannot delete User A's post → 403."""
     # User A creates a post directly in DB.

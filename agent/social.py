@@ -520,15 +520,31 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
 
         post_owner = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
 
+        # threaded reply: lấy tác-giả bình-luận-cha để báo
+        parent_author = None
+        if body.parent_id:
+            pa = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph}", (body.parent_id,))
+            if pa:
+                parent_author = str(pa["user_id"])
+
     log_moderation("comment", str(db._row_to_dict(row)["id"]), status, mod_result, auto=True)
 
     if status == "approved":
+        me = str(user["id"])
+        owner_id = str(post_owner["user_id"]) if post_owner else None
+        preview = body.content[:80] + ("..." if len(body.content) > 80 else "")
         # báo chủ bài (nếu khác người bình luận)
-        if post_owner and str(post_owner["user_id"]) != str(user["id"]):
-            preview = body.content[:80] + ("..." if len(body.content) > 80 else "")
+        if owner_id and owner_id != me:
             create_notification(
-                str(post_owner["user_id"]), "comment",
+                owner_id, "comment",
                 f"{user.get('display_name', 'Ai đó')} đã bình luận bài viết của bạn",
+                body=preview, ref_type="post", ref_id=post_id,
+            )
+        # báo tác-giả bình-luận-cha khi có người trả lời (tránh trùng chủ bài + chính mình)
+        if parent_author and parent_author != me and parent_author != owner_id:
+            create_notification(
+                parent_author, "comment",
+                f"{user.get('display_name', 'Ai đó')} đã trả lời bình luận của bạn",
                 body=preview, ref_type="post", ref_id=post_id,
             )
         # @-mention trong bình luận
