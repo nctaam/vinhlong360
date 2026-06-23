@@ -313,6 +313,50 @@ async def delete_post(post_id: str, user=Depends(require_user)):
     return {"success": True}
 
 
+@router.patch("/posts/{post_id}")
+async def update_post(post_id: str, body: UpdatePost, user=Depends(require_user)):
+    """Sửa bài của CHÍNH MÌNH (nội dung; review đổi sao). Kiểm duyệt + hashtag lại."""
+    ph = db._ph
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"SELECT user_id, post_type FROM posts WHERE id::text = {ph}", (post_id,))
+        if not row:
+            raise HTTPException(404, "Bài viết không tồn tại")
+        d = db._row_to_dict(row)
+        if str(d["user_id"]) != str(user["id"]):
+            raise HTTPException(403, "Không có quyền sửa bài viết này")
+
+    new_content = (body.content or "").strip()
+    if len(new_content) < 10:
+        raise HTTPException(400, "Nội dung cần ít nhất 10 ký tự")
+    if len(new_content) > 5000:
+        raise HTTPException(400, "Nội dung tối đa 5000 ký tự")
+
+    mod_result = await moderate_content(new_content, [])
+    status = mod_result["status"]
+    hashtags = _extract_hashtags(new_content)
+    set_rating = body.rating is not None and d["post_type"] == "review"
+    if set_rating and (body.rating < 1 or body.rating > 5):
+        raise HTTPException(400, "Đánh giá từ 1 đến 5 sao")
+
+    with db._conn() as conn:
+        if set_rating:
+            db._execute(conn, f"""UPDATE posts SET content={ph}, hashtags={ph}::jsonb,
+                          rating={ph}, moderation_status={ph} WHERE id::text={ph}""",
+                        (new_content, json.dumps(hashtags, ensure_ascii=False), body.rating, status, post_id))
+        else:
+            db._execute(conn, f"""UPDATE posts SET content={ph}, hashtags={ph}::jsonb,
+                          moderation_status={ph} WHERE id::text={ph}""",
+                        (new_content, json.dumps(hashtags, ensure_ascii=False), status, post_id))
+        post = db._fetchone(conn, f"""
+            SELECT p.*, u.display_name, u.avatar_url, u.phone,
+                   e.name as entity_name, e.type as entity_type
+            FROM posts p JOIN users u ON u.id = p.user_id
+            LEFT JOIN entities e ON e.id = p.entity_id WHERE p.id::text = {ph}
+        """, (post_id,))
+
+    return {"post": _format_post(db._row_to_dict(post)), "moderation_status": status}
+
+
 # ── Feed ──
 
 @router.get("/feed")
@@ -579,6 +623,115 @@ async def trending_tags(limit: int = Query(10, ge=1, le=20)):
         """, (limit,))
     tags = [{"tag": db._row_to_dict(r)["tag"], "count": int(db._row_to_dict(r)["c"])} for r in rows]
     return {"tags": tags}
+
+
+@router.get("/community/leaderboard")
+async def community_leaderboard(limit: int = Query(10, ge=1, le=50)):
+    """Bảng xếp hạng: thành viên tích cực theo điểm danh-tiếng (1 query gộp)."""
+    with db._conn() as conn:
+        rows = db._fetchall(conn, """
+            SELECT u.id, u.display_name, u.avatar_url,
+                   COUNT(p.id) FILTER (WHERE p.post_type='review') AS reviews,
+                   COUNT(p.id) AS posts,
+                   COUNT(p.id) FILTER (WHERE jsonb_typeof(p.images)='array'
+                                         AND jsonb_array_length(p.images) > 0) AS photos,
+                   COALESCE(fc.c, 0) AS followers
+            FROM users u
+            LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved'
+            LEFT JOIN (SELECT target_id, COUNT(*) c FROM follows
+                         WHERE target_type='user' GROUP BY target_id) fc
+                   ON fc.target_id = u.id::text
+            WHERE u.is_active = TRUE AND u.display_name IS NOT NULL
+            GROUP BY u.id, u.display_name, u.avatar_url, fc.c
+        """, ())
+
+    leaders = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        reviews = int(d["reviews"] or 0)
+        posts = int(d["posts"] or 0)
+        photos = int(d["photos"] or 0)
+        followers = int(d["followers"] or 0)
+        points = reviews * 5 + max(0, posts - reviews) * 2 + photos * 3 + followers
+        if points <= 0:
+            continue
+        level, label = _level_for(points)
+        leaders.append({
+            "id": str(d["id"]), "display_name": d["display_name"], "avatar_url": d.get("avatar_url"),
+            "points": points, "level": level, "level_label": label,
+            "posts": posts, "reviews": reviews,
+        })
+    leaders.sort(key=lambda x: x["points"], reverse=True)
+    return {"leaders": leaders[:limit]}
+
+
+@router.get("/users/{user_id}/following")
+async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100)):
+    """Danh sách NGƯỜI mà user này đang theo dõi (hồ-sơ công-khai)."""
+    ph = db._ph
+    with db._conn() as conn:
+        rows = db._fetchall(conn, f"""
+            SELECT u.id, u.display_name, u.avatar_url
+            FROM follows f JOIN users u ON u.id::text = f.target_id
+            WHERE f.follower_id = {ph}::uuid AND f.target_type = 'user' AND u.is_active = TRUE
+            ORDER BY f.created_at DESC LIMIT {ph}
+        """, (user_id, limit))
+    return {"users": [{"id": str(db._row_to_dict(r)["id"]),
+                       "display_name": db._row_to_dict(r)["display_name"],
+                       "avatar_url": db._row_to_dict(r).get("avatar_url")} for r in rows]}
+
+
+@router.get("/users/{user_id}/followers")
+async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100)):
+    """Danh sách NGƯỜI đang theo dõi user này (hồ-sơ công-khai)."""
+    ph = db._ph
+    with db._conn() as conn:
+        rows = db._fetchall(conn, f"""
+            SELECT u.id, u.display_name, u.avatar_url
+            FROM follows f JOIN users u ON u.id = f.follower_id
+            WHERE f.target_type = 'user' AND f.target_id = {ph} AND u.is_active = TRUE
+            ORDER BY f.created_at DESC LIMIT {ph}
+        """, (user_id, limit))
+    return {"users": [{"id": str(db._row_to_dict(r)["id"]),
+                       "display_name": db._row_to_dict(r)["display_name"],
+                       "avatar_url": db._row_to_dict(r).get("avatar_url")} for r in rows]}
+
+
+@router.get("/community/suggested-follows")
+async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge=1, le=20)):
+    """Gợi ý người để theo dõi: top contributor mình CHƯA theo dõi (loại chính mình)."""
+    ph = db._ph
+    me = str(user["id"])
+    with db._conn() as conn:
+        rows = db._fetchall(conn, f"""
+            SELECT u.id, u.display_name, u.avatar_url,
+                   COUNT(p.id) FILTER (WHERE p.post_type='review') AS reviews,
+                   COUNT(p.id) AS posts,
+                   COUNT(p.id) FILTER (WHERE jsonb_typeof(p.images)='array'
+                                         AND jsonb_array_length(p.images) > 0) AS photos,
+                   COALESCE(fc.c, 0) AS followers
+            FROM users u
+            LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved'
+            LEFT JOIN (SELECT target_id, COUNT(*) c FROM follows
+                         WHERE target_type='user' GROUP BY target_id) fc ON fc.target_id = u.id::text
+            WHERE u.is_active = TRUE AND u.display_name IS NOT NULL
+              AND u.id::text <> {ph}
+              AND u.id::text NOT IN (SELECT target_id FROM follows
+                                       WHERE follower_id = {ph}::uuid AND target_type='user')
+            GROUP BY u.id, u.display_name, u.avatar_url, fc.c
+        """, (me, me))
+    cands = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        reviews = int(d["reviews"] or 0); posts = int(d["posts"] or 0)
+        photos = int(d["photos"] or 0); followers = int(d["followers"] or 0)
+        points = reviews * 5 + max(0, posts - reviews) * 2 + photos * 3 + followers
+        if points <= 0:
+            continue
+        cands.append({"id": str(d["id"]), "display_name": d["display_name"],
+                      "avatar_url": d.get("avatar_url"), "points": points, "posts": posts})
+    cands.sort(key=lambda x: x["points"], reverse=True)
+    return {"users": cands[:limit]}
 
 
 @router.get("/entities/{entity_id}/feed")
@@ -849,6 +1002,14 @@ async def upload_image(file: UploadFile = File(...), user=Depends(require_user))
 
 # ── User profile + reputation (gamification) ──
 
+def _level_for(points: int) -> tuple[int, str]:
+    """Cấp độ danh tiếng theo điểm (dùng chung profile + leaderboard)."""
+    if points >= 300: return 4, "Đại sứ"
+    if points >= 100: return 3, "Đóng góp tích cực"
+    if points >= 20:  return 2, "Người đóng góp"
+    return 1, "Người mới"
+
+
 def _reputation(conn, user_id: str, posts: int, reviews: int) -> dict:
     """Danh tiếng compute-on-fly từ đóng-góp ĐÃ-DUYỆT (§1.4-safe, 0 lưu trữ)."""
     ph = db._ph
@@ -861,10 +1022,7 @@ def _reputation(conn, user_id: str, posts: int, reviews: int) -> dict:
     places = _c(f"""SELECT COUNT(DISTINCT entity_id) c FROM posts WHERE user_id::text={ph}
                     AND moderation_status='approved' AND entity_id IS NOT NULL""", (user_id,))
     points = reviews * 5 + max(0, posts - reviews) * 2 + photos * 3 + followers
-    if points >= 300:   level, label = 4, "Đại sứ"
-    elif points >= 100: level, label = 3, "Đóng góp tích cực"
-    elif points >= 20:  level, label = 2, "Người đóng góp"
-    else:               level, label = 1, "Người mới"
+    level, label = _level_for(points)
     badges = []
     if reviews >= 1:   badges.append({"id": "first_review", "label": "Đánh giá đầu tiên", "icon": "✍️"})
     if reviews >= 10:  badges.append({"id": "reviewer_10", "label": "Nhà phê bình", "icon": "⭐"})

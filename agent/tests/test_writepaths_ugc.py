@@ -286,6 +286,52 @@ def test_search_users_by_name_accent_insensitive(pg_user):
 
 
 @pg_only
+def test_update_post_owner_only(pg_user, pg_entity):
+    """PATCH /posts/{id}: chủ bài sửa được, người khác 403, nội dung ngắn 400."""
+    ph = db._ph
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"""
+            INSERT INTO posts (user_id, entity_id, content, images, post_type, moderation_status)
+            VALUES ({ph}::uuid, {ph}, {ph}, {ph}::jsonb, {ph}, 'approved') RETURNING id
+        """, (str(pg_user["id"]), pg_entity, "Nội dung gốc cần sửa.", json.dumps([]), "share"))
+        pid = str(row["id"])
+    other = db.create_user("09" + uuid.uuid4().hex[:8])
+    try:
+        c = _client_as(pg_user)
+        r = c.patch(f"/api/posts/{pid}", json={"content": "Nội dung đã chỉnh sửa rồi nhé."})
+        assert r.status_code == 200, r.text
+        assert "đã chỉnh sửa" in r.json()["post"]["content"]
+        assert c.patch(f"/api/posts/{pid}", json={"content": "ngắn"}).status_code == 400
+        co = _client_as(other)
+        assert co.patch(f"/api/posts/{pid}", json={"content": "Người khác sửa trộm nhé."}).status_code == 403
+    finally:
+        with db._conn() as conn:
+            db._execute(conn, f"DELETE FROM posts WHERE id::text = {ph}", (pid,))
+            db._execute(conn, f"DELETE FROM users WHERE id::text = {ph}", (str(other["id"]),))
+
+
+@pg_only
+def test_followers_following_lists(pg_user):
+    """/users/{id}/following + /followers liệt kê đúng quan hệ follow."""
+    ph = db._ph
+    other = db.create_user("09" + uuid.uuid4().hex[:8])
+    try:
+        with db._conn() as conn:
+            db._execute(conn, f"UPDATE users SET display_name = 'Theo Doi Test' WHERE id::text = {ph}", (str(other["id"]),))
+            db._execute(conn, f"INSERT INTO follows (follower_id, target_type, target_id) VALUES ({ph}::uuid, 'user', {ph})",
+                        (str(pg_user["id"]), str(other["id"])))
+        c = _client_as(pg_user)
+        following = c.get(f"/api/users/{pg_user['id']}/following").json()["users"]
+        assert str(other["id"]) in [u["id"] for u in following]
+        followers = c.get(f"/api/users/{other['id']}/followers").json()["users"]
+        assert str(pg_user["id"]) in [u["id"] for u in followers]
+    finally:
+        with db._conn() as conn:
+            db._execute(conn, f"DELETE FROM follows WHERE follower_id = {ph}::uuid", (str(pg_user["id"]),))
+            db._execute(conn, f"DELETE FROM users WHERE id::text = {ph}", (str(other["id"]),))
+
+
+@pg_only
 def test_trending_tags_counts_hashtag(pg_user, pg_entity):
     """/api/community/trending-tags đếm hashtag bài đã duyệt trong 30 ngày."""
     ph = db._ph
