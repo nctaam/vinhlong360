@@ -24,13 +24,32 @@
               <span>Đang trả lời <strong>@{{ replyingTo.author?.display_name || 'Người dùng' }}</strong></span>
               <button type="button" class="reply-context-x" aria-label="Huỷ trả lời" @click="cancelReply">&times;</button>
             </div>
-            <input
-              v-model="commentText"
-              class="compose-input-sm"
-              maxlength="500"
-              :placeholder="replyingTo ? `Trả lời @${replyingTo.author?.display_name || 'Người dùng'}…` : `Trả lời ${post.display_name || 'bài viết'}…`"
-              @keyup.enter="submitComment"
-            />
+            <div class="comment-mention-wrap">
+              <input
+                ref="commentInputEl"
+                v-model="commentText"
+                class="compose-input-sm"
+                maxlength="500"
+                :placeholder="replyingTo ? `Trả lời @${replyingTo.author?.display_name || 'Người dùng'}…` : `Trả lời ${post.display_name || 'bài viết'}…`"
+                aria-label="Nội dung bình luận (gõ @ để nhắc người dùng hoặc địa điểm)"
+                @input="onMentionInput"
+                @keydown="onCommentKeydown"
+              />
+              <ul v-if="mentionOpen && mentionResults.length" class="mention-menu" role="listbox" aria-label="Gợi ý @nhắc">
+                <li
+                  v-for="(m, mi) in mentionResults"
+                  :key="m.type + m.id"
+                  :class="['mention-item', { active: mi === mentionActive }]"
+                  role="option"
+                  :aria-selected="mi === mentionActive"
+                  @mousedown.prevent="pickMention(m)"
+                >
+                  <span class="mention-ic" aria-hidden="true">{{ m.type === 'user' ? '👤' : '📍' }}</span>
+                  <span class="mention-label">{{ m.label }}</span>
+                  <span class="mention-sub">{{ m.sub }}</span>
+                </li>
+              </ul>
+            </div>
             <button type="button" class="btn btn-primary btn-sm compose-send" :disabled="!commentText.trim() || submitting" @click="submitComment">
               <svg v-if="!submitting" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4z"/></svg>
               <span v-else class="spinner spinner-sm"></span>
@@ -142,6 +161,19 @@ const submitting = ref(false)
 const loading = ref(true)
 const replyingTo = ref<any | null>(null)
 
+// @-mention trong ô bình luận (dùng composable chung)
+const commentInputEl = ref<HTMLInputElement | null>(null)
+const {
+  mentionResults, mentionOpen, mentionActive,
+  onInput: onMentionInput, pick: pickMention,
+  onKeydown: onMentionKeydown, reset: resetMention, activeMentions,
+} = useMentionAutocomplete(commentText, commentInputEl)
+
+function onCommentKeydown(e: KeyboardEvent) {
+  const consumed = onMentionKeydown(e)            // điều hướng menu khi đang mở
+  if (e.key === 'Enter' && !consumed) submitComment()
+}
+
 // ── Q&A: câu trả lời hay (chủ bài hỏi chọn) ──
 const bestAnswerId = ref<string | null>(null)
 const isQuestion = computed(() => (post.value as any)?.post_type === 'question')
@@ -206,6 +238,7 @@ async function submitComment() {
   try {
     const body: Record<string, any> = { content: commentText.value.trim() }
     const t = replyingTo.value
+    const mentions: any[] = [...activeMentions()]   // @-mention người dùng tự gõ
     if (t) {
       // Threading 1 cấp: gắn vào bình-luận-gốc (cha của reply, hoặc chính nó nếu là top-level)
       body.parent_id = t.parent_id || t.id
@@ -213,9 +246,12 @@ async function submitComment() {
       if (t.parent_id && t.author?.id && t.author?.display_name) {
         const label = t.author.display_name
         if (!body.content.includes(`@${label}`)) body.content = `@${label} ${body.content}`
-        body.mentions = [{ type: 'user', id: t.author.id, label }]
+        if (!mentions.some(x => x.type === 'user' && x.id === t.author.id)) {
+          mentions.push({ type: 'user', id: t.author.id, label })
+        }
       }
     }
+    if (mentions.length) body.mentions = mentions
     await $fetch(`/api/posts/${postId}/comments`, {
       method: 'POST',
       headers: authHeaders(),
@@ -223,6 +259,7 @@ async function submitComment() {
     })
     commentText.value = ''
     replyingTo.value = null
+    resetMention()
     showToast(t ? 'Đã gửi trả lời' : 'Đã gửi bình luận', 'success')
     if (post.value) post.value.comments_count = (post.value.comments_count || 0) + 1
     await fetchComments()

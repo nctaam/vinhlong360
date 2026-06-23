@@ -426,60 +426,16 @@ function autoGrow(e: Event) {
   el.style.height = el.scrollHeight + 'px'
 }
 
-// ── @-mention: gõ @ để nhắc người dùng / địa điểm ──
-interface MentionItem { type: 'user' | 'entity'; id: string; label: string; sub?: string }
-const mentionResults = ref<MentionItem[]>([])
-const mentionOpen = ref(false)
-const mentionActive = ref(0)
-const mentionAt = ref(-1)        // vị trí ký tự '@' trong newContent
-const mentionQueryLen = ref(0)   // độ dài chuỗi truy vấn sau '@'
-const selectedMentions = ref<MentionItem[]>([])
-let mentionTimer: ReturnType<typeof setTimeout> | null = null
+// ── @-mention: gõ @ để nhắc người dùng / địa điểm (composable chung) ──
+const {
+  mentionResults, mentionOpen, mentionActive,
+  onInput: onMentionInput, pick: pickMention,
+  onKeydown: onComposerKeydown, reset: resetMention, activeMentions,
+} = useMentionAutocomplete(newContent, composeInputEl)
 
 function onComposerInput(e: Event) {
   autoGrow(e)
-  const ta = e.target as HTMLTextAreaElement
-  const cursor = ta.selectionStart || 0
-  const before = newContent.value.slice(0, cursor)
-  // @ + token đơn (không dấu cách) ở ngay trước con trỏ, sau khoảng-trắng/đầu dòng
-  const m = before.match(/(?:^|\s)@([\p{L}\p{N}_]{1,30})$/u)
-  if (m) {
-    mentionAt.value = cursor - m[1].length - 1
-    mentionQueryLen.value = m[1].length
-    if (mentionTimer) clearTimeout(mentionTimer)
-    mentionTimer = setTimeout(() => searchMentions(m[1]), 180)
-  } else {
-    mentionOpen.value = false
-  }
-}
-
-async function searchMentions(q: string) {
-  try {
-    const res = await $fetch<{ results: MentionItem[] }>(`/api/mentions?q=${encodeURIComponent(q)}`)
-    mentionResults.value = res.results || []
-    mentionActive.value = 0
-    mentionOpen.value = mentionResults.value.length > 0
-  } catch { mentionOpen.value = false }
-}
-
-function pickMention(m: MentionItem) {
-  const at = mentionAt.value
-  const before = newContent.value.slice(0, at)
-  const after = newContent.value.slice(at + 1 + mentionQueryLen.value)
-  newContent.value = `${before}@${m.label} ${after}`
-  if (!selectedMentions.value.some(x => x.type === m.type && x.id === m.id)) {
-    selectedMentions.value.push({ type: m.type, id: m.id, label: m.label })
-  }
-  mentionOpen.value = false
-  nextTick(() => composeInputEl.value?.focus())
-}
-
-function onComposerKeydown(e: KeyboardEvent) {
-  if (!mentionOpen.value || !mentionResults.value.length) return
-  if (e.key === 'ArrowDown') { e.preventDefault(); mentionActive.value = (mentionActive.value + 1) % mentionResults.value.length }
-  else if (e.key === 'ArrowUp') { e.preventDefault(); mentionActive.value = (mentionActive.value - 1 + mentionResults.value.length) % mentionResults.value.length }
-  else if (e.key === 'Enter') { e.preventDefault(); pickMention(mentionResults.value[mentionActive.value]) }
-  else if (e.key === 'Escape') { mentionOpen.value = false }
+  onMentionInput(e)
 }
 
 // Thu nhỏ ảnh trước khi gửi (max 1280px, JPEG q0.82) — base64 nhẹ đi nhiều lần (trước đây
@@ -615,7 +571,7 @@ async function submitPost() {
       body.images = previewImages.value
     }
     // chỉ gửi mention còn xuất hiện trong nội dung (user có thể đã xoá)
-    const mentions = selectedMentions.value.filter(m => newContent.value.includes(`@${m.label}`))
+    const mentions = activeMentions()
     if (mentions.length) body.mentions = mentions
     await $fetch('/api/posts', {
       method: 'POST',
@@ -626,8 +582,7 @@ async function submitPost() {
     newType.value = 'share'
     imageFiles.value = []
     previewImages.value = []
-    selectedMentions.value = []
-    mentionOpen.value = false
+    resetMention()
     const wasQuote = !!quotingPost.value
     quotingPost.value = null
     showToast(wasQuote ? 'Đã đăng trích dẫn 🔁' : 'Đã đăng bài viết', 'success')
@@ -769,22 +724,7 @@ useHead({
 </script>
 
 <style scoped>
-/* @-mention dropdown */
-.compose-mention-wrap { position: relative; }
-.mention-menu {
-  position: absolute; left: 0; right: 0; top: 100%; z-index: 30; margin-top: 2px;
-  background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md, 0 6px 24px rgba(0,0,0,.16)); list-style: none; padding: .25rem;
-  max-height: 260px; overflow-y: auto;
-}
-.mention-item {
-  display: flex; align-items: center; gap: .5rem; padding: .45rem .55rem;
-  border-radius: var(--radius-sm); cursor: pointer; font-size: var(--text-sm);
-}
-.mention-item.active, .mention-item:hover { background: rgba(var(--primary-rgb), .08); }
-.mention-ic { flex-shrink: 0; }
-.mention-label { font-weight: var(--weight-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mention-sub { margin-left: auto; color: var(--ink-700); font-size: .8em; flex-shrink: 0; }
+/* @-mention dropdown: styles dùng chung đã chuyển sang assets/css/components.css */
 .tag-banner { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .5rem .75rem; margin-bottom: var(--space-3); background: color-mix(in srgb, var(--accent) 10%, var(--bg-alt)); border-radius: var(--radius-md); font-size: var(--text-sm); }
 .tag-clear { border: none; background: none; color: var(--primary-fg); cursor: pointer; font-size: var(--text-sm); }
 .threads-page { max-width: 960px; margin: 0 auto; }
