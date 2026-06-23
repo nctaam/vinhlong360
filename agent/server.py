@@ -66,6 +66,7 @@ from notifications import router as community_router
 from public_api import router as public_router
 import public_api as _public_api
 from saved import router as saved_router
+from plans import router as plans_router
 from seo import router as seo_router
 from social import router as social_router
 from tools import TOOLS, SYSTEM_PROMPT
@@ -853,6 +854,7 @@ app.include_router(admin_router)
 app.include_router(auth_router)
 app.include_router(public_router)
 app.include_router(saved_router)
+app.include_router(plans_router)
 app.include_router(seo_router)
 app.include_router(social_router)
 app.include_router(community_router)
