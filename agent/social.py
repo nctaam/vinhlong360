@@ -466,6 +466,40 @@ async def search_posts(
             "has_more": offset + limit < total_c}
 
 
+@router.get("/search/users")
+async def search_users(
+    q: str = Query(..., min_length=2, max_length=50),
+    page: int = Query(1, ge=1),
+):
+    """Tìm người dùng theo tên hiển thị (không phân-biệt-dấu). Thông tin hồ-sơ công-khai."""
+    ph = db._ph
+    limit = 20
+    offset = (page - 1) * limit
+    pattern = "%" + q.strip().lower() + "%"
+
+    with db._conn() as conn:
+        rows = db._fetchall(conn, f"""
+            SELECT u.id, u.display_name, u.avatar_url,
+                   (SELECT COUNT(*) FROM posts p
+                      WHERE p.user_id = u.id AND p.moderation_status = 'approved') AS post_count
+            FROM users u
+            WHERE u.is_active = TRUE
+              AND f_unaccent(lower(u.display_name)) LIKE f_unaccent({ph})
+            ORDER BY post_count DESC, u.display_name
+            LIMIT {ph} OFFSET {ph}
+        """, (pattern, limit, offset))
+
+    users = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        if d.get("display_name"):
+            users.append({
+                "id": str(d["id"]), "display_name": d["display_name"],
+                "avatar_url": d.get("avatar_url"), "post_count": int(d.get("post_count") or 0),
+            })
+    return {"users": users, "q": q, "has_more": len(users) == limit}
+
+
 @router.get("/community/stats")
 async def community_stats():
     """Số liệu THẬT của cộng đồng (không phải đếm 20 bài đã tải) cho sidebar /cong-dong."""

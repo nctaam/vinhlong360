@@ -268,6 +268,24 @@ def test_search_posts_finds_by_content(pg_user, pg_entity):
 
 
 @pg_only
+def test_search_users_by_name_accent_insensitive(pg_user):
+    """/api/search/users tìm theo tên hiển thị, không phân-biệt-dấu."""
+    ph = db._ph
+    token = uuid.uuid4().hex[:6]
+    name = f"Nguyễn {token}"  # có dấu
+    with db._conn() as conn:
+        db._execute(conn, f"UPDATE users SET display_name = {ph} WHERE id::text = {ph}",
+                    (name, str(pg_user["id"])))
+    client = _client_as(pg_user)
+    # gõ "nguyen <token>" (không dấu) → tìm thấy "Nguyễn <token>"
+    r = client.get(f"/api/search/users?q=nguyen {token}")
+    assert r.status_code == 200, r.text
+    assert str(pg_user["id"]) in [u["id"] for u in r.json()["users"]]
+    # q quá ngắn → 422
+    assert client.get("/api/search/users?q=a").status_code == 422
+
+
+@pg_only
 def test_delete_post_forbidden_for_other_user(pg_user, pg_entity):
     """User B cannot delete User A's post → 403."""
     # User A creates a post directly in DB.
