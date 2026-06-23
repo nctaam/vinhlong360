@@ -45,8 +45,8 @@
       </div>
     </section>
 
-    <!-- Degraded/empty fallback — never leave the page silently blank -->
-    <section v-if="homeError || !hasHomeContent" class="block reveal">
+    <!-- Degraded/empty fallback — chỉ hiện khi client đã fetch xong mà lỗi/rỗng (không nhấp-nháy) -->
+    <section v-if="homeFailed" class="block reveal">
       <EmptyState icon="🌾" :tone="homeError ? 'error' : 'empty'" title="Đang cập nhật nội dung" :message="homeError ? 'Mạng chậm một chút rồi. Bạn thử tải lại giúp tụi mình nhé!' : 'Tụi mình đang bổ sung điểm đến và đặc sản cho khu vực này. Quay lại sau nhé!'">
         <template #actions>
           <button v-if="homeError" type="button" class="btn btn-outline" @click="refreshHome()">Tải lại</button>
@@ -347,11 +347,12 @@ function getFavTypeMeta(type: string) {
   return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }
 }
 
-// SSR fetch THẲNG backend (bỏ qua Nitro proxy — proxy nội-bộ 502 trong ngữ-cảnh SSR
-// render '/'); client fetch tương-đối (browser → nginx → backend).
-const ssrApiBase = import.meta.server ? (process.env.API_BASE || 'http://127.0.0.1:8360') : ''
-const { data: homeData, error: homeError, refresh: refreshHome } = await useAsyncData('homepage',
-  () => $fetch<Record<string, unknown>>('/api/homepage', ssrApiBase ? { baseURL: ssrApiBase } : {}))
+// Data trang chủ fetch CLIENT-ONLY: SSR internal $fetch tới /api/homepage chập
+// (502/fetch-failed) trong ngữ-cảnh render '/'; đường client browser→nginx→backend
+// thì ổn định 200. Tránh SSR rỗng + fallback nhấp-nháy.
+const { data: homeData, error: homeError, pending: homePending, refresh: refreshHome } = await useAsyncData('homepage',
+  () => $fetch<Record<string, unknown>>('/api/homepage'),
+  { server: false, lazy: true })
 
 // Từ cộng đồng — fetch client-side (luôn tươi, không kẹt cache SWR của trang chủ)
 const { data: communityData } = await useAsyncData('home-community', async () => {
@@ -380,11 +381,8 @@ const upcomingEvents = computed(() => sortByRegion(homeData.value?.upcoming_even
 const seasonalTagline = computed(() => homeData.value?.seasonal_tagline || 'Khám phá Vĩnh Long theo cách của người bản địa')
 const hasHomeContent = computed(() => !!(upcomingEvents.value.length || seasonal.value.length || itineraries.value.length || topExperiences.value.length || products.value.length))
 
-// Tự phục hồi: nếu SSR fetch lỗi/rỗng (vd backend hiccup hoặc HTML cache cũ lúc deploy),
-// client tự refetch 1 lần — khách không phải bấm "Tải lại". Chỉ chạy khi thực sự thiếu nội dung.
-onMounted(() => {
-  if (homeError.value || !hasHomeContent.value) refreshHome()
-})
+// Chỉ coi là "lỗi/rỗng" sau khi client đã fetch xong (tránh nhấp-nháy fallback lúc đang tải).
+const homeFailed = computed(() => !homePending.value && (!!homeError.value || (!!homeData.value && !hasHomeContent.value)))
 
 const areaKeys = computed(() => orderedAreaKeys(Object.keys(AREA_META)))
 const REGION_IMG: Record<string, string> = { 'vinh-long': 'attraction', 'ben-tre': 'nature', 'tra-vinh': 'history' }
