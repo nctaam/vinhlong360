@@ -402,7 +402,7 @@ def call_tool(name: str, args: dict) -> str:
     try:
         return _call_tool_impl(name, args or {})
     except Exception as e:  # noqa: BLE001
-        logger.warning(f"call_tool '{name}' lỗi: {e}")
+        logger.warn(f"call_tool '{name}' lỗi: {e}")
         return json.dumps({"error": "Không thực hiện được công cụ (thiếu hoặc sai tham số)."}, ensure_ascii=False)
 
 
@@ -1532,7 +1532,7 @@ async def chat(req: ChatRequest, request: Request):
                 )
         except Exception as _gerr:
             # P1: fail-CLOSED — guardrail lỗi thì KHÔNG cho qua không kiểm.
-            logger.warning(f"Guardrail check_input lỗi → fail-closed: {_gerr}")
+            logger.warn(f"Guardrail check_input lỗi → fail-closed: {_gerr}")
             return ChatResponse(
                 reply="Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút.",
                 tool_calls=[], suggestions=[], session_id=session_id,
@@ -1924,7 +1924,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                 return StreamingResponse(gen(), media_type="text/event-stream")
         except Exception as _gerr:
             # P1: fail-CLOSED
-            logger.warning(f"Guardrail stream check lỗi → fail-closed: {_gerr}")
+            logger.warn(f"Guardrail stream check lỗi → fail-closed: {_gerr}")
             gen = _safe_block_stream("Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút.")
             return StreamingResponse(gen(), media_type="text/event-stream")
 
