@@ -55,6 +55,10 @@
               <time class="thread-time" :datetime="c.created_at">{{ timeAgo(c.created_at) }}</time>
             </div>
             <p class="thread-content reply-text" v-html="renderComment(c)"></p>
+            <div v-if="isQuestion" class="qa-row">
+              <span v-if="c.id === bestAnswerId" class="qa-badge">✓ Câu trả lời hay</span>
+              <button v-else-if="isQuestionAuthor" type="button" class="qa-pick" @click="setBestAnswer(c.id)">Chọn là câu trả lời hay</button>
+            </div>
           </div>
         </div>
 
@@ -113,6 +117,20 @@ const commentText = ref('')
 const comments = ref<Entity[]>([])
 const submitting = ref(false)
 const loading = ref(true)
+
+// ── Q&A: câu trả lời hay (chủ bài hỏi chọn) ──
+const bestAnswerId = ref<string | null>(null)
+const isQuestion = computed(() => (post.value as any)?.post_type === 'question')
+const isQuestionAuthor = computed(() =>
+  isQuestion.value && isLoggedIn.value && String((post.value as any)?.user_id) === String(user.value?.id))
+async function setBestAnswer(commentId: string) {
+  const prev = bestAnswerId.value
+  bestAnswerId.value = commentId
+  try {
+    await $fetch(`/api/posts/${postId}/best-answer`, { method: 'POST', headers: authHeaders(), body: { comment_id: commentId } })
+    showToast('Đã chọn câu trả lời hay', 'success')
+  } catch { bestAnswerId.value = prev; showToast('Không thể chọn, thử lại', 'error') }
+}
 const composeRef = ref<HTMLElement>()
 
 function scrollToCompose() {
@@ -139,6 +157,7 @@ const { data: post, pending } = await useAsyncData(`post-${postId}`, async () =>
     return null
   }
 })
+bestAnswerId.value = (post.value as any)?.best_answer_id ?? null
 
 async function fetchComments() {
   loading.value = true
@@ -254,6 +273,10 @@ if (post.value) {
 </script>
 
 <style scoped>
+.qa-row { margin-top: .4rem; }
+.qa-badge { display: inline-flex; align-items: center; gap: .25rem; font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: .2rem .55rem; border-radius: 999px; background: color-mix(in srgb, var(--leaf, green) 18%, var(--bg-alt)); color: var(--leaf-fg, green); }
+.qa-pick { font-size: var(--text-xs); padding: .2rem .55rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink-700); cursor: pointer; }
+.qa-pick:hover { border-color: var(--primary); color: var(--primary-fg); }
 .thread-detail-page { max-width: 680px; margin: 0 auto; }
 .thread-detail { display: flex; flex-direction: column; }
 
