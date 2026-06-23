@@ -36,8 +36,13 @@
           </ClientOnly>
           <ClientOnly>
             <div class="dc-trip">
-              <button type="button" :class="['trip-btn', { active: visitStatus === 'visited' }]" :aria-pressed="visitStatus === 'visited'" @click="setVisit('visited')">✓ Đã đến</button>
-              <button type="button" :class="['trip-btn', { active: visitStatus === 'want' }]" :aria-pressed="visitStatus === 'want'" @click="setVisit('want')">♡ Muốn đến</button>
+              <button v-if="entity.type === 'event'" type="button" :class="['trip-btn', { active: rsvpGoing }]" :aria-pressed="rsvpGoing" @click="toggleRsvp">
+                {{ rsvpGoing ? '✓ Sẽ đi' : '🎉 Tôi sẽ đi' }}<span v-if="rsvpCount" class="trip-count">{{ rsvpCount }}</span>
+              </button>
+              <template v-else>
+                <button type="button" :class="['trip-btn', { active: visitStatus === 'visited' }]" :aria-pressed="visitStatus === 'visited'" @click="setVisit('visited')">✓ Đã đến</button>
+                <button type="button" :class="['trip-btn', { active: visitStatus === 'want' }]" :aria-pressed="visitStatus === 'want'" @click="setVisit('want')">♡ Muốn đến</button>
+              </template>
               <button type="button" :class="['trip-btn', { active: isFollowingPlace }]" :aria-pressed="isFollowingPlace" @click="toggleFollowPlace">{{ isFollowingPlace ? '🔔 Đang theo dõi' : '🔔 Theo dõi' }}</button>
             </div>
           </ClientOnly>
@@ -378,6 +383,18 @@ const { openAuth } = useAuthModal()
 const { show: _showToast } = useToast()
 const visitStatus = ref<string | null>(null)
 const isFollowingPlace = ref(false)
+const rsvpGoing = ref(false)
+const rsvpCount = ref(0)
+
+async function toggleRsvp() {
+  if (!isLoggedIn.value) { openAuth(); return }
+  try {
+    const r = await $fetch<{ going: boolean; count: number }>(`/api/events/${encodeURIComponent(id.value)}/rsvp`, { method: 'POST', headers: authHeaders() })
+    rsvpGoing.value = r.going
+    rsvpCount.value = r.count
+    if (r.going) _showToast('Đã đăng ký đi sự kiện này 🎉', 'success')
+  } catch { _showToast('Không thể đăng ký, thử lại', 'error') }
+}
 
 async function setVisit(status: 'visited' | 'want') {
   if (!isLoggedIn.value) { openAuth(); return }
@@ -414,6 +431,12 @@ onMounted(async () => {
     const f = await $fetch<{ following: { target_id: string }[] }>('/api/following', { headers: authHeaders() })
     isFollowingPlace.value = (f?.following || []).some(x => String(x.target_id) === id.value)
   } catch { /* ignore */ }
+  if (entity.value?.type === 'event') {
+    try {
+      const r = await $fetch<{ count: number; going: boolean }>(`/api/events/${encodeURIComponent(id.value)}/rsvp`, { headers: authHeaders() })
+      rsvpGoing.value = r.going; rsvpCount.value = r.count
+    } catch { /* ignore */ }
+  }
 })
 const RELATIONSHIP_BATCH_SIZE = 24
 

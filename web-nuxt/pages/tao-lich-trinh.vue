@@ -95,6 +95,7 @@
             {{ formatDistance(routeResult.totalDistance) }} · {{ formatDuration(routeResult.totalDuration) }}
           </div>
           <div v-if="routeLoading" class="route-total route-loading">Đang tính...</div>
+          <div v-else-if="routeError" class="route-total route-err" role="status">⚠️ Chưa tính được lộ trình (thử lại sau)</div>
         </div>
 
         <div v-if="!stops.length" class="builder-empty">
@@ -164,6 +165,9 @@
               <small>{{ plan.stops.length }} điểm · Lưu {{ formatDate(plan.savedAt) }}</small>
             </button>
             <div class="saved-plan-actions">
+              <button v-if="plan.id" type="button" :class="['btn btn-sm', plan.is_public ? 'btn-primary' : 'btn-ghost']" @click="publishPlan(pi)">
+                {{ plan.is_public ? '🌐 Công khai' : '🔒 Riêng tư' }}
+              </button>
               <button type="button" class="btn btn-sm btn-ghost" @click="sharePlan(pi)">Chia sẻ</button>
               <button type="button" class="btn btn-sm btn-ghost danger" @click="deletePlan(pi)">Xóa</button>
             </div>
@@ -191,6 +195,7 @@ interface PlanStop {
 }
 
 interface SavedPlan {
+  id?: string          // có khi đồng-bộ tài-khoản (server); thiếu = plan local (khách)
   title: string
   stops: PlanStop[]
   savedAt: string
@@ -198,6 +203,8 @@ interface SavedPlan {
 
 const { favorites: favList, count: favCount } = useFavorites()
 const { confirmDialog } = useConfirm()
+const { isLoggedIn, authHeaders } = useAuth()
+const routeError = ref(false)   // OSRM không tính được route (≥2 điểm có toạ độ)
 
 const TYPES = CARD_TYPES as readonly string[]
 const typeChips = TYPES.map(t => ({
@@ -320,20 +327,38 @@ async function clearPlan() {
   routeResult.value = null
 }
 
-function savePlan() {
+async function savePlan() {
   if (!stops.value.length) return
   const plan: SavedPlan = {
     title: planTitle.value.trim() || 'Lịch trình chưa đặt tên',
     stops: JSON.parse(JSON.stringify(stops.value)),
     savedAt: new Date().toISOString(),
   }
+  if (isLoggedIn.value) {
+    // Đồng-bộ tài-khoản (cross-device)
+    try {
+      const res = await $fetch<{ id: string }>('/api/my-plans', {
+        method: 'POST', headers: authHeaders(),
+        body: { title: plan.title, stops: plan.stops },
+      })
+      plan.id = res.id
+    } catch (e: any) {
+      showToast(e?.data?.detail || 'Không thể lưu lên tài khoản', 'error')
+      return
+    }
+  } else {
+    persistLocal([plan, ...savedPlans.value])
+  }
   savedPlans.value.unshift(plan)
-  localStorage.setItem('vl360_plans', JSON.stringify(savedPlans.value))
   // brief spring feedback on the button to reinforce the save toast
   savePulse.value = true
   if (savePulseTimer) clearTimeout(savePulseTimer)
   savePulseTimer = setTimeout(() => { savePulse.value = false }, 220)
-  showToast(`Đã lưu "${plan.title}"`, 'success')
+  showToast(`Đã lưu "${plan.title}"${isLoggedIn.value ? ' (đồng bộ tài khoản)' : ''}`, 'success')
+}
+
+function persistLocal(plans: SavedPlan[]) {
+  if (import.meta.client) localStorage.setItem('vl360_plans', JSON.stringify(plans.filter(p => !p.id)))
 }
 
 function loadPlan(idx: number) {
@@ -345,12 +370,37 @@ function loadPlan(idx: number) {
 async function deletePlan(idx: number) {
   const plan = savedPlans.value[idx]
   if (!await confirmDialog(`Xóa lịch trình "${plan?.title || 'chưa đặt tên'}"?`, { danger: true, confirmText: 'Xóa' })) return
+  if (plan?.id && isLoggedIn.value) {
+    try {
+      await $fetch(`/api/my-plans/${plan.id}`, { method: 'DELETE', headers: authHeaders() })
+    } catch (e: any) {
+      showToast(e?.data?.detail || 'Không thể xoá trên tài khoản', 'error')
+      return
+    }
+  }
   savedPlans.value.splice(idx, 1)
-  localStorage.setItem('vl360_plans', JSON.stringify(savedPlans.value))
+  persistLocal(savedPlans.value)
   showToast('Đã xóa lịch trình', 'success')
 }
 
 const { show: showToast } = useToast()
+
+async function publishPlan(idx: number) {
+  const plan = savedPlans.value[idx]
+  if (!plan?.id) return
+  const next = !plan.is_public
+  try {
+    await $fetch(`/api/my-plans/${plan.id}/publish`, { method: 'POST', headers: authHeaders(), body: { is_public: next } })
+    plan.is_public = next
+    if (next && import.meta.client) {
+      const link = `${location.origin}/lich-trinh-chia-se/${plan.id}`
+      navigator.clipboard?.writeText(link).catch(() => {})
+      showToast('Đã công khai — link đã sao chép', 'success')
+    } else {
+      showToast('Đã chuyển về riêng tư', 'success')
+    }
+  } catch (e: any) { showToast(e?.data?.detail || 'Không thể đổi trạng thái', 'error') }
+}
 
 function sharePlan(idx: number) {
   const plan = savedPlans.value[idx]
@@ -388,8 +438,10 @@ async function computeRoute() {
     return
   }
   routeLoading.value = true
+  routeError.value = false
   const result = await fetchRoute(coords, transportMode.value)
   routeResult.value = result
+  routeError.value = !result  // OSRM lỗi/null mà vẫn có ≥2 điểm → báo, không im lặng
   routeLoading.value = false
   updateMap(result)
 }
@@ -477,13 +529,38 @@ watch(routeMapEl, (el) => {
   }
 })
 
-watch([stops, transportMode], scheduleRouteCalc, { deep: true })
+// Chỉ tính lại route khi TOẠ-ĐỘ/THỨ-TỰ stop hoặc phương-tiện đổi — KHÔNG khi sửa giờ/ghi-chú.
+watch(
+  () => [stops.value.map(s => (s.coords ? s.coords.join(',') : 'x')).join('|'), transportMode.value],
+  scheduleRouteCalc,
+)
 
-onMounted(() => {
+onMounted(async () => {
+  let local: SavedPlan[] = []
   try {
     const raw = localStorage.getItem('vl360_plans')
-    if (raw) savedPlans.value = JSON.parse(raw)
+    if (raw) local = JSON.parse(raw)
   } catch { /* ignore */ }
+
+  if (isLoggedIn.value) {
+    try {
+      // có plan khách lưu trước khi đăng nhập → đẩy lên rồi xoá local
+      if (local.length) {
+        const merged = await $fetch<{ plans: SavedPlan[] }>('/api/my-plans/merge', {
+          method: 'POST', headers: authHeaders(), body: { plans: local },
+        })
+        savedPlans.value = merged.plans || []
+        localStorage.removeItem('vl360_plans')
+      } else {
+        const res = await $fetch<{ plans: SavedPlan[] }>('/api/my-plans', { headers: authHeaders() })
+        savedPlans.value = res.plans || []
+      }
+    } catch {
+      savedPlans.value = local  // lỗi mạng → hiển thị tạm local
+    }
+  } else {
+    savedPlans.value = local
+  }
 })
 
 onBeforeUnmount(() => {

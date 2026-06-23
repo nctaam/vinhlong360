@@ -39,6 +39,7 @@
 .trip-btn:hover { background: var(--bg-alt); }
 .trip-btn.active { background: color-mix(in srgb, var(--primary) 14%, var(--bg)); border-color: var(--primary); color: var(--primary-fg); font-weight: var(--weight-medium); }
 .trip-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.trip-count { margin-left: .35rem; font-weight: var(--weight-semibold); }
 @keyframes dcRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 
 .dc-type-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
