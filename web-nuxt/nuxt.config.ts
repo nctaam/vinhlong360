@@ -163,7 +163,8 @@ export default defineNuxtConfig({
     prerender: {
       routes: ['/', '/du-lich', '/san-pham', '/ocop', '/le-hoi', '/luu-tru',
                '/lich-trinh', '/su-kien', '/theo-mua', '/ban-do', '/danh-ba',
-               '/lien-he', '/cong-dong'],
+               '/lien-he', '/cong-dong',
+               '/gioi-thieu', '/chinh-sach-bao-mat', '/dieu-khoan-su-dung'],  // P1-18 SEO
       crawlLinks: false,
     },
     routeRules: {

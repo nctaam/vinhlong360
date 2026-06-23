@@ -28,7 +28,8 @@
 
         <div class="chat-panel-input">
           <input v-model="inputText" :placeholder="chatPlaceholder" aria-label="Nhập câu hỏi" :disabled="streaming" @keyup.enter="sendMessage(inputText)" />
-          <button type="button" aria-label="Gửi tin nhắn" :disabled="!inputText.trim() || streaming" @click="sendMessage(inputText)">Gửi</button>
+          <button v-if="streaming" type="button" aria-label="Dừng trả lời" @click="stopStream">Dừng</button>
+          <button v-else type="button" aria-label="Gửi tin nhắn" :disabled="!inputText.trim()" @click="sendMessage(inputText)">Gửi</button>
         </div>
 
         <p v-if="chatDisclaimer" class="chat-disclaimer">{{ chatDisclaimer }}</p>
@@ -97,6 +98,8 @@ const suggestions = ref<string[]>([])
 const activeSuggestions = computed(() => suggestions.value.length ? suggestions.value : (messages.value.length === 0 ? contextSuggestions.value : []))
 const streaming = ref(false)
 const streamText = ref('')
+const abortCtrl = ref<AbortController | null>(null)  // P1-1: cho phép dừng/timeout SSE
+function stopStream() { abortCtrl.value?.abort() }
 const sessionId = ref('')
 const messagesEl = ref<HTMLElement | null>(null)
 
@@ -119,13 +122,16 @@ async function sendMessage(text: string) {
 
   const history = messages.value.slice(-10).map(m => ({ role: m.role, content: m.content }))
 
+  const controller = new AbortController()
+  abortCtrl.value = controller
+  const timeoutId = setTimeout(() => controller.abort(), 45000)  // P1-1: chặn treo vô hạn
   try {
     const params = new URLSearchParams({
       message: userMsg,
       history: JSON.stringify(history),
       session_id: sessionId.value,
     })
-    const res = await fetch(`/chat/stream?${params}`)
+    const res = await fetch(`/chat/stream?${params}`, { signal: controller.signal })
     if (!res.ok || !res.body) {
       messages.value.push({ role: 'assistant', content: 'Xin lỗi, không thể kết nối. Vui lòng thử lại.' })
       streaming.value = false
@@ -159,12 +165,18 @@ async function sendMessage(text: string) {
 
     messages.value.push({ role: 'assistant', content: fullText || 'Không có phản hồi.' })
   } catch {
-    messages.value.push({ role: 'assistant', content: 'Xin lỗi, có lỗi xảy ra. Vui lòng thử lại.' })
+    const aborted = controller.signal.aborted
+    messages.value.push({
+      role: 'assistant',
+      content: aborted ? 'Đã dừng hoặc quá thời gian chờ. Vui lòng thử lại.' : 'Xin lỗi, có lỗi xảy ra. Vui lòng thử lại.',
+    })
+  } finally {
+    clearTimeout(timeoutId)
+    abortCtrl.value = null
+    streaming.value = false
+    streamText.value = ''
+    scrollBottom()
   }
-
-  streaming.value = false
-  streamText.value = ''
-  scrollBottom()
 }
 </script>
 

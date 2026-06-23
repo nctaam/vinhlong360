@@ -379,8 +379,8 @@ const eventListSchema = computed(() => {
 useHead({
   link: [
     { rel: 'canonical', href: canonicalUrl('/') },
-    { rel: 'preload', as: 'image', href: '/img/hero-mobile.jpg', fetchpriority: 'high', media: '(max-width: 640px)', imagesrcset: '/img/hero-mobile.jpg', imagesizes: '100vw' },
-    { rel: 'preload', as: 'image', href: '/img/hero.jpg', fetchpriority: 'high', media: '(min-width: 641px)', imagesrcset: '/img/hero.jpg', imagesizes: '100vw' },
+    { rel: 'preload', as: 'image', href: '/img/hero-mobile.webp', fetchpriority: 'high', media: '(max-width: 640px)', imagesrcset: '/img/hero-mobile.webp', imagesizes: '100vw' },
+    { rel: 'preload', as: 'image', href: '/img/hero.webp', fetchpriority: 'high', media: '(min-width: 641px)', imagesrcset: '/img/hero.webp', imagesizes: '100vw' },
   ],
   script: [
     {

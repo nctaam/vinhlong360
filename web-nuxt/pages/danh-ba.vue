@@ -88,7 +88,7 @@
             <strong>{{ f.name }}</strong>
           </div>
           <div v-if="attr(f, 'address')" class="fac-row">📍 {{ attr(f, 'address') }}</div>
-          <div v-if="attr(f, 'phone')" class="fac-row">📞 <a :href="`tel:${attr(f, 'phone')}`">{{ attr(f, 'phone') }}</a></div>
+          <div v-if="attr(f, 'phone')" class="fac-row">📞 <a :href="telHref(attr(f, 'phone'))">{{ attr(f, 'phone') }}</a></div>
           <div v-if="attr(f, 'hours')" class="fac-row">🕒 {{ attr(f, 'hours') }}</div>
           <footer v-if="f.source?.url || f.updatedAt" class="fac-src">
             <span v-if="isOfficialSource(f)" class="fac-verified" title="Nguồn chính thống">✓</span>
@@ -108,6 +108,9 @@
           </div>
         </li>
       </ul>
+      <EmptyState v-else-if="facilitiesError" icon="⚠️" title="Không thể tải danh bạ" message="Có lỗi khi tải dữ liệu. Vui lòng thử lại.">
+        <button type="button" class="btn btn-outline btn-sm" @click="loadFacilities">Thử lại</button>
+      </EmptyState>
       <EmptyState v-else message="Chưa có dữ liệu danh bạ cho xã/phường này. Dữ liệu đang được bổ sung từ nguồn chính thống." />
     </template>
 
@@ -174,6 +177,7 @@ const totalWards = computed(() => wardGroups.value.reduce((sum, g) => sum + g.wa
 
 const wardId = ref('')
 const facilities = ref<Entity[]>([])
+const facilitiesError = ref(false)
 const loading = ref(false)
 
 function attr(f: Entity, k: string) { return (f.attributes || {})[k] }
@@ -224,16 +228,22 @@ async function submitReport(f: Entity) {
   reportSending.value = false
 }
 
-watch(wardId, async (id) => {
+async function loadFacilities() {
+  const id = wardId.value
   facilities.value = []
+  facilitiesError.value = false
   if (!id) return
   loading.value = true
   try {
     const res = await $fetch<{ facilities: Entity[] }>(`/api/facilities?place=${encodeURIComponent(id)}`)
     facilities.value = res.facilities || []
-  } catch { showToast('Không thể tải danh bạ cơ quan', 'error') }
+  } catch {
+    facilitiesError.value = true  // P1-5: phân biệt LỖI TẢI với "không có dữ liệu"
+    showToast('Không thể tải danh bạ cơ quan', 'error')
+  }
   loading.value = false
-})
+}
+watch(wardId, loadFacilities)
 
 const jsonLd = computed(() => facilities.value
   .filter((f: Entity) => attr(f, 'address') || attr(f, 'phone'))

@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Entity } from '~/types'
+import type { Notification } from '~/types'
 const { isLoggedIn } = useAuth()
 const { notifications, unreadCount, loading, fetchError, fetchNotifications, markAllRead, markRead, startPolling, stopPolling } = useNotifications()
 

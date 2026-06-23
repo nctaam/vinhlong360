@@ -184,7 +184,7 @@ const filtered = computed(() => {
     )
   }
 
-  list.sort((a: Entity, b: Entity) => relevanceScore(b, seasonFilter.value) - relevanceScore(a, seasonFilter.value))
+  list = [...list].sort((a: Entity, b: Entity) => relevanceScore(b, seasonFilter.value) - relevanceScore(a, seasonFilter.value))
   return list
 })
 

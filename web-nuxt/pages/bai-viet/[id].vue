@@ -39,18 +39,18 @@
         <!-- Comment items as thread replies -->
         <div v-for="(c, idx) in comments" :key="c.id" class="thread-reply">
           <div class="thread-left">
-            <NuxtLink v-if="c.user_id" :to="`/nguoi-dung/${c.user_id}`" class="thread-avatar-link">
-              <span class="avatar thread-avatar avatar-sm">{{ (c.display_name || c.phone || '?').charAt(0).toUpperCase() }}</span>
+            <NuxtLink v-if="c.author?.id" :to="`/nguoi-dung/${c.author?.id}`" class="thread-avatar-link">
+              <span class="avatar thread-avatar avatar-sm">{{ (c.author?.display_name || '?').charAt(0).toUpperCase() }}</span>
             </NuxtLink>
-            <span v-else class="avatar thread-avatar avatar-sm">{{ (c.display_name || c.phone || '?').charAt(0).toUpperCase() }}</span>
+            <span v-else class="avatar thread-avatar avatar-sm">{{ (c.author?.display_name || '?').charAt(0).toUpperCase() }}</span>
             <div v-if="idx < comments.length - 1" class="thread-line"></div>
           </div>
           <div class="thread-right">
             <div class="thread-head">
-              <NuxtLink v-if="c.user_id" :to="`/nguoi-dung/${c.user_id}`" class="thread-author">
-                {{ c.display_name || c.phone || 'Người dùng' }}
+              <NuxtLink v-if="c.author?.id" :to="`/nguoi-dung/${c.author?.id}`" class="thread-author">
+                {{ c.author?.display_name || 'Người dùng' }}
               </NuxtLink>
-              <span v-else class="thread-author">{{ c.display_name || 'Người dùng' }}</span>
+              <span v-else class="thread-author">{{ c.author?.display_name || 'Người dùng' }}</span>
               <time class="thread-time" :datetime="c.created_at">{{ timeAgo(c.created_at) }}</time>
             </div>
             <p class="thread-content reply-text">{{ c.content }}</p>

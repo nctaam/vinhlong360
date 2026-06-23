@@ -197,9 +197,11 @@ const themeOverrideCss = computed(() => {
   const secondary = ss('theme.secondary_color', '') as string
   const radius = ss('theme.radius', '') as string
   const fontScale = ss('theme.font_scale', '') as string
-  if (primary) vars.push(`--primary: ${primary}`)
-  if (accent) vars.push(`--accent: ${accent}`)
-  if (secondary) vars.push(`--secondary: ${secondary}`)
+  // P0-5: chỉ nhận mã hex hợp lệ → chặn CSS-injection qua site_settings (vd "red;}body{...")
+  const isHex = (c: string) => /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(c)
+  if (isHex(primary)) vars.push(`--primary: ${primary}`)
+  if (isHex(accent)) vars.push(`--accent: ${accent}`)
+  if (isHex(secondary)) vars.push(`--secondary: ${secondary}`)
   // Validate radius is a plain CSS length (blocks any CSS injection via the setting).
   if (/^\d{1,3}(\.\d+)?(px|rem|em|%)$/.test(radius)) vars.push(`--radius: ${radius}`)
   let css = vars.length ? `:root { ${vars.join('; ')} }` : ''
