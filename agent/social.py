@@ -41,12 +41,45 @@ POST_TYPES = ("review", "share", "recommend", "question")
 ENTITY_LINK_REQUIRED = ("review",)  # These types must link to an entity
 
 
+def _clean_mentions(raw) -> list[dict]:
+    """Chuẩn hoá + giới hạn mentions: [{type:'user'|'entity', id, label}]. Bỏ mục sai."""
+    out = []
+    for m in (raw or [])[:20]:
+        if not isinstance(m, dict):
+            continue
+        t = m.get("type")
+        mid = str(m.get("id") or "").strip()
+        label = str(m.get("label") or "").strip()[:80]
+        if t in ("user", "entity") and mid and label:
+            out.append({"type": t, "id": mid[:64], "label": label})
+    return out
+
+
+def _notify_mentions(mentions: list[dict], author_id: str, author_name, post_id: str, content: str) -> None:
+    """Gửi thông báo cho người-dùng được @-nhắc (bỏ tự-nhắc + trùng)."""
+    preview = (content or "")[:80] + ("…" if len(content or "") > 80 else "")
+    seen = set()
+    for m in mentions:
+        if m.get("type") != "user":
+            continue
+        uid = m.get("id")
+        if not uid or uid == author_id or uid in seen:
+            continue
+        seen.add(uid)
+        try:
+            create_notification(uid, "mention", f"{author_name or 'Ai đó'} đã nhắc đến bạn",
+                                body=preview, ref_type="post", ref_id=post_id)
+        except Exception:
+            pass
+
+
 class CreatePost(BaseModel):
     content: str
     entity_id: Optional[str] = None
     post_type: str = "share"
     rating: Optional[int] = None
     images: list[str] = []
+    mentions: list[dict] = []
 
     @field_validator("content")
     @classmethod
@@ -120,20 +153,26 @@ async def create_post(body: CreatePost, user=Depends(require_user)):
 
     mod_result = await moderate_content(body.content, body.images)
     status = mod_result["status"]
+    mentions = _clean_mentions(body.mentions)
 
     ph = db._ph
     with db._conn() as conn:
         row = db._fetchone(conn, f"""
-            INSERT INTO posts (user_id, entity_id, content, images, post_type, rating, moderation_status)
-            VALUES ({ph}::uuid, {ph}, {ph}, {ph}::jsonb, {ph}, {ph}, {ph})
+            INSERT INTO posts (user_id, entity_id, content, images, post_type, rating, moderation_status, mentions)
+            VALUES ({ph}::uuid, {ph}, {ph}, {ph}::jsonb, {ph}, {ph}, {ph}, {ph}::jsonb)
             RETURNING *
         """, (
             str(user["id"]), body.entity_id, body.content,
             json.dumps(body.images), body.post_type, body.rating, status,
+            json.dumps(mentions, ensure_ascii=False),
         ))
 
     post = db._row_to_dict(row)
     log_moderation("post", str(post["id"]), status, mod_result, auto=True)
+
+    # @-mention: báo cho người được nhắc (chỉ khi bài được duyệt; không tự-nhắc mình)
+    if status == "approved":
+        _notify_mentions(mentions, str(user["id"]), user.get("display_name"), str(post["id"]), body.content)
 
     result = _enrich_post(post, user)
     if status != "approved":
@@ -626,10 +665,20 @@ def _format_post(row: dict) -> dict:
         except Exception:
             images = []
 
+    mentions = row.get("mentions", [])
+    if isinstance(mentions, str):
+        try:
+            mentions = json.loads(mentions)
+        except Exception:
+            mentions = []
+    if not isinstance(mentions, list):
+        mentions = []
+
     return {
         "id": str(row["id"]),
         "user_id": str(row.get("user_id", "")),
         "content": row["content"],
+        "mentions": mentions,
         "post_type": row.get("post_type", "share"),
         "post_type_label": POST_TYPE_LABELS.get(row.get("post_type", "share"), "Chia sẻ"),
         "rating": row.get("rating"),

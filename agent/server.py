@@ -860,6 +860,50 @@ app.include_router(social_router)
 app.include_router(community_router)
 
 
+TYPE_LABELS_VI = {
+    "dish": "Món ăn", "attraction": "Điểm đến", "place": "Xã/phường", "nature": "Thiên nhiên",
+    "product": "Sản phẩm", "history": "Di tích", "accommodation": "Lưu trú",
+    "craft_village": "Làng nghề", "event": "Sự kiện", "experience": "Trải nghiệm",
+    "landmark": "Địa danh", "culture": "Văn hoá", "facility": "Cơ quan",
+}
+
+
+@app.get("/api/mentions", tags=["social"])
+async def mention_search(q: str = ""):
+    """Autocomplete cho @-mention: người dùng (PG) + địa điểm (KB in-RAM). Trả tối đa ~11 mục."""
+    ql = (q or "").strip().lower()
+    if len(ql) < 1:
+        return {"results": []}
+    results: list[dict] = []
+    # Người dùng (chỉ khi có Postgres)
+    try:
+        if db._use_pg:
+            ph = db._ph
+            with db._conn() as conn:
+                rows = db._fetchall(conn, f"""
+                    SELECT id, display_name, avatar_url FROM users
+                    WHERE is_active = TRUE AND display_name ILIKE {ph}
+                    ORDER BY display_name LIMIT 5
+                """, (f"%{ql}%",))
+            for r in rows:
+                d = db._row_to_dict(r)
+                if d.get("display_name"):
+                    results.append({"type": "user", "id": str(d["id"]), "label": d["display_name"],
+                                    "sub": "Người dùng", "avatar": d.get("avatar_url")})
+    except Exception:
+        pass
+    # Địa điểm/entity (in-RAM, nhanh)
+    try:
+        ents = [e for e in (knowledge._entities or {}).values() if ql in (e.get("name") or "").lower()]
+        ents.sort(key=lambda e: (0 if (e.get("name") or "").lower().startswith(ql) else 1, len(e.get("name") or "")))
+        for e in ents[:6]:
+            results.append({"type": "entity", "id": e["id"], "label": e["name"],
+                            "sub": TYPE_LABELS_VI.get(e.get("type"), e.get("type") or "Địa điểm")})
+    except Exception:
+        pass
+    return {"results": results}
+
+
 MAX_BODY_SIZE = 1_048_576  # 1MB
 
 @app.middleware("http")

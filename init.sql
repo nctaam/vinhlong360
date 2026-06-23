@@ -144,6 +144,7 @@ CREATE TABLE IF NOT EXISTS posts (
     moderation_status TEXT DEFAULT 'pending' CHECK (moderation_status IN ('pending', 'approved', 'rejected', 'flagged')),
     like_count        INTEGER DEFAULT 0,
     comment_count     INTEGER DEFAULT 0,
+    mentions          JSONB DEFAULT '[]',
     created_at        TIMESTAMPTZ DEFAULT NOW(),
     updated_at        TIMESTAMPTZ DEFAULT NOW()
 );
@@ -161,6 +162,7 @@ CREATE TABLE IF NOT EXISTS comments (
     parent_id         UUID REFERENCES comments(id) ON DELETE CASCADE,
     content           TEXT NOT NULL,
     moderation_status TEXT DEFAULT 'approved',
+    mentions          JSONB DEFAULT '[]',
     created_at        TIMESTAMPTZ DEFAULT NOW()
 );
 
