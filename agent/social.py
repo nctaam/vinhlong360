@@ -502,6 +502,33 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
     return {"comment": _format_comment(db._row_to_dict(row))}
 
 
+# ── Q&A: câu trả lời hay nhất (chủ bài hỏi chọn 1 bình luận) ──
+
+class BestAnswerBody(BaseModel):
+    comment_id: Optional[str] = None  # None = bỏ chọn
+
+
+@router.post("/posts/{post_id}/best-answer")
+async def set_best_answer(post_id: str, body: BestAnswerBody, user=Depends(require_user)):
+    ph = db._ph
+    with db._conn() as conn:
+        post = db._fetchone(conn, f"SELECT user_id, post_type FROM posts WHERE id::text = {ph}", (post_id,))
+        if not post:
+            raise HTTPException(404, "Bài viết không tồn tại")
+        d = db._row_to_dict(post)
+        if str(d["user_id"]) != str(user["id"]):
+            raise HTTPException(403, "Chỉ người hỏi mới chọn được câu trả lời hay")
+        if body.comment_id:
+            c = db._fetchone(conn, f"SELECT 1 FROM comments WHERE id::text = {ph} AND post_id::text = {ph}",
+                             (body.comment_id, post_id))
+            if not c:
+                raise HTTPException(400, "Bình luận không thuộc bài này")
+            db._execute(conn, f"UPDATE posts SET best_answer_id = {ph}::uuid WHERE id::text = {ph}", (body.comment_id, post_id))
+        else:
+            db._execute(conn, f"UPDATE posts SET best_answer_id = NULL WHERE id::text = {ph}", (post_id,))
+    return {"best_answer_id": body.comment_id}
+
+
 # ── Likes ──
 
 @router.post("/posts/{post_id}/like")
@@ -760,6 +787,7 @@ def _format_post(row: dict) -> dict:
         "content": row["content"],
         "mentions": mentions,
         "hashtags": hashtags,
+        "best_answer_id": str(row["best_answer_id"]) if row.get("best_answer_id") else None,
         "post_type": row.get("post_type", "share"),
         "post_type_label": POST_TYPE_LABELS.get(row.get("post_type", "share"), "Chia sẻ"),
         "rating": row.get("rating"),
