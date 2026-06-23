@@ -303,14 +303,15 @@ const showBookmarkMomentum = computed(() =>
   sessionBookmarked.value && !bookmarkBannerDismissed.value && activeTab.value !== 'bookmarks'
 )
 
-// ── Feed stats (computed from loaded data) ──
-const feedStats = computed(() => {
-  const all = posts.value
-  return {
-    postCount: all.length || '—',
-    reviewCount: all.filter(p => p.post_type === 'review').length || '—',
-  }
-})
+// ── Feed stats: số THẬT từ server (không phải đếm 20 bài đã tải) ──
+const communityStats = ref<{ posts: number; reviews: number; members: number } | null>(null)
+const feedStats = computed(() => ({
+  postCount: communityStats.value?.posts ?? '—',
+  reviewCount: communityStats.value?.reviews ?? '—',
+}))
+async function loadCommunityStats() {
+  try { communityStats.value = await $fetch('/api/community/stats') } catch { /* giữ '—' */ }
+}
 
 // ── Display posts (with type filter) ──
 const displayPosts = computed(() => {
@@ -367,17 +368,44 @@ function autoGrow(e: Event) {
   el.style.height = el.scrollHeight + 'px'
 }
 
-function onFileSelect(e: Event) {
+// Thu nhỏ ảnh trước khi gửi (max 1280px, JPEG q0.82) — base64 nhẹ đi nhiều lần (trước đây
+// gửi full-size → payload có thể tới hàng chục MB).
+function downscaleImage(file: File, maxDim = 1280, quality = 0.82): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      let { width, height } = img
+      if (Math.max(width, height) > maxDim) {
+        const s = maxDim / Math.max(width, height)
+        width = Math.round(width * s); height = Math.round(height * s)
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = width; canvas.height = height
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return reject(new Error('no-ctx'))
+      ctx.drawImage(img, 0, 0, width, height)
+      resolve(canvas.toDataURL('image/jpeg', quality))
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('img-load')) }
+    img.src = url
+  })
+}
+
+async function onFileSelect(e: Event) {
   const input = e.target as HTMLInputElement
   if (!input.files) return
   const newFiles = Array.from(input.files).slice(0, 5 - imageFiles.value.length)
   for (const file of newFiles) {
     if (file.size > 10 * 1024 * 1024) { showToast('Ảnh quá lớn (tối đa 10MB)', 'warning'); continue }
-    imageFiles.value.push(file)
-    const reader = new FileReader()
-    reader.onload = () => { previewImages.value.push(reader.result as string) }
-    reader.onerror = () => { showToast('Không thể đọc ảnh', 'error') }
-    reader.readAsDataURL(file)
+    try {
+      const dataUrl = await downscaleImage(file)
+      imageFiles.value.push(file)
+      previewImages.value.push(dataUrl)
+    } catch {
+      showToast('Không thể đọc ảnh', 'error')
+    }
   }
   input.value = ''
 }
@@ -527,23 +555,26 @@ async function submitEntityReport() {
 
 const { reportPost } = useReport()
 
+// cùng 1 post có thể nằm ở CẢ feed + tab bookmark → cập-nhật MỌI bản để không lệch.
+function _copies(postId: string) {
+  return [...posts.value, ...bookmarks.value].filter(p => p.id === postId)
+}
+
 async function toggleLike(postId: string) {
   if (!isLoggedIn.value) {
     showToast('Đăng nhập để thích bài viết', 'info')
     return
   }
-  const post = posts.value.find(p => p.id === postId) || bookmarks.value.find(p => p.id === postId)
-  if (post) {
-    post.user_liked = !post.user_liked
-    post.likes = (post.likes || 0) + (post.user_liked ? 1 : -1)
-  }
+  const copies = _copies(postId)
+  const flip = () => copies.forEach(p => {
+    p.user_liked = !p.user_liked
+    p.likes = (p.likes || 0) + (p.user_liked ? 1 : -1)
+  })
+  flip()
   try {
     await $fetch(`/api/posts/${postId}/like`, { method: 'POST', headers: authHeaders() })
   } catch {
-    if (post) {
-      post.user_liked = !post.user_liked
-      post.likes = (post.likes || 0) + (post.user_liked ? 1 : -1)
-    }
+    flip()  // rollback mọi bản
     showToast('Không thể thích bài viết', 'error')
   }
 }
@@ -553,19 +584,17 @@ async function toggleBookmark(postId: string) {
     showToast('Đăng nhập để lưu bài viết', 'info')
     return
   }
-  const post = posts.value.find(p => p.id === postId) || bookmarks.value.find(p => p.id === postId)
-  const wasBookmarked = post?.user_bookmarked
-  if (post) post.user_bookmarked = !post.user_bookmarked
+  const copies = _copies(postId)
+  const wasBookmarked = copies[0]?.user_bookmarked
+  copies.forEach(p => { p.user_bookmarked = !p.user_bookmarked })
   try {
     await $fetch(`/api/posts/${postId}/bookmark`, { method: 'POST', headers: authHeaders() })
-    // Momentum cue: on a fresh save (not un-save), nudge toward the saved list
-    // so bookmarking doesn't dead-end. Banner shown once per session.
-    if (!wasBookmarked && post?.user_bookmarked) {
+    if (!wasBookmarked && copies[0]?.user_bookmarked) {
       showToast('Đã lưu bài viết', 'success')
       if (!sessionBookmarked.value) sessionBookmarked.value = true
     }
   } catch {
-    if (post) post.user_bookmarked = !post.user_bookmarked
+    copies.forEach(p => { p.user_bookmarked = !p.user_bookmarked })  // rollback
     showToast('Không thể lưu bài viết', 'error')
   }
 }
@@ -579,6 +608,7 @@ watch(reportEntityId, () => fetchReportEntity())
 onMounted(() => {
   fetchReportEntity()
   fetchFeed(true)
+  loadCommunityStats()
   window.addEventListener('scroll', onScroll, { passive: true })
 })
 

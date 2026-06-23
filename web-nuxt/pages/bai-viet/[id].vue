@@ -23,6 +23,7 @@
             <input
               v-model="commentText"
               class="compose-input-sm"
+              maxlength="500"
               :placeholder="`Trả lời ${post.display_name || 'bài viết'}…`"
               @keyup.enter="submitComment"
             />
