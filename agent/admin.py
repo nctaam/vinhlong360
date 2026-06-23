@@ -638,6 +638,26 @@ async def create_image_suggestion_batch(body: ImageSuggestionBatch):
     return _imgq.create_batch(payload)
 
 
+def _assert_public_url(url: str) -> None:
+    """P0-13: chặn SSRF — chỉ http(s) tới host phân giải ra IP CÔNG KHAI
+    (chặn 169.254.169.254, localhost, 10/172.16/192.168, link-local…)."""
+    import ipaddress
+    import socket
+    from urllib.parse import urlparse
+    p = urlparse(url or "")
+    if p.scheme not in ("http", "https") or not p.hostname:
+        raise HTTPException(400, "URL ảnh không hợp lệ (chỉ http/https)")
+    try:
+        infos = socket.getaddrinfo(p.hostname, p.port or (443 if p.scheme == "https" else 80))
+    except Exception:
+        raise HTTPException(400, "Không phân giải được host ảnh")
+    for info in infos:
+        ip = ipaddress.ip_address(info[4][0])
+        if (ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved
+                or ip.is_multicast or ip.is_unspecified):
+            raise HTTPException(400, "Host ảnh trỏ địa chỉ nội bộ — từ chối (SSRF)")
+
+
 @router.post("/image-suggestions/{suggestion_id}/approve")
 async def approve_image_suggestion(suggestion_id: str):
     """Duyệt 1 ứng viên: tải ảnh → WebP 3 cỡ → R2 → gắn vào entity.images + lưu
@@ -661,6 +681,7 @@ async def approve_image_suggestion(suggestion_id: str):
 
     # Fetch the candidate from its licensed source (Commons etc.). Bounded + guarded.
     candidate_url = s["candidate_url"]
+    _assert_public_url(candidate_url)  # P0-13: chặn SSRF tới host nội bộ
     try:
         import httpx
         headers = {"User-Agent": "vinhlong360-image-review/1.0 (+https://vinhlong360.vn)"}

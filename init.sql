@@ -230,10 +230,10 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_r
 CREATE TABLE IF NOT EXISTS reports (
     id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     reporter_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    target_type TEXT NOT NULL CHECK (target_type IN ('post', 'comment', 'user')),
+    target_type TEXT NOT NULL CHECK (target_type IN ('post', 'comment', 'user', 'entity', 'facility')),
     target_id   TEXT NOT NULL,
     reason      TEXT NOT NULL,
-    status      TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'reviewed', 'dismissed')),
+    status      TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'reviewed', 'dismissed', 'resolved')),
     created_at  TIMESTAMPTZ DEFAULT NOW()
 );
 

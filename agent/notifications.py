@@ -205,7 +205,9 @@ async def get_follower_count(target_type: str, target_id: str):
 
 # ── Report ──
 
-@router.post("/report")
+# P0-20: đổi path để KHÔNG đụng `POST /api/report` của public_api (báo-sai ẩn danh → JSONL).
+# Endpoint authed này ghi PG reports table; FE hiện dùng public JSONL, giữ cả hai tách bạch.
+@router.post("/report-ugc")
 async def create_report(body: ReportRequest, user=Depends(require_user)):
     ph = db._ph
     with db._conn() as conn:

@@ -1624,11 +1624,19 @@ async def chat(req: ChatRequest, request: Request):
                 pass
 
     # ── Knowledge-only fallback: supplement with KB data when LLM fails ──
+    # P0/chat: chỉ coi là lỗi khi reply RỖNG, hoặc là fallback hệ-thống thật (mọi fallback
+    # đều mở đầu "Xin lỗi/Rất tiếc/Hệ thống..." + chứa cụm sự-cố), hoặc reply rất ngắn báo lỗi.
+    # Tránh false-positive: câu trả lời ĐÚNG có chứa "lỗi"/"sự cố" (vd "sự cố giao thông")
+    # trước đây bị ghi đè bằng KB-fallback.
+    _low = (reply or "").lower().lstrip()
+    _starts_apology = _low.startswith(("xin lỗi", "rất tiếc", "hệ thống ai đang", "hệ thống đang"))
+    _has_fail_word = any(w in _low for w in (
+        "sự cố", "đã xảy ra lỗi", "không thể trả lời", "đang bảo trì", "thử lại sau", "thử lại.",
+    ))
     _is_error_reply = (
         not reply
-        or "sự cố" in reply
-        or ("lỗi" in reply.lower()[:60])
-        or (len(reply) < 100 and "thử lại" in reply)
+        or (_starts_apology and _has_fail_word)
+        or (len(reply) < 80 and _has_fail_word)
     )
     logger.info(f"KB fallback check | is_error={_is_error_reply} | reply_len={len(reply) if reply else 0}")
     if _is_error_reply and corrected_message.strip():
@@ -3056,7 +3064,12 @@ async def dynamic_agents_report():
     return {"available": True, **get_agent_report()}
 
 @app.post("/system/dynamic-agents/create", tags=["Level7"])
-async def dynamic_agents_create(req: DynamicAgentCreateRequest):
+async def dynamic_agents_create(req: DynamicAgentCreateRequest, request: Request):
+    # P0-12: chặn tạo agent không-auth (system_prompt_addon + tool_whitelist do client kiểm
+    # soát → prompt-injection/đốt LLM budget nếu mở). Bắt buộc X-Admin-Key.
+    from middleware import verify_admin_key
+    if not verify_admin_key(request):
+        return JSONResponse(status_code=401, content={"error": "unauthorized", "detail": "Cần X-Admin-Key"})
     if not HAS_DYNAMIC_AGENTS:
         return {"error": "Dynamic agents not available"}
     spec = agent_factory.create_agent(

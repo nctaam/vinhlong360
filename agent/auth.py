@@ -62,6 +62,11 @@ OTP_IP_LIMIT = 5          # tối đa 5 lần / cửa sổ
 OTP_IP_WINDOW = 600       # 10 phút
 _otp_ip_rate: dict[str, list[float]] = {}
 
+# P0-15: rate-limit /login theo IP (chống brute-force mật khẩu — OTP đã có limit, login thì chưa).
+LOGIN_IP_LIMIT = 10       # tối đa 10 lần / cửa sổ
+LOGIN_IP_WINDOW = 300     # 5 phút
+_login_ip_rate: dict[str, list[float]] = {}
+
 
 # ── Models ──
 
@@ -152,6 +157,13 @@ def _hash_otp(code: str) -> str:
 
 def _generate_token() -> str:
     return secrets.token_urlsafe(48)
+
+
+def _hash_token(token: str) -> str:
+    """P0-6: lưu + tra cứu session token bằng SHA-256, KHÔNG plaintext.
+    Token entropy cao (token_urlsafe 48) nên SHA-256 đủ (không cần PBKDF2 như mật khẩu).
+    Lộ DB ⇒ chỉ thấy hash, không dùng lại được."""
+    return hashlib.sha256(token.encode()).hexdigest()
 
 
 def _hash_password(password: str) -> str:
@@ -291,14 +303,15 @@ async def verify_otp(body: OTPVerify, request: Request):
 
     token = _generate_token()
     expires = datetime.now(timezone.utc) + timedelta(days=SESSION_EXPIRE_DAYS)
-    ip = request.client.host if request.client else ""
+    from middleware import get_client_ip
+    ip = get_client_ip(request)  # P1-19: IP thật (trusted-proxy), không phải IP proxy
     ua = request.headers.get("user-agent", "")
 
     with db._conn() as conn:
         db._execute(conn, f"""
             INSERT INTO user_sessions (user_id, token, user_agent, ip_address, expires_at)
             VALUES ({db._ph}::uuid, {db._ph}, {db._ph}, {db._ph}, {db._ph})
-        """, (str(user["id"]), token, ua, ip, expires.isoformat()))
+        """, (str(user["id"]), _hash_token(token), ua, ip, expires.isoformat()))
 
     return {
         "success": True,
@@ -318,6 +331,16 @@ async def check_phone(body: CheckPhone):
 
 @router.post("/login")
 async def login_password(body: PasswordLogin, request: Request):
+    # P0-15: rate-limit theo IP (chống brute-force mật khẩu).
+    from middleware import get_client_ip
+    ip = get_client_ip(request)
+    now = time.time()
+    hits = [t for t in _login_ip_rate.get(ip, []) if now - t < LOGIN_IP_WINDOW]
+    if len(hits) >= LOGIN_IP_LIMIT:
+        raise HTTPException(429, "Quá nhiều lần đăng nhập. Vui lòng thử lại sau.")
+    hits.append(now)
+    _login_ip_rate[ip] = hits
+
     phone = _normalize_phone(body.phone)
     user = db.get_user_by_phone(phone)
 
@@ -332,14 +355,13 @@ async def login_password(body: PasswordLogin, request: Request):
 
     token = _generate_token()
     expires = datetime.now(timezone.utc) + timedelta(days=SESSION_EXPIRE_DAYS)
-    ip = request.client.host if request.client else ""
     ua = request.headers.get("user-agent", "")
 
     with db._conn() as conn:
         db._execute(conn, f"""
             INSERT INTO user_sessions (user_id, token, user_agent, ip_address, expires_at)
             VALUES ({db._ph}::uuid, {db._ph}, {db._ph}, {db._ph}, {db._ph})
-        """, (str(user["id"]), token, ua, ip, expires.isoformat()))
+        """, (str(user["id"]), _hash_token(token), ua, ip, expires.isoformat()))
 
     return {
         "success": True,
@@ -367,7 +389,7 @@ async def logout(request: Request):
     if not token:
         return {"success": True}
     with db._conn() as conn:
-        db._execute(conn, f"DELETE FROM user_sessions WHERE token = {db._ph}", (token,))
+        db._execute(conn, f"DELETE FROM user_sessions WHERE token = {db._ph}", (_hash_token(token),))
     return {"success": True}
 
 
@@ -431,7 +453,7 @@ async def _get_current_user_or_none(request: Request) -> dict | None:
             SELECT u.* FROM user_sessions s
             JOIN users u ON u.id = s.user_id
             WHERE s.token = {db._ph} AND s.expires_at > NOW() AND u.is_active = TRUE
-        """, (token,))
+        """, (_hash_token(token),))
         return db._row_to_dict(row)
 
 

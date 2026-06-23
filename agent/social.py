@@ -367,6 +367,10 @@ async def get_comments(post_id: str):
 
 @router.post("/posts/{post_id}/comments")
 async def create_comment(post_id: str, body: CreateComment, user=Depends(require_user)):
+    # P0-7: bình luận PHẢI qua kiểm duyệt như bài viết (trước đây bỏ qua → spam/abuse public ngay).
+    mod_result = await moderate_content(body.content, [])
+    status = mod_result["status"]
+
     ph = db._ph
     with db._conn() as conn:
         post = db._fetchone(conn, f"SELECT id FROM posts WHERE id::text = {ph}", (post_id,))
@@ -374,16 +378,19 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
             raise HTTPException(404, "Bài viết không tồn tại")
 
         row = db._fetchone(conn, f"""
-            INSERT INTO comments (post_id, user_id, parent_id, content)
-            VALUES ({ph}::uuid, {ph}::uuid, {ph}::uuid, {ph})
+            INSERT INTO comments (post_id, user_id, parent_id, content, moderation_status)
+            VALUES ({ph}::uuid, {ph}::uuid, {ph}::uuid, {ph}, {ph})
             RETURNING *
         """, (post_id, str(user["id"]),
               body.parent_id if body.parent_id else None,
-              body.content))
+              body.content, status))
 
         post_owner = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
 
-    if post_owner and str(post_owner["user_id"]) != str(user["id"]):
+    log_moderation("comment", str(db._row_to_dict(row)["id"]), status, mod_result, auto=True)
+
+    # chỉ báo chủ bài khi bình luận được duyệt (không báo về nội dung bị giữ/ẩn)
+    if status == "approved" and post_owner and str(post_owner["user_id"]) != str(user["id"]):
         preview = body.content[:80] + ("..." if len(body.content) > 80 else "")
         create_notification(
             str(post_owner["user_id"]), "comment",
@@ -626,7 +633,7 @@ def _format_post(row: dict) -> dict:
         "created_at": str(row.get("created_at", "")),
         "display_name": row.get("display_name", ""),
         "avatar": row.get("avatar_url"),
-        "phone": row.get("phone", ""),
+        # P0-8: KHÔNG trả phone (PII) trong payload công khai
         "entity_id": row.get("entity_id"),
         "entity_name": row.get("entity_name"),
         "entity_type": row.get("entity_type"),
