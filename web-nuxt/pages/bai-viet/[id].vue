@@ -33,7 +33,7 @@
           </div>
         </div>
         <div v-else class="thread-comment-guest">
-          <NuxtLink to="/dang-nhap" class="guest-reply-link">Đăng nhập để trả lời</NuxtLink>
+          <button type="button" class="guest-reply-link" @click="openAuth">Đăng nhập để trả lời</button>
         </div>
 
         <!-- Comment items as thread replies -->
@@ -90,6 +90,7 @@ useReveal()
 const route = useRoute()
 const postId = route.params.id as string
 const { isLoggedIn, authHeaders, user } = useAuth()
+const { openAuth } = useAuthModal()
 const { reportPost } = useReport()
 const { show: showToast } = useToast()
 

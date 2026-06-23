@@ -273,20 +273,31 @@ function extractCoords(entity: Entity): [number, number] | null {
   return normalizeCoords(entity.coordinates)
 }
 
-function addStop(entity: Entity) {
-  stops.value.push({
+async function addStop(entity: Entity) {
+  // reactive() so a later coords backfill (below) re-triggers route/map
+  const stop = reactive({
     id: entity.id,
     name: entity.name,
     type: entity.type,
     place_name: entity.place_name,
-    coords: extractCoords(entity),
+    coords: extractCoords(entity) as [number, number] | null,
     time: '',
     notes: '',
   })
+  stops.value.push(stop)
   // brief highlight to confirm the item was added
   addingId.value = entity.id
   if (addingTimer) clearTimeout(addingTimer)
   addingTimer = setTimeout(() => { addingId.value = null }, 300)
+  // P0-19: saved items (favorites) carry no coordinates → fetch detail so the
+  // stop can be routed/mapped. Falls back silently (stop still listed) on error.
+  if (!stop.coords && entity.id) {
+    try {
+      const res = await $fetch<Record<string, any>>(`/api/entities/${encodeURIComponent(entity.id)}`)
+      const c = normalizeCoords(res?.coordinates)
+      if (c) stop.coords = c
+    } catch { /* coords stay null */ }
+  }
 }
 
 function removeStop(idx: number) {
@@ -426,7 +437,7 @@ async function updateMap(result: RouteResult | null) {
     el.innerHTML = `<div class="rm-num">${num}</div>`
     const marker = new maplibre.Marker({ element: el })
       .setLngLat([s.coords![1], s.coords![0]])
-      .setPopup(new maplibre.Popup({ offset: 25 }).setHTML(`<strong>${num}. ${s.name}</strong>`))
+      .setPopup(new maplibre.Popup({ offset: 25 }).setHTML(`<strong>${num}. ${escapeHtml(s.name)}</strong>`))
       .addTo(mapInstance)
     markers.push(marker)
   })

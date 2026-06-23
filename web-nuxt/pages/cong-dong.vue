@@ -100,7 +100,7 @@
           </div>
           <div class="guest-content">
             <p>Có trải nghiệm muốn chia sẻ?</p>
-            <NuxtLink to="/dang-nhap" class="btn btn-outline btn-sm">Đăng nhập</NuxtLink>
+            <button type="button" class="btn btn-outline btn-sm" @click="openAuth">Đăng nhập</button>
           </div>
         </div>
 
@@ -166,7 +166,7 @@
             <button type="button" class="btn btn-primary btn-sm" @click="focusComposer">Viết bài đầu tiên</button>
           </template>
           <template v-else #actions>
-            <NuxtLink to="/dang-nhap" class="btn btn-primary btn-sm">Đăng nhập để chia sẻ</NuxtLink>
+            <button type="button" class="btn btn-primary btn-sm" @click="openAuth">Đăng nhập để chia sẻ</button>
           </template>
         </EmptyState>
 
@@ -257,6 +257,7 @@ const { f: pc } = usePageContent('cong_dong')
 const MAX_CHARS = 500
 
 const { isLoggedIn, authHeaders, user } = useAuth()
+const { openAuth } = useAuthModal()
 const route = useRoute()
 const router = useRouter()
 

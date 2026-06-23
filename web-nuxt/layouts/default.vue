@@ -116,7 +116,7 @@ const { get: ss } = useSiteSettings()
 function toggleColorMode() {
   colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
 }
-const showAuth = ref(false)
+const { open: showAuth } = useAuthModal()
 const mobileNav = ref(false)
 const bannerEnabled = computed(() => ss('announcements.enabled', true))
 const showBeta = ref(false)

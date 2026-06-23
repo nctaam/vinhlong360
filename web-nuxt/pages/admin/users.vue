@@ -292,7 +292,7 @@ async function changeRole(id: string, role: string) {
   if (!confirm(`Đổi role thành "${role}"?`)) return
   acting.value = id
   try {
-    await $fetch(`/admin-api/users/${id}/role`, { method: 'POST', headers: authHeaders(), body: { role } })
+    await $fetch(`/admin-api/users/${id}/role`, { method: 'POST', headers: authHeaders(), query: { role } })
     showToast(`Đã đổi role thành ${role}`, 'success')
     await fetchUsers()
   } catch (e: unknown) {

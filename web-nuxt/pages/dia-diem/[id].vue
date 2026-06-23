@@ -254,7 +254,7 @@
           <div v-if="entity.attributes?.website" class="fact">
             <span class="fact-ic" aria-hidden="true">🔗</span>
             <span class="k">{{ ss('labels.detail.fact_website', 'Website') }}</span>
-            <span class="v"><a :href="entity.attributes.website" target="_blank" rel="noopener" class="fact-link website-link">{{ entity.attributes?.website?.replace(/^https?:\/\//, '') }}</a></span>
+            <span class="v"><a :href="safeUrl(entity.attributes.website)" target="_blank" rel="noopener nofollow" class="fact-link website-link">{{ entity.attributes?.website?.replace(/^https?:\/\//, '') }}</a></span>
           </div>
           <div v-if="entity.attributes?.fee" class="fact">
             <span class="fact-ic" aria-hidden="true">🎫</span>
@@ -501,7 +501,7 @@ const zaloLink = computed(() => {
   return String(z).startsWith('http') ? z : `https://zalo.me/${String(z).replace(/\D/g, '')}`
 })
 // GĐ13.1 (MVP): chủ cơ sở "nhận listing" -> trang liên hệ kèm ngữ cảnh (luồng owner-edit đầy đủ = sau).
-const claimUrl = computed(() => `/lien-he?claim=${encodeURIComponent(id.value)}`)
+const claimUrl = computed(() => `/lien-he?ref=claim&entity=${encodeURIComponent(id.value)}`)
 
 // D2 (2026-06-13): với sản phẩm OCOP, đưa website RIÊNG của chủ thể thành CTA "hỏi mua trực tiếp"
 // — dẫn khách về kênh bán/đặt riêng của họ. KHÔNG link sàn TMĐT, KHÔNG giỏ hàng/thanh toán on-site

@@ -107,7 +107,7 @@
           <div class="wp-contact">
             <div class="wp-contact-item wp-contact-main">
               <span class="wp-contact-label">👮 Công an {{ data.place.name }}</span>
-              <a v-if="attrs.police_phone" :href="`tel:${attrs.police_phone.replace(/\\./g, '')}`" class="wp-phone" :aria-label="`Gọi công an ${data.place.name}`">{{ attrs.police_phone }}</a>
+              <a v-if="attrs.police_phone" :href="telHref(attrs.police_phone)" class="wp-phone" :aria-label="`Gọi công an ${data.place.name}`">{{ attrs.police_phone }}</a>
               <span v-else class="wp-phone-na">Đang cập nhật</span>
             </div>
           </div>
@@ -121,7 +121,7 @@
               <span class="wp-fac-kind"><span class="wp-fac-emoji" aria-hidden="true">{{ kindMeta(f).emoji }}</span> {{ kindMeta(f).label }}</span>
               <strong>{{ f.name }}</strong>
               <div v-if="attr(f,'address')" class="wp-fac-row">📍 {{ attr(f,'address') }}</div>
-              <div v-if="attr(f,'phone')" class="wp-fac-row">📞 <a :href="`tel:${attr(f,'phone')}`" :aria-label="`Gọi ${f.name}`">{{ attr(f,'phone') }}</a></div>
+              <div v-if="attr(f,'phone')" class="wp-fac-row">📞 <a :href="telHref(attr(f,'phone'))" :aria-label="`Gọi ${f.name}`">{{ attr(f,'phone') }}</a></div>
             </li>
           </ul>
         </div>
@@ -257,7 +257,7 @@ watch(mapEl, async (el) => {
     new maplibregl.Marker({ element: el })
       .setLngLat([c[1], c[0]])
       .setPopup(new maplibregl.Popup({ offset: 20, maxWidth: '220px' }).setHTML(
-        `<a href="/dia-diem/${ent.id}" class="map-popup-link">${ent.name}</a><br><small>${meta.label}</small>`
+        `<a href="/dia-diem/${encodeURIComponent(ent.id)}" class="map-popup-link">${escapeHtml(ent.name)}</a><br><small>${escapeHtml(meta.label)}</small>`
       ))
       .addTo(map)
     bounds.extend([c[1], c[0]])
