@@ -110,6 +110,17 @@ class TestCreatePostValidation:
         )
         assert p.rating == 5
 
+    def test_repost_allows_empty_content(self):
+        """Migration 013: repost (repost_of set) cho phép content rỗng."""
+        p = social.CreatePost(content="", repost_of="some-post-id")
+        assert p.repost_of == "some-post-id"
+        assert p.content == ""
+
+    def test_short_nonempty_content_still_rejected(self):
+        """content 1-9 ký tự vẫn bị chặn dù có repost_of (gõ nhầm ≠ quote)."""
+        with pytest.raises(ValidationError):
+            social.CreatePost(content="ngắn", repost_of="some-post-id")
+
 
 class TestCreateCommentValidation:
     def test_valid(self):
@@ -218,6 +229,36 @@ def test_delete_post_forbidden_for_other_user(pg_user, pg_entity):
         with db._conn() as conn:
             db._execute(conn, f"DELETE FROM posts WHERE id::text = {ph}", (pid,))
             db._execute(conn, f"DELETE FROM users WHERE id::text = {ph}", (str(other["id"]),))
+
+
+@pg_only
+def test_repost_creates_snapshot_and_blocks_repost_of_repost(pg_user, pg_entity):
+    """Migration 013: repost lưu snapshot bài gốc; chặn repost-của-repost."""
+    ph = db._ph
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"""
+            INSERT INTO posts (user_id, entity_id, content, images, post_type, moderation_status)
+            VALUES ({ph}::uuid, {ph}, {ph}, {ph}::jsonb, {ph}, 'approved')
+            RETURNING id
+        """, (str(pg_user["id"]), pg_entity, "Bài gốc để đăng lại.", json.dumps([]), "share"))
+        orig_id = str(row["id"])
+    created = [orig_id]
+    try:
+        client = _client_as(pg_user)
+        # repost với content rỗng → 200 + snapshot
+        resp = client.post("/api/posts", json={"repost_of": orig_id, "content": ""})
+        assert resp.status_code == 200, resp.text
+        rp = resp.json()["post"]
+        created.append(rp["id"])
+        assert rp["repost_of"] == orig_id
+        assert rp["repost"] and rp["repost"]["content"].startswith("Bài gốc để đăng lại")
+        # repost-của-repost → 400
+        resp2 = client.post("/api/posts", json={"repost_of": rp["id"], "content": ""})
+        assert resp2.status_code == 400
+    finally:
+        with db._conn() as conn:
+            for pid in created:
+                db._execute(conn, f"DELETE FROM posts WHERE id::text = {ph}", (pid,))
 
 
 @pg_only
