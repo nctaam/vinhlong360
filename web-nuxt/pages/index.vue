@@ -268,7 +268,10 @@
     <ClientOnly>
       <section v-if="communityPosts.length" class="block reveal band">
         <div class="section-head">
-          <h2>Từ cộng đồng</h2>
+          <div class="sh-text">
+            <h2>Từ cộng đồng</h2>
+            <p class="sh-sub">Trải nghiệm thật, mẹo hay từ người đi trước</p>
+          </div>
           <NuxtLink class="see-all" to="/cong-dong">Xem tất cả →</NuxtLink>
         </div>
         <p v-if="communityStats" class="community-stats-line">
@@ -356,7 +359,10 @@
     <!-- 8. Quick links + Chatbot CTA -->
     <section class="block block-compact reveal">
       <div class="section-head">
-        <h2>Khám phá thêm</h2>
+        <div class="sh-text">
+          <h2>Khám phá thêm</h2>
+          <p class="sh-sub">Lối tắt tới mọi ngóc ngách ba vùng đất</p>
+        </div>
       </div>
       <div class="quick-grid">
         <NuxtLink v-for="ql in quickLinks" :key="ql.to" :to="ql.to" class="quick-link"><span class="ql-icon">{{ ql.emoji }}</span><span class="ql-text">{{ ql.label }}</span></NuxtLink>
@@ -860,6 +866,7 @@ html.js .home .hero-enter h1::after {
   border-radius: var(--radius-md);
 }
 .stats-bar .stat-item {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -873,6 +880,12 @@ html.js .home .hero-enter h1::after {
   background: var(--overlay-subtle);
   transform: translateY(-1px);
 }
+/* Đường phân-cách mảnh giữa các chỉ-số → cảm-giác "stat strip" gọn (desktop). */
+.stats-bar .stat-item + .stat-item::before {
+  content: ""; position: absolute; left: calc(-1 * var(--space-4)); top: 50%;
+  transform: translateY(-50%); width: 1px; height: 26px; background: var(--line);
+}
+@media (max-width: 480px) { .stats-bar .stat-item + .stat-item::before { display: none; } }
 .stats-bar .stat-num {
   font-size: var(--text-xl);
   font-weight: var(--weight-extrabold);
