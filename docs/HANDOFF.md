@@ -132,4 +132,21 @@ const { data } = await useAsyncData('key', () => apiFetch('/api/...'))
 
 ---
 
+## 12. Bàn-giao CREDENTIAL — CHỦ tự làm, KHÔNG qua AI/không commit
+
+> ⚠️ Claude KHÔNG thu-thập/hiển-thị/truyền/commit secret thật, KHÔNG đọc prod `.env`. Mục này chỉ là **checklist loại credential + cách bàn-giao an-toàn**. Mọi giá-trị do CHỦ truyền trực-tiếp cho người tiếp-quản qua kênh bảo-mật (password-manager dùng-chung / age/gpg / Signal) — KHÔNG qua git, chat, email-plaintext, hay AI. Repo đã verify sạch secret (`.env` gitignored; chỉ dummy CI).
+
+**Cần bàn-giao (giá-trị KHÔNG ở đây):**
+1. **VPS SSH** — key riêng `~/.ssh/vinhlong_vps` → `root@66.42.57.202` (Vultr). *Khuyến-nghị:* người mới tự tạo keypair, gửi **public key** cho chủ, chủ thêm vào `/root/.ssh/authorized_keys` (không phải copy private key cũ → revoke được). Có SSH là đọc được prod `.env` tại `/opt/vinhlong360/.env` (không cần truyền .env riêng).
+2. **Vultr** (provider VPS) — login chủ.
+3. **Tên miền `vinhlong360.vn`** — tài-khoản registrar + DNS.
+4. **Cloudflare** — account (bucket R2 `vinhlong360`, CDN `cdn.vinhlong360.vn`). Secret: `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`.
+5. **Prod `.env`** (`/opt/vinhlong360/.env`, đã có sẵn trên VPS) — gồm các key (TÊN): `DATABASE_URL` (mật-khẩu Postgres user `vl360`), `LLM_API_KEY`+`LLM_BASE_URL`+`LLM_MODEL` (LLM provider ChatGPT-compatible), `IMAGE_API_KEY` (gen ảnh), `R2_*`, `ADMIN_API_KEY` (đăng-nhập /admin), `ESMS_API_KEY`/`ESMS_SECRET`/`ESMS_BRANDNAME` (OTP SMS — eSMS.vn), `ZALO_OA_ID`/`ZALO_OA_SECRET` (bot Zalo, nếu dùng), `MEMORY_ENCRYPTION_KEY`, `CORS_ORIGINS`, `ENVIRONMENT=production`.
+6. **Provider accounts** sau LLM/Image API, **eSMS.vn** (OTP), **Zalo OA** — login chủ (để rotate/billing).
+7. **Git remote**: HIỆN không có remote (deploy bằng tarball). Nếu muốn push GitHub → chủ tạo repo + cấp URL/quyền (Claude không tự push — §4).
+
+**Khi muốn CẮT quyền tài-khoản/người cũ (rotate):** chủ tự làm — gỡ SSH key cũ khỏi `authorized_keys`; xoay `R2` keys (Cloudflare), `ADMIN_API_KEY`, mật-khẩu Postgres (cập-nhật `DATABASE_URL`), `LLM_API_KEY`, `ESMS`/`ZALO` secret; sửa prod `.env` rồi `systemctl restart vl-agent`. **Lưu-ý:** sai cú-pháp `.env` = crash-loop vl-agent (xem incident-runbook) → backup `.env` trước khi sửa.
+
+---
+
 **Tóm tắt 1 câu:** Đọc CLAUDE.md + ROADMAP, theo bất-biến §2 + điều-kiện-dừng §4, deploy qua `scripts/deploy.sh` (build FE tách-nền + verify 200), **dùng `apiFetch` cho mọi SSR-fetch**, backup trước mọi data-op, KHÔNG đụng secret/prod-.env/git-push khi chưa được chủ duyệt.
