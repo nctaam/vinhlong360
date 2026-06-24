@@ -5,7 +5,7 @@
       "type": "itinerary",
       "name": "Bến Tre 2N1Đ – Tổng tài đưa nữ chính về miền Tây",
       "summary": "Lịch trình 2 ngày 1 đêm cuối tuần theo phong cách drama lãng mạn: tổng tài dẫn nữ chính khám phá xứ dừa Bến Tre. Chèo xuồng ba lá Cồn Phụng, thưởng thức kẹo dừa Mỏ Cày, dạo vườn trái cây Chợ Lách, nghỉ resort sinh thái. Xuất phát từ Bến xe Miền Tây (TP.HCM), tuyến đường tối ưu không quay đầu.",
-      "placeId": null,
+      "placeId": "p-ben-tre",
       "confidence": 1.0,
       "season": null,
       "attributes": {
@@ -827,7 +827,7 @@
       "type": "dish",
       "name": "Cháo Ếch Trần Nam",
       "summary": "Cháo Ếch Trần Nam là quán ăn chuyên cháo ếch tại Đinh Tiên Hoàng (Vĩnh Long), được đánh giá 8.3/10 (11 lượt đánh giá trên Foody) (Vĩnh Long).",
-      "placeId": null,
+      "placeId": "vinh-long",
       "confidence": 0.6,
       "season": {
         "months": [
@@ -1413,7 +1413,7 @@
       "type": "cafe",
       "name": "Panda Purple Cafe",
       "summary": "Panda Purple Cafe là quán cà phê tại 57 Lê Văn Tám (Vĩnh Long), được đánh giá 7.5/10 (6 lượt đánh giá trên Foody) (Vĩnh Long).",
-      "placeId": null,
+      "placeId": "p-thanh-duc",
       "confidence": 0.6,
       "season": {
         "months": [
@@ -2683,7 +2683,7 @@
       "type": "restaurant",
       "name": "Ninh Kiều 5 - Quốc Lộ 60",
       "summary": "Ninh Kiều 5 - Quốc Lộ 60 là nhà hàng tại Quốc Lộ 60 (Bến Tre), được đánh giá 7.3/10 (14 lượt đánh giá trên Foody) (Bến Tre).",
-      "placeId": null,
+      "placeId": "p-son-dong",
       "confidence": 0.6,
       "season": {
         "months": [
@@ -3049,7 +3049,7 @@
       "type": "dish",
       "name": "Bánh Flan 14",
       "summary": "Bánh Flan 14 là quán ăn chuyên bánh flan tại 14 Lê Quý Đôn, P. 1 (Bến Tre), được đánh giá 7.0/10 (11 lượt đánh giá trên Foody) (Bến Tre).",
-      "placeId": null,
+      "placeId": "p-ben-tre",
       "confidence": 0.6,
       "season": {
         "months": [
@@ -3103,7 +3103,7 @@
       "type": "cafe",
       "name": "Làng Văn Coffee",
       "summary": "Làng Văn Coffee là quán cà phê tại Quốc Lộ 60 (Bến Tre), được đánh giá 7.7/10 (6 lượt đánh giá trên Foody) (Bến Tre).",
-      "placeId": null,
+      "placeId": "p-son-dong",
       "confidence": 0.6,
       "season": {
         "months": [
@@ -4043,7 +4043,7 @@
       "type": "restaurant",
       "name": "Nam Sơn",
       "summary": "Nam Sơn là nhà hàng tại 40 Phan Ngọc Tòng (Bến Tre), được đánh giá 7.2/10 (4 lượt đánh giá trên Foody) (Bến Tre).",
-      "placeId": null,
+      "placeId": "p-an-hoi",
       "confidence": 0.6,
       "season": {
         "months": [
@@ -4144,7 +4144,7 @@
       "type": "restaurant",
       "name": "Hàm Luông",
       "summary": "Hàm Luông là nhà hàng tại 200C Hùng Vương, P. 5 (Bến Tre), được đánh giá 7.8/10 (3 lượt đánh giá trên Foody) (Bến Tre).",
-      "placeId": null,
+      "placeId": "p-ben-tre",
       "confidence": 0.6,
       "season": {
         "months": [
@@ -4342,7 +4342,7 @@
       "type": "restaurant",
       "name": "Hủ Tiếu Chay",
       "summary": "Hủ Tiếu Chay là nhà hàng tại 5 Quốc Lộ 60, Tt Mỏ Cày Nam (Bến Tre), được đánh giá 8.3/10 (3 lượt đánh giá trên Foody) (Bến Tre).",
-      "placeId": null,
+      "placeId": "p-an-hoi",
       "confidence": 0.6,
       "season": {
         "months": [
@@ -5338,7 +5338,7 @@
       "type": "cafe",
       "name": "DéJà Huỳnh Kha Coffee",
       "summary": "DéJà Huỳnh Kha Coffee là quán cà phê tại Chu Văn An (Trà Vinh), được đánh giá 8.2/10 (5 lượt đánh giá trên Foody) (Trà Vinh).",
-      "placeId": null,
+      "placeId": "p-tra-vinh",
       "confidence": 0.6,
       "season": {
         "months": [
@@ -5447,7 +5447,7 @@
       "type": "cafe",
       "name": "Mandi Cafe",
       "summary": "Mandi Cafe là quán cà phê tại Nguyễn Thị Minh Khai (Trà Vinh), được đánh giá 7.3/10 (5 lượt đánh giá trên Foody) (Trà Vinh).",
-      "placeId": null,
+      "placeId": "p-tra-vinh",
       "confidence": 0.6,
       "season": {
         "months": [
@@ -5811,7 +5811,7 @@
       "type": "restaurant",
       "name": "Bún Nước Lèo - Lý Thường Kiệt",
       "summary": "Bún Nước Lèo - Lý Thường Kiệt là nhà hàng chuyên bún tại Lý Thường Kiệt (Trà Vinh), được đánh giá 7.8/10 (4 lượt đánh giá trên Foody) (Trà Vinh).",
-      "placeId": null,
+      "placeId": "p-tra-vinh",
       "confidence": 0.6,
       "season": {
         "months": [
@@ -6127,7 +6127,7 @@
       "type": "restaurant",
       "name": "Quán Tuyết - Cơm Cà Ri Gà",
       "summary": "Quán Tuyết - Cơm Cà Ri Gà là nhà hàng chuyên các món gà tại Trần Phú (Trà Vinh), được đánh giá 8.8/10 (2 lượt đánh giá trên Foody) (Trà Vinh).",
-      "placeId": null,
+      "placeId": "p-tra-vinh",
       "confidence": 0.6,
       "season": {
         "months": [
@@ -6233,7 +6233,7 @@
       "type": "dish",
       "name": "Bánh Cuốn Nóng - Trần Quốc Tuấn",
       "summary": "Bánh Cuốn Nóng - Trần Quốc Tuấn là quán ăn chuyên bánh cuốn tại Trần Quốc Tuẩn (Trà Vinh), được đánh giá 8.8/10 (3 lượt đánh giá trên Foody) (Trà Vinh).",
-      "placeId": null,
+      "placeId": "p-tra-vinh",
       "confidence": 0.6,
       "season": {
         "months": [
@@ -7244,7 +7244,7 @@
       "type": "history",
       "name": "Chùa Hội Tông (Hội Tông Cổ Tự)",
       "summary": "Chùa tọa lạc tại ấp 8, xã Quới Sơn, huyện Châu Thành, tỉnh Bến Tre, cách huyện lỵ Châu Thành khoảng 5 km. Chùa được sư ông Long Thiền dựng vào giữa thế kỷ XVIII, dưới triều Chúa Võ Vương Nguyễn Phước Khoát (1738-1765).",
-      "placeId": null,
+      "placeId": "p-ben-tre",
       "confidence": 0.7,
       "season": null,
       "attributes": {
@@ -7308,7 +7308,7 @@
       "type": "history",
       "name": "Khu di tích lịch sử Căn cứ Tỉnh ủy Bến Tre (Rừng lá Thạnh Phú)",
       "summary": "10 thg 10, 2023 · Khu di tích này từng được mệnh danh là một “Căn cứ giữa lòng dân\", thuộc địa phận ấp Trần Ðộ, xã Thạnh Phú, huyện Cái Nước, tỉnh Cà Mau. Đây ...",
-      "placeId": null,
+      "placeId": "xa-thanh-phu",
       "confidence": 0.7,
       "season": null,
       "attributes": {
@@ -7340,7 +7340,7 @@
       "type": "history",
       "name": "Đình Bình Hòa (Đình thần Bình Hòa)",
       "summary": "Vĩnh Long có nhiều di tích văn hóa quốc gia như Văn Thánh Miếu, Chùa Tiên Châu, Đình Long Thanh, Chùa Phước Hậu, Chùa Ngọc Sơn Quang, Đình Tân Hoà, Miếu Công ...",
-      "placeId": null,
+      "placeId": "xa-giong-trom",
       "confidence": 0.7,
       "season": null,
       "attributes": {
@@ -7436,7 +7436,7 @@
       "type": "history",
       "name": "Di tích lịch sử Chiến thắng Giồng Dứa",
       "summary": "Di tích mộ hợp chất Chợ Lách (14BT-CL-. MHC-1) có tọa ñộ: N10015'38.7''– E. 106007'07.9'' nằm kế bên Quốc Lộ 57 và kênh. Chợ Lách, hiện thuộc quy hoạch xây dựng ...",
-      "placeId": null,
+      "placeId": "xa-giong-trom",
       "confidence": 0.7,
       "season": null,
       "attributes": {
@@ -14800,7 +14800,6 @@
       "type": "dish",
       "name": "Tôm càng xanh sông Tiền",
       "summary": "Tôm càng xanh nuôi tự nhiên trên sông Tiền và sông Hậu của Vĩnh Long có thịt chắc ngọt đặc biệt nhờ nguồn nước phù sa giàu dinh dưỡng. Con tôm to mập, càng dài xanh biếc, gạch tôm cam béo ngậy là phần được săn đón nhất. Chế biến đa dạng: hấp bia giữ vị ngọt tự nhiên, nướng muối ớt dậy hương, hoặc nấu lẩu mắm đậm đà. Ngon nhất vào mùa nước nổi tháng 9-11 khi tôm lớn và nhiều gạch. Nhà hàng Hùng Biển là địa chỉ chuyên tôm càng xanh nổi tiếng nhất tỉnh.",
-      "placeId": null,
       "confidence": 0.75,
       "season": {
         "months": [
@@ -14860,7 +14859,7 @@
       "type": "product",
       "name": "Sầu riêng Ri 6 Long Hồ",
       "summary": "Giống sầu riêng đặc sản nổi tiếng của huyện Long Hồ, xuất xứ từ ấp Phước Định 1, xã Bình Hòa Phước. Cơm vàng dày mịn, múi to đều, vị ngọt bùi đậm đà, hương thơm mạnh quyến rũ - được đánh giá vượt trội nhiều giống sầu riêng khác trên thị trường. Mỗi quả nặng trung bình 3-5kg, khi bổ ra múi căng mọng, ăn một miếng nhớ mãi. Thu hút đông đảo khách du lịch đến tham quan vườn, mua tại gốc trong chính vụ hè tháng 5 đến tháng 8, giá hợp lý hơn mua ngoài chợ.",
-      "placeId": null,
+      "placeId": "p-thanh-duc",
       "confidence": 0.75,
       "season": {
         "months": [
@@ -15429,7 +15428,7 @@
       "type": "dish",
       "name": "Ốc Gạo Cồn Phú Đa Hấp Sả",
       "summary": "Ốc gạo Cồn Phú Đa sống trên bãi cát sông thuộc huyện Chợ Lách, Bến Tre, có vỏ xanh đặc trưng, thịt trắng dày, dai ngọt tự nhiên và không nhớt — điểm khác biệt so với ốc gạo nơi khác là không cần ngâm trước khi chế biến. Hấp sả gừng giữ nguyên vị ngọt tinh tế của thịt ốc, nướng muối ớt tạo hương thơm nồng ấm. Ốc còn được dùng làm bánh xèo, cháo ốc. Mùa ngon nhất là tháng 5 âm lịch dịp Tết Đoan Ngọ, khi ốc to như hạt mít và đạt chất lượng đỉnh cao.",
-      "placeId": null,
+      "placeId": "xa-thanh-thoi",
       "confidence": 0.75,
       "season": {
         "months": [
@@ -18411,7 +18410,6 @@
       "type": "nature",
       "name": "Sông Cổ Chiên",
       "summary": "Sông Cổ Chiên (sông, 82 km). Một trong hai nhánh chính của sông Tiền chảy qua Vĩnh Long, phân ranh giới tự nhiên giữa Vĩnh Long và Bến Tre. Từng là tuyến giao thương quan trọng thời Pháp thuộc, có nhiều bến đò lịch sử. Hệ sinh thái cá nước ngọt phong phú, ven bờ có nhiều vườn cây ăn trái. Điểm ngắm cảnh đẹp: Bến Bình Minh (huyện Bình Minh) và cầu Mỹ Thuận nhìn về phía hạ lưu. Đánh giá cảnh quan: 5/5.",
-      "placeId": null,
       "confidence": 0.7,
       "season": {
         "months": [
@@ -18543,7 +18541,7 @@
       "type": "nature",
       "name": "Rạch Cái Cá",
       "summary": "Rạch Cái Cá (rạch, 12 km). Rạch lớn chạy qua trung tâm thành phố Vĩnh Long, từng là trục thương mại chính của chợ Vĩnh Long thời Pháp. Hai bờ rạch có phố cổ người Hoa và kiến trúc thuộc địa còn sót lại. Gắn liền với ký ức đô thị của người dân Vĩnh Long. Điểm ngắm cảnh đẹp: Cầu Kinh – Cầu Lầu đoạn nhìn về phía chợ Vĩnh Long. Đánh giá cảnh quan: 4/5.",
-      "placeId": null,
+      "placeId": "p-thanh-duc",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -18674,7 +18672,6 @@
       "type": "nature",
       "name": "Sông Mang Thít",
       "summary": "Sông Mang Thít (sông, 47 km). Tuyến thủy lộ thiên nhiên nối sông Tiền và sông Cổ Chiên, chạy ngang tỉnh Vĩnh Long theo hướng Đông-Tây. Nổi tiếng với làng nghề lò gạch ngói truyền thống hai bên bờ (hàng trăm lò gạch thủ công), tạo cảnh quan công nghiệp dân gian độc đáo. Đang được nghiên cứu đề xuất công nhận di sản văn hóa. Điểm ngắm cảnh đẹp: Đoạn qua xã Mỹ Phước và Nhơn Phú – nhìn hai bên bờ có hàng trăm ống khói lò gạch. Đánh giá cảnh quan: 5/5.",
-      "placeId": null,
       "confidence": 0.7,
       "season": {
         "months": [
@@ -18946,7 +18943,7 @@
       "type": "nature",
       "name": "Sông Hàm Luông",
       "summary": "Sông Hàm Luông (sông, 70 km). Một trong bốn nhánh chính của sông Cửu Long chảy qua Bến Tre, phân chia cù lao Bảo và cù lao Minh. Gắn liền với lịch sử kháng chiến và văn hóa dừa Bến Tre. Tuyến vận tải thủy quan trọng nhất tỉnh. Điểm ngắm cảnh đẹp: Cầu Hàm Luông (TP. Bến Tre) và bến phà Hàm Luông cũ – nhìn bao quát dòng sông rộng, vườn dừa hai bờ. Đánh giá cảnh quan: 5/5.",
-      "placeId": null,
+      "placeId": "xa-dong-khoi",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -28465,7 +28462,7 @@
       "type": "attraction",
       "name": "Đình Bình Hòa (Giồng Trôm)",
       "summary": "Đình Bình Hòa (Giồng Trôm). Tôn giáo: Tín ngưỡng dân gian. Thành lập: Đầu thế kỷ 19. Đình làng cổ Nam Bộ, kiến trúc ba gian, kết cấu gỗ chắc chắn, mái ngói âm dương rêu phong, nội thất bảo tồn nhiều hiện vật cổ, hoành phi câu đối thời Nguyễn. Thờ: Thần Thành Hoàng, Tiền Hiền Hậu Hiền. Lễ hội: Lễ Kỳ Yên (tháng 3 âm lịch).",
-      "placeId": null,
+      "placeId": "xa-giong-trom",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -33707,7 +33704,6 @@
       "type": "attraction",
       "name": "Khu Di Sản Lò Gạch Mang Thít – Kênh Thầy Cai",
       "summary": "17 thg 7, 2024 · Quy mô khu vực lập quy hoạch khoảng 3.060ha. Đây là khu du lịch trọng điểm, định hướng là khu du lịch quốc gia, có vai trò quan trọng trong việc ...",
-      "placeId": null,
       "confidence": 0.7,
       "season": {
         "months": [
@@ -33989,7 +33985,6 @@
       "type": "nature",
       "name": "Khu Di Sản Đương Đại Mang Thít – Tuyến Sinh Thái Kênh Thủy Lộ",
       "summary": "Ngày 31/5/2023, Chủ tịch UBND tỉnh Vĩnh Long ban hành Quyết định số 1293/QĐ-UBND phê duyệt nhiệm vụ quy hoạch chung xây dựng khu Di sản đương đại Mang Thít thuộc huyện Mang Thít đến năm 2045.",
-      "placeId": null,
       "confidence": 0.7,
       "season": {
         "months": [
@@ -34046,7 +34041,7 @@
       "type": "nature",
       "name": "Khu Bảo Tồn Loài - Sinh Cảnh Sân Chim Vàm Hồ",
       "summary": "Nằm dọc ven sông Ba Lai, sân chim Vàm Hồ là một điểm du lịch sinh thái hấp dẫn được hình thành từ tháng 5-1986 do đàn chim trước ở Cù lao Đất, xã An Hiệp, huyện Ba Tri di cư tới.",
-      "placeId": null,
+      "placeId": "p-ba-tri",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -34216,7 +34211,7 @@
       "type": "experience",
       "name": "Du Lịch Sinh Thái Cộng Đồng Thạnh Phong",
       "summary": "Hành trình khám phá vẻ đẹp bình dị nhưng đầy cuốn hút của miền Tây Nam Bộ - Vĩnh Long cùng tour du lịch Vĩnh Long độc đáo từ Vietluxtour! Ba tỉnh thành này nổi tiếng với cảnh quan sông nước hữu tình, những vườn cây trái trĩu quả, di sản văn hóa tâm linh đặc sắc và các làng nghề truyền thống lâu đời.",
-      "placeId": null,
+      "placeId": "xa-an-qui",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -34273,7 +34268,7 @@
       "type": "nature",
       "name": "Cồn Ốc (Giồng Trôm)",
       "summary": "Khu du lịch Cồn Óc hay còn gọi là cù lao Ốc thuộc xã Hưng Phong, huyện Giồng Trôm, tỉnh Bến Tre, cách thị xã Bến Tre khoảng hơn 10km có chiều dài 8.3km, rộng hơn 1km.",
-      "placeId": null,
+      "placeId": "xa-luong-hoa",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -34387,7 +34382,7 @@
       "type": "experience",
       "name": "Khu Sinh Thái Gió Đước",
       "summary": "ngày 7 Tháng 2 2024 - Khu Sinh Thái Gió Đước (Bến Tre) là một điểm đến lý tưởng cho những ai muốn tìm kiếm sự bình yên và thư giãn giữa thiên nhiên hoang sơ. Hãy đến và tận hưởng những trải nghiệm đáng nhớ ...",
-      "placeId": null,
+      "placeId": "xa-thanh-phu",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -34727,7 +34722,7 @@
       "type": "experience",
       "name": "Vườn dừa sinh thái Cầu Kè",
       "summary": "ngày 10 Tháng 5 2026 · Mấy năm gần đây, vườn dừa sáp của chị Thúy cũng là điểm đến tham quan, trải nghiệm về cây dừa sáp, nghe câu chuyện làm vườn, làm du lịch của nông dân, hành trình sản phẩm dừa sáp Cầu Kè vươn mình ra… thế giới.",
-      "placeId": null,
+      "placeId": "xa-cau-ke",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -34953,7 +34948,7 @@
       "type": "experience",
       "name": "Khu du lịch sinh thái Cù Lao Tân Quy",
       "summary": "?i?m du l?ch sinh th?i tr?n C? Lao T?n Quy, g?n v?i kh?ng gian mi?t v??n C?ng Long v? tr?i nghi?m s?ng n??c, c?y tr?i c?a Tr? Vinh.",
-      "placeId": null,
+      "placeId": "p-cang-long",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -35177,7 +35172,7 @@
       "type": "nature",
       "name": "Vùng cửa sông Cung Hầu - ngắm cá heo nước ngọt",
       "summary": "7 thg 5, 2023 · vùng được kiểm soát mặn ở Bạc Liêu,. Sóc Trăng, Trà Vinh, Bến Tre, ranh mặn với nồng độ 4%% chỉ xâm nhập sâu 35-. 40km từ cửa sông. Tuy nhiên ...",
-      "placeId": null,
+      "placeId": "xa-cau-ngang",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -36346,7 +36341,7 @@
       "type": "product",
       "name": "Muối Ba Tri",
       "summary": "Muối sản xuất tại làng nghề Bảo Thạnh, huyện Ba Tri (600ha). Vị mặn dịu không chát đặc trưng - sản phẩm OCOP nổi tiếng Bến Tre.",
-      "placeId": null,
+      "placeId": "p-ben-tre",
       "confidence": 0.75,
       "season": {
         "months": [
@@ -46023,7 +46018,7 @@
       "type": "attraction",
       "name": "Sokfarm Tiểu Cần",
       "summary": "Nông trại hữu cơ chuyên sản xuất mật hoa dừa tươi hữu cơ (Sokfarm), kết hợp du lịch trải nghiệm nông nghiệp. Sản phẩm đạt chứng nhận hữu cơ quốc tế.",
-      "placeId": null,
+      "placeId": "p-tieu-can",
       "confidence": 0.75,
       "season": {
         "months": [
@@ -46363,7 +46358,7 @@
       "type": "attraction",
       "name": "Chùa Vạn Phước Bình Đại",
       "summary": "Chùa Phật giáo nổi bật với tượng Phật Di Lặc mạ vàng cao 12,45m đặt trong công viên rộng rãi trên tỉnh lộ 883, huyện Bình Đại. Điểm tâm linh và tham quan độc đáo vùng biển BT.",
-      "placeId": null,
+      "placeId": "xa-phu-thuan",
       "confidence": 0.75,
       "season": {
         "months": [
@@ -47358,7 +47353,7 @@
       "type": "dish",
       "name": "Loi Choi Sả Ớt Trà Vinh",
       "summary": "Món đặc sản độc đáo từ con loi choi — loài dài 20–40cm sống ở bãi bùn ven sông — chiên giòn trong dầu nóng với sả và ớt tươi. Vị béo, thơm sả và cay cay; là món ăn đặc hữu chỉ có ở vùng sông nước Trà Vinh.",
-      "placeId": null,
+      "placeId": "xa-chau-thanh",
       "confidence": 0.75,
       "season": {
         "months": [
@@ -47958,7 +47953,7 @@
       "type": "nature",
       "name": "Sân Chim Vàm Hồ Ba Tri",
       "summary": "Nông trại du lịch sinh thái kiêm sân chim lớn nhất miền Tây, diện tích hơn 67ha bên hữu ngạn sông Ba Lai. Nơi cư trú của hơn 120 loài chim quý (cò, vạc, cồng cộc, diệc xám, le le...) và nhiều loài thú hoang. Thời điểm tham quan tốt nhất từ tháng 10 đến tháng 4.",
-      "placeId": null,
+      "placeId": "p-ben-tre",
       "confidence": 0.75,
       "season": {
         "months": [
@@ -48233,7 +48228,7 @@
       "type": "product",
       "name": "Mật Ong Hoa Dừa Bến Tre",
       "summary": "Sản phẩm mật ong đặc trưng của Bến Tre, thu từ hoa dừa và các vườn cây ăn trái phong phú vùng sông nước. Đạt OCOP 4 sao (Công ty Mật ong Tín Phát), màu vàng nhạt đến vàng nâu, mùi thơm đặc trưng.",
-      "placeId": null,
+      "placeId": "p-ben-tre",
       "confidence": 0.75,
       "season": {
         "months": [
@@ -48290,7 +48285,7 @@
       "type": "product",
       "name": "Bưởi Da Xanh Bến Tre",
       "summary": "Đặc sản trái cây được bảo hộ chỉ dẫn địa lý, nguồn gốc từ xã Tân Thanh, huyện Mỏ Cày Bắc. Toàn tỉnh có hơn 5.904ha trồng bưởi da xanh, sản lượng hơn 47.000 tấn/năm. Quả to, múi dày, vị ngọt thanh đặc trưng, xuất khẩu nhiều thị trường quốc tế.",
-      "placeId": null,
+      "placeId": "p-phu-tan",
       "confidence": 0.75,
       "season": {
         "months": [
@@ -50330,7 +50325,6 @@
       "type": "dish",
       "name": "Tép rang dừa",
       "summary": "Món ăn đặc trưng của vùng xứ dừa Bến Tre, tép tươi được rang cùng cơm dừa nạo, tạo vị béo ngọt đặc trưng. Đây là một trong những món ăn dân dã nổi bật tại các điểm du lịch sinh thái ở Châu Thành, Bến Tre.",
-      "placeId": null,
       "confidence": 0.7,
       "season": {
         "months": [
@@ -50480,7 +50474,7 @@
       "type": "craft_village",
       "name": "Làng nghề cây giống Chợ Lách",
       "summary": "Huyện Chợ Lách có 31 làng nghề truyền thống sản xuất cây giống, hoa kiểng với hàng nghìn hộ dân tham gia, cung cấp hơn 17 triệu cây giống và 12 triệu sản phẩm hoa kiểng các loại mỗi năm cho thị trường cả nước.",
-      "placeId": null,
+      "placeId": "xa-cho-lach",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -50535,7 +50529,7 @@
       "type": "product",
       "name": "Sầu riêng Chợ Lách",
       "summary": "Đặc sản sầu riêng nổi tiếng của huyện Chợ Lách, Bến Tre. Sản phẩm sầu riêng cấp đông của Công ty TNHH XNK Trái cây Chánh Thu tại huyện Chợ Lách là một trong những sản phẩm OCOP nổi bật của tỉnh Bến Tre.",
-      "placeId": null,
+      "placeId": "xa-cho-lach",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -50647,7 +50641,7 @@
       "type": "accommodation",
       "name": "Rooster Mekong Resort",
       "summary": "Khu nghỉ dưỡng sinh thái có diện tích hơn 2 ha nằm bên dòng sông Mê Kông, thuộc ấp An Hòa, xã Long Thới. Cung cấp dịch vụ lưu trú bungalow, ẩm thực địa phương và quốc tế, tham quan vườn, tổ chức sự kiện và hội nghị.",
-      "placeId": null,
+      "placeId": "xa-dong-khoi",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -50707,7 +50701,7 @@
       "type": "history",
       "name": "Nhà thờ Giáo xứ Cái Nhum",
       "summary": "Nhà thờ Công giáo nằm tại xã Long Thới, mở cửa cả ngày, vào cửa miễn phí. Là điểm tham quan tín ngưỡng – kiến trúc trong khu vực miệt vườn Chợ Lách.",
-      "placeId": null,
+      "placeId": "xa-cho-lach",
       "confidence": 0.7,
       "season": null,
       "attributes": {
@@ -50785,7 +50779,7 @@
       "type": "attraction",
       "name": "Vườn kiểng thú Năm Công",
       "summary": "Vườn cây cảnh tạo hình độc đáo tại Chợ Lách, nổi tiếng với bộ sưu tập 12 con giáp và các hình thú được tạo hình từ cây kiểng. Là điểm tham quan thu hút du khách thích cây cảnh nghệ thuật.",
-      "placeId": null,
+      "placeId": "xa-cho-lach",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -51186,7 +51180,7 @@
       "type": "product",
       "name": "Rượu Gia Bảo",
       "summary": "Sản phẩm rượu truyền thống đạt chứng nhận OCOP của huyện Mỏ Cày Nam, tỉnh Bến Tre. Là một trong các sản phẩm OCOP tiêu biểu đạt 3-4 sao của huyện, góp phần quảng bá đặc sản địa phương và phát triển kinh tế nông thôn theo chương trình OCOP quốc gia.",
-      "placeId": null,
+      "placeId": "xa-tan-thanh-binh",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -52378,7 +52372,7 @@
       "type": "history",
       "name": "Đền Thất Phủ Võ Miếu",
       "summary": "Thất Phủ Võ Miếu là di tích lịch sử văn hóa tại huyện Ba Tri, Bến Tre, là nơi thờ tự mang đậm nét tín ngưỡng dân gian của người dân địa phương.",
-      "placeId": null,
+      "placeId": "p-ba-tri",
       "confidence": 0.7,
       "season": null,
       "attributes": {
@@ -52671,7 +52665,7 @@
       "type": "history",
       "name": "Khu Tưởng niệm Nguyễn Thị Út (Út Tịch)",
       "summary": "Khu tưởng niệm nữ anh hùng liệt sĩ Nguyễn Thị Út (còn gọi là Út Tịch), biểu tượng bất khuất với tượng đài người Mẹ tay cầm súng, ghi nhớ công ơn người phụ nữ kiên trung trong kháng chiến. Là điểm đến lịch sử - tâm linh ý nghĩa tại huyện Cầu Kè.",
-      "placeId": null,
+      "placeId": "xa-cau-ke",
       "confidence": 0.7,
       "season": null,
       "attributes": {
@@ -53706,7 +53700,7 @@
       "type": "dish",
       "name": "Bún nước lèo Tiểu Cần",
       "summary": "Món đặc sản nổi tiếng của huyện Tiểu Cần, là bún nước lèo nấu từ cá lóc, mắm bồ hóc (prahok) theo công thức Khmer truyền thống, ăn kèm rau sống và giá đỗ. Là một trong những món ăn đặc trưng phải thử khi đến Tiểu Cần.",
-      "placeId": null,
+      "placeId": "p-tieu-can",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -54227,7 +54221,7 @@
       "type": "product",
       "name": "Tôm khô Hai Khâm",
       "summary": "Sản phẩm OCOP 3 sao của huyện Cầu Ngang, được chế biến từ nguồn tôm nước lợ nuôi trồng trong vùng. Tôm khô là đặc sản truyền thống nổi tiếng của vùng biển Trà Vinh, được sản xuất với diện tích nuôi tôm khoảng 5.000 ha trong toàn huyện.",
-      "placeId": null,
+      "placeId": "xa-cau-ngang",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -54339,7 +54333,7 @@
       "type": "product",
       "name": "Bún tươi An Đào",
       "summary": "Sản phẩm OCOP của hộ kinh doanh Đặng Văn An tại xã Mỹ Hòa, huyện Cầu Ngang. Bún tươi được sản xuất theo quy trình truyền thống, là một trong các sản phẩm OCOP tiêu biểu của huyện trong lĩnh vực lương thực thực phẩm.",
-      "placeId": null,
+      "placeId": "xa-cau-ngang",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -54534,7 +54528,7 @@
       "type": "product",
       "name": "Rượu Quách Cầu Ngang",
       "summary": "Sản phẩm OCOP 3 sao được công nhận tại huyện Cầu Ngang năm 2022. Rượu được chưng cất từ trái quách - loại quả đặc trưng của vùng đất Trà Vinh, mang hương vị độc đáo của vùng đồng bằng sông Cửu Long.",
-      "placeId": null,
+      "placeId": "xa-cau-ngang",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -54897,7 +54891,7 @@
       "type": "attraction",
       "name": "Chùa Phnô Om Pung (Chùa Long Trường)",
       "summary": "Ngôi chùa Khmer truyền thống tọa lạc tại huyện Trà Cú, là điểm đến tâm linh và văn hóa đặc trưng của cộng đồng người Khmer Nam Bộ.",
-      "placeId": null,
+      "placeId": "xa-tra-cu",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -55076,7 +55070,7 @@
       "type": "product",
       "name": "Sản phẩm OCOP thủ công mỹ nghệ Trà Cú",
       "summary": "Trà Cú có 33 sản phẩm OCOP (2 sản phẩm 4 sao, 31 sản phẩm 3 sao) mang nét văn hóa Khmer như bộ salon tre, mặt nạ chằn và khỉ, đồ nông cụ thu nhỏ, bột gạo và các sản phẩm thủ công khác.",
-      "placeId": null,
+      "placeId": "xa-tra-cu",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -55397,7 +55391,7 @@
       "type": "history",
       "name": "Di tích lịch sử Lưu Cừ",
       "summary": "Công trình kiến trúc cổ được Bộ Văn hóa và Thông tin công nhận là di tích lịch sử văn hóa cấp quốc gia, nằm trên địa bàn huyện Trà Cú, tỉnh Trà Vinh.",
-      "placeId": null,
+      "placeId": "xa-tra-cu",
       "confidence": 0.7,
       "season": null,
       "attributes": {
@@ -63422,7 +63416,7 @@
       "type": "product",
       "name": "Dừa sáp Cầu Kè - đặc sản Bến Tre",
       "summary": "Các sản phẩm từ dừa của Bến Tre bao gồm dừa tươi, nước dừa đóng hộp, cơm dừa sấy và kẹo dừa đã được chứng nhận OCOP. Bến Tre có số lượng sản phẩm OCOP thuộc top đầu cả nước với 316 sản phẩm đạt 3 sao trở lên, trong đó nhiều sản phẩm đến từ huyện Ba Tri.",
-      "placeId": null,
+      "placeId": "p-ba-tri",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -63691,7 +63685,7 @@
       "type": "craft_village",
       "name": "Làng nghề thạch dừa Hưng Phong",
       "summary": "Làng nghề sản xuất thạch dừa thô tại xã Hưng Phong (Cồn Ốc), huyện Giồng Trôm. Khu vực có gần 500 ha dừa, hơn 60 cơ sở sản xuất với trên 600 lao động. Thạch dừa là sản phẩm đặc trưng của xứ dừa Bến Tre.",
-      "placeId": null,
+      "placeId": "p-ben-tre",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -63985,7 +63979,7 @@
       "type": "person",
       "name": "Nguyễn Ngọc Thăng",
       "summary": "Lãnh binh (tướng quân) nhà Nguyễn nổi tiếng, đã chiến đấu và hy sinh anh dũng năm 1866 trong cuộc kháng chiến chống thực dân Pháp xâm lược. Được thờ phụng tại đền thờ cấp quốc gia ở xã Mỹ Thạnh, huyện Giồng Trôm.",
-      "placeId": null,
+      "placeId": "xa-luong-hoa",
       "confidence": 0.7,
       "season": null,
       "attributes": {
@@ -64020,7 +64014,7 @@
       "type": "product",
       "name": "Bưởi Da Xanh Giồng Trôm",
       "summary": "Bưởi da xanh (green pomelo) đặc sản nổi tiếng của huyện Giồng Trôm, được Hợp tác xã Bưởi da xanh Giồng Trôm chứng nhận OCOP 4 sao – mức cao nhất trong các sản phẩm OCOP địa phương. Trái to, vỏ xanh, múi ngọt mọng nước, là sản phẩm nông nghiệp chủ lực của huyện, trồng nhiều ở các xã ven sông và cồn như Cồn Ốc.",
-      "placeId": null,
+      "placeId": "xa-giong-trom",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -64080,7 +64074,7 @@
       "type": "product",
       "name": "Bánh Phồng Mì Giồng Trôm",
       "summary": "Sản phẩm bánh phồng mì truyền thống của huyện Giồng Trôm với các biến thể: bánh phồng mì sữa, bánh phồng mì dán chuối, bánh phồng mì nước cốt dừa – đều đạt chứng nhận OCOP 3 sao. Là đặc sản địa phương phản ánh nét văn hóa ẩm thực truyền thống của xứ dừa Bến Tre.",
-      "placeId": null,
+      "placeId": "xa-giong-trom",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -64199,7 +64193,7 @@
       "type": "history",
       "name": "Đền thờ Tướng quân Nguyễn Ngọc Thăng",
       "summary": "Đền thờ vị tướng tài năng thời nhà Nguyễn, hy sinh anh dũng trong cuộc chiến chống Pháp năm 1866. Năm 1977 được công nhận là di tích lịch sử cấp quốc gia.",
-      "placeId": null,
+      "placeId": "xa-giong-trom",
       "confidence": 0.7,
       "season": null,
       "attributes": {
@@ -64234,7 +64228,7 @@
       "type": "product",
       "name": "Dừa xiêm xanh Giồng Trôm",
       "summary": "Dừa xiêm xanh là sản phẩm đặc trưng của vùng đất xứ dừa Bến Tre, được công nhận sản phẩm OCOP vào tháng 7 năm 2023 tại huyện Giồng Trôm. Nước ngọt mát, cùi mềm là điểm nổi bật của giống dừa này.",
-      "placeId": null,
+      "placeId": "xa-giong-trom",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -64412,7 +64406,7 @@
       "type": "product",
       "name": "Cá khô đặc sản Thạnh Phong (OCOP)",
       "summary": "Các sản phẩm cá khô gồm cá đối, cá rô phi, cá chim đỏ, cá thòi lòi do Công ty Chế biến Thủy sản Phát Huy tại xã Thạnh Phong sản xuất, đạt chứng nhận OCOP. Đây là sản phẩm thủy sản chế biến đặc trưng của vùng biển Thạnh Phú.",
-      "placeId": null,
+      "placeId": "xa-an-qui",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -64472,7 +64466,7 @@
       "type": "product",
       "name": "Gạo sạch Tôm-Lúa Thạnh Phú (OCOP)",
       "summary": "Gạo sạch từ mô hình tôm-lúa của Hợp tác xã Lúa-Tôm Thạnh Phú, đạt chứng nhận OCOP. Sản phẩm đặc trưng từ hệ canh tác kết hợp lúa và nuôi tôm trên cùng diện tích, đặc sản nông nghiệp bền vững của huyện Thạnh Phú.",
-      "placeId": null,
+      "placeId": "xa-thanh-phu",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -64522,7 +64516,7 @@
       "type": "product",
       "name": "Xoài tứ quý và cua biển Thạnh Phong (OCOP)",
       "summary": "Xoài tứ quý và cua biển do Hợp tác xã Dịch vụ Nông nghiệp Thạnh Phong cung cấp, đạt chứng nhận OCOP. Xoài tứ quý cho trái quanh năm là đặc sản trái cây, cua biển là thủy sản tươi đặc trưng vùng ven biển Thạnh Phú.",
-      "placeId": null,
+      "placeId": "xa-an-qui",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -64583,7 +64577,7 @@
       "type": "experience",
       "name": "Du lịch sinh thái biển Thạnh Phú",
       "summary": "Mô hình du lịch sinh thái biển khai thác tiềm năng vùng ven biển huyện Thạnh Phú, kết hợp tham quan bãi biển Cồn Bửng, trải nghiệm đánh bắt thủy sản, thưởng thức đặc sản biển và khám phá hệ sinh thái rừng ngập mặn ven biển.",
-      "placeId": null,
+      "placeId": "xa-thanh-phu",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -64678,7 +64672,7 @@
       "type": "nature",
       "name": "Rừng ngập mặn Thạnh Phong",
       "summary": "Khu rừng ngập mặn được bảo tồn nguyên vẹn tại xã Thạnh Phong, hệ động thực vật phong phú. Du khách có thể chèo thuyền ba lá vào rừng, câu cá, bắt cua, thưởng ngoạn cảnh quan hoàng hôn yên bình.",
-      "placeId": null,
+      "placeId": "p-ben-tre",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -64738,7 +64732,7 @@
       "type": "product",
       "name": "Khô cá bông lau, cá đù đỏ, cá bống cát một nắng Thạnh Phong",
       "summary": "Các sản phẩm OCOP (đạt chứng nhận 3–4 sao) do Công ty TNHH Chế biến thủy sản Phát Huy sản xuất tại xã Thạnh Phong. Gồm khô cá bông lau, cá rô phi, cá đù đỏ, cá bống cát một nắng theo phương pháp ướp truyền thống đặc trưng địa phương.",
-      "placeId": null,
+      "placeId": "xa-an-qui",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -64855,7 +64849,7 @@
       "type": "craft_village",
       "name": "Làng nghề chế biến hải sản khô Thạnh Phong",
       "summary": "Làng nghề truyền thống chế biến và phơi khô hải sản tại xã Thạnh Phong với phương pháp ướp muối, phơi nắng truyền thống lâu đời. Sản phẩm đặc trưng gồm các loại cá khô, tôm khô được bán rộng rãi trong và ngoài tỉnh.",
-      "placeId": null,
+      "placeId": "xa-an-qui",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -65099,7 +65093,7 @@
       "type": "product",
       "name": "Khô cá biển Thạnh Phú",
       "summary": "Đặc sản thủy sản chế biến của huyện Thạnh Phú, bao gồm khô cá bông lau, cá đù đỏ, cá bống cát một nắng — các sản phẩm OCOP đạt tiêu chuẩn 3 sao và 4 sao. Huyện Thạnh Phú có tổng cộng 38 sản phẩm đạt chứng nhận OCOP (3 sản phẩm 4 sao, 35 sản phẩm 3 sao) gắn với chuỗi giá trị nông sản chủ lực.",
-      "placeId": null,
+      "placeId": "xa-thanh-phu",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -65158,7 +65152,7 @@
       "type": "product",
       "name": "Cua biển và nghêu Thạnh Phú",
       "summary": "Thủy sản đặc trưng của huyện Thạnh Phú, được nuôi trồng và khai thác tự nhiên từ vùng biển Thạnh Phú. Cua biển và nghêu là sản phẩm OCOP chủ lực của huyện, được chứng nhận 3-4 sao, đóng góp vào chuỗi giá trị nông sản và du lịch ẩm thực địa phương.",
-      "placeId": null,
+      "placeId": "xa-thanh-phu",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -65218,7 +65212,7 @@
       "type": "nature",
       "name": "Bãi biển Thạnh Phú",
       "summary": "Vùng biển thuộc huyện Thạnh Phú, tỉnh Bến Tre, có tiềm năng du lịch biển lớn đang được khai thác. Đây là một trong ít điểm biển của miền Tây Nam Bộ, thu hút du khách muốn khám phá hệ sinh thái biển cùng cảnh quan rừng ngập mặn, kết hợp với ẩm thực hải sản tươi sống tại chỗ.",
-      "placeId": null,
+      "placeId": "xa-thanh-phu",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -65383,7 +65377,7 @@
       "type": "nature",
       "name": "Khu bảo vệ cảnh quan rừng ngập mặn Thạnh Phú",
       "summary": "Khu bảo tồn thiên nhiên rừng ngập mặn ven biển cù lao Minh với hệ sinh thái đa dạng, ghi nhận khoảng 152 loài chim, 27 loài bò sát, 16 loài thú. Đây là vùng đất ngập nước quan trọng có chức năng chống xói lở và cân bằng sinh thái cửa sông.",
-      "placeId": null,
+      "placeId": "xa-thanh-phu",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -65499,7 +65493,7 @@
       "type": "product",
       "name": "Gạo sạch lúa-tôm Thạnh Phú",
       "summary": "Sản phẩm gạo sạch từ mô hình canh tác lúa-tôm của Hợp tác xã lúa-tôm Thạnh Phú, được chứng nhận OCOP. Là nông sản chủ lực gắn với chuỗi giá trị nông sản đặc trưng của huyện Thạnh Phú.",
-      "placeId": null,
+      "placeId": "xa-thanh-phu",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -65555,7 +65549,7 @@
       "type": "product",
       "name": "Nghêu, sò, cua biển Thạnh Phú",
       "summary": "Các sản phẩm thủy sản đặc trưng vùng ven biển Thạnh Phú gồm nghêu, sò và cua biển, được khai thác và nuôi trồng theo phương thức truyền thống. Nhiều sản phẩm thủy sản chế biến từ nguyên liệu này đã đạt chứng nhận OCOP 3-4 sao.",
-      "placeId": null,
+      "placeId": "xa-thanh-phu",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -65615,7 +65609,7 @@
       "type": "history",
       "name": "Đường Hồ Chí Minh trên biển - Bến xuất phát Thạnh Phong",
       "summary": "Địa điểm lịch sử ghi dấu điểm xuất phát của những con tàu không số vượt biển chở vũ khí, hàng hóa từ miền Bắc vào miền Nam trong thời kỳ kháng chiến chống Mỹ. Là di tích cách mạng quan trọng của huyện Thạnh Phú.",
-      "placeId": null,
+      "placeId": "xa-an-qui",
       "confidence": 0.7,
       "season": null,
       "attributes": {
@@ -65766,7 +65760,7 @@
       "type": "product",
       "name": "Cua biển Thạnh Phú",
       "summary": "Cua biển Thạnh Phú là đặc sản nổi tiếng của huyện, được chứng nhận OCOP. Sản phẩm do Hợp tác xã Dịch vụ Nông nghiệp Thạnh Phong sản xuất, nổi tiếng với thịt chắc, ngọt, chất lượng cao từ vùng biển sạch.",
-      "placeId": null,
+      "placeId": "xa-an-qui",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -65919,7 +65913,7 @@
       "type": "product",
       "name": "Cá chuồn khô Bình Đại",
       "summary": "Sản phẩm OCOP đặc trưng của huyện Bình Đại gồm cá chuồn đông lạnh tươi và cá chuồn phơi khô do Công ty Cổ phần Anfoods sản xuất, được đánh giá và xếp hạng OCOP năm 2023, là đặc sản thủy hải sản nổi bật của vùng biển Bình Đại.",
-      "placeId": null,
+      "placeId": "p-binh-dai",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -66249,7 +66243,7 @@
       "type": "nature",
       "name": "Rừng ngập mặn Bình Đại",
       "summary": "Hệ sinh thái rừng ngập mặn với diện tích lớn tại huyện Bình Đại, gồm các loài cây đước, đưng, bần, mắm, phi lao. Rừng không chỉ có chức năng phòng hộ ven biển, chống xói lở và xâm nhập mặn mà còn tạo tiềm năng du lịch sinh thái với nguồn thủy hải sản phong phú và cảnh quan thiên nhiên đặc sắc của vùng sông nước Nam Bộ.",
-      "placeId": null,
+      "placeId": "p-binh-dai",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -66733,7 +66727,7 @@
       "type": "nature",
       "name": "Cồn Tam Hiệp (đảo Tam Hiệp)",
       "summary": "Cồn Tam Hiệp thuộc huyện Bình Đại là điểm du lịch sinh thái nổi bật, nơi du khách có thể tham quan vườn vải và cây dược liệu, trải nghiệm làm bánh tráng giòn, chèo xuồng qua các con rạch và thưởng thức đặc sản địa phương.",
-      "placeId": null,
+      "placeId": "xa-phu-thuan",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -66852,7 +66846,7 @@
       "type": "dish",
       "name": "Ốc viết Bến Tre",
       "summary": "Ốc viết là sản vật thiên nhiên đặc trưng của Bến Tre vào mùa gió chướng, phổ biến tại vùng ven biển huyện Bình Đại. Món ốc viết được người dân địa phương khai thác và chế biến thành nhiều món ăn dân dã, trở thành đặc sản nổi tiếng của vùng.",
-      "placeId": null,
+      "placeId": "p-binh-dai",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -66936,7 +66930,7 @@
       "type": "product",
       "name": "Tôm sú Bình Đại",
       "summary": "Tôm sú là sản vật đặc trưng của vùng ven biển huyện Bình Đại, thịt chắc, ngọt tự nhiên, ít tanh. Được nuôi trồng và khai thác tại các xã ven sông biển trong huyện, trong đó có vùng Vang Quới. Là một trong những sản phẩm thủy sản chủ lực của địa phương.",
-      "placeId": null,
+      "placeId": "p-binh-dai",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -67108,7 +67102,7 @@
       "type": "accommodation",
       "name": "Homestay Nam Hàm Luông",
       "summary": "Homestay sinh thái nổi bật tại khu vực huyện Mỏ Cày Bắc, nằm gần sông Hàm Luông, được khách đánh giá cao với điểm 9.4/10 trên các nền tảng đặt phòng quốc tế. Kết hợp trải nghiệm miệt vườn sông nước đặc trưng vùng Cù lao Minh.",
-      "placeId": null,
+      "placeId": "p-ben-tre",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -67432,7 +67426,7 @@
       "type": "product",
       "name": "Nước cốt dừa và sản phẩm dừa OCOP BEINCO",
       "summary": "Các sản phẩm từ dừa của Công ty cổ phần Đầu tư dừa Bến Tre (BEINCO) tại huyện Mỏ Cày Bắc đã đạt chuẩn OCOP, bao gồm nước dừa đậm đặc, nước cốt dừa và creamer dừa béo đặc. Đây là những sản phẩm đặc trưng của xứ Dừa Bến Tre, đáp ứng tiêu chuẩn xuất khẩu.",
-      "placeId": null,
+      "placeId": "xa-tan-thanh-binh",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -67765,7 +67759,7 @@
       "type": "nature",
       "name": "Du lịch sinh thái miệt vườn Mỏ Cày Bắc",
       "summary": "Vùng cù lao Minh nằm giữa hai sông Hàm Luông và Cổ Chiên, đất đai màu mỡ nhờ phù sa bồi đắp quanh năm. Du khách có thể hái trái cây trực tiếp từ vườn gồm quýt, ổi, xoài, chôm chôm, mãng cầu, bưởi da xanh; đi cầu khỉ tre, chèo xuồng ba lá qua các con rạch dọc hàng dừa xanh; tham gia bắt cá, bắt sò, làm muối, thưởng thức bữa cơm nhà vườn.",
-      "placeId": null,
+      "placeId": "xa-tan-thanh-binh",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -67938,7 +67932,7 @@
       "type": "dish",
       "name": "Chù ụ rang me",
       "summary": "Món đặc sản độc đáo của vùng Trà Cú - Trà Vinh, chù ụ (một loại ốc nước ngọt địa phương) được rang cùng me chua tạo vị đặc trưng khó quên. Là một trong những món ăn tiêu biểu du khách tìm kiếm khi đến huyện Trà Cú.",
-      "placeId": null,
+      "placeId": "xa-tra-cu",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -68792,7 +68786,7 @@
       "type": "nature",
       "name": "Rừng ngập mặn Long Vĩnh - Duyên Hải",
       "summary": "Hệ sinh thái rừng ngập mặn trải dài trên các xã Long Vĩnh, Đông Hải, Long Khánh với rừng đước tại Long Khánh rộng 882 ha. Đây là vùng đệm xanh hiếm có ở Đồng bằng sông Cửu Long, là môi trường sống của nhiều loài thủy sản và chim nước, tiềm năng du lịch sinh thái cao.",
-      "placeId": null,
+      "placeId": "p-duyen-hai",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -69231,7 +69225,7 @@
       "type": "dish",
       "name": "Bún nước lèo Trà Cú",
       "summary": "Đặc sản ẩm thực khởi nguồn từ người Khmer, thể hiện rõ nét giao thoa văn hóa ẩm thực ba dân tộc Khmer - Kinh - Hoa. Nước lèo nấu từ mắm bò hóc (prahok) với sả, ngải bún, sả, dừa tươi, dùng kèm bún tươi và rau sống. Là món ăn đặc trưng nhất khi đến Trà Cú và vùng Trà Vinh.",
-      "placeId": null,
+      "placeId": "xa-tra-cu",
       "confidence": 0.7,
       "season": {
         "months": [],
@@ -70044,7 +70038,7 @@
       "type": "attraction",
       "name": "Chợ Ba Tri",
       "summary": "Chợ truyền thống huyện Ba Tri, Bến Tre — chợ huyện lâu đời, bán đặc sản địa phương và nông sản vùng ven biển. Địa chỉ: Nguyễn Đình Chiểu.",
-      "placeId": null,
+      "placeId": "p-ba-tri",
       "confidence": 0.75,
       "season": {
         "months": [
@@ -70155,7 +70149,7 @@
       "type": "attraction",
       "name": "Chợ Bình Đại",
       "summary": "Chợ huyện ven biển Bình Đại, Bến Tre — đa dạng hải sản tươi sống và nông sản vùng cửa sông. Địa chỉ: QL57B.",
-      "placeId": null,
+      "placeId": "p-binh-dai",
       "confidence": 0.75,
       "season": {
         "months": [
@@ -70215,7 +70209,7 @@
       "type": "attraction",
       "name": "Chợ Giồng Trôm",
       "summary": "Chợ huyện Giồng Trôm, Bến Tre — chợ truyền thống bán nông sản, đặc sản dừa và các sản phẩm địa phương. Địa chỉ: ĐT885.",
-      "placeId": null,
+      "placeId": "xa-luong-hoa",
       "confidence": 0.75,
       "season": {
         "months": [
@@ -70553,7 +70547,7 @@
       "type": "product",
       "name": "Cua Bình Đại",
       "summary": "Cua nuôi hoàn toàn thiên nhiên dưới tán rừng ngập mặn huyện Bình Đại, vị thịt ngọt chắc, đặc sản biển đặc trưng vùng Bình Đại.",
-      "placeId": null,
+      "placeId": "p-binh-dai",
       "confidence": 0.75,
       "season": {
         "months": [
@@ -70798,7 +70792,7 @@
       "type": "attraction",
       "name": "Khu du lịch Đại Lộc",
       "summary": "Một trong 8 điểm du lịch thuộc cụm Sơn Định - Vĩnh Bình - Phú Phụng, huyện Chợ Lách. Điểm du lịch sinh thái miệt vườn phục vụ khách tham quan tại địa bàn xã Phú Phụng và vùng lân cận.",
-      "placeId": null,
+      "placeId": "p-an-hoi",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -71055,7 +71049,7 @@
       "type": "craft_village",
       "name": "Làng hoa kiểng và cây giống Chợ Lách",
       "summary": "Huyện Chợ Lách - trong đó có xã Phú Phụng - nổi tiếng là vùng sản xuất hoa kiểng và cây giống lớn nhất cả nước. Các vườn cây giống, hoa kiểng đa dạng (sầu riêng, chôm chôm, măng cụt, hoa giấy) là sản phẩm OCOP và điểm tham quan đặc trưng của huyện.",
-      "placeId": null,
+      "placeId": "xa-cho-lach",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -71348,7 +71342,7 @@
       "type": "product",
       "name": "Sầu riêng cấp đông Chợ Lách",
       "summary": "Sản phẩm OCOP sầu riêng cấp đông của Công ty TNHH XNK Trái cây Chánh Thu, sản xuất tại huyện Chợ Lách. Đây là sản phẩm chế biến từ sầu riêng đặc sản vùng Chợ Lách, đạt chuẩn OCOP, phục vụ xuất khẩu và thị trường nội địa.",
-      "placeId": null,
+      "placeId": "xa-cho-lach",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -71597,7 +71591,7 @@
       "type": "nature",
       "name": "Cồn Du Lịch Cái Gà",
       "summary": "Cồn thiên nhiên nằm trên sông thuộc xã Long Thới, được quy hoạch phát triển thành khu du lịch sinh thái trong dự án Làng Văn hóa Du lịch Chợ Lách. Là điểm tham quan sông nước đặc trưng của miệt vườn Nam Bộ.",
-      "placeId": null,
+      "placeId": "xa-cho-lach",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -72106,7 +72100,7 @@
       "type": "product",
       "name": "Dừa sáp Càng Long",
       "summary": "Đặc sản nổi tiếng của huyện Càng Long, giống dừa đặc biệt có cùi dày, dẻo như sáp, vị béo ngậy thơm ngon khác biệt so với dừa thông thường. Được chế biến thành nhiều sản phẩm OCOP.",
-      "placeId": null,
+      "placeId": "xa-binh-phu",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -72215,7 +72209,7 @@
       "type": "attraction",
       "name": "Chùa Pháp Hoa",
       "summary": "Chùa Phật giáo Khmer rộng khoảng 3 ha, kiến trúc Khmer truyền thống với chánh điện, nhà tăng và nhiều công trình phụ. Khuôn viên có cây cổ thụ và hàng rào xi măng chạm khắc họa tiết Khmer.",
-      "placeId": null,
+      "placeId": "xa-binh-phu",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -73422,7 +73416,7 @@
       "type": "event",
       "name": "Lễ hội Chol Chnam Thmay và Sen Dolta",
       "summary": "Hai lễ hội truyền thống lớn nhất trong năm của đồng bào Khmer tại huyện Trà Cú. Chol Chnam Thmay là Tết năm mới Khmer (tháng 4 dương lịch), tổ chức tại các chùa Khmer như Vàm Ray và Nôdol với nghi lễ tắm tượng Phật, múa truyền thống, phát quà. Sen Dolta (tháng 9-10 âm lịch) là lễ cúng ông bà tổ tiên theo tín ngưỡng Phật giáo Nam tông Khmer, diễn ra sôi nổi tại các chùa và phum sóc trong toàn huyện.",
-      "placeId": null,
+      "placeId": "xa-tra-cu",
       "confidence": 0.7,
       "season": {
         "months": [
@@ -81188,7 +81182,6 @@
       "type": "dish",
       "name": "Bún suông",
       "summary": "Món ăn đặc sản nổi bật của Trà Vinh, được bài viết giới thiệu là món làm say lòng du khách khi đến đây. Nội dung còn nhắc các quán bún suông bán vào buổi chiều tối trên đường Điện Biên Phủ và đường Hùng Vương ở Trà Vinh.",
-      "placeId": null,
       "confidence": 0.9,
       "season": {
         "months": [
@@ -81598,7 +81591,6 @@
       "type": "attraction",
       "name": "Cồn Cù",
       "summary": "Địa danh này được nêu như nơi từng được phát triển thành sân golf trong giai đoạn khai thác du lịch ven biển. Bài viết đặt nó trong bối cảnh khu vực biển Ba Động thuộc Trà Vinh cũ, nay thuộc Vĩnh Long.",
-      "placeId": null,
       "confidence": 0.75,
       "season": {
         "months": [
@@ -82195,7 +82187,6 @@
       "type": "event",
       "name": "Chợ hoa Tết",
       "summary": "Chợ hoa Tết ven sông TP Vĩnh Long, bày bán mai vàng, cúc, thược dược, kiểng từ Chợ Lách và Sa Đéc. Không khí nhộn nhịp cuối năm, du khách và dân địa phương tấp nập chọn hoa.",
-      "placeId": null,
       "confidence": 0.75,
       "season": {
         "months": [
@@ -82410,7 +82401,6 @@
       "type": "event",
       "name": "Lễ hội Bà Chúa Xứ",
       "summary": "Lễ vía Bà Chúa Xứ tại các miếu Bà trong vùng Vĩnh Long, Trà Vinh. Cúng bái, hầu bóng, hội chợ — tín ngưỡng dân gian phổ biến ở Nam Bộ, thu hút đông đảo tín đồ.",
-      "placeId": null,
       "confidence": 0.7,
       "season": {
         "months": [
@@ -85878,7 +85868,6 @@
       "type": "accommodation",
       "name": "Nhà dừa CocoHome",
       "summary": "Nhà dừa CocoHome (Bến Tre) là homestay độc đáo xây hoàn toàn bằng dừa — tường dừa, mái dừa, nội thất dừa. Nằm giữa vườn dừa xanh mát, trải nghiệm sống 'kiểu Bến Tre' đích thực. Có workshop làm kẹo dừa, nấu ăn từ dừa.",
-      "placeId": null,
       "confidence": 0.85,
       "season": {
         "months": [
@@ -87176,7 +87165,6 @@
       "type": "facility",
       "name": "Bệnh viện Đa khoa tỉnh Vĩnh Long",
       "summary": "Bệnh viện công lớn nhất tỉnh Vĩnh Long tại 301 Trần Phú, Phường 4, TP. Vĩnh Long. Đầy đủ chuyên khoa, cấp cứu 24/7. Nên mang CCCD/hộ chiếu khi khám. ĐT: 0270 3822535 / 0270 3823520.",
-      "placeId": null,
       "confidence": 0.7,
       "season": null,
       "attributes": {
@@ -87254,7 +87242,6 @@
       "type": "facility",
       "name": "Agribank Chi nhánh Vĩnh Long",
       "summary": "Ngân hàng. 28 Hưng Đạo Vương, Phường 1, TP. Vĩnh Long. Giờ mở cửa: Thứ 2 – Thứ 6: 7:30–11:30 và 13:00–17:00 (đóng T7, CN). ĐT: 1900 558818 (tổng đài)",
-      "placeId": null,
       "confidence": 0.7,
       "season": null,
       "attributes": {
@@ -87543,7 +87530,6 @@
       "type": "facility",
       "name": "Chợ Vĩnh Long (Chợ Trung Tâm)",
       "summary": "chợ đặc sản tại Đường Gia Long, Phường 1, TP. Vĩnh Long. Mở cửa 05:00 - 18:00. Nên mua: Gạo Bình Tân, khoai lang tím Bình Tân, nem Vĩnh Long, bánh tráng nướng, mắm cá linh, trái cây miền Tây tươi, vải thổ cẩm. Giá: 10.000 - 200.000 VND. Thanh toán: tiền mặt/QR.",
-      "placeId": null,
       "confidence": 0.7,
       "season": null,
       "attributes": {
@@ -90965,7 +90951,6 @@
       "type": "restaurant",
       "name": "Nhà hàng Làng Bè Bến Tre",
       "summary": "Nhà hàng Làng Bè Bến Tre. chuyên Cá đồng, cá sông, tôm càng xanh vùng sông nước miệt vườn. Địa chỉ: 69C Đồng Văn Cống, xã Bình Phú, Thành phố Bến Tre. Giá: 100.000 - 200.000 VNĐ/người",
-      "placeId": null,
       "confidence": 0.65,
       "season": null,
       "attributes": {
@@ -91047,7 +91032,6 @@
       "type": "dish",
       "name": "Ba Nhì - Bún Bò Huế",
       "summary": "Ba Nhì - Bún Bò Huế tại 258 Nguyễn Văn Thiệt, Phường 3, TP Vĩnh Long. Nước dùng xương bò hầm sả và mắm ruốc kiểu miền Trung, cay nhẹ đặc trưng. Topping: bắp bò, chả lụa, huyết, hành tây, sả. Giá bình dân 25.000-50.000đ/tô, mở 06:00-21:00.",
-      "placeId": null,
       "confidence": 0.65,
       "season": null,
       "attributes": {
@@ -91170,7 +91154,6 @@
       "type": "restaurant",
       "name": "Quán Cơm 175",
       "summary": "Quán Cơm 175. chuyên Cơm gia đình nhiều món mặn, cơm gà kho và rim. tại 175 Đồng Khởi, TP. Bến Tre. giá 30.000 – 60.000 VNĐ/người. Nổi bật: Cơm gà rim mắm gừng kiểu miền Tây. nhà hàng bình dân, không gian rộng rãi, thoáng mát, bài trí sạch",
-      "placeId": null,
       "confidence": 0.65,
       "season": null,
       "attributes": {
