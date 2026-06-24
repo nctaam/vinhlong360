@@ -391,12 +391,15 @@ async def get_feed(
         params.append(entity_type)
 
     if area:
+        # FIX: place lưu vùng ở CỘT top-level `area`, KHÔNG ở attributes (trước dùng
+        # attributes->>'area' → subquery luôn rỗng → feed?area= rỗng). Khớp pattern
+        # database.list_entities/search_entities.
         conditions.append(f"""
-            e."placeId" IN (
-                SELECT id FROM entities WHERE type = 'place' AND attributes->>'area' = {ph}
-            )
+            (e.area = {ph} OR e."placeId" IN (
+                SELECT id FROM entities WHERE type = 'place' AND area = {ph}
+            ))
         """)
-        params.append(area)
+        params.extend([area, area])
 
     if user:
         conditions.append(f"""

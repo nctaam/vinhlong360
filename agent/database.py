@@ -415,8 +415,8 @@ class Database:
             return cur.rowcount > 0
 
     def search_entities(self, q: str = None, entity_type: str = None,
-                        area: str = None, limit: int = 20) -> list[dict]:
-        """Search entities with filters."""
+                        area: str = None, limit: int = 20, offset: int = 0) -> list[dict]:
+        """Search entities with filters (offset hỗ-trợ phân-trang — FIX bug search lặp)."""
         self.initialize()
         ph = self._ph
         conditions = ["e.type NOT IN ('place')"]
@@ -446,13 +446,14 @@ class Database:
 
         where = " AND ".join(conditions)
         params.append(limit)
+        params.append(offset)
 
         with self._conn() as conn:
             rows = self._fetchall(conn, f"""
                 SELECT e.* FROM entities e
                 WHERE {where}
-                ORDER BY e.confidence DESC
-                LIMIT {ph}
+                ORDER BY e.confidence DESC, e.id
+                LIMIT {ph} OFFSET {ph}
             """, params)
             return [self._parse_entity(r) for r in rows]
 

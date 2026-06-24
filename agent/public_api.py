@@ -103,11 +103,16 @@ async def list_entities(
         return month in ((e.get("season") or {}).get("months") or [])
 
     if q:
-        results = db.search_entities(q=q, entity_type=type, area=area, limit=limit)
         if month:
-            results = [e for e in results if _in_month(e)]
-        total = len([e for e in results if _in_month(e)]) if month else db.count_entities_filtered(
-            entity_type=type, area=area, q=q)
+            # lọc month TRÊN TOÀN BỘ kết-quả search rồi mới phân-trang → total đúng + offset đúng
+            full = db.search_entities(q=q, entity_type=type, area=area, limit=100000)
+            filtered = [e for e in full if _in_month(e)]
+            total = len(filtered)
+            results = filtered[offset:offset + limit]
+        else:
+            # FIX: truyền offset (trước bỏ qua → trang 2+ trùng trang 1, lặp vô-hạn)
+            results = db.search_entities(q=q, entity_type=type, area=area, limit=limit, offset=offset)
+            total = db.count_entities_filtered(entity_type=type, area=area, q=q)
     elif month:
         # GĐ-audit fix: lọc month TRÊN TOÀN BỘ tập (không phân trang trước rồi mới lọc) →
         # total đúng + offset/limit đúng. Dataset nhỏ (<2k) nên nạp full an toàn.
