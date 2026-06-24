@@ -1763,17 +1763,19 @@ html.js .home .hero-enter h1::after {
 }
 
 /* Dark mode: hero gradient — đặt trên LAYER kenburns (khớp Ken-Burns), không
-   re-add lên .hero (tránh nhị ảnh + gradient sáng sai do --ink-rgb đảo ở dark). */
+   re-add lên .hero (tránh nhị ảnh + gradient sáng sai do --ink-rgb đảo ở dark).
+   PERF: dùng hero.webp (cùng ảnh jpg, đã verify diff 0.48/255) — webp đã PRELOAD
+   → dark LCP nhanh + bỏ jpg 217KB/78KB. */
 .dark .home .hero-kenburns {
   background-image:
     linear-gradient(105deg, rgba(26,26,26,.82) 0%, rgba(26,26,26,.48) 46%, rgba(26,26,26,.08) 100%),
-    url('/img/hero.jpg');
+    url('/img/hero.webp');
 }
 @media (max-width: 640px) {
   .dark .home .hero-kenburns {
     background-image:
       linear-gradient(105deg, rgba(26,26,26,.82) 0%, rgba(26,26,26,.48) 46%, rgba(26,26,26,.08) 100%),
-      url('/img/hero-mobile.jpg');
+      url('/img/hero-mobile.webp');
   }
 }
 
