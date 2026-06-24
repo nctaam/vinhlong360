@@ -63,7 +63,10 @@
     <!-- 2. "Đang diễn ra" — upcoming events + seasonal merged -->
     <section v-if="upcomingEvents.length || seasonal.length" class="block reveal">
       <div class="section-head">
-        <h2>Đang diễn ra</h2>
+        <div class="sh-text">
+          <h2>Đang diễn ra</h2>
+          <p class="sh-sub">Sự kiện &amp; lễ hội sắp tới khắp ba vùng</p>
+        </div>
         <NuxtLink class="see-all" to="/su-kien">Xem lịch →</NuxtLink>
       </div>
 
@@ -112,7 +115,10 @@
     <!-- 3. Lịch trình gợi ý (đẩy lên sớm — 25% user là Planner) -->
     <section v-if="itineraries.length" class="block reveal band">
       <div class="section-head">
-        <h2>Lịch trình gợi ý</h2>
+        <div class="sh-text">
+          <h2>Lịch trình gợi ý</h2>
+          <p class="sh-sub">Hành trình 1–2 ngày, đi là có ngay</p>
+        </div>
         <NuxtLink class="see-all" to="/lich-trinh">Xem tất cả →</NuxtLink>
       </div>
       <div class="scroll-row" role="region" aria-label="Lịch trình gợi ý">
@@ -126,7 +132,10 @@
     <!-- 4. 3 Vùng -->
     <section class="block reveal">
       <div class="section-head">
-        <h2>Khám phá 3 vùng</h2>
+        <div class="sh-text">
+          <h2>Khám phá 3 vùng</h2>
+          <p class="sh-sub">Vĩnh Long • Bến Tre • Trà Vinh — mỗi nơi một sắc</p>
+        </div>
         <NuxtLink class="see-all" to="/ban-do" no-prefetch>Xem bản đồ →</NuxtLink>
       </div>
       <div class="regions">
@@ -154,7 +163,10 @@
     <!-- 4.5 Khám phá theo sở thích — card lớn có ảnh -->
     <section class="block reveal">
       <div class="section-head">
-        <h2>Khám phá theo sở thích</h2>
+        <div class="sh-text">
+          <h2>Khám phá theo sở thích</h2>
+          <p class="sh-sub">Chọn điều bạn mê, để miền Tây dẫn lối</p>
+        </div>
       </div>
       <div class="interest-grid">
         <NuxtLink
@@ -177,7 +189,10 @@
     <!-- 5. Trải nghiệm nổi bật -->
     <section v-if="topExperiences.length" class="block reveal band">
       <div class="section-head">
-        <h2>Trải nghiệm nổi bật</h2>
+        <div class="sh-text">
+          <h2>Trải nghiệm nổi bật</h2>
+          <p class="sh-sub">Miệt vườn, sông nước, làng nghề được yêu thích</p>
+        </div>
         <NuxtLink class="see-all" to="/du-lich">Xem tất cả →</NuxtLink>
       </div>
       <div class="scroll-row" role="region" aria-label="Trải nghiệm nổi bật">
@@ -188,7 +203,10 @@
     <!-- 6. Đặc sản & Quà OCOP — always visible -->
     <section v-if="products.length" class="block reveal">
       <div class="section-head">
-        <h2>Đặc sản &amp; Quà OCOP</h2>
+        <div class="sh-text">
+          <h2>Đặc sản &amp; Quà OCOP</h2>
+          <p class="sh-sub">Mang hương vị miền Tây về làm quà</p>
+        </div>
         <NuxtLink class="see-all" to="/san-pham">Xem tất cả →</NuxtLink>
       </div>
       <div class="scroll-row" role="region" aria-label="Đặc sản và quà OCOP">
@@ -694,6 +712,19 @@ html.js .home .hero-enter h1::after {
   border-radius: var(--radius-full);
   background: linear-gradient(180deg, var(--accent) 0%, var(--primary) 100%);
 }
+/* Phụ-đề editorial dưới heading (warmth + ngữ-cảnh, phá thế "heading trơ + list") */
+.home .section-head .sh-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.home .sh-sub { padding-left: var(--space-4); margin: 0; font-size: var(--text-sm); font-weight: var(--weight-normal); color: var(--muted); line-height: var(--leading-snug); max-width: 62ch; }
+
+/* Bento "3 vùng": vùng đầu (ưu-tiên theo region) lớn bên trái, 2 vùng còn lại xếp phải */
+@media (min-width: 721px) {
+  .home .regions { grid-template-columns: 1.6fr 1fr; grid-template-rows: 1fr 1fr; }
+  .home .region-tile:first-child { grid-row: 1 / span 2; }
+  .home .region-tile:first-child .region-tile-in h3 { font-size: var(--text-2xl); }
+  .home .region-tile:first-child .region-emoji { font-size: var(--text-3xl); }
+  .home .region-tile:first-child .region-tile-in p { font-size: var(--text-base); }
+}
+
 /* Subtle hairline divider above each block — calm section separation */
 .home .block + .block {
   position: relative;
