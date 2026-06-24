@@ -176,3 +176,19 @@ def test_login_invalid_password_rejected():
     client = _client()
     resp = client.post("/auth/login", json={"phone": "0900000001", "password": "nope123"})
     assert resp.status_code == 401
+
+
+# ── Consent enforcement (NĐ147) ─────────────────────────────────────────
+
+def test_otp_verify_model_accepts_consent():
+    """OTPVerify model accepts optional consent boolean."""
+    m = auth.OTPVerify(phone="0909123456", code="123456", consent=True)
+    assert m.consent is True
+    m2 = auth.OTPVerify(phone="0909123456", code="123456")
+    assert m2.consent is False
+
+
+def test_consent_version_constant():
+    """CONSENT_VERSION is defined and non-empty."""
+    assert hasattr(auth, "CONSENT_VERSION")
+    assert auth.CONSENT_VERSION

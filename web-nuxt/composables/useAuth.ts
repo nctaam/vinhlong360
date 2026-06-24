@@ -36,10 +36,10 @@ export function useAuth() {
     })
   }
 
-  async function verifyOtp(phone: string, code: string) {
+  async function verifyOtp(phone: string, code: string, consent?: boolean) {
     const res = await $fetch<{ token?: string; user?: User; has_password?: boolean; error?: string }>('/auth/verify-otp', {
       method: 'POST',
-      body: { phone, code },
+      body: { phone, code, consent: consent ?? false },
     })
     if (res.token) {
       token.value = res.token

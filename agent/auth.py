@@ -84,9 +84,13 @@ class OTPRequest(BaseModel):
         return v
 
 
+CONSENT_VERSION = "1.0"
+
+
 class OTPVerify(BaseModel):
     phone: str
     code: str
+    consent: bool = False
 
     @field_validator("phone")
     @classmethod
@@ -299,7 +303,9 @@ async def verify_otp(body: OTPVerify, request: Request):
 
     user = db.get_user_by_phone(phone)
     if not user:
-        user = db.create_user(phone)
+        if not body.consent:
+            raise HTTPException(400, "Vui lòng đồng ý Điều khoản sử dụng và Chính sách bảo mật")
+        user = db.create_user(phone, consent_version=CONSENT_VERSION)
 
     token = _generate_token()
     expires = datetime.now(timezone.utc) + timedelta(days=SESSION_EXPIRE_DAYS)

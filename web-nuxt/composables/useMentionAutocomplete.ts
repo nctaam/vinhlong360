@@ -23,10 +23,11 @@ export function useMentionAutocomplete(
     // @ + token đơn (không dấu cách) ngay trước con trỏ, sau khoảng-trắng/đầu dòng
     const m = before.match(/(?:^|\s)@([\p{L}\p{N}_]{1,30})$/u)
     if (m) {
-      mentionAt.value = cursor - m[1].length - 1
-      mentionQueryLen.value = m[1].length
+      mentionAt.value = cursor - m[1]!.length - 1
+      mentionQueryLen.value = m[1]!.length
       if (timer) clearTimeout(timer)
-      timer = setTimeout(() => search(m![1]), 180)
+      const q = m[1]!
+      timer = setTimeout(() => search(q), 180)
     } else {
       mentionOpen.value = false
     }
@@ -58,7 +59,7 @@ export function useMentionAutocomplete(
     if (!mentionOpen.value || !mentionResults.value.length) return false
     if (e.key === 'ArrowDown') { e.preventDefault(); mentionActive.value = (mentionActive.value + 1) % mentionResults.value.length; return true }
     if (e.key === 'ArrowUp') { e.preventDefault(); mentionActive.value = (mentionActive.value - 1 + mentionResults.value.length) % mentionResults.value.length; return true }
-    if (e.key === 'Enter') { e.preventDefault(); pick(mentionResults.value[mentionActive.value]); return true }
+    if (e.key === 'Enter') { e.preventDefault(); const item = mentionResults.value[mentionActive.value]; if (item) pick(item); return true }
     if (e.key === 'Escape') { mentionOpen.value = false; return true }
     return false
   }

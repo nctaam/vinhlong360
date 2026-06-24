@@ -734,7 +734,19 @@ class Database:
         return relationships
 
     def count_relationships(self, entity_id: str, *, rel_type: str | None = None, include_near: bool = True) -> int:
-        return len(self.get_relationships(entity_id, rel_type=rel_type, include_near=include_near))
+        self.initialize()
+        ph = self._ph
+        conditions = [f"(from_id = {ph} OR to_id = {ph})"]
+        params: list = [entity_id, entity_id]
+        if rel_type:
+            conditions.append(f"type = {ph}")
+            params.append(rel_type)
+        if not include_near:
+            conditions.append("type != 'near'")
+        where = " AND ".join(conditions)
+        with self._conn() as conn:
+            row = self._fetchone(conn, f"SELECT COUNT(*) AS c FROM relationships WHERE {where}", tuple(params))
+            return row["c"] if row else 0
 
     # ── Itineraries ──
 

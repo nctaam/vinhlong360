@@ -151,7 +151,7 @@ async function toggleHelpful(r: any) {
   } catch { flip() }
 }
 
-const reviews = ref<Entity[]>([])
+const reviews = ref<Review[]>([])
 const rating = ref({ avg: 0, count: 0 })
 const total = ref(0)
 const page = ref(1)
@@ -176,7 +176,7 @@ const deletingId = ref<string | number | null>(null)
 
 const hasMore = computed(() => reviews.value.length < total.value)
 
-function isOwner(r: Entity) {
+function isOwner(r: Review) {
   const uid = (r as unknown as { user_id?: string | number }).user_id
   return !!user.value && uid != null && String(uid) === String(user.value.id)
 }
@@ -218,7 +218,7 @@ function removeImage(i: number) {
   formImages.value.splice(i, 1)
 }
 
-async function deleteReview(r: Entity) {
+async function deleteReview(r: Review) {
   if (!isOwner(r)) return
   if (!await confirmDialog('Xóa đánh giá này?', { danger: true, confirmText: 'Xóa' })) return
   deletingId.value = r.id
@@ -242,7 +242,7 @@ async function deleteReview(r: Entity) {
 async function fetchReviews(append = false) {
   loading.value = true
   try {
-    const res = await $fetch<Entity>(`/api/entities/${props.entityId}/feed?page=${page.value}&limit=10`)
+    const res = await $fetch<ReviewFeedResponse>(`/api/entities/${props.entityId}/feed?page=${page.value}&limit=10`)
     if (append) {
       reviews.value.push(...(res.posts || []))
     } else {
@@ -279,7 +279,7 @@ async function submitReview() {
     formImages.value = []
     page.value = 1
     await fetchReviews()
-  } catch (e: unknown) {
+  } catch (e: any) {
     submitError.value = e.data?.detail || e.message || 'Gửi thất bại'
   }
   submitting.value = false

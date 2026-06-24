@@ -57,12 +57,12 @@ export function useModalA11y(
     if (e.shiftKey) {
       if (active === first || !modalRef.value.contains(active)) {
         e.preventDefault()
-        last.focus()
+        last?.focus()
       }
     } else {
       if (active === last || !modalRef.value.contains(active)) {
         e.preventDefault()
-        first.focus()
+        first?.focus()
       }
     }
   }

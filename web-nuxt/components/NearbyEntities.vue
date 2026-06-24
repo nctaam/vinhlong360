@@ -67,11 +67,11 @@ const nearby = computed(() => {
   const byType: Record<string, any[]> = {}
   for (const e of list) {
     if (!byType[e.type]) byType[e.type] = []
-    byType[e.type].push(e)
+    byType[e.type]!.push(e)
   }
-  const picked: any[] = []
+  const picked: Entity[] = []
   for (const type of Object.keys(byType)) {
-    picked.push(byType[type][0])
+    picked.push(byType[type]![0]!)
     if (picked.length >= 6) break
   }
   if (picked.length < 6) {
@@ -102,11 +102,11 @@ function getTypeMeta(type: string) {
   return TYPE_META[type] || { emoji: '📍', label: type }
 }
 
-function getThumb(e: Entity): string | null {
+function getThumb(e: Entity): string | undefined {
   const imgs = e.images || e.image_urls
-  if (Array.isArray(imgs) && imgs.length > 0) return imgs[0]
+  if (Array.isArray(imgs) && imgs.length > 0) return imgs[0]!
   if (typeof e.image === 'string' && e.image) return e.image
-  return null
+  return undefined
 }
 </script>
 

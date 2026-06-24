@@ -10,7 +10,7 @@ export function useNotifications() {
   async function fetchNotifications() {
     if (!isLoggedIn.value) return
     try {
-      const res = await $fetch<{ notifications: Notification[] }>('/api/notifications?limit=20', { headers: authHeaders() })
+      const res = await $fetch<{ notifications: Notification[]; unread_count?: number }>('/api/notifications?limit=20', { headers: authHeaders() })
       notifications.value = res.notifications || []
       unreadCount.value = res.unread_count || 0
       fetchError.value = false

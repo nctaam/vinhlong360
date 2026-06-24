@@ -13,14 +13,14 @@ export function monthRanges(months: number[]): string {
   const sorted = [...new Set(months)].sort((a, b) => a - b)
   if (!sorted.length) return ''
   const ranges: string[] = []
-  let start = sorted[0], prev = sorted[0]
+  let start = sorted[0]!, prev = sorted[0]!
   for (let i = 1; i < sorted.length; i++) {
     if (sorted[i] === prev + 1) {
-      prev = sorted[i]
+      prev = sorted[i]!
     } else {
       ranges.push(start === prev ? `T${start}` : `T${start}–${prev}`)
-      start = sorted[i]
-      prev = sorted[i]
+      start = sorted[i]!
+      prev = sorted[i]!
     }
   }
   ranges.push(start === prev ? `T${start}` : `T${start}–${prev}`)

@@ -7,7 +7,8 @@ export function normalizeCoords(raw: unknown): [number, number] | null {
     try { coords = JSON.parse(coords) } catch { return null }
   }
   if (coords && !Array.isArray(coords) && typeof coords === 'object') {
-    coords = [coords.lat ?? coords.latitude, coords.lng ?? coords.lon ?? coords.longitude]
+    const obj = coords as Record<string, unknown>
+    coords = [obj.lat ?? obj.latitude, obj.lng ?? obj.lon ?? obj.longitude]
   }
   if (!Array.isArray(coords) || coords.length !== 2) return null
   let lat = Number(coords[0])

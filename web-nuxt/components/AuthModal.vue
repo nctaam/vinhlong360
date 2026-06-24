@@ -263,7 +263,7 @@ async function verifyCode() {
   sending.value = true
   error.value = ''
   try {
-    const res = await verifyOtp(phone.value, code)
+    const res = await verifyOtp(phone.value, code, consent.value)
     if (res.error) {
       error.value = res.error
     } else {

@@ -157,12 +157,12 @@ const ICONS: Record<string, string> = {
 }
 
 // Aliases — categories that share a motif.
-ICONS.org = ICONS.accommodation
-ICONS.facility = ICONS.accommodation
-ICONS.history = ICONS.attraction
-ICONS.place = ICONS.attraction
-ICONS.economy = ICONS.product
-ICONS.person = ICONS.experience
+ICONS.org = ICONS.accommodation!
+ICONS.facility = ICONS.accommodation!
+ICONS.history = ICONS.attraction!
+ICONS.place = ICONS.attraction!
+ICONS.economy = ICONS.product!
+ICONS.person = ICONS.experience!
 
 // Fallback motif: a soft target.
 const DEFAULT_ICON =

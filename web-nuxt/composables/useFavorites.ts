@@ -115,8 +115,9 @@ export function useFavorites() {
   const byType = computed(() => {
     const groups: Record<string, FavoriteItem[]> = {}
     for (const f of favorites.value) {
-      if (!groups[f.type]) groups[f.type] = []
-      groups[f.type].push(f)
+      const key = f.type
+      if (!groups[key]) groups[key] = []
+      groups[key]!.push(f)
     }
     return groups
   })

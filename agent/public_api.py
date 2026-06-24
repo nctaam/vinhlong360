@@ -538,7 +538,18 @@ async def homepage_curated():
     if not seasonal_tagline:
         seasonal_tagline = _TAGLINES.get(month, "Khám phá miệt vườn theo cách của người bản địa")
 
-    for section in [seasonal, experiences, products]:
+    # Top dishes by rating (social proof for "Tinh hoa" section)
+    dishes_pool = [e for e in public
+                   if e["type"] == "dish"
+                   and isinstance((e.get("attributes") or {}).get("rating"), (int, float))
+                   and (e.get("attributes") or {}).get("review_count", 0) >= 3]
+    dishes_pool.sort(key=lambda e: (
+        (e.get("attributes") or {}).get("rating", 0),
+        (e.get("attributes") or {}).get("review_count", 0),
+    ), reverse=True)
+    top_dishes = _dedup_by_name(dishes_pool, limit=6)
+
+    for section in [seasonal, experiences, products, top_dishes]:
         for e in section:
             e.pop("_score", None)
 
@@ -550,6 +561,7 @@ async def homepage_curated():
         "seasonal": seasonal,
         "experiences": experiences,
         "products": products,
+        "top_dishes": top_dishes,
         "itineraries": itineraries,
         "stats": stats,
         "area_counts": area_counts,

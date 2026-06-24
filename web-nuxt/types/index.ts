@@ -15,6 +15,17 @@ export interface EntitySeason {
   text?: string
 }
 
+export interface EntityRelationship {
+  source_id: string
+  target_id: string
+  rel_type: string
+  other_id: string
+  other_name: string
+  other_type?: string
+  other_area?: string
+  distance_km?: number
+}
+
 export interface Entity {
   id: string
   type: string
@@ -27,6 +38,8 @@ export interface Entity {
   attributes?: Record<string, string | number | boolean | string[]>
   source?: EntitySource[]
   images?: string[]
+  image_urls?: string[]
+  image?: string
   coordinates?: Coordinates | [number, number] | null
   updatedAt?: string
   area?: string
@@ -34,6 +47,11 @@ export interface Entity {
   level?: string
   parentId?: string
   legacyArea?: string
+  coords_approximate?: boolean
+  description?: string
+  relationship_total?: number
+  relationships?: EntityRelationship[]
+  quality?: Record<string, unknown>
 }
 
 export interface Relationship {
@@ -101,6 +119,24 @@ export interface Comment {
   user?: User
 }
 
+export interface Review {
+  id: string
+  user_id: string
+  avatar_url?: string
+  display_name?: string
+  content?: string
+  rating?: number
+  likes?: number
+  user_liked?: boolean
+  created_at?: string
+}
+
+export interface ReviewFeedResponse {
+  posts: Review[]
+  rating?: { avg: number; count: number }
+  total: number
+}
+
 export interface Notification {
   id: string
   type: string
@@ -108,6 +144,9 @@ export interface Notification {
   body?: string
   link?: string
   read: boolean
+  is_read?: boolean
+  ref_type?: string
+  ref_id?: string
   created_at: string
 }
 
