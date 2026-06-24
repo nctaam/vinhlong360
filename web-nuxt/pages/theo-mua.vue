@@ -246,7 +246,7 @@ function monthTone(m: number) {
 }
 
 const { data, error: fetchError } = await useAsyncData('season-entities', () =>
-  $fetch<{ entities: Entity[] }>('/api/entities?limit=300'),
+  apiFetch<{ entities: Entity[] }>('/api/entities?limit=300'),
 )
 
 const wedge = computed(() =>

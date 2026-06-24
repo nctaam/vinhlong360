@@ -138,7 +138,7 @@ const gridSection = ref<HTMLElement | null>(null)
 useFilterUrl({ vung: areaFilter }, { vung: 'all' })
 
 const { data, error: fetchError } = await useAsyncData('catalog-accommodation', () =>
-  $fetch<{ entities: Entity[] }>('/api/entities?type=accommodation&limit=200')
+  apiFetch<{ entities: Entity[] }>('/api/entities?type=accommodation&limit=200')
 )
 
 const allEntities = computed(() => {

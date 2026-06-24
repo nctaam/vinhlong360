@@ -115,7 +115,7 @@ const mapEl = ref<HTMLElement | null>(null)
 const { createMap } = useNDAMap()
 
 const { data, error: fetchError } = await useAsyncData('map-entities', () =>
-  $fetch<{ entities: Entity[] }>('/api/entities?limit=700')
+  apiFetch<{ entities: Entity[] }>('/api/entities?limit=700')
 )
 
 let mapInited = false

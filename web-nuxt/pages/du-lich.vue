@@ -142,7 +142,7 @@ const gridSection = ref<HTMLElement | null>(null)
 useFilterUrl({ type: typeFilter, mua: seasonFilter }, { type: 'all', mua: 'all' })
 
 const { data, error: fetchError } = await useAsyncData('catalog-tourism', () =>
-  $fetch<{ entities: Entity[] }>('/api/entities?limit=200')
+  apiFetch<{ entities: Entity[] }>('/api/entities?limit=200')
 )
 
 const allEntities = computed(() => {

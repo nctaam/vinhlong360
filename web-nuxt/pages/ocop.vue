@@ -198,7 +198,7 @@ const starFilterStr = computed({
 useFilterUrl({ sao: starFilterStr, vung: areaFilter, mua: seasonFilter }, { sao: '0', vung: 'all', mua: 'all' })
 
 const { data, error: fetchError } = await useAsyncData('catalog-ocop', () =>
-  $fetch<{ entities: Entity[] }>('/api/entities?type=product&limit=200')
+  apiFetch<{ entities: Entity[] }>('/api/entities?type=product&limit=200')
 )
 
 const allOcop = computed(() => {

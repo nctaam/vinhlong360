@@ -139,7 +139,7 @@ const gridSection = ref<HTMLElement | null>(null)
 useFilterUrl({ mua: seasonFilter }, { mua: String(currentMonth) })
 
 const { data, error: fetchError } = await useAsyncData('catalog-products', () =>
-  $fetch<{ entities: Entity[] }>('/api/entities?type=product&limit=200')
+  apiFetch<{ entities: Entity[] }>('/api/entities?type=product&limit=200')
 )
 
 const allEntities = computed(() => {

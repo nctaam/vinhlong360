@@ -147,7 +147,7 @@ const typeFilter = ref('all')
 useFilterUrl({ vung: areaFilter, loai: typeFilter }, { vung: 'all', loai: 'all' })
 
 const { data, error: fetchError } = await useAsyncData(`interest-${interest}`, () =>
-  $fetch<{ entities: Entity[] }>('/api/entities?limit=200')
+  apiFetch<{ entities: Entity[] }>('/api/entities?limit=200')
 )
 
 // Items matching this interest, before the area/type filters are applied.

@@ -150,7 +150,7 @@ const { show: showToast } = useToast()
 const ADMIN_LEVELS = ['phuong', 'xa', 'tinh']
 const route = useRoute()
 
-const { data: places, error: placesError } = await useAsyncData('dir-places', () => $fetch<Place[]>('/api/places'))
+const { data: places, error: placesError } = await useAsyncData('dir-places', () => apiFetch<Place[]>('/api/places'))
 
 const areaFromQuery = computed(() => {
   const a = route.query.area as string

@@ -239,7 +239,7 @@ let maplibre: unknown = null
 let markers: unknown[] = []
 
 const { data, error: fetchError } = await useAsyncData('planner-entities', () =>
-  $fetch<{ entities: Entity[] }>('/api/entities?limit=700')
+  apiFetch<{ entities: Entity[] }>('/api/entities?limit=700')
 )
 
 const allEntities = computed(() => {
