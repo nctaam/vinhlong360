@@ -21,26 +21,16 @@ function hashString(input: string): number {
   return h >>> 0
 }
 
-// Per-category hue shift (degrees) for the gradient's second stop. Loosely tied
-// to the category's identity colour so e.g. nature skews green-on-green, dish
-// skews warm. Keys cover every `cat` value emitted by TYPE_META plus the spec's
-// named categories; unknown categories fall through to the default shift.
-const HUE_SHIFT: Record<string, number> = {
-  attraction: 35,
-  dish: 45,
-  product: 30,
-  accommodation: 50,
-  craft: 40,
-  nature: 25,
-  experience: 28,
-  itinerary: 55,
-  event: 60,
-  history: 38,
-  org: 50,
-  facility: 50,
-  economy: 42,
-  person: 48,
-  place: 36,
+// Base hue (degrees) NEO theo BẢN-SẮC category + hệ màu vùng (clay/amber/leaf/river)
+// → mọi card cùng loại chung một họ màu (nhận-diện được loại qua màu), mỗi entity vẫn
+// khác nhau nhờ jitter ±15° + sáng/góc theo hash. Loại lạ → hue ngẫu-nhiên theo hash.
+const CATEGORY_HUE: Record<string, number> = {
+  nature: 132, experience: 122,                                  // xanh lá miệt vườn
+  dish: 22, product: 30, craft: 16, economy: 34,                 // ấm cam–đất (đặc sản/làng nghề)
+  attraction: 196, history: 204, place: 200, facility: 206, org: 200, // teal sông nước
+  accommodation: 40,                                             // sand ấm
+  event: 344, person: 350,                                       // lễ hội rực hồng–đỏ
+  itinerary: 168,                                                // ngọc–lam
 }
 
 /**
@@ -51,15 +41,17 @@ const HUE_SHIFT: Record<string, number> = {
 export function generateCategoryPlaceholder(entityId: string | number, category: string): string {
   const h = hashString(String(entityId))
 
-  const hue = h % 360
-  const shift = HUE_SHIFT[category] ?? 40
-  const hue2 = (hue + shift) % 360
+  // Hue NEO theo category (nhất-quán bản-sắc) + jitter ±15° cho khác-biệt từng entity.
+  const base = CATEGORY_HUE[category] ?? (h % 360)
+  const hue = (base + (h % 31) - 15 + 360) % 360
+  const hue2 = (hue + 24) % 360
 
-  // Saturation 60–75%, lightness 55–65% → pastel, dark text stays legible.
-  const sat1 = 60 + (h % 16)            // 60..75
-  const light1 = 55 + ((h >>> 4) % 11)  // 55..65
-  const sat2 = 62 + ((h >>> 8) % 14)    // 62..75
-  const light2 = 56 + ((h >>> 12) % 10) // 56..65
+  // Sâu + bão-hoà hơn (không còn pastel nhạt): sat 64–77%, light 39–56% → màu "có chủ-ý",
+  // watermark trắng + chữ trắng đọc rõ; chênh light giữa 2 stop tạo chiều sâu.
+  const sat1 = 64 + (h % 14)            // 64..77
+  const light1 = 47 + ((h >>> 4) % 10)  // 47..56
+  const sat2 = 66 + ((h >>> 8) % 12)    // 66..77
+  const light2 = 39 + ((h >>> 12) % 9)  // 39..47
 
   // Gradient angle 0–359° from the hash (independent bits from the hue).
   const angle = (h >>> 16) % 360
@@ -68,14 +60,22 @@ export function generateCategoryPlaceholder(entityId: string | number, category:
   const c2 = `hsl(${hue2}, ${sat2}%, ${light2}%)`
 
   // gradientTransform rotate() works in the gradient's bounding-box space (0..1),
-  // so rotate around its centre (0.5, 0.5).
+  // so rotate around its centre (0.5, 0.5). radialGradient 'hl' = vầng sáng góc
+  // trên-trái tạo chiều sâu (đỡ phẳng).
   const svg =
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice">` +
-    `<defs><linearGradient id="g" gradientTransform="rotate(${angle} 0.5 0.5)">` +
+    `<defs>` +
+    `<linearGradient id="g" gradientTransform="rotate(${angle} 0.5 0.5)">` +
     `<stop offset="0" stop-color="${c1}"/>` +
     `<stop offset="1" stop-color="${c2}"/>` +
-    `</linearGradient></defs>` +
+    `</linearGradient>` +
+    `<radialGradient id="hl" cx="0.26" cy="0.18" r="0.9">` +
+    `<stop offset="0" stop-color="rgba(255,255,255,0.22)"/>` +
+    `<stop offset="0.55" stop-color="rgba(255,255,255,0)"/>` +
+    `</radialGradient>` +
+    `</defs>` +
     `<rect width="400" height="240" fill="url(#g)"/>` +
+    `<rect width="400" height="240" fill="url(#hl)"/>` +
     `</svg>`
 
   // Single quotes inside the url(): the value lands in a double-quoted SSR
