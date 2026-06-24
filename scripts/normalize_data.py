@@ -1,491 +1,521 @@
-#!/usr/bin/env python3
-"""Normalize VinhLong360 static data safely, with a backup before writes."""
+"""
+normalize_data.py — Comprehensive data normalization for data.json.
 
-from __future__ import annotations
+12 normalization passes:
+  N1.  Reclassify mistyped dishes → restaurant / cafe
+  N2.  Fix wrong province in summaries (BT/TV entities saying "tỉnh Vĩnh Long")
+  N3.  Delete nonsemantic dish→craft_village associated_with rels
+  N4.  Delete "near" relationships with distance > 15km
+  N5.  Remove bidirectional duplicate relationships
+  N6.  Normalize OCOP ratings to standard format
+  N7.  Fix address-only summaries (prepend type context)
+  N8.  Fix English dates in summaries
+  N9.  Clear out-of-bbox coordinates
+  N10. Auto-assign placeId from address ward matching
+  N11. Normalize address abbreviations (P. → Phường, etc.)
+  N12. Normalize price formats to "X.000 đ" style
 
-import argparse
+Usage:
+  python scripts/normalize_data.py              # dry-run
+  python scripts/normalize_data.py --apply      # apply
+
+§B1: ALWAYS run scripts/backup_data.py BEFORE --apply.
+"""
+
 import json
 import math
-import shutil
+import re
 import sys
-import unicodedata
-from datetime import datetime
+from collections import Counter
 from pathlib import Path
-from typing import Any
 
-ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_DATA = ROOT / "web" / "data.json"
-DEFAULT_BACKUP_DIR = ROOT / "agent" / "data" / "kb_snapshots"
-MEKONG_LAT_RANGE = (8.0, 11.5)
-MEKONG_LNG_RANGE = (104.0, 107.5)
-MAX_NEAR_DISTANCE_KM = 50.0
-MAX_NEAR_PER_ENTITY = 12
+DATA_PATH = Path(__file__).resolve().parent.parent / "web" / "data.json"
+DRY_RUN = "--apply" not in sys.argv
 
-
-def _configure_output() -> None:
-    if hasattr(sys.stdout, "reconfigure"):
-        sys.stdout.reconfigure(encoding="utf-8")
-        sys.stderr.reconfigure(encoding="utf-8")
-
-
-def _parse_json_string(value: Any) -> Any:
-    current = value
-    for _ in range(4):
-        if not isinstance(current, str):
-            return current
-        text = current.strip()
-        if not text:
-            return None
-        try:
-            current = json.loads(text)
-        except json.JSONDecodeError:
-            return current
-    return current
+RESTAURANT_PATTERNS = [
+    r"\bquán\b", r"\bnhà hàng\b", r"\brestaurant\b", r"\bbuffet\b",
+    r"\blẩu\b", r"\bcơm tấm\b", r"\btiệm ăn\b", r"\bquán ăn\b",
+    r"\bhải sản\b", r"\bẩm thực\b", r"\bgrill\b", r"\bbbq\b",
+    r"\bhotpot\b",
+]
+CAFE_PATTERNS = [
+    r"\bcà phê\b", r"\bcafe\b", r"\bcoffee\b", r"\bhighlands\b",
+    r"\bphúc long\b", r"\btrung nguyên\b", r"\btrà sữa\b",
+    r"\bmilk tea\b", r"\bboba\b", r"\bstarbucks\b", r"\bthe coffee\b",
+]
+FOOD_SIGNALS = [
+    "bánh", "chè", "mứt", "kẹo", "rượu", "nước mắm", "trái", "cá",
+    "tôm", "gà", "vịt", "heo", "bò", "nem", "chả", "xôi", "cháo",
+    "mắm", "khô", "dừa", "bưởi", "sầu riêng", "măng cụt",
+]
 
 
-def normalized_coordinates(value: Any) -> list[float] | None:
-    value = _parse_json_string(value)
-    if isinstance(value, dict):
-        lat = value.get("lat", value.get("latitude"))
-        lng = value.get("lng", value.get("lon", value.get("longitude")))
-        value = [lat, lng]
-    if not isinstance(value, (list, tuple)) or len(value) != 2:
-        return None
-    try:
-        lat = float(value[0])
-        lng = float(value[1])
-    except (TypeError, ValueError):
-        return None
-    if -90 <= lat <= 90 and -180 <= lng <= 180:
-        return [lat, lng]
-    if -180 <= lat <= 180 and -90 <= lng <= 90:
-        # Common imported shape is [lng, lat]; contract requires [lat, lng].
-        return [lng, lat]
-    return None
+def load_data():
+    with open(DATA_PATH, "r", encoding="utf-8") as f:
+        return json.load(f)
 
 
-def rel_source(rel: dict[str, Any]) -> Any:
-    return rel.get("from") or rel.get("from_id") or rel.get("source_id")
+def save_data(data):
+    with open(DATA_PATH, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-def rel_target(rel: dict[str, Any]) -> Any:
-    return rel.get("to") or rel.get("to_id") or rel.get("target_id")
+def _matches_any(text, patterns):
+    for p in patterns:
+        if re.search(p, text, re.IGNORECASE):
+            return True
+    return False
 
 
-def rel_type(rel: dict[str, Any]) -> Any:
-    return rel.get("type") or rel.get("rel_type")
-
-def in_mekong_bbox(coords: list[float] | None) -> bool:
-    if not coords:
-        return False
-    lat, lng = coords
-    return MEKONG_LAT_RANGE[0] <= lat <= MEKONG_LAT_RANGE[1] and MEKONG_LNG_RANGE[0] <= lng <= MEKONG_LNG_RANGE[1]
-
-def haversine_km(a: list[float] | None, b: list[float] | None) -> float | None:
-    if not a or not b:
-        return None
-    lat1, lng1 = math.radians(a[0]), math.radians(a[1])
-    lat2, lng2 = math.radians(b[0]), math.radians(b[1])
-    dlat = lat2 - lat1
-    dlng = lng2 - lng1
-    val = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlng / 2) ** 2
-    return 6371.0 * 2 * math.asin(math.sqrt(val))
-
-def entity_effective_area(entity: dict[str, Any], place_by_id: dict[str, dict[str, Any]]) -> str | None:
-    area = entity.get("area")
-    if area:
-        return str(area)
-    place_id = entity.get("placeId")
-    place = place_by_id.get(str(place_id)) if place_id else None
-    if place and place.get("area"):
-        return str(place["area"])
-    return None
+def _haversine_km(lat1, lng1, lat2, lng2):
+    R = 6371
+    dlat = math.radians(lat2 - lat1)
+    dlng = math.radians(lng2 - lng1)
+    a = (math.sin(dlat / 2) ** 2
+         + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2))
+         * math.sin(dlng / 2) ** 2)
+    return R * 2 * math.asin(math.sqrt(a))
 
 
-AREA_KEYWORDS = {
-    "vinh-long": ("vinh long", "vĩnh long"),
-    "ben-tre": ("ben tre", "bến tre"),
-    "tra-vinh": ("tra vinh", "trà vinh"),
-}
-
-AREA_LABELS = {
-    "vinh-long": "Vĩnh Long",
-    "ben-tre": "Bến Tre",
-    "tra-vinh": "Trà Vinh",
-}
-
-LEVEL_LABELS = {
-    "phuong": "phường",
-    "xa": "xã",
-    "ward": "phường",
-    "commune": "xã",
-}
-
-
-def _fold_text(value: Any) -> str:
-    text = str(value or "").lower()
-    text = unicodedata.normalize("NFD", text)
-    text = "".join(ch for ch in text if unicodedata.category(ch) != "Mn")
-    return text.replace("đ", "d")
-
-
-def infer_area(entity: dict[str, Any]) -> str | None:
-    attrs = entity.get("attributes") or {}
-    fields = [
-        entity.get("id"),
-        entity.get("name"),
-        entity.get("legacyArea"),
-        attrs.get("address"),
-        attrs.get("area"),
-        attrs.get("province"),
-        attrs.get("location"),
-    ]
-    text = _fold_text(" | ".join(str(value) for value in fields if value))
-    hits = [
-        area for area, keywords in AREA_KEYWORDS.items()
-        if any(_fold_text(keyword) in text for keyword in keywords)
-    ]
-    return hits[0] if len(hits) == 1 else None
-
-def infer_area_from_place(entity: dict[str, Any], place_by_id: dict[str, dict[str, Any]]) -> tuple[str | None, bool]:
-    """Infer area from placeId only when entity text does not contradict it."""
-    if entity.get("type") == "place" or entity.get("area"):
-        return None, False
-    place_id = entity.get("placeId")
-    if not place_id:
-        return None, False
-    place = place_by_id.get(str(place_id))
-    if not place:
-        return None, False
-    place_area = place.get("area")
-    if not place_area:
-        return None, False
-    keyword_area = infer_area(entity)
-    if keyword_area and keyword_area != place_area:
-        return None, True
-    return str(place_area), False
-
-def generate_place_summary(entity: dict[str, Any]) -> str | None:
-    if entity.get("type") != "place" or entity.get("summary"):
-        return None
-    name = entity.get("name")
-    if not name:
-        return None
-    area = entity.get("area")
-    area_label = AREA_LABELS.get(area, area)
-    level = LEVEL_LABELS.get(entity.get("level"), "đơn vị hành chính")
-    if area_label:
-        summary = f"{name} là {level} thuộc khu vực {area_label}."
-    else:
-        summary = f"{name} là {level} trong bộ dữ liệu hành chính của vinhlong360."
-    legacy_area = entity.get("legacyArea")
-    if legacy_area:
-        summary += f" Thông tin phân vùng hiện có trong dữ liệu: {legacy_area}."
-    summary += " Bản ghi này đóng vai trò mốc hành chính để liên kết các điểm đến, sản phẩm và trải nghiệm địa phương trong vinhlong360."
-    return summary
-
-
-def render_data_js(data: dict[str, Any]) -> str:
-    places = [e for e in data.get("entities", []) if e.get("type") == "place"]
-    items = [e for e in data.get("entities", []) if e.get("type") != "place"]
-    relationships = data.get("relationships", [])
-    itineraries = data.get("itineraries", [])
-    return (
-        "/* vinhlong360 data - auto-synced from data.json */\n"
-        "(function () {\n"
-        f"var places = {json.dumps(places, ensure_ascii=False, indent=2)};\n"
-        f"var items = {json.dumps(items, ensure_ascii=False, indent=2)};\n"
-        f"var relationships = {json.dumps(relationships, ensure_ascii=False, indent=2)};\n"
-        f"var itineraries = {json.dumps(itineraries, ensure_ascii=False, indent=2)};\n"
-        "window.VL_DATA = {\n"
-        "  entities: places.concat(items),\n"
-        "  relationships: relationships,\n"
-        "  itineraries: itineraries,\n"
-        "  ALL_MONTHS: [1,2,3,4,5,6,7,8,9,10,11,12]\n"
-        "};\n"
-        "})();\n"
-    )
-
-def write_data_js(data: dict[str, Any], path: Path, content: str | None = None) -> bool:
-    js = content if content is not None else render_data_js(data)
-    if path.exists() and path.read_text(encoding="utf-8", errors="replace") == js:
-        return False
-    path.write_text(js, encoding="utf-8", newline="\n")
-    return True
-
-def regenerate_near_relationships(
-    entities: list[dict[str, Any]],
-    relationships: list[dict[str, Any]],
-    place_by_id: dict[str, dict[str, Any]],
-    *,
-    max_distance_km: float = MAX_NEAR_DISTANCE_KM,
-    max_per_entity: int = MAX_NEAR_PER_ENTITY,
-) -> tuple[list[dict[str, Any]], int, int]:
-    non_near = [rel for rel in relationships if isinstance(rel, dict) and rel_type(rel) != "near"]
-    before_near = len(relationships) - len(non_near)
-    candidates: list[dict[str, Any]] = []
-    for entity in entities:
-        if not isinstance(entity, dict) or entity.get("type") == "place" or not entity.get("id"):
+def n1_reclassify_dishes(entities):
+    fixes = []
+    for e in entities:
+        if e.get("type") != "dish":
             continue
-        coords = normalized_coordinates(entity.get("coordinates"))
-        area = entity_effective_area(entity, place_by_id)
-        if not area or not in_mekong_bbox(coords):
-            continue
-        candidates.append({"entity": entity, "id": str(entity["id"]), "coords": coords, "area": area, "placeId": entity.get("placeId")})
+        name = e.get("name", "")
+        attrs = e.get("attributes") or {}
+        has_biz = bool(attrs.get("address")) and bool(attrs.get("phone") or attrs.get("rating"))
 
-    pairs: list[tuple[int, float, str, str]] = []
-    for left_index, left in enumerate(candidates):
-        for right in candidates[left_index + 1:]:
-            if left["area"] != right["area"]:
-                continue
-            distance = haversine_km(left["coords"], right["coords"])
-            if distance is None or distance > max_distance_km:
-                continue
-            same_place = left.get("placeId") and left.get("placeId") == right.get("placeId")
-            pairs.append((0 if same_place else 1, distance, left["id"], right["id"]))
+        if _matches_any(name, CAFE_PATTERNS):
+            fixes.append((e["id"], "cafe", name))
+        elif _matches_any(name, RESTAURANT_PATTERNS):
+            fixes.append((e["id"], "restaurant", name))
+        elif has_biz and not any(s in name.lower() for s in FOOD_SIGNALS):
+            fixes.append((e["id"], "restaurant", name))
+    return fixes
 
-    pairs.sort(key=lambda item: (item[0], item[1], item[2], item[3]))
-    fanout: dict[str, int] = {}
-    rebuilt: list[dict[str, Any]] = []
-    seen: set[tuple[str, str, str]] = set()
-    for priority, distance, source_id, target_id in pairs:
-        if fanout.get(source_id, 0) >= max_per_entity or fanout.get(target_id, 0) >= max_per_entity:
+
+def n2_fix_wrong_province_summary(entities):
+    fixes = []
+    area_province = {"ben-tre": "tỉnh Bến Tre", "tra-vinh": "tỉnh Trà Vinh"}
+    for e in entities:
+        area = e.get("area", "")
+        if area not in area_province:
             continue
-        key = (source_id, target_id, "near")
+        summary = e.get("summary", "")
+        if not summary:
+            continue
+        if re.search(r"tỉnh Vĩnh Long", summary):
+            new_summary = re.sub(r"tỉnh Vĩnh Long", area_province[area], summary)
+            fixes.append((e["id"], e.get("name", ""), summary[:60], new_summary[:60]))
+            e["_n2_summary"] = new_summary
+    return fixes
+
+
+def n3_delete_dish_craft_village_rels(rels, entity_map):
+    to_delete = []
+    for i, r in enumerate(rels):
+        if r["type"] != "associated_with":
+            continue
+        ef = entity_map.get(r.get("from"))
+        et = entity_map.get(r.get("to"))
+        if not ef or not et:
+            continue
+        pair = {ef.get("type"), et.get("type")}
+        if pair == {"dish", "craft_village"} or pair == {"restaurant", "craft_village"} or pair == {"cafe", "craft_village"}:
+            to_delete.append(i)
+    return to_delete
+
+
+def n4_delete_far_near_rels(rels, entity_map, skip_indices):
+    to_delete = []
+    for i, r in enumerate(rels):
+        if r["type"] != "near" or i in skip_indices:
+            continue
+        e1 = entity_map.get(r.get("from"))
+        e2 = entity_map.get(r.get("to"))
+        if not e1 or not e2:
+            continue
+        c1, c2 = e1.get("coordinates"), e2.get("coordinates")
+        if not (isinstance(c1, list) and len(c1) >= 2 and isinstance(c2, list) and len(c2) >= 2):
+            continue
+        if _haversine_km(c1[0], c1[1], c2[0], c2[1]) > 15:
+            to_delete.append(i)
+    return to_delete
+
+
+def n5_remove_bidirectional_dupes(rels, skip_indices):
+    seen = {}
+    to_delete = []
+    for i, r in enumerate(rels):
+        if i in skip_indices:
+            continue
+        key = tuple(sorted([r.get("from", ""), r.get("to", "")])) + (r["type"],)
         if key in seen:
-            continue
-        seen.add(key)
-        fanout[source_id] = fanout.get(source_id, 0) + 1
-        fanout[target_id] = fanout.get(target_id, 0) + 1
-        rebuilt.append({"from": source_id, "to": target_id, "type": "near", "distance_km": round(distance, 2)})
-
-    return non_near + rebuilt, before_near, len(rebuilt)
-
-def drop_produced_in_area_conflicts(
-    relationships: list[dict[str, Any]],
-    entity_by_id: dict[str, dict[str, Any]],
-    place_by_id: dict[str, dict[str, Any]],
-) -> tuple[list[dict[str, Any]], int]:
-    kept: list[dict[str, Any]] = []
-    dropped = 0
-    for rel in relationships:
-        if not isinstance(rel, dict) or rel_type(rel) != "produced_in":
-            kept.append(rel)
-            continue
-        source_id = rel_source(rel)
-        target_id = rel_target(rel)
-        source = entity_by_id.get(str(source_id)) if source_id else None
-        target = entity_by_id.get(str(target_id)) if target_id else None
-        source_area = entity_effective_area(source, place_by_id) if source else None
-        target_area = entity_effective_area(target, place_by_id) if target else None
-        if source_area and target_area and source_area != target_area:
-            dropped += 1
-            continue
-        kept.append(rel)
-    return kept, dropped
-
-
-def main() -> int:
-    _configure_output()
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--data", type=Path, default=DEFAULT_DATA, help="Path to data.json")
-    parser.add_argument("--backup-dir", type=Path, default=DEFAULT_BACKUP_DIR, help="Directory for pre-write backup")
-    parser.add_argument("--no-backup", action="store_true", help="Skip backup")
-    parser.add_argument("--drop-broken-relationships", action="store_true", help="Remove relationships that reference missing entity IDs")
-    parser.add_argument("--remove-legacy-coords", action="store_true", help="Remove legacy coords after copying to coordinates")
-    parser.add_argument("--infer-area", action="store_true", help="Infer province area when an entity clearly mentions Vinh Long, Ben Tre, or Tra Vinh")
-    parser.add_argument("--infer-area-from-place", action="store_true", help="Infer missing entity area from placeId when entity text does not contradict the place area")
-    parser.add_argument("--summarize-places", action="store_true", help="Generate concise summaries for place entities from existing administrative fields")
-    parser.add_argument("--drop-out-of-bounds-coordinates", action="store_true", help="Remove coordinates outside the Mekong bbox instead of keeping wrong map points")
-    parser.add_argument("--repair-area-place-conflicts", action="store_true", help="Remove non-place placeId values whose place area conflicts with explicit entity area")
-    parser.add_argument("--repair-produced-in-area-conflicts", action="store_true", help="Remove produced_in relationships whose endpoints have conflicting province areas")
-    parser.add_argument("--regenerate-near", action="store_true", help="Rebuild near relationships from verified in-bounds coordinates")
-    parser.add_argument("--no-sync-js", action="store_true", help="Do not regenerate sibling data.js")
-    parser.add_argument("--check", action="store_true", help="Report planned changes without writing")
-    args = parser.parse_args()
-
-    data = json.loads(args.data.read_text(encoding="utf-8-sig"))
-    entities = data.get("entities", [])
-    relationships = data.get("relationships", [])
-    if not isinstance(entities, list) or not isinstance(relationships, list):
-        raise SystemExit("data.json must contain list fields: entities and relationships")
-
-    added_coordinates = 0
-    normalized_existing_coordinates = 0
-    removed_legacy_coords = 0
-    inferred_area = 0
-    inferred_area_from_place = 0
-    area_place_conflicts = 0
-    generated_place_summaries = 0
-    dropped_out_of_bounds_coordinates = 0
-    repaired_area_place_conflicts = 0
-    repaired_produced_in_area_conflicts = 0
-    previous_near_relationships = 0
-    regenerated_near_relationships = 0
-    place_by_id = {
-        str(entity.get("id")): entity
-        for entity in entities
-        if isinstance(entity, dict) and entity.get("type") == "place" and entity.get("id")
-    }
-    entity_by_id = {
-        str(entity.get("id")): entity
-        for entity in entities
-        if isinstance(entity, dict) and entity.get("id")
-    }
-
-    for entity in entities:
-        if not isinstance(entity, dict):
-            continue
-        if args.infer_area and entity.get("type") != "place" and not entity.get("area"):
-            area = infer_area(entity)
-            if area:
-                entity["area"] = area
-                inferred_area += 1
-        if args.infer_area_from_place and entity.get("type") != "place" and not entity.get("area"):
-            area, conflict = infer_area_from_place(entity, place_by_id)
-            if area:
-                entity["area"] = area
-                inferred_area_from_place += 1
-            elif conflict:
-                area_place_conflicts += 1
-        if args.summarize_places:
-            summary = generate_place_summary(entity)
-            if summary:
-                entity["summary"] = summary
-                generated_place_summaries += 1
-        coord = normalized_coordinates(entity.get("coordinates"))
-        legacy = normalized_coordinates(entity.get("coords"))
-        if args.drop_out_of_bounds_coordinates and coord is not None and not in_mekong_bbox(coord):
-            entity.pop("coordinates", None)
-            entity.pop("coords", None)
-            dropped_out_of_bounds_coordinates += 1
-            coord = None
-            legacy = None
-        if coord is None and legacy is not None:
-            entity["coordinates"] = legacy
-            added_coordinates += 1
-        elif coord is not None:
-            canonical = [coord[0], coord[1]]
-            if entity.get("coordinates") != canonical:
-                entity["coordinates"] = canonical
-                normalized_existing_coordinates += 1
-        if args.remove_legacy_coords and "coords" in entity and "coordinates" in entity:
-            entity.pop("coords", None)
-            removed_legacy_coords += 1
-
-    if args.repair_area_place_conflicts:
-        for entity in entities:
-            if not isinstance(entity, dict) or entity.get("type") == "place" or not entity.get("placeId"):
-                continue
-            place = place_by_id.get(str(entity.get("placeId")))
-            if not place:
-                continue
-            entity_area = entity.get("area")
-            place_area = place.get("area")
-            if entity_area and place_area and entity_area != place_area:
-                entity.pop("placeId", None)
-                repaired_area_place_conflicts += 1
-
-    ids = {str(e.get("id")) for e in entities if isinstance(e, dict) and e.get("id")}
-    dropped_relationships = 0
-    if args.drop_broken_relationships:
-        kept = []
-        for rel in relationships:
-            if not isinstance(rel, dict):
-                dropped_relationships += 1
-                continue
-            src = rel_source(rel)
-            dst = rel_target(rel)
-            kind = rel_type(rel)
-            if not src or not dst or not kind or str(src) not in ids or str(dst) not in ids:
-                dropped_relationships += 1
-                continue
-            kept.append(rel)
-        data["relationships"] = kept
-
-    if args.repair_produced_in_area_conflicts:
-        kept, repaired_produced_in_area_conflicts = drop_produced_in_area_conflicts(
-            data.get("relationships", []),
-            entity_by_id,
-            place_by_id,
-        )
-        if kept != data.get("relationships", []):
-            data["relationships"] = kept
-
-    if args.regenerate_near:
-        rebuilt, previous_near_relationships, regenerated_near_relationships = regenerate_near_relationships(
-            entities,
-            data.get("relationships", []),
-            place_by_id,
-        )
-        if rebuilt != data.get("relationships", []):
-            data["relationships"] = rebuilt
-
-    data_js_changed = False
-    rendered_data_js = None
-    if not args.no_sync_js:
-        data_js = args.data.with_name("data.js")
-        rendered_data_js = render_data_js(data)
-        data_js_changed = not data_js.exists() or data_js.read_text(encoding="utf-8", errors="replace") != rendered_data_js
-
-    changed = any([
-        added_coordinates,
-        normalized_existing_coordinates,
-        removed_legacy_coords,
-        inferred_area,
-        inferred_area_from_place,
-        generated_place_summaries,
-        dropped_out_of_bounds_coordinates,
-        repaired_area_place_conflicts,
-        repaired_produced_in_area_conflicts,
-        previous_near_relationships != regenerated_near_relationships,
-        dropped_relationships,
-        data_js_changed,
-    ])
-
-    print("Normalization plan")
-    print("==================")
-    print(f"added_coordinates: {added_coordinates}")
-    print(f"normalized_existing_coordinates: {normalized_existing_coordinates}")
-    print(f"removed_legacy_coords: {removed_legacy_coords}")
-    print(f"inferred_area: {inferred_area}")
-    print(f"inferred_area_from_place: {inferred_area_from_place}")
-    print(f"area_place_conflicts: {area_place_conflicts}")
-    print(f"generated_place_summaries: {generated_place_summaries}")
-    print(f"dropped_out_of_bounds_coordinates: {dropped_out_of_bounds_coordinates}")
-    print(f"repaired_area_place_conflicts: {repaired_area_place_conflicts}")
-    print(f"repaired_produced_in_area_conflicts: {repaired_produced_in_area_conflicts}")
-    print(f"previous_near_relationships: {previous_near_relationships}")
-    print(f"regenerated_near_relationships: {regenerated_near_relationships}")
-    print(f"dropped_relationships: {dropped_relationships}")
-    print(f"sync_js: {not args.no_sync_js}")
-    print(f"data_js_changed: {data_js_changed}")
-
-    if args.check:
-        return 0
-    if not changed:
-        print("No changes needed.")
-        return 0
-
-    if not args.no_backup:
-        args.backup_dir.mkdir(parents=True, exist_ok=True)
-        stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        backup = args.backup_dir / f"snap_stabilization_{stamp}.json"
-        shutil.copy2(args.data, backup)
-        print(f"backup: {backup}")
-
-    args.data.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
-    print(f"wrote: {args.data}")
-
-    if not args.no_sync_js:
-        data_js = args.data.with_name("data.js")
-        if write_data_js(data, data_js, rendered_data_js):
-            print(f"wrote: {data_js}")
+            to_delete.append(i)
         else:
-            print(f"unchanged: {data_js}")
+            seen[key] = i
+    return to_delete
 
-    return 0
+
+def n6_normalize_ocop(entities):
+    fixes = []
+    for e in entities:
+        attrs = e.get("attributes") or {}
+        tags = e.get("tags") or []
+        name = e.get("name", "")
+        summary = e.get("summary", "")
+
+        ocop_val = attrs.get("ocop_rating") or attrs.get("ocop") or attrs.get("ocop_star")
+        star = None
+
+        for src in [str(ocop_val or ""), name, summary] + [str(t) for t in tags]:
+            m = re.search(r"(?:OCOP\s*)?(\d)\s*sao", src, re.IGNORECASE)
+            if m:
+                star = int(m.group(1))
+                break
+            m = re.search(r"(\d)\s*sao\s*OCOP", src, re.IGNORECASE)
+            if m:
+                star = int(m.group(1))
+                break
+
+        if star and 1 <= star <= 5:
+            if attrs.get("ocop_star") != star:
+                new_attrs = dict(attrs)
+                new_attrs["ocop_star"] = star
+                for old_key in ["ocop_rating", "ocop"]:
+                    new_attrs.pop(old_key, None)
+                fixes.append((e["id"], e.get("name", ""), star, new_attrs))
+        elif any("ocop" in str(v).lower() for v in [*attrs.values(), *tags, name]):
+            if "ocop_star" not in attrs and "ocop_certified" not in attrs:
+                new_attrs = dict(attrs)
+                new_attrs["ocop_certified"] = True
+                fixes.append((e["id"], e.get("name", ""), None, new_attrs))
+    return fixes
+
+
+def n7_fix_address_only_summaries(entities):
+    type_labels = {
+        "accommodation": "Cơ sở lưu trú", "restaurant": "Nhà hàng",
+        "cafe": "Quán cà phê", "dish": "Món ăn", "attraction": "Điểm tham quan",
+        "product": "Sản phẩm", "craft_village": "Làng nghề",
+    }
+    fixes = []
+    for e in entities:
+        if "_n2_summary" in e:
+            continue
+        summary = (e.get("summary") or "").strip()
+        if not summary or len(summary) > 120:
+            continue
+        addr = ((e.get("attributes") or {}).get("address") or "").strip()
+        if not addr:
+            continue
+        name = e.get("name", "")
+        s_low = summary.lower().replace(",", " ").replace(".", " ").split()
+        a_low = addr.lower().replace(",", " ").replace(".", " ").split()
+        overlap = len(set(s_low) & set(a_low)) / max(len(set(s_low)), 1)
+        if overlap > 0.7 and len(summary) < len(addr) + len(name) + 30:
+            label = type_labels.get(e.get("type", ""), "Địa điểm")
+            new_summary = f"{label} {name} tại {addr}."
+            if new_summary != summary:
+                fixes.append((e["id"], name, summary[:50], new_summary[:80]))
+                e["_n7_summary"] = new_summary
+    return fixes
+
+
+def n8_fix_english_dates(entities):
+    month_map = {
+        "Jan": "Tháng 1", "Feb": "Tháng 2", "Mar": "Tháng 3", "Apr": "Tháng 4",
+        "May": "Tháng 5", "Jun": "Tháng 6", "Jul": "Tháng 7", "Aug": "Tháng 8",
+        "Sep": "Tháng 9", "Oct": "Tháng 10", "Nov": "Tháng 11", "Dec": "Tháng 12",
+        "January": "Tháng 1", "February": "Tháng 2", "March": "Tháng 3",
+        "April": "Tháng 4", "June": "Tháng 6", "July": "Tháng 7",
+        "August": "Tháng 8", "September": "Tháng 9", "October": "Tháng 10",
+        "November": "Tháng 11", "December": "Tháng 12",
+    }
+    pattern = re.compile(
+        r"\b(January|February|March|April|June|July|August|September|October|November|December|"
+        r"Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2}),?\s*(\d{4})\b"
+    )
+    fixes = []
+    for e in entities:
+        if "_n2_summary" in e or "_n7_summary" in e:
+            continue
+        summary = e.get("summary", "")
+        if not summary:
+            continue
+        m = pattern.search(summary)
+        if m:
+            month_vi = month_map.get(m.group(1), m.group(1))
+            vi_date = f"ngày {m.group(2)} {month_vi} {m.group(3)}"
+            new_summary = summary[:m.start()] + vi_date + summary[m.end():]
+            fixes.append((e["id"], e.get("name", ""), m.group(0), vi_date))
+            e["_n8_summary"] = new_summary
+    return fixes
+
+
+def n9_clear_bad_coordinates(entities):
+    LAT_MIN, LAT_MAX = 9.5, 10.8
+    LNG_MIN, LNG_MAX = 105.4, 107.0
+    fixes = []
+    for e in entities:
+        coords = e.get("coordinates")
+        if not isinstance(coords, list) or len(coords) < 2:
+            continue
+        lat, lng = coords[0], coords[1]
+        if lat < LAT_MIN or lat > LAT_MAX or lng < LNG_MIN or lng > LNG_MAX:
+            fixes.append((e["id"], e.get("name", ""), coords))
+    return fixes
+
+
+def n10_auto_assign_placeid(entities, entity_map):
+    wards = {}
+    for e in entities:
+        if e.get("type") == "place" and e.get("level") in ("xa", "phuong"):
+            name_lower = e["name"].lower()
+            area = e.get("area", "")
+            wards[(area, name_lower)] = e["id"]
+            for prefix in ["phường ", "xã ", "thị trấn "]:
+                if name_lower.startswith(prefix):
+                    wards[(area, name_lower[len(prefix):])] = e["id"]
+
+    fixes = []
+    for e in entities:
+        if e.get("placeId") or e.get("type") == "place":
+            continue
+        addr = ((e.get("attributes") or {}).get("address") or "").lower()
+        area = e.get("area", "")
+        if not addr or not area:
+            continue
+
+        matched_pid = None
+        m = re.search(r"(?:p\.|phường)\s*(\d+)", addr)
+        if m:
+            num = m.group(1)
+            for (a, wname), pid in wards.items():
+                if a == area and ("phường " + num == wname or wname.endswith(num)):
+                    matched_pid = pid
+                    break
+
+        if not matched_pid:
+            m = re.search(r"(?:xã|tt\.|thị trấn)\s+([^,]+)", addr, re.IGNORECASE)
+            if m:
+                xa_name = m.group(1).strip().lower()
+                for (a, wname), pid in wards.items():
+                    if a == area and xa_name in wname:
+                        matched_pid = pid
+                        break
+
+        if matched_pid:
+            fixes.append((e["id"], e.get("name", ""), matched_pid))
+    return fixes
+
+
+def n11_normalize_addresses(entities):
+    abbrevs = [
+        (r"\bP\.\s*", "Phường "), (r"\bQ\.\s*", "Quận "),
+        (r"\bTP\.\s*", "Thành phố "), (r"\bTp\.\s*", "Thành phố "),
+        (r"\bTT\.\s*", "Thị trấn "), (r"\bTX\.\s*", "Thị xã "),
+    ]
+    fixes = []
+    for e in entities:
+        attrs = e.get("attributes") or {}
+        addr = attrs.get("address", "")
+        if not addr:
+            continue
+        original = addr
+        for pat, repl in abbrevs:
+            addr = re.sub(pat, repl, addr)
+        addr = re.sub(r"\s{2,}", " ", addr).strip()
+        area = e.get("area", "")
+        if area == "ben-tre":
+            addr = re.sub(r"[Tt]ỉnh Vĩnh Long$", "tỉnh Bến Tre", addr)
+        elif area == "tra-vinh":
+            addr = re.sub(r"[Tt]ỉnh Vĩnh Long$", "tỉnh Trà Vinh", addr)
+        if addr != original:
+            fixes.append((e["id"], e.get("name", "")[:30], original[:50], addr[:50]))
+            e["_n11_addr"] = addr
+    return fixes
+
+
+def n12_normalize_prices(entities):
+    fixes = []
+    for e in entities:
+        attrs = e.get("attributes") or {}
+        for key in ["price", "price_range"]:
+            val = attrs.get(key)
+            if not val or not isinstance(val, str):
+                continue
+            original = val
+            new_val = val
+            new_val = re.sub(r"(\d)(\d{3})(\d{3})\b", r"\1.\2.\3", new_val)
+            new_val = re.sub(r"(\d{2,3})(\d{3})\b(?!\.\d)", r"\1.\2", new_val)
+            new_val = re.sub(r"\s*VND\b", " đ", new_val)
+            new_val = re.sub(r"\s*VNĐ\b", " đ", new_val)
+            new_val = re.sub(r"\s*vnđ\b", " đ", new_val)
+            new_val = re.sub(r"\s*vnd\b", " đ", new_val)
+            new_val = re.sub(r"\s*đồng\b", " đ", new_val)
+            new_val = re.sub(r"(\d)đ\b", r"\1 đ", new_val)
+            new_val = new_val.strip()
+            if new_val != original:
+                fixes.append((e["id"], key, original, new_val))
+                if "_n12_attrs" not in e:
+                    e["_n12_attrs"] = dict(attrs)
+                e["_n12_attrs"][key] = new_val
+    return fixes
+
+
+def main():
+    data = load_data()
+    entities = data["entities"]
+    rels = data["relationships"]
+    entity_map = {e["id"]: e for e in entities}
+
+    mode = "DRY RUN" if DRY_RUN else "APPLYING"
+    print(f"{'=' * 60}")
+    print(f"  DATA NORMALIZATION — {mode}")
+    print(f"  {len(entities)} entities, {len(rels)} relationships")
+    print(f"{'=' * 60}\n")
+
+    all_del = set()
+
+    # N1
+    n1 = n1_reclassify_dishes(entities)
+    tc = Counter(t for _, t, _ in n1)
+    print(f"N1. Reclassify dishes: {len(n1)} ({tc.get('restaurant', 0)} restaurant, {tc.get('cafe', 0)} cafe)")
+    for _, t, nm in n1[:5]:
+        print(f"    {nm[:45]} → {t}")
+    if len(n1) > 5:
+        print(f"    ... +{len(n1) - 5} more")
+
+    # N2
+    n2 = n2_fix_wrong_province_summary(entities)
+    print(f"\nN2. Fix wrong province in summaries: {len(n2)}")
+    for _, nm, old, new in n2[:3]:
+        print(f"    {nm[:30]}: ...{old[-30:]} → ...{new[-30:]}")
+
+    # N3
+    n3 = n3_delete_dish_craft_village_rels(rels, entity_map)
+    all_del.update(n3)
+    print(f"\nN3. Delete dish↔craft_village associated_with: {len(n3)}")
+
+    # N4
+    n4 = n4_delete_far_near_rels(rels, entity_map, all_del)
+    all_del.update(n4)
+    print(f"\nN4. Delete near rels > 15km: {len(n4)}")
+
+    # N5
+    n5 = n5_remove_bidirectional_dupes(rels, all_del)
+    all_del.update(n5)
+    print(f"\nN5. Remove bidirectional duplicates: {len(n5)}")
+
+    # N6
+    n6 = n6_normalize_ocop(entities)
+    print(f"\nN6. Normalize OCOP: {len(n6)}")
+    stars = Counter(s for _, _, s, _ in n6 if s)
+    for s, c in sorted(stars.items()):
+        print(f"    {s} sao: {c}")
+    ns = sum(1 for _, _, s, _ in n6 if not s)
+    if ns:
+        print(f"    certified (no star): {ns}")
+
+    # N7
+    n7 = n7_fix_address_only_summaries(entities)
+    print(f"\nN7. Fix address-only summaries: {len(n7)}")
+    for _, nm, old, new in n7[:3]:
+        print(f"    {nm[:25]}: \"{old[:40]}\" → \"{new[:50]}\"")
+
+    # N8
+    n8 = n8_fix_english_dates(entities)
+    print(f"\nN8. Fix English dates: {len(n8)}")
+    for _, nm, od, nd in n8[:5]:
+        print(f"    {nm[:30]}: {od} → {nd}")
+
+    # N9
+    n9 = n9_clear_bad_coordinates(entities)
+    print(f"\nN9. Clear out-of-bbox coords: {len(n9)}")
+    for _, nm, c in n9[:5]:
+        print(f"    {nm[:35]}: [{c[0]:.4f}, {c[1]:.4f}]")
+
+    # N10
+    n10 = n10_auto_assign_placeid(entities, entity_map)
+    print(f"\nN10. Auto-assign placeId: {len(n10)}")
+    for _, nm, pid in n10[:5]:
+        print(f"     {nm[:35]} → {pid}")
+
+    # N11
+    n11 = n11_normalize_addresses(entities)
+    print(f"\nN11. Normalize addresses: {len(n11)}")
+    for _, nm, old, new in n11[:3]:
+        print(f"     {nm}: \"{old}\" → \"{new}\"")
+
+    # N12
+    n12 = n12_normalize_prices(entities)
+    print(f"\nN12. Normalize prices: {len(n12)}")
+    for _, k, old, new in n12[:5]:
+        print(f"     {k}: \"{old}\" → \"{new}\"")
+
+    total_del = len(all_del)
+    print(f"\n{'=' * 60}")
+    print(f"  SUMMARY")
+    print(f"  Rels deleted:    {total_del} (N3:{len(n3)} + N4:{len(n4)} + N5:{len(n5)})")
+    print(f"  Entity fixes:    N1:{len(n1)} N2:{len(n2)} N6:{len(n6)} N7:{len(n7)}")
+    print(f"                   N8:{len(n8)} N9:{len(n9)} N10:{len(n10)} N11:{len(n11)} N12:{len(n12)}")
+    print(f"  Net rels:        {len(rels) - total_del}")
+    print(f"{'=' * 60}")
+
+    if DRY_RUN:
+        print(f"\n  → DRY RUN. Run with --apply to save.")
+        return
+
+    print("\nApplying...")
+    eid_map = {e["id"]: e for e in entities}
+
+    for eid, new_type, _ in n1:
+        if eid in eid_map:
+            eid_map[eid]["type"] = new_type
+
+    for e in entities:
+        for key in ("_n2_summary", "_n7_summary", "_n8_summary"):
+            if key in e:
+                e["summary"] = e.pop(key)
+                break
+
+    for i in sorted(all_del, reverse=True):
+        del rels[i]
+
+    for eid, _, star, new_attrs in n6:
+        if eid in eid_map:
+            eid_map[eid]["attributes"] = new_attrs
+
+    for eid, _, _ in n9:
+        if eid in eid_map:
+            eid_map[eid]["coordinates"] = None
+
+    for eid, _, pid in n10:
+        if eid in eid_map:
+            eid_map[eid]["placeId"] = pid
+
+    for e in entities:
+        if "_n11_addr" in e:
+            if not e.get("attributes"):
+                e["attributes"] = {}
+            e["attributes"]["address"] = e.pop("_n11_addr")
+
+    for e in entities:
+        if "_n12_attrs" in e:
+            e["attributes"] = e.pop("_n12_attrs")
+
+    for e in entities:
+        for k in list(e.keys()):
+            if k.startswith("_n"):
+                del e[k]
+
+    data["relationships"] = rels
+    save_data(data)
+    print(f"\nSaved: {len(entities)} entities, {len(rels)} relationships")
+    print("Run: python scripts/validate_data.py to verify.")
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()
