@@ -2,6 +2,7 @@
   <div class="home">
     <!-- 1. Hero — dynamic tagline + search + quick-pick pills -->
     <section class="hero">
+      <div class="hero-kenburns" aria-hidden="true"></div>
       <HeroIllustration />
       <div class="hero-scrim" aria-hidden="true"></div>
       <div class="hero-inner hero-enter">
@@ -186,6 +187,28 @@
       </div>
     </section>
 
+    <!-- 4.7 Spotlight — 1 điểm nổi bật cỡ lớn (magazine split, panel thiết-kế) -->
+    <section v-if="spotlight" class="block reveal">
+      <div class="spotlight">
+        <NuxtLink
+          :to="`/dia-diem/${spotlight.id}`"
+          class="spot-visual"
+          :class="`cat-${spotMeta?.cat}`"
+          :style="{ backgroundImage: spotBg }"
+          :aria-label="spotlight.name"
+        >
+          <span v-if="spotRegion" class="spot-region">📍 {{ spotRegion }}</span>
+          <span class="spot-icon" v-html="spotIcon" />
+        </NuxtLink>
+        <div class="spot-body">
+          <span class="spot-kicker">{{ spotMeta?.emoji }} {{ spotMeta?.label }} · Nổi bật</span>
+          <h2>{{ spotlight.name }}</h2>
+          <p v-if="spotlight.summary" class="spot-sum">{{ spotlight.summary }}</p>
+          <NuxtLink :to="`/dia-diem/${spotlight.id}`" class="btn btn-primary spot-cta">Khám phá ngay →</NuxtLink>
+        </div>
+      </div>
+    </section>
+
     <!-- 5. Trải nghiệm nổi bật -->
     <section v-if="topExperiences.length" class="block reveal band">
       <div class="section-head">
@@ -327,6 +350,7 @@
 <script setup lang="ts">
 import type { Itinerary, Entity} from '~/types'
 import { TYPE_META, AREA_META, INTEREST_META } from '~/composables/useConstants'
+import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 
 useReveal()
 const { get: ss } = useSiteSettings()
@@ -408,12 +432,31 @@ const currentMonth = computed(() => homeData.value?.month || (new Date().getMont
 // Tất cả content section ưu tiên theo vùng đã chọn (sortByRegion ổn định: vùng khác vẫn giữ).
 const seasonal = computed(() => sortByRegion(homeData.value?.seasonal || []))
 const experiences = computed(() => sortByRegion(homeData.value?.experiences || []))
-const topExperiences = computed(() => experiences.value.slice(0, 6))
-const products = computed(() => sortByRegion(homeData.value?.products || []))
+const productsAll = computed(() => sortByRegion(homeData.value?.products || []))
+// Spotlight — 1 điểm nổi bật cỡ lớn (magazine split): chọn entity có summary GIÀU
+// nhất từ trải-nghiệm/đặc-sản → panel editorial "có chất", phá nhịp lưới card.
+// Loại khỏi rail bên dưới để khỏi trùng. Deterministic (SSR-safe, không theo giờ).
+const spotlight = computed<any>(() => {
+  const pool = [...experiences.value.slice(0, 8), ...productsAll.value.slice(0, 8)]
+  if (!pool.length) return null
+  return pool.slice().sort((a: any, b: any) => (b?.summary || '').length - (a?.summary || '').length)[0] || null
+})
+const spotId = computed(() => spotlight.value?.id)
+const spotMeta = computed(() => spotlight.value ? (TYPE_META[spotlight.value.type] || { emoji: '📍', label: spotlight.value.type, cat: 'place' }) : null)
+const spotBg = computed(() => spotlight.value && spotMeta.value ? generateCategoryPlaceholder(spotlight.value.id, spotMeta.value.cat) : '')
+const spotIcon = computed(() => spotMeta.value ? generateCategoryIcon(spotMeta.value.cat) : '')
+const spotRegion = computed(() => {
+  const a = spotlight.value?.area || spotlight.value?.attributes?.area || spotlight.value?.attributes?.province
+  if (!a) return ''
+  const meta = (AREA_META as Record<string, { name: string }>)[String(a)]
+  return meta ? meta.name : String(a)
+})
+const topExperiences = computed(() => experiences.value.filter((e: any) => e.id !== spotId.value).slice(0, 6))
+const products = computed(() => productsAll.value.filter((e: any) => e.id !== spotId.value).slice(0, 6))
 const itineraries = computed(() => sortByRegion(homeData.value?.itineraries || []))
 const upcomingEvents = computed(() => sortByRegion(homeData.value?.upcoming_events || []))
 const seasonalTagline = computed(() => homeData.value?.seasonal_tagline || 'Khám phá Vĩnh Long theo cách của người bản địa')
-const hasHomeContent = computed(() => !!(upcomingEvents.value.length || seasonal.value.length || itineraries.value.length || topExperiences.value.length || products.value.length))
+const hasHomeContent = computed(() => !!(upcomingEvents.value.length || seasonal.value.length || itineraries.value.length || topExperiences.value.length || products.value.length || spotlight.value))
 
 // Chỉ coi là "lỗi/rỗng" sau khi đã fetch xong (tránh nhấp-nháy fallback lúc đang tải).
 const homeFailed = computed(() => !homePending.value && (!!homeError.value || (!!homeData.value && !hasHomeContent.value)))
@@ -571,6 +614,34 @@ useHead({
     linear-gradient(to top, rgba(var(--ink-rgb),.55) 0%, rgba(var(--ink-rgb),.06) 32%, transparent 55%);
 }
 .home .hero-inner { z-index: 1; }
+
+/* 1b — Ken-Burns: ảnh hero "sống" bằng zoom + pan rất chậm (transform thuần,
+   composited; reduced-motion tắt). Layer riêng nằm DƯỚI illustration + scrim
+   nên không ảnh hưởng legibility chữ. Ảnh chuyển từ .hero sang đây để pan được. */
+.home .hero { background-image: none; }
+.home .hero-kenburns {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    linear-gradient(105deg, rgba(var(--ink-rgb),.86) 0%, rgba(var(--ink-rgb),.52) 46%, rgba(var(--ink-rgb),.12) 100%),
+    url('/img/hero.webp');
+  background-size: cover;
+  background-position: center;
+  transform: scale(1.06);
+  animation: hero-kenburns 34s ease-in-out infinite alternate;
+}
+@media (max-width: 640px) {
+  .home .hero-kenburns {
+    background-image:
+      linear-gradient(105deg, rgba(var(--ink-rgb),.86) 0%, rgba(var(--ink-rgb),.52) 46%, rgba(var(--ink-rgb),.12) 100%),
+      url('/img/hero-mobile.webp');
+  }
+}
+@keyframes hero-kenburns {
+  0%   { transform: scale(1.06) translate3d(0, 0, 0); }
+  100% { transform: scale(1.16) translate3d(-2.2%, -1.6%, 0); }
+}
 
 /* 2 — Kicker (eyebrow) above the headline: quiet authority + place IA */
 .home .hero-kicker {
@@ -959,6 +1030,27 @@ html.js .home .hero-enter h1::after {
   color: #fff; text-decoration: none;
   box-shadow: var(--shadow-md);
   transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+/* "Đang diễn ra" — vệt sáng quét chậm: cảm-giác live/premium. Transform thuần,
+   composited; reduced-motion tắt (xem khối @media cuối). */
+.event-hero::before {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  left: -60%;
+  width: 45%;
+  z-index: -1;
+  background: linear-gradient(105deg, transparent 0%, rgba(255,255,255,.16) 50%, transparent 100%);
+  transform: translateX(0) skewX(-14deg);
+  animation: event-sheen 6.5s ease-in-out 1.2s infinite;
+}
+@keyframes event-sheen {
+  0%   { transform: translateX(0) skewX(-14deg); }
+  55%  { transform: translateX(420%) skewX(-14deg); }
+  100% { transform: translateX(420%) skewX(-14deg); }
 }
 .event-hero:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
 .event-hero:active { transform: scale(.99); transition-duration: .1s; }
@@ -1128,6 +1220,73 @@ html.js .home .hero-enter h1::after {
 @media (prefers-reduced-motion: reduce) {
   .interest-card:hover { transform: none; }
   .interest-card:active { transform: none; }
+}
+
+/* ── Spotlight — magazine split: 1 điểm nổi bật cỡ lớn, panel thiết-kế (KHÔNG
+   ô-ảnh-trống), phá nhịp lưới card. Đảo-chiều stack trên mobile. ── */
+.spotlight {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: var(--space-6);
+  align-items: stretch;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+@media (max-width: 760px) { .spotlight { grid-template-columns: 1fr; } }
+.spot-visual {
+  position: relative;
+  min-height: 300px;
+  background-size: cover;
+  background-position: center;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  text-decoration: none;
+}
+@media (max-width: 760px) { .spot-visual { min-height: 200px; } }
+.spot-icon {
+  width: 150px; height: 150px;
+  opacity: .88;
+  color: var(--text-on-dark, #fff);
+  filter: drop-shadow(0 4px 16px rgba(0,0,0,.28));
+  transition: transform .6s var(--ease-out-expo);
+  pointer-events: none;
+}
+.spot-icon :deep(svg), .spot-icon svg { width: 100%; height: 100%; display: block; }
+.spot-visual:hover .spot-icon { transform: scale(1.07) rotate(-2deg); }
+.spot-region {
+  position: absolute; top: var(--space-4); left: var(--space-4);
+  padding: var(--space-1) var(--space-3);
+  background: rgba(0,0,0,.36);
+  color: #fff; border-radius: var(--radius-full);
+  font-size: var(--text-xs); font-weight: var(--weight-semibold);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+}
+.spot-body {
+  padding: var(--space-8) var(--space-8) var(--space-8) 0;
+  display: flex; flex-direction: column; justify-content: center;
+  gap: var(--space-3); min-width: 0;
+}
+@media (max-width: 760px) { .spot-body { padding: var(--space-5); } }
+.spot-kicker {
+  font-size: var(--text-xs); font-weight: var(--weight-bold);
+  text-transform: uppercase; letter-spacing: .05em;
+  color: var(--primary-fg-strong);
+}
+.spot-body h2 {
+  margin: 0;
+  font-size: clamp(1.5rem, 3.2vw, 2.1rem);
+  line-height: var(--leading-snug); letter-spacing: -.01em;
+}
+.spot-sum {
+  margin: 0; color: var(--text-muted); line-height: var(--leading-relaxed);
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+}
+.spot-cta { align-self: flex-start; margin-top: var(--space-2); }
+@media (prefers-reduced-motion: reduce) {
+  .spot-visual:hover .spot-icon { transform: none; }
 }
 
 /* ── Quick links — grid layout ── */
@@ -1395,14 +1554,15 @@ html.js .home .hero-enter h1::after {
   color: var(--text-on-dark, #fff);
 }
 
-/* Dark mode: hero gradient */
-.dark .home .hero {
+/* Dark mode: hero gradient — đặt trên LAYER kenburns (khớp Ken-Burns), không
+   re-add lên .hero (tránh nhị ảnh + gradient sáng sai do --ink-rgb đảo ở dark). */
+.dark .home .hero-kenburns {
   background-image:
     linear-gradient(105deg, rgba(26,26,26,.82) 0%, rgba(26,26,26,.48) 46%, rgba(26,26,26,.08) 100%),
     url('/img/hero.jpg');
 }
 @media (max-width: 640px) {
-  .dark .home .hero {
+  .dark .home .hero-kenburns {
     background-image:
       linear-gradient(105deg, rgba(26,26,26,.82) 0%, rgba(26,26,26,.48) 46%, rgba(26,26,26,.08) 100%),
       url('/img/hero-mobile.jpg');
@@ -1459,6 +1619,8 @@ html.js .home .hero-enter h1::after {
   html.js .home .hero-enter > * { opacity: 1; transform: none; animation: none; }
   html.js .home .hero-enter h1::after { animation: none; transform: scaleX(1); opacity: 1; }
   .home .hero-kicker-dot { animation: none; }
+  .home .hero-kenburns { animation: none; transform: none; }
+  .event-hero::before { animation: none; opacity: 0; }
   .hero-pill:hover { transform: none; }
   .hero-pill:active { transform: none; }
   .event-card:hover { transform: none; }

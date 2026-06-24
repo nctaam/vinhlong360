@@ -95,6 +95,11 @@ cd $REMOTE
 set -a; . ./.env; set +a
 pg_dump "\$DATABASE_URL" -f /tmp/db-pre-deploy-$TS.sql && mv /tmp/db-pre-deploy-$TS.sql backups/ && echo "  db dump -> backups/db-pre-deploy-$TS.sql"
 tar -czf backups/pre-deploy-$TS.tar.gz agent web/data.json web-nuxt/.output 2>/dev/null && echo "  code snapshot -> backups/pre-deploy-$TS.tar.gz"
+# Xoay-vòng: giữ 6 bản auto-backup mới nhất mỗi loại (chặn đầy đĩa — sự-cố 2026-06-24).
+# Chỉ đụng pre-deploy-*/db-pre-deploy-* tự-sinh; KHÔNG đụng milestone-backup có-tên.
+ls -t backups/pre-deploy-*.tar.gz 2>/dev/null | tail -n +7 | xargs -r rm -f
+ls -t backups/db-pre-deploy-*.sql 2>/dev/null | tail -n +7 | xargs -r rm -f
+echo "  rotated auto-backups (kept newest 6)"
 EOF
 fi
 
