@@ -144,12 +144,12 @@ const AREA_RGB: Record<string, string> = {
 const areaTint = computed(() => ({ '--AREA-rgb': AREA_RGB[areaKey] || 'var(--primary-rgb)' }))
 
 const { data, error: fetchError } = await useAsyncData(`area-${areaKey}`, () =>
-  $fetch<any>(`/api/entities?area=${areaKey}&limit=200`)
+  apiFetch<any>(`/api/entities?area=${areaKey}&limit=200`)
 )
 
 const ADMIN_LEVELS = ['phuong', 'xa', 'tinh']
 const { data: placesData } = await useAsyncData(`area-wards-${areaKey}`, () =>
-  $fetch<Place[]>('/api/places').catch(() => [])
+  apiFetch<Place[]>('/api/places').catch(() => [])
 )
 const wards = computed(() =>
   (placesData.value || [])

@@ -40,7 +40,7 @@
 <script setup lang="ts">
 useReveal()
 const { data, pending } = await useAsyncData('leaderboard',
-  () => $fetch<any>('/api/community/leaderboard?limit=50').catch(() => ({ leaders: [] })))
+  () => apiFetch<any>('/api/community/leaderboard?limit=50').catch(() => ({ leaders: [] })))
 const leaders = computed(() => data.value?.leaders || [])
 
 function levelIcon(level: number): string {

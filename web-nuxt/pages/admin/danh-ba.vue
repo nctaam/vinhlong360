@@ -145,7 +145,7 @@ function validate(): boolean {
   return Object.keys(errs).length === 0
 }
 
-const { data: places } = await useAsyncData('adb-places', () => $fetch<Place[]>('/api/places').catch(() => []))
+const { data: places } = await useAsyncData('adb-places', () => apiFetch<Place[]>('/api/places').catch(() => []))
 const placeById = computed(() => Object.fromEntries((places.value || []).map((p: Entity) => [p.id, p])))
 const wardGroups = computed(() => {
   const wards = (places.value || []).filter((p: Entity) => ADMIN_LEVELS.includes(p.level))

@@ -211,7 +211,7 @@ const view = ref('list')
 useFilterUrl({ vung: areaFilter }, { vung: 'all' })
 
 const { data, error: fetchError } = await useAsyncData('events', () =>
-  $fetch<{ events: Entity[] }>('/api/events?limit=200')
+  apiFetch<{ events: Entity[] }>('/api/events?limit=200')
 )
 
 const allEvents = computed(() =>

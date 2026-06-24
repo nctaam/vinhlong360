@@ -98,7 +98,7 @@ const route = useRoute()
 const id = route.params.id as string
 
 const { data: itinerary, error: fetchError } = await useAsyncData(`itinerary-${id}`, () =>
-  $fetch<Itinerary>(`/api/itineraries/${id}`)
+  apiFetch<Itinerary>(`/api/itineraries/${id}`)
 )
 
 if (fetchError.value) {

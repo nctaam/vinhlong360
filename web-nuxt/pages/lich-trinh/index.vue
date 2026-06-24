@@ -163,7 +163,7 @@ const areaFilter = ref('all')
 useFilterUrl({ vung: areaFilter }, { vung: 'all' })
 
 const { data: itineraries, error: fetchError } = await useAsyncData('itineraries', () =>
-  $fetch<any[]>('/api/itineraries')
+  apiFetch<any[]>('/api/itineraries')
 )
 
 const areaCounts = computed(() => {

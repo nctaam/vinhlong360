@@ -87,7 +87,7 @@ function buildUrl(offset: number) {
 // Trang đầu (SSR-friendly cho SEO); load-more nối client-side.
 const { data, pending, refresh } = await useAsyncData(
   'dia-diem-list',
-  () => $fetch<{ total: number; entities: any[] }>(buildUrl(0)),
+  () => apiFetch<{ total: number; entities: any[] }>(buildUrl(0)),
   { watch: [] },
 )
 const firstPage = computed(() => data.value?.entities || [])

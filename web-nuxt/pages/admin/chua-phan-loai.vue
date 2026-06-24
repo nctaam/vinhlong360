@@ -147,7 +147,7 @@ const bulkPick = ref('')
 const bulkBusy = ref(false)
 const bulkProgress = ref({ done: 0, total: 0 })
 
-const { data: places } = await useAsyncData('cpl-places', () => $fetch<Place[]>('/api/places').catch(() => []))
+const { data: places } = await useAsyncData('cpl-places', () => apiFetch<Place[]>('/api/places').catch(() => []))
 const wardGroups = computed(() => {
   const wards = (places.value || []).filter((p: Entity) => ADMIN_LEVELS.includes(p.level))
   return Object.keys(AREA_META).map(area => ({
