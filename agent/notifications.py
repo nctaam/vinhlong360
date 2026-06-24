@@ -123,6 +123,10 @@ async def toggle_follow(target_type: str, target_id: str, user=Depends(require_u
     if target_type == "user" and target_id == str(user["id"]):
         raise HTTPException(400, "Không thể tự follow chính mình")
 
+    # Guard: không tạo follow rác trỏ entity không tồn-tại (bug-hunt 2026-06-24)
+    if target_type == "entity" and not db.get_entity(target_id):
+        raise HTTPException(404, "Không tìm thấy địa điểm")
+
     ph = db._ph
     with db._conn() as conn:
         existing = db._fetchone(conn, f"""
