@@ -5,14 +5,29 @@
       <div class="hero-kenburns" aria-hidden="true"></div>
       <HeroIllustration />
       <div class="hero-scrim" aria-hidden="true"></div>
-      <div class="hero-inner hero-enter">
-        <span class="hero-kicker"><span class="hero-kicker-dot" aria-hidden="true"></span>Vĩnh Long · Bến Tre · Trà Vinh</span>
-        <h1>{{ seasonalTagline }}</h1>
-        <p class="hero-sub">{{ ss('homepage.hero_subtitle', 'Trải nghiệm miệt vườn, đặc sản theo mùa, lễ hội truyền thống — tất cả trong một bản đồ.') }}</p>
-        <SearchAutocomplete class="hero-search hero-ac" :placeholder="ss('homepage.search_placeholder', 'Tìm: chôm chôm, kẹo dừa, cù lao An Bình…')" />
-        <div class="hero-pills">
-          <NuxtLink v-for="pill in heroPills" :key="pill.to" :to="pill.to" class="hero-pill">{{ pill.emoji }} {{ pill.label }}</NuxtLink>
+      <div class="hero-inner">
+        <div class="hero-main hero-enter">
+          <span class="hero-kicker"><span class="hero-kicker-dot" aria-hidden="true"></span>Vĩnh Long · Bến Tre · Trà Vinh</span>
+          <h1>{{ seasonalTagline }}</h1>
+          <p class="hero-sub">{{ ss('homepage.hero_subtitle', 'Trải nghiệm miệt vườn, đặc sản theo mùa, lễ hội truyền thống — tất cả trong một bản đồ.') }}</p>
+          <SearchAutocomplete class="hero-search hero-ac" :placeholder="ss('homepage.search_placeholder', 'Tìm: chôm chôm, kẹo dừa, cù lao An Bình…')" />
+          <div class="hero-pills">
+            <NuxtLink v-for="pill in heroPills" :key="pill.to" :to="pill.to" class="hero-pill">{{ pill.emoji }} {{ pill.label }}</NuxtLink>
+          </div>
         </div>
+        <aside v-if="heroFeature" class="hero-feature" aria-label="Gợi ý nổi bật">
+          <NuxtLink :to="`/dia-diem/${heroFeature.id}`" class="hf-card">
+            <span class="hf-thumb" :class="`cat-${hfMeta?.cat}`" :style="{ backgroundImage: hfBg }" aria-hidden="true">
+              <span class="hf-thumb-icon" v-html="hfIcon" />
+            </span>
+            <span class="hf-body">
+              <span class="hf-tag">✦ Gợi ý nổi bật</span>
+              <span class="hf-title">{{ heroFeature.name }}</span>
+              <span v-if="hfRegion" class="hf-region">📍 {{ hfRegion }}</span>
+              <span class="hf-cta">Khám phá →</span>
+            </span>
+          </NuxtLink>
+        </aside>
       </div>
     </section>
 
@@ -484,7 +499,20 @@ const spotRegion = computed(() => {
   const meta = (AREA_META as Record<string, { name: string }>)[String(a)]
   return meta ? meta.name : String(a)
 })
-const topExperiences = computed(() => experiences.value.filter((e: any) => e.id !== spotId.value).slice(0, 6))
+// Hero feature (cột phải hero bất-đối-xứng) — điểm trải-nghiệm nổi nhất, KHÁC spotlight;
+// loại khỏi rail bên dưới để không trùng. Ẩn trên mobile (CSS) → hero mobile vẫn gọn.
+const heroFeature = computed<any>(() => experiences.value.find((e: any) => e.id !== spotId.value) || spotlight.value || null)
+const hfId = computed(() => heroFeature.value?.id)
+const hfMeta = computed(() => heroFeature.value ? (TYPE_META[heroFeature.value.type] || { emoji: '📍', label: heroFeature.value.type, cat: 'place' }) : null)
+const hfBg = computed(() => heroFeature.value && hfMeta.value ? generateCategoryPlaceholder(heroFeature.value.id, hfMeta.value.cat) : '')
+const hfIcon = computed(() => hfMeta.value ? generateCategoryIcon(hfMeta.value.cat) : '')
+const hfRegion = computed(() => {
+  const a = heroFeature.value?.area || heroFeature.value?.attributes?.area || heroFeature.value?.attributes?.province
+  if (!a) return ''
+  const meta = (AREA_META as Record<string, { name: string }>)[String(a)]
+  return meta ? meta.name : String(a)
+})
+const topExperiences = computed(() => experiences.value.filter((e: any) => e.id !== spotId.value && e.id !== hfId.value).slice(0, 6))
 const products = computed(() => productsAll.value.filter((e: any) => e.id !== spotId.value).slice(0, 6))
 const itineraries = computed(() => sortByRegion(homeData.value?.itineraries || []))
 const upcomingEvents = computed(() => sortByRegion(homeData.value?.upcoming_events || []))
@@ -647,6 +675,42 @@ useHead({
     linear-gradient(to top, rgba(var(--ink-rgb),.55) 0%, rgba(var(--ink-rgb),.06) 32%, transparent 55%);
 }
 .home .hero-inner { z-index: 1; }
+
+/* Hero BẤT-ĐỐI-XỨNG: ≥920px chia 2 cột (chữ trái + thẻ featured phải) — magazine,
+   đưa nội-dung lên màn đầu. Mobile: thẻ ẩn (giữ hero gọn). */
+@media (min-width: 920px) {
+  .home .hero-inner { display: grid; grid-template-columns: minmax(0, 1.32fr) minmax(280px, 0.8fr); gap: var(--space-10); align-items: center; }
+}
+@media (max-width: 919px) { .hero-feature { display: none; } }
+.hf-card {
+  display: flex; gap: var(--space-4); align-items: center;
+  padding: var(--space-4);
+  background: rgba(255,255,255,.12);
+  backdrop-filter: saturate(180%) blur(14px); -webkit-backdrop-filter: saturate(180%) blur(14px);
+  border: .5px solid rgba(255,255,255,.28);
+  border-radius: var(--radius-lg);
+  color: var(--text-on-dark, #fff); text-decoration: none;
+  box-shadow: var(--shadow-md);
+  transition: transform .4s var(--ease-spring-gentle), box-shadow .4s var(--ease-out-expo), background .3s var(--ease-out);
+}
+.hf-card:hover { transform: translateY(-4px); background: rgba(255,255,255,.18); box-shadow: var(--shadow-xl); }
+.hf-card:active { transform: scale(.99); transition-duration: .1s; }
+.hf-card:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 3px; }
+.hf-thumb {
+  flex: 0 0 86px; height: 86px; border-radius: var(--radius-md);
+  background-size: cover; background-position: center;
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.hf-thumb-icon { width: 46px; height: 46px; opacity: .85; filter: drop-shadow(0 2px 6px rgba(0,0,0,.22)); }
+.hf-thumb-icon :deep(svg), .hf-thumb-icon svg { width: 100%; height: 100%; display: block; }
+.hf-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.hf-tag { font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .04em; color: var(--accent); }
+.hf-title { font-size: var(--text-lg); font-weight: var(--weight-bold); line-height: var(--leading-snug); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.hf-region { font-size: var(--text-xs); opacity: .88; }
+.hf-cta { font-size: var(--text-sm); font-weight: var(--weight-semibold); margin-top: var(--space-1); }
+/* Entrance: thẻ featured xuất-hiện sau chữ (cinematic) — JS-gated, reduced-motion tắt. */
+html.js .home .hero-feature { opacity: 0; transform: translateY(16px); animation: hero-rise .7s var(--ease-out-expo) .5s forwards; }
 
 /* 1b — Ken-Burns: ảnh hero "sống" bằng zoom + pan rất chậm (transform thuần,
    composited; reduced-motion tắt). Layer riêng nằm DƯỚI illustration + scrim
@@ -1764,6 +1828,8 @@ html.js .home .hero-enter h1::after {
   html.js .home .hero-enter h1::after { animation: none; transform: scaleX(1); opacity: 1; }
   .home .hero-kicker-dot { animation: none; }
   .home .hero-kenburns { animation: none; transform: none; }
+  html.js .home .hero-feature { opacity: 1; transform: none; animation: none; }
+  .hf-card:hover { transform: none; }
   .event-hero::before { animation: none; opacity: 0; }
   .hero-pill:hover { transform: none; }
   .hero-pill:active { transform: none; }
