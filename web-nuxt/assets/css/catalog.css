@@ -109,13 +109,16 @@
 @media (max-width: 640px) {
   .catalog-hero-icon { font-size: 1.8rem; }
 }
-.catalog-hero h1 { margin: 0 0 var(--space-2); font-size: var(--text-2xl); letter-spacing: var(--tracking-tight); }
+/* H1 lớn hơn, editorial (đồng-nhất với hero trang chủ) */
+.catalog-hero h1 { margin: 0 0 var(--space-2); font-size: clamp(1.6rem, 4.2vw, 2.4rem); line-height: 1.12; font-weight: var(--weight-extrabold); letter-spacing: var(--tracking-tight); }
 .catalog-hero p { margin: 0; color: var(--muted); font-size: var(--text-base); line-height: var(--leading-relaxed); max-width: 600px; }
 .catalog-stats {
   display: flex; gap: var(--space-6); margin-top: var(--space-5); padding-top: var(--space-4);
-  border-top: .5px solid var(--line);
+  border-top: .5px solid var(--line); flex-wrap: wrap;
 }
-.stat-item { display: flex; flex-direction: column; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); transition: background .3s var(--ease-out); cursor: default; }
+.stat-item { position: relative; display: flex; flex-direction: column; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); transition: background .3s var(--ease-out); cursor: default; }
+/* Đường phân-cách mảnh giữa chỉ-số → "stat strip" gọn (đồng-nhất trang chủ) */
+.catalog-stats .stat-item + .stat-item::before { content: ""; position: absolute; left: calc(-1 * var(--space-3)); top: 50%; transform: translateY(-50%); width: 1px; height: 24px; background: var(--line); }
 .stat-item:hover { background: var(--overlay-subtle); }
 .stat-num { font-size: var(--text-2xl); font-weight: var(--weight-extrabold); color: var(--primary-fg); letter-spacing: var(--tracking-tight); transition: color .3s var(--ease-out); }
 .stat-item:hover .stat-num { color: var(--primary-fg-strong, var(--primary-fg)); }

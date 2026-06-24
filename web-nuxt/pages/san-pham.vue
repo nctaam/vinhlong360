@@ -27,6 +27,9 @@
       </div>
     </section>
 
+    <!-- Spotlight nổi bật (magazine, dùng-chung) -->
+    <CatalogSpotlight :items="allEntities" />
+
     <!-- Đang vào mùa -->
     <section v-if="seasonalHighlights.length" class="block reveal">
       <div class="seasonal-banner seasonal-banner-live">

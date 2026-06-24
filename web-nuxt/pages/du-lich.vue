@@ -19,6 +19,9 @@
       </div>
     </section>
 
+    <!-- Spotlight nổi bật (magazine, dùng-chung) -->
+    <CatalogSpotlight :items="allEntities" />
+
     <!-- Featured -->
     <section v-if="featured.length" class="block reveal">
       <div class="section-head">
