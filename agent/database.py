@@ -1025,7 +1025,9 @@ class Database:
         self.initialize()
         with self._conn() as conn:
             entities = self._fetchone(conn, "SELECT COUNT(*) as c FROM entities WHERE type != 'place'")["c"]
-            places = self._fetchone(conn, "SELECT COUNT(*) as c FROM entities WHERE type = 'place'")["c"]
+            # "places" = SỐ XÃ/PHƯỜNG thật (level xa/phuong) = 124, KHÔNG đếm cả type=place thô
+            # (162 — gồm 37 cơ-sở gán nhầm type=place + 1 tỉnh) để nhãn "Xã phường" đúng.
+            places = self._fetchone(conn, "SELECT COUNT(*) as c FROM entities WHERE type = 'place' AND level IN ('xa','phuong')")["c"]
             rels = self._fetchone(conn, "SELECT COUNT(*) as c FROM relationships")["c"]
             its = self._fetchone(conn, "SELECT COUNT(*) as c FROM itineraries")["c"]
             feedback = self._fetchone(conn, "SELECT COUNT(*) as c FROM feedback")["c"]

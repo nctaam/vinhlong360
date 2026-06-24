@@ -147,7 +147,7 @@ useReveal()
 const { f: pc } = usePageContent('danh_ba')
 const { show: showToast } = useToast()
 
-const ADMIN_LEVELS = ['phuong', 'xa', 'tinh']
+const ADMIN_LEVELS = ['phuong', 'xa']  // danh-bạ chỉ xã/phường (124), KHÔNG gộp cấp tỉnh
 const route = useRoute()
 
 const { data: places, error: placesError } = await useAsyncData('dir-places', () => apiFetch<Place[]>('/api/places'))
