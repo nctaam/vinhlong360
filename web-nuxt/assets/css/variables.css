@@ -4,6 +4,7 @@
    ============================================================ */
 
 :root {
+  color-scheme: light;  /* native UI (thanh cuộn, form, ô chọn) khớp theme sáng */
   /* ── TẦNG 1: PRIMITIVE — thang màu thô, đặt tên theo cảnh quan Tây Nam Bộ ── */
   /* Clay (gạch nung Mang Thít) */
   --clay-50:  #F7E9E3;
@@ -212,6 +213,7 @@
    Remap semantic tokens + lighten brand-foreground cho đạt WCAG trên nền tối.
    (preference 'system' → tự áp .dark theo OS; nút toggle ở header ghi đè.) ── */
 .dark {
+  color-scheme: dark;  /* thanh cuộn/native-UI tối khớp theme (sửa: trước là 'normal') */
   --bg: #0d0d0f;  /* near-black dịu hơn #000 (đỡ chói + tách card #1c1c1e rõ hơn) */
   --bg-warm: #1c1c1e;
   --bg-alt: #2c2c2e;
