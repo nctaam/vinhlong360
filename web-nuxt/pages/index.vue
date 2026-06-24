@@ -67,28 +67,37 @@
         <NuxtLink class="see-all" to="/su-kien">Xem lịch →</NuxtLink>
       </div>
 
-      <!-- Upcoming events -->
-      <div v-if="upcomingEvents.length" class="happening-scroll" role="region" aria-label="Sự kiện sắp diễn ra">
-        <NuxtLink
-          v-for="ev in upcomingEvents"
-          :key="ev.id"
-          :to="`/dia-diem/${ev.id}`"
-          class="event-card"
-        >
-          <div class="ec-date">
-            <span class="ec-day">{{ formatEventDay(ev) }}</span>
-            <span class="ec-month">{{ formatEventMonth(ev) }}</span>
+      <!-- Sự kiện: cái gần nhất nổi-bật (hero), còn lại danh-sách gọn → bất-đối-xứng -->
+      <div v-if="upcomingEvents.length" class="happening-feature">
+        <NuxtLink :to="`/dia-diem/${upcomingEvents[0].id}`" class="event-hero">
+          <div class="eh-date">
+            <span class="eh-day">{{ formatEventDay(upcomingEvents[0]) }}</span>
+            <span class="eh-month">{{ formatEventMonth(upcomingEvents[0]) }}</span>
           </div>
-          <div class="ec-info">
-            <span class="ec-cat">{{ ev.attributes?.category === 'le-hoi' ? '🎭 Lễ hội' : '📅 Sự kiện' }}</span>
-            <h3>{{ ev.name }}</h3>
-            <span v-if="ev.attributes?.lunar_date" class="ec-lunar">🌙 {{ ev.attributes.lunar_date }}</span>
-            <span v-if="ev.days_until != null" class="ec-countdown" :class="{ 'ec-today': ev.days_until === 0 }">
-              <span v-if="ev.days_until === 0" class="ec-live-dot" aria-hidden="true"></span>
-              {{ ev.days_until === 0 ? 'Hôm nay!' : ev.days_until === 1 ? 'Ngày mai' : `Còn ${ev.days_until} ngày` }}
+          <div class="eh-body">
+            <span class="eh-cat">{{ upcomingEvents[0].attributes?.category === 'le-hoi' ? '🎭 Lễ hội' : '📅 Sự kiện' }}</span>
+            <h3>{{ upcomingEvents[0].name }}</h3>
+            <span v-if="upcomingEvents[0].attributes?.lunar_date" class="eh-lunar">🌙 {{ upcomingEvents[0].attributes.lunar_date }}</span>
+            <span v-if="upcomingEvents[0].days_until != null" class="eh-countdown" :class="{ 'eh-today': upcomingEvents[0].days_until === 0 }">
+              <span v-if="upcomingEvents[0].days_until === 0" class="ec-live-dot" aria-hidden="true"></span>
+              {{ upcomingEvents[0].days_until === 0 ? 'Hôm nay!' : upcomingEvents[0].days_until === 1 ? 'Ngày mai' : `Còn ${upcomingEvents[0].days_until} ngày` }}
             </span>
           </div>
         </NuxtLink>
+        <div v-if="upcomingEvents.length > 1" class="happening-rest">
+          <NuxtLink v-for="ev in upcomingEvents.slice(1, 4)" :key="ev.id" :to="`/dia-diem/${ev.id}`" class="event-mini">
+            <div class="ec-date ec-date-sm">
+              <span class="ec-day">{{ formatEventDay(ev) }}</span>
+              <span class="ec-month">{{ formatEventMonth(ev) }}</span>
+            </div>
+            <div class="ec-info">
+              <h3>{{ ev.name }}</h3>
+              <span v-if="ev.days_until != null" class="ec-countdown" :class="{ 'ec-today': ev.days_until === 0 }">
+                {{ ev.days_until === 0 ? 'Hôm nay!' : ev.days_until === 1 ? 'Ngày mai' : `Còn ${ev.days_until} ngày` }}
+              </span>
+            </div>
+          </NuxtLink>
+        </div>
       </div>
 
       <!-- Seasonal products/experiences -->
@@ -101,7 +110,7 @@
     </section>
 
     <!-- 3. Lịch trình gợi ý (đẩy lên sớm — 25% user là Planner) -->
-    <section v-if="itineraries.length" class="block reveal">
+    <section v-if="itineraries.length" class="block reveal band">
       <div class="section-head">
         <h2>Lịch trình gợi ý</h2>
         <NuxtLink class="see-all" to="/lich-trinh">Xem tất cả →</NuxtLink>
@@ -166,7 +175,7 @@
     </section>
 
     <!-- 5. Trải nghiệm nổi bật -->
-    <section v-if="topExperiences.length" class="block reveal">
+    <section v-if="topExperiences.length" class="block reveal band">
       <div class="section-head">
         <h2>Trải nghiệm nổi bật</h2>
         <NuxtLink class="see-all" to="/du-lich">Xem tất cả →</NuxtLink>
@@ -189,7 +198,7 @@
 
     <!-- 6.5 Từ cộng đồng — social proof, luôn tươi (client-only, không kẹt cache SWR) -->
     <ClientOnly>
-      <section v-if="communityPosts.length" class="block reveal">
+      <section v-if="communityPosts.length" class="block reveal band">
         <div class="section-head">
           <h2>Từ cộng đồng</h2>
           <NuxtLink class="see-all" to="/cong-dong">Xem tất cả →</NuxtLink>
@@ -907,6 +916,45 @@ html.js .home .hero-enter h1::after {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: .4; transform: scale(.7); }
 }
+
+/* ── "Đang diễn ra" — featured event (hero) + danh-sách gọn ── */
+.happening-feature { display: grid; grid-template-columns: 1.5fr 1fr; gap: var(--space-4); align-items: stretch; }
+@media (max-width: 760px) { .happening-feature { grid-template-columns: 1fr; } }
+.event-hero {
+  display: flex; align-items: center; gap: var(--space-5);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(var(--primary-rgb), .96) 0%, rgba(var(--accent-rgb), .88) 100%);
+  color: #fff; text-decoration: none;
+  box-shadow: var(--shadow-md);
+  transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo);
+}
+.event-hero:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.event-hero:active { transform: scale(.99); transition-duration: .1s; }
+.event-hero:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.eh-date { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 88px; padding: var(--space-4); background: rgba(255,255,255,.2); border-radius: var(--radius-md); flex-shrink: 0; }
+.eh-day { font-size: var(--text-4xl); font-weight: var(--weight-extrabold); line-height: 1; font-variant-numeric: tabular-nums; }
+.eh-month { font-size: var(--text-sm); font-weight: var(--weight-semibold); opacity: .92; }
+.eh-body { min-width: 0; display: flex; flex-direction: column; gap: var(--space-1); }
+.eh-cat { font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .04em; opacity: .9; }
+.eh-body h3 { margin: var(--space-1) 0; font-size: var(--text-2xl); font-weight: var(--weight-bold); letter-spacing: -.01em; line-height: var(--leading-snug); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.eh-lunar { font-size: var(--text-sm); opacity: .9; }
+.eh-countdown { align-self: flex-start; display: inline-flex; align-items: center; gap: 5px; margin-top: var(--space-1); padding: var(--space-1) var(--space-3); background: rgba(255,255,255,.22); border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: var(--weight-bold); }
+.eh-today { background: rgba(255,255,255,.32); }
+.happening-rest { display: flex; flex-direction: column; gap: var(--space-2); justify-content: center; }
+.event-mini { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle); }
+.event-mini:hover { border-color: var(--primary-fg); transform: translateX(2px); }
+.ec-date-sm { min-width: 46px; padding: var(--space-2); }
+.event-mini .ec-info { gap: 2px; }
+.event-mini h3 { margin: 0; font-size: var(--text-sm); font-weight: var(--weight-semibold); line-height: var(--leading-snug); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+@media (prefers-reduced-motion: reduce) { .event-hero:hover, .event-mini:hover { transform: none; } }
+
+/* ── #1 Nhịp section: panel nền-ấm bo-góc xen-kẽ → tách section, phá nền cream phẳng.
+   Dùng panel (contained) thay full-bleed box-shadow vì content-visibility:auto sẽ cắt paint. ── */
+.home .block.band { background: var(--bg-warm); border-radius: var(--radius-xl); padding-inline: var(--space-6); }
+.home .block.band + .block::before,
+.home .block + .block.band::before { display: none; }
+.dark .home .block.band { background: var(--bg-alt); }
 
 .happening-label {
   font-size: var(--text-sm);
