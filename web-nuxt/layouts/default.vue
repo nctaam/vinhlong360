@@ -168,7 +168,7 @@ const DEFAULT_FOOTER_COLUMNS = [
     { to: '/danh-ba', label: 'Danh bạ hành chính' },
     { to: '/cong-dong', label: 'Cộng đồng' },
   ] },
-  { title: '3 vùng', links: [
+  { title: 'Khu vực', links: [
     { to: '/khu-vuc/vinh-long', label: '🍊 Vĩnh Long' },
     { to: '/khu-vuc/ben-tre', label: '🥥 Bến Tre' },
     { to: '/khu-vuc/tra-vinh', label: '🛕 Trà Vinh' },

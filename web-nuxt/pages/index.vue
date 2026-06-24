@@ -52,6 +52,17 @@
       <SkeletonGrid :count="3" />
     </section>
 
+    <!-- 1b. Khám phá nhanh — compact category grid -->
+    <section v-if="hasHomeContent" class="block block-compact reveal">
+      <nav class="cat-grid" aria-label="Khám phá theo chủ đề">
+        <NuxtLink v-for="cat in categoryLinks" :key="cat.to" :to="cat.to" class="cat-tile" :class="`cat-tile-${cat.accent}`">
+          <span class="cat-emoji" aria-hidden="true">{{ cat.emoji }}</span>
+          <span class="cat-label">{{ cat.label }}</span>
+          <span class="cat-count" v-if="cat.count">{{ cat.count }}+</span>
+        </NuxtLink>
+      </nav>
+    </section>
+
     <!-- 2. "Đang diễn ra" — upcoming events + seasonal -->
     <section v-if="upcomingEvents.length || seasonal.length" class="block reveal">
       <div class="section-head">
@@ -172,7 +183,7 @@
 
     <!-- 5. Từ cộng đồng — compact + trending tags -->
     <ClientOnly>
-      <section v-if="communityPosts.length" class="block reveal">
+      <section class="block reveal">
         <div class="section-head">
           <div class="sh-text">
             <h2>Từ cộng đồng</h2>
@@ -180,44 +191,46 @@
           </div>
           <NuxtLink class="see-all" to="/cong-dong">Xem tất cả →</NuxtLink>
         </div>
-        <p v-if="communityStats" class="community-stats-line">
-          <strong>{{ communityStats.posts }}</strong> bài viết
-          · <strong>{{ communityStats.reviews }}</strong> đánh giá
-          · <strong>{{ communityStats.members }}</strong> thành viên
-        </p>
-        <div v-if="trendingTags.length" class="trending-tags">
-          <span class="tt-label">🔥 Trending:</span>
-          <NuxtLink v-for="t in trendingTags" :key="t.tag" :to="`/cong-dong?tag=${encodeURIComponent(t.tag)}`" class="tt-chip">{{ t.tag }}</NuxtLink>
-        </div>
-        <div v-if="topMembers.length" class="home-leaders">
-          <span class="hl-label">🏆 Tích cực nhất:</span>
-          <NuxtLink v-for="(m, i) in topMembers" :key="m.id" :to="`/nguoi-dung/${m.id}`" class="hl-chip">
-            <span class="hl-rank" :class="`hl-rank-${i + 1}`">{{ i + 1 }}</span>
-            <span class="hl-avatar">{{ (m.display_name || '?').charAt(0).toUpperCase() }}</span>
-            <span class="hl-name">{{ m.display_name }}</span>
-          </NuxtLink>
-          <NuxtLink to="/bang-xep-hang" class="hl-more">Bảng xếp hạng →</NuxtLink>
-        </div>
-        <div class="scroll-row" role="region" aria-label="Bài viết cộng đồng mới">
-          <NuxtLink v-for="p in communityPosts" :key="p.id" :to="`/bai-viet/${p.id}`" class="cm-card">
-            <div v-if="p.images && p.images.length" class="cm-img">
-              <img :src="p.images[0]" alt="" loading="lazy" decoding="async" width="280" height="150" />
-            </div>
-            <div class="cm-body">
-              <div class="cm-author">
-                <span class="cm-avatar">{{ (p.display_name || '?').charAt(0).toUpperCase() }}</span>
-                <span class="cm-name">{{ p.display_name || 'Người dùng' }}</span>
-                <span v-if="p.post_type_label" class="cm-type">{{ p.post_type_label }}</span>
+        <template v-if="communityPosts.length">
+          <p v-if="communityStats" class="community-stats-line">
+            <strong>{{ communityStats.posts }}</strong> bài viết
+            · <strong>{{ communityStats.reviews }}</strong> đánh giá
+            · <strong>{{ communityStats.members }}</strong> thành viên
+          </p>
+          <div v-if="trendingTags.length" class="trending-tags">
+            <span class="tt-label">🔥 Trending:</span>
+            <NuxtLink v-for="t in trendingTags" :key="t.tag" :to="`/cong-dong?tag=${encodeURIComponent(t.tag)}`" class="tt-chip">{{ t.tag }}</NuxtLink>
+          </div>
+          <div v-if="topMembers.length" class="home-leaders">
+            <span class="hl-label">🏆 Tích cực nhất:</span>
+            <NuxtLink v-for="(m, i) in topMembers" :key="m.id" :to="`/nguoi-dung/${m.id}`" class="hl-chip">
+              <span class="hl-rank" :class="`hl-rank-${i + 1}`">{{ i + 1 }}</span>
+              <span class="hl-avatar">{{ (m.display_name || '?').charAt(0).toUpperCase() }}</span>
+              <span class="hl-name">{{ m.display_name }}</span>
+            </NuxtLink>
+            <NuxtLink to="/bang-xep-hang" class="hl-more">Bảng xếp hạng →</NuxtLink>
+          </div>
+          <div class="scroll-row" role="region" aria-label="Bài viết cộng đồng mới">
+            <NuxtLink v-for="p in communityPosts" :key="p.id" :to="`/bai-viet/${p.id}`" class="cm-card">
+              <div v-if="p.images && p.images.length" class="cm-img">
+                <img :src="p.images[0]" alt="" loading="lazy" decoding="async" width="280" height="150" />
               </div>
-              <p class="cm-content">{{ p.content }}</p>
-              <div class="cm-meta">
-                <span v-if="p.likes">❤️ {{ p.likes }}</span>
-                <span v-if="p.comments_count || p.comment_count">💬 {{ p.comments_count || p.comment_count }}</span>
-                <span v-if="p.entity_name" class="cm-place">📍 {{ p.entity_name }}</span>
+              <div class="cm-body">
+                <div class="cm-author">
+                  <span class="cm-avatar">{{ (p.display_name || '?').charAt(0).toUpperCase() }}</span>
+                  <span class="cm-name">{{ p.display_name || 'Người dùng' }}</span>
+                  <span v-if="p.post_type_label" class="cm-type">{{ p.post_type_label }}</span>
+                </div>
+                <p class="cm-content">{{ p.content }}</p>
+                <div class="cm-meta">
+                  <span v-if="p.likes">❤️ {{ p.likes }}</span>
+                  <span v-if="p.comments_count || p.comment_count">💬 {{ p.comments_count || p.comment_count }}</span>
+                  <span v-if="p.entity_name" class="cm-place">📍 {{ p.entity_name }}</span>
+                </div>
               </div>
-            </div>
-          </NuxtLink>
-        </div>
+            </NuxtLink>
+          </div>
+        </template>
         <div class="community-join">
           <span>Chia sẻ quán ngon, điểm đẹp, mẹo đi — góp một mảnh ghép cho bản đồ chung.</span>
           <NuxtLink to="/cong-dong" class="btn btn-outline">💬 Tham gia cộng đồng</NuxtLink>
@@ -330,10 +343,32 @@ const itineraries = computed(() => homeData.value?.itineraries || [])
 const upcomingEvents = computed(() => homeData.value?.upcoming_events || [])
 const seasonalTagline = computed(() => homeData.value?.seasonal_tagline || 'Khám phá miệt vườn theo cách của người bản địa')
 
+const CATEGORY_LINKS = [
+  { emoji: '🌿', label: 'Du lịch', to: '/du-lich', accent: 'leaf', countKey: 'experiences' },
+  { emoji: '🍲', label: 'Ẩm thực', to: '/kham-pha/am-thuc', accent: 'amber', countKey: '' },
+  { emoji: '🎁', label: 'OCOP', to: '/ocop', accent: 'clay', countKey: 'products' },
+  { emoji: '🎭', label: 'Lễ hội', to: '/le-hoi', accent: 'river', countKey: '' },
+  { emoji: '🏡', label: 'Lưu trú', to: '/luu-tru', accent: 'leaf', countKey: '' },
+  { emoji: '🗺️', label: 'Bản đồ', to: '/ban-do', accent: 'river', countKey: '' },
+]
+const categoryLinks = computed(() => {
+  const s = stats.value as any
+  return CATEGORY_LINKS.map(c => ({
+    ...c,
+    count: c.countKey && s ? s[c.countKey] : null,
+  }))
+})
+
+const SPOTLIGHT_TYPE_WEIGHT: Record<string, number> = { experience: 3, place: 2, dish: 1, product: 0 }
 const spotlight = computed<any>(() => {
   const pool = [...experiences.value.slice(0, 8), ...productsAll.value.slice(0, 8)]
   if (!pool.length) return null
-  return pool.slice().sort((a: any, b: any) => (b?.summary || '').length - (a?.summary || '').length)[0] || null
+  return pool.slice().sort((a: any, b: any) => {
+    const wa = SPOTLIGHT_TYPE_WEIGHT[a?.type] ?? 1
+    const wb = SPOTLIGHT_TYPE_WEIGHT[b?.type] ?? 1
+    if (wb !== wa) return wb - wa
+    return (b?.summary || '').length - (a?.summary || '').length
+  })[0] || null
 })
 const spotId = computed(() => spotlight.value?.id)
 const spotMeta = computed(() => spotlight.value ? (TYPE_META[spotlight.value.type] || { emoji: '📍', label: spotlight.value.type, cat: 'place' }) : null)
@@ -675,6 +710,39 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   .hero-stat-label { font-size: .55rem; }
   .hero-stat + .hero-stat::before { display: none; }
 }
+
+/* ═══════════════════════════════════════════════════
+   CATEGORY QUICK-NAV GRID
+   ═══════════════════════════════════════════════════ */
+.cat-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3);
+}
+@media (min-width: 769px) { .cat-grid { grid-template-columns: repeat(6, 1fr); } }
+.cat-tile {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-1);
+  padding: var(--space-4) var(--space-2);
+  background: var(--card); border: .5px solid var(--line); border-radius: var(--radius);
+  text-decoration: none; color: var(--ink);
+  transition: transform .3s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), border-color .25s var(--ease-out);
+  position: relative; overflow: hidden;
+}
+.cat-tile::before {
+  content: ""; position: absolute; inset: 0; opacity: 0;
+  transition: opacity .3s var(--ease-out); border-radius: inherit;
+}
+.cat-tile-leaf::before { background: linear-gradient(135deg, rgba(var(--primary-rgb),.06) 0%, transparent 60%); }
+.cat-tile-amber::before { background: linear-gradient(135deg, rgba(var(--accent-rgb),.06) 0%, transparent 60%); }
+.cat-tile-clay::before { background: linear-gradient(135deg, rgba(180,90,50,.06) 0%, transparent 60%); }
+.cat-tile-river::before { background: linear-gradient(135deg, rgba(50,120,180,.06) 0%, transparent 60%); }
+.cat-tile:hover::before { opacity: 1; }
+.cat-tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); border-color: var(--border); }
+.cat-tile:active { transform: scale(.96); transition-duration: .1s; }
+.cat-tile:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.cat-emoji { font-size: 1.75rem; line-height: 1; }
+.cat-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); text-align: center; }
+.cat-count { font-size: var(--text-xs); color: var(--muted); font-variant-numeric: tabular-nums; }
+.dark .cat-tile { background: var(--card); border-color: var(--line); }
+.dark .cat-tile:hover { border-color: rgba(255,255,255,.1); }
 
 /* ═══════════════════════════════════════════════════
    SECTION RHYTHM
@@ -1029,5 +1097,6 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   .spot-visual::before { animation: none; }
   .spot-visual:hover .spot-icon { transform: none; }
   .dish-item:hover, .dish-item:active { transform: none; }
+  .cat-tile:hover, .cat-tile:active { transform: none; }
 }
 </style>
