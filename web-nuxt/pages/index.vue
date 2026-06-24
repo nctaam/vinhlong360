@@ -40,7 +40,7 @@
     <!-- Stats bar — trust signal -->
     <section v-if="stats" class="stats-bar reveal">
       <div class="stat-item" v-for="s in statsItems" :key="s.label">
-        <span class="stat-num">{{ s.value }}</span>
+        <span class="stat-num"><CountUp :value="s.value" /></span>
         <span class="stat-label">{{ s.label }}</span>
       </div>
     </section>
@@ -993,15 +993,32 @@ html.js .home .hero-enter h1::after {
 .region-tra-vinh .region-tile-in { background: linear-gradient(135deg, rgba(var(--river-rgb),.82) 0%, rgba(var(--river-rgb),.55) 100%); }
 
 /* ── Khám phá theo sở thích — card lớn có ảnh ── */
+/* Bento bất-đối-xứng: ô đầu (Ẩm thực) lớn 2×2, 4 ô còn lại nhỏ → phá thế lưới đều */
 .interest-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: minmax(132px, 1fr);
   gap: var(--space-4);
+}
+.interest-card:first-child {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+.interest-card:first-child .interest-emoji { font-size: 2.6rem; }
+.interest-card:first-child .interest-in h3 { font-size: var(--text-2xl); }
+.interest-card:first-child .interest-in p { -webkit-line-clamp: 3; font-size: var(--text-sm); }
+@media (max-width: 720px) {
+  .interest-grid { grid-template-columns: repeat(2, 1fr); }
+  .interest-card:first-child { grid-column: span 2; grid-row: span 1; min-height: 200px; }
+}
+@media (max-width: 420px) {
+  .interest-grid { grid-template-columns: 1fr; }
+  .interest-card:first-child { grid-column: span 1; }
 }
 .interest-card {
   position: relative;
   display: block;
-  min-height: 200px;
+  min-height: 0;  /* để grid-auto-rows điều-khiển (bento): ô nhỏ thấp, ô đầu cao 2 hàng */
   border-radius: var(--radius);
   overflow: hidden;
   background-size: cover;
