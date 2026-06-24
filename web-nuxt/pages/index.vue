@@ -250,6 +250,20 @@
       </div>
     </section>
 
+    <!-- 6.4 Interstitial #2 — lời mời tham-gia cộng-đồng (cinematic, ấm) -->
+    <section class="block-cine reveal" aria-label="Tham gia cộng đồng vinhlong360">
+      <div class="cine cine--invite">
+        <div class="cine-bg" aria-hidden="true"></div>
+        <div class="cine-grain" aria-hidden="true"></div>
+        <div class="cine-inner">
+          <p class="cine-kicker">Cộng đồng vinhlong360</p>
+          <h2 class="cine-title">Kể câu chuyện<br>miền Tây của bạn</h2>
+          <p class="cine-sub">Chia sẻ quán ngon, điểm đẹp, mẹo đi — góp một mảnh ghép cho bản đồ chung của ba vùng đất.</p>
+          <NuxtLink to="/cong-dong" class="btn btn-primary cine-cta">Tham gia ngay →</NuxtLink>
+        </div>
+      </div>
+    </section>
+
     <!-- 6.5 Từ cộng đồng — social proof, luôn tươi (client-only, không kẹt cache SWR) -->
     <ClientOnly>
       <section v-if="communityPosts.length" class="block reveal band">
@@ -1265,6 +1279,20 @@ html.js .home .hero-enter h1::after {
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
   text-decoration: none;
+  isolation: isolate;
+}
+/* Panel "thở": quầng sáng khí-quyển trôi chậm sau motif (composited, reduced-motion off).
+   Layer riêng → KHÔNG đụng transform hover của .spot-icon. */
+.spot-visual::before {
+  content: ""; position: absolute; inset: -18%; z-index: 0;
+  background: radial-gradient(46% 46% at 34% 30%, rgba(255,255,255,.24) 0%, transparent 68%);
+  animation: spot-glow 13s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+.spot-region, .spot-icon { position: relative; z-index: 1; }
+@keyframes spot-glow {
+  0%   { transform: translate3d(0, 0, 0) scale(1); opacity: .9; }
+  100% { transform: translate3d(7%, 5%, 0) scale(1.12); opacity: 1; }
 }
 @media (max-width: 760px) { .spot-visual { min-height: 180px; } }
 .spot-icon {
@@ -1310,6 +1338,7 @@ html.js .home .hero-enter h1::after {
 .spot-cta { align-self: flex-start; margin-top: var(--space-2); }
 @media (prefers-reduced-motion: reduce) {
   .spot-visual:hover .spot-icon { transform: none; }
+  .spot-visual::before { animation: none; }
 }
 
 /* ── Interstitial cinematic ("act-break") — dải tối điện-ảnh: khí-quyển 3-màu-vùng
@@ -1360,8 +1389,30 @@ html.js .home .hero-enter h1::after {
   .cine { padding: var(--space-12) var(--space-5); }
   .cine-sub { font-size: var(--text-base); }
 }
+/* Interstitial #2 (mời cộng-đồng): gradient ấm hơn + CTA */
+.cine--invite { background: linear-gradient(135deg, #241a16 0%, #20191f 46%, #142420 100%); }
+.cine-cta { margin-top: var(--space-6); display: inline-flex; }
+
+/* Parallax-lite: nội-dung interstitial trôi nhẹ theo cuộn (depth điện-ảnh).
+   Scroll-driven (compositor, 0 JS); @supports + reduced-motion → Firefox/giảm-motion
+   tự fallback TĨNH, không vỡ. Chỉ ±24px nên an-toàn trong khung overflow-hidden. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .cine-inner {
+      animation: cine-parallax linear both;
+      animation-timeline: view();
+      animation-range: entry 8% exit 92%;
+      will-change: transform;
+    }
+  }
+}
+@keyframes cine-parallax {
+  from { transform: translateY(26px); }
+  to   { transform: translateY(-26px); }
+}
 @media (prefers-reduced-motion: reduce) {
   .cine-bg { animation: none; }
+  .cine-inner { animation: none; transform: none; }
 }
 
 /* ── Quick links — grid layout ── */
