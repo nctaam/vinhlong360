@@ -2,44 +2,6 @@
 (function () {
 var places = [
   {
-    "id": "ben-xe-mien-tay-hcm",
-    "type": "place",
-    "name": "Bến xe Miền Tây",
-    "summary": "Bến xe khách liên tỉnh lớn nhất phía Nam, đầu mối giao thông chính từ TP.HCM đi các tỉnh miền Tây (Vĩnh Long, Bến Tre, Trà Vinh, Cần Thơ…). Địa chỉ: 395 Kinh Dương Vương, Phường An Lạc, Quận Bình Tân, TP.HCM.",
-    "placeId": null,
-    "confidence": 0.95,
-    "season": null,
-    "attributes": {
-      "transport_type": "bến xe",
-      "address": "395 Kinh Dương Vương, Phường An Lạc, Quận Bình Tân, TP. Hồ Chí Minh",
-      "routes": [
-        "TP.HCM ↔ Vĩnh Long",
-        "TP.HCM ↔ Bến Tre",
-        "TP.HCM ↔ Trà Vinh",
-        "TP.HCM ↔ Cần Thơ"
-      ],
-      "price_range": "TP.HCM–Vĩnh Long ~100.000–150.000đ; TP.HCM–Bến Tre ~80.000–150.000đ",
-      "hours": "24/7; xe tập trung 4:00–22:00",
-      "category": "transport"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": null,
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-21T17:04:47Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-21T17:04:47Z"
-  },
-  {
     "id": "p-vung-liem",
     "type": "place",
     "name": "Phường Vũng Liêm",
@@ -1000,69 +962,6 @@ var places = [
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
-    "id": "chua-van-phuoc",
-    "type": "place",
-    "name": "Chùa Vạn Phước",
-    "summary": "Ngôi chùa nổi tiếng tại Bến Tre được mệnh danh là 'tiên cảnh chốn trần gian', là điểm du lịch tâm linh thu hút đông đảo du khách đến tham quan và chiêm bái.",
-    "placeId": null,
-    "confidence": 0.7,
-    "season": null,
-    "attributes": {
-      "address": "Bến Tre",
-      "province_old": "Bến Tre",
-      "legacy_district": "Châu Thành"
-    },
-    "source": [
-      {
-        "title": "Ward Crawl 2 — vinhlong360",
-        "url": "https://vinhlong360.vn/"
-      }
-    ],
-    "images": [],
-    "coordinates": null,
-    "area": "ben-tre",
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-10T00:00:00Z"
-  },
-  {
-    "id": "cho-dai-an",
-    "type": "place",
-    "name": "Chợ Đại An",
-    "summary": "Khu chợ truyền thống tại xã Đại An, huyện Trà Cú, là điểm đến văn hóa và ẩm thực đặc sắc của vùng. Nơi tập trung nhiều đặc sản nổi tiếng của Trà Cú và Trà Vinh, từ nông sản tươi như dừa sáp, bưởi da xanh, măng cụt đến các món ăn đường phố địa phương.",
-    "placeId": null,
-    "confidence": 0.7,
-    "season": null,
-    "attributes": {
-      "address": "Xã Đại An, tỉnh Vĩnh Long",
-      "province_old": "Trà Vinh",
-      "ward": "Đại An",
-      "legacy_district": "Trà Cú"
-    },
-    "source": [
-      {
-        "title": "Ward Crawl 2 — vinhlong360",
-        "url": "https://vinhlong360.vn/"
-      }
-    ],
-    "images": [],
-    "coordinates": null,
-    "area": "tra-vinh",
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-10T00:00:00Z"
-  },
-  {
     "id": "p-long-ho",
     "type": "place",
     "name": "Phường Long Hồ",
@@ -1181,568 +1080,6 @@ var places = [
     "description": "",
     "createdAt": "2026-06-22T23:15:39Z",
     "verifiedAt": "2026-06-18T06:12:14.387185Z"
-  },
-  {
-    "id": "benh-vien-da-khoa-tinh-vinh-long-vinh-long",
-    "type": "place",
-    "name": "Bệnh viện Đa khoa tỉnh Vĩnh Long",
-    "summary": "Bệnh viện. 301 Trần Phú, Phường 4, TP. Vĩnh Long. Giờ mở cửa: 24/7 (cấp cứu liên tục). ĐT: 0270 3822535 / 0270 3823520",
-    "placeId": "p-duyen-hai",
-    "confidence": 0.7,
-    "season": null,
-    "attributes": {
-      "name": "Bệnh viện Đa khoa tỉnh Vĩnh Long",
-      "category": "bệnh viện",
-      "address": "301 Trần Phú, Phường 4, TP. Vĩnh Long",
-      "phone": "0270 3822535 / 0270 3823520",
-      "hours": "24/7 (cấp cứu liên tục)",
-      "note_for_tourists": "Bệnh viện công lớn nhất tỉnh, có đầy đủ chuyên khoa. Cấp cứu 24/7. Nên mang theo CCCD/hộ chiếu khi khám.",
-      "province_old": "Vĩnh Long",
-      "area": "vinh-long",
-      "category_tag": "practical_info"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      9.6468053,
-      106.5051412
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "benh-vien-da-khoa-xuyen-a-vinh-long-vinh-long",
-    "type": "place",
-    "name": "Bệnh viện Đa khoa Xuyên Á Vĩnh Long",
-    "summary": "Bệnh viện. 68E Phạm Hùng, Phường Long Châu, TP. Vĩnh Long. Giờ mở cửa: Cấp cứu 24/7; Khám ngoại trú: 7:00–12:00 và 13:00–16:00. ĐT: 0270 6250999 (cấp cứu 24/7) / Tổng đài: 1800 9075 (miễn phí)",
-    "placeId": "p-long-chau",
-    "confidence": 0.7,
-    "season": null,
-    "attributes": {
-      "name": "Bệnh viện Đa khoa Xuyên Á Vĩnh Long",
-      "category": "bệnh viện",
-      "address": "68E Phạm Hùng, Phường Long Châu, TP. Vĩnh Long",
-      "phone": "0270 6250999 (cấp cứu 24/7) / Tổng đài: 1800 9075 (miễn phí)",
-      "hours": "Cấp cứu 24/7; Khám ngoại trú: 7:00–12:00 và 13:00–16:00",
-      "note_for_tourists": "Bệnh viện tư nhân, chất lượng cao hơn, ít đông hơn bệnh viện công. Phù hợp với du khách cần khám nhanh, chấp nhận thanh toán thẻ.",
-      "province_old": "Vĩnh Long",
-      "area": "vinh-long",
-      "category_tag": "practical_info"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.2615149,
-      105.9404921
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "agribank-chi-nhanh-vinh-long-vinh-long",
-    "type": "place",
-    "name": "Agribank Chi nhánh Vĩnh Long",
-    "summary": "Ngân hàng. 28 Hưng Đạo Vương, Phường 1, TP. Vĩnh Long. Giờ mở cửa: Thứ 2 – Thứ 6: 7:30–11:30 và 13:00–17:00 (đóng T7, CN). ĐT: 1900 558818 (tổng đài)",
-    "placeId": "xa-tap-son",
-    "confidence": 0.7,
-    "season": null,
-    "attributes": {
-      "name": "Agribank Chi nhánh Vĩnh Long",
-      "category": "ngân hàng",
-      "address": "28 Hưng Đạo Vương, Phường 1, TP. Vĩnh Long",
-      "phone": "1900 558818 (tổng đài)",
-      "hours": "Thứ 2 – Thứ 6: 7:30–11:30 và 13:00–17:00 (đóng T7, CN)",
-      "note_for_tourists": "Agribank có mạng lưới ATM rộng nhất tỉnh (37 điểm), thuận tiện rút tiền mặt VND ở các huyện xa. Nhận thẻ quốc tế tại ATM.",
-      "province_old": "Vĩnh Long",
-      "area": "vinh-long",
-      "category_tag": "practical_info"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      9.7387693,
-      106.2631345
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "buu-dien-trung-tam-vinh-long-vinh-long",
-    "type": "place",
-    "name": "Bưu điện Trung tâm Vĩnh Long",
-    "summary": "Bưu điện. 12C–14 Hoàng Thái Hiếu, Phường 1, TP. Vĩnh Long. Giờ mở cửa: Thứ 2 – Thứ 6: 7:00–17:00; Thứ 7: 7:00–12:00 (đóng CN). ĐT: 0270 3822550 / Tổng đài VNPost: 1900 0317",
-    "placeId": "p-long-chau",
-    "confidence": 0.7,
-    "season": {
-      "months": [],
-      "peak": [],
-      "text": "Quanh năm"
-    },
-    "attributes": {
-      "name": "Bưu điện Trung tâm Vĩnh Long",
-      "category": "bưu điện",
-      "address": "12C–14 Hoàng Thái Hiếu, Phường 1, TP. Vĩnh Long",
-      "phone": "0270 3822550 / Tổng đài VNPost: 1900 0317",
-      "hours": "Thứ 2 – Thứ 6: 7:00–17:00; Thứ 7: 7:00–12:00 (đóng CN)",
-      "note_for_tourists": "Gửi bưu phẩm quốc tế, mua tem, đổi tiền nhỏ. Tỉnh có 118 bưu cục phủ khắp các huyện.",
-      "province_old": "Vĩnh Long",
-      "area": "vinh-long",
-      "category_tag": "practical_info",
-      "priority": "A-",
-      "target_segments": "Foodie; nội địa",
-      "suggested_duration": "Nửa ngày",
-      "role": "food_asset"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.2526939,
-      105.9410019
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "cong-an-tinh-vinh-long-vinh-long",
-    "type": "place",
-    "name": "Công an tỉnh Vĩnh Long",
-    "summary": "Công an/hỗ trợ. 180 ấp Long Hưng, Xã Thanh Đức, Huyện Long Hồ, Vĩnh Long. Giờ mở cửa: 24/7 (trực ban). ĐT: 0270 3877177 / 0270 6552666 / Khẩn cấp: 113",
-    "placeId": "p-tan-hanh",
-    "confidence": 0.7,
-    "season": null,
-    "attributes": {
-      "name": "Công an tỉnh Vĩnh Long",
-      "category": "công an/hỗ trợ",
-      "address": "180 ấp Long Hưng, Xã Thanh Đức, Vĩnh Long",
-      "phone": "0270 3877177 / 0270 6552666 / Khẩn cấp: 113",
-      "hours": "24/7 (trực ban)",
-      "note_for_tourists": "Gọi 113 khi khẩn cấp (mất cắp, tai nạn). Để khai báo tạm trú (du khách nước ngoài ở homestay/nhà dân cần chủ nhà khai báo trong 24h).",
-      "province_old": "Vĩnh Long",
-      "area": "vinh-long",
-      "category_tag": "practical_info"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.2583881,
-      105.9346077
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "buu-dien-trung-tam-tp-ben-tre-ben-tre",
-    "type": "place",
-    "name": "Bưu điện Trung tâm TP. Bến Tre",
-    "summary": "Bưu điện. 3 Đại lộ Đồng Khởi, Phường 2, TP. Bến Tre. Giờ mở cửa: Thứ 2–6: 7h30–11h30 và 13h30–17h00; Thứ 7: sáng 7h30–11h00. ĐT: 1800 1567 (tổng đài VNPost, miễn phí)",
-    "placeId": "p-ben-tre",
-    "confidence": 0.7,
-    "season": {
-      "months": [],
-      "peak": [],
-      "text": "Quanh năm"
-    },
-    "attributes": {
-      "name": "Bưu điện Trung tâm TP. Bến Tre",
-      "category": "bưu điện",
-      "address": "3 Đại lộ Đồng Khởi, Phường 2, TP. Bến Tre",
-      "phone": "1800 1567 (tổng đài VNPost, miễn phí)",
-      "hours": "Thứ 2–6: 7h30–11h30 và 13h30–17h00; Thứ 7: sáng 7h30–11h00",
-      "note_for_tourists": "Gửi quà lưu niệm, bưu phẩm về nước. Có thể mua SIM Vinaphone tại đây. Nằm ở vị trí trung tâm, gần quảng trường tỉnh",
-      "province_old": "Bến Tre",
-      "area": "ben-tre",
-      "category_tag": "practical_info",
-      "priority": "A-",
-      "target_segments": "Học sinh; diaspora",
-      "suggested_duration": "Nửa ngày",
-      "role": "heritage_theme"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.2361217,
-      106.3763684
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "cong-an-tp-ben-tre-ben-tre",
-    "type": "place",
-    "name": "Công an TP. Bến Tre",
-    "summary": "Công an. 25C Đại lộ Đồng Khởi, Khu phố 6, Phường Phú Khương, TP. Bến Tre. Giờ mở cửa: Trực ban 24/24. Tiếp công dân: giờ hành chính thứ 2–6. ĐT: 0275 3838 105 (trực ban 24/24) | Khẩn cấp: 113",
-    "placeId": "p-ben-tre",
-    "confidence": 0.7,
-    "season": null,
-    "attributes": {
-      "name": "Công an TP. Bến Tre",
-      "category": "công an",
-      "address": "25C Đại lộ Đồng Khởi, Khu phố 6, Phường Phú Khương, TP. Bến Tre",
-      "phone": "0275 3838 105 (trực ban 24/24) | Khẩn cấp: 113",
-      "hours": "Trực ban 24/24. Tiếp công dân: giờ hành chính thứ 2–6",
-      "note_for_tourists": "Gọi 113 khi bị cướp, mất tài sản, cần hỗ trợ khẩn cấp về an ninh. Để khai báo mất hộ chiếu hoặc cần giấy tờ hỗ trợ du lịch, đến trực tiếp trong giờ hành chính",
-      "province_old": "Bến Tre",
-      "area": "ben-tre",
-      "category_tag": "practical_info"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.2364799,
-      106.3759212
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "cap-cuu-115-ben-tre-ben-tre",
-    "type": "place",
-    "name": "Cấp cứu 115 Bến Tre",
-    "summary": "Bệnh viện. TP. Bến Tre (điều phối toàn tỉnh). Giờ mở cửa: 24/24. ĐT: 115",
-    "placeId": "xa-thanh-thoi",
-    "confidence": 0.7,
-    "season": null,
-    "attributes": {
-      "name": "Cấp cứu 115 Bến Tre",
-      "category": "bệnh viện",
-      "address": "TP. Bến Tre (điều phối toàn tỉnh)",
-      "phone": "115",
-      "hours": "24/24",
-      "note_for_tourists": "Số gọi cấp cứu y tế miễn phí toàn quốc. Gọi khi có tai nạn, đột quỵ, chấn thương nặng. Xe cấp cứu sẽ điều phối từ Bệnh viện Nguyễn Đình Chiểu",
-      "province_old": "Bến Tre",
-      "area": "ben-tre",
-      "category_tag": "practical_info"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.0527561,
-      106.3145932
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "co-opmart-vinh-long-vinh-long",
-    "type": "place",
-    "name": "Co.opmart Vĩnh Long",
-    "summary": "siêu thị tại Số 1 Hùng Vương, Phường 1, TP. Vĩnh Long. Mở cửa 07:00 - 22:00. Nên mua: Đặc sản đóng gói (kẹo dừa, bánh tráng, khô cá), thực phẩm tươi sống, hàng tiêu dùng, rượu cần Bình Minh. Giá: 50.000 - 500.000 VND. Thanh toán: tiền mặt/thẻ/QR.",
-    "placeId": "p-long-chau",
-    "confidence": 0.7,
-    "season": null,
-    "attributes": {
-      "shop_type": "siêu thị",
-      "address": "Số 1 Hùng Vương, Phường 1, TP. Vĩnh Long",
-      "hours": "07:00 - 22:00",
-      "what_to_buy": "Đặc sản đóng gói (kẹo dừa, bánh tráng, khô cá), thực phẩm tươi sống, hàng tiêu dùng, rượu cần Bình Minh",
-      "price_range": "50.000 - 500.000 VND",
-      "payment_methods": "tiền mặt/thẻ/QR",
-      "province_old": "Vĩnh Long",
-      "area": "vinh-long",
-      "category": "shopping"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.2549108,
-      105.9707194
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "cho-vinh-long-cho-trung-tam-vinh-long",
-    "type": "place",
-    "name": "Chợ Vĩnh Long (Chợ Trung Tâm)",
-    "summary": "chợ đặc sản tại Đường Gia Long, Phường 1, TP. Vĩnh Long. Mở cửa 05:00 - 18:00. Nên mua: Gạo Bình Tân, khoai lang tím Bình Tân, nem Vĩnh Long, bánh tráng nướng, mắm cá linh, trái cây miền Tây tươi, vải thổ cẩm. Giá: 10.000 - 200.000 VND. Thanh toán: tiền mặt/QR.",
-    "placeId": "xa-long-thanh",
-    "confidence": 0.7,
-    "season": null,
-    "attributes": {
-      "shop_type": "chợ đặc sản",
-      "address": "Đường Gia Long, Phường 1, TP. Vĩnh Long",
-      "hours": "05:00 - 18:00",
-      "what_to_buy": "Gạo Bình Tân, khoai lang tím Bình Tân, nem Vĩnh Long, bánh tráng nướng, mắm cá linh, trái cây miền Tây tươi, vải thổ cẩm",
-      "price_range": "10.000 - 200.000 VND",
-      "payment_methods": "tiền mặt/QR",
-      "province_old": "Vĩnh Long",
-      "area": "vinh-long",
-      "category": "shopping"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.2498397,
-      106.1391364
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "co-opmart-ben-tre-ben-tre",
-    "type": "place",
-    "name": "Co.opmart Bến Tre",
-    "summary": "siêu thị tại 02 Nguyễn Huệ, Phường 1, TP. Bến Tre, tỉnh Bến Tre. Mở cửa 07:00 - 22:00 hàng ngày. Nên mua: Kẹo dừa Bến Tre (Thanh Long, Đông Á), bánh phồng tôm, mắm tôm chà, sản phẩm OCOP đóng gói, dừa xiêm, rượu dừa. Giá: 50.000 - 500.000 VND. Thanh toán: tiền mặt/thẻ/QR.",
-    "placeId": "p-ben-tre",
-    "confidence": 0.7,
-    "season": null,
-    "attributes": {
-      "shop_type": "siêu thị",
-      "address": "02 Nguyễn Huệ, Phường 1, TP. Bến Tre, tỉnh Vĩnh Long",
-      "hours": "07:00 - 22:00 hàng ngày",
-      "what_to_buy": "Kẹo dừa Bến Tre (Thanh Long, Đông Á), bánh phồng tôm, mắm tôm chà, sản phẩm OCOP đóng gói, dừa xiêm, rượu dừa",
-      "price_range": "50.000 - 500.000 VND",
-      "payment_methods": "tiền mặt/thẻ/QR",
-      "province_old": "Bến Tre",
-      "area": "ben-tre",
-      "category": "shopping"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.2422007,
-      106.3767201
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "sieu-thi-go-big-c-ben-tre-ben-tre",
-    "type": "place",
-    "name": "Siêu thị GO! (Big C) Bến Tre",
-    "summary": "siêu thị tại Quốc lộ 60, Phường Phú Khương, TP. Bến Tre, tỉnh Bến Tre. Mở cửa 08:00 - 22:00 hàng ngày. Nên mua: Thực phẩm đặc sản đóng gói: kẹo dừa, bánh phồng, mắm, nước dừa đóng hộp, sản phẩm OCOP khu vực, hàng tiêu dùng địa phương. Giá: 20.000 - 600.000 VND. Thanh toán: tiền mặt/thẻ/QR.",
-    "placeId": "p-ben-tre",
-    "confidence": 0.7,
-    "season": null,
-    "attributes": {
-      "shop_type": "siêu thị",
-      "address": "Quốc lộ 60, Phường Phú Khương, TP. Bến Tre, tỉnh Vĩnh Long",
-      "hours": "08:00 - 22:00 hàng ngày",
-      "what_to_buy": "Thực phẩm đặc sản đóng gói: kẹo dừa, bánh phồng, mắm, nước dừa đóng hộp, sản phẩm OCOP khu vực, hàng tiêu dùng địa phương",
-      "price_range": "20.000 - 600.000 VND",
-      "payment_methods": "tiền mặt/thẻ/QR",
-      "province_old": "Bến Tre",
-      "area": "ben-tre",
-      "category": "shopping"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.2541267,
-      106.3602237
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "sieu-thi-co-opmart-tra-vinh-tra-vinh",
-    "type": "place",
-    "name": "Siêu thị Co.opmart Trà Vinh",
-    "summary": "siêu thị tại Số 4 Nguyễn Thị Minh Khai, Phường 4, TP. Trà Vinh. Mở cửa 08:00 - 22:00 hàng ngày. Nên mua: Đặc sản đóng gói: bánh tét lá cẩm, muối tôm Trà Vinh, mắm còng, bánh phồng, rượu nếp, trà mãng cầu xiêm. Giá: 50.000 - 500.000 VNĐ. Thanh toán: tiền mặt/thẻ/QR.",
-    "placeId": "p-tra-vinh",
-    "confidence": 0.7,
-    "season": null,
-    "attributes": {
-      "shop_type": "siêu thị",
-      "address": "Số 4 Nguyễn Thị Minh Khai, Phường 4, TP. Trà Vinh",
-      "hours": "08:00 - 22:00 hàng ngày",
-      "what_to_buy": "Đặc sản đóng gói: bánh tét lá cẩm, muối tôm Trà Vinh, mắm còng, bánh phồng, rượu nếp, trà mãng cầu xiêm",
-      "price_range": "50.000 - 500.000 VNĐ",
-      "payment_methods": "tiền mặt/thẻ/QR",
-      "province_old": "Trà Vinh",
-      "area": "tra-vinh",
-      "category": "shopping"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      9.9241955,
-      106.3398494
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "hop-tac-xa-dua-sap-cau-ke-tra-vinh",
-    "type": "place",
-    "name": "Hợp tác xã Dừa Sáp Cầu Kè",
-    "summary": "cửa hàng OCOP tại Thị trấn Cầu Kè, huyện Cầu Kè, Trà Vinh (cách TP khoảng 45 km). Mở cửa 06:00 - 18:00 hàng ngày. Nên mua: Dừa sáp tươi, kem dừa sáp, bánh từ dừa sáp, dầu dừa nguyên chất, kẹo dừa sáp - đặc sản OCOP nổi tiếng nhất Trà Vinh. Giá: 50.000 - 250.000 VNĐ/trái hoặc sản phẩm. Thanh toán: tiền mặt/QR.",
-    "placeId": "xa-thanh-thoi",
-    "confidence": 0.7,
-    "season": null,
-    "attributes": {
-      "shop_type": "cửa hàng OCOP",
-      "address": "Thị trấn Cầu Kè, Trà Vinh (cách TP khoảng 45 km)",
-      "hours": "06:00 - 18:00 hàng ngày",
-      "what_to_buy": "Dừa sáp tươi, kem dừa sáp, bánh từ dừa sáp, dầu dừa nguyên chất, kẹo dừa sáp - đặc sản OCOP nổi tiếng nhất Trà Vinh",
-      "price_range": "50.000 - 250.000 VNĐ/trái hoặc sản phẩm",
-      "payment_methods": "tiền mặt/QR",
-      "province_old": "Trà Vinh",
-      "area": "tra-vinh",
-      "category": "shopping"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.0527561,
-      106.3145932
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
   },
   {
     "id": "vinh-long",
@@ -4099,41 +3436,6 @@ var places = [
     "verifiedAt": "2026-06-10T00:00:00Z"
   },
   {
-    "id": "cho-cau-ke",
-    "type": "place",
-    "name": "Chợ Cầu Kè",
-    "summary": "Chợ trung tâm Cầu Kè, nơi mua sắm đặc sản địa phương phong phú và đa dạng, bao gồm dừa sáp, xá pấu, các loại thủ công mỹ nghệ và món ăn đặc trưng của vùng đất ba dân tộc Kinh - Khmer - Hoa. Đánh giá Google đạt 4.2/5.",
-    "placeId": "xa-tan-an",
-    "confidence": 0.7,
-    "season": null,
-    "attributes": {
-      "address": "171 đường 30 Tháng 4, Thị trấn Cầu Kè, tỉnh Vĩnh Long",
-      "province_old": "Trà Vinh",
-      "ward": "Thị trấn Cầu Kè",
-      "legacy_district": "Cầu Kè"
-    },
-    "source": [
-      {
-        "title": "Ward Crawl 2 — vinhlong360",
-        "url": "https://vinhlong360.vn/"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      9.8723353,
-      106.056032
-    ],
-    "area": "tra-vinh",
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-10T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-10T00:00:00Z"
-  },
-  {
     "id": "p-ba-tri",
     "type": "place",
     "name": "Phường Ba Tri",
@@ -4471,807 +3773,6 @@ var places = [
     "description": "",
     "createdAt": "2026-06-22T23:15:39Z",
     "verifiedAt": "2026-06-18T06:12:14.393883Z"
-  },
-  {
-    "id": "ben-xe-vinh-long-trung-tam-vinh-long",
-    "type": "place",
-    "name": "Bến xe Vĩnh Long (Trung tâm)",
-    "summary": "Bến xe. tại Số 01E đường Đinh Tiên Hoàng, Phường 8, TP. Vĩnh Long. Tuyến: TP.HCM (Bến xe Miền Tây), Cần Thơ, Bình Dương, Long An, An Giang, Kiên Giang, Đồng Tháp, Tiền Giang, Bạc Liêu, Vũng Liêm, Trà Ôn. Giờ: Hoạt động 24/7; các chuyến xe tập trung từ 5:00–19:00. Giá: 40.000–200.000đ tùy tuyến (Vĩnh Long–Cần Thơ ~40.000đ, Vĩnh Long–TP.HCM ~100.000–150.000đ).",
-    "placeId": "p-long-chau",
-    "confidence": 0.7,
-    "season": null,
-    "attributes": {
-      "transport_type": "bến xe",
-      "address": "Số 01E đường Đinh Tiên Hoàng, Phường 8, TP. Vĩnh Long",
-      "routes": [
-        "TP.HCM (Bến xe Miền Tây)",
-        "Cần Thơ",
-        "Bình Dương",
-        "Long An",
-        "An Giang",
-        "Kiên Giang",
-        "Đồng Tháp",
-        "Tiền Giang",
-        "Bạc Liêu",
-        "Vũng Liêm",
-        "Trà Ôn"
-      ],
-      "price_range": "40.000–200.000đ tùy tuyến (Vĩnh Long–Cần Thơ ~40.000đ, Vĩnh Long–TP.HCM ~100.000–150.000đ)",
-      "frequency": "Xe liên tỉnh xuất bến liên tục từ sáng sớm đến chiều tối; xe buýt nội tỉnh 30 phút/chuyến",
-      "hours": "Hoạt động 24/7; các chuyến xe tập trung từ 5:00–19:00",
-      "tip": "Đây là đầu mối giao thông chính của tỉnh. Các nhà xe uy tín có Phương Trang, Kim Hoàng, Thanh Thủy, Tuấn Hưng, Mai Linh Express. Nên đặt vé trước qua Vexere hoặc website nhà xe vào dịp lễ Tết. SĐT: 0270 3823 769.",
-      "province_old": "Vĩnh Long",
-      "area": "vinh-long",
-      "category": "transport"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.253,
-      105.9642
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "ben-pha-an-binh-vinh-long",
-    "type": "place",
-    "name": "Bến Phà An Bình",
-    "summary": "Bến phà. tại Phường 2, TP. Vĩnh Long (bến tạm từ 15/9/2024, cách bến cũ ~460m về phía thượng nguồn sông Cổ Chiên). Tuyến: TP. Vĩnh Long ↔ Cù lao An Bình (4 xã: An Bình, Bình Hòa Phước, Đồng Phú, Hòa Ninh – Long Hồ). Giờ: 5:00–22:00 hàng ngày. Giá: 5.000–15.000đ/người tùy phương tiện (xe máy ~10.000đ).",
-    "placeId": "p-long-chau",
-    "confidence": 0.7,
-    "season": null,
-    "attributes": {
-      "transport_type": "bến phà",
-      "address": "Phường 2, TP. Vĩnh Long (bến tạm từ 15/9/2024, cách bến cũ ~460m về phía thượng nguồn sông Cổ Chiên)",
-      "routes": [
-        "TP. Vĩnh Long ↔ Cù lao An Bình (4 xã: An Bình, Bình Hòa Phước, Đồng Phú, Hòa Ninh – huyện Long Hồ)"
-      ],
-      "price_range": "5.000–15.000đ/người tùy phương tiện (xe máy ~10.000đ)",
-      "frequency": "Liên tục, chờ đủ khách là chạy, khoảng 10–15 phút/chuyến",
-      "hours": "5:00–22:00 hàng ngày",
-      "tip": "Tuyến phà ngắn và tiện lợi nhất để vào Cù lao An Bình – điểm du lịch sông nước nổi tiếng của Vĩnh Long. Bến vừa di dời do sạt lở, cần hỏi người địa phương để xác nhận vị trí bến tạm hiện tại.",
-      "province_old": "Vĩnh Long",
-      "area": "vinh-long",
-      "category": "transport"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.2483,
-      105.9713
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "ben-xe-vung-liem-vinh-long",
-    "type": "place",
-    "name": "Bến Xe Vũng Liêm",
-    "summary": "Bến xe. tại Tỉnh lộ 902, Thị trấn Vũng Liêm, Huyện Vũng Liêm, Vĩnh Long. Tuyến: Vũng Liêm ↔ Vĩnh Long (TP), Vũng Liêm ↔ Cần Thơ, Vũng Liêm ↔ Bến xe Miền Tây (TP.HCM). Giờ: 7:00–17:00 (xe buýt nội tỉnh); xe khách liên tỉnh từ 5:00–18:00. Giá: Vũng Liêm–Vĩnh Long ~20.000–25.000đ; Vũng Liêm–Cần Thơ ~55.000đ.",
-    "placeId": "xa-hoa-hiep",
-    "confidence": 0.7,
-    "season": null,
-    "attributes": {
-      "transport_type": "bến xe",
-      "address": "Tỉnh lộ 902, Thị trấn Vũng Liêm, Vĩnh Long",
-      "routes": [
-        "Vũng Liêm ↔ Vĩnh Long (TP)",
-        "Vũng Liêm ↔ Cần Thơ",
-        "Vũng Liêm ↔ Bến xe Miền Tây (TP.HCM)"
-      ],
-      "price_range": "Vũng Liêm–Vĩnh Long ~20.000–25.000đ; Vũng Liêm–Cần Thơ ~55.000đ",
-      "frequency": "Xe buýt nội tỉnh (tuyến 03) 30 phút/chuyến; xe khách liên tỉnh theo lịch cố định",
-      "hours": "7:00–17:00 (xe buýt nội tỉnh); xe khách liên tỉnh từ 5:00–18:00",
-      "tip": "Bến xe phục vụ huyện Vũng Liêm – phía đông tỉnh Vĩnh Long, giáp Cần Thơ. Khách đi Cần Thơ có thể bắt xe buýt Phương Trang tuyến liên tỉnh tiện lợi hơn. SĐT: 0270 3970 670.",
-      "province_old": "Vĩnh Long",
-      "area": "vinh-long",
-      "category": "transport"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.1072,
-      106.034
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "ben-xe-ben-tre-trung-tam-ben-tre",
-    "type": "place",
-    "name": "Bến xe Bến Tre (Trung tâm)",
-    "summary": "Bến xe. tại 303 Đoàn Hoàng Minh, Phường Phú Khương, TP. Bến Tre (hoặc QL60, xã Hữu Định – bến mới xã Phú Hưng). Tuyến: Bến Tre – TP.HCM (Bến xe Miền Tây), Bến Tre – Bình Dương, Bến Tre – Vũng Tàu, Bến Tre – Cần Thơ, Bến Tre – Cà Mau, Bến Tre – Sóc Trăng, Bến Tre – Bạc Liêu. Giờ: 24/24 (theo lịch xe). Giá: Bến Tre – TP.HCM: 80.000–150.000đ/người tùy hãng.",
-    "placeId": "p-ben-tre",
-    "confidence": 0.7,
-    "season": null,
-    "attributes": {
-      "transport_type": "bến xe",
-      "address": "303 Đoàn Hoàng Minh, Phường Phú Khương, TP. Bến Tre (hoặc QL60, xã Hữu Định – bến mới xã Phú Hưng)",
-      "routes": "Bến Tre – TP.HCM (Bến xe Miền Tây), Bến Tre – Bình Dương, Bến Tre – Vũng Tàu, Bến Tre – Cần Thơ, Bến Tre – Cà Mau, Bến Tre – Sóc Trăng, Bến Tre – Bạc Liêu",
-      "price_range": "Bến Tre – TP.HCM: 80.000–150.000đ/người tùy hãng",
-      "frequency": "Tuyến TP.HCM: 20–30 phút/chuyến; tuyến tỉnh khác: 1–3 chuyến/ngày",
-      "hours": "24/24 (theo lịch xe)",
-      "tip": "Số điện thoại bến: 0275 3822 558. Tuyến TP.HCM đi qua cao tốc và cầu Rạch Miễu chỉ mất khoảng 2–2,5 giờ. Đặt vé trước qua Vexere hoặc xe hãng để tránh hết chỗ vào cuối tuần.",
-      "province_old": "Bến Tre",
-      "area": "ben-tre",
-      "category": "transport"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.2387,
-      106.3757
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "ben-xe-ba-tri-ben-tre",
-    "type": "place",
-    "name": "Bến xe Ba Tri",
-    "summary": "Bến xe. tại Tỉnh Lộ 885, đường An Bình Tây, Thị trấn Ba Tri, huyện Ba Tri, Bến Tre. Tuyến: Ba Tri – Bến Tre (trung tâm), Ba Tri – TP.HCM (Bến xe Miền Tây). Giờ: 5:00 – 17:30. Giá: Ba Tri – TP.HCM: khoảng 120.000–160.000đ.",
-    "placeId": "p-ba-tri",
-    "confidence": 0.7,
-    "season": null,
-    "attributes": {
-      "transport_type": "bến xe",
-      "address": "Tỉnh Lộ 885, đường An Bình Tây, Thị trấn Ba Tri, Bến Tre",
-      "routes": "Ba Tri – Bến Tre (trung tâm), Ba Tri – TP.HCM (Bến xe Miền Tây)",
-      "price_range": "Ba Tri – TP.HCM: khoảng 120.000–160.000đ",
-      "frequency": "Vài chuyến mỗi buổi sáng và chiều",
-      "hours": "5:00 – 17:30",
-      "tip": "Bến nhỏ, ít chuyến trực tiếp ra TP.HCM; nên bắt xe về Bến Tre rồi đổi tuyến lớn. Xe buýt nội tỉnh tuyến 02 cũng phục vụ hành lang Ba Tri.",
-      "province_old": "Bến Tre",
-      "area": "ben-tre",
-      "category": "transport"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.0487,
-      106.5924
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "ben-xe-mo-cay-nam-ben-tre",
-    "type": "place",
-    "name": "Bến xe Mỏ Cày Nam",
-    "summary": "Bến xe. tại Quốc Lộ 60, Thị trấn Mỏ Cày, huyện Mỏ Cày Nam, Bến Tre. Tuyến: Mỏ Cày – Bến Tre (trung tâm), kết nối tuyến TP.HCM. Giờ: 5:00 – 17:30. Giá: Mỏ Cày – Bến Tre: khoảng 30.000–50.000đ.",
-    "placeId": "xa-dong-khoi",
-    "confidence": 0.7,
-    "season": null,
-    "attributes": {
-      "transport_type": "bến xe",
-      "address": "Quốc Lộ 60, Thị trấn Mỏ Cày, Bến Tre",
-      "routes": "Mỏ Cày – Bến Tre (trung tâm), kết nối tuyến TP.HCM",
-      "price_range": "Mỏ Cày – Bến Tre: khoảng 30.000–50.000đ",
-      "frequency": "Xe buýt và xe khách liên tỉnh qua đây theo hành lang QL60",
-      "hours": "5:00 – 17:30",
-      "tip": "Nằm trên Quốc lộ 60, xe từ TP.HCM về Bến Tre đều đi qua đây; có thể xuống đây nếu đến huyện Mỏ Cày, không cần vào trung tâm tỉnh.",
-      "province_old": "Bến Tre",
-      "area": "ben-tre",
-      "category": "transport"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.1563,
-      106.383
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "ben-xe-tra-vinh-ben-xe-trung-tam-tra-vinh",
-    "type": "place",
-    "name": "Bến xe Trà Vinh (Bến xe trung tâm)",
-    "summary": "Bến xe. tại 559 Quốc lộ 54, Phường 9, Thành phố Trà Vinh, tỉnh Trà Vinh. Tuyến: Trà Vinh - TP. Hồ Chí Minh (Bến Miền Tây, An Sương); Trà Vinh - Cần Thơ; Trà Vinh - Cà Mau; Trà Vinh - Bạc Liêu; Trà Vinh - Vĩnh Long; Trà Vinh - Đà Lạt / Lâm Đồng; Trà Vinh - Đà Nẵng; nội tỉnh đến Duyên Hải, Trà Cú, Cầu Kè, Tiểu Cần, Cầu Ngang, Càng Long. Giờ: Bến xe mở cửa từ 4:00 - 22:00 hàng ngày; quầy bán vé hoạt động liên tục trong giờ bến mở. Giá: Trà Vinh - TP.HCM: 175.000 - 350.000đ/vé (ghế ngồi đến giường nằm); nội tỉnh: 20.000 - 60.000đ.",
-    "placeId": "p-tra-vinh",
-    "confidence": 0.7,
-    "season": null,
-    "attributes": {
-      "transport_type": "bến xe",
-      "address": "559 Quốc lộ 54, Phường 9, Thành phố Trà Vinh, tỉnh Vĩnh Long",
-      "routes": "Trà Vinh - TP. Hồ Chí Minh (Bến Miền Tây, An Sương); Trà Vinh - Cần Thơ; Trà Vinh - Cà Mau; Trà Vinh - Bạc Liêu; Trà Vinh - Vĩnh Long; Trà Vinh - Đà Lạt / Lâm Đồng; Trà Vinh - Đà Nẵng; nội tỉnh đến Duyên Hải, Trà Cú, Cầu Kè, Tiểu Cần, Cầu Ngang, Càng Long",
-      "price_range": "Trà Vinh - TP.HCM: 175.000 - 350.000đ/vé (ghế ngồi đến giường nằm); nội tỉnh: 20.000 - 60.000đ",
-      "frequency": "Tuyến Sài Gòn: khoảng 30-40 chuyến/ngày, xuất phát từ 4:00 sáng đến 21:00 tối; tuyến nội tỉnh: 4-8 chuyến/ngày",
-      "hours": "Bến xe mở cửa từ 4:00 - 22:00 hàng ngày; quầy bán vé hoạt động liên tục trong giờ bến mở",
-      "tip": "Các hãng xe uy tín hoạt động tại đây gồm Phương Trang (FUTA), Hòa Thuận, Kim Hoàng, Ngọc Trinh, Tấn Cường, Miền Tây. Nên đặt vé trước qua vexere.com hoặc redbus.vn vào các dịp lễ Tết. Bến có wifi miễn phí, điều hòa, quầy ăn uống và gửi hàng hóa.",
-      "province_old": "Trà Vinh",
-      "area": "tra-vinh",
-      "category": "transport"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      9.9347,
-      106.3454
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "tinh-binh-chay-vinh-long",
-    "type": "place",
-    "name": "Tịnh Bình Chay",
-    "summary": "Quán chay Phật giáo Tịnh Bình tại 110A Trần Đại Nghĩa, phường 4 TP. Vĩnh Long. Chuyên bì cuốn chay, gỏi cuốn chay, lẩu chay. Không gian thờ Phật, đèn lồng kiểu chùa miền Tây. Mở hàng ngày 8:30–21:30, giá 40.000–250.000 VND.",
-    "placeId": null,
-    "confidence": 0.65,
-    "season": null,
-    "attributes": {
-      "province_old": "Vĩnh Long",
-      "area": "vinh-long",
-      "category": "restaurant",
-      "sub_category": "vegetarian_ethnic",
-      "address": "110A Trần Đại Nghĩa, Khóm 3, Phường 4, TP. Vĩnh Long",
-      "hours": "08:30 – 21:30",
-      "price_range": "40.000 – 250.000 VND/món (bì cuốn/gỏi cuốn 8.000 VND)",
-      "specialty": "Bì cuốn chay, gỏi cuốn chay, lẩu chay; không gian thờ Phật, đèn lồng ấm cúng kiểu chùa miền Tây",
-      "food_type": "chay Phật giáo",
-      "vegan_friendly": "yes"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.5360254,
-      106.425277
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "com-chay-au-lac-vinh-long",
-    "type": "place",
-    "name": "Cơm Chay Âu Lạc",
-    "summary": "Quán cơm chay Âu Lạc bình dân trên đường Trần Văn Ơn, phường 1 TP. Vĩnh Long. Giá rẻ, đơn giản, thanh đạm kiểu Nam Bộ. Mở buổi sáng và trưa (6:00–14:00), giá 20.000–30.000 VND, phù hợp ăn hàng ngày.",
-    "placeId": null,
-    "confidence": 0.65,
-    "season": null,
-    "attributes": {
-      "province_old": "Vĩnh Long",
-      "area": "vinh-long",
-      "category": "restaurant",
-      "sub_category": "vegetarian_ethnic",
-      "address": "Đường Trần Văn Ơn, Phường 1, TP. Vĩnh Long",
-      "hours": "Buổi sáng và trưa (khoảng 06:00 – 14:00)",
-      "price_range": "20.000 – 30.000 VND",
-      "specialty": "Cơm chay bình dân giá rẻ, phù hợp ăn hàng ngày; đơn giản, thanh đạm kiểu Nam Bộ",
-      "food_type": "chay",
-      "vegan_friendly": "yes"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.5388927,
-      106.4063226
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "quan-an-ly-thong-ben-tre",
-    "type": "place",
-    "name": "Quán Ăn Lý Thông",
-    "summary": "Quán Ăn Lý Thông. chuyên Ếch um dừa, cá tai tượng chiên xù, gà ta hấp lá chanh. chòi lá hướng sông và vườn dừa, cảm giác làng quê chân chất. Địa chỉ: Phú Nhuận, TP. Bến Tre (gần đường vào theo hướng nội ô). Giá: 100.000 – 250.000 VNĐ/người",
-    "placeId": "p-binh-minh",
-    "confidence": 0.65,
-    "season": null,
-    "attributes": {
-      "province_old": "Bến Tre",
-      "area": "ben-tre",
-      "category": "restaurant",
-      "sub_category": "com_binh_dan",
-      "address": "Phú Nhuận, TP. Bến Tre (gần đường vào theo hướng nội ô)",
-      "hours": "08:30 – 22:00 hàng ngày",
-      "price_range": "100.000 – 250.000 VNĐ/người",
-      "specialty": "Ếch um dừa, cá tai tượng chiên xù, gà ta hấp lá chanh",
-      "seating_capacity": "khoảng 80 chỗ (nhiều chòi nhỏ riêng tư)",
-      "atmosphere": "chòi lá hướng sông và vườn dừa, cảm giác làng quê chân chất",
-      "local_favorite": "yes"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.0366515,
-      105.7871499
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "bun-bo-co-tam-cho-ben-tre-ben-tre",
-    "type": "place",
-    "name": "Bún bò Cô Tám chợ Bến Tre",
-    "summary": "Bún bò Cô Tám chợ Bến Tre. quán bún nổi tiếng. chuyên Bún bò giò heo + chả cây. nước dùng: Sả ớt, mắm ruốc Huế, nước dùng đỏ cay thơm. Địa chỉ: Khu vực chợ Bến Tre, đường Hai Bà Trưng, TP. Bến Tre. Giá: 30.000 - 45.000đ",
-    "placeId": "xa-thanh-thoi",
-    "confidence": 0.65,
-    "season": null,
-    "attributes": {
-      "province_old": "Bến Tre",
-      "area": "ben-tre",
-      "category": "restaurant",
-      "sub_category": "pho_bun",
-      "address": "Khu vực chợ Bến Tre, đường Hai Bà Trưng, TP. Bến Tre",
-      "hours": "05:30 - 10:30",
-      "price_range": "30.000 - 45.000đ",
-      "specialty": null,
-      "noodle_type": "bún",
-      "broth_style": "Sả ớt, mắm ruốc Huế, nước dùng đỏ cay thơm",
-      "toppings": "Bắp bò, giò heo, chả Huế, huyết, rau sống",
-      "daily_capacity": "120-150 tô",
-      "must_order": "Bún bò giò heo + chả cây"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.0527561,
-      106.3145932
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "nha-hang-lang-chai-ben-tre-ben-tre",
-    "type": "place",
-    "name": "Nhà hàng Làng Chài Bến Tre",
-    "summary": "Nhà hàng Làng Chài Bến Tre. chuyên Hải sản biển tươi sống: ghẹ, tôm hùm, mực, bạch tuộc, ốc, sò. Địa chỉ: 17A10 Đồng Văn Cống, KP. Bình Khởi, P. 6, Thành phố Bến Tre. Giá: 100.000 - 300.000 VNĐ/người",
-    "placeId": "p-ben-tre",
-    "confidence": 0.65,
-    "season": null,
-    "attributes": {
-      "province_old": "Bến Tre",
-      "area": "ben-tre",
-      "category": "restaurant",
-      "sub_category": "seafood_river",
-      "address": "17A10 Đồng Văn Cống, KP. Bình Khởi, P. 6, Thành phố Bến Tre",
-      "hours": "09:00 - 23:00",
-      "price_range": "100.000 - 300.000 VNĐ/người",
-      "specialty": "Hải sản biển tươi sống: ghẹ, tôm hùm, mực, bạch tuộc, ốc, sò",
-      "location_type": "trung tâm",
-      "live_seafood": "yes",
-      "view": "yes",
-      "parking": "yes"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.2410152,
-      106.3564024
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "nha-hang-lang-be-ben-tre-ben-tre",
-    "type": "place",
-    "name": "Nhà hàng Làng Bè Bến Tre",
-    "summary": "Nhà hàng Làng Bè Bến Tre. chuyên Cá đồng, cá sông, tôm càng xanh vùng sông nước miệt vườn. Địa chỉ: 69C Đồng Văn Cống, xã Bình Phú, Thành phố Bến Tre. Giá: 100.000 - 200.000 VNĐ/người",
-    "placeId": "xa-hoa-minh",
-    "confidence": 0.65,
-    "season": null,
-    "attributes": {
-      "province_old": "Bến Tre",
-      "area": "ben-tre",
-      "category": "restaurant",
-      "sub_category": "seafood_river",
-      "address": "69C Đồng Văn Cống, xã Bình Phú, Thành phố Bến Tre",
-      "hours": "09:00 - 21:00",
-      "price_range": "100.000 - 200.000 VNĐ/người",
-      "specialty": "Cá đồng, cá sông, tôm càng xanh vùng sông nước miệt vườn",
-      "location_type": "bờ sông",
-      "live_seafood": "no",
-      "view": "yes",
-      "parking": "yes"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.3276125,
-      106.3512572
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "nha-hang-ham-luong-ben-tre",
-    "type": "place",
-    "name": "Nhà hàng Hàm Luông",
-    "summary": "Nhà hàng Hàm Luông. chuyên Đặc sản sông nước Bến Tre: cá sông, tôm, hải sản đồng quê. Địa chỉ: 200C đường Hùng Vương, Phường 5, Thành phố Bến Tre (trong Hàm Luông Hotel). Giá: 150.000 - 275.000 VNĐ/người",
-    "placeId": "p-ben-tre",
-    "confidence": 0.65,
-    "season": null,
-    "attributes": {
-      "province_old": "Bến Tre",
-      "area": "ben-tre",
-      "category": "restaurant",
-      "sub_category": "seafood_river",
-      "address": "200C đường Hùng Vương, Phường 5, Thành phố Bến Tre (trong Hàm Luông Hotel)",
-      "hours": "07:00 - 22:00",
-      "price_range": "150.000 - 275.000 VNĐ/người",
-      "specialty": "Đặc sản sông nước Bến Tre: cá sông, tôm, hải sản đồng quê",
-      "location_type": "trung tâm",
-      "live_seafood": "no",
-      "view": "no",
-      "parking": "yes"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.2342166,
-      106.3687012
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "ba-nhi-bun-bo-hue-vinh-long",
-    "type": "place",
-    "name": "Ba Nhì - Bún Bò Huế",
-    "summary": "Ba Nhì - Bún Bò Huế tại 258 Nguyễn Văn Thiệt, Phường 3, TP Vĩnh Long. Nước dùng xương bò hầm sả và mắm ruốc kiểu miền Trung, cay nhẹ đặc trưng. Topping: bắp bò, chả lụa, huyết, hành tây, sả. Giá bình dân 25.000-50.000đ/tô, mở 06:00-21:00.",
-    "placeId": "xa-thanh-thoi",
-    "confidence": 0.65,
-    "season": null,
-    "attributes": {
-      "province_old": "Vĩnh Long",
-      "area": "vinh-long",
-      "category": "restaurant",
-      "sub_category": "pho_bun",
-      "noodle_type": "bún",
-      "address": "258 Nguyễn Văn Thiệt, Phường 3, TP Vĩnh Long",
-      "price_range": "25.000 - 50.000đ/tô",
-      "hours": "06:00 - 21:00",
-      "broth_style": "xương bò hầm sả, mắm ruốc, cay nhẹ kiểu miền Trung",
-      "toppings": "bắp bò, chả lụa, huyết, mắm ruốc, hành tây, sả",
-      "specialty": "Bún bò Huế đặc biệt bắp bò",
-      "must_order": "Bún bò Huế đặc biệt bắp bò"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.0527561,
-      106.3145932
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "nem-nuong-thanh-binh-ben-tre",
-    "type": "place",
-    "name": "Nem nướng Thanh Bình",
-    "summary": "Nem nướng Thanh Bình. chuyên Nem nướng cuốn bánh tráng, nem lụi. tại Khu vực gần bến phà Hàm Luông (cũ), TP. Bến Tre. giá 30.000 – 50.000đ/phần. Nem nướng than hồng thơm, cuốn bánh tráng mỏng với đồ chua và đậu phộng rang",
-    "placeId": "p-cai-von",
-    "confidence": 0.65,
-    "season": null,
-    "attributes": {
-      "province_old": "Bến Tre",
-      "area": "ben-tre",
-      "category": "restaurant",
-      "sub_category": "street_food",
-      "address": "Khu vực gần bến phà Hàm Luông (cũ), TP. Bến Tre",
-      "hours": "10:00 – 21:00",
-      "price_range": "30.000 – 50.000đ/phần",
-      "specialty": "Nem nướng cuốn bánh tráng, nem lụi",
-      "tip": "Gọi kèm nước chấm sả ớt đặc biệt của quán",
-      "famous_for": "Nem nướng than hồng thơm, cuốn bánh tráng mỏng với đồ chua và đậu phộng rang",
-      "queue_level": "Vừa",
-      "years_in_business": "12+ năm"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.032372,
-      105.783341
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "com-ga-xoi-mo-5-vi-ben-tre",
-    "type": "place",
-    "name": "Cơm Gà Xối Mỡ 5 Vị",
-    "summary": "Cơm Gà Xối Mỡ 5 Vị. chuyên Cơm gà xối mỡ giòn vàng, ăn kèm cơm trắng dẻo. tại 306C Nguyễn Huệ, TP. Bến Tre. giá 35.000 – 70.000 VNĐ/người. Nổi bật: Gà xối mỡ nóng giòn ngay lúc chiên xong. quán bình dân, bàn ghế đơn giản, đông khách",
-    "placeId": "xa-thanh-thoi",
-    "confidence": 0.65,
-    "season": null,
-    "attributes": {
-      "province_old": "Bến Tre",
-      "area": "ben-tre",
-      "category": "restaurant",
-      "sub_category": "com_binh_dan",
-      "address": "306C Nguyễn Huệ, TP. Bến Tre",
-      "hours": "10:00 – 21:00 hàng ngày",
-      "price_range": "35.000 – 70.000 VNĐ/người",
-      "specialty": "Cơm gà xối mỡ giòn vàng, ăn kèm cơm trắng dẻo",
-      "seating_capacity": "khoảng 50 chỗ",
-      "atmosphere": "quán bình dân, bàn ghế đơn giản, đông khách",
-      "best_dish": "Gà xối mỡ nóng giòn ngay lúc chiên xong",
-      "local_favorite": "yes"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.0527561,
-      106.3145932
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "quan-com-175-ben-tre",
-    "type": "place",
-    "name": "Quán Cơm 175",
-    "summary": "Quán Cơm 175. chuyên Cơm gia đình nhiều món mặn, cơm gà kho và rim. tại 175 Đồng Khởi, TP. Bến Tre. giá 30.000 – 60.000 VNĐ/người. Nổi bật: Cơm gà rim mắm gừng kiểu miền Tây. nhà hàng bình dân, không gian rộng rãi, thoáng mát, bài trí sạch",
-    "placeId": "p-phuoc-hau",
-    "confidence": 0.65,
-    "season": null,
-    "attributes": {
-      "province_old": "Bến Tre",
-      "area": "ben-tre",
-      "category": "restaurant",
-      "sub_category": "com_binh_dan",
-      "address": "175 Đồng Khởi, TP. Bến Tre",
-      "hours": "06:30 – 21:00 hàng ngày",
-      "price_range": "30.000 – 60.000 VNĐ/người",
-      "specialty": "Cơm gia đình nhiều món mặn, cơm gà kho và rim",
-      "seating_capacity": "khoảng 60 – 80 chỗ",
-      "atmosphere": "nhà hàng bình dân, không gian rộng rãi, thoáng mát, bài trí sạch",
-      "best_dish": "Cơm gà rim mắm gừng kiểu miền Tây",
-      "local_favorite": "yes"
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.236572,
-      105.9628974
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
-  },
-  {
-    "id": "am-thuc-ngo-dong-ben-tre",
-    "type": "place",
-    "name": "Ẩm Thực Ngô Đồng",
-    "summary": "Ẩm Thực Ngô Đồng. chuyên Heo rừng quay, heo rừng nướng sả, gà trống thiến. tại 165B Đồng Khởi, Phường Phú Khương, TP. Bến Tre. giá 200.000 – 500.000 VNĐ/người. Nổi bật: Heo rừng quay da giòn chấm mắm me. sân vườn kết hợp chòi nước, không gian đồng quê",
-    "placeId": "p-ben-tre",
-    "confidence": 0.65,
-    "season": null,
-    "attributes": {
-      "province_old": "Bến Tre",
-      "area": "ben-tre",
-      "category": "restaurant",
-      "sub_category": "com_binh_dan",
-      "address": "165B Đồng Khởi, Phường Phú Khương, TP. Bến Tre",
-      "hours": "10:00 – 22:00 hàng ngày",
-      "price_range": "200.000 – 500.000 VNĐ/người",
-      "specialty": "Heo rừng quay, heo rừng nướng sả, gà trống thiến",
-      "seating_capacity": "khoảng 100 – 120 chỗ",
-      "atmosphere": "sân vườn kết hợp chòi nước, không gian đồng quê",
-      "best_dish": "Heo rừng quay da giòn chấm mắm me",
-      "local_favorite": "yes",
-      "target_segments": [
-        "SEG07: Foodie/ẩm thực"
-      ]
-    },
-    "source": [
-      {
-        "name": "curated"
-      }
-    ],
-    "images": [],
-    "coordinates": [
-      10.2451873,
-      106.3717451
-    ],
-    "area": null,
-    "level": null,
-    "parentId": null,
-    "legacyArea": null,
-    "updatedAt": "2026-06-11T00:00:00Z",
-    "created_at": "2026-06-22 23:15:39",
-    "description": "",
-    "createdAt": "2026-06-22T23:15:39Z",
-    "verifiedAt": "2026-06-11T00:00:00Z"
   }
 ];
 var items = [
@@ -92074,6 +90575,1492 @@ var items = [
     "description": "",
     "createdAt": "2026-06-22T23:15:39Z",
     "verifiedAt": "2026-06-09T00:00:00Z"
+  },
+  {
+    "id": "ben-xe-mien-tay-hcm",
+    "type": "facility",
+    "name": "Bến xe Miền Tây",
+    "summary": "Bến xe khách liên tỉnh lớn nhất phía Nam, đầu mối giao thông chính từ TP.HCM đi các tỉnh miền Tây (Vĩnh Long, Bến Tre, Trà Vinh, Cần Thơ…). Địa chỉ: 395 Kinh Dương Vương, Phường An Lạc, Quận Bình Tân, TP.HCM.",
+    "placeId": null,
+    "confidence": 0.95,
+    "season": null,
+    "attributes": {
+      "transport_type": "bến xe",
+      "address": "395 Kinh Dương Vương, Phường An Lạc, Quận Bình Tân, TP. Hồ Chí Minh",
+      "routes": [
+        "TP.HCM ↔ Vĩnh Long",
+        "TP.HCM ↔ Bến Tre",
+        "TP.HCM ↔ Trà Vinh",
+        "TP.HCM ↔ Cần Thơ"
+      ],
+      "price_range": "TP.HCM–Vĩnh Long ~100.000–150.000đ; TP.HCM–Bến Tre ~80.000–150.000đ",
+      "hours": "24/7; xe tập trung 4:00–22:00",
+      "category": "transport",
+      "office_kind": "khac"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": null,
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-21T17:04:47Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-21T17:04:47Z"
+  },
+  {
+    "id": "chua-van-phuoc",
+    "type": "attraction",
+    "name": "Chùa Vạn Phước",
+    "summary": "Ngôi chùa nổi tiếng tại Bến Tre được mệnh danh là 'tiên cảnh chốn trần gian', là điểm du lịch tâm linh thu hút đông đảo du khách đến tham quan và chiêm bái.",
+    "placeId": null,
+    "confidence": 0.7,
+    "season": null,
+    "attributes": {
+      "address": "Bến Tre",
+      "province_old": "Bến Tre",
+      "legacy_district": "Châu Thành"
+    },
+    "source": [
+      {
+        "title": "Ward Crawl 2 — vinhlong360",
+        "url": "https://vinhlong360.vn/"
+      }
+    ],
+    "images": [],
+    "coordinates": null,
+    "area": "ben-tre",
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-10T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-10T00:00:00Z"
+  },
+  {
+    "id": "cho-dai-an",
+    "type": "facility",
+    "name": "Chợ Đại An",
+    "summary": "Khu chợ truyền thống tại xã Đại An, huyện Trà Cú, là điểm đến văn hóa và ẩm thực đặc sắc của vùng. Nơi tập trung nhiều đặc sản nổi tiếng của Trà Cú và Trà Vinh, từ nông sản tươi như dừa sáp, bưởi da xanh, măng cụt đến các món ăn đường phố địa phương.",
+    "placeId": null,
+    "confidence": 0.7,
+    "season": null,
+    "attributes": {
+      "address": "Xã Đại An, tỉnh Vĩnh Long",
+      "province_old": "Trà Vinh",
+      "ward": "Đại An",
+      "legacy_district": "Trà Cú",
+      "office_kind": "khac"
+    },
+    "source": [
+      {
+        "title": "Ward Crawl 2 — vinhlong360",
+        "url": "https://vinhlong360.vn/"
+      }
+    ],
+    "images": [],
+    "coordinates": null,
+    "area": "tra-vinh",
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-10T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-10T00:00:00Z"
+  },
+  {
+    "id": "benh-vien-da-khoa-tinh-vinh-long-vinh-long",
+    "type": "facility",
+    "name": "Bệnh viện Đa khoa tỉnh Vĩnh Long",
+    "summary": "Bệnh viện. 301 Trần Phú, Phường 4, TP. Vĩnh Long. Giờ mở cửa: 24/7 (cấp cứu liên tục). ĐT: 0270 3822535 / 0270 3823520",
+    "placeId": "p-duyen-hai",
+    "confidence": 0.7,
+    "season": null,
+    "attributes": {
+      "name": "Bệnh viện Đa khoa tỉnh Vĩnh Long",
+      "category": "bệnh viện",
+      "address": "301 Trần Phú, Phường 4, TP. Vĩnh Long",
+      "phone": "0270 3822535 / 0270 3823520",
+      "hours": "24/7 (cấp cứu liên tục)",
+      "note_for_tourists": "Bệnh viện công lớn nhất tỉnh, có đầy đủ chuyên khoa. Cấp cứu 24/7. Nên mang theo CCCD/hộ chiếu khi khám.",
+      "province_old": "Vĩnh Long",
+      "area": "vinh-long",
+      "category_tag": "practical_info",
+      "office_kind": "y_te"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      9.6468053,
+      106.5051412
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "benh-vien-da-khoa-xuyen-a-vinh-long-vinh-long",
+    "type": "facility",
+    "name": "Bệnh viện Đa khoa Xuyên Á Vĩnh Long",
+    "summary": "Bệnh viện. 68E Phạm Hùng, Phường Long Châu, TP. Vĩnh Long. Giờ mở cửa: Cấp cứu 24/7; Khám ngoại trú: 7:00–12:00 và 13:00–16:00. ĐT: 0270 6250999 (cấp cứu 24/7) / Tổng đài: 1800 9075 (miễn phí)",
+    "placeId": "p-long-chau",
+    "confidence": 0.7,
+    "season": null,
+    "attributes": {
+      "name": "Bệnh viện Đa khoa Xuyên Á Vĩnh Long",
+      "category": "bệnh viện",
+      "address": "68E Phạm Hùng, Phường Long Châu, TP. Vĩnh Long",
+      "phone": "0270 6250999 (cấp cứu 24/7) / Tổng đài: 1800 9075 (miễn phí)",
+      "hours": "Cấp cứu 24/7; Khám ngoại trú: 7:00–12:00 và 13:00–16:00",
+      "note_for_tourists": "Bệnh viện tư nhân, chất lượng cao hơn, ít đông hơn bệnh viện công. Phù hợp với du khách cần khám nhanh, chấp nhận thanh toán thẻ.",
+      "province_old": "Vĩnh Long",
+      "area": "vinh-long",
+      "category_tag": "practical_info",
+      "office_kind": "y_te"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.2615149,
+      105.9404921
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "agribank-chi-nhanh-vinh-long-vinh-long",
+    "type": "facility",
+    "name": "Agribank Chi nhánh Vĩnh Long",
+    "summary": "Ngân hàng. 28 Hưng Đạo Vương, Phường 1, TP. Vĩnh Long. Giờ mở cửa: Thứ 2 – Thứ 6: 7:30–11:30 và 13:00–17:00 (đóng T7, CN). ĐT: 1900 558818 (tổng đài)",
+    "placeId": "xa-tap-son",
+    "confidence": 0.7,
+    "season": null,
+    "attributes": {
+      "name": "Agribank Chi nhánh Vĩnh Long",
+      "category": "ngân hàng",
+      "address": "28 Hưng Đạo Vương, Phường 1, TP. Vĩnh Long",
+      "phone": "1900 558818 (tổng đài)",
+      "hours": "Thứ 2 – Thứ 6: 7:30–11:30 và 13:00–17:00 (đóng T7, CN)",
+      "note_for_tourists": "Agribank có mạng lưới ATM rộng nhất tỉnh (37 điểm), thuận tiện rút tiền mặt VND ở các huyện xa. Nhận thẻ quốc tế tại ATM.",
+      "province_old": "Vĩnh Long",
+      "area": "vinh-long",
+      "category_tag": "practical_info",
+      "office_kind": "khac"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      9.7387693,
+      106.2631345
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "buu-dien-trung-tam-vinh-long-vinh-long",
+    "type": "facility",
+    "name": "Bưu điện Trung tâm Vĩnh Long",
+    "summary": "Bưu điện. 12C–14 Hoàng Thái Hiếu, Phường 1, TP. Vĩnh Long. Giờ mở cửa: Thứ 2 – Thứ 6: 7:00–17:00; Thứ 7: 7:00–12:00 (đóng CN). ĐT: 0270 3822550 / Tổng đài VNPost: 1900 0317",
+    "placeId": "p-long-chau",
+    "confidence": 0.7,
+    "season": {
+      "months": [],
+      "peak": [],
+      "text": "Quanh năm"
+    },
+    "attributes": {
+      "name": "Bưu điện Trung tâm Vĩnh Long",
+      "category": "bưu điện",
+      "address": "12C–14 Hoàng Thái Hiếu, Phường 1, TP. Vĩnh Long",
+      "phone": "0270 3822550 / Tổng đài VNPost: 1900 0317",
+      "hours": "Thứ 2 – Thứ 6: 7:00–17:00; Thứ 7: 7:00–12:00 (đóng CN)",
+      "note_for_tourists": "Gửi bưu phẩm quốc tế, mua tem, đổi tiền nhỏ. Tỉnh có 118 bưu cục phủ khắp các huyện.",
+      "province_old": "Vĩnh Long",
+      "area": "vinh-long",
+      "category_tag": "practical_info",
+      "priority": "A-",
+      "target_segments": "Foodie; nội địa",
+      "suggested_duration": "Nửa ngày",
+      "role": "food_asset",
+      "office_kind": "buu_dien"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.2526939,
+      105.9410019
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "cong-an-tinh-vinh-long-vinh-long",
+    "type": "facility",
+    "name": "Công an tỉnh Vĩnh Long",
+    "summary": "Công an/hỗ trợ. 180 ấp Long Hưng, Xã Thanh Đức, Huyện Long Hồ, Vĩnh Long. Giờ mở cửa: 24/7 (trực ban). ĐT: 0270 3877177 / 0270 6552666 / Khẩn cấp: 113",
+    "placeId": "p-tan-hanh",
+    "confidence": 0.7,
+    "season": null,
+    "attributes": {
+      "name": "Công an tỉnh Vĩnh Long",
+      "category": "công an/hỗ trợ",
+      "address": "180 ấp Long Hưng, Xã Thanh Đức, Vĩnh Long",
+      "phone": "0270 3877177 / 0270 6552666 / Khẩn cấp: 113",
+      "hours": "24/7 (trực ban)",
+      "note_for_tourists": "Gọi 113 khi khẩn cấp (mất cắp, tai nạn). Để khai báo tạm trú (du khách nước ngoài ở homestay/nhà dân cần chủ nhà khai báo trong 24h).",
+      "province_old": "Vĩnh Long",
+      "area": "vinh-long",
+      "category_tag": "practical_info",
+      "office_kind": "cong_an"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.2583881,
+      105.9346077
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "buu-dien-trung-tam-tp-ben-tre-ben-tre",
+    "type": "facility",
+    "name": "Bưu điện Trung tâm TP. Bến Tre",
+    "summary": "Bưu điện. 3 Đại lộ Đồng Khởi, Phường 2, TP. Bến Tre. Giờ mở cửa: Thứ 2–6: 7h30–11h30 và 13h30–17h00; Thứ 7: sáng 7h30–11h00. ĐT: 1800 1567 (tổng đài VNPost, miễn phí)",
+    "placeId": "p-ben-tre",
+    "confidence": 0.7,
+    "season": {
+      "months": [],
+      "peak": [],
+      "text": "Quanh năm"
+    },
+    "attributes": {
+      "name": "Bưu điện Trung tâm TP. Bến Tre",
+      "category": "bưu điện",
+      "address": "3 Đại lộ Đồng Khởi, Phường 2, TP. Bến Tre",
+      "phone": "1800 1567 (tổng đài VNPost, miễn phí)",
+      "hours": "Thứ 2–6: 7h30–11h30 và 13h30–17h00; Thứ 7: sáng 7h30–11h00",
+      "note_for_tourists": "Gửi quà lưu niệm, bưu phẩm về nước. Có thể mua SIM Vinaphone tại đây. Nằm ở vị trí trung tâm, gần quảng trường tỉnh",
+      "province_old": "Bến Tre",
+      "area": "ben-tre",
+      "category_tag": "practical_info",
+      "priority": "A-",
+      "target_segments": "Học sinh; diaspora",
+      "suggested_duration": "Nửa ngày",
+      "role": "heritage_theme",
+      "office_kind": "buu_dien"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.2361217,
+      106.3763684
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "cong-an-tp-ben-tre-ben-tre",
+    "type": "facility",
+    "name": "Công an TP. Bến Tre",
+    "summary": "Công an. 25C Đại lộ Đồng Khởi, Khu phố 6, Phường Phú Khương, TP. Bến Tre. Giờ mở cửa: Trực ban 24/24. Tiếp công dân: giờ hành chính thứ 2–6. ĐT: 0275 3838 105 (trực ban 24/24) | Khẩn cấp: 113",
+    "placeId": "p-ben-tre",
+    "confidence": 0.7,
+    "season": null,
+    "attributes": {
+      "name": "Công an TP. Bến Tre",
+      "category": "công an",
+      "address": "25C Đại lộ Đồng Khởi, Khu phố 6, Phường Phú Khương, TP. Bến Tre",
+      "phone": "0275 3838 105 (trực ban 24/24) | Khẩn cấp: 113",
+      "hours": "Trực ban 24/24. Tiếp công dân: giờ hành chính thứ 2–6",
+      "note_for_tourists": "Gọi 113 khi bị cướp, mất tài sản, cần hỗ trợ khẩn cấp về an ninh. Để khai báo mất hộ chiếu hoặc cần giấy tờ hỗ trợ du lịch, đến trực tiếp trong giờ hành chính",
+      "province_old": "Bến Tre",
+      "area": "ben-tre",
+      "category_tag": "practical_info",
+      "office_kind": "cong_an"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.2364799,
+      106.3759212
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "cap-cuu-115-ben-tre-ben-tre",
+    "type": "facility",
+    "name": "Cấp cứu 115 Bến Tre",
+    "summary": "Bệnh viện. TP. Bến Tre (điều phối toàn tỉnh). Giờ mở cửa: 24/24. ĐT: 115",
+    "placeId": "xa-thanh-thoi",
+    "confidence": 0.7,
+    "season": null,
+    "attributes": {
+      "name": "Cấp cứu 115 Bến Tre",
+      "category": "bệnh viện",
+      "address": "TP. Bến Tre (điều phối toàn tỉnh)",
+      "phone": "115",
+      "hours": "24/24",
+      "note_for_tourists": "Số gọi cấp cứu y tế miễn phí toàn quốc. Gọi khi có tai nạn, đột quỵ, chấn thương nặng. Xe cấp cứu sẽ điều phối từ Bệnh viện Nguyễn Đình Chiểu",
+      "province_old": "Bến Tre",
+      "area": "ben-tre",
+      "category_tag": "practical_info",
+      "office_kind": "y_te"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.0527561,
+      106.3145932
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "co-opmart-vinh-long-vinh-long",
+    "type": "facility",
+    "name": "Co.opmart Vĩnh Long",
+    "summary": "siêu thị tại Số 1 Hùng Vương, Phường 1, TP. Vĩnh Long. Mở cửa 07:00 - 22:00. Nên mua: Đặc sản đóng gói (kẹo dừa, bánh tráng, khô cá), thực phẩm tươi sống, hàng tiêu dùng, rượu cần Bình Minh. Giá: 50.000 - 500.000 VND. Thanh toán: tiền mặt/thẻ/QR.",
+    "placeId": "p-long-chau",
+    "confidence": 0.7,
+    "season": null,
+    "attributes": {
+      "shop_type": "siêu thị",
+      "address": "Số 1 Hùng Vương, Phường 1, TP. Vĩnh Long",
+      "hours": "07:00 - 22:00",
+      "what_to_buy": "Đặc sản đóng gói (kẹo dừa, bánh tráng, khô cá), thực phẩm tươi sống, hàng tiêu dùng, rượu cần Bình Minh",
+      "price_range": "50.000 - 500.000 VND",
+      "payment_methods": "tiền mặt/thẻ/QR",
+      "province_old": "Vĩnh Long",
+      "area": "vinh-long",
+      "category": "shopping",
+      "office_kind": "khac"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.2549108,
+      105.9707194
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "cho-vinh-long-cho-trung-tam-vinh-long",
+    "type": "facility",
+    "name": "Chợ Vĩnh Long (Chợ Trung Tâm)",
+    "summary": "chợ đặc sản tại Đường Gia Long, Phường 1, TP. Vĩnh Long. Mở cửa 05:00 - 18:00. Nên mua: Gạo Bình Tân, khoai lang tím Bình Tân, nem Vĩnh Long, bánh tráng nướng, mắm cá linh, trái cây miền Tây tươi, vải thổ cẩm. Giá: 10.000 - 200.000 VND. Thanh toán: tiền mặt/QR.",
+    "placeId": "xa-long-thanh",
+    "confidence": 0.7,
+    "season": null,
+    "attributes": {
+      "shop_type": "chợ đặc sản",
+      "address": "Đường Gia Long, Phường 1, TP. Vĩnh Long",
+      "hours": "05:00 - 18:00",
+      "what_to_buy": "Gạo Bình Tân, khoai lang tím Bình Tân, nem Vĩnh Long, bánh tráng nướng, mắm cá linh, trái cây miền Tây tươi, vải thổ cẩm",
+      "price_range": "10.000 - 200.000 VND",
+      "payment_methods": "tiền mặt/QR",
+      "province_old": "Vĩnh Long",
+      "area": "vinh-long",
+      "category": "shopping",
+      "office_kind": "khac"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.2498397,
+      106.1391364
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "co-opmart-ben-tre-ben-tre",
+    "type": "facility",
+    "name": "Co.opmart Bến Tre",
+    "summary": "siêu thị tại 02 Nguyễn Huệ, Phường 1, TP. Bến Tre, tỉnh Bến Tre. Mở cửa 07:00 - 22:00 hàng ngày. Nên mua: Kẹo dừa Bến Tre (Thanh Long, Đông Á), bánh phồng tôm, mắm tôm chà, sản phẩm OCOP đóng gói, dừa xiêm, rượu dừa. Giá: 50.000 - 500.000 VND. Thanh toán: tiền mặt/thẻ/QR.",
+    "placeId": "p-ben-tre",
+    "confidence": 0.7,
+    "season": null,
+    "attributes": {
+      "shop_type": "siêu thị",
+      "address": "02 Nguyễn Huệ, Phường 1, TP. Bến Tre, tỉnh Vĩnh Long",
+      "hours": "07:00 - 22:00 hàng ngày",
+      "what_to_buy": "Kẹo dừa Bến Tre (Thanh Long, Đông Á), bánh phồng tôm, mắm tôm chà, sản phẩm OCOP đóng gói, dừa xiêm, rượu dừa",
+      "price_range": "50.000 - 500.000 VND",
+      "payment_methods": "tiền mặt/thẻ/QR",
+      "province_old": "Bến Tre",
+      "area": "ben-tre",
+      "category": "shopping",
+      "office_kind": "khac"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.2422007,
+      106.3767201
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "sieu-thi-go-big-c-ben-tre-ben-tre",
+    "type": "facility",
+    "name": "Siêu thị GO! (Big C) Bến Tre",
+    "summary": "siêu thị tại Quốc lộ 60, Phường Phú Khương, TP. Bến Tre, tỉnh Bến Tre. Mở cửa 08:00 - 22:00 hàng ngày. Nên mua: Thực phẩm đặc sản đóng gói: kẹo dừa, bánh phồng, mắm, nước dừa đóng hộp, sản phẩm OCOP khu vực, hàng tiêu dùng địa phương. Giá: 20.000 - 600.000 VND. Thanh toán: tiền mặt/thẻ/QR.",
+    "placeId": "p-ben-tre",
+    "confidence": 0.7,
+    "season": null,
+    "attributes": {
+      "shop_type": "siêu thị",
+      "address": "Quốc lộ 60, Phường Phú Khương, TP. Bến Tre, tỉnh Vĩnh Long",
+      "hours": "08:00 - 22:00 hàng ngày",
+      "what_to_buy": "Thực phẩm đặc sản đóng gói: kẹo dừa, bánh phồng, mắm, nước dừa đóng hộp, sản phẩm OCOP khu vực, hàng tiêu dùng địa phương",
+      "price_range": "20.000 - 600.000 VND",
+      "payment_methods": "tiền mặt/thẻ/QR",
+      "province_old": "Bến Tre",
+      "area": "ben-tre",
+      "category": "shopping",
+      "office_kind": "khac"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.2541267,
+      106.3602237
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "sieu-thi-co-opmart-tra-vinh-tra-vinh",
+    "type": "facility",
+    "name": "Siêu thị Co.opmart Trà Vinh",
+    "summary": "siêu thị tại Số 4 Nguyễn Thị Minh Khai, Phường 4, TP. Trà Vinh. Mở cửa 08:00 - 22:00 hàng ngày. Nên mua: Đặc sản đóng gói: bánh tét lá cẩm, muối tôm Trà Vinh, mắm còng, bánh phồng, rượu nếp, trà mãng cầu xiêm. Giá: 50.000 - 500.000 VNĐ. Thanh toán: tiền mặt/thẻ/QR.",
+    "placeId": "p-tra-vinh",
+    "confidence": 0.7,
+    "season": null,
+    "attributes": {
+      "shop_type": "siêu thị",
+      "address": "Số 4 Nguyễn Thị Minh Khai, Phường 4, TP. Trà Vinh",
+      "hours": "08:00 - 22:00 hàng ngày",
+      "what_to_buy": "Đặc sản đóng gói: bánh tét lá cẩm, muối tôm Trà Vinh, mắm còng, bánh phồng, rượu nếp, trà mãng cầu xiêm",
+      "price_range": "50.000 - 500.000 VNĐ",
+      "payment_methods": "tiền mặt/thẻ/QR",
+      "province_old": "Trà Vinh",
+      "area": "tra-vinh",
+      "category": "shopping",
+      "office_kind": "khac"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      9.9241955,
+      106.3398494
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "hop-tac-xa-dua-sap-cau-ke-tra-vinh",
+    "type": "facility",
+    "name": "Hợp tác xã Dừa Sáp Cầu Kè",
+    "summary": "cửa hàng OCOP tại Thị trấn Cầu Kè, huyện Cầu Kè, Trà Vinh (cách TP khoảng 45 km). Mở cửa 06:00 - 18:00 hàng ngày. Nên mua: Dừa sáp tươi, kem dừa sáp, bánh từ dừa sáp, dầu dừa nguyên chất, kẹo dừa sáp - đặc sản OCOP nổi tiếng nhất Trà Vinh. Giá: 50.000 - 250.000 VNĐ/trái hoặc sản phẩm. Thanh toán: tiền mặt/QR.",
+    "placeId": "xa-thanh-thoi",
+    "confidence": 0.7,
+    "season": null,
+    "attributes": {
+      "shop_type": "cửa hàng OCOP",
+      "address": "Thị trấn Cầu Kè, Trà Vinh (cách TP khoảng 45 km)",
+      "hours": "06:00 - 18:00 hàng ngày",
+      "what_to_buy": "Dừa sáp tươi, kem dừa sáp, bánh từ dừa sáp, dầu dừa nguyên chất, kẹo dừa sáp - đặc sản OCOP nổi tiếng nhất Trà Vinh",
+      "price_range": "50.000 - 250.000 VNĐ/trái hoặc sản phẩm",
+      "payment_methods": "tiền mặt/QR",
+      "province_old": "Trà Vinh",
+      "area": "tra-vinh",
+      "category": "shopping",
+      "office_kind": "khac"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.0527561,
+      106.3145932
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "cho-cau-ke",
+    "type": "facility",
+    "name": "Chợ Cầu Kè",
+    "summary": "Chợ trung tâm Cầu Kè, nơi mua sắm đặc sản địa phương phong phú và đa dạng, bao gồm dừa sáp, xá pấu, các loại thủ công mỹ nghệ và món ăn đặc trưng của vùng đất ba dân tộc Kinh - Khmer - Hoa. Đánh giá Google đạt 4.2/5.",
+    "placeId": "xa-tan-an",
+    "confidence": 0.7,
+    "season": null,
+    "attributes": {
+      "address": "171 đường 30 Tháng 4, Thị trấn Cầu Kè, tỉnh Vĩnh Long",
+      "province_old": "Trà Vinh",
+      "ward": "Thị trấn Cầu Kè",
+      "legacy_district": "Cầu Kè",
+      "office_kind": "khac"
+    },
+    "source": [
+      {
+        "title": "Ward Crawl 2 — vinhlong360",
+        "url": "https://vinhlong360.vn/"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      9.8723353,
+      106.056032
+    ],
+    "area": "tra-vinh",
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-10T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-10T00:00:00Z"
+  },
+  {
+    "id": "ben-xe-vinh-long-trung-tam-vinh-long",
+    "type": "facility",
+    "name": "Bến xe Vĩnh Long (Trung tâm)",
+    "summary": "Bến xe. tại Số 01E đường Đinh Tiên Hoàng, Phường 8, TP. Vĩnh Long. Tuyến: TP.HCM (Bến xe Miền Tây), Cần Thơ, Bình Dương, Long An, An Giang, Kiên Giang, Đồng Tháp, Tiền Giang, Bạc Liêu, Vũng Liêm, Trà Ôn. Giờ: Hoạt động 24/7; các chuyến xe tập trung từ 5:00–19:00. Giá: 40.000–200.000đ tùy tuyến (Vĩnh Long–Cần Thơ ~40.000đ, Vĩnh Long–TP.HCM ~100.000–150.000đ).",
+    "placeId": "p-long-chau",
+    "confidence": 0.7,
+    "season": null,
+    "attributes": {
+      "transport_type": "bến xe",
+      "address": "Số 01E đường Đinh Tiên Hoàng, Phường 8, TP. Vĩnh Long",
+      "routes": [
+        "TP.HCM (Bến xe Miền Tây)",
+        "Cần Thơ",
+        "Bình Dương",
+        "Long An",
+        "An Giang",
+        "Kiên Giang",
+        "Đồng Tháp",
+        "Tiền Giang",
+        "Bạc Liêu",
+        "Vũng Liêm",
+        "Trà Ôn"
+      ],
+      "price_range": "40.000–200.000đ tùy tuyến (Vĩnh Long–Cần Thơ ~40.000đ, Vĩnh Long–TP.HCM ~100.000–150.000đ)",
+      "frequency": "Xe liên tỉnh xuất bến liên tục từ sáng sớm đến chiều tối; xe buýt nội tỉnh 30 phút/chuyến",
+      "hours": "Hoạt động 24/7; các chuyến xe tập trung từ 5:00–19:00",
+      "tip": "Đây là đầu mối giao thông chính của tỉnh. Các nhà xe uy tín có Phương Trang, Kim Hoàng, Thanh Thủy, Tuấn Hưng, Mai Linh Express. Nên đặt vé trước qua Vexere hoặc website nhà xe vào dịp lễ Tết. SĐT: 0270 3823 769.",
+      "province_old": "Vĩnh Long",
+      "area": "vinh-long",
+      "category": "transport",
+      "office_kind": "khac"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.253,
+      105.9642
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "ben-pha-an-binh-vinh-long",
+    "type": "facility",
+    "name": "Bến Phà An Bình",
+    "summary": "Bến phà. tại Phường 2, TP. Vĩnh Long (bến tạm từ 15/9/2024, cách bến cũ ~460m về phía thượng nguồn sông Cổ Chiên). Tuyến: TP. Vĩnh Long ↔ Cù lao An Bình (4 xã: An Bình, Bình Hòa Phước, Đồng Phú, Hòa Ninh – Long Hồ). Giờ: 5:00–22:00 hàng ngày. Giá: 5.000–15.000đ/người tùy phương tiện (xe máy ~10.000đ).",
+    "placeId": "p-long-chau",
+    "confidence": 0.7,
+    "season": null,
+    "attributes": {
+      "transport_type": "bến phà",
+      "address": "Phường 2, TP. Vĩnh Long (bến tạm từ 15/9/2024, cách bến cũ ~460m về phía thượng nguồn sông Cổ Chiên)",
+      "routes": [
+        "TP. Vĩnh Long ↔ Cù lao An Bình (4 xã: An Bình, Bình Hòa Phước, Đồng Phú, Hòa Ninh – huyện Long Hồ)"
+      ],
+      "price_range": "5.000–15.000đ/người tùy phương tiện (xe máy ~10.000đ)",
+      "frequency": "Liên tục, chờ đủ khách là chạy, khoảng 10–15 phút/chuyến",
+      "hours": "5:00–22:00 hàng ngày",
+      "tip": "Tuyến phà ngắn và tiện lợi nhất để vào Cù lao An Bình – điểm du lịch sông nước nổi tiếng của Vĩnh Long. Bến vừa di dời do sạt lở, cần hỏi người địa phương để xác nhận vị trí bến tạm hiện tại.",
+      "province_old": "Vĩnh Long",
+      "area": "vinh-long",
+      "category": "transport",
+      "office_kind": "khac"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.2483,
+      105.9713
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "ben-xe-vung-liem-vinh-long",
+    "type": "facility",
+    "name": "Bến Xe Vũng Liêm",
+    "summary": "Bến xe. tại Tỉnh lộ 902, Thị trấn Vũng Liêm, Huyện Vũng Liêm, Vĩnh Long. Tuyến: Vũng Liêm ↔ Vĩnh Long (TP), Vũng Liêm ↔ Cần Thơ, Vũng Liêm ↔ Bến xe Miền Tây (TP.HCM). Giờ: 7:00–17:00 (xe buýt nội tỉnh); xe khách liên tỉnh từ 5:00–18:00. Giá: Vũng Liêm–Vĩnh Long ~20.000–25.000đ; Vũng Liêm–Cần Thơ ~55.000đ.",
+    "placeId": "xa-hoa-hiep",
+    "confidence": 0.7,
+    "season": null,
+    "attributes": {
+      "transport_type": "bến xe",
+      "address": "Tỉnh lộ 902, Thị trấn Vũng Liêm, Vĩnh Long",
+      "routes": [
+        "Vũng Liêm ↔ Vĩnh Long (TP)",
+        "Vũng Liêm ↔ Cần Thơ",
+        "Vũng Liêm ↔ Bến xe Miền Tây (TP.HCM)"
+      ],
+      "price_range": "Vũng Liêm–Vĩnh Long ~20.000–25.000đ; Vũng Liêm–Cần Thơ ~55.000đ",
+      "frequency": "Xe buýt nội tỉnh (tuyến 03) 30 phút/chuyến; xe khách liên tỉnh theo lịch cố định",
+      "hours": "7:00–17:00 (xe buýt nội tỉnh); xe khách liên tỉnh từ 5:00–18:00",
+      "tip": "Bến xe phục vụ huyện Vũng Liêm – phía đông tỉnh Vĩnh Long, giáp Cần Thơ. Khách đi Cần Thơ có thể bắt xe buýt Phương Trang tuyến liên tỉnh tiện lợi hơn. SĐT: 0270 3970 670.",
+      "province_old": "Vĩnh Long",
+      "area": "vinh-long",
+      "category": "transport",
+      "office_kind": "khac"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.1072,
+      106.034
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "ben-xe-ben-tre-trung-tam-ben-tre",
+    "type": "facility",
+    "name": "Bến xe Bến Tre (Trung tâm)",
+    "summary": "Bến xe. tại 303 Đoàn Hoàng Minh, Phường Phú Khương, TP. Bến Tre (hoặc QL60, xã Hữu Định – bến mới xã Phú Hưng). Tuyến: Bến Tre – TP.HCM (Bến xe Miền Tây), Bến Tre – Bình Dương, Bến Tre – Vũng Tàu, Bến Tre – Cần Thơ, Bến Tre – Cà Mau, Bến Tre – Sóc Trăng, Bến Tre – Bạc Liêu. Giờ: 24/24 (theo lịch xe). Giá: Bến Tre – TP.HCM: 80.000–150.000đ/người tùy hãng.",
+    "placeId": "p-ben-tre",
+    "confidence": 0.7,
+    "season": null,
+    "attributes": {
+      "transport_type": "bến xe",
+      "address": "303 Đoàn Hoàng Minh, Phường Phú Khương, TP. Bến Tre (hoặc QL60, xã Hữu Định – bến mới xã Phú Hưng)",
+      "routes": "Bến Tre – TP.HCM (Bến xe Miền Tây), Bến Tre – Bình Dương, Bến Tre – Vũng Tàu, Bến Tre – Cần Thơ, Bến Tre – Cà Mau, Bến Tre – Sóc Trăng, Bến Tre – Bạc Liêu",
+      "price_range": "Bến Tre – TP.HCM: 80.000–150.000đ/người tùy hãng",
+      "frequency": "Tuyến TP.HCM: 20–30 phút/chuyến; tuyến tỉnh khác: 1–3 chuyến/ngày",
+      "hours": "24/24 (theo lịch xe)",
+      "tip": "Số điện thoại bến: 0275 3822 558. Tuyến TP.HCM đi qua cao tốc và cầu Rạch Miễu chỉ mất khoảng 2–2,5 giờ. Đặt vé trước qua Vexere hoặc xe hãng để tránh hết chỗ vào cuối tuần.",
+      "province_old": "Bến Tre",
+      "area": "ben-tre",
+      "category": "transport",
+      "office_kind": "khac"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.2387,
+      106.3757
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "ben-xe-ba-tri-ben-tre",
+    "type": "facility",
+    "name": "Bến xe Ba Tri",
+    "summary": "Bến xe. tại Tỉnh Lộ 885, đường An Bình Tây, Thị trấn Ba Tri, huyện Ba Tri, Bến Tre. Tuyến: Ba Tri – Bến Tre (trung tâm), Ba Tri – TP.HCM (Bến xe Miền Tây). Giờ: 5:00 – 17:30. Giá: Ba Tri – TP.HCM: khoảng 120.000–160.000đ.",
+    "placeId": "p-ba-tri",
+    "confidence": 0.7,
+    "season": null,
+    "attributes": {
+      "transport_type": "bến xe",
+      "address": "Tỉnh Lộ 885, đường An Bình Tây, Thị trấn Ba Tri, Bến Tre",
+      "routes": "Ba Tri – Bến Tre (trung tâm), Ba Tri – TP.HCM (Bến xe Miền Tây)",
+      "price_range": "Ba Tri – TP.HCM: khoảng 120.000–160.000đ",
+      "frequency": "Vài chuyến mỗi buổi sáng và chiều",
+      "hours": "5:00 – 17:30",
+      "tip": "Bến nhỏ, ít chuyến trực tiếp ra TP.HCM; nên bắt xe về Bến Tre rồi đổi tuyến lớn. Xe buýt nội tỉnh tuyến 02 cũng phục vụ hành lang Ba Tri.",
+      "province_old": "Bến Tre",
+      "area": "ben-tre",
+      "category": "transport",
+      "office_kind": "khac"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.0487,
+      106.5924
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "ben-xe-mo-cay-nam-ben-tre",
+    "type": "facility",
+    "name": "Bến xe Mỏ Cày Nam",
+    "summary": "Bến xe. tại Quốc Lộ 60, Thị trấn Mỏ Cày, huyện Mỏ Cày Nam, Bến Tre. Tuyến: Mỏ Cày – Bến Tre (trung tâm), kết nối tuyến TP.HCM. Giờ: 5:00 – 17:30. Giá: Mỏ Cày – Bến Tre: khoảng 30.000–50.000đ.",
+    "placeId": "xa-dong-khoi",
+    "confidence": 0.7,
+    "season": null,
+    "attributes": {
+      "transport_type": "bến xe",
+      "address": "Quốc Lộ 60, Thị trấn Mỏ Cày, Bến Tre",
+      "routes": "Mỏ Cày – Bến Tre (trung tâm), kết nối tuyến TP.HCM",
+      "price_range": "Mỏ Cày – Bến Tre: khoảng 30.000–50.000đ",
+      "frequency": "Xe buýt và xe khách liên tỉnh qua đây theo hành lang QL60",
+      "hours": "5:00 – 17:30",
+      "tip": "Nằm trên Quốc lộ 60, xe từ TP.HCM về Bến Tre đều đi qua đây; có thể xuống đây nếu đến huyện Mỏ Cày, không cần vào trung tâm tỉnh.",
+      "province_old": "Bến Tre",
+      "area": "ben-tre",
+      "category": "transport",
+      "office_kind": "khac"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.1563,
+      106.383
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "ben-xe-tra-vinh-ben-xe-trung-tam-tra-vinh",
+    "type": "facility",
+    "name": "Bến xe Trà Vinh (Bến xe trung tâm)",
+    "summary": "Bến xe. tại 559 Quốc lộ 54, Phường 9, Thành phố Trà Vinh, tỉnh Trà Vinh. Tuyến: Trà Vinh - TP. Hồ Chí Minh (Bến Miền Tây, An Sương); Trà Vinh - Cần Thơ; Trà Vinh - Cà Mau; Trà Vinh - Bạc Liêu; Trà Vinh - Vĩnh Long; Trà Vinh - Đà Lạt / Lâm Đồng; Trà Vinh - Đà Nẵng; nội tỉnh đến Duyên Hải, Trà Cú, Cầu Kè, Tiểu Cần, Cầu Ngang, Càng Long. Giờ: Bến xe mở cửa từ 4:00 - 22:00 hàng ngày; quầy bán vé hoạt động liên tục trong giờ bến mở. Giá: Trà Vinh - TP.HCM: 175.000 - 350.000đ/vé (ghế ngồi đến giường nằm); nội tỉnh: 20.000 - 60.000đ.",
+    "placeId": "p-tra-vinh",
+    "confidence": 0.7,
+    "season": null,
+    "attributes": {
+      "transport_type": "bến xe",
+      "address": "559 Quốc lộ 54, Phường 9, Thành phố Trà Vinh, tỉnh Vĩnh Long",
+      "routes": "Trà Vinh - TP. Hồ Chí Minh (Bến Miền Tây, An Sương); Trà Vinh - Cần Thơ; Trà Vinh - Cà Mau; Trà Vinh - Bạc Liêu; Trà Vinh - Vĩnh Long; Trà Vinh - Đà Lạt / Lâm Đồng; Trà Vinh - Đà Nẵng; nội tỉnh đến Duyên Hải, Trà Cú, Cầu Kè, Tiểu Cần, Cầu Ngang, Càng Long",
+      "price_range": "Trà Vinh - TP.HCM: 175.000 - 350.000đ/vé (ghế ngồi đến giường nằm); nội tỉnh: 20.000 - 60.000đ",
+      "frequency": "Tuyến Sài Gòn: khoảng 30-40 chuyến/ngày, xuất phát từ 4:00 sáng đến 21:00 tối; tuyến nội tỉnh: 4-8 chuyến/ngày",
+      "hours": "Bến xe mở cửa từ 4:00 - 22:00 hàng ngày; quầy bán vé hoạt động liên tục trong giờ bến mở",
+      "tip": "Các hãng xe uy tín hoạt động tại đây gồm Phương Trang (FUTA), Hòa Thuận, Kim Hoàng, Ngọc Trinh, Tấn Cường, Miền Tây. Nên đặt vé trước qua vexere.com hoặc redbus.vn vào các dịp lễ Tết. Bến có wifi miễn phí, điều hòa, quầy ăn uống và gửi hàng hóa.",
+      "province_old": "Trà Vinh",
+      "area": "tra-vinh",
+      "category": "transport",
+      "office_kind": "khac"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      9.9347,
+      106.3454
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "tinh-binh-chay-vinh-long",
+    "type": "dish",
+    "name": "Tịnh Bình Chay",
+    "summary": "Quán chay Phật giáo Tịnh Bình tại 110A Trần Đại Nghĩa, phường 4 TP. Vĩnh Long. Chuyên bì cuốn chay, gỏi cuốn chay, lẩu chay. Không gian thờ Phật, đèn lồng kiểu chùa miền Tây. Mở hàng ngày 8:30–21:30, giá 40.000–250.000 VND.",
+    "placeId": null,
+    "confidence": 0.65,
+    "season": null,
+    "attributes": {
+      "province_old": "Vĩnh Long",
+      "area": "vinh-long",
+      "category": "restaurant",
+      "sub_category": "vegetarian_ethnic",
+      "address": "110A Trần Đại Nghĩa, Khóm 3, Phường 4, TP. Vĩnh Long",
+      "hours": "08:30 – 21:30",
+      "price_range": "40.000 – 250.000 VND/món (bì cuốn/gỏi cuốn 8.000 VND)",
+      "specialty": "Bì cuốn chay, gỏi cuốn chay, lẩu chay; không gian thờ Phật, đèn lồng ấm cúng kiểu chùa miền Tây",
+      "food_type": "chay Phật giáo",
+      "vegan_friendly": "yes"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.5360254,
+      106.425277
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "com-chay-au-lac-vinh-long",
+    "type": "dish",
+    "name": "Cơm Chay Âu Lạc",
+    "summary": "Quán cơm chay Âu Lạc bình dân trên đường Trần Văn Ơn, phường 1 TP. Vĩnh Long. Giá rẻ, đơn giản, thanh đạm kiểu Nam Bộ. Mở buổi sáng và trưa (6:00–14:00), giá 20.000–30.000 VND, phù hợp ăn hàng ngày.",
+    "placeId": null,
+    "confidence": 0.65,
+    "season": null,
+    "attributes": {
+      "province_old": "Vĩnh Long",
+      "area": "vinh-long",
+      "category": "restaurant",
+      "sub_category": "vegetarian_ethnic",
+      "address": "Đường Trần Văn Ơn, Phường 1, TP. Vĩnh Long",
+      "hours": "Buổi sáng và trưa (khoảng 06:00 – 14:00)",
+      "price_range": "20.000 – 30.000 VND",
+      "specialty": "Cơm chay bình dân giá rẻ, phù hợp ăn hàng ngày; đơn giản, thanh đạm kiểu Nam Bộ",
+      "food_type": "chay",
+      "vegan_friendly": "yes"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.5388927,
+      106.4063226
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "quan-an-ly-thong-ben-tre",
+    "type": "dish",
+    "name": "Quán Ăn Lý Thông",
+    "summary": "Quán Ăn Lý Thông. chuyên Ếch um dừa, cá tai tượng chiên xù, gà ta hấp lá chanh. chòi lá hướng sông và vườn dừa, cảm giác làng quê chân chất. Địa chỉ: Phú Nhuận, TP. Bến Tre (gần đường vào theo hướng nội ô). Giá: 100.000 – 250.000 VNĐ/người",
+    "placeId": "p-binh-minh",
+    "confidence": 0.65,
+    "season": null,
+    "attributes": {
+      "province_old": "Bến Tre",
+      "area": "ben-tre",
+      "category": "restaurant",
+      "sub_category": "com_binh_dan",
+      "address": "Phú Nhuận, TP. Bến Tre (gần đường vào theo hướng nội ô)",
+      "hours": "08:30 – 22:00 hàng ngày",
+      "price_range": "100.000 – 250.000 VNĐ/người",
+      "specialty": "Ếch um dừa, cá tai tượng chiên xù, gà ta hấp lá chanh",
+      "seating_capacity": "khoảng 80 chỗ (nhiều chòi nhỏ riêng tư)",
+      "atmosphere": "chòi lá hướng sông và vườn dừa, cảm giác làng quê chân chất",
+      "local_favorite": "yes"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.0366515,
+      105.7871499
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "bun-bo-co-tam-cho-ben-tre-ben-tre",
+    "type": "dish",
+    "name": "Bún bò Cô Tám chợ Bến Tre",
+    "summary": "Bún bò Cô Tám chợ Bến Tre. quán bún nổi tiếng. chuyên Bún bò giò heo + chả cây. nước dùng: Sả ớt, mắm ruốc Huế, nước dùng đỏ cay thơm. Địa chỉ: Khu vực chợ Bến Tre, đường Hai Bà Trưng, TP. Bến Tre. Giá: 30.000 - 45.000đ",
+    "placeId": "xa-thanh-thoi",
+    "confidence": 0.65,
+    "season": null,
+    "attributes": {
+      "province_old": "Bến Tre",
+      "area": "ben-tre",
+      "category": "restaurant",
+      "sub_category": "pho_bun",
+      "address": "Khu vực chợ Bến Tre, đường Hai Bà Trưng, TP. Bến Tre",
+      "hours": "05:30 - 10:30",
+      "price_range": "30.000 - 45.000đ",
+      "specialty": null,
+      "noodle_type": "bún",
+      "broth_style": "Sả ớt, mắm ruốc Huế, nước dùng đỏ cay thơm",
+      "toppings": "Bắp bò, giò heo, chả Huế, huyết, rau sống",
+      "daily_capacity": "120-150 tô",
+      "must_order": "Bún bò giò heo + chả cây"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.0527561,
+      106.3145932
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "nha-hang-lang-chai-ben-tre-ben-tre",
+    "type": "dish",
+    "name": "Nhà hàng Làng Chài Bến Tre",
+    "summary": "Nhà hàng Làng Chài Bến Tre. chuyên Hải sản biển tươi sống: ghẹ, tôm hùm, mực, bạch tuộc, ốc, sò. Địa chỉ: 17A10 Đồng Văn Cống, KP. Bình Khởi, P. 6, Thành phố Bến Tre. Giá: 100.000 - 300.000 VNĐ/người",
+    "placeId": "p-ben-tre",
+    "confidence": 0.65,
+    "season": null,
+    "attributes": {
+      "province_old": "Bến Tre",
+      "area": "ben-tre",
+      "category": "restaurant",
+      "sub_category": "seafood_river",
+      "address": "17A10 Đồng Văn Cống, KP. Bình Khởi, P. 6, Thành phố Bến Tre",
+      "hours": "09:00 - 23:00",
+      "price_range": "100.000 - 300.000 VNĐ/người",
+      "specialty": "Hải sản biển tươi sống: ghẹ, tôm hùm, mực, bạch tuộc, ốc, sò",
+      "location_type": "trung tâm",
+      "live_seafood": "yes",
+      "view": "yes",
+      "parking": "yes"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.2410152,
+      106.3564024
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "nha-hang-lang-be-ben-tre-ben-tre",
+    "type": "dish",
+    "name": "Nhà hàng Làng Bè Bến Tre",
+    "summary": "Nhà hàng Làng Bè Bến Tre. chuyên Cá đồng, cá sông, tôm càng xanh vùng sông nước miệt vườn. Địa chỉ: 69C Đồng Văn Cống, xã Bình Phú, Thành phố Bến Tre. Giá: 100.000 - 200.000 VNĐ/người",
+    "placeId": "xa-hoa-minh",
+    "confidence": 0.65,
+    "season": null,
+    "attributes": {
+      "province_old": "Bến Tre",
+      "area": "ben-tre",
+      "category": "restaurant",
+      "sub_category": "seafood_river",
+      "address": "69C Đồng Văn Cống, xã Bình Phú, Thành phố Bến Tre",
+      "hours": "09:00 - 21:00",
+      "price_range": "100.000 - 200.000 VNĐ/người",
+      "specialty": "Cá đồng, cá sông, tôm càng xanh vùng sông nước miệt vườn",
+      "location_type": "bờ sông",
+      "live_seafood": "no",
+      "view": "yes",
+      "parking": "yes"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.3276125,
+      106.3512572
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "nha-hang-ham-luong-ben-tre",
+    "type": "dish",
+    "name": "Nhà hàng Hàm Luông",
+    "summary": "Nhà hàng Hàm Luông. chuyên Đặc sản sông nước Bến Tre: cá sông, tôm, hải sản đồng quê. Địa chỉ: 200C đường Hùng Vương, Phường 5, Thành phố Bến Tre (trong Hàm Luông Hotel). Giá: 150.000 - 275.000 VNĐ/người",
+    "placeId": "p-ben-tre",
+    "confidence": 0.65,
+    "season": null,
+    "attributes": {
+      "province_old": "Bến Tre",
+      "area": "ben-tre",
+      "category": "restaurant",
+      "sub_category": "seafood_river",
+      "address": "200C đường Hùng Vương, Phường 5, Thành phố Bến Tre (trong Hàm Luông Hotel)",
+      "hours": "07:00 - 22:00",
+      "price_range": "150.000 - 275.000 VNĐ/người",
+      "specialty": "Đặc sản sông nước Bến Tre: cá sông, tôm, hải sản đồng quê",
+      "location_type": "trung tâm",
+      "live_seafood": "no",
+      "view": "no",
+      "parking": "yes"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.2342166,
+      106.3687012
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "ba-nhi-bun-bo-hue-vinh-long",
+    "type": "dish",
+    "name": "Ba Nhì - Bún Bò Huế",
+    "summary": "Ba Nhì - Bún Bò Huế tại 258 Nguyễn Văn Thiệt, Phường 3, TP Vĩnh Long. Nước dùng xương bò hầm sả và mắm ruốc kiểu miền Trung, cay nhẹ đặc trưng. Topping: bắp bò, chả lụa, huyết, hành tây, sả. Giá bình dân 25.000-50.000đ/tô, mở 06:00-21:00.",
+    "placeId": "xa-thanh-thoi",
+    "confidence": 0.65,
+    "season": null,
+    "attributes": {
+      "province_old": "Vĩnh Long",
+      "area": "vinh-long",
+      "category": "restaurant",
+      "sub_category": "pho_bun",
+      "noodle_type": "bún",
+      "address": "258 Nguyễn Văn Thiệt, Phường 3, TP Vĩnh Long",
+      "price_range": "25.000 - 50.000đ/tô",
+      "hours": "06:00 - 21:00",
+      "broth_style": "xương bò hầm sả, mắm ruốc, cay nhẹ kiểu miền Trung",
+      "toppings": "bắp bò, chả lụa, huyết, mắm ruốc, hành tây, sả",
+      "specialty": "Bún bò Huế đặc biệt bắp bò",
+      "must_order": "Bún bò Huế đặc biệt bắp bò"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.0527561,
+      106.3145932
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "nem-nuong-thanh-binh-ben-tre",
+    "type": "dish",
+    "name": "Nem nướng Thanh Bình",
+    "summary": "Nem nướng Thanh Bình. chuyên Nem nướng cuốn bánh tráng, nem lụi. tại Khu vực gần bến phà Hàm Luông (cũ), TP. Bến Tre. giá 30.000 – 50.000đ/phần. Nem nướng than hồng thơm, cuốn bánh tráng mỏng với đồ chua và đậu phộng rang",
+    "placeId": "p-cai-von",
+    "confidence": 0.65,
+    "season": null,
+    "attributes": {
+      "province_old": "Bến Tre",
+      "area": "ben-tre",
+      "category": "restaurant",
+      "sub_category": "street_food",
+      "address": "Khu vực gần bến phà Hàm Luông (cũ), TP. Bến Tre",
+      "hours": "10:00 – 21:00",
+      "price_range": "30.000 – 50.000đ/phần",
+      "specialty": "Nem nướng cuốn bánh tráng, nem lụi",
+      "tip": "Gọi kèm nước chấm sả ớt đặc biệt của quán",
+      "famous_for": "Nem nướng than hồng thơm, cuốn bánh tráng mỏng với đồ chua và đậu phộng rang",
+      "queue_level": "Vừa",
+      "years_in_business": "12+ năm"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.032372,
+      105.783341
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "com-ga-xoi-mo-5-vi-ben-tre",
+    "type": "dish",
+    "name": "Cơm Gà Xối Mỡ 5 Vị",
+    "summary": "Cơm Gà Xối Mỡ 5 Vị. chuyên Cơm gà xối mỡ giòn vàng, ăn kèm cơm trắng dẻo. tại 306C Nguyễn Huệ, TP. Bến Tre. giá 35.000 – 70.000 VNĐ/người. Nổi bật: Gà xối mỡ nóng giòn ngay lúc chiên xong. quán bình dân, bàn ghế đơn giản, đông khách",
+    "placeId": "xa-thanh-thoi",
+    "confidence": 0.65,
+    "season": null,
+    "attributes": {
+      "province_old": "Bến Tre",
+      "area": "ben-tre",
+      "category": "restaurant",
+      "sub_category": "com_binh_dan",
+      "address": "306C Nguyễn Huệ, TP. Bến Tre",
+      "hours": "10:00 – 21:00 hàng ngày",
+      "price_range": "35.000 – 70.000 VNĐ/người",
+      "specialty": "Cơm gà xối mỡ giòn vàng, ăn kèm cơm trắng dẻo",
+      "seating_capacity": "khoảng 50 chỗ",
+      "atmosphere": "quán bình dân, bàn ghế đơn giản, đông khách",
+      "best_dish": "Gà xối mỡ nóng giòn ngay lúc chiên xong",
+      "local_favorite": "yes"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.0527561,
+      106.3145932
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "quan-com-175-ben-tre",
+    "type": "dish",
+    "name": "Quán Cơm 175",
+    "summary": "Quán Cơm 175. chuyên Cơm gia đình nhiều món mặn, cơm gà kho và rim. tại 175 Đồng Khởi, TP. Bến Tre. giá 30.000 – 60.000 VNĐ/người. Nổi bật: Cơm gà rim mắm gừng kiểu miền Tây. nhà hàng bình dân, không gian rộng rãi, thoáng mát, bài trí sạch",
+    "placeId": "p-phuoc-hau",
+    "confidence": 0.65,
+    "season": null,
+    "attributes": {
+      "province_old": "Bến Tre",
+      "area": "ben-tre",
+      "category": "restaurant",
+      "sub_category": "com_binh_dan",
+      "address": "175 Đồng Khởi, TP. Bến Tre",
+      "hours": "06:30 – 21:00 hàng ngày",
+      "price_range": "30.000 – 60.000 VNĐ/người",
+      "specialty": "Cơm gia đình nhiều món mặn, cơm gà kho và rim",
+      "seating_capacity": "khoảng 60 – 80 chỗ",
+      "atmosphere": "nhà hàng bình dân, không gian rộng rãi, thoáng mát, bài trí sạch",
+      "best_dish": "Cơm gà rim mắm gừng kiểu miền Tây",
+      "local_favorite": "yes"
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.236572,
+      105.9628974
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
+  },
+  {
+    "id": "am-thuc-ngo-dong-ben-tre",
+    "type": "dish",
+    "name": "Ẩm Thực Ngô Đồng",
+    "summary": "Ẩm Thực Ngô Đồng. chuyên Heo rừng quay, heo rừng nướng sả, gà trống thiến. tại 165B Đồng Khởi, Phường Phú Khương, TP. Bến Tre. giá 200.000 – 500.000 VNĐ/người. Nổi bật: Heo rừng quay da giòn chấm mắm me. sân vườn kết hợp chòi nước, không gian đồng quê",
+    "placeId": "p-ben-tre",
+    "confidence": 0.65,
+    "season": null,
+    "attributes": {
+      "province_old": "Bến Tre",
+      "area": "ben-tre",
+      "category": "restaurant",
+      "sub_category": "com_binh_dan",
+      "address": "165B Đồng Khởi, Phường Phú Khương, TP. Bến Tre",
+      "hours": "10:00 – 22:00 hàng ngày",
+      "price_range": "200.000 – 500.000 VNĐ/người",
+      "specialty": "Heo rừng quay, heo rừng nướng sả, gà trống thiến",
+      "seating_capacity": "khoảng 100 – 120 chỗ",
+      "atmosphere": "sân vườn kết hợp chòi nước, không gian đồng quê",
+      "best_dish": "Heo rừng quay da giòn chấm mắm me",
+      "local_favorite": "yes",
+      "target_segments": [
+        "SEG07: Foodie/ẩm thực"
+      ]
+    },
+    "source": [
+      {
+        "name": "curated"
+      }
+    ],
+    "images": [],
+    "coordinates": [
+      10.2451873,
+      106.3717451
+    ],
+    "area": null,
+    "parentId": null,
+    "legacyArea": null,
+    "updatedAt": "2026-06-11T00:00:00Z",
+    "created_at": "2026-06-22 23:15:39",
+    "description": "",
+    "createdAt": "2026-06-22T23:15:39Z",
+    "verifiedAt": "2026-06-11T00:00:00Z"
   }
 ];
 var relationships = [
