@@ -209,6 +209,19 @@
       </div>
     </section>
 
+    <!-- 4.8 Interstitial cinematic — "act-break" nghệ-thuật, khí-quyển trôi + đại-tự -->
+    <section class="block-cine reveal" aria-label="Vĩnh Long · Bến Tre · Trà Vinh">
+      <div class="cine">
+        <div class="cine-bg" aria-hidden="true"></div>
+        <div class="cine-grain" aria-hidden="true"></div>
+        <div class="cine-inner">
+          <p class="cine-kicker">Vĩnh Long · Bến Tre · Trà Vinh</p>
+          <h2 class="cine-title">Ba dòng sông,<br>một miền phù sa</h2>
+          <p class="cine-sub">Miệt vườn trĩu quả, xứ dừa bạt ngàn, văn hoá Khmer ngàn năm — ba bản sắc hợp lưu thành một vùng đất.</p>
+        </div>
+      </div>
+    </section>
+
     <!-- 5. Trải nghiệm nổi bật -->
     <section v-if="topExperiences.length" class="block reveal band">
       <div class="section-head">
@@ -900,6 +913,12 @@ html.js .home .hero-enter h1::after {
   outline: 2px solid var(--text-on-dark, #fff);
   outline-offset: 2px;
 }
+/* Mobile: nén pill (padding ngang nhỏ hơn) để 6 pill bớt tràn 3 hàng — giữ
+   min-height 44px cho touch + font-size không đổi (đọc tốt). */
+@media (max-width: 480px) {
+  .hero-pills { gap: var(--space-2); margin-top: var(--space-4); }
+  .hero-pill { padding-left: var(--space-3); padding-right: var(--space-3); }
+}
 
 /* ── Horizontal scroll row (mobile → scroll, tablet → 2col, desktop → grid) ── */
 .scroll-row {
@@ -1182,7 +1201,9 @@ html.js .home .hero-enter h1::after {
   .interest-grid { grid-template-columns: repeat(2, 1fr); }
   .interest-card:first-child { grid-column: span 2; grid-row: span 1; min-height: 200px; }
 }
-@media (max-width: 420px) {
+/* Giữ bento 2-cột tới máy rất nhỏ (gọn + đỡ đơn-điệu hơn 5 thẻ full-width xếp dọc);
+   chỉ về 1-cột khi ≤360px (thẻ 2-cột sẽ quá hẹp). */
+@media (max-width: 360px) {
   .interest-grid { grid-template-columns: 1fr; }
   .interest-card:first-child { grid-column: span 1; }
 }
@@ -1245,7 +1266,7 @@ html.js .home .hero-enter h1::after {
   overflow: hidden;
   text-decoration: none;
 }
-@media (max-width: 760px) { .spot-visual { min-height: 200px; } }
+@media (max-width: 760px) { .spot-visual { min-height: 180px; } }
 .spot-icon {
   width: 150px; height: 150px;
   opacity: .88;
@@ -1256,6 +1277,8 @@ html.js .home .hero-enter h1::after {
 }
 .spot-icon :deep(svg), .spot-icon svg { width: 100%; height: 100%; display: block; }
 .spot-visual:hover .spot-icon { transform: scale(1.07) rotate(-2deg); }
+/* Mobile icon nhỏ hơn — ĐẶT SAU base .spot-icon để override đúng (cùng specificity). */
+@media (max-width: 760px) { .spot-icon { width: 96px; height: 96px; } }
 .spot-region {
   position: absolute; top: var(--space-4); left: var(--space-4);
   padding: var(--space-1) var(--space-3);
@@ -1287,6 +1310,58 @@ html.js .home .hero-enter h1::after {
 .spot-cta { align-self: flex-start; margin-top: var(--space-2); }
 @media (prefers-reduced-motion: reduce) {
   .spot-visual:hover .spot-icon { transform: none; }
+}
+
+/* ── Interstitial cinematic ("act-break") — dải tối điện-ảnh: khí-quyển 3-màu-vùng
+   trôi chậm + film-grain + đại-tự thơ. Contained (KHÔNG full-bleed → tránh cv-clip).
+   Mọi animation composited + reduced-motion tắt. ── */
+.block-cine { padding: var(--space-8) var(--space-5); max-width: var(--maxw); margin: 0 auto; }
+.cine {
+  position: relative; isolation: isolate; overflow: hidden;
+  border-radius: var(--radius-xl);
+  padding: clamp(var(--space-12), 9vw, var(--space-16)) var(--space-6);
+  text-align: center; color: #fff;
+  background: linear-gradient(135deg, #14241f 0%, #1a1f24 48%, #241a16 100%);
+  box-shadow: var(--shadow-lg);
+}
+.cine-bg {
+  position: absolute; inset: -25%; z-index: -2;
+  background:
+    radial-gradient(40% 50% at 22% 28%, rgba(46,160,120,.40) 0%, transparent 60%),
+    radial-gradient(42% 52% at 80% 72%, rgba(232,163,61,.32) 0%, transparent 62%),
+    radial-gradient(50% 60% at 60% 16%, rgba(58,140,170,.28) 0%, transparent 60%);
+  filter: blur(10px);
+  animation: cine-drift 20s ease-in-out infinite alternate;
+}
+@keyframes cine-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(2.6%, -2.2%, 0) scale(1.1); }
+}
+.cine-grain {
+  position: absolute; inset: 0; z-index: -1; opacity: .14; pointer-events: none;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.cine-inner { position: relative; }
+.cine-kicker {
+  margin: 0 0 var(--space-3); font-size: var(--text-xs); font-weight: var(--weight-bold);
+  letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,.78);
+}
+.cine-title {
+  margin: 0; font-weight: var(--weight-extrabold);
+  font-size: clamp(2rem, 6.2vw, 3.7rem); line-height: 1.06; letter-spacing: -.02em;
+  text-shadow: 0 2px 28px rgba(0,0,0,.4);
+}
+.cine-sub {
+  margin: var(--space-5) auto 0; max-width: 560px;
+  font-size: var(--text-lg); line-height: var(--leading-relaxed); color: rgba(255,255,255,.84);
+}
+@media (max-width: 640px) {
+  .cine { padding: var(--space-12) var(--space-5); }
+  .cine-sub { font-size: var(--text-base); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cine-bg { animation: none; }
 }
 
 /* ── Quick links — grid layout ── */

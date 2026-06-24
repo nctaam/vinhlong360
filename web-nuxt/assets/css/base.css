@@ -225,10 +225,12 @@ a:focus:not(:focus-visible), button:focus:not(:focus-visible) { outline: none; }
    Only when <html> gets the `js` class (added before first paint via inline
    head script + reveal-enhance plugin) do we hide-then-animate. This avoids a
    flash-of-invisible-content if the IntersectionObserver never runs. */
-@keyframes revealUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+/* Filmic reveal: rise + scale-in nhẹ + expo dài → section "arrive" có chủ-ý
+   (cinematic), không chỉ fade. Transform+opacity (composited); reduce-motion tắt. */
+@keyframes revealUp { from { opacity: 0; transform: translateY(30px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
 .reveal { opacity: 1; transform: none; }
-html.js .reveal { opacity: 0; transform: translateY(18px); }
-.reveal.revealed { animation: revealUp .6s var(--ease-out-expo) both; }
+html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
+.reveal.revealed { animation: revealUp .8s var(--ease-out-expo) both; }
 .reveal.revealed:nth-child(2) { animation-delay: .06s; }
 .reveal.revealed:nth-child(3) { animation-delay: .12s; }
 .reveal.revealed:nth-child(4) { animation-delay: .18s; }
