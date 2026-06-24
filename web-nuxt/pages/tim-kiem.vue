@@ -181,7 +181,7 @@ const searchInput = ref(q.value)
 
 const { data, error: searchError, status } = await useAsyncData(
   'search-results',
-  () => q.value ? $fetch<any>(`/api/entities?q=${encodeURIComponent(q.value)}&limit=100`) : Promise.resolve({ entities: [] }),
+  () => q.value ? apiFetch<any>(`/api/entities?q=${encodeURIComponent(q.value)}&limit=100`) : Promise.resolve({ entities: [] }),
   { watch: [q] }
 )
 const searching = computed(() => status.value === 'pending' && !!q.value)
@@ -194,8 +194,8 @@ const { data: extra } = await useAsyncData(
   'search-extra',
   () => q.value
     ? Promise.all([
-        $fetch<any>(`/api/search/posts?q=${encodeURIComponent(q.value)}`).catch(() => ({ posts: [] })),
-        $fetch<any>(`/api/search/users?q=${encodeURIComponent(q.value)}`).catch(() => ({ users: [] })),
+        apiFetch<any>(`/api/search/posts?q=${encodeURIComponent(q.value)}`).catch(() => ({ posts: [] })),
+        apiFetch<any>(`/api/search/users?q=${encodeURIComponent(q.value)}`).catch(() => ({ users: [] })),
       ]).then(([p, u]) => ({ posts: (p.posts || []).slice(0, 6), users: (u.users || []).slice(0, 8) }))
     : Promise.resolve({ posts: [], users: [] }),
   { watch: [q] },

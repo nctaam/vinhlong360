@@ -148,7 +148,7 @@ const fetchFailed = ref(false)
 const { data } = await useAsyncData(`ward-${id.value}`, async () => {
   try {
     fetchFailed.value = false
-    return await $fetch<Record<string, unknown>>(`/api/places/${id.value}/overview`)
+    return await apiFetch<Record<string, unknown>>(`/api/places/${id.value}/overview`)
   } catch {
     fetchFailed.value = true
     return null

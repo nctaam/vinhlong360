@@ -35,7 +35,7 @@ const planId = String(route.params.id || '')
 
 const { data: plan } = await useAsyncData(`shared-plan-${planId}`, async () => {
   try {
-    const res = await $fetch<{ plan: any }>(`/api/shared-plans/${encodeURIComponent(planId)}`)
+    const res = await apiFetch<{ plan: any }>(`/api/shared-plans/${encodeURIComponent(planId)}`)
     return res?.plan ?? null
   } catch {
     return null

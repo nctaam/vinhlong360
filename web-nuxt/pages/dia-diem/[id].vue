@@ -420,7 +420,7 @@ function goBack() {
 
 const { data: entity, error: fetchError } = await useAsyncData(
   computed(() => `entity-${id.value}`),
-  () => $fetch<Entity>(`/api/entities/${id.value}`),
+  () => apiFetch<Entity>(`/api/entities/${id.value}`),
   { watch: [id] }
 )
 

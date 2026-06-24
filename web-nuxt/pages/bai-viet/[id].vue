@@ -253,7 +253,7 @@ const postFetchFailed = ref(false)
 const { data: post, pending } = await useAsyncData(`post-${postId}`, async () => {
   try {
     postFetchFailed.value = false
-    const res = await $fetch<Post>(`/api/posts/${postId}`, { headers: authHeaders() })
+    const res = await apiFetch<Post>(`/api/posts/${postId}`, { headers: authHeaders() })
     return res?.post || res
   } catch {
     postFetchFailed.value = true

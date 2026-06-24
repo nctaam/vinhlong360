@@ -202,7 +202,7 @@ const { data: profile } = await useAsyncData(`user-${userId}`, async () => {
     profileFetchFailed.value = false
     // BE trả {user:{display_name, avatar_url, bio, created_at, stats:{posts,reviews}}}
     // → unwrap + map về flat keys mà template đọc (P0-11).
-    const res = await $fetch<Record<string, any>>(`/api/users/${userId}`, { headers: authHeaders() })
+    const res = await apiFetch<Record<string, any>>(`/api/users/${userId}`, { headers: authHeaders() })
     const u = (res?.user ?? res) as Record<string, any> | null
     if (!u) return null
     return {

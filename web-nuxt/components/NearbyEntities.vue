@@ -53,7 +53,7 @@ const areaLabel = computed(() => AREA_META[props.area]?.name || props.area)
 const sameTypeLabel = computed(() => TYPE_META[props.entityType]?.label || props.entityType)
 
 const { data } = await useAsyncData(`nearby-${props.area}`, () =>
-  $fetch<any>(`/api/entities?area=${encodeURIComponent(props.area)}&limit=80`)
+  apiFetch<any>(`/api/entities?area=${encodeURIComponent(props.area)}&limit=80`)
 )
 
 const nearby = computed(() => {
