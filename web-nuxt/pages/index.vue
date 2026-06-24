@@ -1361,11 +1361,16 @@ html.js .home .hero-enter h1::after {
 .cine {
   position: relative; isolation: isolate; overflow: hidden;
   border-radius: var(--radius-xl);
+  /* Hairline rim → định-hình cạnh dải tối khi nằm trên nền-tối (dark mode), tinh-tế ở light. */
+  border: 1px solid rgba(255,255,255,.08);
   padding: clamp(var(--space-12), 9vw, var(--space-16)) var(--space-6);
   text-align: center; color: #fff;
   background: linear-gradient(135deg, #14241f 0%, #1a1f24 48%, #241a16 100%);
   box-shadow: var(--shadow-lg);
 }
+/* Dark: viền rõ hơn chút + glow màu-vùng đậm hơn để dải nổi trên nền tối. */
+.dark .cine { border-color: rgba(255,255,255,.1); }
+.dark .cine-bg { filter: blur(10px) saturate(1.15) brightness(1.12); }
 .cine-bg {
   position: absolute; inset: -25%; z-index: -2;
   background:
