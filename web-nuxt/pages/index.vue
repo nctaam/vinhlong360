@@ -357,7 +357,7 @@ function getFavTypeMeta(type: string) {
 // internal $fetch (proxy nội-bộ Nitro 502 trong ngữ-cảnh render '/'). Có data trong
 // HTML-SSR → tốt cho SEO (JSON-LD Event/ItemList + thẻ điểm-đến crawl được).
 // Client fetch tương-đối. Nếu SSR vẫn lỗi → onMounted tự refetch (an toàn).
-const ssrBase = import.meta.server ? useRequestURL().origin : ''
+const ssrBase = import.meta.server ? 'https://vinhlong360.vn' : ''
 const { data: homeData, error: homeError, pending: homePending, refresh: refreshHome } = await useAsyncData('homepage',
   () => $fetch<Record<string, unknown>>('/api/homepage', ssrBase ? { baseURL: ssrBase } : {}))
 
@@ -703,6 +703,11 @@ html.js .home .hero-enter h1::after {
 
 /* Breathing room between sections */
 .home .block { padding-top: var(--space-16); padding-bottom: var(--space-8); }
+/* content-visibility: bỏ qua render layout/paint các section NGOÀI màn hình (trang chủ
+   rất dài ~10000px) → giảm chi-phí paint ban-đầu. 'auto' nhớ kích-thước thật sau lần
+   render đầu (tránh nhảy scroll); 480px là ước-lượng ban đầu. Section trong tầm vẫn render
+   bình thường nên không hại LCP/above-the-fold. */
+.home .block { content-visibility: auto; contain-intrinsic-size: auto 480px; }
 .home .block-compact { padding-top: var(--space-8); padding-bottom: var(--space-8); }
 
 /* ── Stats bar ── */

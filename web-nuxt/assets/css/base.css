@@ -69,6 +69,16 @@ select:-webkit-autofill {
   }
 }
 
+/* ── WCAG 2.2 — 2.4.11 Focus Not Obscured (Minimum) ──
+   Header sticky có thể che phần-tử khi Tab tới hoặc khi nhảy theo neo (#hash).
+   scroll-margin-top chừa chỗ = chiều cao header để phần-tử focus/anchor luôn hiện đủ.
+   Dùng :where() để specificity = 0 (không đè scroll-margin riêng nếu có). */
+:root { --header-h: 70px; }
+:where(a[href], button, input, select, textarea, summary,
+       [tabindex]:not([tabindex="-1"]), :target, h2, h3) {
+  scroll-margin-top: calc(var(--header-h) + 0.5rem);
+}
+
 a { color: inherit; text-decoration: none; text-decoration-skip-ink: auto; }
 button, [role="button"], a { touch-action: manipulation; }
 input, textarea, [contenteditable] { caret-color: var(--primary-fg); }
