@@ -126714,6 +126714,4001 @@
       "from": "cho-cau-ke",
       "to": "xa-cau-ke",
       "type": "located_in"
+    },
+    {
+      "from": "ben-tre-tong-tai-romantic-2day-001",
+      "to": "p-ben-tre",
+      "type": "located_in"
+    },
+    {
+      "from": "chao-ech-tran-nam",
+      "to": "vinh-long",
+      "type": "located_in"
+    },
+    {
+      "from": "panda-purple-cafe",
+      "to": "p-thanh-duc",
+      "type": "located_in"
+    },
+    {
+      "from": "ninh-kieu-5---quoc-lo-60",
+      "to": "p-son-dong",
+      "type": "located_in"
+    },
+    {
+      "from": "banh-flan-14",
+      "to": "p-ben-tre",
+      "type": "located_in"
+    },
+    {
+      "from": "lang-van-coffee",
+      "to": "p-son-dong",
+      "type": "located_in"
+    },
+    {
+      "from": "nam-son",
+      "to": "p-an-hoi",
+      "type": "located_in"
+    },
+    {
+      "from": "ham-luong",
+      "to": "p-ben-tre",
+      "type": "located_in"
+    },
+    {
+      "from": "hu-tieu-chay",
+      "to": "p-an-hoi",
+      "type": "located_in"
+    },
+    {
+      "from": "jollibee---coopmart-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "1985-cafe",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "hu-tieu-xi-quach-a-linh---le-loi",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "khuc-ban-chieu",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "deja-vu-cafe",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "deja-huynh-kha-coffee",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "king-beer-garden",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "mandi-cafe",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "choosa-damour---coffee-flowers",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "tau-hu-ngon-lanh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "banh-xeo-long-binh-2",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "bun-nuoc-leo---ly-thuong-kiet",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "banh-tet-tra-cuon-co-huong",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "tra-sua-huy",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "pho-xanh-garden-coffee",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-tuyet---com-ca-ri-ga",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "banh-cuon-nong---tran-quoc-tuan",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "com-ga-bong-viet",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "chau-dong-quan---am-thuc-viet",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "duc-thanh-2---quan-lau-de",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "gazebo-cafe",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "somo-farm-cuu-long",
+      "to": "xa-cai-nhum",
+      "type": "located_in"
+    },
+    {
+      "from": "ao-ba-om-ao-vuong-tra-vinh",
+      "to": "p-nguyet-hoa",
+      "type": "located_in"
+    },
+    {
+      "from": "chua-hoi-tong-ben-tre",
+      "to": "p-ben-tre",
+      "type": "located_in"
+    },
+    {
+      "from": "can-cu-tinh-uy-ben-tre-rung-la-thanh-phu",
+      "to": "xa-thanh-phu",
+      "type": "located_in"
+    },
+    {
+      "from": "dinh-binh-hoa-giong-trom",
+      "to": "xa-giong-trom",
+      "type": "located_in"
+    },
+    {
+      "from": "chien-thang-giong-dua-giong-trom",
+      "to": "xa-giong-trom",
+      "type": "located_in"
+    },
+    {
+      "from": "tt-thuong-mai-sense-city-ben-tre",
+      "to": "p-an-hoi",
+      "type": "located_in"
+    },
+    {
+      "from": "sau-rieng-ri-6-long-ho",
+      "to": "p-thanh-duc",
+      "type": "located_in"
+    },
+    {
+      "from": "oc-gao-con-phu-da-hap-sa",
+      "to": "xa-thanh-thoi",
+      "type": "located_in"
+    },
+    {
+      "from": "nha-thuoc-fpt-long-chau-77-duong-1-5-vinh-long",
+      "to": "p-long-chau",
+      "type": "located_in"
+    },
+    {
+      "from": "nha-thuoc-fpt-long-chau-1237-quoc-lo-54-vinh-long",
+      "to": "p-tan-quoi",
+      "type": "located_in"
+    },
+    {
+      "from": "vietcombank-chi-nhanh-vinh-long-vinh-long",
+      "to": "p-long-chau",
+      "type": "located_in"
+    },
+    {
+      "from": "bidv-chi-nhanh-vinh-long-vinh-long",
+      "to": "p-long-chau",
+      "type": "located_in"
+    },
+    {
+      "from": "atm-vietcombank-benh-vien-da-khoa-tinh-vinh-long",
+      "to": "p-phuoc-hau",
+      "type": "located_in"
+    },
+    {
+      "from": "cua-hang-viettel-store-trung-nu-vuong-vinh-long",
+      "to": "p-long-chau",
+      "type": "located_in"
+    },
+    {
+      "from": "cua-hang-viettel-pham-hung-vinh-long",
+      "to": "p-long-chau",
+      "type": "located_in"
+    },
+    {
+      "from": "cua-hang-viettel-dinh-tien-hoang-vinh-long",
+      "to": "p-tan-hanh",
+      "type": "located_in"
+    },
+    {
+      "from": "benh-vien-da-khoa-minh-duc-ben-tre-ben-tre",
+      "to": "p-son-dong",
+      "type": "located_in"
+    },
+    {
+      "from": "nha-thuoc-fpt-long-chau-108a3-dong-khoi-ben-tre",
+      "to": "p-phu-tan",
+      "type": "located_in"
+    },
+    {
+      "from": "vinmart-vinmart-vinh-long-vinh-long",
+      "to": "p-long-chau",
+      "type": "located_in"
+    },
+    {
+      "from": "cua-hang-ocop-vinh-long-trung-tam-xuc-tien-thuong-mai-vinh-long",
+      "to": "p-phuoc-hau",
+      "type": "located_in"
+    },
+    {
+      "from": "showroom-cacao-mekong-ben-tre-cacao-ben-tre",
+      "to": "xa-tan-phu",
+      "type": "located_in"
+    },
+    {
+      "from": "cua-hang-qua-tang-dac-san-ben-tre-mekong-delta-ben-tre",
+      "to": "p-phu-tuc",
+      "type": "located_in"
+    },
+    {
+      "from": "cua-hang-dac-san-mien-tay-tra-vinh-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "co-so-muoi-tom-va-mam-ba-dong-tra-vinh",
+      "to": "xa-long-huu",
+      "type": "located_in"
+    },
+    {
+      "from": "nha-trung-bay-va-ban-san-pham-ocop-cau-ngang-tra-vinh",
+      "to": "xa-cau-ngang",
+      "type": "located_in"
+    },
+    {
+      "from": "cho-dem-tra-vinh-pho-di-bo-hung-vuong-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "rach-cai-ca-vinh-long",
+      "to": "p-thanh-duc",
+      "type": "located_in"
+    },
+    {
+      "from": "song-ham-luong-ben-tre",
+      "to": "xa-dong-khoi",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-tom-cang-xanh-hai-lua-cu-lao-an-binh-vinh-long",
+      "to": "xa-an-binh",
+      "type": "located_in"
+    },
+    {
+      "from": "nha-hang-hai-san-song-tra-binh-dai-ben-tre",
+      "to": "xa-phuoc-my-trung",
+      "type": "located_in"
+    },
+    {
+      "from": "tiem-an-dong-khanh-vinh-long",
+      "to": "p-long-chau",
+      "type": "located_in"
+    },
+    {
+      "from": "hu-tieu-nam-vang-99-vinh-long",
+      "to": "p-phuoc-hau",
+      "type": "located_in"
+    },
+    {
+      "from": "hu-tieu-phuong-phuong-hu-tieu-bun-mam-vinh-long",
+      "to": "p-long-chau",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-45-sui-cao-chao-long-hu-tieu-vinh-long",
+      "to": "p-long-chau",
+      "type": "located_in"
+    },
+    {
+      "from": "bun-nuoc-leo-tra-vinh-tai-vinh-long",
+      "to": "p-phuoc-hau",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-thuan-phuc-vinh-long",
+      "to": "p-phuoc-hau",
+      "type": "located_in"
+    },
+    {
+      "from": "hu-tieu-xua-va-nay-vinh-long",
+      "to": "p-thanh-duc",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-chao-luon-ba-nam-cho-vinh-long",
+      "to": "p-long-chau",
+      "type": "located_in"
+    },
+    {
+      "from": "nha-hang-ben-nuoc-khu-du-lich-my-hoa-vinh-long",
+      "to": "p-cai-von",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-co-tu-lau-mam-xa-hoa-ninh-vinh-long",
+      "to": "xa-an-binh",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-an-song-hau-ben-do-tra-on-vinh-long",
+      "to": "p-tra-on",
+      "type": "located_in"
+    },
+    {
+      "from": "nha-hang-binh-an-khu-cong-nghiep-hoa-phu-vinh-long",
+      "to": "p-tan-ngai",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-oc-co-ba-gan-cau-my-thuan-phia-vinh-long",
+      "to": "p-tan-ngai",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-lau-ca-keo-chu-tam-huyen-vung-liem-vinh-long",
+      "to": "p-vung-liem",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-hu-tieu-nam-vang-chu-teo-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-bun-nuoc-leo-cho-tra-vinh-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "hu-tieu-ba-tam-cau-ke-tra-vinh",
+      "to": "xa-cau-ke",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-pho-bac-nam-hung-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-hu-tieu-tieu-can-hu-tieu-muc-tra-vinh",
+      "to": "p-tieu-can",
+      "type": "located_in"
+    },
+    {
+      "from": "banh-mi-co-sau-gan-truong-ai-hoc-tra-vinh-tra-vinh",
+      "to": "p-hoa-thuan",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-bun-rieu-cua-cho-cu-tra-vinh-tra-vinh",
+      "to": "p-long-duc",
+      "type": "located_in"
+    },
+    {
+      "from": "hu-tieu-go-duyen-hai-tra-vinh",
+      "to": "p-duyen-hai",
+      "type": "located_in"
+    },
+    {
+      "from": "nha-hang-bien-nho-ba-ong-tra-vinh",
+      "to": "p-truong-long-hoa",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-hai-san-duyen-hai-cho-duyen-hai-tra-vinh",
+      "to": "p-duyen-hai",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-nhau-bo-song-ba-ke-tieu-can-tra-vinh",
+      "to": "p-tieu-can",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-hai-san-my-long-bai-bien-my-long-tra-vinh",
+      "to": "xa-my-long",
+      "type": "located_in"
+    },
+    {
+      "from": "chao-am-ba-nam-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "bun-nuoc-leo-huong-tra-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "bun-nuoc-leo-cay-sung-tra-vinh",
+      "to": "p-nguyet-hoa",
+      "type": "located_in"
+    },
+    {
+      "from": "bun-suong-ut-tam-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "banh-trang-boti-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "chao-am-cho-chau-thanh-tra-vinh",
+      "to": "xa-chau-thanh",
+      "type": "located_in"
+    },
+    {
+      "from": "an-vat-kimoochi-tra-vinh",
+      "to": "p-hoa-thuan",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-com-binh-dan-cho-tra-vinh-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-com-tam-sau-tinh-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-nhau-ben-ca-tra-vinh-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-di-bay-com-nieu-tra-vinh",
+      "to": "p-long-duc",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-com-binh-dan-ut-huong-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-nhau-hai-san-bien-ba-dong-tra-vinh",
+      "to": "p-truong-long-hoa",
+      "type": "located_in"
+    },
+    {
+      "from": "van-thanh-mieu",
+      "to": "p-phuoc-hau",
+      "type": "located_in"
+    },
+    {
+      "from": "lo-gach-mang-thit",
+      "to": "xa-nhon-phu",
+      "type": "located_in"
+    },
+    {
+      "from": "vung-cam-sanh-tra-on",
+      "to": "xa-hoa-binh",
+      "type": "located_in"
+    },
+    {
+      "from": "ben-xe-cho-lach-ben-tre",
+      "to": "xa-cho-lach",
+      "type": "located_in"
+    },
+    {
+      "from": "ben-tau-du-lich-tp-ben-tre-ben-tre",
+      "to": "p-an-hoi",
+      "type": "located_in"
+    },
+    {
+      "from": "ben-pha-tan-phu-chau-thanh-ben-tre",
+      "to": "xa-tan-phu",
+      "type": "located_in"
+    },
+    {
+      "from": "ben-xe-duyen-hai-tx-duyen-hai-tra-vinh",
+      "to": "p-duyen-hai",
+      "type": "located_in"
+    },
+    {
+      "from": "ben-xe-tra-cu-tra-vinh",
+      "to": "xa-tra-cu",
+      "type": "located_in"
+    },
+    {
+      "from": "ben-xe-cau-ke-tra-vinh",
+      "to": "xa-cau-ke",
+      "type": "located_in"
+    },
+    {
+      "from": "ben-xe-cau-ngang-tra-vinh",
+      "to": "xa-cau-ngang",
+      "type": "located_in"
+    },
+    {
+      "from": "ben-pha-dai-ngai-dau-cau-quan-tra-vinh-tra-vinh",
+      "to": "xa-hiep-my",
+      "type": "located_in"
+    },
+    {
+      "from": "tuyen-xe-buyt-noi-tinh-tra-vinh-cac-tuyen-tp-tra-vinh-di-huyen-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "ben-xe-tieu-can-tra-vinh",
+      "to": "p-tieu-can",
+      "type": "located_in"
+    },
+    {
+      "from": "dinh-binh-hoa-ben-tre",
+      "to": "xa-giong-trom",
+      "type": "located_in"
+    },
+    {
+      "from": "ca-phe-nha-co-vinh-long-khu-nha-co-huynh-thuy-le-vinh-long",
+      "to": "p-long-chau",
+      "type": "located_in"
+    },
+    {
+      "from": "ca-phe-song-tien-ben-ninh-kieu-vinh-long-vinh-long",
+      "to": "p-long-chau",
+      "type": "located_in"
+    },
+    {
+      "from": "ca-phe-vuon-cau-khu-con-phung-con-phuoc-vinh-long",
+      "to": "xa-an-binh",
+      "type": "located_in"
+    },
+    {
+      "from": "ca-phe-highland-vincom-vinh-long-vinh-long",
+      "to": "p-phuoc-hau",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-che-ba-tu-cho-vinh-long-vinh-long",
+      "to": "p-long-chau",
+      "type": "located_in"
+    },
+    {
+      "from": "banh-uot-banh-beo-cho-vung-liem-vinh-long",
+      "to": "p-vung-liem",
+      "type": "located_in"
+    },
+    {
+      "from": "sinh-to-ha-tien-duong-pham-thai-buong-vinh-long",
+      "to": "p-phuoc-hau",
+      "type": "located_in"
+    },
+    {
+      "from": "che-khuc-bach-khu-dem-vinh-long-cho-dem-phuong-1-vinh-long",
+      "to": "p-long-chau",
+      "type": "located_in"
+    },
+    {
+      "from": "am-thuc-chay-hoa-sen-vinh-long",
+      "to": "p-phuoc-hau",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-chay-an-lac-vinh-long",
+      "to": "p-phuoc-hau",
+      "type": "located_in"
+    },
+    {
+      "from": "ca-phe-xua-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-che-ba-hai-cho-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "ca-phe-bo-song-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-che-banh-lot-khmer-gan-ao-ba-om-tra-vinh",
+      "to": "p-nguyet-hoa",
+      "type": "located_in"
+    },
+    {
+      "from": "ca-phe-vuon-dua-tra-vinh",
+      "to": "p-hoa-thuan",
+      "type": "located_in"
+    },
+    {
+      "from": "tiem-banh-che-gan-chua-ang-angkor-borei-tra-vinh",
+      "to": "p-nguyet-hoa",
+      "type": "located_in"
+    },
+    {
+      "from": "ca-phe-cay-bang-phuong-4-tra-vinh",
+      "to": "p-long-duc",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-chao-ca-ro-dong-cho-cau-ke-tra-vinh",
+      "to": "xa-cau-ke",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-hu-tieu-nguoi-hoa-khu-phuong-1-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-com-chay-gan-chua-ang-angkor-rajaborei-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-lau-mam-mien-tay-cho-tieu-can-tra-vinh",
+      "to": "p-tieu-can",
+      "type": "located_in"
+    },
+    {
+      "from": "ngay-hoi-banh-dan-gian-nam-bo-ket-hop-hoi-cho-ocop-vinh-long-vinh-long",
+      "to": "p-long-chau",
+      "type": "located_in"
+    },
+    {
+      "from": "hoi-cho-dac-san-vung-mien-khu-vuc-dbscl-vinh-long-vinh-long",
+      "to": "p-long-chau",
+      "type": "located_in"
+    },
+    {
+      "from": "khu-du-lich-sinh-thai-truong-huy-vinh-long",
+      "to": "p-long-chau",
+      "type": "located_in"
+    },
+    {
+      "from": "san-chim-vam-ho-ben-tre",
+      "to": "p-ba-tri",
+      "type": "located_in"
+    },
+    {
+      "from": "du-lich-sinh-thai-cong-dong-thanh-phong-ben-tre",
+      "to": "xa-an-qui",
+      "type": "located_in"
+    },
+    {
+      "from": "con-oc-giong-trom-ben-tre",
+      "to": "xa-luong-hoa",
+      "type": "located_in"
+    },
+    {
+      "from": "khu-sinh-thai-gio-duoc-thanh-phu-ben-tre",
+      "to": "xa-thanh-phu",
+      "type": "located_in"
+    },
+    {
+      "from": "vuon-dua-sinh-thai-cau-ke-tra-vinh",
+      "to": "xa-cau-ke",
+      "type": "located_in"
+    },
+    {
+      "from": "con-ngheu-bai-vang-bien-tra-vinh",
+      "to": "xa-chau-thanh",
+      "type": "located_in"
+    },
+    {
+      "from": "cu-lao-tan-quy-cang-long-tra-vinh",
+      "to": "p-cang-long",
+      "type": "located_in"
+    },
+    {
+      "from": "cua-song-cung-hau-ca-heo-cau-ngang-tra-vinh",
+      "to": "xa-cau-ngang",
+      "type": "located_in"
+    },
+    {
+      "from": "can-cu-cach-mang-cai-ngang-vinh-long",
+      "to": "xa-cai-ngang",
+      "type": "located_in"
+    },
+    {
+      "from": "cho-noi-tra-on",
+      "to": "xa-luc-si-thanh",
+      "type": "located_in"
+    },
+    {
+      "from": "bao-tang-van-hoa-dan-toc-khmer",
+      "to": "p-nguyet-hoa",
+      "type": "located_in"
+    },
+    {
+      "from": "khu-van-hoa-du-lich-ao-ba-om",
+      "to": "p-nguyet-hoa",
+      "type": "located_in"
+    },
+    {
+      "from": "cu-lao-an-binh",
+      "to": "xa-an-binh",
+      "type": "located_in"
+    },
+    {
+      "from": "muoi-ba-tri",
+      "to": "p-ben-tre",
+      "type": "located_in"
+    },
+    {
+      "from": "chua-phuoc-hau-ngai-tu",
+      "to": "xa-ngai-tu",
+      "type": "located_in"
+    },
+    {
+      "from": "khu-luu-niem-thu-tuong-vo-van-kiet",
+      "to": "p-vung-liem",
+      "type": "located_in"
+    },
+    {
+      "from": "chua-shanghamangala-khmer-vung-liem",
+      "to": "xa-trung-thanh",
+      "type": "located_in"
+    },
+    {
+      "from": "cu-lao-dai-vung-liem",
+      "to": "xa-quoi-thien",
+      "type": "located_in"
+    },
+    {
+      "from": "le-hoi-van-thanh-mieu",
+      "to": "p-phuoc-hau",
+      "type": "located_in"
+    },
+    {
+      "from": "le-hoi-ok-om-bok",
+      "to": "p-nguyet-hoa",
+      "type": "located_in"
+    },
+    {
+      "from": "khach-san-nghia-hiep",
+      "to": "xa-ngai-tu",
+      "type": "located_in"
+    },
+    {
+      "from": "khach-san-tan-thanh-6",
+      "to": "xa-trung-thanh",
+      "type": "located_in"
+    },
+    {
+      "from": "coco-riverside-lodge",
+      "to": "xa-trung-ngai",
+      "type": "located_in"
+    },
+    {
+      "from": "khach-san-diamond-stars",
+      "to": "p-an-hoi",
+      "type": "located_in"
+    },
+    {
+      "from": "ks-nh-hung-vuong",
+      "to": "p-an-hoi",
+      "type": "located_in"
+    },
+    {
+      "from": "cho-dem-ben-tre",
+      "to": "p-an-hoi",
+      "type": "located_in"
+    },
+    {
+      "from": "chua-gia-kiet",
+      "to": "xa-tra-con",
+      "type": "located_in"
+    },
+    {
+      "from": "khu-du-lich-sinh-thai-anh-ba-khia",
+      "to": "p-binh-dai",
+      "type": "located_in"
+    },
+    {
+      "from": "sokfarm-tieu-can",
+      "to": "p-tieu-can",
+      "type": "located_in"
+    },
+    {
+      "from": "khu-pho-am-thuc-bo-ho",
+      "to": "p-an-hoi",
+      "type": "located_in"
+    },
+    {
+      "from": "chua-van-phuoc-binh-dai",
+      "to": "xa-phu-thuan",
+      "type": "located_in"
+    },
+    {
+      "from": "bun-suong-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "chao-am-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "located_in"
+    },
+    {
+      "from": "loi-choi-sa-ot-tra-vinh",
+      "to": "xa-chau-thanh",
+      "type": "located_in"
+    },
+    {
+      "from": "san-chim-vam-ho-ba-tri",
+      "to": "p-ben-tre",
+      "type": "located_in"
+    },
+    {
+      "from": "mat-ong-hoa-dua-ben-tre",
+      "to": "p-ben-tre",
+      "type": "located_in"
+    },
+    {
+      "from": "buoi-da-xanh-ben-tre",
+      "to": "p-phu-tan",
+      "type": "located_in"
+    },
+    {
+      "from": "lau-mam-ben-tre",
+      "to": "p-phu-khuong",
+      "type": "located_in"
+    },
+    {
+      "from": "chua-ky-son-khmer-loan-my",
+      "to": "xa-ngai-tu",
+      "type": "located_in"
+    },
+    {
+      "from": "lang-det-chieu-cu-lao-dai",
+      "to": "xa-quoi-thien",
+      "type": "located_in"
+    },
+    {
+      "from": "khu-sinh-thai-nha-xua-long-ho",
+      "to": "p-phuoc-hau",
+      "type": "located_in"
+    },
+    {
+      "from": "khu-du-lich-truong-huy-long-ho",
+      "to": "p-thanh-duc",
+      "type": "located_in"
+    },
+    {
+      "from": "lang-nghe-cay-giong-cho-lach",
+      "to": "xa-cho-lach",
+      "type": "located_in"
+    },
+    {
+      "from": "sau-rieng-cho-lach",
+      "to": "xa-cho-lach",
+      "type": "located_in"
+    },
+    {
+      "from": "lang-van-hoa-du-lich-cho-lach",
+      "to": "xa-cho-lach",
+      "type": "located_in"
+    },
+    {
+      "from": "rooster-mekong-resort",
+      "to": "xa-dong-khoi",
+      "type": "located_in"
+    },
+    {
+      "from": "nha-tho-giao-xu-cai-nhum",
+      "to": "xa-cho-lach",
+      "type": "located_in"
+    },
+    {
+      "from": "vuon-kieng-thu-nam-cong",
+      "to": "xa-cho-lach",
+      "type": "located_in"
+    },
+    {
+      "from": "sau-rieng-cap-dong-chanh-thu",
+      "to": "xa-cho-lach",
+      "type": "located_in"
+    },
+    {
+      "from": "keo-dua-tuyet-phung",
+      "to": "p-mo-cay",
+      "type": "located_in"
+    },
+    {
+      "from": "ruou-gia-bao",
+      "to": "xa-tan-thanh-binh",
+      "type": "located_in"
+    },
+    {
+      "from": "lang-nghe-thu-cong-my-nghe-dua-mo-cay-nam",
+      "to": "p-mo-cay",
+      "type": "located_in"
+    },
+    {
+      "from": "lang-nghe-tre-truc-ba-tri",
+      "to": "p-ba-tri",
+      "type": "located_in"
+    },
+    {
+      "from": "bien-con-nhan",
+      "to": "p-ba-tri",
+      "type": "located_in"
+    },
+    {
+      "from": "chua-khai-tuong",
+      "to": "p-ba-tri",
+      "type": "located_in"
+    },
+    {
+      "from": "den-that-phu-vo-mieu",
+      "to": "p-ba-tri",
+      "type": "located_in"
+    },
+    {
+      "from": "chua-ang-wat-angkor-raig-borei",
+      "to": "p-nguyet-hoa",
+      "type": "located_in"
+    },
+    {
+      "from": "khu-tuong-niem-nguyen-thi-ut-ut-tich",
+      "to": "xa-cau-ke",
+      "type": "located_in"
+    },
+    {
+      "from": "bun-nuoc-leo-tieu-can",
+      "to": "p-tieu-can",
+      "type": "located_in"
+    },
+    {
+      "from": "chua-giac-linh-chua-doi",
+      "to": "xa-cau-ngang",
+      "type": "located_in"
+    },
+    {
+      "from": "san-pham-ocop-cau-ngang",
+      "to": "xa-cau-ngang",
+      "type": "located_in"
+    },
+    {
+      "from": "tom-kho-hai-kham",
+      "to": "xa-cau-ngang",
+      "type": "located_in"
+    },
+    {
+      "from": "bun-tuoi-an-dao",
+      "to": "xa-cau-ngang",
+      "type": "located_in"
+    },
+    {
+      "from": "ruou-quach-cau-ngang",
+      "to": "xa-cau-ngang",
+      "type": "located_in"
+    },
+    {
+      "from": "chua-phno-om-pung-chua-long-truong",
+      "to": "xa-tra-cu",
+      "type": "located_in"
+    },
+    {
+      "from": "san-pham-ocop-thu-cong-my-nghe-tra-cu",
+      "to": "xa-tra-cu",
+      "type": "located_in"
+    },
+    {
+      "from": "di-tich-lich-su-luu-cu",
+      "to": "xa-tra-cu",
+      "type": "located_in"
+    },
+    {
+      "from": "dinh-vinh-xuan",
+      "to": "xa-vinh-xuan",
+      "type": "located_in"
+    },
+    {
+      "from": "di-tich-ao-ho-co-vinh-xuan",
+      "to": "xa-vinh-xuan",
+      "type": "located_in"
+    },
+    {
+      "from": "tau-hu-ky-my-hoa-binh-minh",
+      "to": "p-cai-von",
+      "type": "located_in"
+    },
+    {
+      "from": "khu-du-lich-sinh-thai-hoang-quan",
+      "to": "p-cai-von",
+      "type": "located_in"
+    },
+    {
+      "from": "buoi-nam-roi-my-hoa",
+      "to": "p-cai-von",
+      "type": "located_in"
+    },
+    {
+      "from": "tau-hu-ky-cai-von",
+      "to": "p-cai-von",
+      "type": "located_in"
+    },
+    {
+      "from": "vuon-thanh-tra-dong-thanh",
+      "to": "p-dong-thanh",
+      "type": "located_in"
+    },
+    {
+      "from": "binh-minh-ecolodge-riverside",
+      "to": "p-cai-von",
+      "type": "located_in"
+    },
+    {
+      "from": "trai-nghiem-cau-ca-cau-tom-song-hau",
+      "to": "p-cai-von",
+      "type": "located_in"
+    },
+    {
+      "from": "tra-kho-qua-rung-cai-von",
+      "to": "p-cai-von",
+      "type": "located_in"
+    },
+    {
+      "from": "tra-gung-mat-ong-dong-binh",
+      "to": "p-dong-thanh",
+      "type": "located_in"
+    },
+    {
+      "from": "tra-gung-mat-ong-nguyen-chat-gingo",
+      "to": "p-dong-thanh",
+      "type": "located_in"
+    },
+    {
+      "from": "cong-vien-29-tan-quoi",
+      "to": "p-tan-quoi",
+      "type": "located_in"
+    },
+    {
+      "from": "cho-tan-quoi",
+      "to": "p-tan-quoi",
+      "type": "located_in"
+    },
+    {
+      "from": "chua-hung-hue",
+      "to": "p-tan-quoi",
+      "type": "located_in"
+    },
+    {
+      "from": "chua-ong",
+      "to": "xa-tan-luoc",
+      "type": "located_in"
+    },
+    {
+      "from": "cong-vien-29",
+      "to": "p-tan-quoi",
+      "type": "located_in"
+    },
+    {
+      "from": "cho-tan-thanh",
+      "to": "xa-tan-luoc",
+      "type": "located_in"
+    },
+    {
+      "from": "man-an-phuoc-ocop",
+      "to": "xa-tan-luoc",
+      "type": "located_in"
+    },
+    {
+      "from": "khoai-lang-tan-thanh-ocop",
+      "to": "xa-tan-luoc",
+      "type": "located_in"
+    },
+    {
+      "from": "cong-vien-tuong-dai-chien-thang-mau-than",
+      "to": "p-phuoc-hau",
+      "type": "located_in"
+    },
+    {
+      "from": "tong-phuoc-hiep",
+      "to": "p-phuoc-hau",
+      "type": "located_in"
+    },
+    {
+      "from": "nguyen-thong",
+      "to": "p-phuoc-hau",
+      "type": "located_in"
+    },
+    {
+      "from": "chua-ong-that-phu-mieu",
+      "to": "p-thanh-duc",
+      "type": "located_in"
+    },
+    {
+      "from": "chua-quan-am-phuong-8",
+      "to": "p-tan-hanh",
+      "type": "located_in"
+    },
+    {
+      "from": "tinh-xa-ngoc-nhan",
+      "to": "p-tan-hanh",
+      "type": "located_in"
+    },
+    {
+      "from": "rau-cau-vinh-quang",
+      "to": "p-tan-hanh",
+      "type": "located_in"
+    },
+    {
+      "from": "dinh-tan-ngai",
+      "to": "p-tan-ngai",
+      "type": "located_in"
+    },
+    {
+      "from": "dinh-tan-hoa-w3",
+      "to": "p-tan-ngai",
+      "type": "located_in"
+    },
+    {
+      "from": "khu-du-lich-truong-an",
+      "to": "p-tan-ngai",
+      "type": "located_in"
+    },
+    {
+      "from": "khu-du-lich-sinh-thai-nha-xua",
+      "to": "p-phuoc-hau",
+      "type": "located_in"
+    },
+    {
+      "from": "dua-ngo-luc-binh-thanh-quoi",
+      "to": "xa-phu-quoi",
+      "type": "located_in"
+    },
+    {
+      "from": "lang-hoa-mai-binh-hoa-phuoc",
+      "to": "xa-an-binh",
+      "type": "located_in"
+    },
+    {
+      "from": "rau-thom-ocop-hop-tac-xa-phuoc-hau",
+      "to": "p-phuoc-hau",
+      "type": "located_in"
+    },
+    {
+      "from": "diem-du-lich-nha-dua-cocohome",
+      "to": "xa-an-binh",
+      "type": "located_in"
+    },
+    {
+      "from": "mekong-pottery-homestay",
+      "to": "p-thanh-duc",
+      "type": "located_in"
+    },
+    {
+      "from": "thanh-long-vang-thanh-duc-ocop-3-sao",
+      "to": "p-thanh-duc",
+      "type": "located_in"
+    },
+    {
+      "from": "lang-nghe-gom-truyen-thong-long-ho",
+      "to": "p-thanh-duc",
+      "type": "located_in"
+    },
+    {
+      "from": "khu-luu-niem-chu-tich-hoi-dong-bo-truong-pham-hung",
+      "to": "p-long-ho",
+      "type": "located_in"
+    },
+    {
+      "from": "cu-lao-an-binh-bao-gom-xa-dong-phu",
+      "to": "xa-an-binh",
+      "type": "located_in"
+    },
+    {
+      "from": "lang-nghe-cham-non-la-long-ho",
+      "to": "p-long-ho",
+      "type": "located_in"
+    },
+    {
+      "from": "mat-ong-hai-nuong",
+      "to": "xa-an-binh",
+      "type": "located_in"
+    },
+    {
+      "from": "pham-hung-pham-van-thien",
+      "to": "p-long-ho",
+      "type": "located_in"
+    },
+    {
+      "from": "chom-chom-binh-hoa-phuoc-rambutan",
+      "to": "xa-an-binh",
+      "type": "located_in"
+    },
+    {
+      "from": "khu-di-san-lo-gach-mang-thit",
+      "to": "xa-nhon-phu",
+      "type": "located_in"
+    },
+    {
+      "from": "cuu-long-my-tuu-ruou-ocop-mang-thit",
+      "to": "xa-cai-nhum",
+      "type": "located_in"
+    },
+    {
+      "from": "vung-di-san-duong-dai-mang-thit-vuong-quoc-lo-gach",
+      "to": "xa-nhon-phu",
+      "type": "located_in"
+    },
+    {
+      "from": "ruou-truyen-thong-cuu-long-cuu-long-my-tuu",
+      "to": "xa-cai-nhum",
+      "type": "located_in"
+    },
+    {
+      "from": "chau-van-sanh-cong-tu-loi",
+      "to": "xa-cai-nhum",
+      "type": "located_in"
+    },
+    {
+      "from": "xa-chanh-an",
+      "to": "xa-cai-nhum",
+      "type": "located_in"
+    },
+    {
+      "from": "dinh-hoa-tinh",
+      "to": "xa-binh-phuoc",
+      "type": "located_in"
+    },
+    {
+      "from": "nha-thuyen-nam-cao-homestay",
+      "to": "xa-binh-phuoc",
+      "type": "located_in"
+    },
+    {
+      "from": "quan-ca-phe-nha-gach-gom-duong-dai",
+      "to": "xa-nhon-phu",
+      "type": "located_in"
+    },
+    {
+      "from": "cua-hang-ocop-vung-liem",
+      "to": "p-vung-liem",
+      "type": "located_in"
+    },
+    {
+      "from": "tuong-dai-doc-binh-le-can-nguyen-giao-va-di-tich-ho-vung-linh",
+      "to": "p-vung-liem",
+      "type": "located_in"
+    },
+    {
+      "from": "lang-se-loi-lac-va-dan-lat-vung-liem",
+      "to": "xa-trung-ngai",
+      "type": "located_in"
+    },
+    {
+      "from": "lang-nghe-trong-lac-trung-thanh-dong",
+      "to": "xa-trung-ngai",
+      "type": "located_in"
+    },
+    {
+      "from": "gao-huu-co-tan-dat",
+      "to": "xa-trung-ngai",
+      "type": "located_in"
+    },
+    {
+      "from": "thoai-ngoc-hau",
+      "to": "xa-quoi-thien",
+      "type": "located_in"
+    },
+    {
+      "from": "vuon-trai-cay-cu-lao-dai",
+      "to": "xa-quoi-thien",
+      "type": "located_in"
+    },
+    {
+      "from": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+      "to": "xa-quoi-thien",
+      "type": "located_in"
+    },
+    {
+      "from": "lang-nghe-dan-chieu-va-lam-banh-xe-may-tre",
+      "to": "xa-quoi-thien",
+      "type": "located_in"
+    },
+    {
+      "from": "homestay-cu-lao-dai",
+      "to": "xa-quoi-thien",
+      "type": "located_in"
+    },
+    {
+      "from": "bot-rau-ma-hoang-gia",
+      "to": "xa-hieu-thanh",
+      "type": "located_in"
+    },
+    {
+      "from": "khu-du-lich-sala",
+      "to": "p-tam-binh",
+      "type": "located_in"
+    },
+    {
+      "from": "lang-nghe-dan-luc-binh-ngai-tu-binh-ninh",
+      "to": "xa-ngai-tu",
+      "type": "located_in"
+    },
+    {
+      "from": "chua-ky-son-ky-son",
+      "to": "xa-ngai-tu",
+      "type": "located_in"
+    },
+    {
+      "from": "khu-du-lich-sinh-thai-sala",
+      "to": "p-tam-binh",
+      "type": "located_in"
+    },
+    {
+      "from": "du-lich-sinh-thai-cu-lao-may-nam-khanh",
+      "to": "xa-luc-si-thanh",
+      "type": "located_in"
+    },
+    {
+      "from": "cu-lao-may-cu-lao-luc-si-thanh",
+      "to": "xa-luc-si-thanh",
+      "type": "located_in"
+    },
+    {
+      "from": "banh-trang-ngot-le-hang-htx-banh-trang-cu-lao-may",
+      "to": "xa-luc-si-thanh",
+      "type": "located_in"
+    },
+    {
+      "from": "kho-ca-loc-phu-thanh",
+      "to": "xa-luc-si-thanh",
+      "type": "located_in"
+    },
+    {
+      "from": "homestay-cu-lao-may",
+      "to": "xa-luc-si-thanh",
+      "type": "located_in"
+    },
+    {
+      "from": "lang-nghe-keo-dua-ba-tri",
+      "to": "p-ba-tri",
+      "type": "located_in"
+    },
+    {
+      "from": "dua-sap-cau-ke-dac-san-ben-tre",
+      "to": "p-ba-tri",
+      "type": "located_in"
+    },
+    {
+      "from": "bai-bien-ba-tri",
+      "to": "p-ba-tri",
+      "type": "located_in"
+    },
+    {
+      "from": "lang-nghe-thach-dua-hung-phong",
+      "to": "p-ben-tre",
+      "type": "located_in"
+    },
+    {
+      "from": "nguyen-ngoc-thang",
+      "to": "xa-luong-hoa",
+      "type": "located_in"
+    },
+    {
+      "from": "buoi-da-xanh-giong-trom",
+      "to": "xa-giong-trom",
+      "type": "located_in"
+    },
+    {
+      "from": "banh-phong-mi-giong-trom",
+      "to": "xa-giong-trom",
+      "type": "located_in"
+    },
+    {
+      "from": "den-tho-tuong-quan-nguyen-ngoc-thang",
+      "to": "xa-giong-trom",
+      "type": "located_in"
+    },
+    {
+      "from": "dua-xiem-xanh-giong-trom",
+      "to": "xa-giong-trom",
+      "type": "located_in"
+    },
+    {
+      "from": "ca-kho-dac-san-thanh-phong-ocop",
+      "to": "xa-an-qui",
+      "type": "located_in"
+    },
+    {
+      "from": "gao-sach-tom-lua-thanh-phu-ocop",
+      "to": "xa-thanh-phu",
+      "type": "located_in"
+    },
+    {
+      "from": "xoai-tu-quy-va-cua-bien-thanh-phong-ocop",
+      "to": "xa-an-qui",
+      "type": "located_in"
+    },
+    {
+      "from": "du-lich-sinh-thai-bien-thanh-phu",
+      "to": "xa-thanh-phu",
+      "type": "located_in"
+    },
+    {
+      "from": "rung-ngap-man-thanh-phong",
+      "to": "p-ben-tre",
+      "type": "located_in"
+    },
+    {
+      "from": "kho-ca-bong-lau-ca-du-do-ca-bong-cat-mot-nang-thanh-phong",
+      "to": "xa-an-qui",
+      "type": "located_in"
+    },
+    {
+      "from": "lang-nghe-che-bien-hai-san-kho-thanh-phong",
+      "to": "xa-an-qui",
+      "type": "located_in"
+    },
+    {
+      "from": "kho-ca-bien-thanh-phu",
+      "to": "xa-thanh-phu",
+      "type": "located_in"
+    },
+    {
+      "from": "cua-bien-va-ngheu-thanh-phu",
+      "to": "xa-thanh-phu",
+      "type": "located_in"
+    },
+    {
+      "from": "bai-bien-thanh-phu",
+      "to": "xa-thanh-phu",
+      "type": "located_in"
+    },
+    {
+      "from": "khu-bao-ve-canh-quan-rung-ngap-man-thanh-phu",
+      "to": "xa-thanh-phu",
+      "type": "located_in"
+    },
+    {
+      "from": "gao-sach-lua-tom-thanh-phu",
+      "to": "xa-thanh-phu",
+      "type": "located_in"
+    },
+    {
+      "from": "ngheu-so-cua-bien-thanh-phu",
+      "to": "xa-thanh-phu",
+      "type": "located_in"
+    },
+    {
+      "from": "duong-ho-chi-minh-tren-bien-ben-xuat-phat-thanh-phong",
+      "to": "xa-an-qui",
+      "type": "located_in"
+    },
+    {
+      "from": "cua-bien-thanh-phu",
+      "to": "xa-an-qui",
+      "type": "located_in"
+    },
+    {
+      "from": "ca-chuon-kho-binh-dai",
+      "to": "p-binh-dai",
+      "type": "located_in"
+    },
+    {
+      "from": "tom-kho-binh-dai",
+      "to": "p-binh-dai",
+      "type": "located_in"
+    },
+    {
+      "from": "mut-dua-huu-co-binh-dai",
+      "to": "p-binh-dai",
+      "type": "located_in"
+    },
+    {
+      "from": "rung-ngap-man-binh-dai",
+      "to": "p-binh-dai",
+      "type": "located_in"
+    },
+    {
+      "from": "ca-bong-lau-mot-nang-binh-dai",
+      "to": "p-binh-dai",
+      "type": "located_in"
+    },
+    {
+      "from": "banh-xeo-bien-binh-dai",
+      "to": "p-binh-dai",
+      "type": "located_in"
+    },
+    {
+      "from": "con-tam-hiep-dao-tam-hiep",
+      "to": "xa-phu-thuan",
+      "type": "located_in"
+    },
+    {
+      "from": "ca-doi-kho-mot-nang-binh-dai",
+      "to": "p-binh-dai",
+      "type": "located_in"
+    },
+    {
+      "from": "oc-viet-ben-tre",
+      "to": "p-binh-dai",
+      "type": "located_in"
+    },
+    {
+      "from": "tom-su-binh-dai",
+      "to": "p-binh-dai",
+      "type": "located_in"
+    },
+    {
+      "from": "so-diep-binh-dai",
+      "to": "p-binh-dai",
+      "type": "located_in"
+    },
+    {
+      "from": "homestay-nam-ham-luong",
+      "to": "p-ben-tre",
+      "type": "located_in"
+    },
+    {
+      "from": "nuoc-cot-dua-va-san-pham-dua-ocop-beinco",
+      "to": "xa-tan-thanh-binh",
+      "type": "located_in"
+    },
+    {
+      "from": "du-lich-sinh-thai-miet-vuon-mo-cay-bac",
+      "to": "xa-tan-thanh-binh",
+      "type": "located_in"
+    },
+    {
+      "from": "chu-u-rang-me",
+      "to": "xa-tra-cu",
+      "type": "located_in"
+    },
+    {
+      "from": "chua-sa-leng-kompong-chray",
+      "to": "xa-tap-son",
+      "type": "located_in"
+    },
+    {
+      "from": "rung-ngap-man-long-vinh-duyen-hai",
+      "to": "p-duyen-hai",
+      "type": "located_in"
+    },
+    {
+      "from": "vien-chau-huynh-tri-ba",
+      "to": "p-duyen-hai",
+      "type": "located_in"
+    },
+    {
+      "from": "bun-nuoc-leo-tra-cu",
+      "to": "xa-tra-cu",
+      "type": "located_in"
+    },
+    {
+      "from": "cho-ba-tri",
+      "to": "p-ba-tri",
+      "type": "located_in"
+    },
+    {
+      "from": "cho-binh-dai",
+      "to": "p-binh-dai",
+      "type": "located_in"
+    },
+    {
+      "from": "cho-giong-trom",
+      "to": "xa-luong-hoa",
+      "type": "located_in"
+    },
+    {
+      "from": "cay-goi-nuoc-di-san-ben-tre",
+      "to": "p-ben-tre",
+      "type": "located_in"
+    },
+    {
+      "from": "cua-binh-dai",
+      "to": "p-binh-dai",
+      "type": "located_in"
+    },
+    {
+      "from": "khu-du-lich-dai-loc",
+      "to": "p-an-hoi",
+      "type": "located_in"
+    },
+    {
+      "from": "lang-hoa-kieng-va-cay-giong-cho-lach",
+      "to": "xa-cho-lach",
+      "type": "located_in"
+    },
+    {
+      "from": "sau-rieng-cap-dong-cho-lach",
+      "to": "xa-cho-lach",
+      "type": "located_in"
+    },
+    {
+      "from": "con-du-lich-cai-ga",
+      "to": "xa-cho-lach",
+      "type": "located_in"
+    },
+    {
+      "from": "dua-sap-cang-long",
+      "to": "xa-binh-phu",
+      "type": "located_in"
+    },
+    {
+      "from": "chua-phap-hoa",
+      "to": "xa-binh-phu",
+      "type": "located_in"
+    },
+    {
+      "from": "le-via-quoc-cong-tong-phuoc-hiep",
+      "to": "p-phuoc-hau",
+      "type": "located_in"
+    },
+    {
+      "from": "le-ha-dien-dinh-tan-hoa",
+      "to": "p-tan-ngai",
+      "type": "located_in"
+    },
+    {
+      "from": "le-thuong-dien-dinh-tan-ngai",
+      "to": "p-tan-ngai",
+      "type": "located_in"
+    },
+    {
+      "from": "le-gio-phan-thanh-gian-tai-van-thanh-mieu",
+      "to": "p-phuoc-hau",
+      "type": "located_in"
+    },
+    {
+      "from": "le-hoi-chol-chnam-thmay-tai-chua-ky-son",
+      "to": "xa-ngai-tu",
+      "type": "located_in"
+    },
+    {
+      "from": "le-hoi-chol-chnam-thmay-va-sen-dolta",
+      "to": "xa-tra-cu",
+      "type": "located_in"
+    },
+    {
+      "from": "le-hoi-ky-yen-ha-dien-dinh-tan-giai",
+      "to": "p-phuoc-hau",
+      "type": "located_in"
+    },
+    {
+      "from": "ben-tre-tong-tai-romantic-2day-001",
+      "to": "con-phung-con-ong-dao-dua",
+      "type": "near"
+    },
+    {
+      "from": "ben-tre-tong-tai-romantic-2day-001",
+      "to": "khu-luu-niem-truong-vinh-ky",
+      "type": "near"
+    },
+    {
+      "from": "ben-tre-tong-tai-romantic-2day-001",
+      "to": "ben-xe-ben-tre-trung-tam-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "meo-u-kitchen---mon-nhat",
+      "to": "khach-san-hoa-ngoc",
+      "type": "near"
+    },
+    {
+      "from": "meo-u-kitchen---mon-nhat",
+      "to": "khach-san-anh-hong",
+      "type": "near"
+    },
+    {
+      "from": "meo-u-kitchen---mon-nhat",
+      "to": "diem-trung-bay-va-gioi-thieu-san-pham-ocop-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "brownie-coffee-and-tea",
+      "to": "lu-lu---cake-drink",
+      "type": "near"
+    },
+    {
+      "from": "brownie-coffee-and-tea",
+      "to": "kimchi-kimchi---mi-cay-han-quoc",
+      "type": "near"
+    },
+    {
+      "from": "brownie-coffee-and-tea",
+      "to": "yogurt-garden",
+      "type": "near"
+    },
+    {
+      "from": "bin-coffee",
+      "to": "tra-sua-tapi---trung-nu-vuong",
+      "type": "near"
+    },
+    {
+      "from": "bin-coffee",
+      "to": "henry-coffee",
+      "type": "near"
+    },
+    {
+      "from": "bin-coffee",
+      "to": "martini-cocktail-tea",
+      "type": "near"
+    },
+    {
+      "from": "lu-lu---cake-drink",
+      "to": "kimchi-kimchi---mi-cay-han-quoc",
+      "type": "near"
+    },
+    {
+      "from": "lu-lu---cake-drink",
+      "to": "yogurt-garden",
+      "type": "near"
+    },
+    {
+      "from": "lu-lu---cake-drink",
+      "to": "cua-hang-dac-san-mekong",
+      "type": "near"
+    },
+    {
+      "from": "lau-bo-bay-map",
+      "to": "khu-du-lich-nha-xua-va-homestay-ut-trinh",
+      "type": "near"
+    },
+    {
+      "from": "lau-bo-bay-map",
+      "to": "lang-du-lich-cong-dong-cai-ngang",
+      "type": "near"
+    },
+    {
+      "from": "lau-bo-bay-map",
+      "to": "khu-tuong-niem-co-chu-tich-hdbt-pham-hung",
+      "type": "near"
+    },
+    {
+      "from": "khoi---lau-nuong",
+      "to": "khach-san-van-trang",
+      "type": "near"
+    },
+    {
+      "from": "khoi---lau-nuong",
+      "to": "van-trang-hotel",
+      "type": "near"
+    },
+    {
+      "from": "khoi---lau-nuong",
+      "to": "lau-tai-co",
+      "type": "near"
+    },
+    {
+      "from": "lau-tai-co",
+      "to": "xoi-man-69---hung-dao-vuong",
+      "type": "near"
+    },
+    {
+      "from": "lau-tai-co",
+      "to": "vietcombank-chi-nhanh-vinh-long-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "lau-tai-co",
+      "to": "khach-san-dong-quan",
+      "type": "near"
+    },
+    {
+      "from": "chao-ech-tran-nam",
+      "to": "khu-luu-niem-nguyen-dinh-chieu",
+      "type": "near"
+    },
+    {
+      "from": "chao-ech-tran-nam",
+      "to": "hoc-nau-an-mien-tay",
+      "type": "near"
+    },
+    {
+      "from": "chao-ech-tran-nam",
+      "to": "tet-nguyen-dan-mien-tay",
+      "type": "near"
+    },
+    {
+      "from": "quan-vteen---pham-hung",
+      "to": "com-tam-cay-sung",
+      "type": "near"
+    },
+    {
+      "from": "quan-vteen---pham-hung",
+      "to": "cua-hang-viettel-pham-hung-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "quan-vteen---pham-hung",
+      "to": "quan-com-chay-lac-vien-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "kimchi-kimchi---mi-cay-han-quoc",
+      "to": "yogurt-garden",
+      "type": "near"
+    },
+    {
+      "from": "kimchi-kimchi---mi-cay-han-quoc",
+      "to": "cua-hang-dac-san-mekong",
+      "type": "near"
+    },
+    {
+      "from": "kimchi-kimchi---mi-cay-han-quoc",
+      "to": "cha-lua-thanh-cong",
+      "type": "near"
+    },
+    {
+      "from": "tra-sua-tapi---trung-nu-vuong",
+      "to": "henry-coffee",
+      "type": "near"
+    },
+    {
+      "from": "tra-sua-tapi---trung-nu-vuong",
+      "to": "martini-cocktail-tea",
+      "type": "near"
+    },
+    {
+      "from": "tra-sua-tapi---trung-nu-vuong",
+      "to": "cua-hang-viettel-store-trung-nu-vuong-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "henry-coffee",
+      "to": "martini-cocktail-tea",
+      "type": "near"
+    },
+    {
+      "from": "henry-coffee",
+      "to": "cua-hang-viettel-store-trung-nu-vuong-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "henry-coffee",
+      "to": "one-hotel",
+      "type": "near"
+    },
+    {
+      "from": "dang-ga---cac-mon-ga-ta",
+      "to": "chua-khmer-phu-ly",
+      "type": "near"
+    },
+    {
+      "from": "dang-ga---cac-mon-ga-ta",
+      "to": "tham-chua-khmer",
+      "type": "near"
+    },
+    {
+      "from": "dang-ga---cac-mon-ga-ta",
+      "to": "tau-hu-ky-my-hoa-binh-minh",
+      "type": "near"
+    },
+    {
+      "from": "lau-bo",
+      "to": "thoai-ngoc-hau",
+      "type": "near"
+    },
+    {
+      "from": "lau-bo",
+      "to": "khach-san-ngu-long",
+      "type": "near"
+    },
+    {
+      "from": "lau-bo",
+      "to": "khach-san-trung-tinh",
+      "type": "near"
+    },
+    {
+      "from": "panda-purple-cafe",
+      "to": "nguyen-thi-ut",
+      "type": "near"
+    },
+    {
+      "from": "panda-purple-cafe",
+      "to": "khach-san-ngu-long",
+      "type": "near"
+    },
+    {
+      "from": "panda-purple-cafe",
+      "to": "khach-san-trung-tinh",
+      "type": "near"
+    },
+    {
+      "from": "xoi-man-69---hung-dao-vuong",
+      "to": "vietcombank-chi-nhanh-vinh-long-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "xoi-man-69---hung-dao-vuong",
+      "to": "khach-san-dong-quan",
+      "type": "near"
+    },
+    {
+      "from": "xoi-man-69---hung-dao-vuong",
+      "to": "khach-san-van-trang",
+      "type": "near"
+    },
+    {
+      "from": "yogurt-garden",
+      "to": "cua-hang-dac-san-mekong",
+      "type": "near"
+    },
+    {
+      "from": "yogurt-garden",
+      "to": "cha-lua-thanh-cong",
+      "type": "near"
+    },
+    {
+      "from": "yogurt-garden",
+      "to": "bin-coffee",
+      "type": "near"
+    },
+    {
+      "from": "sup-khuyet-tat",
+      "to": "hu-tieu---sui-cao",
+      "type": "near"
+    },
+    {
+      "from": "sup-khuyet-tat",
+      "to": "hu-tieu-phuong-phuong-hu-tieu-bun-mam-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "sup-khuyet-tat",
+      "to": "quan-45-sui-cao-chao-long-hu-tieu-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "martini-cocktail-tea",
+      "to": "cua-hang-viettel-store-trung-nu-vuong-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "martini-cocktail-tea",
+      "to": "one-hotel",
+      "type": "near"
+    },
+    {
+      "from": "martini-cocktail-tea",
+      "to": "brownie-coffee-and-tea",
+      "type": "near"
+    },
+    {
+      "from": "hu-tieu---sui-cao",
+      "to": "hu-tieu-phuong-phuong-hu-tieu-bun-mam-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "hu-tieu---sui-cao",
+      "to": "quan-45-sui-cao-chao-long-hu-tieu-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "hu-tieu---sui-cao",
+      "to": "ben-pha-an-binh-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "co-dai---sinh-to-giai-khat",
+      "to": "nha-thuoc-fpt-long-chau-77-duong-1-5-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "co-dai---sinh-to-giai-khat",
+      "to": "nghe-det-luc-binh-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "co-dai---sinh-to-giai-khat",
+      "to": "khach-san-tan-hung",
+      "type": "near"
+    },
+    {
+      "from": "com-tam-cay-sung",
+      "to": "cua-hang-viettel-pham-hung-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "com-tam-cay-sung",
+      "to": "quan-com-chay-lac-vien-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "com-tam-cay-sung",
+      "to": "khach-san-xuan-huong",
+      "type": "near"
+    },
+    {
+      "from": "ninh-kieu-5---quoc-lo-60",
+      "to": "lang-van-coffee",
+      "type": "near"
+    },
+    {
+      "from": "ninh-kieu-5---quoc-lo-60",
+      "to": "ben-dua-quan---lau-ga-noi",
+      "type": "near"
+    },
+    {
+      "from": "ninh-kieu-5---quoc-lo-60",
+      "to": "cua-hang-ocop-bien-ba-dong",
+      "type": "near"
+    },
+    {
+      "from": "tra-sua-family---dong-khoi",
+      "to": "bo-to-ba-tri---cac-mon-bo",
+      "type": "near"
+    },
+    {
+      "from": "tra-sua-family---dong-khoi",
+      "to": "nhon-thanh-homestay",
+      "type": "near"
+    },
+    {
+      "from": "tra-sua-family---dong-khoi",
+      "to": "p-phu-khuong",
+      "type": "near"
+    },
+    {
+      "from": "banh-flan-14",
+      "to": "ho-truc-giang",
+      "type": "near"
+    },
+    {
+      "from": "banh-flan-14",
+      "to": "mat-ong-hoa-dua-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "banh-flan-14",
+      "to": "mat-hoa-dua",
+      "type": "near"
+    },
+    {
+      "from": "lang-van-coffee",
+      "to": "ben-dua-quan---lau-ga-noi",
+      "type": "near"
+    },
+    {
+      "from": "lang-van-coffee",
+      "to": "cua-hang-ocop-bien-ba-dong",
+      "type": "near"
+    },
+    {
+      "from": "lang-van-coffee",
+      "to": "sieu-thi-go-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "ola-tea-house",
+      "to": "tiem-ba-khoang",
+      "type": "near"
+    },
+    {
+      "from": "ola-tea-house",
+      "to": "lemais---coffee-tea",
+      "type": "near"
+    },
+    {
+      "from": "ola-tea-house",
+      "to": "p-phu-tan",
+      "type": "near"
+    },
+    {
+      "from": "bo-to-ba-tri---cac-mon-bo",
+      "to": "nhon-thanh-homestay",
+      "type": "near"
+    },
+    {
+      "from": "bo-to-ba-tri---cac-mon-bo",
+      "to": "p-phu-khuong",
+      "type": "near"
+    },
+    {
+      "from": "bo-to-ba-tri---cac-mon-bo",
+      "to": "nguyen-dinh-chieu",
+      "type": "near"
+    },
+    {
+      "from": "tiem-ba-khoang",
+      "to": "lemais---coffee-tea",
+      "type": "near"
+    },
+    {
+      "from": "tiem-ba-khoang",
+      "to": "p-phu-tan",
+      "type": "near"
+    },
+    {
+      "from": "tiem-ba-khoang",
+      "to": "keo-dua-tan-thach",
+      "type": "near"
+    },
+    {
+      "from": "lemais---coffee-tea",
+      "to": "p-phu-tan",
+      "type": "near"
+    },
+    {
+      "from": "lemais---coffee-tea",
+      "to": "keo-dua-tan-thach",
+      "type": "near"
+    },
+    {
+      "from": "lemais---coffee-tea",
+      "to": "gao-huu-co-tan-dat",
+      "type": "near"
+    },
+    {
+      "from": "nam-son",
+      "to": "oc-gao-vinh-binh",
+      "type": "near"
+    },
+    {
+      "from": "nam-son",
+      "to": "p-an-hoi",
+      "type": "near"
+    },
+    {
+      "from": "nam-son",
+      "to": "lang-nghe-bun-suong",
+      "type": "near"
+    },
+    {
+      "from": "ham-luong",
+      "to": "nha-hang-lang-chai-ben-tre-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "ham-luong",
+      "to": "keo-dua-thu-cong-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "ham-luong",
+      "to": "vuon-kieng-thu-nam-cong",
+      "type": "near"
+    },
+    {
+      "from": "pho-tien",
+      "to": "p-mo-cay",
+      "type": "near"
+    },
+    {
+      "from": "hu-tieu-chay",
+      "to": "hu-tieu-ba-phu",
+      "type": "near"
+    },
+    {
+      "from": "hu-tieu-chay",
+      "to": "khu-du-lich-truong-an",
+      "type": "near"
+    },
+    {
+      "from": "hu-tieu-chay",
+      "to": "khu-du-lich-dai-loc",
+      "type": "near"
+    },
+    {
+      "from": "quan-chi-yen---trai-cay-dia",
+      "to": "p-son-dong",
+      "type": "near"
+    },
+    {
+      "from": "quan-chi-yen---trai-cay-dia",
+      "to": "ninh-kieu-5---quoc-lo-60",
+      "type": "near"
+    },
+    {
+      "from": "quan-chi-yen---trai-cay-dia",
+      "to": "lang-van-coffee",
+      "type": "near"
+    },
+    {
+      "from": "ben-dua-quan---lau-ga-noi",
+      "to": "cua-hang-ocop-bien-ba-dong",
+      "type": "near"
+    },
+    {
+      "from": "ben-dua-quan---lau-ga-noi",
+      "to": "sieu-thi-go-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "ben-dua-quan---lau-ga-noi",
+      "to": "sieu-thi-go-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "deja-huynh-kha-coffee",
+      "to": "ao-ba-om-ao-vuong-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "deja-huynh-kha-coffee",
+      "to": "tt-xuc-tien-du-lich-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "deja-huynh-kha-coffee",
+      "to": "nuoc-mam-ruoi-long-vinh",
+      "type": "near"
+    },
+    {
+      "from": "mandi-cafe",
+      "to": "quan-tuyet---com-ca-ri-ga",
+      "type": "near"
+    },
+    {
+      "from": "mandi-cafe",
+      "to": "vila-basi",
+      "type": "near"
+    },
+    {
+      "from": "mandi-cafe",
+      "to": "thanh-ton",
+      "type": "near"
+    },
+    {
+      "from": "bun-nuoc-leo---ly-thuong-kiet",
+      "to": "cho-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "bun-nuoc-leo---ly-thuong-kiet",
+      "to": "chua-long-khanh",
+      "type": "near"
+    },
+    {
+      "from": "bun-nuoc-leo---ly-thuong-kiet",
+      "to": "ben-xe-tra-vinh-ben-xe-trung-tam-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "quan-tuyet---com-ca-ri-ga",
+      "to": "banh-cuon-nong---tran-quoc-tuan",
+      "type": "near"
+    },
+    {
+      "from": "quan-tuyet---com-ca-ri-ga",
+      "to": "vila-basi",
+      "type": "near"
+    },
+    {
+      "from": "quan-tuyet---com-ca-ri-ga",
+      "to": "dinh-long-duc",
+      "type": "near"
+    },
+    {
+      "from": "banh-cuon-nong---tran-quoc-tuan",
+      "to": "dinh-long-duc",
+      "type": "near"
+    },
+    {
+      "from": "banh-cuon-nong---tran-quoc-tuan",
+      "to": "dinh-vinh-xuan",
+      "type": "near"
+    },
+    {
+      "from": "banh-cuon-nong---tran-quoc-tuan",
+      "to": "thanh-ton",
+      "type": "near"
+    },
+    {
+      "from": "cu-lao-minh",
+      "to": "cu-lao-my-hoa",
+      "type": "near"
+    },
+    {
+      "from": "mieu-quan-tien-hien-phan-cong-an",
+      "to": "khu-di-tich-cach-mang-cai-ngang",
+      "type": "near"
+    },
+    {
+      "from": "mieu-quan-tien-hien-phan-cong-an",
+      "to": "xa-tuong-loc",
+      "type": "near"
+    },
+    {
+      "from": "tt-xuc-tien-du-lich-tra-vinh",
+      "to": "nuoc-mam-ruoi-long-vinh",
+      "type": "near"
+    },
+    {
+      "from": "tt-xuc-tien-du-lich-tra-vinh",
+      "to": "phuoc-minh-cung-chua-ong",
+      "type": "near"
+    },
+    {
+      "from": "tt-xuc-tien-du-lich-tra-vinh",
+      "to": "p-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "tom-cang-xanh-song-tien",
+      "to": "sa-po-che-cho-lach",
+      "type": "near"
+    },
+    {
+      "from": "tom-cang-xanh-song-tien",
+      "to": "vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "tom-cang-xanh-song-tien",
+      "to": "thach-boi",
+      "type": "near"
+    },
+    {
+      "from": "nha-thuoc-fpt-long-chau-77-duong-1-5-vinh-long",
+      "to": "nghe-det-luc-binh-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "nha-thuoc-fpt-long-chau-77-duong-1-5-vinh-long",
+      "to": "khach-san-tan-hung",
+      "type": "near"
+    },
+    {
+      "from": "nha-thuoc-fpt-long-chau-77-duong-1-5-vinh-long",
+      "to": "cho-tan-quoi",
+      "type": "near"
+    },
+    {
+      "from": "vietcombank-chi-nhanh-vinh-long-vinh-long",
+      "to": "khach-san-dong-quan",
+      "type": "near"
+    },
+    {
+      "from": "vietcombank-chi-nhanh-vinh-long-vinh-long",
+      "to": "khach-san-van-trang",
+      "type": "near"
+    },
+    {
+      "from": "vietcombank-chi-nhanh-vinh-long-vinh-long",
+      "to": "van-trang-hotel",
+      "type": "near"
+    },
+    {
+      "from": "cua-hang-viettel-store-trung-nu-vuong-vinh-long",
+      "to": "bin-coffee",
+      "type": "near"
+    },
+    {
+      "from": "cua-hang-viettel-store-trung-nu-vuong-vinh-long",
+      "to": "one-hotel",
+      "type": "near"
+    },
+    {
+      "from": "cua-hang-viettel-store-trung-nu-vuong-vinh-long",
+      "to": "brownie-coffee-and-tea",
+      "type": "near"
+    },
+    {
+      "from": "cua-hang-viettel-pham-hung-vinh-long",
+      "to": "quan-com-chay-lac-vien-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "cua-hang-viettel-pham-hung-vinh-long",
+      "to": "khach-san-xuan-huong",
+      "type": "near"
+    },
+    {
+      "from": "cua-hang-viettel-pham-hung-vinh-long",
+      "to": "khach-san-tan-sang",
+      "type": "near"
+    },
+    {
+      "from": "vinmart-vinmart-vinh-long-vinh-long",
+      "to": "somo-farm-cuu-long",
+      "type": "near"
+    },
+    {
+      "from": "vinmart-vinmart-vinh-long-vinh-long",
+      "to": "le-vu-lan",
+      "type": "near"
+    },
+    {
+      "from": "vinmart-vinmart-vinh-long-vinh-long",
+      "to": "cho-hoa-tet",
+      "type": "near"
+    },
+    {
+      "from": "cua-hang-dac-san-mien-tay-ba-bay-nem-vinh-long",
+      "to": "cua-hang-thuc-pham-an-toan-hoa-sao",
+      "type": "near"
+    },
+    {
+      "from": "cua-hang-dac-san-mien-tay-ba-bay-nem-vinh-long",
+      "to": "phuoc-thanh-iv-tourist-area",
+      "type": "near"
+    },
+    {
+      "from": "cua-hang-dac-san-mien-tay-ba-bay-nem-vinh-long",
+      "to": "khach-san-phuoc-thanh-iv",
+      "type": "near"
+    },
+    {
+      "from": "song-mang-thit-vinh-long",
+      "to": "dinh-hoa-tinh",
+      "type": "near"
+    },
+    {
+      "from": "song-ba-lai-ben-tre",
+      "to": "xa-chau-hung",
+      "type": "near"
+    },
+    {
+      "from": "song-lang-the-tra-vinh",
+      "to": "mam-song-khoai-lang",
+      "type": "near"
+    },
+    {
+      "from": "song-lang-the-tra-vinh",
+      "to": "xa-nhi-long",
+      "type": "near"
+    },
+    {
+      "from": "bun-rieu-cua-cho-mo-cay-ben-tre",
+      "to": "can-cu-tinh-uy-ben-tre-rung-la-thanh-phu",
+      "type": "near"
+    },
+    {
+      "from": "bun-rieu-cua-cho-mo-cay-ben-tre",
+      "to": "bun-nuoc-leo-cho-ba-tri-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "bun-rieu-cua-cho-mo-cay-ben-tre",
+      "to": "khu-sinh-thai-gio-duoc-thanh-phu-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "bun-nuoc-leo-cho-ba-tri-ben-tre",
+      "to": "can-cu-tinh-uy-ben-tre-rung-la-thanh-phu",
+      "type": "near"
+    },
+    {
+      "from": "bun-nuoc-leo-cho-ba-tri-ben-tre",
+      "to": "khu-sinh-thai-gio-duoc-thanh-phu-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "bun-nuoc-leo-cho-ba-tri-ben-tre",
+      "to": "cho-dau-moi-nong-thuy-san-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "tiem-an-dong-khanh-vinh-long",
+      "to": "khu-du-lich-sinh-thai-hoang-hao",
+      "type": "near"
+    },
+    {
+      "from": "tiem-an-dong-khanh-vinh-long",
+      "to": "mam-tom-cha-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "tiem-an-dong-khanh-vinh-long",
+      "to": "khach-san-tan-hung",
+      "type": "near"
+    },
+    {
+      "from": "hu-tieu-phuong-phuong-hu-tieu-bun-mam-vinh-long",
+      "to": "quan-45-sui-cao-chao-long-hu-tieu-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "hu-tieu-phuong-phuong-hu-tieu-bun-mam-vinh-long",
+      "to": "ben-pha-an-binh-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "hu-tieu-phuong-phuong-hu-tieu-bun-mam-vinh-long",
+      "to": "bin-coffee",
+      "type": "near"
+    },
+    {
+      "from": "quan-45-sui-cao-chao-long-hu-tieu-vinh-long",
+      "to": "ben-pha-an-binh-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "quan-45-sui-cao-chao-long-hu-tieu-vinh-long",
+      "to": "bin-coffee",
+      "type": "near"
+    },
+    {
+      "from": "quan-45-sui-cao-chao-long-hu-tieu-vinh-long",
+      "to": "tra-sua-tapi---trung-nu-vuong",
+      "type": "near"
+    },
+    {
+      "from": "nha-hang-binh-an-khu-cong-nghiep-hoa-phu-vinh-long",
+      "to": "nem-chua-sau-xe",
+      "type": "near"
+    },
+    {
+      "from": "nha-hang-binh-an-khu-cong-nghiep-hoa-phu-vinh-long",
+      "to": "cho-hoa-tet",
+      "type": "near"
+    },
+    {
+      "from": "nha-hang-binh-an-khu-cong-nghiep-hoa-phu-vinh-long",
+      "to": "cho-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "quan-oc-co-ba-gan-cau-my-thuan-phia-vinh-long",
+      "to": "banh-trang-my-long",
+      "type": "near"
+    },
+    {
+      "from": "quan-oc-co-ba-gan-cau-my-thuan-phia-vinh-long",
+      "to": "bien-an-thuy",
+      "type": "near"
+    },
+    {
+      "from": "quan-oc-co-ba-gan-cau-my-thuan-phia-vinh-long",
+      "to": "dua-hau-tan-hung-ocop",
+      "type": "near"
+    },
+    {
+      "from": "ben-xe-tra-cu-tra-vinh",
+      "to": "xa-tra-cu",
+      "type": "near"
+    },
+    {
+      "from": "ben-xe-tra-cu-tra-vinh",
+      "to": "san-pham-ocop-thu-cong-my-nghe-tra-cu",
+      "type": "near"
+    },
+    {
+      "from": "ben-xe-tra-cu-tra-vinh",
+      "to": "di-tich-lich-su-luu-cu",
+      "type": "near"
+    },
+    {
+      "from": "dinh-binh-hoa-ben-tre",
+      "to": "dinh-binh-hoa",
+      "type": "near"
+    },
+    {
+      "from": "dinh-binh-hoa-ben-tre",
+      "to": "dinh-binh-hoa-giong-trom",
+      "type": "near"
+    },
+    {
+      "from": "dinh-binh-hoa-ben-tre",
+      "to": "chien-thang-giong-dua-giong-trom",
+      "type": "near"
+    },
+    {
+      "from": "quan-com-chay-lac-vien-vinh-long",
+      "to": "khach-san-xuan-huong",
+      "type": "near"
+    },
+    {
+      "from": "quan-com-chay-lac-vien-vinh-long",
+      "to": "khach-san-tan-sang",
+      "type": "near"
+    },
+    {
+      "from": "quan-com-chay-lac-vien-vinh-long",
+      "to": "ben-cang-hanh-khach-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "hoi-cho-xuc-tien-thuong-mai-du-lich-vinh-long-dip-tet-nguyen-dan-vinh-long",
+      "to": "pho-91",
+      "type": "near"
+    },
+    {
+      "from": "hoi-cho-xuc-tien-thuong-mai-du-lich-vinh-long-dip-tet-nguyen-dan-vinh-long",
+      "to": "phan-thanh-gian",
+      "type": "near"
+    },
+    {
+      "from": "hoi-cho-xuc-tien-thuong-mai-du-lich-vinh-long-dip-tet-nguyen-dan-vinh-long",
+      "to": "co-opmart-vinh-long-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "di-san-lo-gach-mang-thit-kenh-thay-cai",
+      "to": "lo-gach-mang-thit",
+      "type": "near"
+    },
+    {
+      "from": "di-san-lo-gach-mang-thit-kenh-thay-cai",
+      "to": "di-san-duong-dai-mang-thit-tuyen-sinh-thai-kenh-thuy-lo",
+      "type": "near"
+    },
+    {
+      "from": "di-san-lo-gach-mang-thit-kenh-thay-cai",
+      "to": "gom-do-mang-thit",
+      "type": "near"
+    },
+    {
+      "from": "di-san-duong-dai-mang-thit-tuyen-sinh-thai-kenh-thuy-lo",
+      "to": "lo-gach-mang-thit",
+      "type": "near"
+    },
+    {
+      "from": "di-san-duong-dai-mang-thit-tuyen-sinh-thai-kenh-thuy-lo",
+      "to": "gom-do-mang-thit",
+      "type": "near"
+    },
+    {
+      "from": "di-san-duong-dai-mang-thit-tuyen-sinh-thai-kenh-thuy-lo",
+      "to": "lo-gach-hung-loi",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-xuan-huong",
+      "to": "quan-vteen---pham-hung",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-xuan-huong",
+      "to": "khach-san-tan-sang",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-xuan-huong",
+      "to": "ben-cang-hanh-khach-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-phuong-hoang",
+      "to": "khach-san-lac-long",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-phuong-hoang",
+      "to": "khach-san-phung-hoang",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-phuong-hoang",
+      "to": "khach-san-thien-thanh",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-lac-long",
+      "to": "khach-san-phung-hoang",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-lac-long",
+      "to": "khach-san-thien-thanh",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-lac-long",
+      "to": "le-gio-to-hung-vuong",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-hoa-ngoc",
+      "to": "khach-san-anh-hong",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-hoa-ngoc",
+      "to": "diem-trung-bay-va-gioi-thieu-san-pham-ocop-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-hoa-ngoc",
+      "to": "bun-mam-co-ba",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-thien-thanh",
+      "to": "khach-san-phung-hoang",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-thien-thanh",
+      "to": "le-gio-to-hung-vuong",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-thien-thanh",
+      "to": "lau-tai-co",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-truong-an",
+      "to": "dinh-tan-hoa-dinh-cai-doi",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-truong-an",
+      "to": "dinh-tan-hoa",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-truong-an",
+      "to": "cau-my-thuan",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-phu-gia",
+      "to": "di-chi-khao-co-hoc-thanh-moi",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-phu-gia",
+      "to": "nghia-trung-mieu",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-phu-gia",
+      "to": "mang-cut-binh-hoa-phuoc",
+      "type": "near"
+    },
+    {
+      "from": "riverside-park-eco-resort",
+      "to": "lau-bo-bay-map",
+      "type": "near"
+    },
+    {
+      "from": "riverside-park-eco-resort",
+      "to": "khu-du-lich-nha-xua-va-homestay-ut-trinh",
+      "type": "near"
+    },
+    {
+      "from": "riverside-park-eco-resort",
+      "to": "lang-du-lich-cong-dong-cai-ngang",
+      "type": "near"
+    },
+    {
+      "from": "coco-home",
+      "to": "di-chi-khao-co-hoc-thanh-moi",
+      "type": "near"
+    },
+    {
+      "from": "coco-home",
+      "to": "nghia-trung-mieu",
+      "type": "near"
+    },
+    {
+      "from": "coco-home",
+      "to": "mang-cut-binh-hoa-phuoc",
+      "type": "near"
+    },
+    {
+      "from": "nha-nghi-dl-sinh-thai-hoang-hao",
+      "to": "lau-bo-bay-map",
+      "type": "near"
+    },
+    {
+      "from": "nha-nghi-dl-sinh-thai-hoang-hao",
+      "to": "khu-du-lich-nha-xua-va-homestay-ut-trinh",
+      "type": "near"
+    },
+    {
+      "from": "nha-nghi-dl-sinh-thai-hoang-hao",
+      "to": "lang-du-lich-cong-dong-cai-ngang",
+      "type": "near"
+    },
+    {
+      "from": "coco-riverside-lodge",
+      "to": "coco-riverside-lodge-trung-nghia",
+      "type": "near"
+    },
+    {
+      "from": "homestay-lang-be",
+      "to": "lang-nghe-nau-ruou-phu-le",
+      "type": "near"
+    },
+    {
+      "from": "homestay-lang-be",
+      "to": "lang-nghe-bun-suong",
+      "type": "near"
+    },
+    {
+      "from": "homestay-lang-be",
+      "to": "banh-phong-mi-giong-trom",
+      "type": "near"
+    },
+    {
+      "from": "co-so-san-xuat-peace-farm",
+      "to": "di-chi-khao-co-hoc-thanh-moi",
+      "type": "near"
+    },
+    {
+      "from": "co-so-san-xuat-peace-farm",
+      "to": "nghia-trung-mieu",
+      "type": "near"
+    },
+    {
+      "from": "co-so-san-xuat-peace-farm",
+      "to": "mang-cut-binh-hoa-phuoc",
+      "type": "near"
+    },
+    {
+      "from": "the-grand-hotel-vinh-long",
+      "to": "di-chi-khao-co-hoc-thanh-moi",
+      "type": "near"
+    },
+    {
+      "from": "the-grand-hotel-vinh-long",
+      "to": "nghia-trung-mieu",
+      "type": "near"
+    },
+    {
+      "from": "the-grand-hotel-vinh-long",
+      "to": "mang-cut-binh-hoa-phuoc",
+      "type": "near"
+    },
+    {
+      "from": "banh-nhat-ngoc",
+      "to": "tep-kho-my-long",
+      "type": "near"
+    },
+    {
+      "from": "banh-nhat-ngoc",
+      "to": "rau-cau-vinh-quang",
+      "type": "near"
+    },
+    {
+      "from": "banh-nhat-ngoc",
+      "to": "ca-keo-kho-to",
+      "type": "near"
+    },
+    {
+      "from": "cua-hang-thuc-pham-an-toan-hoa-sao",
+      "to": "phuoc-thanh-iv-tourist-area",
+      "type": "near"
+    },
+    {
+      "from": "cua-hang-thuc-pham-an-toan-hoa-sao",
+      "to": "khach-san-phuoc-thanh-iv",
+      "type": "near"
+    },
+    {
+      "from": "cua-hang-thuc-pham-an-toan-hoa-sao",
+      "to": "khach-san-nguyen-mai",
+      "type": "near"
+    },
+    {
+      "from": "banh-kep-thuy-kieu",
+      "to": "vuon-trai-cay-cu-lao-dai",
+      "type": "near"
+    },
+    {
+      "from": "banh-kep-thuy-kieu",
+      "to": "le-cung-bien-dong-cao",
+      "type": "near"
+    },
+    {
+      "from": "banh-kep-thuy-kieu",
+      "to": "cho-thanh-phu",
+      "type": "near"
+    },
+    {
+      "from": "nuoc-mam-ruoi-long-vinh",
+      "to": "phuoc-minh-cung-chua-ong",
+      "type": "near"
+    },
+    {
+      "from": "nuoc-mam-ruoi-long-vinh",
+      "to": "p-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "nuoc-mam-ruoi-long-vinh",
+      "to": "ca-tra-thuong-pham-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "keo-dau-phong-du-tan-loi",
+      "to": "mat-hoa-dua-va-duong-hoa-dua-tra-vinh-ocop-5-sao",
+      "type": "near"
+    },
+    {
+      "from": "keo-dau-phong-du-tan-loi",
+      "to": "cong-vien-dan-chu",
+      "type": "near"
+    },
+    {
+      "from": "keo-dau-phong-du-tan-loi",
+      "to": "chua-can-snom-can-nom",
+      "type": "near"
+    },
+    {
+      "from": "mam-tep-du-du-thuy-nguyen",
+      "to": "xa-chau-thanh",
+      "type": "near"
+    },
+    {
+      "from": "mat-ong-rung-ban-nguyen-van-bao",
+      "to": "xa-kim-hoa-diem-du-lich-sinh-thai-song-nuoc",
+      "type": "near"
+    },
+    {
+      "from": "mat-ong-rung-ban-nguyen-van-bao",
+      "to": "tom-kho-hai-kham",
+      "type": "near"
+    },
+    {
+      "from": "mat-ong-rung-ban-nguyen-van-bao",
+      "to": "banh-tet-tu-quy-hai-ly",
+      "type": "near"
+    },
+    {
+      "from": "di-tich-lich-su-luu-cu",
+      "to": "san-pham-ocop-thu-cong-my-nghe-tra-cu",
+      "type": "near"
+    },
+    {
+      "from": "di-tich-lich-su-luu-cu",
+      "to": "chu-u-rang-me",
+      "type": "near"
+    },
+    {
+      "from": "di-tich-lich-su-luu-cu",
+      "to": "dua-sap-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "sau-rieng-say-thang-hoa-sau-ri",
+      "to": "di-chi-khao-co-hoc-thanh-moi",
+      "type": "near"
+    },
+    {
+      "from": "sau-rieng-say-thang-hoa-sau-ri",
+      "to": "nghia-trung-mieu",
+      "type": "near"
+    },
+    {
+      "from": "sau-rieng-say-thang-hoa-sau-ri",
+      "to": "mang-cut-binh-hoa-phuoc",
+      "type": "near"
+    },
+    {
+      "from": "nha-thuyen-nam-cao-homestay",
+      "to": "di-chi-khao-co-hoc-thanh-moi",
+      "type": "near"
+    },
+    {
+      "from": "nha-thuyen-nam-cao-homestay",
+      "to": "nghia-trung-mieu",
+      "type": "near"
+    },
+    {
+      "from": "nha-thuyen-nam-cao-homestay",
+      "to": "mang-cut-binh-hoa-phuoc",
+      "type": "near"
+    },
+    {
+      "from": "gao-sach-tom-lua-thanh-phu-ocop",
+      "to": "du-lich-sinh-thai-bien-thanh-phu",
+      "type": "near"
+    },
+    {
+      "from": "gao-sach-tom-lua-thanh-phu-ocop",
+      "to": "kho-ca-bien-thanh-phu",
+      "type": "near"
+    },
+    {
+      "from": "gao-sach-tom-lua-thanh-phu-ocop",
+      "to": "cua-bien-va-ngheu-thanh-phu",
+      "type": "near"
+    },
+    {
+      "from": "cua-bien-thanh-phu",
+      "to": "khu-bao-ve-canh-quan-thanh-phu-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "cua-bien-thanh-phu",
+      "to": "bien-con-bung-thanh-phu-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "cua-bien-thanh-phu",
+      "to": "du-lich-sinh-thai-cong-dong-thanh-phong-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "chu-u-rang-me",
+      "to": "san-pham-ocop-thu-cong-my-nghe-tra-cu",
+      "type": "near"
+    },
+    {
+      "from": "chu-u-rang-me",
+      "to": "dua-sap-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "chu-u-rang-me",
+      "to": "le-hoi-chol-chnam-thmay-va-sen-dolta",
+      "type": "near"
+    },
+    {
+      "from": "cua-lot-vinacrab-long-toan",
+      "to": "cay-da-cua-huu",
+      "type": "near"
+    },
+    {
+      "from": "cua-lot-vinacrab-long-toan",
+      "to": "le-chol-chhnam-thmay",
+      "type": "near"
+    },
+    {
+      "from": "cua-lot-vinacrab-long-toan",
+      "to": "le-hoi-dom-long-neak-ta",
+      "type": "near"
+    },
+    {
+      "from": "lap-xuong-ngoc-huong",
+      "to": "chua-sa-leng-kompong-chray",
+      "type": "near"
+    },
+    {
+      "from": "lap-xuong-ngoc-huong",
+      "to": "buffet-nuong-kachu",
+      "type": "near"
+    },
+    {
+      "from": "lap-xuong-ngoc-huong",
+      "to": "banh-bo-nuong-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "homestay-bep-nam-bo-xua-con-chim",
+      "to": "banh-canh-ben-co-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "homestay-bep-nam-bo-xua-con-chim",
+      "to": "chua-hoi-ton-co-tu",
+      "type": "near"
+    },
+    {
+      "from": "homestay-bep-nam-bo-xua-con-chim",
+      "to": "lang-nghe-thu-cong-my-nghe-tu-dua-quoi-son",
+      "type": "near"
+    },
+    {
+      "from": "le-ngan-homestay",
+      "to": "muoi-quynh-homestay",
+      "type": "near"
+    },
+    {
+      "from": "le-ngan-homestay",
+      "to": "nam-thanh-homestay",
+      "type": "near"
+    },
+    {
+      "from": "le-ngan-homestay",
+      "to": "hoan-my-homestay",
+      "type": "near"
+    },
+    {
+      "from": "mekong-garden-homestay",
+      "to": "mekong-riverside-homestay",
+      "type": "near"
+    },
+    {
+      "from": "mekong-garden-homestay",
+      "to": "green-river-homestay",
+      "type": "near"
+    },
+    {
+      "from": "mekong-garden-homestay",
+      "to": "ngoc-phuong-homestay",
+      "type": "near"
+    },
+    {
+      "from": "cho-ba-tri",
+      "to": "le-gio-nguyen-dinh-chieu",
+      "type": "near"
+    },
+    {
+      "from": "cho-ba-tri",
+      "to": "mo-va-khu-luu-niem-vo-truong-toan",
+      "type": "near"
+    },
+    {
+      "from": "cho-ba-tri",
+      "to": "banh-canh-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "cho-binh-dai",
+      "to": "dinh-binh-phuoc",
+      "type": "near"
+    },
+    {
+      "from": "cho-thanh-phu",
+      "to": "le-cung-bien-dong-cao",
+      "type": "near"
+    },
+    {
+      "from": "cho-thanh-phu",
+      "to": "vuon-trai-cay-cu-lao-dai",
+      "type": "near"
+    },
+    {
+      "from": "nha-tho-duc-my-cho-cua",
+      "to": "lang-dan-lat-duc-my-cang-long",
+      "type": "near"
+    },
+    {
+      "from": "nha-tho-duc-my-cho-cua",
+      "to": "lang-nghe-tieu-thu-cong-nghiep-duc-my",
+      "type": "near"
+    },
+    {
+      "from": "nha-tho-duc-my-cho-cua",
+      "to": "chua-khanh-thanh",
+      "type": "near"
+    },
+    {
+      "from": "le-hoi-ky-yen-ha-dien-dinh-tan-giai",
+      "to": "dinh-tan-giai",
+      "type": "near"
+    },
+    {
+      "from": "le-hoi-ky-yen-ha-dien-dinh-tan-giai",
+      "to": "rach-cai-ca-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "le-hoi-ky-yen-ha-dien-dinh-tan-giai",
+      "to": "khu-trung-tam-hanh-chinh-van-hoa-phuong-1-tp-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "bun-mam-mien-tay",
+      "to": "di-chi-khao-co-hoc-thanh-moi",
+      "type": "near"
+    },
+    {
+      "from": "bun-mam-mien-tay",
+      "to": "nghia-trung-mieu",
+      "type": "near"
+    },
+    {
+      "from": "bun-mam-mien-tay",
+      "to": "mang-cut-binh-hoa-phuoc",
+      "type": "near"
+    },
+    {
+      "from": "xoi-vi-mien-tay",
+      "to": "dinh-tan-thach",
+      "type": "near"
+    },
+    {
+      "from": "xoi-vi-mien-tay",
+      "to": "con-quy",
+      "type": "near"
+    },
+    {
+      "from": "xoi-vi-mien-tay",
+      "to": "chom-chom-con-tan-quy",
+      "type": "near"
+    },
+    {
+      "from": "cho-hoa-tet",
+      "to": "cho-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "cho-hoa-tet",
+      "to": "diem-trung-bay-ocop-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "cho-hoa-tet",
+      "to": "nem-chua-sau-xe",
+      "type": "near"
+    },
+    {
+      "from": "xa-tan-long-hoi",
+      "to": "di-chi-khao-co-hoc-thanh-moi",
+      "type": "near"
+    },
+    {
+      "from": "xa-tan-long-hoi",
+      "to": "nghia-trung-mieu",
+      "type": "near"
+    },
+    {
+      "from": "xa-tan-long-hoi",
+      "to": "mang-cut-binh-hoa-phuoc",
+      "type": "near"
+    },
+    {
+      "from": "xa-phu-quoi",
+      "to": "di-chi-khao-co-hoc-thanh-moi",
+      "type": "near"
+    },
+    {
+      "from": "xa-phu-quoi",
+      "to": "nghia-trung-mieu",
+      "type": "near"
+    },
+    {
+      "from": "xa-phu-quoi",
+      "to": "mang-cut-binh-hoa-phuoc",
+      "type": "near"
+    },
+    {
+      "from": "xa-quoi-an",
+      "to": "di-chi-khao-co-hoc-thanh-moi",
+      "type": "near"
+    },
+    {
+      "from": "xa-quoi-an",
+      "to": "nghia-trung-mieu",
+      "type": "near"
+    },
+    {
+      "from": "xa-quoi-an",
+      "to": "mang-cut-binh-hoa-phuoc",
+      "type": "near"
+    },
+    {
+      "from": "xa-hieu-phung",
+      "to": "di-chi-khao-co-hoc-thanh-moi",
+      "type": "near"
+    },
+    {
+      "from": "xa-hieu-phung",
+      "to": "nghia-trung-mieu",
+      "type": "near"
+    },
+    {
+      "from": "xa-hieu-phung",
+      "to": "mang-cut-binh-hoa-phuoc",
+      "type": "near"
+    },
+    {
+      "from": "xa-hieu-thanh",
+      "to": "di-chi-khao-co-hoc-thanh-moi",
+      "type": "near"
+    },
+    {
+      "from": "xa-hieu-thanh",
+      "to": "nghia-trung-mieu",
+      "type": "near"
+    },
+    {
+      "from": "xa-hieu-thanh",
+      "to": "mang-cut-binh-hoa-phuoc",
+      "type": "near"
+    },
+    {
+      "from": "xa-hoa-binh",
+      "to": "di-chi-khao-co-hoc-thanh-moi",
+      "type": "near"
+    },
+    {
+      "from": "xa-hoa-binh",
+      "to": "nghia-trung-mieu",
+      "type": "near"
+    },
+    {
+      "from": "xa-hoa-binh",
+      "to": "mang-cut-binh-hoa-phuoc",
+      "type": "near"
+    },
+    {
+      "from": "xa-hoa-hiep",
+      "to": "di-chi-khao-co-hoc-thanh-moi",
+      "type": "near"
+    },
+    {
+      "from": "xa-hoa-hiep",
+      "to": "nghia-trung-mieu",
+      "type": "near"
+    },
+    {
+      "from": "xa-hoa-hiep",
+      "to": "mang-cut-binh-hoa-phuoc",
+      "type": "near"
+    },
+    {
+      "from": "xa-song-phu",
+      "to": "di-chi-khao-co-hoc-thanh-moi",
+      "type": "near"
+    },
+    {
+      "from": "xa-song-phu",
+      "to": "nghia-trung-mieu",
+      "type": "near"
+    },
+    {
+      "from": "xa-song-phu",
+      "to": "mang-cut-binh-hoa-phuoc",
+      "type": "near"
+    },
+    {
+      "from": "xa-cai-ngang",
+      "to": "di-chi-khao-co-hoc-thanh-moi",
+      "type": "near"
+    },
+    {
+      "from": "xa-cai-ngang",
+      "to": "nghia-trung-mieu",
+      "type": "near"
+    },
+    {
+      "from": "xa-cai-ngang",
+      "to": "mang-cut-binh-hoa-phuoc",
+      "type": "near"
+    },
+    {
+      "from": "xa-my-thuan",
+      "to": "di-chi-khao-co-hoc-thanh-moi",
+      "type": "near"
+    },
+    {
+      "from": "xa-my-thuan",
+      "to": "nghia-trung-mieu",
+      "type": "near"
+    },
+    {
+      "from": "xa-my-thuan",
+      "to": "mang-cut-binh-hoa-phuoc",
+      "type": "near"
+    },
+    {
+      "from": "chua-van-phuoc",
+      "to": "ngheu-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "chua-van-phuoc",
+      "to": "cho-dem-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "chua-van-phuoc",
+      "to": "oc-gao-con-phu-da",
+      "type": "near"
+    },
+    {
+      "from": "benh-vien-da-khoa-tinh-vinh-long-vinh-long",
+      "to": "kho-ca-keo-duyen-hai",
+      "type": "near"
+    },
+    {
+      "from": "benh-vien-da-khoa-tinh-vinh-long-vinh-long",
+      "to": "mo-quan-chua",
+      "type": "near"
+    },
+    {
+      "from": "benh-vien-da-khoa-tinh-vinh-long-vinh-long",
+      "to": "rung-ngap-man-long-vinh-duyen-hai",
+      "type": "near"
+    },
+    {
+      "from": "benh-vien-da-khoa-xuyen-a-vinh-long-vinh-long",
+      "to": "dua-hau-tan-hung-ocop",
+      "type": "near"
+    },
+    {
+      "from": "benh-vien-da-khoa-xuyen-a-vinh-long-vinh-long",
+      "to": "khu-du-lich-sinh-thai-truong-huy-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "benh-vien-da-khoa-xuyen-a-vinh-long-vinh-long",
+      "to": "cha-lua-pate-thit-banh-pho-banh-canh-gao-phuong-truong-an",
+      "type": "near"
+    },
+    {
+      "from": "agribank-chi-nhanh-vinh-long-vinh-long",
+      "to": "buffet-nuong-kachu",
+      "type": "near"
+    },
+    {
+      "from": "agribank-chi-nhanh-vinh-long-vinh-long",
+      "to": "banh-bo-nuong-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "agribank-chi-nhanh-vinh-long-vinh-long",
+      "to": "chua-sa-leng-kompong-chray",
+      "type": "near"
+    },
+    {
+      "from": "buu-dien-trung-tam-vinh-long-vinh-long",
+      "to": "thach-boi",
+      "type": "near"
+    },
+    {
+      "from": "buu-dien-trung-tam-vinh-long-vinh-long",
+      "to": "thach-oai",
+      "type": "near"
+    },
+    {
+      "from": "buu-dien-trung-tam-vinh-long-vinh-long",
+      "to": "thanh-loan",
+      "type": "near"
+    },
+    {
+      "from": "cong-an-tinh-vinh-long-vinh-long",
+      "to": "khu-du-lich-sinh-thai-truong-huy-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "cong-an-tinh-vinh-long-vinh-long",
+      "to": "cha-lua-pate-thit-banh-pho-banh-canh-gao-phuong-truong-an",
+      "type": "near"
+    },
+    {
+      "from": "cong-an-tinh-vinh-long-vinh-long",
+      "to": "dua-hau-tan-hung-ocop",
+      "type": "near"
+    },
+    {
+      "from": "buu-dien-trung-tam-tp-ben-tre-ben-tre",
+      "to": "lang-keo-dua-phuong-7-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "buu-dien-trung-tam-tp-ben-tre-ben-tre",
+      "to": "p-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "buu-dien-trung-tam-tp-ben-tre-ben-tre",
+      "to": "chua-hoi-tong-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "cong-an-tp-ben-tre-ben-tre",
+      "to": "mam-cong-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "cong-an-tp-ben-tre-ben-tre",
+      "to": "lang-keo-dua-phuong-7-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "cong-an-tp-ben-tre-ben-tre",
+      "to": "buu-dien-trung-tam-tp-ben-tre-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "cap-cuu-115-ben-tre-ben-tre",
+      "to": "banh-xeo-oc-gao-phu-da",
+      "type": "near"
+    },
+    {
+      "from": "cap-cuu-115-ben-tre-ben-tre",
+      "to": "hop-tac-xa-dua-sap-cau-ke-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "cap-cuu-115-ben-tre-ben-tre",
+      "to": "xa-thanh-thoi",
+      "type": "near"
+    },
+    {
+      "from": "co-opmart-vinh-long-vinh-long",
+      "to": "khach-san-phuoc-hung",
+      "type": "near"
+    },
+    {
+      "from": "co-opmart-vinh-long-vinh-long",
+      "to": "phan-thanh-gian",
+      "type": "near"
+    },
+    {
+      "from": "co-opmart-vinh-long-vinh-long",
+      "to": "khach-san-ngu-long",
+      "type": "near"
+    },
+    {
+      "from": "cho-vinh-long-cho-trung-tam-vinh-long",
+      "to": "ca-chay-song-hau",
+      "type": "near"
+    },
+    {
+      "from": "cho-vinh-long-cho-trung-tam-vinh-long",
+      "to": "mua-trai-cay-chin-roi",
+      "type": "near"
+    },
+    {
+      "from": "cho-vinh-long-cho-trung-tam-vinh-long",
+      "to": "ngay-hoi-trai-cay",
+      "type": "near"
+    },
+    {
+      "from": "co-opmart-ben-tre-ben-tre",
+      "to": "san-chim-vam-ho-ba-tri",
+      "type": "near"
+    },
+    {
+      "from": "co-opmart-ben-tre-ben-tre",
+      "to": "muoi-ba-tri",
+      "type": "near"
+    },
+    {
+      "from": "co-opmart-ben-tre-ben-tre",
+      "to": "homestay-con-ba-tu",
+      "type": "near"
+    },
+    {
+      "from": "sieu-thi-go-big-c-ben-tre-ben-tre",
+      "to": "sieu-thi-go-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "sieu-thi-go-big-c-ben-tre-ben-tre",
+      "to": "sieu-thi-go-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "sieu-thi-go-big-c-ben-tre-ben-tre",
+      "to": "cua-hang-ocop-bien-ba-dong",
+      "type": "near"
+    },
+    {
+      "from": "sieu-thi-co-opmart-tra-vinh-tra-vinh",
+      "to": "sieu-thi-coop-mart-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "sieu-thi-co-opmart-tra-vinh-tra-vinh",
+      "to": "chua-kompong-ksan",
+      "type": "near"
+    },
+    {
+      "from": "sieu-thi-co-opmart-tra-vinh-tra-vinh",
+      "to": "bun-nuoc-leo-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "hop-tac-xa-dua-sap-cau-ke-tra-vinh",
+      "to": "banh-xeo-oc-gao-phu-da",
+      "type": "near"
+    },
+    {
+      "from": "hop-tac-xa-dua-sap-cau-ke-tra-vinh",
+      "to": "xa-thanh-thoi",
+      "type": "near"
+    },
+    {
+      "from": "hop-tac-xa-dua-sap-cau-ke-tra-vinh",
+      "to": "bun-bo-co-tam-cho-ben-tre-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "xa-long-thanh",
+      "to": "xa-vinh-thanh",
+      "type": "near"
+    },
+    {
+      "from": "xa-long-thanh",
+      "to": "lang-hoa-kieng-va-cay-giong-cho-lach",
+      "type": "near"
+    },
+    {
+      "from": "xa-long-thanh",
+      "to": "sau-rieng-cap-dong-cho-lach",
+      "type": "near"
+    },
+    {
+      "from": "xa-ngu-lac",
+      "to": "bai-bien-mo-o-truong-long-hoa-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "xa-long-hoa",
+      "to": "quan-tan-tan",
+      "type": "near"
+    },
+    {
+      "from": "xa-long-hoa",
+      "to": "thanh-duong-giao-xu-mac-bac",
+      "type": "near"
+    },
+    {
+      "from": "xa-long-hoa",
+      "to": "nha-tho-mac-bac-tieu-can",
+      "type": "near"
+    },
+    {
+      "from": "xa-long-vinh",
+      "to": "vung-giong-cat-long-vinh",
+      "type": "near"
+    },
+    {
+      "from": "xa-hung-khanh-trung",
+      "to": "xa-phuoc-my-trung",
+      "type": "near"
+    },
+    {
+      "from": "xa-quoi-dien",
+      "to": "ca-loc-nuong-trui",
+      "type": "near"
+    },
+    {
+      "from": "xa-quoi-dien",
+      "to": "lo-com-cuu-long-vlt",
+      "type": "near"
+    },
+    {
+      "from": "xa-quoi-dien",
+      "to": "lo-com-cuu-long",
+      "type": "near"
+    },
+    {
+      "from": "xa-an-ngai-trung",
+      "to": "di-chi-khao-co-hoc-thanh-moi",
+      "type": "near"
+    },
+    {
+      "from": "xa-an-ngai-trung",
+      "to": "nghia-trung-mieu",
+      "type": "near"
+    },
+    {
+      "from": "xa-an-ngai-trung",
+      "to": "mang-cut-binh-hoa-phuoc",
+      "type": "near"
+    },
+    {
+      "from": "xa-an-hiep",
+      "to": "farmstay-dat-cu-lao",
+      "type": "near"
+    },
+    {
+      "from": "xa-luong-phu",
+      "to": "lang-nghe-nau-ruou-phu-le",
+      "type": "near"
+    },
+    {
+      "from": "xa-luong-phu",
+      "to": "homestay-lang-be",
+      "type": "near"
+    },
+    {
+      "from": "xa-luong-phu",
+      "to": "con-oc-giong-trom-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "cho-cau-ke",
+      "to": "vuon-dua-sinh-thai-cau-ke-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "cho-cau-ke",
+      "to": "festival-dua-sap-cau-ke-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "cho-cau-ke",
+      "to": "chua-sam-pua",
+      "type": "near"
+    },
+    {
+      "from": "p-tan-hoa",
+      "to": "nha-tho-mac-bac-tieu-can",
+      "type": "near"
+    },
+    {
+      "from": "p-tan-hoa",
+      "to": "rau-mau-dat-giong-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "p-tan-hoa",
+      "to": "thanh-duong-giao-xu-mac-bac",
+      "type": "near"
+    },
+    {
+      "from": "ben-xe-vinh-long-trung-tam-vinh-long",
+      "to": "nha-tho-chanh-toa-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "ben-xe-vinh-long-trung-tam-vinh-long",
+      "to": "nha-tho-chinh-toa-vinh-long-nha-tho-chanh-toa",
+      "type": "near"
+    },
+    {
+      "from": "ben-xe-vinh-long-trung-tam-vinh-long",
+      "to": "toa-giam-muc-giao-phan-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "ben-pha-an-binh-vinh-long",
+      "to": "sup-khuyet-tat",
+      "type": "near"
+    },
+    {
+      "from": "ben-pha-an-binh-vinh-long",
+      "to": "thoai-ngoc-hau",
+      "type": "near"
+    },
+    {
+      "from": "ben-pha-an-binh-vinh-long",
+      "to": "bin-coffee",
+      "type": "near"
+    },
+    {
+      "from": "ben-xe-ben-tre-trung-tam-ben-tre",
+      "to": "con-phung-con-ong-dao-dua",
+      "type": "near"
+    },
+    {
+      "from": "ben-xe-ben-tre-trung-tam-ben-tre",
+      "to": "cong-vien-an-hoi",
+      "type": "near"
+    },
+    {
+      "from": "ben-xe-ben-tre-trung-tam-ben-tre",
+      "to": "khu-luu-niem-truong-vinh-ky",
+      "type": "near"
+    },
+    {
+      "from": "ben-xe-ba-tri-ben-tre",
+      "to": "lang-nghe-dan-dat-ba-tri",
+      "type": "near"
+    },
+    {
+      "from": "ben-xe-ba-tri-ben-tre",
+      "to": "lang-mo-va-dinh-phan-thanh-gian",
+      "type": "near"
+    },
+    {
+      "from": "ben-xe-ba-tri-ben-tre",
+      "to": "san-chim-vam-ho-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "ben-xe-mo-cay-nam-ben-tre",
+      "to": "mekong-home",
+      "type": "near"
+    },
+    {
+      "from": "ben-xe-mo-cay-nam-ben-tre",
+      "to": "rooster-mekong-resort",
+      "type": "near"
+    },
+    {
+      "from": "ben-xe-mo-cay-nam-ben-tre",
+      "to": "song-ham-luong-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "ben-xe-tra-vinh-ben-xe-trung-tam-tra-vinh",
+      "to": "chua-long-khanh",
+      "type": "near"
+    },
+    {
+      "from": "ben-xe-tra-vinh-ben-xe-trung-tam-tra-vinh",
+      "to": "cho-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "ben-xe-tra-vinh-ben-xe-trung-tam-tra-vinh",
+      "to": "dinh-long-duc",
+      "type": "near"
+    },
+    {
+      "from": "tinh-binh-chay-vinh-long",
+      "to": "man-an-phuoc-ocop",
+      "type": "near"
+    },
+    {
+      "from": "tinh-binh-chay-vinh-long",
+      "to": "le-ha-dien-dinh-tan-hoa",
+      "type": "near"
+    },
+    {
+      "from": "tinh-binh-chay-vinh-long",
+      "to": "com-chay-au-lac-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "com-chay-au-lac-vinh-long",
+      "to": "le-ha-dien-dinh-tan-hoa",
+      "type": "near"
+    },
+    {
+      "from": "com-chay-au-lac-vinh-long",
+      "to": "man-an-phuoc-ocop",
+      "type": "near"
+    },
+    {
+      "from": "quan-an-ly-thong-ben-tre",
+      "to": "nem-nuong-thanh-binh-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "quan-an-ly-thong-ben-tre",
+      "to": "nha-hang-sau-tu",
+      "type": "near"
+    },
+    {
+      "from": "quan-an-ly-thong-ben-tre",
+      "to": "lang-nghe-cay-giong-cho-lach",
+      "type": "near"
+    },
+    {
+      "from": "bun-bo-co-tam-cho-ben-tre-ben-tre",
+      "to": "banh-xeo-oc-gao-phu-da",
+      "type": "near"
+    },
+    {
+      "from": "bun-bo-co-tam-cho-ben-tre-ben-tre",
+      "to": "cap-cuu-115-ben-tre-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "bun-bo-co-tam-cho-ben-tre-ben-tre",
+      "to": "xa-thanh-thoi",
+      "type": "near"
+    },
+    {
+      "from": "nha-hang-lang-chai-ben-tre-ben-tre",
+      "to": "keo-dua-thu-cong-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "nha-hang-lang-chai-ben-tre-ben-tre",
+      "to": "vuon-kieng-thu-nam-cong",
+      "type": "near"
+    },
+    {
+      "from": "nha-hang-lang-chai-ben-tre-ben-tre",
+      "to": "khach-san-vin-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "nha-hang-lang-be-ben-tre-ben-tre",
+      "to": "thach-sok-xane",
+      "type": "near"
+    },
+    {
+      "from": "nha-hang-lang-be-ben-tre-ben-tre",
+      "to": "cho-noi-tra-on-dc",
+      "type": "near"
+    },
+    {
+      "from": "nha-hang-lang-be-ben-tre-ben-tre",
+      "to": "chua-hang-cha-lo",
+      "type": "near"
+    },
+    {
+      "from": "nha-hang-ham-luong-ben-tre",
+      "to": "mekong-hotel-restaurant",
+      "type": "near"
+    },
+    {
+      "from": "nha-hang-ham-luong-ben-tre",
+      "to": "homestay-nam-ham-luong",
+      "type": "near"
+    },
+    {
+      "from": "nha-hang-ham-luong-ben-tre",
+      "to": "khach-san-tai-nguyen",
+      "type": "near"
+    },
+    {
+      "from": "ba-nhi-bun-bo-hue-vinh-long",
+      "to": "banh-xeo-oc-gao-phu-da",
+      "type": "near"
+    },
+    {
+      "from": "ba-nhi-bun-bo-hue-vinh-long",
+      "to": "cap-cuu-115-ben-tre-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "ba-nhi-bun-bo-hue-vinh-long",
+      "to": "hop-tac-xa-dua-sap-cau-ke-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "nem-nuong-thanh-binh-ben-tre",
+      "to": "nha-hang-sau-tu",
+      "type": "near"
+    },
+    {
+      "from": "nem-nuong-thanh-binh-ben-tre",
+      "to": "lang-nghe-cay-giong-cho-lach",
+      "type": "near"
+    },
+    {
+      "from": "nem-nuong-thanh-binh-ben-tre",
+      "to": "nha-hang-am-thuc-pho",
+      "type": "near"
+    },
+    {
+      "from": "com-ga-xoi-mo-5-vi-ben-tre",
+      "to": "banh-xeo-oc-gao-phu-da",
+      "type": "near"
+    },
+    {
+      "from": "com-ga-xoi-mo-5-vi-ben-tre",
+      "to": "cap-cuu-115-ben-tre-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "com-ga-xoi-mo-5-vi-ben-tre",
+      "to": "hop-tac-xa-dua-sap-cau-ke-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "quan-com-175-ben-tre",
+      "to": "cong-vien-tuong-dai-chien-thang-mau-than",
+      "type": "near"
+    },
+    {
+      "from": "quan-com-175-ben-tre",
+      "to": "tuong-dai-chien-thang-mau-than-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "quan-com-175-ben-tre",
+      "to": "bun-mam-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "am-thuc-ngo-dong-ben-tre",
+      "to": "vuon-dua-sap-ba-thuy",
+      "type": "near"
+    },
+    {
+      "from": "am-thuc-ngo-dong-ben-tre",
+      "to": "nha-hang-phuong-thuy-1",
+      "type": "near"
+    },
+    {
+      "from": "am-thuc-ngo-dong-ben-tre",
+      "to": "nha-co-huynh-phu-thanh-phu",
+      "type": "near"
     }
   ],
   "itineraries": [
