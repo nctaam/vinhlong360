@@ -110,6 +110,7 @@ async def mark_notification_read(notif_id: str, user=Depends(require_user)):
 
 
 _sse_subscribers: dict[str, list[asyncio.Queue]] = {}
+_SSE_MAX_PER_USER = 5
 
 
 def _notify_sse(user_id: str, data: dict):
@@ -136,7 +137,10 @@ async def notification_stream(request: Request, token: str = Query(None)):
         raise HTTPException(401, "Invalid token")
     uid = str(db._row_to_dict(row)["id"])
     queue: asyncio.Queue = asyncio.Queue(maxsize=50)
-    _sse_subscribers.setdefault(uid, []).append(queue)
+    subs = _sse_subscribers.setdefault(uid, [])
+    if len(subs) >= _SSE_MAX_PER_USER:
+        subs.pop(0)
+    subs.append(queue)
 
     async def event_generator():
         try:
@@ -149,7 +153,14 @@ async def notification_stream(request: Request, token: str = Query(None)):
                 except asyncio.TimeoutError:
                     yield ": keepalive\n\n"
         finally:
-            _sse_subscribers.get(uid, []).remove(queue) if queue in _sse_subscribers.get(uid, []) else None
+            try:
+                subs = _sse_subscribers.get(uid, [])
+                if queue in subs:
+                    subs.remove(queue)
+                if not subs:
+                    _sse_subscribers.pop(uid, None)
+            except Exception:
+                pass
 
     return StreamingResponse(event_generator(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
