@@ -188,6 +188,8 @@ const placeName = computed(() => data.value?.place?.name || 'Xã/Phường')
 useSeoMeta({
   title: () => `${placeName.value} — du lịch, lưu trú, đặc sản & danh bạ | vinhlong360`,
   description: () => data.value?.place?.summary || `Tổng hợp địa điểm du lịch, cơ sở lưu trú, sản phẩm đặc sản và danh bạ hành chính của ${placeName.value}.`,
+  ogTitle: () => `${placeName.value} — vinhlong360`,
+  ogDescription: () => data.value?.place?.summary || `Du lịch, đặc sản & danh bạ ${placeName.value}.`,
 })
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl(`/xa-phuong/${id.value}`) }],

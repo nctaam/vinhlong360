@@ -146,6 +146,8 @@ const tips = [
 useSeoMeta({
   title: 'Hướng dẫn thành viên — Hệ thống cấp bậc & điểm danh tiếng — vinhlong360',
   description: 'Tìm hiểu cách tính điểm danh tiếng, cấp bậc thành viên và huy hiệu trên cộng đồng vinhlong360.',
+  ogTitle: 'Hướng dẫn thành viên — vinhlong360',
+  ogDescription: 'Cách tính điểm danh tiếng, cấp bậc và huy hiệu trên vinhlong360.',
 })
 useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan-thanh-vien') }] })
 </script>

@@ -50,6 +50,8 @@ function levelIcon(level: number): string {
 useSeoMeta({
   title: 'Thành viên tích cực — Bảng xếp hạng — vinhlong360',
   description: 'Bảng xếp hạng thành viên đóng góp tích cực nhất cộng đồng vinhlong360: đánh giá, bài viết, ảnh và lượt theo dõi.',
+  ogTitle: 'Bảng xếp hạng — vinhlong360',
+  ogDescription: 'Thành viên đóng góp tích cực nhất cộng đồng vinhlong360.',
 })
 useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/bang-xep-hang') }] })
 </script>

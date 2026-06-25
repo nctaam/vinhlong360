@@ -49,6 +49,8 @@ const stripNum = (h: string) => (h || '').replace(/^\s*\d+\.\s*/, '')
 useSeoMeta({
   title: () => doc.value.seo_title,
   description: () => doc.value.seo_description,
+  ogTitle: () => doc.value.seo_title,
+  ogDescription: () => doc.value.seo_description,
 })
 
 const aboutJsonLd = {
