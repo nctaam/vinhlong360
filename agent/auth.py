@@ -73,6 +73,16 @@ LOGIN_PHONE_LIMIT = 5     # 5 sai → khoá phone 15 phút
 LOGIN_PHONE_WINDOW = 900  # 15 phút
 _login_phone_fails: dict[str, list[float]] = {}
 
+_RATE_MAX_KEYS = 2000
+
+def _gc_rate_dict(d: dict, window: float) -> None:
+    if len(d) <= _RATE_MAX_KEYS:
+        return
+    now = time.time()
+    stale = [k for k, v in d.items() if not v or now - max(v) > window]
+    for k in stale:
+        del d[k]
+
 
 # ── Models ──
 
@@ -247,6 +257,7 @@ async def request_otp(body: OTPRequest, request: Request):
         raise HTTPException(429, "Quá nhiều yêu cầu OTP từ IP này. Vui lòng thử lại sau.")
     hits.append(now)
     _otp_ip_rate[ip] = hits
+    _gc_rate_dict(_otp_ip_rate, OTP_IP_WINDOW)
 
     _otp_rate[phone] = now
 
@@ -367,6 +378,7 @@ async def login_password(body: PasswordLogin, request: Request):
         raise HTTPException(429, "Quá nhiều lần đăng nhập. Vui lòng thử lại sau.")
     hits.append(now)
     _login_ip_rate[ip] = hits
+    _gc_rate_dict(_login_ip_rate, LOGIN_IP_WINDOW)
 
     phone = _normalize_phone(body.phone)
 
@@ -712,13 +724,17 @@ async def _get_current_user_or_none(request: Request) -> dict | None:
     token = _extract_token(request)
     if not token:
         return None
-    with db._conn() as conn:
-        row = db._fetchone(conn, f"""
-            SELECT u.* FROM user_sessions s
-            JOIN users u ON u.id = s.user_id
-            WHERE s.token = {db._ph} AND s.expires_at > NOW() AND u.is_active = TRUE
-        """, (_hash_token(token),))
-        return db._row_to_dict(row)
+    try:
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT u.* FROM user_sessions s
+                JOIN users u ON u.id = s.user_id
+                WHERE s.token = {db._ph} AND s.expires_at > NOW() AND u.is_active = TRUE
+            """, (_hash_token(token),))
+            return db._row_to_dict(row)
+    except Exception:
+        logger.exception("DB error in _get_current_user_or_none")
+        return None
 
 
 def _safe_user(user: dict) -> dict:

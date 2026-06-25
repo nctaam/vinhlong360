@@ -24,6 +24,9 @@
       </div>
 
       <SkeletonList v-if="loading && !items.length" :count="6" />
+      <EmptyState v-else-if="fetchError && !items.length" icon="⚠️" tone="error" title="Không thể tải thông báo" message="Lỗi kết nối. Vui lòng thử lại.">
+        <template #actions><button type="button" class="btn btn-outline btn-sm" @click="load">Thử lại</button></template>
+      </EmptyState>
       <EmptyState v-else-if="!filtered.length" icon="🔔" :title="filter === 'all' ? 'Chưa có thông báo' : 'Không có thông báo loại này'" message="Khi có hoạt động mới, bạn sẽ thấy ở đây." />
       <template v-else>
         <ul class="tb-list">
@@ -68,6 +71,7 @@ const items = ref<any[]>([])
 const loading = ref(true)
 const loadingMore = ref(false)
 const hasMore = ref(false)
+const fetchError = ref(false)
 const filtered = computed(() => {
   if (filter.value === 'all') return items.value
   return items.value.filter(n => n.type === filter.value)
@@ -75,11 +79,13 @@ const filtered = computed(() => {
 
 async function load() {
   if (!isLoggedIn.value) { loading.value = false; return }
+  loading.value = true
+  fetchError.value = false
   try {
     const res = await $fetch<any>(`/api/notifications?limit=${PAGE_SIZE}`, { headers: authHeaders() })
     items.value = res.notifications || []
     hasMore.value = (res.notifications || []).length >= PAGE_SIZE
-  } catch { /* non-critical */ } finally { loading.value = false }
+  } catch { fetchError.value = true } finally { loading.value = false }
 }
 
 async function loadMore() {

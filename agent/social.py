@@ -575,10 +575,13 @@ async def search_posts(
     không phân biệt hoa-thường; chỉ bài ĐÃ DUYỆT). v1 phân-biệt-dấu."""
     uid = user["id"] if user else "anon"
     check_rate(f"search:{uid}", 30, 60, "Tìm kiếm quá nhanh. Vui lòng thử lại sau.")
+    stripped = q.strip()
+    if len(stripped) < 2:
+        return {"posts": [], "total": 0, "page": 1}
     ph = db._ph
     limit = 20
     offset = (page - 1) * limit
-    pattern = "%" + q.strip().lower() + "%"  # f_unaccent strip dấu ở SQL; lower ở đây
+    pattern = "%" + stripped.lower() + "%"
 
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
@@ -615,10 +618,13 @@ async def search_users(
     """Tìm người dùng theo tên hiển thị (không phân-biệt-dấu). Thông tin hồ-sơ công-khai."""
     uid = user["id"] if user else "anon"
     check_rate(f"search:{uid}", 30, 60, "Tìm kiếm quá nhanh. Vui lòng thử lại sau.")
+    stripped = q.strip()
+    if len(stripped) < 2:
+        return {"users": [], "total": 0, "page": 1}
     ph = db._ph
     limit = 20
     offset = (page - 1) * limit
-    pattern = "%" + q.strip().lower() + "%"
+    pattern = "%" + stripped.lower() + "%"
     block_clause = ""
     params: list = [pattern]
     if user:
@@ -1052,20 +1058,20 @@ async def toggle_like(post_id: str, user=Depends(require_user)):
     check_rate(f"like:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW,
                "Bạn thao tác quá nhanh. Vui lòng đợi chút.")
     ph = db._ph
+    uid = str(user["id"])
     with db._conn() as conn:
-        existing = db._fetchone(conn, f"""
-            SELECT 1 FROM likes WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
-        """, (str(user["id"]), post_id))
+        deleted = db._fetchone(conn, f"""
+            DELETE FROM likes WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
+            RETURNING 1
+        """, (uid, post_id))
 
-        if existing:
-            db._execute(conn, f"""
-                DELETE FROM likes WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
-            """, (str(user["id"]), post_id))
+        if deleted:
             liked = False
         else:
             db._execute(conn, f"""
                 INSERT INTO likes (user_id, post_id) VALUES ({ph}::uuid, {ph}::uuid)
-            """, (str(user["id"]), post_id))
+                ON CONFLICT DO NOTHING
+            """, (uid, post_id))
             liked = True
 
         post_row = db._fetchone(conn, f"""
@@ -1089,20 +1095,20 @@ async def toggle_bookmark(post_id: str, user=Depends(require_user)):
     check_rate(f"bookmark:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW,
                "Bạn thao tác quá nhanh. Vui lòng đợi chút.")
     ph = db._ph
+    uid = str(user["id"])
     with db._conn() as conn:
-        existing = db._fetchone(conn, f"""
-            SELECT 1 FROM bookmarks WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
-        """, (str(user["id"]), post_id))
+        deleted = db._fetchone(conn, f"""
+            DELETE FROM bookmarks WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
+            RETURNING 1
+        """, (uid, post_id))
 
-        if existing:
-            db._execute(conn, f"""
-                DELETE FROM bookmarks WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
-            """, (str(user["id"]), post_id))
+        if deleted:
             saved = False
         else:
             db._execute(conn, f"""
                 INSERT INTO bookmarks (user_id, post_id) VALUES ({ph}::uuid, {ph}::uuid)
-            """, (str(user["id"]), post_id))
+                ON CONFLICT DO NOTHING
+            """, (uid, post_id))
             saved = True
 
     return {"bookmarked": saved}
