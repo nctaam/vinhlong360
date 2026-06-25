@@ -74,6 +74,7 @@
             <td class="admin-td-muted">{{ e.place_name || '—' }}</td>
             <td class="admin-actions">
               <button type="button" class="btn-success" @click="openEdit(e)">Sửa</button>
+              <button type="button" @click="cloneEntity(e)" title="Nhân bản">&#128203;</button>
               <button type="button" class="btn-danger" :disabled="acting === e.id" @click="deleteEntity(e.id)">Xóa</button>
             </td>
           </tr>
@@ -256,6 +257,14 @@ function openEdit(e: Entity) {
   newRel.value = { to_id: '', type: 'related_to' }
   fieldErrors.value = {}
   fetchRels(e.id)
+  showModal.value = true
+}
+
+function cloneEntity(e: Entity) {
+  editingEntity.value = null
+  form.value = { id: '', name: `${e.name} (bản sao)`, type: e.type, placeId: e.placeId || '', summary: e.summary || '', images: [] }
+  newImage.value = ''
+  fieldErrors.value = {}
   showModal.value = true
 }
 

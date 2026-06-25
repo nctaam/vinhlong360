@@ -44,6 +44,14 @@
 
     <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
     <template v-else>
+    <!-- Keyboard shortcuts legend -->
+    <div class="mod-kbd-legend">
+      <span class="mod-kbd-hint">Phím tắt:</span>
+      <kbd>j</kbd><kbd>k</kbd> di chuyển
+      <kbd>a</kbd> duyệt
+      <kbd>r</kbd> từ chối
+    </div>
+
     <!-- Queue table -->
     <div class="admin-table-wrap">
     <table class="admin-table">
@@ -58,8 +66,8 @@
         </tr>
       </thead>
       <tbody>
-        <template v-for="p in queue" :key="p.id">
-          <tr>
+        <template v-for="(p, idx) in queue" :key="p.id">
+          <tr :class="{ 'mod-focused': idx === focusIdx }" @click="focusIdx = idx">
             <td>
               <div class="mod-author">
                 <div class="mod-author-avatar">{{ (p.display_name || p.author || '?')[0] }}</div>
@@ -256,12 +264,42 @@ function formatDate(d: string) {
   return d ? new Date(d).toLocaleDateString('vi-VN') : ''
 }
 
-onMounted(() => fetchQueue())
+const focusIdx = ref(-1)
+const focusedPost = computed(() => queue.value[focusIdx.value] || null)
+
+function onKeydown(e: KeyboardEvent) {
+  if ((e.target as HTMLElement)?.tagName === 'INPUT' || (e.target as HTMLElement)?.tagName === 'TEXTAREA') return
+  if (e.key === 'j') { focusIdx.value = Math.min(focusIdx.value + 1, queue.value.length - 1); e.preventDefault() }
+  else if (e.key === 'k') { focusIdx.value = Math.max(focusIdx.value - 1, 0); e.preventDefault() }
+  else if (e.key === 'a' && focusedPost.value && focusedPost.value.moderation_status !== 'approved') { approve(focusedPost.value.id); e.preventDefault() }
+  else if (e.key === 'r' && focusedPost.value && focusedPost.value.moderation_status !== 'rejected') { startReject(focusedPost.value.id); e.preventDefault() }
+}
+
+onMounted(() => {
+  fetchQueue()
+  window.addEventListener('keydown', onKeydown)
+})
+onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 </script>
 
 <style scoped>
 .mod-subtitle { font-size: .82rem; color: var(--muted); margin-top: 2px; }
 .refresh-spin { display: inline-block; animation: admin-spin .6s linear infinite; }
+
+/* ── Keyboard shortcuts ── */
+.mod-kbd-legend {
+  display: flex; align-items: center; gap: .5rem; font-size: .75rem; color: var(--muted);
+  margin-bottom: var(--space-3); flex-wrap: wrap;
+}
+.mod-kbd-hint { font-weight: 600; }
+.mod-kbd-legend kbd {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 22px; height: 22px; padding: 0 5px; border-radius: 4px;
+  background: var(--bg-alt); border: 1px solid var(--line); font-size: .7rem;
+  font-family: var(--font-mono, monospace); font-weight: 600;
+}
+.mod-focused td { background: rgba(33,150,83,.06) !important; }
+.mod-focused td:first-child { box-shadow: inset 3px 0 0 var(--primary, #219653); }
 
 /* ── Status tabs ── */
 .mod-tabs { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-5); }
