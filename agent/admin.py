@@ -251,6 +251,7 @@ async def list_entities(
     area: Optional[str] = None,
     q: Optional[str] = None,
     include_places: bool = False,
+    orphans_only: bool = False,
     limit: int = Query(50, le=500),
     offset: int = 0,
 ):
@@ -265,6 +266,11 @@ async def list_entities(
     if include_places:
         places = db.list_entities(entity_type=None, limit=1000, offset=0)
         results = [e for e in (results + [p for p in places if p["type"] == "place"])]
+
+    if orphans_only:
+        all_rels = db.all_relationships()
+        ent_ids_with_rels = {r["from"] for r in all_rels} | {r["to"] for r in all_rels}
+        results = [e for e in results if e.get("type") != "place" and e["id"] not in ent_ids_with_rels]
 
     total = len(results)
     items = results[:limit] if q else results

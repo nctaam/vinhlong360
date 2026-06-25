@@ -108,7 +108,7 @@
         <span>Tóm tắt: {{ stats.completeness.has_summary }}/{{ stats.completeness.total }}</span>
         <span>Ảnh: {{ stats.completeness.has_images }}/{{ stats.completeness.total }}</span>
         <span>Phường/xã: {{ stats.completeness.has_place }}/{{ stats.completeness.total }}</span>
-        <span v-if="stats.completeness.orphans">Mồ côi: <b style="color:#FF9F0A">{{ stats.completeness.orphans }}</b></span>
+        <NuxtLink v-if="stats.completeness.orphans" to="/admin/entities?orphans=1" class="dash-orphan-link">Mồ côi: <b style="color:#FF9F0A">{{ stats.completeness.orphans }}</b></NuxtLink>
       </div>
     </div>
 
@@ -411,6 +411,8 @@ onMounted(fetchDashboard)
 .dash-comp-bar { height: 8px; background: rgba(142,142,147,.1); border-radius: 4px; overflow: hidden; }
 .dash-comp-fill { height: 100%; background: var(--primary, #219653); border-radius: 4px; transition: width .5s ease-out; }
 .dash-comp-details { display: flex; gap: var(--space-4); margin-top: var(--space-3); font-size: .78rem; color: var(--muted); }
+.dash-orphan-link { color: inherit; text-decoration: none; border-bottom: 1px dashed #FF9F0A; }
+.dash-orphan-link:hover { color: #FF9F0A; }
 .dark .dash-completeness { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 
 /* ── Quick actions ── */

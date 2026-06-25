@@ -20,6 +20,9 @@
         <option value="">Tất cả loại</option>
         <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
       </select>
+      <button type="button" class="btn btn-outline btn-sm" :class="{ 'btn-active-warn': orphansOnly }" @click="orphansOnly = !orphansOnly; fetchEntities(true)">
+        {{ orphansOnly ? '&#10003; Mồ côi' : 'Mồ côi' }}
+      </button>
       <button type="button" class="btn btn-primary" @click="openCreate">+ Tạo mới</button>
       <button type="button" class="btn btn-outline btn-sm" title="Tải JSON" @click="exportJSON">&#x2B73; JSON</button>
       <button type="button" class="btn btn-outline btn-sm" title="Tải CSV" @click="exportCSV">&#x2B73; CSV</button>
@@ -237,6 +240,7 @@ const { timeAgo } = useTimeAgo()
 const types = Object.keys(TYPE_META)
 const search = ref('')
 const typeFilter = ref('')
+const orphansOnly = ref(false)
 const page = ref(1)
 const limit = 30
 const entities = ref<Entity[]>([])
@@ -335,6 +339,7 @@ async function fetchEntities(reset = false) {
     const params = new URLSearchParams({ limit: String(limit), offset: String((page.value - 1) * limit) })
     if (search.value) params.set('q', search.value)
     if (typeFilter.value) params.set('type', typeFilter.value)
+    if (orphansOnly.value) params.set('orphans_only', 'true')
     const res = await $fetch<Record<string, unknown>>(`/admin-api/entities?${params}`, { headers: authHeaders() })
     entities.value = res.entities || res || []
     loadError.value = false
@@ -575,6 +580,8 @@ function onKeydown(ev: KeyboardEvent) {
   }
 }
 onMounted(() => {
+  const route = useRoute()
+  if (route.query.orphans === '1') orphansOnly.value = true
   fetchEntities()
   window.addEventListener('keydown', onKeydown)
 })
@@ -641,6 +648,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .img-url { flex: 1; font-size: .78rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ── Search box (clear + searching feedback) ── */
+.btn-active-warn { background: rgba(255,159,10,.12) !important; border-color: #FF9F0A !important; color: #FF9F0A !important; font-weight: 600; }
 .ent-search-wrap { position: relative; display: flex; align-items: center; flex: 1 1 220px; min-width: 180px; }
 .ent-search-wrap .input { width: 100%; padding-right: 32px; }
 .ent-search-clear {
