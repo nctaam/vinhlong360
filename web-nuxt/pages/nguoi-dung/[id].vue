@@ -345,7 +345,7 @@ async function loadFollowList(which: 'followers' | 'following') {
   try {
     const res = await $fetch<any>(`/api/users/${userId}/${which}`)
     followLists.value[which] = res.users || []
-  } catch { followLists.value[which] = [] }
+  } catch { followLists.value[which] = []; showToast('Không thể tải danh sách', 'error') }
   followLoadingList.value = false
 }
 function openFollowModal(tab: 'followers' | 'following') {

@@ -397,8 +397,8 @@ async function publishPlan(idx: number) {
     plan.is_public = next
     if (next && import.meta.client) {
       const link = `${location.origin}/lich-trinh-chia-se/${plan.id}`
-      navigator.clipboard?.writeText(link).catch(() => {})
-      showToast('Đã công khai — link đã sao chép', 'success')
+      try { await navigator.clipboard?.writeText(link); showToast('Đã công khai — link đã sao chép', 'success') }
+      catch { showToast('Đã công khai', 'success') }
     } else {
       showToast('Đã chuyển về riêng tư', 'success')
     }
