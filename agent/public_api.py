@@ -116,30 +116,33 @@ async def list_entities(
     limit: int = Query(50, le=1000),
     offset: int = Query(0, ge=0),
 ):
+    # Support comma-separated types: ?type=experience,attraction,dish
+    entity_types: list[str] | None = None
+    single_type = type
+    if type and "," in type:
+        entity_types = [t.strip() for t in type.split(",") if t.strip()]
+        single_type = None
+
     def _in_month(e):
         return month in ((e.get("season") or {}).get("months") or [])
 
     if q:
         if month:
-            # lọc month TRÊN TOÀN BỘ kết-quả search rồi mới phân-trang → total đúng + offset đúng
-            full = db.search_entities(q=q, entity_type=type, area=area, limit=100000)
+            full = db.search_entities(q=q, entity_type=single_type, area=area, limit=100000, entity_types=entity_types)
             filtered = [e for e in full if _in_month(e)]
             total = len(filtered)
             results = filtered[offset:offset + limit]
         else:
-            # FIX: truyền offset (trước bỏ qua → trang 2+ trùng trang 1, lặp vô-hạn)
-            results = db.search_entities(q=q, entity_type=type, area=area, limit=limit, offset=offset)
-            total = db.count_entities_filtered(entity_type=type, area=area, q=q)
+            results = db.search_entities(q=q, entity_type=single_type, area=area, limit=limit, offset=offset, entity_types=entity_types)
+            total = db.count_entities_filtered(entity_type=single_type, area=area, q=q, entity_types=entity_types)
     elif month:
-        # GĐ-audit fix: lọc month TRÊN TOÀN BỘ tập (không phân trang trước rồi mới lọc) →
-        # total đúng + offset/limit đúng. Dataset nhỏ (<2k) nên nạp full an toàn.
-        full = db.list_entities(entity_type=type, area=area, limit=100000, offset=0)
+        full = db.list_entities(entity_type=single_type, area=area, limit=100000, offset=0, entity_types=entity_types)
         filtered = [e for e in full if _in_month(e)]
         total = len(filtered)
         results = filtered[offset:offset + limit]
     else:
-        results = db.list_entities(entity_type=type, area=area, limit=limit, offset=offset)
-        total = db.count_entities_filtered(entity_type=type, area=area, q=q)
+        results = db.list_entities(entity_type=single_type, area=area, limit=limit, offset=offset, entity_types=entity_types)
+        total = db.count_entities_filtered(entity_type=single_type, area=area, q=q, entity_types=entity_types)
 
     # Quarantine: không hiển thị entity provisional/auto-learned chưa duyệt ở trang công khai.
     results = [e for e in results if _is_public(e)]

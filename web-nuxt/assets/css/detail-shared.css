@@ -53,7 +53,7 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
 .lb-fade-leave-active { transition: opacity .25s var(--ease-out); }
 .lb-fade-enter-from, .lb-fade-leave-to { opacity: 0; }
 .lb-fade-enter-from .lb-img { transform: scale(.92); }
-.lb-img { max-width: 90vw; max-height: 85vh; object-fit: contain; border-radius: var(--radius-md); box-shadow: 0 16px 64px rgba(0,0,0,.5); transition: transform .35s var(--ease-spring-gentle), opacity .3s var(--ease-out); user-select: none; -webkit-user-drag: none; touch-action: pan-y; }
+.lb-img { max-width: 90vw; max-height: 85vh; object-fit: contain; border-radius: var(--radius-md); box-shadow: 0 16px 64px rgba(0,0,0,.5); transition: transform .35s var(--ease-spring-gentle), opacity .3s var(--ease-out); user-select: none; -webkit-user-drag: none; touch-action: manipulation; }
 .lb-close { position: absolute; top: var(--space-4); right: var(--space-5); font-size: 1.6rem; color: var(--text-on-dark, #fff); background: rgba(255,255,255,.1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: .5px solid rgba(255,255,255,.15); cursor: pointer; line-height: 1; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background .3s var(--ease-out), transform .3s var(--ease-spring-gentle); }
 .lb-close:hover { background: rgba(255,255,255,.22); transform: scale(1.08); }
 .lb-close:active { transform: scale(.9); transition-duration: .08s; }

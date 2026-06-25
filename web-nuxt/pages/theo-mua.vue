@@ -259,12 +259,10 @@ function monthTone(m: number) {
 }
 
 const { data, error: fetchError } = await useAsyncData('season-entities', () =>
-  apiFetch<{ entities: Entity[] }>('/api/entities?limit=300'),
+  apiFetch<{ entities: Entity[]; total: number }>(`/api/entities?type=${WEDGE_TYPES.join(',')}&limit=500`),
 )
 
-const wedge = computed(() =>
-  (data.value?.entities || []).filter((e: Entity) => WEDGE_TYPES.includes(e.type)),
-)
+const wedge = computed(() => data.value?.entities || [])
 
 function score(e: Entity) { return relevanceScore(e, String(month.value)) }
 function isInSeason(e: Entity) { return (e.season?.months || []).includes(month.value) }

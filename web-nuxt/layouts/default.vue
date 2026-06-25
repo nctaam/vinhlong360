@@ -7,11 +7,11 @@
           <span class="logo">{{ ss('branding.site_name', 'vinhlong360').replace('360', '') }}<span class="dot">360</span></span>
           <span class="tld">{{ ss('branding.logo_suffix', '.vn') }}</span>
         </NuxtLink>
-        <button type="button" class="nav-toggle" :aria-expanded="mobileNav" aria-haspopup="true" aria-controls="main-nav" aria-label="Menu" @click="mobileNav = !mobileNav">
+        <button type="button" class="nav-toggle" :aria-expanded="mobileNav" aria-haspopup="true" aria-controls="main-nav" aria-label="Menu" @click="mobileNav ? closeNav() : (mobileNav = true)">
           <span></span><span></span><span></span>
         </button>
-        <div class="nav-backdrop" :class="{ show: mobileNav }" aria-hidden="true" @click="mobileNav = false"></div>
-        <nav id="main-nav" class="main-nav" :class="{ open: mobileNav }" @keydown="onNavKeydown">
+        <div class="nav-backdrop" :class="{ show: mobileNav, closing: navClosing }" aria-hidden="true" @click="closeNav"></div>
+        <nav id="main-nav" class="main-nav" :class="{ open: mobileNav, closing: navClosing }" @keydown="onNavKeydown">
           <template v-for="(g, i) in navGroups" :key="g.label">
             <NuxtLink v-if="g.to" :to="g.to" :class="{ active: isActive(g) }" :aria-current="isActive(g) ? 'page' : undefined" @click="closeAll">{{ g.label }}</NuxtLink>
             <div v-else class="nav-group" :class="{ open: openGroup === i }">
@@ -217,7 +217,18 @@ useHead({ style: [{ innerHTML: themeOverrideCss }] })
 
 const openGroup = ref<number | null>(null)
 function toggleGroup(i: number) { openGroup.value = openGroup.value === i ? null : i }
-function closeAll() { openGroup.value = null; mobileNav.value = false }
+const navClosing = ref(false)
+
+function closeNav() {
+  if (!mobileNav.value || navClosing.value) return
+  navClosing.value = true
+  setTimeout(() => {
+    mobileNav.value = false
+    navClosing.value = false
+  }, 250)
+}
+
+function closeAll() { openGroup.value = null; closeNav() }
 function isActive(g: { to?: string; children?: { to: string }[] }) {
   if (g.to) return route.path === g.to
   return !!g.children?.some(c => route.path === c.to || route.path.startsWith(c.to + '/'))
@@ -239,7 +250,7 @@ watch(mobileNav, (open) => {
 
 function onNavKeydown(e: KeyboardEvent) {
   if (!mobileNav.value) return
-  if (e.key === 'Escape') { mobileNav.value = false; return }
+  if (e.key === 'Escape') { closeNav(); return }
   if (e.key !== 'Tab') return
   const nav = document.getElementById('main-nav')
   if (!nav) return
@@ -259,7 +270,7 @@ function onPageScroll() { topbarScrolled.value = window.scrollY > 8 }
 
 onMounted(() => {
   const onDoc = (e: MouseEvent) => { if (!(e.target as HTMLElement)?.closest('.main-nav')) openGroup.value = null }
-  const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') { openGroup.value = null; mobileNav.value = false } }
+  const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') { openGroup.value = null; closeNav() } }
   document.addEventListener('click', onDoc)
   document.addEventListener('keydown', onEsc)
   window.addEventListener('scroll', onPageScroll, { passive: true })

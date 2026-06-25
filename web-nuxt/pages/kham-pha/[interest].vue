@@ -146,16 +146,13 @@ const areaFilter = ref('all')
 const typeFilter = ref('all')
 useFilterUrl({ vung: areaFilter, loai: typeFilter }, { vung: 'all', loai: 'all' })
 
+const interestTypes = INTEREST_META[interest].types
+
 const { data, error: fetchError } = await useAsyncData(`interest-${interest}`, () =>
-  apiFetch<{ entities: Entity[] }>('/api/entities?limit=200')
+  apiFetch<{ entities: Entity[]; total: number }>(`/api/entities?type=${interestTypes.join(',')}&limit=500`)
 )
 
-// Items matching this interest, before the area/type filters are applied.
-const interestItems = computed<Entity[]>(() => {
-  const raw = data.value
-  if (!raw) return []
-  return (raw.entities || []).filter((e: Entity) => interestMeta.value.types.includes(e.type))
-})
+const interestItems = computed<Entity[]>(() => data.value?.entities || [])
 
 // SIGNATURE 3: breakdown of the interest's own types, with live counts,
 // for the "Theo loại" segmented filter (only render when >1 type present).

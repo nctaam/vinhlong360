@@ -158,13 +158,13 @@ const gridSection = ref<HTMLElement | null>(null)
 useFilterUrl({ type: typeFilter, mua: seasonFilter }, { type: 'all', mua: 'all' })
 
 const { data, error: fetchError } = await useAsyncData('catalog-tourism', () =>
-  apiFetch<{ entities: Entity[] }>('/api/entities?limit=200')
+  apiFetch<{ entities: Entity[]; total: number }>(`/api/entities?type=${TYPES.join(',')}&limit=500`)
 )
 
 const allEntities = computed(() => {
   const raw = data.value
   if (!raw) return []
-  return (raw.entities || []).filter((e: Entity) => TYPES.includes(e.type))
+  return raw.entities || []
 })
 
 const stats = computed(() => {

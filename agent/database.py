@@ -437,14 +437,19 @@ class Database:
             return cur.rowcount > 0
 
     def search_entities(self, q: str = None, entity_type: str = None,
-                        area: str = None, limit: int = 20, offset: int = 0) -> list[dict]:
+                        area: str = None, limit: int = 20, offset: int = 0,
+                        entity_types: list[str] | None = None) -> list[dict]:
         """Search entities with filters (offset hỗ-trợ phân-trang — FIX bug search lặp)."""
         self.initialize()
         ph = self._ph
         conditions = ["e.type NOT IN ('place')"]
         params = []
 
-        if entity_type:
+        if entity_types:
+            placeholders = ", ".join([ph] * len(entity_types))
+            conditions.append(f"e.type IN ({placeholders})")
+            params.extend(entity_types)
+        elif entity_type:
             conditions.append(f"e.type = {ph}")
             params.append(entity_type)
 
@@ -480,13 +485,18 @@ class Database:
             return [self._parse_entity(r) for r in rows]
 
     def list_entities(self, entity_type: str = None, area: str = None,
-                      limit: int = 500, offset: int = 0) -> list[dict]:
+                      limit: int = 500, offset: int = 0,
+                      entity_types: list[str] | None = None) -> list[dict]:
         """List entities with pagination."""
         self.initialize()
         ph = self._ph
         conditions = ["e.type != 'place'"]
         params = []
-        if entity_type:
+        if entity_types:
+            placeholders = ", ".join([ph] * len(entity_types))
+            conditions.append(f"e.type IN ({placeholders})")
+            params.extend(entity_types)
+        elif entity_type:
             conditions.append(f"e.type = {ph}")
             params.append(entity_type)
         if area:
@@ -510,14 +520,18 @@ class Database:
             return [self._parse_entity(r) for r in rows]
 
     def count_entities_filtered(self, entity_type: str = None, area: str = None,
-                                q: str = None) -> int:
+                                q: str = None, entity_types: list[str] | None = None) -> int:
         """Count non-place entities with the same public filters as list/search."""
         self.initialize()
         ph = self._ph
         conditions = ["e.type != 'place'"]
         params = []
 
-        if entity_type:
+        if entity_types:
+            placeholders = ", ".join([ph] * len(entity_types))
+            conditions.append(f"e.type IN ({placeholders})")
+            params.extend(entity_types)
+        elif entity_type:
             conditions.append(f"e.type = {ph}")
             params.append(entity_type)
         if area:
