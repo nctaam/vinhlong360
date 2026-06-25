@@ -107,6 +107,22 @@
 
     <!-- Quick explore when no query -->
     <template v-if="!q">
+      <ClientOnly>
+        <section v-if="recentItems.length" class="block reveal">
+          <div class="section-head">
+            <h2>Đã xem gần đây</h2>
+          </div>
+          <div class="recent-grid">
+            <NuxtLink v-for="r in recentItems" :key="r.id" :to="`/dia-diem/${r.id}`" class="recent-card">
+              <img v-if="r.image" :src="r.image" :alt="r.name" class="recent-img" loading="lazy" />
+              <span v-else class="recent-img recent-placeholder" aria-hidden="true">{{ TYPE_META[r.type]?.emoji || '📍' }}</span>
+              <span class="recent-name">{{ r.name }}</span>
+              <span class="recent-type">{{ TYPE_META[r.type]?.label || r.type }}</span>
+            </NuxtLink>
+          </div>
+        </section>
+      </ClientOnly>
+
       <section class="block reveal">
         <div class="section-head">
           <h2>Khám phá theo danh mục</h2>
@@ -189,6 +205,7 @@
 import { TYPE_META } from '~/composables/useConstants'
 useReveal()
 const { f: pc } = usePageContent('tim_kiem')
+const { recentItems } = useRecentlyViewed()
 const route = useRoute()
 const q = computed(() => (route.query.q as string) || '')
 const searchInput = ref(q.value)
@@ -409,11 +426,38 @@ useHead({
 .dark .result-type-badge { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); }
 .dark .fetch-error { color: var(--error); }
 
+/* Recently viewed */
+.recent-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: var(--space-3);
+}
+.recent-card {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+  padding: var(--space-3); background: var(--card); border: .5px solid var(--line);
+  border-radius: var(--radius-lg); text-decoration: none; color: var(--ink); text-align: center;
+  transition: transform .3s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), border-color .3s;
+}
+.recent-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--primary-fg); }
+.recent-card:active { transform: scale(.97); transition-duration: .08s; }
+.recent-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.recent-img {
+  width: 56px; height: 56px; border-radius: var(--radius-md); object-fit: cover;
+}
+.recent-placeholder {
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-alt); font-size: var(--text-xl);
+}
+.recent-name { font-size: var(--text-xs); font-weight: var(--weight-semibold); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
+.recent-type { font-size: 10px; color: var(--muted); }
+.dark .recent-card { background: var(--bg-alt); border-color: var(--line); }
+.dark .recent-card:hover { border-color: rgba(255,255,255,.15); }
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .quick-pick:hover { transform: none; }
   .quick-pick:active { transform: none; }
   .quick-pick:hover .quick-pick-icon { transform: none; }
+  .recent-card:hover { transform: none; }
+  .recent-card:active { transform: none; }
   .grid { animation: none; opacity: 1; transform: none; }
 }
 </style>

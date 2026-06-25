@@ -465,7 +465,9 @@ async function toggleFollowPlace() {
   finally { actionPending.value = false }
 }
 
+const { track: trackRecent } = useRecentlyViewed()
 onMounted(async () => {
+  if (entity.value) trackRecent(entity.value)
   if (!isLoggedIn.value) return
   try {
     const v = await $fetch<{ status: string | null }>(`/api/me/visits/check/${encodeURIComponent(id.value)}`, { headers: authHeaders() })
