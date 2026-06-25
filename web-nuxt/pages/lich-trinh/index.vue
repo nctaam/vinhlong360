@@ -40,7 +40,8 @@
         <div class="scroll-row saved-row" role="region" aria-label="Mục đã lưu">
           <NuxtLink v-for="fav in recentSaved" :key="fav.id" :to="`/dia-diem/${fav.id}`" class="card">
             <div v-if="fav.image" class="cover cover-img">
-              <img :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" />
+              <NuxtImg v-if="isRemoteUrl(fav.image)" :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" sizes="sm:100vw md:50vw lg:400px" />
+              <img v-else :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" />
             </div>
             <div class="card-b">
               <span class="card-type">{{ getTypeMeta(fav.type).label }}</span>
@@ -157,6 +158,7 @@ useReveal()
 const { favorites, byType, count, clear } = useFavorites()
 const { confirmDialog } = useConfirm()
 const recentSaved = computed(() => favorites.value.slice(0, 8))
+const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
 
 function getTypeMeta(type: string) {
   return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }

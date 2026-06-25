@@ -114,7 +114,10 @@
         </div>
         <p class="ri-content">{{ r.content }}</p>
         <div v-if="r.images?.length" class="ri-images">
-          <img v-for="(img, i) in r.images" :key="i" :src="img" :alt="`Ảnh đánh giá ${i + 1}`" loading="lazy" decoding="async" width="200" height="200" @error="(e) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
+          <template v-for="(img, i) in r.images" :key="i">
+            <NuxtImg v-if="isRemoteUrl(img)" :src="img" :alt="`Ảnh đánh giá ${i + 1}`" loading="lazy" decoding="async" width="200" height="200" sizes="200px" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
+            <img v-else :src="img" :alt="`Ảnh đánh giá ${i + 1}`" loading="lazy" decoding="async" width="200" height="200" @error="(e) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
+          </template>
         </div>
         <button type="button" :class="['ri-helpful', { active: r.user_liked }]" :aria-pressed="!!r.user_liked" @click="toggleHelpful(r)">
           👍 Hữu ích<span v-if="r.likes" class="ri-helpful-count">{{ r.likes }}</span>
@@ -140,6 +143,7 @@ const props = defineProps<{
 
 const { user, authHeaders } = useAuth()
 const { confirmDialog } = useConfirm()
+const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
 const { openAuth } = useAuthModal()
 
 async function toggleHelpful(r: any) {

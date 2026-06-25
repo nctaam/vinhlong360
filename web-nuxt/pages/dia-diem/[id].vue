@@ -15,7 +15,8 @@
 
     <!-- Cover + Hero Image -->
     <div :class="['detail-cover', `cat-${typeMeta.cat}`, { 'has-cover-img': coverImage }]">
-      <img v-if="coverImage" :src="coverImage" :alt="entity.name" class="dc-bg" loading="eager" fetchpriority="high" sizes="100vw" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="openCoverLightbox" />
+      <NuxtImg v-if="coverImage && isRemoteUrl(coverImage)" :src="coverImage" :alt="entity.name" class="dc-bg" loading="eager" fetchpriority="high" sizes="sm:100vw md:100vw lg:960px xl:1200px" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="openCoverLightbox" />
+      <img v-else-if="coverImage" :src="coverImage" :alt="entity.name" class="dc-bg" loading="eager" fetchpriority="high" sizes="100vw" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="openCoverLightbox" />
       <div v-if="coverImage" class="dc-overlay"></div>
       <div v-if="coverImage" class="dc-vignette" aria-hidden="true"></div>
       <div class="dc-inner">
@@ -53,22 +54,10 @@
         {{ entity.images.length === 1 ? 'Xem ảnh' : `${entity.images.length} ảnh` }}
       </button>
       <div v-if="hasEntityImages && entity.images.length > 1" class="dc-thumbs">
-        <img
-          v-for="(src, i) in entity.images.slice(0, 4)"
-          :key="src"
-          :src="src"
-          :alt="`${entity.name} - ${i + 1}`"
-          :class="['dc-thumb', { active: i === 0 }]"
-          loading="lazy"
-          width="56"
-          height="40"
-          decoding="async"
-          role="button"
-          tabindex="0"
-          @click="openCoverLightbox(i)"
-          @keydown.enter="openCoverLightbox(i)"
-          @keydown.space.prevent="openCoverLightbox(i)"
-        />
+        <template v-for="(src, i) in entity.images.slice(0, 4)" :key="src">
+          <NuxtImg v-if="isRemoteUrl(src)" :src="src" :alt="`${entity.name} - ${i + 1}`" :class="['dc-thumb', { active: i === 0 }]" loading="lazy" width="56" height="40" decoding="async" role="button" tabindex="0" @click="openCoverLightbox(i)" @keydown.enter="openCoverLightbox(i)" @keydown.space.prevent="openCoverLightbox(i)" />
+          <img v-else :src="src" :alt="`${entity.name} - ${i + 1}`" :class="['dc-thumb', { active: i === 0 }]" loading="lazy" width="56" height="40" decoding="async" role="button" tabindex="0" @click="openCoverLightbox(i)" @keydown.enter="openCoverLightbox(i)" @keydown.space.prevent="openCoverLightbox(i)" />
+        </template>
         <button type="button" v-if="entity.images.length > 4" class="dc-thumb-more" :aria-label="`Xem thêm ${entity.images.length - 4} ảnh`" @click="openCoverLightbox(4)">
           +{{ entity.images.length - 4 }}
         </button>
@@ -522,6 +511,7 @@ const coverImage = computed(() => {
   if (hasEntityImages.value) return entity.value!.images[0]
   return `/img/cat/${typeMeta.value.cat}.jpg`
 })
+const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
 
 const imageCredit = computed(() => {
   const credits = entity.value?.image_credits

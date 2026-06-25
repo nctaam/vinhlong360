@@ -59,7 +59,8 @@
           class="thread-img-wrap"
           @click="openLightbox(i)"
         >
-          <img :src="img" :alt="`Ảnh ${i + 1}`" loading="lazy" decoding="async" width="400" height="300" @error="(e) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
+          <NuxtImg v-if="isRemoteUrl(img)" :src="img" :alt="`Ảnh ${i + 1}`" loading="lazy" decoding="async" width="400" height="300" sizes="sm:100vw md:50vw lg:400px" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
+          <img v-else :src="img" :alt="`Ảnh ${i + 1}`" loading="lazy" decoding="async" width="400" height="300" @error="(e) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
           <span v-if="i === 3 && extraCount > 0" class="thread-img-more">+{{ extraCount }}</span>
         </button>
       </div>
@@ -134,6 +135,7 @@ const emit = defineEmits<{
 }>()
 
 const { user: _authUser } = useAuth()
+const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
 const isOwner = computed(() =>
   !!_authUser.value?.id && String(props.post?.user_id) === String(_authUser.value.id))
 

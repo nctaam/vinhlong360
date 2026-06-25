@@ -140,7 +140,8 @@
             </div>
           </div>
           <div v-if="e.images?.length" class="event-thumb">
-            <img :src="e.images[0]" :alt="e.name" loading="lazy" decoding="async" width="80" height="60" @error="(ev) => { const t = ev.target as HTMLImageElement; t.style.display = 'none' }" />
+            <NuxtImg v-if="isRemoteUrl(e.images[0])" :src="e.images[0]" :alt="e.name" loading="lazy" decoding="async" width="80" height="60" @error="(ev: Event) => { const t = ev.target as HTMLImageElement; t.style.display = 'none' }" />
+            <img v-else :src="e.images[0]" :alt="e.name" loading="lazy" decoding="async" width="80" height="60" @error="(ev) => { const t = ev.target as HTMLImageElement; t.style.display = 'none' }" />
           </div>
         </NuxtLink>
       </div>
@@ -219,6 +220,7 @@ import { lunarLabel, isLunarFirstDay, isLunarFull } from '~/composables/useLunar
 
 useReveal()
 const { f: pc } = usePageContent('le_hoi')
+const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
 
 const q = ref('')
 const areaFilter = ref('all')

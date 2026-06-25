@@ -17,7 +17,8 @@
               <time :datetime="p.created_at">{{ timeAgo(p.created_at) }}</time>
             </span>
           </div>
-          <img v-if="firstImage(p)" :src="firstImage(p)!" alt="" class="ef-thumb" loading="lazy" decoding="async" />
+          <NuxtImg v-if="firstImage(p) && isRemoteUrl(firstImage(p)!)" :src="firstImage(p)!" alt="" class="ef-thumb" loading="lazy" decoding="async" width="80" height="80" />
+          <img v-else-if="firstImage(p)" :src="firstImage(p)!" alt="" class="ef-thumb" loading="lazy" decoding="async" />
         </NuxtLink>
       </li>
     </ul>
@@ -30,6 +31,7 @@
 <script setup lang="ts">
 const props = defineProps<{ entityId: string; entityName: string }>()
 const { timeAgo } = useTimeAgo()
+const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
 
 const posts = ref<any[]>([])
 const total = ref(0)

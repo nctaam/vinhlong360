@@ -212,7 +212,8 @@
           <div class="scroll-row" role="region" aria-label="Bài viết cộng đồng mới">
             <NuxtLink v-for="p in communityPosts" :key="p.id" :to="`/bai-viet/${p.id}`" class="cm-card">
               <div v-if="p.images && p.images.length" class="cm-img">
-                <img :src="p.images[0]" :alt="p.display_name || 'Bài viết'" loading="lazy" decoding="async" width="280" height="150" />
+                <NuxtImg v-if="isRemoteUrl(p.images[0])" :src="p.images[0]" :alt="p.display_name || 'Bài viết'" loading="lazy" decoding="async" width="280" height="150" sizes="sm:280px" />
+                <img v-else :src="p.images[0]" :alt="p.display_name || 'Bài viết'" loading="lazy" decoding="async" width="280" height="150" />
               </div>
               <div class="cm-body">
                 <div class="cm-author">
@@ -246,7 +247,8 @@
         <div class="scroll-row" role="region" aria-label="Đã lưu gần đây">
           <NuxtLink v-for="fav in recentSaved" :key="fav.id" :to="`/dia-diem/${fav.id}`" class="card">
             <div v-if="fav.image" class="cover cover-img">
-              <img :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="480" height="192" />
+              <NuxtImg v-if="isRemoteUrl(fav.image)" :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="480" height="192" sizes="sm:100vw md:50vw lg:480px" />
+              <img v-else :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="480" height="192" />
             </div>
             <div class="card-b">
               <span class="card-type">{{ getFavTypeMeta(fav.type).label }}</span>
@@ -294,6 +296,7 @@ const heroPills = computed(() => ss('homepage.hero_pills', DEFAULT_HERO_PILLS) a
 
 const { favorites } = useFavorites()
 const recentSaved = computed(() => favorites.value.slice(0, 4))
+const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
 
 const { isLoggedIn } = useAuth()
 const { show: showToast } = useToast()
