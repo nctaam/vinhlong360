@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request, Depends, UploadFile, File
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, field_validator
 
 import data_quality
@@ -277,11 +278,15 @@ async def list_entities(
 
     total = len(results)
     items = results[:limit] if q else results
-    for e in items:
-        if e.get("placeId"):
-            place = db.get_entity(e["placeId"])
-            e["place_name"] = place["name"] if place else None
-            e["area"] = place.get("area") if place else e.get("area")
+
+    place_ids = list({e["placeId"] for e in items if e.get("placeId")})
+    if place_ids:
+        place_map = db.get_entities_batch(place_ids)
+        for e in items:
+            pid = e.get("placeId")
+            if pid and pid in place_map:
+                e["place_name"] = place_map[pid]["name"]
+                e["area"] = place_map[pid].get("area") or e.get("area")
 
     return {"total": total, "offset": offset, "limit": limit, "entities": items}
 
@@ -294,6 +299,21 @@ async def list_places():
     with db._conn() as conn:
         rows = db._fetchall(conn, "SELECT id, name, area, level FROM entities WHERE type = 'place' ORDER BY name")
     return [db._row_to_dict(r) for r in rows]
+
+
+@router.get("/entities/check-duplicate")
+async def check_duplicate(name: str = Query(..., min_length=2)):
+    """Kiểm tra entity trùng tên (substring match, case-insensitive)."""
+    name_lower = name.lower().strip()
+    if len(name_lower) < 2:
+        return {"duplicates": []}
+    pattern = f"%{name_lower}%"
+    with db._conn() as conn:
+        rows = db._fetchall(conn,
+            "SELECT id, name, type FROM entities WHERE type != 'place' AND LOWER(name) LIKE ? LIMIT 5",
+            (pattern,))
+    return {"duplicates": [{"id": db._row_to_dict(r)["id"], "name": db._row_to_dict(r)["name"],
+                            "type": db._row_to_dict(r).get("type", "")} for r in rows]}
 
 
 @router.get("/entities/{entity_id}")
@@ -348,25 +368,6 @@ async def create_entity(entity: EntityCreate):
     db.upsert_entity(new_entity)
     _sync_kb()
     return {"status": "created", "entity": new_entity}
-
-
-@router.get("/entities/check-duplicate")
-async def check_duplicate(name: str = Query(..., min_length=2)):
-    """Kiểm tra entity trùng tên (substring match, case-insensitive)."""
-    name_lower = name.lower().strip()
-    if len(name_lower) < 2:
-        return {"duplicates": []}
-    all_ents = db.all_entities()
-    matches = []
-    for e in all_ents:
-        if e.get("type") == "place":
-            continue
-        ename = (e.get("name") or "").lower()
-        if name_lower in ename or ename in name_lower:
-            matches.append({"id": e["id"], "name": e["name"], "type": e.get("type", "")})
-            if len(matches) >= 5:
-                break
-    return {"duplicates": matches}
 
 
 @router.delete("/entities/{entity_id}")
@@ -461,16 +462,20 @@ async def list_unclassified(limit: int = Query(50, ge=1, le=500), offset: int = 
                             q: Optional[str] = None):
     """Entity nội dung CHƯA gán xã/phường (placeId rỗng) — để admin gán đúng (lấp nợ placeId)."""
     ql = (q or "").lower().strip()
-    out = []
-    for e in db.all_entities():
-        if e.get("type") == "place" or e.get("placeId"):
-            continue
-        if ql and ql not in e.get("name", "").lower():
-            continue
-        out.append({"id": e["id"], "name": e.get("name"), "type": e.get("type"),
-                    "area": e.get("area"), "summary": (e.get("summary") or "")[:100]})
-    out.sort(key=lambda x: x.get("name", ""))
-    return {"total": len(out), "entities": out[offset:offset + limit]}
+    base = "FROM entities WHERE type != 'place' AND (placeId IS NULL OR placeId = '')"
+    params: list = []
+    if ql:
+        base += " AND LOWER(name) LIKE ?"
+        params.append(f"%{ql}%")
+    with db._conn() as conn:
+        cnt = db._fetchone(conn, f"SELECT COUNT(*) as c {base}", tuple(params))
+        total = db._row_to_dict(cnt)["c"] if cnt else 0
+        rows = db._fetchall(conn, f"SELECT id, name, type, area, summary {base} ORDER BY name LIMIT ? OFFSET ?",
+                            tuple(params) + (limit, offset))
+    out = [{"id": db._row_to_dict(r)["id"], "name": db._row_to_dict(r).get("name"),
+            "type": db._row_to_dict(r).get("type"), "area": db._row_to_dict(r).get("area"),
+            "summary": (db._row_to_dict(r).get("summary") or "")[:100]} for r in rows]
+    return {"total": total, "entities": out}
 
 
 class AssignPlaceRequest(BaseModel):
@@ -509,17 +514,46 @@ async def get_itinerary_admin(itin_id: str):
         raise HTTPException(404, "Itinerary not found")
     return it
 
+class ItineraryCreate(BaseModel):
+    id: str = Field(..., min_length=1, max_length=100)
+    title: str = Field(..., min_length=1, max_length=300)
+    description: str | None = Field(None, max_length=2000)
+    days: list | None = None
+    area: str | None = Field(None, max_length=100)
+    tags: list[str] | None = None
+
+class ItineraryUpdate(BaseModel):
+    title: str | None = Field(None, min_length=1, max_length=300)
+    description: str | None = Field(None, max_length=2000)
+    days: list | None = None
+    area: str | None = Field(None, max_length=100)
+    tags: list[str] | None = None
+
+class RelationshipCreate(BaseModel):
+    from_id: str = Field(..., min_length=1, max_length=100)
+    to_id: str = Field(..., min_length=1, max_length=100)
+    type: str = Field(..., min_length=1, max_length=100)
+
+class RelationshipBulkPair(BaseModel):
+    to_id: str = Field(..., min_length=1, max_length=100)
+    type: str = Field("related_to", max_length=100)
+
+class RelationshipBulkCreate(BaseModel):
+    from_id: str = Field(..., min_length=1, max_length=100)
+    pairs: list[RelationshipBulkPair] = Field(..., max_length=50)
+
+
 @router.post("/itineraries")
-async def create_itinerary(body: dict):
-    if not body.get("id") or not body.get("title"):
-        raise HTTPException(400, "id and title required")
-    db.upsert_itinerary(body)
-    return {"status": "created", "id": body["id"]}
+async def create_itinerary(body: ItineraryCreate):
+    data = body.model_dump(exclude_none=True)
+    db.upsert_itinerary(data)
+    return {"status": "created", "id": body.id}
 
 @router.put("/itineraries/{itin_id}")
-async def update_itinerary(itin_id: str, body: dict):
-    body["id"] = itin_id
-    db.upsert_itinerary(body)
+async def update_itinerary(itin_id: str, body: ItineraryUpdate):
+    data = body.model_dump(exclude_none=True)
+    data["id"] = itin_id
+    db.upsert_itinerary(data)
     return {"status": "updated", "id": itin_id}
 
 @router.delete("/itineraries/{itin_id}")
@@ -534,8 +568,8 @@ async def delete_itinerary(itin_id: str):
 # ── Relationship CRUD ──
 
 @router.post("/relationships")
-async def add_relationship(body: dict):
-    db.add_relationship(body["from_id"], body["to_id"], body["type"])
+async def add_relationship(body: RelationshipCreate):
+    db.add_relationship(body.from_id, body.to_id, body.type)
     return {"status": "created"}
 
 @router.delete("/relationships")
@@ -549,21 +583,17 @@ async def delete_relationship(from_id: str, to_id: str, type: str):
 
 
 @router.post("/relationships/bulk")
-async def add_relationships_bulk(body: dict):
-    """B7b: thêm nhiều quan hệ cùng lúc. Body: {from_id, pairs: [{to_id, type}]}."""
-    from_id = body.get("from_id", "")
-    pairs = body.get("pairs", [])
-    if not from_id or not pairs:
-        raise HTTPException(400, "Cần from_id và pairs")
+async def add_relationships_bulk(body: RelationshipBulkCreate):
+    """B7b: thêm nhiều quan hệ cùng lúc."""
     added = 0
     errors = []
-    for p in pairs[:50]:
-        to_id = p.get("to_id", "").strip()
-        rel_type = p.get("type", "related_to")
+    for p in body.pairs:
+        to_id = p.to_id.strip()
+        rel_type = p.type
         if not to_id:
             continue
         try:
-            db.add_relationship(from_id, to_id, rel_type)
+            db.add_relationship(body.from_id, to_id, rel_type)
             added += 1
         except Exception as e:
             errors.append({"to_id": to_id, "error": str(e)})
@@ -636,53 +666,6 @@ async def bulk_delete(entity_ids: list[str]):
         if db.delete_entity(eid):
             deleted += 1
     return {"status": "deleted", "count": deleted}
-
-
-# ── Image management ──
-
-@router.post("/entities/{entity_id}/images")
-async def add_entity_image(entity_id: str, request: Request):
-    """Add image URL to entity."""
-    body = await request.json()
-    url = body.get("url", "")
-    if not url or not isinstance(url, str) or len(url) > 500:
-        raise HTTPException(400, "Invalid image URL")
-    if not url.startswith(("https://", "http://")):
-        raise HTTPException(400, "Image URL must start with http:// or https://")
-
-    entity = db.get_entity(entity_id)
-    if not entity:
-        raise HTTPException(404, f"Entity '{entity_id}' not found")
-
-    images = entity.get("images", []) or []
-    if isinstance(images, str):
-        images = json.loads(images)
-    if len(images) >= 10:
-        raise HTTPException(400, "Maximum 10 images per entity")
-    images.append(url)
-    entity["images"] = images
-    entity["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
-    db.upsert_entity(entity)
-    return {"status": "added", "images": images}
-
-
-@router.delete("/entities/{entity_id}/images/{index}")
-async def remove_entity_image(entity_id: str, index: int):
-    """Remove image by index from entity."""
-    entity = db.get_entity(entity_id)
-    if not entity:
-        raise HTTPException(404, f"Entity '{entity_id}' not found")
-
-    images = entity.get("images", []) or []
-    if isinstance(images, str):
-        images = json.loads(images)
-    if index < 0 or index >= len(images):
-        raise HTTPException(400, f"Image index {index} out of range (0-{len(images)-1})")
-    removed = images.pop(index)
-    entity["images"] = images
-    entity["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
-    db.upsert_entity(entity)
-    return {"status": "removed", "removed_url": removed, "images": images}
 
 
 # ══════════════════════════════════════════════════
@@ -874,23 +857,32 @@ async def admin_stats():
             by_type[d["type"]] = d["c"]
             total_entities += d["c"]
 
-    all_ents = [e for e in db.all_entities() if e.get("type") != "place"]
-    has_summary = sum(1 for e in all_ents if e.get("summary"))
-    has_images = sum(1 for e in all_ents if e.get("images"))
-    has_place = sum(1 for e in all_ents if e.get("placeId"))
-    ent_ids_with_rels = set()
     with db._conn() as c2:
-        for r in db._fetchall(c2, "SELECT DISTINCT from_id FROM relationships UNION SELECT DISTINCT to_id FROM relationships", ()):
-            d = db._row_to_dict(r)
-            ent_ids_with_rels.add(d.get("from_id") or d.get("to_id"))
-    orphan_count = sum(1 for e in all_ents if e["id"] not in ent_ids_with_rels)
+        comp = db._fetchone(c2, """
+            SELECT COUNT(*) as total,
+                   SUM(CASE WHEN summary IS NOT NULL AND summary != '' THEN 1 ELSE 0 END) as has_summary,
+                   SUM(CASE WHEN images IS NOT NULL AND images != '' AND images != '[]' THEN 1 ELSE 0 END) as has_images,
+                   SUM(CASE WHEN placeId IS NOT NULL AND placeId != '' THEN 1 ELSE 0 END) as has_place
+            FROM entities WHERE type != 'place'
+        """, ())
+        cd = db._row_to_dict(comp) if comp else {}
+        comp_total = cd.get("total", 0)
+        has_summary = cd.get("has_summary", 0)
+        has_images = cd.get("has_images", 0)
+        has_place = cd.get("has_place", 0)
+        orphan_row = db._fetchone(c2, """
+            SELECT COUNT(*) as c FROM entities
+            WHERE type != 'place'
+              AND id NOT IN (SELECT DISTINCT from_id FROM relationships UNION SELECT DISTINCT to_id FROM relationships)
+        """, ())
+        orphan_count = db._row_to_dict(orphan_row)["c"] if orphan_row else 0
     completeness = {
-        "total": len(all_ents),
+        "total": comp_total,
         "has_summary": has_summary,
         "has_images": has_images,
         "has_place": has_place,
         "orphans": orphan_count,
-        "pct": round((has_summary + has_images + has_place) / (len(all_ents) * 3) * 100, 1) if all_ents else 0,
+        "pct": round((has_summary + has_images + has_place) / (comp_total * 3) * 100, 1) if comp_total else 0,
     }
 
     deltas = {}
@@ -1049,8 +1041,9 @@ async def badge_counts():
         counts["images"] = _imgq.status_counts().get("pending", 0)
     except Exception:
         pass
-    unc = [e for e in db.all_entities() if e.get("type") != "place" and not e.get("placeId")]
-    counts["unclassified"] = len(unc)
+    with db._conn() as conn2:
+        unc_row = db._fetchone(conn2, "SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND (placeId IS NULL OR placeId = '')", ())
+        counts["unclassified"] = db._row_to_dict(unc_row)["c"] if unc_row else 0
     try:
         import kb_curation
         s = kb_curation.stats()
@@ -1093,9 +1086,11 @@ async def dashboard_alerts():
             alerts.append({"type": "images", "count": img_pending, "label": f"{img_pending} ảnh chờ duyệt", "icon": "🖼️", "link": "/admin/duyet-anh", "priority": 4})
     except Exception:
         pass
-    unc = [e for e in db.all_entities() if e.get("type") != "place" and not e.get("placeId")]
-    if unc:
-        alerts.append({"type": "unclassified", "count": len(unc), "label": f"{len(unc)} entity chưa phân loại", "icon": "📍", "link": "/admin/chua-phan-loai", "priority": 5})
+    with db._conn() as conn2:
+        unc_row = db._fetchone(conn2, "SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND (placeId IS NULL OR placeId = '')", ())
+        unc_count = db._row_to_dict(unc_row)["c"] if unc_row else 0
+    if unc_count:
+        alerts.append({"type": "unclassified", "count": unc_count, "label": f"{unc_count} entity chưa phân loại", "icon": "📍", "link": "/admin/chua-phan-loai", "priority": 5})
     try:
         import kb_curation
         s = kb_curation.stats()
@@ -1108,13 +1103,16 @@ async def dashboard_alerts():
     return {"alerts": alerts[:5]}
 
 
+_learn_proc: Optional[subprocess.Popen] = None
+
 @router.post("/trigger-learn")
 async def trigger_learn(category: Optional[str] = None, topics: int = 3):
     """Trigger 1 vòng auto-learn (chạy background)."""
-    # Validate topics range
+    global _learn_proc
+    if _learn_proc is not None and _learn_proc.poll() is None:
+        raise HTTPException(409, f"Auto-learn đang chạy (PID {_learn_proc.pid}). Vui lòng chờ xong.")
     if topics < 1 or topics > 20:
         raise HTTPException(400, "topics must be between 1 and 20")
-    # Sanitize category — allow only alphanumeric, hyphens, underscores, Vietnamese chars
     if category:
         if len(category) > 50 or not re.match(r'^[\w\s\-À-ɏḀ-ỿ]+$', category):
             raise HTTPException(400, "Invalid category — only letters, numbers, hyphens, underscores allowed (max 50 chars)")
@@ -1123,7 +1121,7 @@ async def trigger_learn(category: Optional[str] = None, topics: int = 3):
         cmd.extend(["--category", category])
 
     try:
-        proc = subprocess.Popen(
+        _learn_proc = subprocess.Popen(
             cmd,
             cwd=str(ROOT),
             stdout=subprocess.PIPE,
@@ -1132,7 +1130,7 @@ async def trigger_learn(category: Optional[str] = None, topics: int = 3):
         )
         return {
             "status": "started",
-            "pid": proc.pid,
+            "pid": _learn_proc.pid,
             "command": " ".join(cmd),
             "note": "Chạy background. Gọi POST /reload sau khi xong.",
         }
@@ -1171,17 +1169,34 @@ async def reject_provisional(entity_id: str):
 
 @router.post("/export")
 async def export_data():
-    """Export toàn bộ entities từ DB."""
-    entities = db.list_entities(limit=10000)
-    db.initialize()
-    with db._conn() as conn:
-        rels = db._fetchall(conn, "SELECT from_id, to_id, type FROM relationships", ())
-        itins = db._fetchall(conn, "SELECT * FROM itineraries", ())
-    return {
-        "entities": entities,
-        "relationships": [db._row_to_dict(r) for r in rels],
-        "itineraries": [db._row_to_dict(r) for r in itins],
-    }
+    """Export toàn bộ entities từ DB — streaming JSON để không OOM."""
+    import io
+
+    def _generate():
+        yield '{"entities":['
+        entities = db.list_entities(limit=10000)
+        for i, e in enumerate(entities):
+            if i:
+                yield ","
+            yield json.dumps(e, ensure_ascii=False)
+        yield '],"relationships":['
+        with db._conn() as conn:
+            rels = db._fetchall(conn, "SELECT from_id, to_id, type FROM relationships", ())
+        for i, r in enumerate(rels):
+            if i:
+                yield ","
+            yield json.dumps(db._row_to_dict(r), ensure_ascii=False)
+        yield '],"itineraries":['
+        with db._conn() as conn:
+            itins = db._fetchall(conn, "SELECT * FROM itineraries", ())
+        for i, it in enumerate(itins):
+            if i:
+                yield ","
+            yield json.dumps(db._row_to_dict(it), ensure_ascii=False)
+        yield ']}'
+
+    return StreamingResponse(_generate(), media_type="application/json",
+                             headers={"Content-Disposition": "attachment; filename=vinhlong360-export.json"})
 
 
 @router.get("/sources")
@@ -1283,14 +1298,13 @@ async def batch_moderation(body: BatchModerationBody):
         raise HTTPException(400, "post_ids: 1-100 items")
     status = "approved" if body.action == "approve" else "rejected"
     ph = db._ph
-    updated = 0
+    placeholders = ", ".join(ph for _ in body.post_ids)
+    params = [status] + list(body.post_ids)
     with db._conn() as conn:
-        for pid in body.post_ids:
-            db._execute(conn, f"UPDATE posts SET moderation_status = {ph} WHERE id::text = {ph}", (status, pid))
-            updated += 1
+        db._execute(conn, f"UPDATE posts SET moderation_status = {ph} WHERE id::text IN ({placeholders})", tuple(params))
     for pid in body.post_ids:
         _log_mod_action("post", pid, status, body.reason.strip() or None)
-    return {"success": True, "updated": updated}
+    return {"success": True, "updated": len(body.post_ids)}
 
 
 class ModNoteBody(BaseModel):
@@ -1426,23 +1440,32 @@ async def get_info_reports(limit: int = Query(100, ge=1, le=500)):
     return {"reports": items[:limit], "total": len(items), "open": open_count}
 
 
+_audit_cache: dict = {"mtime": 0.0, "items": []}
+
 @router.get("/audit-log")
 async def get_audit_log(limit: int = Query(200, ge=1, le=1000)):
     """P2-7: nhật ký thao tác admin (mutation), mới nhất trước."""
     if not _AUDIT_FILE.exists():
         return {"entries": [], "total": 0}
-    items = []
-    with open(_AUDIT_FILE, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                items.append(json.loads(line))
-            except json.JSONDecodeError:
-                continue
-    items.reverse()
-    return {"entries": items[:limit], "total": len(items)}
+    try:
+        mtime = _AUDIT_FILE.stat().st_mtime
+    except OSError:
+        mtime = 0.0
+    if mtime != _audit_cache["mtime"]:
+        items = []
+        with open(_AUDIT_FILE, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    items.append(json.loads(line))
+                except json.JSONDecodeError:
+                    continue
+        _audit_cache["mtime"] = mtime
+        _audit_cache["items"] = items
+    items = _audit_cache["items"]
+    return {"entries": list(reversed(items[-limit:])), "total": len(items)}
 
 
 class ReportActionRequest(BaseModel):

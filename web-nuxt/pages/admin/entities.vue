@@ -59,6 +59,7 @@
             <th class="ent-sortable" @click="toggleSort('name')">Tên <span class="ent-sort-arrow">{{ sortArrow('name') }}</span></th>
             <th class="ent-sortable" @click="toggleSort('type')">Loại <span class="ent-sort-arrow">{{ sortArrow('type') }}</span></th>
             <th class="ent-sortable" @click="toggleSort('place_name')">Địa điểm <span class="ent-sort-arrow">{{ sortArrow('place_name') }}</span></th>
+            <th><span title="Tóm tắt / Ảnh / Địa điểm">Chất lượng</span></th>
             <th>Thao tác</th>
           </tr>
         </thead>
@@ -87,14 +88,19 @@
               <span v-else class="type-badge ent-inline-label" :data-type="e.type" @dblclick="startInline(e, 'type', e.type)">{{ e.type }}</span>
             </td>
             <td class="admin-td-muted">{{ e.place_name || '—' }}</td>
+            <td class="ent-health-cell">
+              <span class="ent-dot" :class="e.summary ? 'dot-ok' : 'dot-miss'" :title="e.summary ? 'Có tóm tắt' : 'Thiếu tóm tắt'"></span>
+              <span class="ent-dot" :class="e.images?.length ? 'dot-ok' : 'dot-miss'" :title="e.images?.length ? `${e.images.length} ảnh` : 'Thiếu ảnh'"></span>
+              <span class="ent-dot" :class="e.placeId ? 'dot-ok' : 'dot-miss'" :title="e.placeId ? 'Có địa điểm' : 'Thiếu địa điểm'"></span>
+            </td>
             <td class="admin-actions">
-              <button type="button" class="btn-success" @click="openEdit(e)">Sửa</button>
-              <button type="button" @click="cloneEntity(e)" title="Nhân bản">&#128203;</button>
-              <button type="button" class="btn-danger" :disabled="acting === e.id" @click="deleteEntity(e.id)">Xóa</button>
+              <button type="button" class="btn-success" @click="openEdit(e)" :aria-label="`Sửa ${e.name}`">Sửa</button>
+              <button type="button" @click="cloneEntity(e)" title="Nhân bản" :aria-label="`Nhân bản ${e.name}`">&#128203;</button>
+              <button type="button" class="btn-danger" :disabled="acting === e.id" @click="deleteEntity(e.id)" :aria-label="`Xóa ${e.name}`">Xóa</button>
             </td>
           </tr>
           <tr v-if="!sortedEntities.length">
-            <td colspan="6" class="admin-empty-row">
+            <td colspan="7" class="admin-empty-row">
               <div class="ent-empty">
                 <span class="ent-empty-icon">&#128269;</span>
                 <template v-if="search">
@@ -115,7 +121,7 @@
       <nav v-if="entities.length || page > 1" class="admin-pagination" role="navigation" aria-label="Phân trang">
         <button type="button" :disabled="page <= 1" @click="page--; fetchEntities()">← Trước</button>
         <span class="admin-page-info">
-          Trang {{ page }}<span v-if="entities.length < limit" class="ent-page-hint"> · trang cuối</span>
+          Trang {{ page }}<span v-if="totalEntities" class="ent-page-hint"> · {{ totalEntities }} entity</span><span v-if="entities.length < limit" class="ent-page-hint"> · trang cuối</span>
         </span>
         <button type="button" :disabled="entities.length < limit" @click="page++; fetchEntities()">Sau →</button>
       </nav>
@@ -244,6 +250,7 @@ const orphansOnly = ref(false)
 const page = ref(1)
 const limit = 30
 const entities = ref<Entity[]>([])
+const totalEntities = ref(0)
 const showModal = ref(false)
 const editingEntity = ref<Record<string, unknown> | null>(null)
 const form = ref<Record<string, unknown>>({})
@@ -342,6 +349,7 @@ async function fetchEntities(reset = false) {
     if (orphansOnly.value) params.set('orphans_only', 'true')
     const res = await $fetch<Record<string, unknown>>(`/admin-api/entities?${params}`, { headers: authHeaders() })
     entities.value = res.entities || res || []
+    totalEntities.value = (res as any).total ?? entities.value.length
     loadError.value = false
   } catch {
     loadError.value = true
@@ -351,12 +359,20 @@ async function fetchEntities(reset = false) {
   searching.value = false
 }
 
+function _focusModal() {
+  nextTick(() => {
+    const el = document.getElementById(editingEntity.value ? 'ent-name' : 'ent-id')
+    el?.focus()
+  })
+}
+
 function openCreate() {
   editingEntity.value = null
   form.value = { id: '', name: '', type: 'experience', placeId: '', summary: '', images: [] }
   newImage.value = ''
   fieldErrors.value = {}
   showModal.value = true
+  _focusModal()
 }
 
 function openEdit(e: Entity) {
@@ -369,6 +385,7 @@ function openEdit(e: Entity) {
   fetchRels(e.id)
   fetchEntityHistory(e.id)
   showModal.value = true
+  _focusModal()
 }
 
 function cloneEntity(e: Entity) {
@@ -377,6 +394,7 @@ function cloneEntity(e: Entity) {
   newImage.value = ''
   fieldErrors.value = {}
   showModal.value = true
+  _focusModal()
 }
 
 function exportJSON() {
@@ -583,6 +601,7 @@ function onKeydown(ev: KeyboardEvent) {
 onMounted(() => {
   const route = useRoute()
   if (route.query.orphans === '1') orphansOnly.value = true
+  if (typeof route.query.q === 'string' && route.query.q) search.value = route.query.q
   fetchEntities()
   window.addEventListener('keydown', onKeydown)
 })
@@ -772,4 +791,13 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
 .ent-char-count { font-weight: 400; font-size: .78rem; color: var(--muted); }
 .ent-summary-preview { padding: .5rem .8rem; border: 1px solid var(--line); border-radius: 6px; min-height: 60px; font-size: .9rem; line-height: 1.6; white-space: pre-wrap; }
+
+/* ── Health indicator dots ── */
+.ent-health-cell { white-space: nowrap; }
+.ent-dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  margin-right: 3px; vertical-align: middle;
+}
+.dot-ok { background: #34C759; }
+.dot-miss { background: #FF3B30; opacity: .45; }
 </style>

@@ -156,6 +156,11 @@ const ADMIN_PAGE_LABELS: Record<string, string> = {
   '/admin/bao-cao': 'Báo cáo',
   '/admin/duyet-tu-hoc': 'Duyệt & Tools',
   '/admin/ai': 'Knowledge Agent',
+  '/admin/nhat-ky': 'Nhật ký',
+  '/admin/media': 'Thư viện ảnh',
+  '/admin/lich-trinh': 'Lịch trình',
+  '/admin/danh-ba': 'Danh bạ HC',
+  '/admin/duyet-anh': 'Duyệt ảnh',
   '/admin/cai-dat': 'Cài đặt trang',
 }
 const currentPageLabel = computed(() => {
@@ -173,11 +178,14 @@ useHead({
   meta: [{ name: 'robots', content: 'noindex,nofollow' }],
 })
 
+let badgeInterval: ReturnType<typeof setInterval> | undefined
 onMounted(async () => {
   if (!user.value && token.value) await fetchMe()
   if (window.innerWidth < 1024) sidebarCollapsed.value = true
   loadBadges()
+  badgeInterval = setInterval(loadBadges, 60_000)
 })
+onUnmounted(() => { if (badgeInterval) clearInterval(badgeInterval) })
 </script>
 
 <style>

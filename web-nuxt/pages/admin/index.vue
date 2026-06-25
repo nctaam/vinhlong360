@@ -154,7 +154,8 @@
 
         <!-- Donut chart -->
         <div class="dash-chart-card dash-donut-wrap">
-          <svg class="dash-donut" viewBox="0 0 160 160">
+          <svg class="dash-donut" viewBox="0 0 160 160" role="img" :aria-label="`Biểu đồ phân bố ${totalByType} entities theo loại`">
+            <title>Phân bố entity theo loại</title>
             <circle cx="80" cy="80" r="60" fill="none" stroke="var(--line)" stroke-width="20" opacity=".2" />
             <circle
               v-for="(seg, i) in donutSegments" :key="i"

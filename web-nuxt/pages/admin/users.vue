@@ -91,7 +91,7 @@
             </td>
             <td class="admin-td-muted">{{ u.phone }}</td>
             <td>
-              <select :value="u.role" class="usr-role-select" :disabled="acting === u.id" :aria-label="`Chọn role cho ${u.display_name || u.phone}`" @change="changeRole(u.id, ($event.target as HTMLSelectElement).value)">
+              <select :value="u.role" class="usr-role-select" :disabled="acting === u.id" :aria-label="`Chọn role cho ${u.display_name || u.phone}`" @change="requestRoleChange(u.id, ($event.target as HTMLSelectElement).value)">
                 <option value="user">user</option>
                 <option value="moderator">moderator</option>
                 <option value="admin">admin</option>
@@ -112,10 +112,11 @@
           </tr>
           <tr v-if="confirmingId === u.id" class="usr-confirm-row">
             <td colspan="6">
-              <div class="usr-confirm" role="alertdialog" :aria-label="confirmAction === 'ban' ? 'Xác nhận cấm user' : 'Xác nhận mở cấm user'">
-                <span class="usr-confirm-icon" aria-hidden="true">{{ confirmAction === 'ban' ? '⚠' : '✓' }}</span>
+              <div class="usr-confirm" role="alertdialog" :aria-label="confirmAction === 'role' ? 'Xác nhận đổi role' : confirmAction === 'ban' ? 'Xác nhận cấm user' : 'Xác nhận mở cấm user'">
+                <span class="usr-confirm-icon" aria-hidden="true">{{ confirmAction === 'ban' ? '⚠' : confirmAction === 'role' ? '🔑' : '✓' }}</span>
                 <span class="usr-confirm-text">
-                  {{ confirmAction === 'ban' ? 'Cấm' : 'Mở cấm' }} <strong>{{ u.display_name || u.phone }}</strong>?
+                  <template v-if="confirmAction === 'role'">Đổi role <strong>{{ u.display_name || u.phone }}</strong> thành <strong>{{ confirmRoleValue }}</strong>?</template>
+                  <template v-else>{{ confirmAction === 'ban' ? 'Cấm' : 'Mở cấm' }} <strong>{{ u.display_name || u.phone }}</strong>?</template>
                 </span>
                 <div class="usr-confirm-actions">
                   <button type="button" :class="confirmAction === 'ban' ? 'btn-danger' : 'btn-success'" :disabled="acting === u.id" @click="confirmProceed(u.id)">Xác nhận</button>
@@ -219,18 +220,27 @@ const users = ref<Entity[]>([])
 const loading = ref(true)
 const acting = ref<string | null>(null)
 
-// ── Inline confirm-before-destructive (replaces native confirm() for ban/unban) ──
+// ── Inline confirm-before-destructive (replaces native confirm()) ──
 const confirmingId = ref<string | null>(null)
-const confirmAction = ref<'ban' | 'unban' | null>(null)
+const confirmAction = ref<'ban' | 'unban' | 'role' | null>(null)
+const confirmRoleValue = ref<string | null>(null)
 function requestBan(id: string) { confirmingId.value = id; confirmAction.value = 'ban' }
 function requestUnban(id: string) { confirmingId.value = id; confirmAction.value = 'unban' }
-function cancelConfirm() { confirmingId.value = null; confirmAction.value = null }
+function requestRoleChange(id: string, role: string) {
+  const current = users.value.find(u => u.id === id)
+  if (current?.role === role) return
+  confirmingId.value = id; confirmAction.value = 'role'; confirmRoleValue.value = role
+}
+function cancelConfirm() { confirmingId.value = null; confirmAction.value = null; confirmRoleValue.value = null }
 function confirmProceed(id: string) {
   const action = confirmAction.value
+  const roleVal = confirmRoleValue.value
   confirmingId.value = null
   confirmAction.value = null
+  confirmRoleValue.value = null
   if (action === 'ban') ban(id)
   else if (action === 'unban') unban(id)
+  else if (action === 'role' && roleVal) changeRole(id, roleVal)
 }
 
 // ── Client-side filter + sort (operates on the current page's loaded users) ──
@@ -349,9 +359,6 @@ async function unban(id: string) {
 }
 
 async function changeRole(id: string, role: string) {
-  const current = users.value.find(u => u.id === id)
-  if (current?.role === role) return
-  if (!confirm(`Đổi role thành "${role}"?`)) return
   acting.value = id
   try {
     await $fetch(`/admin-api/users/${id}/role`, { method: 'POST', headers: authHeaders(), query: { role } })

@@ -2,11 +2,11 @@
   <div>
     <div class="admin-head-row">
       <div>
-        <h1>Thu vien anh</h1>
-        <p class="media-subtitle">Tat ca hinh anh tu cac entity — loc trung lap, thieu credit</p>
+        <h1>Thư viện ảnh</h1>
+        <p class="media-subtitle">Tất cả hình ảnh từ các entity — lọc trùng lặp, thiếu credit</p>
       </div>
       <button type="button" class="admin-refresh" :disabled="loading" @click="fetchMedia">
-        <span :class="{ 'refresh-spin': loading }">&#8635;</span> Lam moi
+        <span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới
       </button>
     </div>
 
@@ -14,15 +14,15 @@
     <div class="stat-grid" v-if="stats">
       <div class="stat-card">
         <div class="stat-value">{{ stats.total_images }}</div>
-        <div class="stat-label">Tong anh</div>
+        <div class="stat-label">Tổng ảnh</div>
       </div>
       <div class="stat-card" :class="{ 'status-warn': stats.duplicates > 0 }">
         <div class="stat-value">{{ stats.duplicates }}</div>
-        <div class="stat-label">URL trung lap</div>
+        <div class="stat-label">URL trùng lặp</div>
       </div>
       <div class="stat-card" :class="{ 'status-warn': stats.missing_credit > 0 }">
         <div class="stat-value">{{ stats.missing_credit }}</div>
-        <div class="stat-label">Thieu credit</div>
+        <div class="stat-label">Thiếu credit</div>
       </div>
     </div>
 
@@ -36,7 +36,7 @@
 
     <div v-if="!items.length" class="admin-empty-state">
       <div class="admin-empty-state-icon">&#128247;</div>
-      <div class="admin-empty-state-text">Khong co anh nao{{ filter !== 'all' ? ' voi bo loc nay' : '' }}</div>
+      <div class="admin-empty-state-text">Không có ảnh nào{{ filter !== 'all' ? ' với bộ lọc này' : '' }}</div>
     </div>
 
     <!-- Image grid -->
@@ -44,19 +44,19 @@
       <div v-for="item in items" :key="item.url + item.entity_id" class="media-card" role="button" tabindex="0" @click="previewItem = item" @keydown.enter="previewItem = item">
         <div class="media-img-wrap">
           <img :src="item.url" :alt="item.entity_name" loading="lazy" decoding="async" @error="onImgError" />
-          <span v-if="item.usage_count > 1" class="media-dup-badge" title="Dung boi nhieu entity">{{ item.usage_count }}x</span>
+          <span v-if="item.usage_count > 1" class="media-dup-badge" title="Dùng bởi nhiều entity">{{ item.usage_count }}x</span>
         </div>
         <div class="media-card-info">
           <span class="media-entity-name">{{ item.entity_name }}</span>
           <span class="media-entity-type">{{ item.entity_type }}</span>
           <span v-if="item.credit" class="media-credit">{{ item.credit }}</span>
-          <span v-else class="media-no-credit">Thieu credit</span>
+          <span v-else class="media-no-credit">Thiếu credit</span>
         </div>
       </div>
     </div>
 
     <!-- Load more -->
-    <button v-if="hasMore" type="button" class="btn btn-outline media-load-more" :disabled="loading" @click="loadMore">Xem them ({{ total - items.length }} con lai)</button>
+    <button v-if="hasMore" type="button" class="btn btn-outline media-load-more" :disabled="loading" @click="loadMore">Xem thêm ({{ total - items.length }} còn lại)</button>
 
     </template>
 
@@ -66,14 +66,14 @@
       <div class="modal admin-modal-lg">
         <div class="media-preview-header">
           <strong>{{ previewItem.entity_name }}</strong>
-          <button type="button" class="btn btn-ghost btn-sm" @click="previewItem = null">Dong</button>
+          <button type="button" class="btn btn-ghost btn-sm" @click="previewItem = null">Đóng</button>
         </div>
         <img :src="previewItem.url" :alt="previewItem.entity_name" class="media-preview-img" />
         <div class="media-preview-meta">
           <div><strong>Entity:</strong> <NuxtLink :to="`/dia-diem/${previewItem.entity_id}`" target="_blank">{{ previewItem.entity_name }}</NuxtLink> ({{ previewItem.entity_type }})</div>
-          <div><strong>Credit:</strong> {{ previewItem.credit || 'Khong co' }}</div>
-          <div><strong>License:</strong> {{ previewItem.license || 'Khong ro' }}</div>
-          <div v-if="previewItem.usage_count > 1"><strong>Dung boi:</strong> {{ previewItem.usage_count }} entities</div>
+          <div><strong>Credit:</strong> {{ previewItem.credit || 'Không có' }}</div>
+          <div><strong>License:</strong> {{ previewItem.license || 'Không rõ' }}</div>
+          <div v-if="previewItem.usage_count > 1"><strong>Dùng bởi:</strong> {{ previewItem.usage_count }} entities</div>
           <div class="media-preview-url"><strong>URL:</strong> <code>{{ previewItem.url }}</code></div>
         </div>
       </div>
@@ -89,9 +89,9 @@ const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 
 const FILTERS = [
-  { key: 'all', label: 'Tat ca' },
-  { key: 'missing_credit', label: 'Thieu credit' },
-  { key: 'duplicate', label: 'Trung lap' },
+  { key: 'all', label: 'Tất cả' },
+  { key: 'missing_credit', label: 'Thiếu credit' },
+  { key: 'duplicate', label: 'Trùng lặp' },
 ] as const
 
 const items = ref<any[]>([])
@@ -111,7 +111,7 @@ async function fetchMedia(append = false) {
     items.value = append ? [...items.value, ...(res.items || [])] : (res.items || [])
     total.value = res.total || 0
     stats.value = res.stats || null
-  } catch { showToast('Khong the tai thu vien anh', 'error') }
+  } catch { showToast('Không thể tải thư viện ảnh', 'error') }
   loading.value = false
 }
 

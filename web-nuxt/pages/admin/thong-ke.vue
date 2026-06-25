@@ -37,7 +37,7 @@
           <div class="stat-value">{{ data.summary?.total_queries ?? '—' }}</div>
           <div class="stat-label">Tổng truy vấn</div>
         </div>
-        <svg v-if="sparkPoints.length > 1" class="tk-spark" viewBox="0 0 80 24" preserveAspectRatio="none"><polyline :points="sparkPoints" fill="none" stroke="#3478F6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        <svg v-if="sparkPoints.length > 1" class="tk-spark" viewBox="0 0 80 24" preserveAspectRatio="none" role="img" aria-label="Xu hướng entity 30 ngày"><title>Trend</title><polyline :points="sparkPoints" fill="none" stroke="#3478F6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
       </div>
       <div class="stat-card">
         <div class="tk-icon" style="background: rgba(175,82,222,.1); color: #AF52DE;">&#128161;</div>
@@ -99,7 +99,7 @@
             <span class="tk-rank">{{ i + 1 }}</span>
             <span class="tk-query">{{ label(it) }}</span>
             <span class="tk-hits">{{ count(it) }}</span>
-            <NuxtLink :to="`/admin/entities?search=${encodeURIComponent(String(label(it)))}`" class="tk-gap-action" title="Tìm entity">&#128269;</NuxtLink>
+            <NuxtLink :to="`/admin/entities?q=${encodeURIComponent(String(label(it)))}`" class="tk-gap-action" title="Tìm entity">&#128269;</NuxtLink>
             <NuxtLink to="/admin/entities?create=1" class="tk-gap-action" title="Tạo entity">&#10010;</NuxtLink>
           </li>
         </ol>

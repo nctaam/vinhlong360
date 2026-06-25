@@ -50,6 +50,10 @@
       <kbd>j</kbd><kbd>k</kbd> di chuyển
       <kbd>a</kbd> duyệt
       <kbd>r</kbd> từ chối
+      <kbd>p</kbd> xem trước
+      <span v-if="sessionApproved || sessionRejected" class="mod-session-stats">
+        &#9679; Phiên này: <b class="mod-session-ok">{{ sessionApproved }}</b> duyệt, <b class="mod-session-rej">{{ sessionRejected }}</b> từ chối
+      </span>
     </div>
 
     <!-- Batch action bar -->
@@ -305,7 +309,9 @@ async function approve(id: string) {
   try {
     await $fetch(`/admin-api/moderation/${id}/approve`, { method: 'POST', headers: authHeaders() })
     showToast('Đã duyệt bài viết', 'success')
-    await refreshSamePage()
+    sessionApproved.value++
+    removeFromQueue(id)
+    fetchStats()
   } catch (e: unknown) {
     showToast((e as any)?.data?.detail || 'Lỗi khi duyệt', 'error')
   }
@@ -325,18 +331,33 @@ async function confirmReject(id: string) {
     showToast('Đã từ chối bài viết', 'success')
     rejectingId.value = null
     rejectReason.value = ''
-    await refreshSamePage()
+    sessionRejected.value++
+    removeFromQueue(id)
+    fetchStats()
   } catch (e: unknown) {
     showToast((e as any)?.data?.detail || 'Lỗi khi từ chối', 'error')
   }
   acting.value = null
 }
 
-// After an action, reload from page 1 up to the current page count so the list
-// stays consistent without losing the user's scroll position entirely.
-async function refreshSamePage() {
-  page.value = 1
-  await fetchQueue()
+const sessionApproved = ref(0)
+const sessionRejected = ref(0)
+
+function removeFromQueue(id: string) {
+  const idx = queue.value.findIndex(p => p.id === id)
+  if (idx === -1) return
+  queue.value.splice(idx, 1)
+  total.value = Math.max(0, total.value - 1)
+  batchSelected.value.delete(id)
+  batchSelected.value = new Set(batchSelected.value)
+  if (focusIdx.value >= queue.value.length) focusIdx.value = queue.value.length - 1
+}
+
+async function fetchStats() {
+  try {
+    const s = await $fetch<any>('/admin-api/moderation/stats', { headers: authHeaders() })
+    modStats.value = s.counts || s || {}
+  } catch { /* ignore */ }
 }
 
 function formatDate(d: string) {
@@ -352,6 +373,8 @@ function onKeydown(e: KeyboardEvent) {
   else if (e.key === 'k') { focusIdx.value = Math.max(focusIdx.value - 1, 0); e.preventDefault() }
   else if (e.key === 'a' && focusedPost.value && focusedPost.value.moderation_status !== 'approved') { approve(focusedPost.value.id); e.preventDefault() }
   else if (e.key === 'r' && focusedPost.value && focusedPost.value.moderation_status !== 'rejected') { startReject(focusedPost.value.id); e.preventDefault() }
+  else if ((e.key === 'p' || e.key === 'Enter') && focusedPost.value && !previewPost.value) { previewPost.value = focusedPost.value; e.preventDefault() }
+  else if (e.key === 'Escape' && previewPost.value) { previewPost.value = null; e.preventDefault() }
 }
 
 async function addNote(postId: string) {
@@ -398,6 +421,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   background: var(--bg-alt); border: 1px solid var(--line); font-size: .7rem;
   font-family: var(--font-mono, monospace); font-weight: 600;
 }
+.mod-session-stats { margin-left: auto; font-size: .72rem; }
+.mod-session-ok { color: #219653; }
+.mod-session-rej { color: #D94F3D; }
 .mod-focused td { background: rgba(33,150,83,.06) !important; }
 .mod-focused td:first-child { box-shadow: inset 3px 0 0 var(--primary, #219653); }
 
