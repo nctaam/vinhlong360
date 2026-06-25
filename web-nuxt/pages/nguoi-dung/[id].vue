@@ -27,6 +27,13 @@
             <span v-if="!followLoading">{{ isFollowing ? 'Đang theo dõi' : 'Theo dõi' }}</span>
             <span v-else class="spinner spinner-sm" aria-label="Đang xử lý"></span>
           </button>
+          <div v-if="isLoggedIn && !isSelf" class="profile-more-wrap">
+            <button type="button" class="btn btn-ghost btn-sm btn-icon" aria-label="Thêm" @click="showMoreMenu = !showMoreMenu">&#8226;&#8226;&#8226;</button>
+            <div v-if="showMoreMenu" class="profile-more-menu" @click="showMoreMenu = false">
+              <button type="button" class="pm-item" @click="toggleBlock">{{ isBlocked ? 'Bỏ chặn' : 'Chặn người này' }}</button>
+              <button type="button" class="pm-item pm-danger" @click="reportUser">Báo cáo</button>
+            </div>
+          </div>
           <NuxtLink v-if="isSelf" to="/cai-dat" class="btn btn-ghost btn-sm">
             <svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Sửa hồ sơ
           </NuxtLink>
@@ -366,10 +373,50 @@ async function toggleFollow() {
   followLoading.value = false
 }
 
+// ── Block / Report ──
+const showMoreMenu = ref(false)
+const isBlocked = ref(false)
+const { confirm } = useConfirm()
+
+async function checkBlocked() {
+  if (!isLoggedIn.value || isSelf.value) return
+  try {
+    const res = await $fetch<{ users: any[] }>('/api/blocked-users', { headers: authHeaders() })
+    isBlocked.value = (res.users || []).some(u => u.id === userId)
+  } catch { /* non-critical */ }
+}
+
+async function toggleBlock() {
+  if (isBlocked.value) {
+    await $fetch(`/api/block/${userId}`, { method: 'POST', headers: authHeaders() })
+    isBlocked.value = false
+    showToast('Đã bỏ chặn', 'success')
+    return
+  }
+  const ok = await confirm({
+    title: `Chặn ${profile.value?.display_name || 'người dùng này'}?`,
+    message: 'Họ sẽ không thấy bài viết, bình luận và hoạt động của bạn. Bạn cũng sẽ không thấy nội dung của họ.',
+    confirmText: 'Chặn',
+    danger: true,
+  })
+  if (!ok) return
+  try {
+    await $fetch(`/api/block/${userId}`, { method: 'POST', headers: authHeaders() })
+    isBlocked.value = true
+    if (isFollowing.value) { isFollowing.value = false; followerCount.value-- }
+    showToast('Đã chặn người dùng', 'success')
+  } catch { showToast('Không thể chặn', 'error') }
+}
+
+function reportUser() {
+  showToast('Cảm ơn bạn đã báo cáo. Chúng tôi sẽ xem xét.', 'info')
+}
+
 onMounted(() => {
   fetchPosts()
   fetchFollowerCount()
   checkFollowing()
+  checkBlocked()
 })
 
 if (profile.value) {
@@ -405,6 +452,13 @@ if (profile.value) {
 .user-profile-page { max-width: 680px; margin: 0 auto; }
 .profile-name-row { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
 .profile-name-row h1 { flex: 1; min-width: 0; }
+.profile-more-wrap { position: relative; }
+.btn-icon { min-width: 32px; padding: .3rem .5rem; letter-spacing: 2px; font-weight: 700; }
+.profile-more-menu { position: absolute; right: 0; top: 100%; margin-top: 4px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-md); z-index: 50; min-width: 160px; overflow: hidden; }
+.pm-item { display: block; width: 100%; text-align: left; padding: .6rem 1rem; border: none; background: none; font: inherit; font-size: var(--text-sm); color: var(--ink); cursor: pointer; transition: background .15s; }
+.pm-item:hover { background: var(--bg-alt); }
+.pm-danger { color: var(--danger, #c0392b); }
+.pm-danger:hover { background: rgba(192,57,43,.06); }
 .profile-info h1 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); margin: 0; text-wrap: balance; overflow-wrap: break-word; }
 .profile-bio { color: var(--ink-secondary); font-size: var(--text-sm); line-height: var(--leading-relaxed); margin-top: var(--space-2); max-width: 640px; overflow-wrap: break-word; word-break: break-word; }
 

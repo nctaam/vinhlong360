@@ -851,6 +851,51 @@ async def get_entity_feed(
     }
 
 
+@router.get("/posts/{post_id}/related")
+async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10)):
+    """Bài viết liên quan: cùng entity hoặc cùng hashtag."""
+    ph = db._ph
+    with db._conn() as conn:
+        src = db._fetchone(conn, f"""
+            SELECT entity_id, hashtags FROM posts
+            WHERE id::text = {ph} AND moderation_status = 'approved'
+        """, (post_id,))
+        if not src:
+            return {"posts": []}
+        d = db._row_to_dict(src)
+        entity_id = d.get("entity_id")
+        tags = d.get("hashtags") or []
+
+        candidates = []
+        if entity_id:
+            rows = db._fetchall(conn, f"""
+                SELECT p.*, u.display_name, u.avatar_url
+                FROM posts p JOIN users u ON u.id = p.user_id
+                WHERE p.entity_id = {ph} AND p.id::text <> {ph}
+                  AND p.moderation_status = 'approved'
+                ORDER BY p.like_count DESC, p.created_at DESC
+                LIMIT {ph}
+            """, (entity_id, post_id, limit))
+            candidates.extend(rows)
+
+        if len(candidates) < limit and tags:
+            seen = {post_id} | {str(db._row_to_dict(r)["id"]) for r in candidates}
+            tag_rows = db._fetchall(conn, f"""
+                SELECT p.*, u.display_name, u.avatar_url
+                FROM posts p JOIN users u ON u.id = p.user_id
+                WHERE p.moderation_status = 'approved' AND p.id::text <> {ph}
+                  AND p.hashtags && ARRAY[{','.join(ph for _ in tags)}]::text[]
+                ORDER BY p.like_count DESC
+                LIMIT {ph}
+            """, (post_id, *tags, limit))
+            for r in tag_rows:
+                if str(db._row_to_dict(r)["id"]) not in seen:
+                    candidates.append(r)
+                    seen.add(str(db._row_to_dict(r)["id"]))
+
+    return {"posts": [_format_post(db._row_to_dict(r)) for r in candidates[:limit]]}
+
+
 # ── Comments ──
 
 @router.get("/posts/{post_id}/comments")

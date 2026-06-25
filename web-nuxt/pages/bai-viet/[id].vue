@@ -119,6 +119,23 @@
         </div>
         <div v-if="loading" class="feed-loading" role="status" aria-label="Đang tải bình luận"><div class="spinner"></div></div>
       </div>
+
+      <!-- Related posts -->
+      <ClientOnly>
+        <div v-if="relatedPosts.length" class="related-section">
+          <h3 class="related-title">Bài viết liên quan</h3>
+          <div class="related-grid">
+            <NuxtLink v-for="rp in relatedPosts" :key="rp.id" :to="`/bai-viet/${rp.id}`" class="related-card">
+              <img v-if="rp.images?.[0]" :src="rp.images[0]" alt="" class="related-thumb" loading="lazy" decoding="async" />
+              <div class="related-body">
+                <span class="related-author">{{ rp.display_name }}</span>
+                <p class="related-text">{{ (rp.content || '').slice(0, 80) }}{{ (rp.content || '').length > 80 ? '…' : '' }}</p>
+                <span class="related-meta">{{ rp.like_count || 0 }} thích</span>
+              </div>
+            </NuxtLink>
+          </div>
+        </div>
+      </ClientOnly>
     </div>
 
     <div v-else-if="pending" class="thread-detail-skeleton" role="status" aria-label="Đang tải bài viết">
@@ -342,8 +359,17 @@ async function toggleBookmark(id: string) {
 
 const { timeAgo } = useTimeAgo()
 
+const relatedPosts = ref<any[]>([])
+async function fetchRelated() {
+  try {
+    const res = await $fetch<any>(`/api/posts/${postId}/related?limit=4`)
+    relatedPosts.value = res.posts || []
+  } catch { /* non-critical */ }
+}
+
 onMounted(() => {
   fetchComments()
+  fetchRelated()
   // mở editor khi điều hướng từ trang khác: /bai-viet/{id}?edit=1 (chủ bài)
   if (route.query.edit === '1' && isLoggedIn.value && post.value
       && String((post.value as any).user_id) === String(user.value?.id)) {
@@ -542,6 +568,23 @@ if (post.value) {
 .thread-reply .thread-avatar-link:focus-visible {
   outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-sm);
 }
+
+/* ── Related posts ── */
+.related-section { margin-top: var(--space-6); padding-top: var(--space-5); border-top: .5px solid var(--line); }
+.related-title { font-size: var(--text-lg); font-weight: var(--weight-bold); margin: 0 0 var(--space-3); }
+.related-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3); }
+.related-card {
+  display: flex; flex-direction: column; background: var(--card); border: .5px solid var(--line);
+  border-radius: var(--radius-lg); overflow: hidden; text-decoration: none; color: var(--ink);
+  transition: border-color .2s, transform .2s var(--ease-spring-gentle);
+}
+.related-card:hover { border-color: var(--primary-fg); transform: translateY(-1px); }
+.related-thumb { width: 100%; height: 100px; object-fit: cover; }
+.related-body { padding: var(--space-2) var(--space-3); display: flex; flex-direction: column; gap: .2rem; }
+.related-author { font-size: var(--text-xs); font-weight: var(--weight-semibold); }
+.related-text { margin: 0; font-size: var(--text-xs); color: var(--ink-secondary, var(--ink)); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.related-meta { font-size: var(--text-xs); color: var(--muted); }
+@media (max-width: 480px) { .related-grid { grid-template-columns: 1fr; } }
 
 @media (prefers-reduced-motion: reduce) {
   .thread-reply { animation: none; }
