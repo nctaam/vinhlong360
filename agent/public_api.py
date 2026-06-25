@@ -128,24 +128,21 @@ async def list_entities(
 
     if q:
         if month:
-            full = db.search_entities(q=q, entity_type=single_type, area=area, limit=100000, entity_types=entity_types)
+            full = db.search_entities(q=q, entity_type=single_type, area=area, limit=100000, entity_types=entity_types, public_only=True)
             filtered = [e for e in full if _in_month(e)]
             total = len(filtered)
             results = filtered[offset:offset + limit]
         else:
-            results = db.search_entities(q=q, entity_type=single_type, area=area, limit=limit, offset=offset, entity_types=entity_types)
-            total = db.count_entities_filtered(entity_type=single_type, area=area, q=q, entity_types=entity_types)
+            results = db.search_entities(q=q, entity_type=single_type, area=area, limit=limit, offset=offset, entity_types=entity_types, public_only=True)
+            total = db.count_entities_filtered(entity_type=single_type, area=area, q=q, entity_types=entity_types, public_only=True)
     elif month:
-        full = db.list_entities(entity_type=single_type, area=area, limit=100000, offset=0, entity_types=entity_types)
+        full = db.list_entities(entity_type=single_type, area=area, limit=100000, offset=0, entity_types=entity_types, public_only=True)
         filtered = [e for e in full if _in_month(e)]
         total = len(filtered)
         results = filtered[offset:offset + limit]
     else:
-        results = db.list_entities(entity_type=single_type, area=area, limit=limit, offset=offset, entity_types=entity_types)
-        total = db.count_entities_filtered(entity_type=single_type, area=area, q=q, entity_types=entity_types)
-
-    # Quarantine: không hiển thị entity provisional/auto-learned chưa duyệt ở trang công khai.
-    results = [e for e in results if _is_public(e)]
+        results = db.list_entities(entity_type=single_type, area=area, limit=limit, offset=offset, entity_types=entity_types, public_only=True)
+        total = db.count_entities_filtered(entity_type=single_type, area=area, q=q, entity_types=entity_types, public_only=True)
     _enrich_place(results)
     return {"total": total, "entities": results}
 

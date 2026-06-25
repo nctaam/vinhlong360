@@ -4,7 +4,7 @@ export function useDrafts() {
   function saveDraft(content: string, postType: string) {
     if (typeof localStorage === 'undefined') return
     if (!content.trim()) { clearDraft(); return }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ content, postType, ts: Date.now() }))
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ content, postType, ts: Date.now() })) } catch {}
   }
 
   function loadDraft(): { content: string; postType: string } | null {
@@ -19,7 +19,7 @@ export function useDrafts() {
   }
 
   function clearDraft() {
-    if (typeof localStorage !== 'undefined') localStorage.removeItem(STORAGE_KEY)
+    try { if (typeof localStorage !== 'undefined') localStorage.removeItem(STORAGE_KEY) } catch {}
   }
 
   return { saveDraft, loadDraft, clearDraft }

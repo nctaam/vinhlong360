@@ -34,7 +34,7 @@ export function useFavorites() {
 
   function persist() {
     if (import.meta.server) return
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites.value))
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites.value)) } catch {}
   }
 
   load()

@@ -358,10 +358,13 @@ async function savePlan() {
 }
 
 function persistLocal(plans: SavedPlan[]) {
-  if (import.meta.client) localStorage.setItem('vl360_plans', JSON.stringify(plans.filter(p => !p.id)))
+  if (import.meta.client) {
+    try { localStorage.setItem('vl360_plans', JSON.stringify(plans.filter(p => !p.id))) } catch {}
+  }
 }
 
-function loadPlan(idx: number) {
+async function loadPlan(idx: number) {
+  if (stops.value.length && !await confirmDialog('Thay thế lịch trình đang tạo bằng bản đã lưu?', { confirmText: 'Thay thế' })) return
   const plan = savedPlans.value[idx]
   planTitle.value = plan.title
   stops.value = JSON.parse(JSON.stringify(plan.stops))
