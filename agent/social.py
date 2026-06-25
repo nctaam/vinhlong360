@@ -912,9 +912,11 @@ async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10)):
                 LIMIT {ph}
             """, (post_id, *tags, limit))
             for r in tag_rows:
-                if str(db._row_to_dict(r)["id"]) not in seen:
+                d = db._row_to_dict(r)
+                rid = str(d["id"])
+                if rid not in seen:
                     candidates.append(r)
-                    seen.add(str(db._row_to_dict(r)["id"]))
+                    seen.add(rid)
 
     return {"posts": [_format_post(db._row_to_dict(r)) for r in candidates[:limit]]}
 
@@ -941,9 +943,16 @@ async def get_comments(post_id: str, request: Request, user=Depends(get_current_
 
     comments = [_format_comment(db._row_to_dict(r)) for r in rows]
 
-    top_level = [c for c in comments if not c.get("parent_id")]
+    replies_by_parent: dict[str, list] = {}
+    top_level = []
+    for c in comments:
+        pid = c.get("parent_id")
+        if pid:
+            replies_by_parent.setdefault(str(pid), []).append(c)
+        else:
+            top_level.append(c)
     for c in top_level:
-        c["replies"] = [r for r in comments if str(r.get("parent_id")) == c["id"]]
+        c["replies"] = replies_by_parent.get(c["id"], [])
 
     return {"comments": top_level}
 
