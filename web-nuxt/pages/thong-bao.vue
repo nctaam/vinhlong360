@@ -15,14 +15,22 @@
     </div>
 
     <template v-else>
+      <div class="tb-filters">
+        <button v-for="f in FILTERS" :key="f.key" type="button"
+          :class="['chip', { active: filter === f.key }]"
+          :aria-pressed="filter === f.key"
+          @click="filter = f.key"
+        >{{ f.icon }} {{ f.label }}</button>
+      </div>
+
       <SkeletonList v-if="loading && !items.length" :count="6" />
-      <EmptyState v-else-if="!items.length" icon="🔔" title="Chưa có thông báo" message="Khi có hoạt động mới, bạn sẽ thấy ở đây." />
+      <EmptyState v-else-if="!filtered.length" icon="🔔" :title="filter === 'all' ? 'Chưa có thông báo' : 'Không có thông báo loại này'" message="Khi có hoạt động mới, bạn sẽ thấy ở đây." />
       <ul v-else class="tb-list">
-        <li v-for="n in items" :key="n.id">
+        <li v-for="n in filtered" :key="n.id">
           <button type="button" :class="['tb-item', { unread: !n.is_read }]" @click="open(n)">
             <span class="tb-icon" aria-hidden="true">{{ icon(n) }}</span>
             <span class="tb-body">
-              <span class="tb-title">{{ n.title }}</span>
+              <span class="tb-title">{{ n.title }}<span v-if="n.group_count > 1" class="tb-group"> +{{ n.group_count - 1 }}</span></span>
               <span v-if="n.body" class="tb-sub">{{ n.body }}</span>
               <time class="tb-time" :datetime="n.created_at">{{ timeAgo(n.created_at) }}</time>
             </span>
@@ -40,8 +48,22 @@ const { isLoggedIn, authHeaders } = useAuth()
 const { openAuth } = useAuthModal()
 const { timeAgo } = useTimeAgo()
 
+const FILTERS = [
+  { key: 'all', label: 'Tất cả', icon: '🔔' },
+  { key: 'like', label: 'Thích', icon: '❤️' },
+  { key: 'comment', label: 'Bình luận', icon: '💬' },
+  { key: 'follow', label: 'Theo dõi', icon: '👤' },
+  { key: 'mention', label: 'Nhắc đến', icon: '📣' },
+] as const
+type FilterKey = typeof FILTERS[number]['key']
+
+const filter = ref<FilterKey>('all')
 const items = ref<any[]>([])
 const loading = ref(true)
+const filtered = computed(() => {
+  if (filter.value === 'all') return items.value
+  return items.value.filter(n => n.type === filter.value)
+})
 
 async function load() {
   if (!isLoggedIn.value) { loading.value = false; return }
@@ -95,8 +117,12 @@ useHead({
 .tb-icon { font-size: 1.25rem; flex-shrink: 0; line-height: 1.4; }
 .tb-body { display: flex; flex-direction: column; gap: .15rem; flex: 1; min-width: 0; }
 .tb-title { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink); }
+.tb-group { font-size: .72rem; font-weight: 700; color: var(--primary, #219653); background: rgba(33,150,83,.1); padding: 1px 6px; border-radius: 100px; margin-left: 4px; }
 .tb-sub { font-size: var(--text-sm); color: var(--ink-700); }
 .tb-time { font-size: var(--text-xs); color: var(--muted); }
 .tb-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); flex-shrink: 0; margin-top: .35rem; }
 .tb-guest { margin-top: var(--space-6); }
+.tb-filters { display: flex; gap: var(--space-2); margin-bottom: var(--space-4); overflow-x: auto; padding-bottom: var(--space-1); scrollbar-width: none; }
+.tb-filters::-webkit-scrollbar { display: none; }
+.tb-filters .chip { white-space: nowrap; }
 </style>

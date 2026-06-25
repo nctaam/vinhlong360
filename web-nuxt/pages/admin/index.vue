@@ -25,7 +25,7 @@
       <div class="dash-stat-card">
         <div class="dash-stat-icon" style="background: rgba(33,150,83,.1); color: #219653;">&#127759;</div>
         <div class="dash-stat-body">
-          <div class="dash-stat-value">{{ stats.total_entities || 0 }}</div>
+          <div class="dash-stat-value">{{ stats.total_entities || 0 }}<span v-if="stats.entities_week" class="dash-delta">+{{ stats.entities_week }}</span></div>
           <div class="dash-stat-label">Entities</div>
         </div>
       </div>
@@ -91,6 +91,7 @@
         <span v-if="health.memory_mb">RAM: <b>{{ health.memory_mb }}MB</b></span>
         <span>LLM: <b :class="health.llm_api === 'ok' ? '' : 'dash-health-warn'">{{ health.llm_api || 'chưa kiểm' }}</b></span>
         <span v-if="health.data_quality">Dữ liệu: <b>{{ health.data_quality.coverage_pct }}%</b></span>
+        <span v-if="stats.backup">Backup: <b>{{ stats.backup.last }}</b> ({{ stats.backup.size_mb }}MB, {{ stats.backup.count }} bản)</span>
       </div>
     </div>
 

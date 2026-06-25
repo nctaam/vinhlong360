@@ -74,8 +74,10 @@ async def get_notifications(
             WHERE user_id = {ph}::uuid AND is_read = FALSE
         """, (str(user["id"]),))
 
+    raw = [_format_notif(db._row_to_dict(r)) for r in rows]
+    grouped = _group_notifications(raw)
     return {
-        "notifications": [_format_notif(db._row_to_dict(r)) for r in rows],
+        "notifications": grouped,
         "unread_count": unread["c"] if unread else 0,
     }
 
@@ -288,6 +290,31 @@ async def list_blocked_users(user=Depends(require_user)):
 
 
 # ── Helpers ──
+
+def _group_notifications(notifs: list[dict]) -> list[dict]:
+    """Group same (type, ref_type, ref_id) within 24h. Latest becomes the group representative."""
+    from datetime import datetime, timedelta
+    groups: dict[str, dict] = {}
+    result = []
+    for n in notifs:
+        key = f"{n['type']}:{n.get('ref_type', '')}:{n.get('ref_id', '')}"
+        if key in groups:
+            existing = groups[key]
+            try:
+                t1 = datetime.fromisoformat(str(existing["created_at"]).replace("Z", "+00:00"))
+                t2 = datetime.fromisoformat(str(n["created_at"]).replace("Z", "+00:00"))
+                if abs((t1 - t2).total_seconds()) < 86400:
+                    existing.setdefault("group_count", 1)
+                    existing["group_count"] += 1
+                    if not existing.get("is_read") and n.get("is_read"):
+                        pass
+                    continue
+            except (ValueError, TypeError):
+                pass
+        groups[key] = n
+        result.append(n)
+    return result
+
 
 def _format_notif(row: dict) -> dict:
     return {

@@ -199,6 +199,7 @@
             @repost="repostPost"
             @quote="startQuote"
             @edit="(id) => navigateTo(`/bai-viet/${id}?edit=1`)"
+            @delete="deletePost"
           />
         </TransitionGroup>
 
@@ -861,6 +862,14 @@ async function toggleBookmark(postId: string) {
     copies.forEach(p => { p.user_bookmarked = !p.user_bookmarked })  // rollback
     showToast('Không thể lưu bài viết', 'error')
   }
+}
+
+async function deletePost(postId: string) {
+  try {
+    await $fetch(`/api/posts/${postId}`, { method: 'DELETE', headers: authHeaders() })
+    posts.value = posts.value.filter(p => p.id !== postId)
+    showToast('Đã xoá bài viết', 'success')
+  } catch { showToast('Không thể xoá bài viết', 'error') }
 }
 
 function goToPost(postId: string) {

@@ -52,15 +52,15 @@
         <thead>
           <tr>
             <th class="admin-th-check"><input type="checkbox" :checked="allSelected" @change="toggleAll" aria-label="Chọn tất cả" /></th>
-            <th>ID</th>
-            <th>Tên</th>
-            <th>Loại</th>
-            <th>Địa điểm</th>
+            <th class="ent-sortable" @click="toggleSort('id')">ID <span class="ent-sort-arrow">{{ sortArrow('id') }}</span></th>
+            <th class="ent-sortable" @click="toggleSort('name')">Tên <span class="ent-sort-arrow">{{ sortArrow('name') }}</span></th>
+            <th class="ent-sortable" @click="toggleSort('type')">Loại <span class="ent-sort-arrow">{{ sortArrow('type') }}</span></th>
+            <th class="ent-sortable" @click="toggleSort('place_name')">Địa điểm <span class="ent-sort-arrow">{{ sortArrow('place_name') }}</span></th>
             <th>Thao tác</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="e in entities" :key="e.id" :class="{ 'row-selected': selected.has(e.id), 'row-acting': acting === e.id }">
+          <tr v-for="e in sortedEntities" :key="e.id" :class="{ 'row-selected': selected.has(e.id), 'row-acting': acting === e.id }">
             <td><input type="checkbox" :checked="selected.has(e.id)" @change="toggleSel(e.id)" :aria-label="`Chọn ${e.name}`" /></td>
             <td class="admin-td-id">{{ e.id }}</td>
             <td>
@@ -69,10 +69,20 @@
                   <img :src="e.images[0]" :alt="e.name" width="32" height="32" loading="lazy" @error="(ev) => ((ev.target as HTMLImageElement).style.display = 'none')" />
                 </div>
                 <div class="ent-thumb ent-thumb-empty" v-else>&#128247;</div>
-                <strong>{{ e.name }}</strong>
+                <template v-if="inlineEdit.id === e.id && inlineEdit.field === 'name'">
+                  <input v-model="inlineEdit.value" class="input ent-inline-input" @keyup.enter="saveInline(e)" @keyup.escape="inlineEdit.id = ''" @vue:mounted="(vn: any) => vn.el?.focus()" />
+                </template>
+                <strong v-else class="ent-inline-label" @dblclick="startInline(e, 'name', e.name)">{{ e.name }}</strong>
               </div>
             </td>
-            <td><span class="type-badge" :data-type="e.type">{{ e.type }}</span></td>
+            <td>
+              <template v-if="inlineEdit.id === e.id && inlineEdit.field === 'type'">
+                <select v-model="inlineEdit.value" class="input ent-inline-select" @change="saveInline(e)" @keyup.escape="inlineEdit.id = ''" @vue:mounted="(vn: any) => vn.el?.focus()">
+                  <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
+                </select>
+              </template>
+              <span v-else class="type-badge ent-inline-label" :data-type="e.type" @dblclick="startInline(e, 'type', e.type)">{{ e.type }}</span>
+            </td>
             <td class="admin-td-muted">{{ e.place_name || '—' }}</td>
             <td class="admin-actions">
               <button type="button" class="btn-success" @click="openEdit(e)">Sửa</button>
@@ -80,7 +90,7 @@
               <button type="button" class="btn-danger" :disabled="acting === e.id" @click="deleteEntity(e.id)">Xóa</button>
             </td>
           </tr>
-          <tr v-if="!entities.length">
+          <tr v-if="!sortedEntities.length">
             <td colspan="6" class="admin-empty-row">
               <div class="ent-empty">
                 <span class="ent-empty-icon">&#128269;</span>
@@ -121,8 +131,12 @@
           </div>
           <div class="ent-field">
             <label class="form-label" for="ent-name">Tên</label>
-            <input id="ent-name" v-model="form.name" class="input" :class="{ error: fieldErrors.name }" placeholder="Tên" aria-label="Tên entity" @input="clearFieldError('name')" />
+            <input id="ent-name" v-model="form.name" class="input" :class="{ error: fieldErrors.name }" placeholder="Tên" aria-label="Tên entity" @input="clearFieldError('name'); checkDuplicate()" />
             <span v-if="fieldErrors.name" class="form-error">{{ fieldErrors.name }}</span>
+            <div v-if="duplicates.length && !editingEntity" class="ent-dup-warn" role="alert">
+              <strong>&#9888; Có thể trùng:</strong>
+              <span v-for="d in duplicates" :key="d.id" class="ent-dup-item">{{ d.name }} <span class="ent-dup-type">({{ d.type }})</span></span>
+            </div>
           </div>
           <div class="ent-field">
             <label class="form-label" for="ent-type">Loại</label>
@@ -210,10 +224,73 @@ const loading = ref(true)
 const acting = ref<string | null>(null)
 const saving = ref(false)
 const bulkBusy = ref(false)
+
+const sortKey = ref<string>('')
+const sortDir = ref<'asc' | 'desc'>('asc')
+
+function toggleSort(key: string) {
+  if (sortKey.value === key) {
+    if (sortDir.value === 'asc') sortDir.value = 'desc'
+    else { sortKey.value = ''; sortDir.value = 'asc' }
+  } else {
+    sortKey.value = key
+    sortDir.value = 'asc'
+  }
+}
+function sortArrow(key: string): string {
+  if (sortKey.value !== key) return ''
+  return sortDir.value === 'asc' ? '▲' : '▼'
+}
+const sortedEntities = computed(() => {
+  if (!sortKey.value) return entities.value
+  const k = sortKey.value
+  const dir = sortDir.value === 'asc' ? 1 : -1
+  return [...entities.value].sort((a, b) => {
+    const va = String((a as Record<string, any>)[k] || '').toLowerCase()
+    const vb = String((b as Record<string, any>)[k] || '').toLowerCase()
+    return va < vb ? -dir : va > vb ? dir : 0
+  })
+})
 // Additive UX state — does not alter save/data path
 const loadError = ref(false)
 const searching = ref(false)
 const fieldErrors = ref<Record<string, string>>({})
+
+const inlineEdit = ref<{ id: string; field: string; value: string }>({ id: '', field: '', value: '' })
+
+function startInline(e: Entity, field: string, value: string) {
+  inlineEdit.value = { id: e.id, field, value }
+}
+
+async function saveInline(e: Entity) {
+  const { field, value } = inlineEdit.value
+  if (!value.trim()) { inlineEdit.value.id = ''; return }
+  try {
+    const body: Record<string, unknown> = { id: e.id, name: e.name, type: e.type, placeId: e.placeId || '', summary: e.summary || '' }
+    body[field] = value.trim()
+    await $fetch(`/admin-api/entities/${e.id}`, { method: 'PUT', headers: authHeaders(), body })
+    ;(e as Record<string, any>)[field] = value.trim()
+    showToast('Đã cập nhật', 'success')
+  } catch (err: any) {
+    showToast(err?.data?.detail || 'Lỗi khi cập nhật', 'error')
+  }
+  inlineEdit.value.id = ''
+}
+
+const duplicates = ref<Array<{ id: string; name: string; type: string }>>([])
+let dupTimer: ReturnType<typeof setTimeout> | null = null
+function checkDuplicate() {
+  if (editingEntity.value) return
+  if (dupTimer) clearTimeout(dupTimer)
+  const name = String(form.value.name || '').trim()
+  if (name.length < 3) { duplicates.value = []; return }
+  dupTimer = setTimeout(async () => {
+    try {
+      const res = await $fetch<{ duplicates: typeof duplicates.value }>(`/admin-api/entities/check-duplicate?name=${encodeURIComponent(name)}`, { headers: authHeaders() })
+      duplicates.value = res.duplicates || []
+    } catch { duplicates.value = [] }
+  }, 400)
+}
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 function debounceFetch() {
@@ -585,6 +662,29 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .dark .ent-search-clear:hover { background: rgba(255,255,255,.08); color: #fff; }
 .dark .admin-actions button:focus-visible,
 .dark .ent-search-clear:focus-visible { outline-color: var(--primary-fg, #D98A6F); }
+/* ── Inline edit ── */
+.ent-inline-label { cursor: default; }
+.ent-inline-label:hover { outline: 1px dashed var(--line); outline-offset: 2px; border-radius: 4px; }
+.ent-inline-input { max-width: 200px; padding: 3px 6px; font-size: .85rem; font-weight: 600; }
+.ent-inline-select { max-width: 140px; padding: 3px 6px; font-size: .78rem; }
+
+/* ── Duplicate warning ── */
+.ent-dup-warn {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  padding: 8px 12px; border-radius: 8px; font-size: .82rem;
+  background: rgba(255,159,10,.1); border: .5px solid rgba(255,159,10,.3);
+  color: #c67a00; animation: ent-fade-in .2s ease;
+}
+.ent-dup-warn strong { white-space: nowrap; }
+.ent-dup-item { background: rgba(255,159,10,.12); padding: 2px 8px; border-radius: 100px; font-weight: 500; }
+.ent-dup-type { font-weight: 400; font-size: .72rem; opacity: .7; }
+.dark .ent-dup-warn { background: rgba(255,159,10,.08); border-color: rgba(255,159,10,.2); color: #ffb340; }
+
+/* ── Sortable columns ── */
+.ent-sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+.ent-sortable:hover { color: var(--primary, #219653); }
+.ent-sort-arrow { font-size: .65rem; opacity: .7; margin-left: 2px; }
+
 .ent-char-count { font-weight: 400; font-size: .78rem; color: var(--muted); }
 .ent-summary-preview { padding: .5rem .8rem; border: 1px solid var(--line); border-radius: 6px; min-height: 60px; font-size: .9rem; line-height: 1.6; white-space: pre-wrap; }
 </style>

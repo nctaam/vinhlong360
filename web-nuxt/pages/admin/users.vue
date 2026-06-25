@@ -105,6 +105,7 @@
             </td>
             <td class="admin-td-muted"><time :datetime="u.created_at">{{ formatDate(u.created_at) }}</time></td>
             <td class="admin-actions">
+              <button type="button" class="btn-outline btn-sm" @click="openDetail(u)">Chi tiết</button>
               <button type="button" v-if="u.is_banned" class="btn-success" :disabled="acting === u.id" @click="requestUnban(u.id)">Mở cấm</button>
               <button type="button" v-else class="btn-danger" :disabled="acting === u.id" @click="requestBan(u.id)">Cấm</button>
             </td>
@@ -143,6 +144,65 @@
         <button type="button" :disabled="users.length < limit" @click="page++; fetchUsers()">Sau &#8594;</button>
       </nav>
     </template>
+
+    <!-- User detail drawer -->
+    <Teleport to="body">
+      <div v-if="detailUser" class="ud-overlay" @click.self="detailUser = null">
+        <div class="ud-drawer" role="dialog" aria-modal="true" :aria-label="`Chi tiết ${detailUser.display_name || detailUser.phone}`">
+          <header class="ud-head">
+            <div class="ud-head-user">
+              <div class="usr-avatar ud-avatar">{{ (detailUser.display_name || '?')[0] }}</div>
+              <div>
+                <h2 class="ud-name">{{ detailUser.display_name || '—' }}</h2>
+                <span class="ud-phone">{{ detailUser.phone }}</span>
+              </div>
+            </div>
+            <button type="button" class="ud-close" aria-label="Đóng" @click="detailUser = null">&times;</button>
+          </header>
+          <div class="ud-body">
+            <div class="ud-meta">
+              <div class="ud-meta-item">
+                <span class="ud-meta-label">Role</span>
+                <span :class="['usr-status', detailUser.role === 'admin' ? 'usr-admin-role' : '']">{{ detailUser.role || 'user' }}</span>
+              </div>
+              <div class="ud-meta-item">
+                <span class="ud-meta-label">Trạng thái</span>
+                <span :class="['usr-status', detailUser.is_banned ? 'usr-banned' : 'usr-active']">
+                  <span class="usr-status-dot"></span>
+                  {{ detailUser.is_banned ? 'Bị cấm' : 'Hoạt động' }}
+                </span>
+              </div>
+              <div class="ud-meta-item">
+                <span class="ud-meta-label">Tham gia</span>
+                <span>{{ formatDate(detailUser.created_at) }}</span>
+              </div>
+              <div v-if="detailProfile?.bio" class="ud-meta-item ud-bio">
+                <span class="ud-meta-label">Giới thiệu</span>
+                <p>{{ detailProfile.bio }}</p>
+              </div>
+              <div v-if="detailProfile" class="ud-stats-row">
+                <div class="ud-stat"><strong>{{ detailProfile.post_count || 0 }}</strong><span>bài viết</span></div>
+                <div class="ud-stat"><strong>{{ detailProfile.review_count || 0 }}</strong><span>đánh giá</span></div>
+                <div class="ud-stat"><strong>{{ detailProfile.reputation?.points || 0 }}</strong><span>điểm</span></div>
+              </div>
+            </div>
+
+            <div class="ud-section">
+              <h3>Bài viết gần đây</h3>
+              <div v-if="detailPostsLoading" class="ud-loading"><div class="spinner spinner-sm"></div></div>
+              <div v-else-if="!detailPosts.length" class="ud-empty">Chưa có bài viết.</div>
+              <div v-else class="ud-post-list">
+                <NuxtLink v-for="p in detailPosts" :key="p.id" :to="`/bai-viet/${p.id}`" class="ud-post" target="_blank">
+                  <span class="ud-post-type" v-if="p.post_type">{{ p.post_type }}</span>
+                  <span class="ud-post-content">{{ (p.content || '').slice(0, 120) }}</span>
+                  <time class="ud-post-time">{{ formatDate(p.created_at) }}</time>
+                </NuxtLink>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -329,6 +389,34 @@ function exportCSV() {
   URL.revokeObjectURL(url)
 }
 
+// ── User detail drawer ──
+const detailUser = ref<any | null>(null)
+const detailProfile = ref<any | null>(null)
+const detailPosts = ref<any[]>([])
+const detailPostsLoading = ref(false)
+
+async function openDetail(u: any) {
+  detailUser.value = u
+  detailProfile.value = null
+  detailPosts.value = []
+  detailPostsLoading.value = true
+  try {
+    const [profileRes, postsRes] = await Promise.all([
+      $fetch<any>(`/api/users/${u.id}`, { headers: authHeaders() }).catch(() => null),
+      $fetch<any>(`/api/users/${u.id}/posts?limit=10`, { headers: authHeaders() }).catch(() => null),
+    ])
+    if (profileRes) {
+      const p = profileRes.user || profileRes
+      detailProfile.value = {
+        ...p,
+        post_count: p.stats?.posts ?? p.post_count ?? 0,
+        review_count: p.stats?.reviews ?? p.review_count ?? 0,
+      }
+    }
+    detailPosts.value = postsRes?.posts || []
+  } finally { detailPostsLoading.value = false }
+}
+
 onMounted(() => fetchUsers())
 </script>
 
@@ -481,4 +569,41 @@ onMounted(() => fetchUsers())
 .dark .usr-skeleton-line { background: linear-gradient(90deg, rgba(255,255,255,.06) 25%, rgba(255,255,255,.12) 50%, rgba(255,255,255,.06) 75%); background-size: 200% 100%; }
 .dark .usr-confirm-actions button { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
 .dark .usr-confirm-cancel:hover { background: rgba(255,255,255,.06); }
+
+/* ── User detail drawer ── */
+.ud-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.45); display: flex; justify-content: flex-end; }
+.ud-drawer { width: 100%; max-width: 440px; background: var(--card); height: 100%; display: flex; flex-direction: column; box-shadow: -4px 0 24px rgba(0,0,0,.15); animation: udSlideIn .25s var(--ease-out, cubic-bezier(.2,1,.4,1)); overflow: hidden; }
+@keyframes udSlideIn { from { transform: translateX(100%); } }
+.ud-head { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4); border-bottom: .5px solid var(--line); }
+.ud-head-user { display: flex; align-items: center; gap: var(--space-3); }
+.ud-avatar { width: 44px; height: 44px; font-size: 1rem; }
+.ud-name { font-size: var(--text-base); font-weight: var(--weight-bold); margin: 0; }
+.ud-phone { font-size: var(--text-xs); color: var(--muted); }
+.ud-close { border: none; background: none; font-size: 1.5rem; line-height: 1; cursor: pointer; color: var(--muted); padding: var(--space-2); }
+.ud-body { flex: 1; overflow-y: auto; padding: var(--space-4); }
+.ud-meta { display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-5); }
+.ud-meta-item { display: flex; align-items: center; justify-content: space-between; font-size: var(--text-sm); }
+.ud-meta-label { color: var(--muted); font-weight: var(--weight-medium); }
+.ud-bio { flex-direction: column; align-items: flex-start; gap: var(--space-1); }
+.ud-bio p { margin: 0; font-size: var(--text-sm); color: var(--ink); }
+.ud-stats-row { display: flex; gap: var(--space-4); margin-top: var(--space-2); }
+.ud-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: var(--space-2) var(--space-3); background: var(--bg-alt); border-radius: var(--radius-md); flex: 1; }
+.ud-stat strong { font-size: var(--text-lg); font-weight: var(--weight-bold); }
+.ud-stat span { font-size: var(--text-xs); color: var(--muted); }
+.ud-section h3 { font-size: var(--text-sm); font-weight: var(--weight-semibold); margin: 0 0 var(--space-3); color: var(--ink); }
+.ud-loading { text-align: center; padding: var(--space-4); }
+.ud-empty { font-size: var(--text-sm); color: var(--muted); text-align: center; padding: var(--space-4); }
+.ud-post-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.ud-post { display: flex; flex-direction: column; gap: 2px; padding: var(--space-2) var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-md); text-decoration: none; color: var(--ink); transition: background .2s, border-color .2s; }
+.ud-post:hover { background: var(--bg-alt); border-color: var(--primary); }
+.ud-post-type { font-size: .7rem; font-weight: 600; color: var(--primary); text-transform: uppercase; }
+.ud-post-content { font-size: var(--text-sm); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ud-post-time { font-size: var(--text-xs); color: var(--muted); }
+.usr-admin-role { color: var(--primary); font-weight: 600; }
+
+.dark .ud-drawer { background: var(--card, #2c2c2e); box-shadow: -4px 0 32px rgba(0,0,0,.5); }
+.dark .ud-stat { background: rgba(255,255,255,.04); }
+
+@media (max-width: 480px) { .ud-drawer { max-width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .ud-drawer { animation: none; } }
 </style>

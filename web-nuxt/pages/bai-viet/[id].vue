@@ -13,7 +13,7 @@
           <button type="button" class="btn btn-primary btn-sm" :disabled="editSaving || editContent.trim().length < 10" @click="saveEdit">{{ editSaving ? 'Đang lưu…' : 'Lưu' }}</button>
         </div>
       </div>
-      <PostCard v-else :post="post" :has-replies="comments.length > 0" @like="toggleLike" @comment="scrollToCompose" @bookmark="toggleBookmark" @report="reportPost" @repost="repost" @quote="quote" @edit="startEdit" />
+      <PostCard v-else :post="post" :has-replies="comments.length > 0" @like="toggleLike" @comment="scrollToCompose" @bookmark="toggleBookmark" @report="reportPost" @repost="repost" @quote="quote" @edit="startEdit" @delete="deletePost" />
 
       <!-- Comment thread -->
       <div class="thread-comments">
@@ -196,6 +196,14 @@ async function setBestAnswer(commentId: string) {
     showToast('Đã chọn câu trả lời hay', 'success')
   } catch { bestAnswerId.value = prev; showToast('Không thể chọn, thử lại', 'error') }
 }
+async function deletePost() {
+  try {
+    await $fetch(`/api/posts/${postId}`, { method: 'DELETE', headers: authHeaders() })
+    showToast('Đã xoá bài viết', 'success')
+    navigateTo('/cong-dong')
+  } catch { showToast('Không thể xoá bài viết', 'error') }
+}
+
 const composeRef = ref<HTMLElement>()
 
 function scrollToCompose() {

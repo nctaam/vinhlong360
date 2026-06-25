@@ -108,9 +108,12 @@
               <div class="mod-reject-container">
               <div class="mod-reject">
                 <span class="mod-reject-label" aria-hidden="true">&#9888; Lý do:</span>
+                <div class="mod-reason-presets">
+                  <button v-for="r in REJECT_PRESETS" :key="r" type="button" class="mod-reason-chip" :class="{ active: rejectReason === r }" @click="rejectReason = rejectReason === r ? '' : r">{{ r }}</button>
+                </div>
                 <input
                   v-model="rejectReason" type="text" class="mod-reason-input"
-                  placeholder="Lý do từ chối (tuỳ chọn, lưu vào nhật ký)…"
+                  placeholder="Hoặc nhập lý do khác…"
                   @keyup.enter="confirmReject(p.id)" @keyup.esc="cancelReject"
                 />
                 <button type="button" class="btn-danger" :disabled="acting === p.id" @click="confirmReject(p.id)">
@@ -194,6 +197,8 @@ const BADGES: Record<string, { label: string; cls: string }> = {
   approved: { label: 'Đã duyệt', cls: 'mb-approved' },
   rejected: { label: 'Từ chối', cls: 'mb-rejected' },
 }
+
+const REJECT_PRESETS = ['Spam', 'Vi phạm quy tắc', 'Nội dung không phù hợp', 'Quảng cáo', 'Trùng lặp'] as const
 
 const queue = ref<any[]>([])
 const modStats = ref<Record<string, number>>({})
@@ -415,6 +420,14 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
 /* Inline action spinner (reuses global admin-spin keyframe) */
 .mod-btn-spin { display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: admin-spin .6s linear infinite; }
+.mod-reason-presets { display: flex; flex-wrap: wrap; gap: 4px; width: 100%; }
+.mod-reason-chip {
+  padding: 4px 10px; border-radius: 100px; border: .5px solid var(--line);
+  background: var(--bg); font-size: .76rem; font-weight: 500; color: var(--muted);
+  cursor: pointer; transition: all .15s;
+}
+.mod-reason-chip:hover { border-color: #D94F3D; color: #D94F3D; }
+.mod-reason-chip.active { background: rgba(217,79,61,.12); border-color: #D94F3D; color: #D94F3D; font-weight: 600; }
 .mod-reason-input { flex: 1; min-width: 200px; padding: 9px 12px; border: .5px solid var(--line); border-radius: 10px; font-size: .85rem; background: var(--bg); color: var(--ink); min-height: 40px; }
 .mod-reason-input:focus { outline: none; border-color: #D94F3D; box-shadow: 0 0 0 3px rgba(217,79,61,.1); }
 .btn-ghost-sm { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; padding: 8px 12px; border-radius: 8px; }

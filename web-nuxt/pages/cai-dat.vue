@@ -1,21 +1,38 @@
 <template>
   <section class="page settings-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cài đặt hồ sơ' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cài đặt' }]" />
 
     <div v-if="!isLoggedIn" class="settings-guest card">
-      <h1>Cài đặt hồ sơ</h1>
+      <h1>Cài đặt</h1>
       <p>Bạn cần đăng nhập để chỉnh sửa hồ sơ.</p>
       <button type="button" class="btn btn-primary" @click="openAuth">Đăng nhập</button>
     </div>
 
-    <div v-else class="settings-card card">
-      <h1>Cài đặt hồ sơ</h1>
+    <template v-else>
+    <h1 class="settings-title">Cài đặt</h1>
+
+    <!-- Tab navigation -->
+    <nav class="settings-tabs" role="tablist" aria-label="Cài đặt">
+      <button
+        v-for="t in TABS" :key="t.key" type="button" role="tab"
+        class="settings-tab" :class="{ active: activeTab === t.key }"
+        :aria-selected="activeTab === t.key"
+        @click="setTab(t.key)"
+      >
+        <span class="settings-tab-icon" aria-hidden="true">{{ t.icon }}</span>
+        {{ t.label }}
+      </button>
+    </nav>
+
+    <!-- Tab: Hồ sơ -->
+    <div v-if="activeTab === 'ho-so'" class="settings-card card" role="tabpanel">
+      <h2>Hồ sơ cá nhân</h2>
       <form class="settings-form" @submit.prevent="save">
         <div class="sf-avatar-section">
           <div class="sf-avatar-preview" @click="($refs.avatarInput as HTMLInputElement)?.click()">
             <img v-if="avatarPreview || user?.avatar_url" :src="avatarPreview || user?.avatar_url!" alt="Avatar" class="sf-avatar-img" />
             <AvatarPlaceholder v-else :initial="user?.display_name?.[0]?.toUpperCase()" />
-            <span class="sf-avatar-overlay">📷</span>
+            <span class="sf-avatar-overlay">&#128247;</span>
           </div>
           <div class="sf-avatar-info">
             <span class="sf-label">Ảnh đại diện</span>
@@ -62,46 +79,47 @@
       </form>
     </div>
 
-    <!-- Password management -->
-    <div v-if="isLoggedIn" class="settings-card card">
-      <h2>Mật khẩu</h2>
-      <p v-if="!user?.has_password" class="sf-hint">Bạn chưa đặt mật khẩu. Đặt mật khẩu để đăng nhập nhanh hơn.</p>
-      <form class="settings-form" @submit.prevent="savePassword">
-        <label v-if="user?.has_password" class="sf-field">
-          <span class="sf-label">Mật khẩu hiện tại</span>
-          <input v-model="currentPw" type="password" class="sf-input" autocomplete="current-password" required />
-        </label>
-        <label class="sf-field">
-          <span class="sf-label">{{ user?.has_password ? 'Mật khẩu mới' : 'Đặt mật khẩu' }}</span>
-          <input v-model="newPw" type="password" class="sf-input" minlength="6" autocomplete="new-password" required />
-        </label>
-        <div class="sf-actions">
-          <button type="submit" class="btn btn-primary" :disabled="savingPw">
-            {{ savingPw ? 'Đang lưu...' : (user?.has_password ? 'Đổi mật khẩu' : 'Đặt mật khẩu') }}
-          </button>
-        </div>
-      </form>
-    </div>
-
-    <!-- Active sessions -->
-    <div v-if="isLoggedIn" class="settings-card card">
-      <h2>Phiên đăng nhập</h2>
-      <div v-if="sessionsLoading" class="sf-hint">Đang tải...</div>
-      <div v-else-if="sessions.length" class="sessions-list">
-        <div v-for="s in sessions" :key="s.id" :class="['session-item', { current: s.is_current }]">
-          <div class="session-info">
-            <span class="session-ua">{{ shortUA(s.user_agent) }}</span>
-            <span class="sf-hint">{{ s.ip_address }} &middot; {{ timeAgo(s.created_at) }}</span>
+    <!-- Tab: Bảo mật -->
+    <div v-if="activeTab === 'bao-mat'" role="tabpanel">
+      <div class="settings-card card">
+        <h2>Mật khẩu</h2>
+        <p v-if="!user?.has_password" class="sf-hint">Bạn chưa đặt mật khẩu. Đặt mật khẩu để đăng nhập nhanh hơn.</p>
+        <form class="settings-form" @submit.prevent="savePassword">
+          <label v-if="user?.has_password" class="sf-field">
+            <span class="sf-label">Mật khẩu hiện tại</span>
+            <input v-model="currentPw" type="password" class="sf-input" autocomplete="current-password" required />
+          </label>
+          <label class="sf-field">
+            <span class="sf-label">{{ user?.has_password ? 'Mật khẩu mới' : 'Đặt mật khẩu' }}</span>
+            <input v-model="newPw" type="password" class="sf-input" minlength="6" autocomplete="new-password" required />
+          </label>
+          <div class="sf-actions">
+            <button type="submit" class="btn btn-primary" :disabled="savingPw">
+              {{ savingPw ? 'Đang lưu...' : (user?.has_password ? 'Đổi mật khẩu' : 'Đặt mật khẩu') }}
+            </button>
           </div>
-          <span v-if="s.is_current" class="session-badge">Hiện tại</span>
-          <button v-else type="button" class="btn btn-ghost btn-sm btn-danger-text" @click="revokeSession(s.id)">Thu hồi</button>
-        </div>
+        </form>
       </div>
-      <p v-else class="sf-hint">Không có phiên nào.</p>
+
+      <div class="settings-card card">
+        <h2>Phiên đăng nhập</h2>
+        <div v-if="sessionsLoading" class="sf-hint">Đang tải...</div>
+        <div v-else-if="sessions.length" class="sessions-list">
+          <div v-for="s in sessions" :key="s.id" :class="['session-item', { current: s.is_current }]">
+            <div class="session-info">
+              <span class="session-ua">{{ shortUA(s.user_agent) }}</span>
+              <span class="sf-hint">{{ s.ip_address }} &middot; {{ timeAgo(s.created_at) }}</span>
+            </div>
+            <span v-if="s.is_current" class="session-badge">Hiện tại</span>
+            <button v-else type="button" class="btn btn-ghost btn-sm btn-danger-text" @click="revokeSession(s.id)">Thu hồi</button>
+          </div>
+        </div>
+        <p v-else class="sf-hint">Không có phiên nào.</p>
+      </div>
     </div>
 
-    <!-- Blocked users -->
-    <div v-if="isLoggedIn" class="settings-card card">
+    <!-- Tab: Người chặn -->
+    <div v-if="activeTab === 'chan'" class="settings-card card" role="tabpanel">
       <h2>Người bị chặn</h2>
       <div v-if="blockedLoading" class="sf-hint">Đang tải...</div>
       <div v-else-if="blockedUsers.length" class="sessions-list">
@@ -115,8 +133,8 @@
       <p v-else class="sf-hint">Bạn chưa chặn ai.</p>
     </div>
 
-    <!-- Danger zone -->
-    <div v-if="isLoggedIn" class="settings-card card settings-danger">
+    <!-- Tab: Nguy hiểm -->
+    <div v-if="activeTab === 'nguy-hiem'" class="settings-card card settings-danger" role="tabpanel">
       <h2>Vùng nguy hiểm</h2>
       <div class="danger-actions">
         <div class="danger-item">
@@ -135,6 +153,7 @@
         </div>
       </div>
     </div>
+    </template>
   </section>
 </template>
 
@@ -142,12 +161,28 @@
 const { user, isLoggedIn, authHeaders, fetchMe } = useAuth()
 const { openAuth } = useAuthModal()
 const { show: showToast } = useToast()
+const route = useRoute()
 
 useHead({
-  title: 'Cài đặt hồ sơ',
+  title: 'Cài đặt',
   meta: [{ name: 'robots', content: 'noindex,nofollow' }],
   link: [{ rel: 'canonical', href: canonicalUrl('/cai-dat') }],
 })
+
+const TABS = [
+  { key: 'ho-so', label: 'Hồ sơ', icon: '\u{1F464}' },
+  { key: 'bao-mat', label: 'Bảo mật', icon: '\u{1F512}' },
+  { key: 'chan', label: 'Chặn', icon: '\u{1F6AB}' },
+  { key: 'nguy-hiem', label: 'Nguy hiểm', icon: '⚠️' },
+] as const
+type TabKey = typeof TABS[number]['key']
+
+const activeTab = ref<TabKey>((route.hash?.slice(1) as TabKey) || 'ho-so')
+
+function setTab(key: TabKey) {
+  activeTab.value = key
+  if (import.meta.client) window.history.replaceState(null, '', `#${key}`)
+}
 
 const displayName = ref(user.value?.display_name || '')
 const bio = ref('')
@@ -312,9 +347,29 @@ async function save() {
 
 <style scoped>
 .settings-page { max-width: 640px; margin: 0 auto; }
+.settings-title { font-size: 1.5rem; margin: 0 0 1rem; }
 .settings-card, .settings-guest { padding: 1.5rem; }
-.settings-card h1, .settings-guest h1 { margin: 0 0 1.25rem; font-size: 1.5rem; }
+.settings-guest h1 { margin: 0 0 1.25rem; font-size: 1.5rem; }
 .settings-guest p { color: var(--ink-700); margin-bottom: 1rem; }
+
+/* ── Tabs ── */
+.settings-tabs {
+  display: flex; gap: var(--space-2); margin-bottom: var(--space-5);
+  border-bottom: 1px solid var(--line); padding-bottom: 0;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+}
+.settings-tab {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: .6rem 1rem; border: none; background: none;
+  font-size: .88rem; font-weight: 500; color: var(--muted);
+  cursor: pointer; white-space: nowrap; position: relative;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color .2s, border-color .2s;
+}
+.settings-tab:hover { color: var(--ink); }
+.settings-tab.active { color: var(--accent, var(--primary, #219653)); border-bottom-color: var(--accent, var(--primary, #219653)); font-weight: 600; }
+.settings-tab:focus-visible { outline: 2px solid var(--accent, var(--primary)); outline-offset: -2px; border-radius: 4px; }
+.settings-tab-icon { font-size: 1rem; }
 .settings-form { display: flex; flex-direction: column; gap: 1.25rem; }
 .sf-field { display: flex; flex-direction: column; gap: .4rem; }
 .sf-label { font-weight: 600; font-size: .95rem; }

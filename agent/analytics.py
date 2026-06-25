@@ -134,12 +134,13 @@ def save_conversation(session_id: str, messages: list[dict]):
 
 # ── Report functions ──
 
-def get_popular_queries(limit: int = 20) -> list[dict]:
+def get_popular_queries(limit: int = 20, since: str | None = None) -> list[dict]:
     """Top câu hỏi phổ biến (nhóm theo similarity)."""
     data = _load()
     counter = Counter()
     for q in data["queries"]:
-        # Normalize: lowercase, bỏ dấu chấm hỏi cuối
+        if since and q.get("timestamp", "") < since:
+            continue
         text = q["text"].lower().strip().rstrip("?").strip()
         if len(text) > 5:
             counter[text] += 1
@@ -153,11 +154,13 @@ def get_top_entities(limit: int = 20) -> list[dict]:
     return [{"entity_id": eid, "hits": count} for eid, count in sorted_hits[:limit]]
 
 
-def get_knowledge_gaps(limit: int = 20) -> list[dict]:
+def get_knowledge_gaps(limit: int = 20, since: str | None = None) -> list[dict]:
     """Câu hỏi mà agent không trả lời được → cần bổ sung KB."""
     data = _load()
     counter = Counter()
     for q in data["unanswered"]:
+        if since and q.get("timestamp", "") < since:
+            continue
         text = q["text"].lower().strip().rstrip("?").strip()
         if len(text) > 5:
             counter[text] += 1
@@ -181,17 +184,23 @@ def get_tool_usage() -> dict:
     return data.get("tool_usage", {})
 
 
-def get_summary() -> dict:
+def get_summary(since: str | None = None) -> dict:
     """Tổng quan analytics."""
     data = _load()
     today = datetime.now().strftime("%Y-%m-%d")
     today_stats = data["daily_stats"].get(today, {"queries": 0, "sessions": 0})
+    queries = data["queries"]
+    unanswered = data.get("unanswered", [])
+    if since:
+        queries = [q for q in queries if q.get("timestamp", "") >= since]
+        unanswered = [q for q in unanswered if q.get("timestamp", "") >= since]
     return {
-        "total_queries": len(data["queries"]),
+        "total_queries": len(queries),
+        "unique_queries": len({q["text"].lower().strip() for q in queries if q.get("text")}),
         "total_sessions": data["sessions"],
         "today_queries": today_stats["queries"],
         "today_sessions": today_stats["sessions"],
         "top_entities": get_top_entities(5),
-        "knowledge_gaps": len(data.get("unanswered", [])),
+        "knowledge_gaps": len(unanswered),
         "tool_usage": data.get("tool_usage", {}),
     }

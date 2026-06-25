@@ -638,7 +638,11 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50)):
                    COUNT(p.id) AS posts,
                    COUNT(p.id) FILTER (WHERE jsonb_typeof(p.images)='array'
                                          AND jsonb_array_length(p.images) > 0) AS photos,
-                   COALESCE(fc.c, 0) AS followers
+                   COALESCE(fc.c, 0) AS followers,
+                   COUNT(DISTINCT p.entity_id) FILTER (WHERE p.entity_id IS NOT NULL) AS places,
+                   COALESCE(SUM(CASE WHEN jsonb_typeof(p.likes)='number' THEN p.likes::int
+                                     WHEN jsonb_typeof(p.likes)='array' THEN jsonb_array_length(p.likes)
+                                     ELSE 0 END), 0) AS likes
             FROM users u
             LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved'
             LEFT JOIN (SELECT target_id, COUNT(*) c FROM follows
@@ -655,7 +659,9 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50)):
         posts = int(d["posts"] or 0)
         photos = int(d["photos"] or 0)
         followers = int(d["followers"] or 0)
-        points = reviews * 5 + max(0, posts - reviews) * 2 + photos * 3 + followers
+        places = int(d["places"] or 0)
+        likes = int(d["likes"] or 0)
+        points = _calc_points(reviews, posts, photos, followers, places, likes)
         if points <= 0:
             continue
         level, label = _level_for(points)
@@ -712,7 +718,11 @@ async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge
                    COUNT(p.id) AS posts,
                    COUNT(p.id) FILTER (WHERE jsonb_typeof(p.images)='array'
                                          AND jsonb_array_length(p.images) > 0) AS photos,
-                   COALESCE(fc.c, 0) AS followers
+                   COALESCE(fc.c, 0) AS followers,
+                   COUNT(DISTINCT p.entity_id) FILTER (WHERE p.entity_id IS NOT NULL) AS places,
+                   COALESCE(SUM(CASE WHEN jsonb_typeof(p.likes)='number' THEN p.likes::int
+                                     WHEN jsonb_typeof(p.likes)='array' THEN jsonb_array_length(p.likes)
+                                     ELSE 0 END), 0) AS likes
             FROM users u
             LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved'
             LEFT JOIN (SELECT target_id, COUNT(*) c FROM follows
@@ -728,7 +738,8 @@ async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge
         d = db._row_to_dict(r)
         reviews = int(d["reviews"] or 0); posts = int(d["posts"] or 0)
         photos = int(d["photos"] or 0); followers = int(d["followers"] or 0)
-        points = reviews * 5 + max(0, posts - reviews) * 2 + photos * 3 + followers
+        places = int(d["places"] or 0); likes = int(d["likes"] or 0)
+        points = _calc_points(reviews, posts, photos, followers, places, likes)
         if points <= 0:
             continue
         cands.append({"id": str(d["id"]), "display_name": d["display_name"],
@@ -1003,12 +1014,37 @@ async def upload_image(file: UploadFile = File(...), user=Depends(require_user))
     return {"url": url}
 
 
-# ── User profile + reputation (gamification) ──
+# ── User profile + reputation (gamification, anti-inflation) ──
+
+def _diminish(count: int, tiers: list[tuple[int, int]]) -> int:
+    """Điểm giảm dần theo tier: [(số_lượng, điểm_mỗi_cái), ...]. Phần vượt tier cuối = 0."""
+    pts, remaining = 0, count
+    for tier_count, per_point in tiers:
+        take = min(remaining, tier_count)
+        pts += take * per_point
+        remaining -= take
+        if remaining <= 0:
+            break
+    return pts
+
+
+def _calc_points(reviews: int, posts: int, photos: int,
+                 followers: int, places: int, likes: int) -> int:
+    """Công thức điểm chống lạm phát — dùng chung profile/leaderboard/suggested."""
+    review_pts = _diminish(reviews, [(10, 5), (20, 3), (20, 1)])       # max 130
+    post_pts = _diminish(max(posts - reviews, 0), [(15, 2), (15, 1)])  # max 45
+    photo_pts = _diminish(photos, [(10, 3), (10, 1)])                  # max 40
+    follower_pts = _diminish(followers, [(20, 1)])                     # max 20
+    place_pts = _diminish(places, [(10, 2), (10, 1)])                  # max 30
+    like_pts = _diminish(likes, [(50, 1)])                             # max 50
+    return review_pts + post_pts + photo_pts + follower_pts + place_pts + like_pts
+    # Tổng tối đa lý thuyết: 315 — Đại sứ (200+) cần đa dạng, không spam 1 loại được
+
 
 def _level_for(points: int) -> tuple[int, str]:
     """Cấp độ danh tiếng theo điểm (dùng chung profile + leaderboard)."""
-    if points >= 300: return 4, "Đại sứ"
-    if points >= 100: return 3, "Đóng góp tích cực"
+    if points >= 200: return 4, "Đại sứ"
+    if points >= 80:  return 3, "Đóng góp tích cực"
     if points >= 20:  return 2, "Người đóng góp"
     return 1, "Người mới"
 
@@ -1024,16 +1060,22 @@ def _reputation(conn, user_id: str, posts: int, reviews: int) -> dict:
     followers = _c(f"SELECT COUNT(*) c FROM follows WHERE target_type='user' AND target_id={ph}", (user_id,))
     places = _c(f"""SELECT COUNT(DISTINCT entity_id) c FROM posts WHERE user_id::text={ph}
                     AND moderation_status='approved' AND entity_id IS NOT NULL""", (user_id,))
-    points = reviews * 5 + max(0, posts - reviews) * 2 + photos * 3 + followers
+    likes = _c(f"""SELECT COALESCE(SUM(CASE WHEN jsonb_typeof(likes)='number' THEN likes::int
+                   WHEN jsonb_typeof(likes)='array' THEN jsonb_array_length(likes) ELSE 0 END), 0) c
+                   FROM posts WHERE user_id::text={ph} AND moderation_status='approved'""", (user_id,))
+    points = _calc_points(reviews, posts, photos, followers, places, likes)
     level, label = _level_for(points)
     badges = []
-    if reviews >= 1:   badges.append({"id": "first_review", "label": "Đánh giá đầu tiên", "icon": "✍️"})
-    if reviews >= 10:  badges.append({"id": "reviewer_10", "label": "Nhà phê bình", "icon": "⭐"})
-    if photos >= 5:    badges.append({"id": "photographer", "label": "Nhiếp ảnh cộng đồng", "icon": "📸"})
-    if places >= 5:    badges.append({"id": "explorer", "label": "Người khám phá", "icon": "🧭"})
-    if followers >= 10: badges.append({"id": "popular", "label": "Được yêu thích", "icon": "💛"})
+    if reviews >= 1:    badges.append({"id": "first_review", "label": "Đánh giá đầu tiên", "icon": "✍️"})
+    if reviews >= 25:   badges.append({"id": "reviewer_25", "label": "Nhà phê bình", "icon": "⭐"})
+    if photos >= 10:    badges.append({"id": "photographer", "label": "Nhiếp ảnh cộng đồng", "icon": "📸"})
+    if places >= 10:    badges.append({"id": "explorer", "label": "Người khám phá", "icon": "🧭"})
+    if followers >= 20: badges.append({"id": "popular", "label": "Được yêu thích", "icon": "💛"})
+    if likes >= 50:     badges.append({"id": "quality", "label": "Nội dung chất lượng", "icon": "🏆"})
+    if places >= 3 and reviews >= 5 and photos >= 3:
+        badges.append({"id": "allrounder", "label": "Đa năng", "icon": "🌟"})
     return {"points": points, "level": level, "level_label": label, "badges": badges,
-            "photos": photos, "followers": followers, "places": places}
+            "photos": photos, "followers": followers, "places": places, "likes": likes}
 
 
 @router.get("/users/{user_id}")

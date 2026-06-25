@@ -124,10 +124,10 @@
     <p v-else-if="fetchFailed" class="empty review-error">Không thể tải đánh giá. <button type="button" class="btn btn-outline btn-sm review-retry-btn" @click="fetchFailed = false; fetchReviews()">Thử lại</button></p>
     <p v-else-if="!loading" class="empty review-empty">Chưa có đánh giá nào. Hãy là người đầu tiên!</p>
 
-    <!-- Load more -->
-    <button type="button" v-if="hasMore" class="btn btn-outline review-load-more" @click="loadMore">
-      Xem thêm đánh giá
-    </button>
+    <!-- Auto-load more on scroll -->
+    <div v-if="hasMore" ref="sentinel" class="review-sentinel">
+      <div v-if="infiniteLoading" class="spinner spinner-sm"></div>
+    </div>
   </div>
 </template>
 
@@ -259,6 +259,8 @@ function loadMore() {
   fetchReviews(true)
 }
 
+const { sentinel, loading: infiniteLoading } = useInfiniteScroll(loadMore, { enabled: hasMore })
+
 async function submitReview() {
   submitting.value = true
   submitError.value = ''
@@ -297,6 +299,7 @@ onMounted(() => fetchReviews())
 .review-retry-btn { margin-inline-start: var(--space-2); }
 .review-empty { font-size: var(--text-sm); }
 .review-load-more { margin-top: var(--space-3); }
+.review-sentinel { display: flex; justify-content: center; padding: var(--space-3) 0; min-height: 40px; }
 
 /* Image attach */
 .rf-photo-hint { margin: var(--space-2) 0 0; font-size: var(--text-sm); color: var(--ink-700); }

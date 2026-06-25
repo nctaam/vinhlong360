@@ -33,9 +33,9 @@
         </div>
         <p v-if="profile.bio" class="profile-bio">{{ profile.bio }}</p>
         <div v-if="profile.reputation" class="profile-reputation">
-          <span class="rep-level" :data-level="profile.reputation.level">
+          <NuxtLink to="/huong-dan-thanh-vien" class="rep-level" :data-level="profile.reputation.level" title="Xem hướng dẫn cấp bậc">
             {{ levelIcon(profile.reputation.level) }} {{ profile.reputation.level_label }}
-          </span>
+          </NuxtLink>
           <span v-for="b in profile.reputation.badges" :key="b.id" class="rep-badge" :title="b.label">
             {{ b.icon }} {{ b.label }}
           </span>
@@ -126,6 +126,7 @@
               @repost="repost"
               @quote="quote"
               @edit="(id) => navigateTo(`/bai-viet/${id}?edit=1`)"
+              @delete="deletePost"
             />
           </TransitionGroup>
           <Transition name="fade">
@@ -294,6 +295,14 @@ async function toggleLike(postId: string) {
   } catch { showToast('Không thể thích bài viết', 'error') }
 }
 
+async function deletePost(postId: string) {
+  try {
+    await $fetch(`/api/posts/${postId}`, { method: 'DELETE', headers: authHeaders() })
+    posts.value = posts.value.filter(p => p.id !== postId)
+    showToast('Đã xoá bài viết', 'success')
+  } catch { showToast('Không thể xoá bài viết', 'error') }
+}
+
 async function toggleBookmark(postId: string) {
   if (!isLoggedIn.value) return
   try {
@@ -378,7 +387,8 @@ if (profile.value) {
 
 <style scoped>
 .profile-reputation { display: flex; flex-wrap: wrap; gap: .4rem; margin: .25rem 0 .75rem; }
-.rep-level { font-weight: var(--weight-semibold); font-size: var(--text-sm); padding: .2rem .6rem; border-radius: 999px; background: color-mix(in srgb, var(--accent) 16%, var(--bg-alt)); color: var(--accent-text, var(--ink)); }
+.rep-level { font-weight: var(--weight-semibold); font-size: var(--text-sm); padding: .2rem .6rem; border-radius: 999px; background: color-mix(in srgb, var(--accent) 16%, var(--bg-alt)); color: var(--accent-text, var(--ink)); text-decoration: none; transition: filter .2s; }
+.rep-level:hover { filter: brightness(1.1); }
 .rep-level[data-level="4"] { background: color-mix(in srgb, gold 28%, var(--bg-alt)); }
 .rep-badge { font-size: var(--text-xs); padding: .2rem .55rem; border-radius: 999px; background: var(--bg-alt); border: 1px solid var(--border); color: var(--ink-700); }
 .profile-loading { text-align: center; padding: var(--space-5) 0; }

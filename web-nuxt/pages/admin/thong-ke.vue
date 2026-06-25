@@ -13,6 +13,11 @@
       </div>
     </div>
 
+    <!-- Date range filter -->
+    <div class="tk-range-chips" role="group" aria-label="Khoảng thời gian">
+      <button v-for="r in RANGES" :key="r.days" type="button" class="tk-chip" :class="{ active: rangeDays === r.days }" @click="setRange(r.days)">{{ r.label }}</button>
+    </div>
+
     <!-- Skeleton placeholders while loading (replaces flash of empty spinner) -->
     <div v-if="loading" class="tk-skeleton" aria-hidden="true">
       <div class="stat-grid">
@@ -28,28 +33,29 @@
     <div class="stat-grid">
       <div class="stat-card">
         <div class="tk-icon" style="background: rgba(52,120,246,.1); color: #3478F6;">&#128172;</div>
-        <div>
+        <div class="tk-stat-body">
           <div class="stat-value">{{ data.summary?.total_queries ?? '—' }}</div>
           <div class="stat-label">Tổng truy vấn</div>
         </div>
+        <svg v-if="sparkPoints.length > 1" class="tk-spark" viewBox="0 0 80 24" preserveAspectRatio="none"><polyline :points="sparkPoints" fill="none" stroke="#3478F6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
       </div>
       <div class="stat-card">
         <div class="tk-icon" style="background: rgba(175,82,222,.1); color: #AF52DE;">&#128161;</div>
-        <div>
+        <div class="tk-stat-body">
           <div class="stat-value">{{ data.summary?.unique_queries ?? '—' }}</div>
           <div class="stat-label">Truy vấn khác nhau</div>
         </div>
       </div>
       <div class="stat-card" :class="{ 'status-warn': (data.gaps || []).length > 5 }">
         <div class="tk-icon" style="background: rgba(255,159,10,.1); color: #FF9F0A;">&#128371;</div>
-        <div>
+        <div class="tk-stat-body">
           <div class="stat-value">{{ (data.gaps || []).length }}</div>
           <div class="stat-label">Knowledge gaps</div>
         </div>
       </div>
       <div class="stat-card">
         <div class="tk-icon" style="background: rgba(33,150,83,.1); color: #219653;">&#128176;</div>
-        <div>
+        <div class="tk-stat-body">
           <div class="stat-value">
             {{ costTotal }}
             <span v-if="costScope" class="tk-cost-scope">{{ costScope }}</span>
@@ -138,6 +144,28 @@ const { show: showToast } = useToast()
 const data = ref<Record<string, unknown>>({})
 const loading = ref(true)
 
+const RANGES = [
+  { days: 7, label: '7 ngày' },
+  { days: 30, label: '30 ngày' },
+  { days: 90, label: '90 ngày' },
+  { days: 0, label: 'Tất cả' },
+] as const
+const rangeDays = ref(0)
+
+function setRange(days: number) {
+  rangeDays.value = days
+  fetchData()
+}
+
+const sparkPoints = computed(() => {
+  const daily = ((data.value?.daily || []) as Array<{ queries?: number }>).slice().reverse()
+  if (daily.length < 2) return ''
+  const vals = daily.map(d => d.queries || 0)
+  const max = Math.max(...vals, 1)
+  const w = 80, h = 24
+  return vals.map((v, i) => `${((i / (vals.length - 1)) * w).toFixed(1)},${(h - (v / max) * (h - 2) - 1).toFixed(1)}`).join(' ')
+})
+
 function label(it: Record<string, unknown>) { return it?.query ?? it?.q ?? it?.name ?? String(it) }
 function count(it: Record<string, unknown>) { return it?.count ?? it?.hits ?? it?.n ?? '' }
 function barPct(it: Record<string, unknown>, list: unknown) {
@@ -166,7 +194,8 @@ const costScope = computed(() => {
 async function fetchData() {
   loading.value = true
   try {
-    data.value = await $fetch<Record<string, unknown>>('/admin-api/analytics-overview', { headers: authHeaders() })
+    const params = rangeDays.value ? `?days=${rangeDays.value}` : ''
+    data.value = await $fetch<Record<string, unknown>>(`/admin-api/analytics-overview${params}`, { headers: authHeaders() })
   } catch (e: unknown) {
     showToast((e as any)?.data?.detail || 'Không thể tải thống kê', 'error')
   }
@@ -198,7 +227,8 @@ onMounted(fetchData)
 .refresh-spin { display: inline-block; animation: admin-spin .6s linear infinite; }
 
 /* ── Stat card icon ── */
-.stat-card { display: flex; align-items: center; gap: var(--space-4); }
+.stat-card { display: flex; align-items: center; gap: var(--space-4); position: relative; overflow: hidden; }
+.tk-stat-body { flex: 1; min-width: 0; }
 .tk-icon {
   width: 44px; height: 44px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
@@ -389,6 +419,25 @@ onMounted(fetchData)
 @media (prefers-reduced-motion: reduce) {
   .tk-sk-card, .tk-sk-panel { animation: none; }
 }
+/* ── Sparkline ── */
+.tk-spark {
+  width: 80px; height: 24px; flex-shrink: 0; opacity: .5;
+  transition: opacity .2s;
+}
+.stat-card:hover .tk-spark { opacity: .9; }
+
+/* ── Date range chips ── */
+.tk-range-chips { display: flex; gap: var(--space-2); margin-bottom: var(--space-5); flex-wrap: wrap; }
+.tk-chip {
+  padding: 6px 14px; border-radius: 100px; border: .5px solid var(--line);
+  background: var(--bg); color: var(--muted); font-size: .82rem; font-weight: 500;
+  cursor: pointer; transition: all .2s;
+}
+.tk-chip:hover { border-color: var(--primary, #219653); color: var(--ink); }
+.tk-chip.active { background: var(--primary, #219653); color: #fff; border-color: var(--primary, #219653); }
+.tk-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.dark .tk-chip.active { background: var(--primary, #219653); }
+
 .tk-gap-action { text-decoration: none; font-size: .8rem; opacity: .4; transition: opacity .15s; margin-left: 2px; }
 .tk-gap-action:hover { opacity: 1; }
 </style>

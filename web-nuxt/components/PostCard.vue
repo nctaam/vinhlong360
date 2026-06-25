@@ -24,6 +24,7 @@
         <Transition name="menu-pop">
           <div v-if="showMenu" class="thread-menu" role="menu">
             <button v-if="isOwner" type="button" role="menuitem" @click="$emit('edit', post.id); showMenu = false">Sửa bài</button>
+            <button v-if="isOwner" type="button" role="menuitem" class="menu-danger" @click="confirmDelete">Xoá bài</button>
             <button v-if="!isOwner" type="button" role="menuitem" @click="$emit('report', post.id); showMenu = false">Báo cáo</button>
           </div>
         </Transition>
@@ -129,6 +130,7 @@ const emit = defineEmits<{
   (e: 'repost', id: string): void
   (e: 'quote', id: string): void
   (e: 'edit', id: string): void
+  (e: 'delete', id: string): void
 }>()
 
 const { user: _authUser } = useAuth()
@@ -178,6 +180,13 @@ function onLike() {
 }
 
 const { show: showToast } = useToast()
+const { confirmDialog } = useConfirm()
+
+async function confirmDelete() {
+  showMenu.value = false
+  const ok = await confirmDialog('Xoá bài viết này? Hành động không thể hoàn tác.', { confirmText: 'Xoá', danger: true })
+  if (ok) emit('delete', props.post.id)
+}
 
 async function sharePost() {
   const url = `${window.location.origin}/bai-viet/${props.post.id}`

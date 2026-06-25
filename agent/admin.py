@@ -16,7 +16,7 @@ import os
 import re
 import subprocess
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
@@ -328,6 +328,25 @@ async def create_entity(entity: EntityCreate):
     db.upsert_entity(new_entity)
     _sync_kb()
     return {"status": "created", "entity": new_entity}
+
+
+@router.get("/entities/check-duplicate")
+async def check_duplicate(name: str = Query(..., min_length=2)):
+    """Kiểm tra entity trùng tên (substring match, case-insensitive)."""
+    name_lower = name.lower().strip()
+    if len(name_lower) < 2:
+        return {"duplicates": []}
+    all_ents = db.all_entities()
+    matches = []
+    for e in all_ents:
+        if e.get("type") == "place":
+            continue
+        ename = (e.get("name") or "").lower()
+        if name_lower in ename or ename in name_lower:
+            matches.append({"id": e["id"], "name": e["name"], "type": e.get("type", "")})
+            if len(matches) >= 5:
+                break
+    return {"duplicates": matches}
 
 
 @router.delete("/entities/{entity_id}")
@@ -847,6 +866,26 @@ async def admin_stats():
         except Exception:
             pass
 
+    entities_week = 0
+    try:
+        with db._conn() as c3:
+            ew = db._fetchone(c3, "SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND created_at >= datetime('now', '-7 days')", ())
+            entities_week = db._row_to_dict(ew)["c"] if ew else 0
+    except Exception:
+        pass
+
+    backup_info = None
+    try:
+        backup_dir = Path(__file__).resolve().parent.parent / "scratch" / "backups"
+        if backup_dir.exists():
+            dirs = sorted(backup_dir.iterdir(), key=lambda p: p.name, reverse=True)
+            if dirs:
+                latest = dirs[0]
+                size_mb = round(sum(f.stat().st_size for f in latest.rglob("*") if f.is_file()) / 1048576, 1)
+                backup_info = {"last": latest.name, "size_mb": size_mb, "count": len(dirs)}
+    except Exception:
+        pass
+
     return {
         "total_entities": total_entities,
         "total_places": total_places,
@@ -854,6 +893,8 @@ async def admin_stats():
         "total_itineraries": itin_count["c"] if itin_count else 0,
         "by_type": by_type,
         "completeness": completeness,
+        "entities_week": entities_week,
+        "backup": backup_info,
         **deltas,
     }
 
@@ -1125,17 +1166,22 @@ async def moderation_stats():
 
 
 @router.get("/analytics-overview")
-async def analytics_overview():
+async def analytics_overview(days: int = Query(0, ge=0, le=365)):
     """GĐ9.6: gói số liệu cho trang admin Analytics (1 call, đã auth qua require_admin).
 
     - popular: user hỏi gì nhiều · gaps: câu bot bí (backlog nội dung) · costs: chi phí LLM.
+    - days: 0 = tất cả, 7/30/90 = lọc theo khoảng thời gian.
     """
+    since = None
+    if days > 0:
+        since = (datetime.now() - timedelta(days=days)).isoformat()
     out = {
-        "summary": _safe(lambda: analytics.get_summary(), {}),
-        "popular": _safe(lambda: analytics.get_popular_queries(20), []),
-        "gaps": _safe(lambda: analytics.get_knowledge_gaps(20), []),
+        "summary": _safe(lambda: analytics.get_summary(since=since), {}),
+        "popular": _safe(lambda: analytics.get_popular_queries(20, since=since), []),
+        "gaps": _safe(lambda: analytics.get_knowledge_gaps(20, since=since), []),
         "top_entities": _safe(lambda: analytics.get_top_entities(15), []),
         "costs": _safe(_get_cost_report, {}) if _HAS_COST else {"available": False},
+        "daily": _safe(lambda: analytics.get_daily_stats(days or 30), []),
     }
     return out
 

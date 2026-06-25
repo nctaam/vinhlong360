@@ -3,7 +3,7 @@
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng', to: '/cong-dong' }, { label: 'Bảng xếp hạng' }]" />
     <header class="bxh-head">
       <h1>Thành viên tích cực</h1>
-      <p>Xếp hạng theo điểm danh tiếng — đánh giá, bài viết, ảnh và lượt theo dõi.</p>
+      <p>Xếp hạng theo điểm danh tiếng — đánh giá, bài viết, ảnh và lượt theo dõi. <NuxtLink to="/huong-dan-thanh-vien" class="bxh-guide-link">Cách tính điểm?</NuxtLink></p>
     </header>
 
     <SkeletonList v-if="pending" :count="6" />
@@ -59,6 +59,8 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/bang-xep-hang') }] })
 .bxh-head { margin-bottom: var(--space-5); }
 .bxh-head h1 { margin: 0 0 var(--space-2); }
 .bxh-head p { color: var(--muted); margin: 0; }
+.bxh-guide-link { color: var(--primary-fg); font-weight: var(--weight-medium); text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 2px; transition: text-decoration-color .2s; }
+.bxh-guide-link:hover { text-decoration-color: var(--primary-fg); }
 .bxh-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
 .bxh-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle); }
 .bxh-row:hover { border-color: var(--primary-fg); transform: translateY(-1px); }
