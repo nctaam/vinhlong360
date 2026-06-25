@@ -1210,6 +1210,14 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
     reviews_n = review_count["c"] if review_count else 0
     with db._conn() as conn:
         reputation = _reputation(conn, user_id, posts_n, reviews_n)
+        follower_row = db._fetchone(conn, f"""
+            SELECT COUNT(*) as c FROM follows
+            WHERE target_type = 'user' AND target_id = {ph}
+        """, (user_id,))
+        following_row = db._fetchone(conn, f"""
+            SELECT COUNT(*) as c FROM follows
+            WHERE follower_id::text = {ph} AND target_type = 'user'
+        """, (user_id,))
 
     return {
         "user": {
@@ -1218,7 +1226,12 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
             "avatar_url": profile.get("avatar_url"),
             "bio": profile.get("bio", ""),
             "created_at": str(profile["created_at"]),
-            "stats": {"posts": posts_n, "reviews": reviews_n},
+            "stats": {
+                "posts": posts_n,
+                "reviews": reviews_n,
+                "followers": follower_row["c"] if follower_row else 0,
+                "following": following_row["c"] if following_row else 0,
+            },
             "reputation": reputation,
         },
     }

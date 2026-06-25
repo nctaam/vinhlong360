@@ -58,7 +58,11 @@
           </div>
           <button type="button" class="stat-item stat-clickable" @click="openFollowModal('followers')">
             <strong>{{ followerCount }}</strong>
-            <span>theo dõi</span>
+            <span>người theo dõi</span>
+          </button>
+          <button type="button" class="stat-item stat-clickable" @click="openFollowModal('following')">
+            <strong>{{ profile.following_count || 0 }}</strong>
+            <span>đang theo dõi</span>
           </button>
           <div class="stat-item">
             <time v-if="profile.created_at" :datetime="profile.created_at"><strong>{{ joinDate }}</strong></time>
@@ -228,12 +232,16 @@ const { data: profile } = await useAsyncData(`user-${userId}`, async () => {
     const res = await apiFetch<Record<string, any>>(`/api/users/${userId}`, { headers: authHeaders() })
     const u = (res?.user ?? res) as Record<string, any> | null
     if (!u) return null
-    return {
+    const mapped = {
       ...u,
       avatar: u.avatar_url ?? u.avatar ?? null,
       post_count: u.stats?.posts ?? u.post_count ?? 0,
       review_count: u.stats?.reviews ?? u.review_count ?? 0,
+      follower_count: u.stats?.followers ?? 0,
+      following_count: u.stats?.following ?? 0,
     }
+    followerCount.value = mapped.follower_count
+    return mapped
   } catch {
     profileFetchFailed.value = true
     return null
@@ -319,12 +327,6 @@ async function toggleBookmark(postId: string) {
   } catch { showToast('Không thể lưu bài viết', 'error') }
 }
 
-async function fetchFollowerCount() {
-  try {
-    const res = await $fetch<any>(`/api/followers/count/user/${userId}`)
-    followerCount.value = res.count || 0
-  } catch { /* non-critical */ }
-}
 
 // ── Modal danh sách follower/following ──
 const followModalOpen = ref(false)
@@ -425,7 +427,6 @@ function reportUser() {
 
 onMounted(() => {
   fetchPosts()
-  fetchFollowerCount()
   checkFollowing()
   checkBlocked()
 })
