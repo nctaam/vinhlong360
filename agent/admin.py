@@ -963,6 +963,69 @@ async def trigger_backup():
         raise HTTPException(500, str(e))
 
 
+@router.get("/media")
+async def media_gallery(
+    page: int = Query(1, ge=1),
+    limit: int = Query(50, ge=1, le=200),
+    filter: str = Query("all", pattern="^(all|missing_credit|duplicate)$"),
+):
+    """B6a: Central media gallery — flat list of all images across entities."""
+    entities = db.all_entities()
+    media_items = []
+    url_usage: dict[str, list[str]] = {}
+    for e in entities:
+        images = e.get("images") or []
+        if isinstance(images, str):
+            try:
+                images = json.loads(images)
+            except Exception:
+                images = []
+        for img in images:
+            url = img.get("url") or img if isinstance(img, str) else img.get("url", "")
+            if not url:
+                continue
+            credit = img.get("credit") or img.get("author") or "" if isinstance(img, dict) else ""
+            license_info = img.get("license", "") if isinstance(img, dict) else ""
+            item = {
+                "url": url,
+                "entity_id": e.get("id", ""),
+                "entity_name": e.get("name", ""),
+                "entity_type": e.get("type", ""),
+                "credit": credit,
+                "license": license_info,
+            }
+            media_items.append(item)
+            url_usage.setdefault(url, []).append(e.get("id", ""))
+
+    if filter == "missing_credit":
+        media_items = [m for m in media_items if not m["credit"]]
+    elif filter == "duplicate":
+        dup_urls = {u for u, ids in url_usage.items() if len(ids) > 1}
+        media_items = [m for m in media_items if m["url"] in dup_urls]
+
+    total = len(media_items)
+    offset = (page - 1) * limit
+    page_items = media_items[offset:offset + limit]
+
+    for item in page_items:
+        usage = url_usage.get(item["url"], [])
+        item["usage_count"] = len(usage)
+
+    dup_count = sum(1 for u, ids in url_usage.items() if len(ids) > 1)
+    no_credit_count = sum(1 for m in media_items if not m["credit"]) if filter != "missing_credit" else total
+
+    return {
+        "items": page_items,
+        "total": total,
+        "page": page,
+        "stats": {
+            "total_images": len(media_items) if filter == "all" else sum(len(e.get("images") or []) for e in entities),
+            "duplicates": dup_count,
+            "missing_credit": no_credit_count,
+        },
+    }
+
+
 @router.get("/badge-counts")
 async def badge_counts():
     """Lightweight counts cho sidebar badges — moderation/images/unclassified/provisional."""

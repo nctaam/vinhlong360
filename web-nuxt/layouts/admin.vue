@@ -47,6 +47,10 @@
             <span class="nav-icon">&#128269;</span>
             <span class="nav-text" v-if="!sidebarCollapsed">Chất lượng DL</span>
           </NuxtLink>
+          <NuxtLink to="/admin/media" :class="{ active: route.path === '/admin/media' }" :title="sidebarCollapsed ? 'Thư viện ảnh' : undefined">
+            <span class="nav-icon">&#128444;</span>
+            <span class="nav-text" v-if="!sidebarCollapsed">Thư viện ảnh</span>
+          </NuxtLink>
         </div>
 
         <div class="nav-group">
