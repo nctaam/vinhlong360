@@ -70,6 +70,13 @@
       </div>
     </section>
 
+    <!-- Editorial -->
+    <section class="page-article reveal">
+      <h2>Sự kiện tại miền Tây</h2>
+      <p>Ngoài các lễ hội truyền thống, vùng Vĩnh Long, Bến Tre và Trà Vinh ngày càng có nhiều sự kiện văn hoá, thể thao và du lịch hiện đại. Hội chợ nông sản, festival ẩm thực, giải chạy marathon, triển lãm nghệ thuật và các chương trình xúc tiến du lịch được tổ chức thường xuyên, đặc biệt vào dịp cuối tuần và các ngày lễ lớn.</p>
+      <p>Các sự kiện này là cơ hội tốt để trải nghiệm văn hoá địa phương theo cách hiện đại — thưởng thức ẩm thực đường phố, xem trình diễn nghề truyền thống, mua sản phẩm OCOP trực tiếp từ nhà sản xuất, hoặc tham gia các hoạt động cộng đồng cùng người dân bản địa.</p>
+    </section>
+
     <!-- Divider -->
     <div class="catalog-divider">
       <span class="catalog-divider-text">Duyệt tất cả</span>

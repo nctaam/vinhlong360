@@ -58,6 +58,19 @@
       </div>
     </section>
 
+    <!-- Editorial -->
+    <section class="page-article reveal">
+      <h2>Ở đâu khi đi miền Tây?</h2>
+      <p>Lưu trú ở Vĩnh Long, Bến Tre và Trà Vinh mang đến những trải nghiệm rất khác so với khách sạn thành phố. Đây là vùng đất của homestay nhà vườn — nơi bạn ngủ trong căn nhà gỗ giữa vườn trái cây, thức dậy với tiếng chim hót và hương hoa bưởi. Nhiều chỗ ở nằm trên cù lao, phải đi đò hoặc xuồng mới tới — chính sự cách biệt ấy tạo nên sự yên tĩnh đặc trưng.</p>
+
+      <h2>Các loại hình lưu trú</h2>
+      <p><strong>Homestay nhà vườn</strong> là loại hình phổ biến nhất và đặc trưng nhất. Chủ nhà thường là nông dân, sẵn sàng đưa khách đi thăm vườn, chèo xuồng, nấu ăn cùng. Giá thường từ 200.000–500.000đ/đêm, bao gồm bữa sáng và đôi khi cả bữa tối. <strong>Resort sinh thái</strong> cao cấp hơn, có hồ bơi, spa, nhà hàng nhưng vẫn giữ phong cách sông nước với bungalow trên cầu gỗ, mái lá. Giá từ 800.000–2.000.000đ/đêm.</p>
+      <p><strong>Khách sạn và nhà nghỉ phố</strong> tập trung ở trung tâm thành phố Vĩnh Long, Bến Tre, Trà Vinh — tiện cho di chuyển nhưng ít trải nghiệm bản địa. Giá từ 150.000–600.000đ/đêm tuỳ hạng.</p>
+
+      <h2>Lời khuyên đặt phòng</h2>
+      <p>Dịp Tết Nguyên đán, lễ 30/4–1/5 và hè (tháng 6–8) là mùa cao điểm — nên đặt trước ít nhất 1–2 tuần. Ngày thường hầu như luôn có phòng trống. Liên hệ trực tiếp qua số điện thoại hoặc Zalo của chủ nhà thường được giá tốt hơn so với đặt qua trung gian. Nếu đi nhóm đông, nhiều homestay có giá ưu đãi hoặc bao trọn gói ăn ở + tour vườn.</p>
+    </section>
+
     <!-- Divider -->
     <div class="catalog-divider">
       <span class="catalog-divider-text">Duyệt tất cả</span>

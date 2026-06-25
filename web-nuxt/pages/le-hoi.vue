@@ -73,6 +73,19 @@
       </div>
     </section>
 
+    <!-- Editorial -->
+    <section class="page-article reveal">
+      <h2>Văn hoá lễ hội miền Tây</h2>
+      <p>Vùng đất Vĩnh Long, Bến Tre và Trà Vinh là nơi giao thoa của ba nền văn hoá: Kinh, Khmer và Hoa. Mỗi cộng đồng mang đến một hệ thống lễ hội riêng biệt, tạo nên bức tranh văn hoá đa dạng hiếm có trong cả nước. Từ đình miếu Kinh ven sông đến chùa Khmer tháp nhọn, từ hội quán Hoa rực rỡ đèn lồng đến giỗ kỵ danh nhân — lễ hội ở đây không chỉ là dịp vui mà là sợi dây kết nối cộng đồng qua nhiều thế hệ.</p>
+
+      <h2>Lễ hội tiêu biểu</h2>
+      <p><strong>Lễ Kỳ Yên</strong> là lễ hội phổ biến nhất, tổ chức tại đình làng khắp vùng vào đầu năm âm lịch, cầu cho mưa thuận gió hoà, mùa màng bội thu. <strong>Ok Om Bok</strong> (lễ Cúng Trăng) là lễ hội đặc trưng của người Khmer Trà Vinh, tổ chức vào rằm tháng 10 âm lịch với đua ghe ngo trên sông Maspéro. <strong>Lễ Nghinh Ông</strong> diễn ra ở các vùng ven biển, tôn vinh Cá Ông (cá voi) — vị thần bảo hộ ngư dân.</p>
+      <p>Ngoài ra còn có các lễ giỗ danh nhân như giỗ Thủ khoa Bùi Hữu Nghĩa (Vĩnh Long), giỗ cụ Phan Thanh Giản, và nhiều lễ hội nông nghiệp như Hội trái cây ngon, Lễ hội bánh dân gian Nam Bộ. Mỗi lễ hội thường kéo dài 2–3 ngày với phần lễ trang nghiêm và phần hội sôi nổi.</p>
+
+      <h2>Đi lễ hội — cần biết gì?</h2>
+      <p>Hầu hết lễ hội truyền thống mở cửa tự do, không thu phí. Trang phục lịch sự khi vào khu vực chánh điện hoặc chánh đường. Nếu đến chùa Khmer, nên bỏ giày dép trước khi vào và tránh chạm đầu người khác. Thời gian tốt nhất để xem nghi lễ chính thường là buổi sáng; phần hội chợ, văn nghệ diễn ra chiều và tối.</p>
+    </section>
+
     <!-- Divider -->
     <div class="catalog-divider">
       <span class="catalog-divider-text">Duyệt tất cả</span>

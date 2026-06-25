@@ -24,6 +24,12 @@
       </div>
     </section>
 
+    <!-- Editorial -->
+    <section v-if="areaEditorial" class="page-article reveal">
+      <h2>{{ areaEditorial.title }}</h2>
+      <p v-for="(p, i) in areaEditorial.paragraphs" :key="i">{{ p }}</p>
+    </section>
+
     <!-- Error state -->
     <EmptyState v-if="fetchError && !entities.length" tone="error" icon="⚠️" title="Không thể tải dữ liệu" message="Lỗi kết nối. Vui lòng thử lại.">
       <template #actions>
@@ -146,6 +152,31 @@ const areaTint = computed(() => ({ '--AREA-rgb': AREA_RGB[areaKey] || 'var(--pri
 const { data, error: fetchError } = await useAsyncData(`area-${areaKey}`, () =>
   apiFetch<any>(`/api/entities?area=${areaKey}&limit=200`)
 )
+
+const AREA_EDITORIAL: Record<string, { title: string; paragraphs: string[] }> = {
+  'vinh-long': {
+    title: 'Vĩnh Long — xứ dừa miệt vườn',
+    paragraphs: [
+      'Vĩnh Long nằm giữa sông Tiền và sông Hậu, nổi tiếng với các cù lao trái cây, vườn cây ăn trái xanh mướt quanh năm và hệ thống kênh rạch chằng chịt. Du khách đến đây thường trải nghiệm đi xuồng ba lá, thăm các làng nghề truyền thống như làm gạch gốm, dệt chiếu, và thưởng thức trái cây tại vườn.',
+      'Ngoài du lịch sinh thái, Vĩnh Long còn giữ được nhiều di tích lịch sử và công trình kiến trúc độc đáo: Văn Thánh Miếu, nhà cổ Cai Cường, chùa Tiên Châu. Ẩm thực địa phương phong phú với cá tai tượng chiên xù, bánh tráng Cù Lao Mây, và các loại mứt trái cây đặc sản.',
+    ],
+  },
+  'ben-tre': {
+    title: 'Bến Tre — xứ dừa ngàn năm',
+    paragraphs: [
+      'Bến Tre được mệnh danh là "xứ dừa" với hơn 70.000 hecta dừa — lớn nhất cả nước. Toàn tỉnh là một hệ thống cù lao được bao bọc bởi sông Tiền và biển Đông, tạo nên cảnh quan sông nước đặc trưng nhất vùng Đồng bằng sông Cửu Long.',
+      'Du lịch Bến Tre xoay quanh trải nghiệm sông nước: chèo thuyền trên rạch dừa, thăm lò kẹo dừa, uống nước dừa tươi trong vườn, và nghỉ tại các homestay ven sông. Sản phẩm OCOP nổi bật của Bến Tre gồm kẹo dừa Bến Tre, rượu dừa, tinh dầu dừa và các sản phẩm thủ công từ gáo dừa.',
+    ],
+  },
+  'tra-vinh': {
+    title: 'Trà Vinh — giao thoa Kinh–Khmer–Hoa',
+    paragraphs: [
+      'Trà Vinh là tỉnh có cộng đồng Khmer lớn nhất vùng đồng bằng, tạo nên bản sắc văn hoá đặc biệt với hệ thống hơn 140 ngôi chùa Khmer cổ, lễ hội Ok Om Bok, đua ghe Ngo và ẩm thực Khmer đặc trưng. Kiến trúc chùa Khmer Trà Vinh được đánh giá là đẹp nhất khu vực.',
+      'Ngoài văn hoá Khmer, Trà Vinh còn có bờ biển Ba Động kéo dài, rừng ngập mặn Long Khánh, và hệ thống ao Bà Om — di tích quốc gia với hàng cổ thụ hàng trăm năm tuổi. Đặc sản nổi tiếng gồm bún nước lèo, bánh tét Trà Cuôn, và dừa sáp — giống dừa quý hiếm chỉ có ở Cầu Kè, Trà Vinh.',
+    ],
+  },
+}
+const areaEditorial = computed(() => AREA_EDITORIAL[areaKey])
 
 const ADMIN_LEVELS = ['phuong', 'xa', 'tinh']
 const { data: placesData } = await useAsyncData(`area-wards-${areaKey}`, () =>

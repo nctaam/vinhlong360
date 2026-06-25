@@ -561,6 +561,31 @@
   margin: var(--space-3) 0 var(--space-4);
 }
 
+/* ── Page Article (editorial deep-content section below hero/spotlight) ── */
+.page-article {
+  max-width: 72ch; margin: 0 auto var(--space-6);
+  padding: var(--space-6) var(--space-6) var(--space-5);
+  background: var(--card); border: .5px solid var(--line);
+  border-radius: var(--radius-xl); box-shadow: var(--shadow-sm);
+}
+.page-article h2 {
+  font-size: var(--text-lg); font-weight: var(--weight-bold);
+  margin: var(--space-6) 0 var(--space-3); letter-spacing: var(--tracking-tight);
+  color: var(--ink);
+}
+.page-article h2:first-child { margin-top: 0; }
+.page-article p {
+  color: var(--ink); font-size: var(--text-base);
+  line-height: var(--leading-relaxed); margin: 0 0 var(--space-3);
+}
+.page-article p:last-child { margin-bottom: 0; }
+.page-article strong { font-weight: var(--weight-semibold); color: var(--primary-fg); }
+.dark .page-article { background: var(--card); border-color: var(--line); }
+@media (max-width: 640px) {
+  .page-article { padding: var(--space-4) var(--space-4) var(--space-3); border-radius: var(--radius-lg); }
+  .page-article h2 { font-size: var(--text-base); margin: var(--space-5) 0 var(--space-2); }
+}
+
 /* ── Reduced motion (catalog shared) ── */
 @media (prefers-reduced-motion: reduce) {
   .cross-card:hover { transform: none; }

@@ -137,6 +137,19 @@
       <NuxtLink to="/lien-he" class="b2b-callout-link">Gửi yêu cầu <span aria-hidden="true">→</span></NuxtLink>
     </aside>
 
+    <!-- Editorial -->
+    <section class="page-article reveal">
+      <h2>Khí hậu miền Tây và du lịch theo mùa</h2>
+      <p>Vùng đồng bằng sông Cửu Long có khí hậu nhiệt đới gió mùa với hai mùa rõ rệt. <strong>Mùa khô</strong> (tháng 12–4) trời nắng ấm, ít mưa, nhiệt độ 25–32°C — đây là thời gian lý tưởng nhất để du lịch, đạp xe và tham quan làng nghề. <strong>Mùa mưa</strong> (tháng 5–11) có những cơn mưa rào buổi chiều nhưng sáng thường còn nắng đẹp, và đây lại là mùa trái cây rộ nhất.</p>
+
+      <h2>Mùa nước nổi — trải nghiệm độc đáo</h2>
+      <p>Từ tháng 8 đến tháng 11, nước từ thượng nguồn Mekong đổ về làm mực nước sông dâng cao, tràn vào đồng ruộng. Đây không phải thiên tai mà là nhịp sống tự nhiên mang phù sa màu mỡ cho vụ lúa kế tiếp. Mùa nước nổi mang đến những đặc sản mùa vụ không đâu có: cá linh non kho mía, bông điên điển xào tỏi, lẩu mắm bông súng, chuột đồng quay lu.</p>
+      <p>Đi xuồng giữa đồng nước mênh mông, hái bông điên điển vàng rực hay tát mương bắt cá là trải nghiệm chỉ có trong vài tháng ngắn ngủi mỗi năm — và chỉ ở miền Tây.</p>
+
+      <h2>Lịch mùa vụ tóm tắt</h2>
+      <p><strong>Tháng 1–3:</strong> Dưa hấu, quýt, mùa khô đẹp trời. <strong>Tháng 4–5:</strong> Đầu mùa mưa, xoài, mít bắt đầu chín. <strong>Tháng 5–7:</strong> Cao điểm trái cây — sầu riêng, măng cụt, chôm chôm, vú sữa. <strong>Tháng 8–11:</strong> Mùa nước nổi, cá linh, bông điên điển. <strong>Tháng 12:</strong> Mùa khô trở lại, bưởi Năm Roi chín vàng, thời tiết mát mẻ nhất năm.</p>
+    </section>
+
     <!-- Divider -->
     <div v-if="ranked.length" class="catalog-divider">
       <span class="catalog-divider-text">Tất cả đang mùa</span>

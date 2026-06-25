@@ -575,6 +575,7 @@ const practicalTips = computed(() => {
   const a = entity.value?.attributes
   if (!a) return []
   const tips: { icon: string; label: string; value: string }[] = []
+  if (a.highlight) tips.push({ icon: '✨', label: 'Điểm nhấn', value: a.highlight })
   if (a.booking_note) tips.push({ icon: '📝', label: 'Đặt trước', value: a.booking_note })
   if (a.best_time) tips.push({ icon: '⏰', label: 'Thời điểm tốt nhất', value: a.best_time })
   if (a.transport) tips.push({ icon: '🚗', label: 'Di chuyển', value: a.transport })

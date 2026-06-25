@@ -44,6 +44,22 @@
       </div>
     </section>
 
+    <!-- Editorial -->
+    <section class="page-article reveal">
+      <h2>Vì sao chọn Vĩnh Long, Bến Tre, Trà Vinh?</h2>
+      <p>Ba tỉnh nằm ở trung tâm đồng bằng sông Cửu Long, nơi hệ thống sông Tiền và sông Hậu chia thành hàng chục nhánh nhỏ tạo nên mạng lưới kênh rạch chằng chịt. Đây là vùng đất của những cù lao xanh mát quanh năm — An Bình, Bình Hoà Phước, Minh, Ông Hổ — nơi cuộc sống vẫn giữ nhịp chậm rãi của miệt vườn Nam Bộ.</p>
+      <p>Khác với các điểm du lịch đông đúc, khu vực này mang đến trải nghiệm gần gũi: chèo xuồng qua rạch dừa nước, đạp xe trên đường làng, tát mương bắt cá cùng nông dân, hoặc đơn giản là ngồi võng nghe chim hót trong vườn trái cây. Du khách không chỉ ngắm cảnh mà thực sự sống cùng nhịp sinh hoạt bản địa.</p>
+
+      <h2>Trải nghiệm theo mùa</h2>
+      <p>Mỗi thời điểm trong năm mang đến một trải nghiệm khác biệt. <strong>Tháng 8–11</strong> là mùa nước nổi — nước từ thượng nguồn Mekong tràn về, biến đồng ruộng thành biển nước mênh mông, mở ra mùa bông điên điển vàng rực và cá linh non béo ngậy. <strong>Tháng 12–3</strong> là mùa khô, thời tiết mát mẻ lý tưởng cho đạp xe và tham quan làng nghề. <strong>Tháng 4–7</strong> là mùa trái cây rộ — chôm chôm, sầu riêng, măng cụt chín đỏ khắp vườn.</p>
+
+      <h2>Làng nghề trăm năm</h2>
+      <p>Vùng đất này nổi tiếng với những làng nghề tồn tại hàng trăm năm: gốm đỏ Mang Thít với hàng ngàn lò gạch dọc sông Cổ Chiên, kẹo dừa Bến Tre được làm thủ công từ nước cốt dừa tươi, chiếu lác Định Yên dệt từ cây lác mọc ven kênh, hay bánh tráng Mỹ Lồng nướng trên than hồng. Mỗi sản phẩm kể một câu chuyện về đời sống và tri thức của người miền Tây qua nhiều thế hệ.</p>
+
+      <h2>Di chuyển và lưu ý</h2>
+      <p>Từ TP.HCM, bạn có thể đến Vĩnh Long trong khoảng 2 giờ bằng xe khách hoặc ô tô riêng theo cao tốc Trung Lương – Mỹ Thuận. Phà Mỹ Thuận nay đã được thay bằng cầu, rút ngắn thời gian di chuyển đáng kể. Trong vùng, xe máy hoặc xe đạp là phương tiện lý tưởng để khám phá các cù lao và đường làng nhỏ hẹp. Nhiều homestay cung cấp xe đạp miễn phí cho khách lưu trú.</p>
+    </section>
+
     <!-- Divider -->
     <div class="catalog-divider">
       <span class="catalog-divider-text">Duyệt tất cả</span>

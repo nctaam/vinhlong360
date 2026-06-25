@@ -7,6 +7,13 @@
       <p>Tất cả điểm đến, đặc sản, làng nghề, lưu trú và di tích của Vĩnh Long, Bến Tre, Trà Vinh — lọc theo loại và khu vực.</p>
     </header>
 
+    <!-- Editorial -->
+    <section class="page-article">
+      <h2>Khám phá toàn bộ điểm đến miền Tây</h2>
+      <p>Danh bạ địa điểm tổng hợp mọi điểm đến, trải nghiệm, sản phẩm, lưu trú và di tích trên toàn vùng Vĩnh Long, Bến Tre và Trà Vinh. Mỗi mục đều có thông tin thực tế: địa chỉ, số điện thoại, giờ mở cửa, giá tham khảo và mùa vụ phù hợp. Bạn có thể lọc theo loại hình (du lịch, ẩm thực, lưu trú, OCOP) và khu vực để tìm nhanh điều mình cần.</p>
+      <p>Dữ liệu được thu thập từ nhiều nguồn: trang thông tin chính quyền địa phương, khảo sát thực địa và đóng góp từ cộng đồng. Nếu bạn phát hiện thông tin sai hoặc thiếu, hãy báo cho chúng tôi qua nút "Báo sai dữ liệu" trên mỗi trang chi tiết.</p>
+    </section>
+
     <!-- Tìm + lọc -->
     <div class="dd-search">
       <svg class="dd-search-ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
@@ -54,7 +61,7 @@
         <EntityCard v-for="e in items" :key="e.id" :entity="e" />
       </div>
       <button v-if="hasMore" type="button" class="btn btn-ghost dd-more" :disabled="loadingMore" @click="loadMore">
-        {{ loadingMore ? 'Đang tải…' : 'Xem thêm' }}
+        {{ loadingMore ? 'Đang tải…' : `Xem thêm (còn ${total - items.length})` }}
       </button>
     </template>
   </section>
