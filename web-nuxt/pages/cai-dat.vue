@@ -44,6 +44,24 @@
           <input ref="avatarInput" type="file" accept="image/jpeg,image/png,image/webp" hidden @change="onAvatarChange" />
         </div>
 
+        <div class="sf-cover-section">
+          <div class="sf-cover-preview" @click="($refs.coverInput as HTMLInputElement)?.click()">
+            <img v-if="coverPreview || user?.cover_url" :src="coverPreview || user?.cover_url!" alt="Ảnh bìa" class="sf-cover-img" />
+            <div v-else class="sf-cover-placeholder">
+              <span>Thêm ảnh bìa</span>
+            </div>
+            <span class="sf-avatar-overlay">&#128247;</span>
+          </div>
+          <div class="sf-avatar-info">
+            <span class="sf-label">Ảnh bìa</span>
+            <span class="sf-hint">Ảnh ngang, tỉ lệ 3:1. Tối đa 12MB.</span>
+            <button type="button" class="btn btn-ghost btn-sm" :disabled="uploadingCover" @click="($refs.coverInput as HTMLInputElement)?.click()">
+              {{ uploadingCover ? 'Đang tải...' : 'Đổi ảnh bìa' }}
+            </button>
+          </div>
+          <input ref="coverInput" type="file" accept="image/jpeg,image/png,image/webp" hidden @change="onCoverChange" />
+        </div>
+
         <label class="sf-field">
           <span class="sf-label">Tên hiển thị</span>
           <input
@@ -115,6 +133,21 @@
           </div>
         </div>
         <p v-else class="sf-hint">Không có phiên nào.</p>
+      </div>
+
+      <div class="settings-card card">
+        <h2>Lịch sử đăng nhập</h2>
+        <div v-if="loginHistoryLoading" class="sf-hint">Đang tải...</div>
+        <div v-else-if="loginHistory.length" class="sessions-list">
+          <div v-for="h in loginHistory" :key="h.id" :class="['session-item', { 'login-fail': !h.success }]">
+            <div class="session-info">
+              <span class="session-ua">{{ h.method === 'otp' ? 'OTP' : 'Mật khẩu' }} — {{ h.success ? 'Thành công' : 'Thất bại' }}</span>
+              <span class="sf-hint">{{ h.ip }} &middot; {{ timeAgo(h.created_at) }}</span>
+            </div>
+            <span :class="h.success ? 'login-ok' : 'login-bad'">{{ h.success ? '✓' : '✗' }}</span>
+          </div>
+        </div>
+        <p v-else class="sf-hint">Chưa có lịch sử.</p>
       </div>
     </div>
 
@@ -271,6 +304,7 @@ onMounted(async () => {
     if (!displayName.value && u?.display_name) displayName.value = u.display_name
   } catch { /* prefill is best-effort */ }
   loadSessions()
+  loadLoginHistory()
   loadBlocked()
 })
 
@@ -320,6 +354,46 @@ async function revokeSession(id: string) {
     sessions.value = sessions.value.filter(s => s.id !== id)
     showToast('Đã thu hồi phiên', 'success')
   } catch { showToast('Không thể thu hồi phiên', 'error') }
+}
+
+const uploadingCover = ref(false)
+const coverPreview = ref('')
+
+async function onCoverChange(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  coverPreview.value = URL.createObjectURL(file)
+  uploadingCover.value = true
+  try {
+    const form = new FormData()
+    form.append('file', file)
+    const res = await $fetch<{ cover_url: string }>('/auth/cover', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: form,
+    })
+    if (res.cover_url) {
+      await fetchMe()
+      showToast('Đã cập nhật ảnh bìa', 'success')
+    }
+  } catch (err: any) {
+    coverPreview.value = ''
+    showToast(err?.data?.detail || 'Không thể tải ảnh bìa lên', 'error')
+  } finally {
+    uploadingCover.value = false
+  }
+}
+
+const loginHistory = ref<any[]>([])
+const loginHistoryLoading = ref(true)
+
+async function loadLoginHistory() {
+  loginHistoryLoading.value = true
+  try {
+    const res = await $fetch<{ history: any[] }>('/auth/login-history', { headers: authHeaders() })
+    loginHistory.value = res.history || []
+  } catch { /* ignore */ }
+  loginHistoryLoading.value = false
 }
 
 const blockedUsers = ref<any[]>([])
@@ -489,6 +563,22 @@ async function save() {
 .toggle:checked { background: var(--accent, var(--primary)); }
 .toggle:checked::after { transform: translateX(18px); }
 .toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ── Cover photo ── */
+.sf-cover-section { display: flex; align-items: flex-start; gap: 1rem; }
+.sf-cover-preview {
+  width: 200px; height: 68px; border-radius: var(--radius-md); overflow: hidden; cursor: pointer;
+  position: relative; flex-shrink: 0; border: 2px solid var(--border-input);
+}
+.sf-cover-preview:hover .sf-avatar-overlay { opacity: 1; }
+.sf-cover-img { width: 100%; height: 100%; object-fit: cover; }
+.sf-cover-placeholder {
+  width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+  background: var(--bg-warm); color: var(--ink-700); font-size: .85rem;
+}
+.login-fail { border-color: rgba(192,57,43,.3) !important; }
+.login-ok { color: var(--accent); font-weight: 600; font-size: 1.1rem; }
+.login-bad { color: var(--danger, #c0392b); font-weight: 600; font-size: 1.1rem; }
 
 /* ── Theme toggle ── */
 .theme-options { display: flex; gap: .5rem; flex-wrap: wrap; }

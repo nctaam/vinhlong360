@@ -1206,7 +1206,7 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
     ph = db._ph
     with db._conn() as conn:
         profile = db._fetchone(conn, f"""
-            SELECT id, display_name, avatar_url, bio, created_at
+            SELECT id, display_name, avatar_url, cover_url, bio, created_at
             FROM users WHERE id::text = {ph} AND is_active = TRUE
         """, (user_id,))
 
@@ -1243,6 +1243,7 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
             "id": str(profile["id"]),
             "display_name": profile["display_name"],
             "avatar_url": profile.get("avatar_url"),
+            "cover_url": profile.get("cover_url"),
             "bio": profile.get("bio", ""),
             "created_at": str(profile["created_at"]),
             "stats": {

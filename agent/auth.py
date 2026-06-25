@@ -333,6 +333,8 @@ async def verify_otp(body: OTPVerify, request: Request):
             VALUES ({db._ph}::uuid, {db._ph}, {db._ph}, {db._ph}, {db._ph})
         """, (str(user["id"]), _hash_token(token), ua, ip, expires.isoformat()))
 
+    _log_login(phone, "otp", True, request, str(user["id"]))
+
     return {
         "success": True,
         "token": token,
@@ -372,14 +374,17 @@ async def login_password(body: PasswordLogin, request: Request):
     if not user or not user.get("password_hash"):
         phone_hits.append(now)
         _login_phone_fails[phone] = phone_hits
+        _log_login(phone, "password", False, request)
         raise HTTPException(401, "Số điện thoại hoặc mật khẩu không đúng")
 
     if not user.get("is_active", True):
+        _log_login(phone, "password", False, request, str(user["id"]))
         raise HTTPException(403, "Tài khoản đã bị vô hiệu hóa")
 
     if not _verify_password(body.password, user["password_hash"]):
         phone_hits.append(now)
         _login_phone_fails[phone] = phone_hits
+        _log_login(phone, "password", False, request, str(user["id"]))
         raise HTTPException(401, "Số điện thoại hoặc mật khẩu không đúng")
 
     _login_phone_fails.pop(phone, None)
@@ -393,6 +398,8 @@ async def login_password(body: PasswordLogin, request: Request):
             INSERT INTO user_sessions (user_id, token, user_agent, ip_address, expires_at)
             VALUES ({db._ph}::uuid, {db._ph}, {db._ph}, {db._ph}, {db._ph})
         """, (str(user["id"]), _hash_token(token), ua, ip, expires.isoformat()))
+
+    _log_login(phone, "password", True, request, str(user["id"]))
 
     return {
         "success": True,
@@ -561,6 +568,65 @@ async def upload_avatar(request: Request, file: UploadFile = File(...)):
     return {"avatar_url": avatar_url, "sizes": urls}
 
 
+@router.post("/cover")
+async def upload_cover(request: Request, file: UploadFile = File(...)):
+    user = await _get_current_user_or_none(request)
+    if not user:
+        raise HTTPException(401, "Chưa đăng nhập")
+
+    from storage import storage, MAX_IMAGE_SIZE, sniff_image_type
+
+    data = await file.read()
+    if len(data) > MAX_IMAGE_SIZE:
+        raise HTTPException(400, f"Ảnh quá lớn (tối đa {MAX_IMAGE_SIZE // 1024 // 1024}MB)")
+    if not sniff_image_type(data):
+        raise HTTPException(400, "File không phải ảnh hợp lệ (JPEG/PNG/GIF/WebP)")
+
+    try:
+        urls = await run_in_threadpool(storage.upload_image_set, data, "covers", str(user["id"])[:8])
+    except ValueError as e:
+        raise HTTPException(400, f"Ảnh không hợp lệ: {e}")
+    except Exception as e:
+        raise HTTPException(500, f"Lỗi upload ảnh: {e}")
+
+    cover_url = urls.get("lg") or urls.get("md")
+    db.update_user(str(user["id"]), cover_url=cover_url)
+    return {"cover_url": cover_url, "sizes": urls}
+
+
+# ── Login history ──
+
+def _log_login(phone: str, method: str, success: bool, request: Request, user_id: str | None = None):
+    ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "")
+    ua = request.headers.get("user-agent", "")[:500]
+    try:
+        ph = db._ph
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                INSERT INTO login_history (user_id, phone, method, success, ip, user_agent)
+                VALUES ({ph}::uuid, {ph}, {ph}, {ph}, {ph}, {ph})
+            """, (user_id, phone, method, success, ip, ua))
+    except Exception:
+        pass
+
+
+@router.get("/login-history")
+async def get_login_history(request: Request, limit: int = 20):
+    user = await _get_current_user_or_none(request)
+    if not user:
+        raise HTTPException(401, "Chưa đăng nhập")
+    ph = db._ph
+    with db._conn() as conn:
+        rows = db._fetchall(conn, f"""
+            SELECT id, method, success, ip, user_agent, created_at
+            FROM login_history
+            WHERE user_id = {ph}::uuid
+            ORDER BY created_at DESC
+            LIMIT {ph}
+        """, (str(user["id"]), min(limit, 50)))
+    return {"history": [dict(r) for r in rows]}
+
+
 # ── Auth helpers (used by other modules) ──
 
 def _extract_token(request: Request) -> str | None:
@@ -591,6 +657,7 @@ def _safe_user(user: dict) -> dict:
         "phone": user["phone"][:3] + "****" + user["phone"][-3:],
         "display_name": user.get("display_name"),
         "avatar_url": user.get("avatar_url"),
+        "cover_url": user.get("cover_url"),
         "bio": user.get("bio", ""),
         "role": user.get("role", "user"),
         "created_at": str(user.get("created_at", "")),

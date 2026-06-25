@@ -616,7 +616,7 @@ const zaloLink = computed(() => {
   return String(z).startsWith('http') ? z : `https://zalo.me/${String(z).replace(/\D/g, '')}`
 })
 // GĐ13.1 (MVP): chủ cơ sở "nhận listing" -> trang liên hệ kèm ngữ cảnh (luồng owner-edit đầy đủ = sau).
-const claimUrl = computed(() => `/lien-he?ref=claim&entity=${encodeURIComponent(id.value)}`)
+const claimUrl = computed(() => `/lien-he?ref=claim&entity=${encodeURIComponent(entity.value?.name || id.value)}`)
 
 // D2 (2026-06-13): với sản phẩm OCOP, đưa website RIÊNG của chủ thể thành CTA "hỏi mua trực tiếp"
 // — dẫn khách về kênh bán/đặt riêng của họ. KHÔNG link sàn TMĐT, KHÔNG giỏ hàng/thanh toán on-site

@@ -19,7 +19,7 @@
         <h2>Đăng ký quản lý trang</h2>
         <p>Bạn là chủ cơ sở kinh doanh, homestay, nhà vườn, hoặc điểm du lịch? Đăng ký để cập nhật thông tin, ảnh, giờ mở cửa và nhận đánh giá từ khách.</p>
         <div class="card-action">
-          <a :href="`mailto:${claimEmail}?subject=Đăng ký quản lý trang`" class="btn btn-primary">📧 Gửi email đăng ký</a>
+          <a :href="`mailto:${claimEmail}?subject=${encodeURIComponent(claimSubject)}`" class="btn btn-primary">📧 Gửi email đăng ký</a>
         </div>
         <p class="card-note">Hoặc nhắn Zalo: <strong>{{ zaloName }}</strong></p>
       </section>
@@ -90,6 +90,11 @@ const zaloName = computed(() => ss('contact.zalo', 'vinhlong360'))
 
 const route = useRoute()
 const isClaim = computed(() => route.query.ref === 'claim')
+const claimEntity = computed(() => route.query.entity ? decodeURIComponent(String(route.query.entity)) : '')
+const claimSubject = computed(() => {
+  const base = 'Đăng ký quản lý trang'
+  return claimEntity.value ? `${base}: ${claimEntity.value}` : base
+})
 
 useSeoMeta({
   title: () => pc('seo_title'),

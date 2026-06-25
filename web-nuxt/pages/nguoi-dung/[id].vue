@@ -4,7 +4,8 @@
 
     <div v-if="profile" class="user-profile reveal">
       <div class="profile-cover">
-        <UserCoverPlaceholder />
+        <img v-if="profile.cover_url" :src="profile.cover_url" :alt="`Ảnh bìa ${profile.display_name}`" class="cover-img" loading="eager" decoding="async" />
+        <UserCoverPlaceholder v-else />
         <div class="cover-scrim" aria-hidden="true"></div>
         <div class="profile-avatar-wrap">
           <span v-if="profile.avatar" class="avatar avatar-xl">
@@ -454,6 +455,7 @@ if (profile.value) {
 .profile-loading .spinner { margin: 0 auto; }
 
 .profile-cover { position: relative; border-radius: var(--radius-xl, 20px); overflow: hidden; margin-bottom: calc(-1 * var(--space-8)); box-shadow: var(--shadow-lg, var(--shadow-md)); }
+.cover-img { width: 100%; height: 200px; object-fit: cover; display: block; }
 .cover-scrim { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.18)); }
 .profile-avatar-wrap { position: absolute; bottom: calc(-1 * var(--space-6)); left: var(--space-5); z-index: 1; }
 .profile-avatar-wrap .avatar { border: 6px solid var(--card); box-shadow: 0 0 0 2px var(--line), 0 8px 28px rgba(0,0,0,.12); transition: transform .35s var(--ease-spring-gentle); }
