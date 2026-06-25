@@ -1238,6 +1238,46 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
             WHERE follower_id::text = {ph} AND target_type = 'user'
         """, (user_id,))
 
+    privacy = None
+    try:
+        with db._conn() as conn:
+            prow = db._fetchone(conn, f"SELECT * FROM user_privacy WHERE user_id = {ph}::uuid", (user_id,))
+            if prow:
+                privacy = db._row_to_dict(prow)
+    except Exception:
+        pass
+
+    viewer_id = str(user["id"]) if user else None
+    is_self = viewer_id == user_id
+    vis = privacy["profile_visibility"] if privacy else "public"
+
+    is_follower = False
+    if not is_self and vis != "public" and viewer_id:
+        with db._conn() as conn:
+            frow = db._fetchone(conn, f"""
+                SELECT 1 FROM follows
+                WHERE follower_id = {ph}::uuid AND target_type = 'user' AND target_id = {ph}
+            """, (viewer_id, user_id))
+            is_follower = frow is not None
+
+    if vis == "private" and not is_self and not is_follower:
+        return {
+            "user": {
+                "id": str(profile["id"]),
+                "display_name": profile["display_name"],
+                "avatar_url": profile.get("avatar_url"),
+                "cover_url": profile.get("cover_url"),
+                "bio": "",
+                "created_at": str(profile["created_at"]),
+                "stats": {"posts": 0, "reviews": 0, "followers": follower_row["c"] if follower_row else 0, "following": 0},
+                "reputation": None,
+                "is_private": True,
+            },
+        }
+
+    show_activity = privacy["show_activity"] if privacy else True
+    show_saved = privacy["show_saved"] if privacy else True
+
     return {
         "user": {
             "id": str(profile["id"]),
@@ -1253,6 +1293,8 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
                 "following": following_row["c"] if following_row else 0,
             },
             "reputation": reputation,
+            "show_activity": show_activity,
+            "show_saved": show_saved,
         },
     }
 

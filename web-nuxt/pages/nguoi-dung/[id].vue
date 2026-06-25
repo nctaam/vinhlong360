@@ -88,7 +88,11 @@
         </div>
       </div>
 
-      <div class="profile-tabs">
+      <div v-if="profile.is_private" class="profile-private-notice">
+        <p>🔒 Hồ sơ riêng tư — theo dõi để xem nội dung.</p>
+      </div>
+
+      <div v-else class="profile-tabs">
         <button type="button" :class="['chip', { active: tab === 'posts' }]" :aria-pressed="tab === 'posts'" @click="tab = 'posts'">Bài viết</button>
         <button type="button" :class="['chip', { active: tab === 'reviews' }]" :aria-pressed="tab === 'reviews'" @click="tab = 'reviews'">Đánh giá</button>
         <button type="button" v-if="isSelf" :class="['chip', { active: tab === 'saved' }]" :aria-pressed="tab === 'saved'" @click="tab = 'saved'">
@@ -96,7 +100,7 @@
         </button>
       </div>
 
-      <div class="feed-main">
+      <div v-if="!profile.is_private" class="feed-main">
         <!-- Đã lưu (self only, client-only — từ localStorage) -->
         <ClientOnly v-if="tab === 'saved'">
           <div v-if="favorites.length" class="saved-grid">
@@ -456,6 +460,7 @@ if (profile.value) {
 
 .profile-cover { position: relative; border-radius: var(--radius-xl, 20px); overflow: hidden; margin-bottom: calc(-1 * var(--space-8)); box-shadow: var(--shadow-lg, var(--shadow-md)); }
 .cover-img { width: 100%; height: 200px; object-fit: cover; display: block; }
+.profile-private-notice { text-align: center; padding: var(--space-8) var(--space-4); color: var(--ink-700); font-size: .95rem; }
 .cover-scrim { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.18)); }
 .profile-avatar-wrap { position: absolute; bottom: calc(-1 * var(--space-6)); left: var(--space-5); z-index: 1; }
 .profile-avatar-wrap .avatar { border: 6px solid var(--card); box-shadow: 0 0 0 2px var(--line), 0 8px 28px rgba(0,0,0,.12); transition: transform .35s var(--ease-spring-gentle); }

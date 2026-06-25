@@ -189,6 +189,49 @@
       </div>
     </div>
 
+    <!-- Tab: Quyền riêng tư -->
+    <div v-if="activeTab === 'rieng-tu'" class="settings-card card" role="tabpanel">
+      <h2>Quyền riêng tư</h2>
+      <div v-if="privacyLoading" class="sf-hint">Đang tải...</div>
+      <div v-else class="settings-form">
+        <div class="sf-field">
+          <span class="sf-label">Ai xem được hồ sơ?</span>
+          <span class="sf-hint">Kiểm soát ai có thể xem bài viết, hoạt động và danh sách yêu thích.</span>
+          <div class="theme-options">
+            <button type="button" :class="['theme-btn', { active: privacy.profile_visibility === 'public' }]" @click="setPrivacy('profile_visibility', 'public')">
+              Công khai
+            </button>
+            <button type="button" :class="['theme-btn', { active: privacy.profile_visibility === 'followers' }]" @click="setPrivacy('profile_visibility', 'followers')">
+              Người theo dõi
+            </button>
+            <button type="button" :class="['theme-btn', { active: privacy.profile_visibility === 'private' }]" @click="setPrivacy('profile_visibility', 'private')">
+              Riêng tư
+            </button>
+          </div>
+        </div>
+        <label class="notif-pref-item" @click.prevent="setPrivacy('show_activity', !privacy.show_activity)">
+          <div class="notif-pref-info">
+            <span class="notif-pref-icon">📊</span>
+            <div>
+              <strong>Hiển thị hoạt động</strong>
+              <span class="sf-hint">Cho người khác xem bạn đã thích, bình luận gì gần đây.</span>
+            </div>
+          </div>
+          <input type="checkbox" class="toggle" :checked="privacy.show_activity" />
+        </label>
+        <label class="notif-pref-item" @click.prevent="setPrivacy('show_saved', !privacy.show_saved)">
+          <div class="notif-pref-info">
+            <span class="notif-pref-icon">💾</span>
+            <div>
+              <strong>Hiển thị danh sách đã lưu</strong>
+              <span class="sf-hint">Cho người khác xem địa điểm bạn đã lưu.</span>
+            </div>
+          </div>
+          <input type="checkbox" class="toggle" :checked="privacy.show_saved" />
+        </label>
+      </div>
+    </div>
+
     <!-- Tab: Người chặn -->
     <div v-if="activeTab === 'chan'" class="settings-card card" role="tabpanel">
       <h2>Người bị chặn</h2>
@@ -250,6 +293,7 @@ const TABS = [
   { key: 'bao-mat', label: 'Bảo mật', icon: '\u{1F512}' },
   { key: 'thong-bao', label: 'Thông báo', icon: '🔔' },
   { key: 'giao-dien', label: 'Giao diện', icon: '🎨' },
+  { key: 'rieng-tu', label: 'Riêng tư', icon: '🔒' },
   { key: 'chan', label: 'Chặn', icon: '\u{1F6AB}' },
   { key: 'nguy-hiem', label: 'Nguy hiểm', icon: '⚠️' },
 ] as const
@@ -305,6 +349,7 @@ onMounted(async () => {
   } catch { /* prefill is best-effort */ }
   loadSessions()
   loadLoginHistory()
+  loadPrivacy()
   loadBlocked()
 })
 
@@ -394,6 +439,30 @@ async function loadLoginHistory() {
     loginHistory.value = res.history || []
   } catch { /* ignore */ }
   loginHistoryLoading.value = false
+}
+
+const privacy = ref({ profile_visibility: 'public', show_activity: true, show_saved: true })
+const privacyLoading = ref(true)
+
+async function loadPrivacy() {
+  privacyLoading.value = true
+  try {
+    const res = await $fetch<Record<string, any>>('/auth/privacy', { headers: authHeaders() })
+    privacy.value = { profile_visibility: res.profile_visibility || 'public', show_activity: res.show_activity !== false, show_saved: res.show_saved !== false }
+  } catch { /* ignore */ }
+  privacyLoading.value = false
+}
+
+async function setPrivacy(key: string, value: any) {
+  const prev = { ...privacy.value }
+  ;(privacy.value as any)[key] = value
+  try {
+    await $fetch('/auth/privacy', { method: 'PUT', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: { [key]: value } })
+    showToast('Đã cập nhật quyền riêng tư', 'success')
+  } catch {
+    privacy.value = prev
+    showToast('Không thể cập nhật', 'error')
+  }
 }
 
 const blockedUsers = ref<any[]>([])

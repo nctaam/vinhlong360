@@ -627,6 +627,66 @@ async def get_login_history(request: Request, limit: int = 20):
     return {"history": [dict(r) for r in rows]}
 
 
+# ── Privacy settings ──
+
+class PrivacyUpdate(BaseModel):
+    profile_visibility: str | None = None
+    show_activity: bool | None = None
+    show_saved: bool | None = None
+
+
+@router.get("/privacy")
+async def get_privacy(request: Request):
+    user = await _get_current_user_or_none(request)
+    if not user:
+        raise HTTPException(401, "Chưa đăng nhập")
+    ph = db._ph
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"SELECT * FROM user_privacy WHERE user_id = {ph}::uuid", (str(user["id"]),))
+    if row:
+        row = db._row_to_dict(row)
+        return {"profile_visibility": row["profile_visibility"], "show_activity": row["show_activity"], "show_saved": row["show_saved"]}
+    return {"profile_visibility": "public", "show_activity": True, "show_saved": True}
+
+
+@router.put("/privacy")
+async def update_privacy(body: PrivacyUpdate, request: Request):
+    user = await _get_current_user_or_none(request)
+    if not user:
+        raise HTTPException(401, "Chưa đăng nhập")
+
+    valid_vis = ("public", "followers", "private")
+    if body.profile_visibility and body.profile_visibility not in valid_vis:
+        raise HTTPException(400, f"profile_visibility phải là một trong: {', '.join(valid_vis)}")
+
+    ph = db._ph
+    uid = str(user["id"])
+    with db._conn() as conn:
+        existing = db._fetchone(conn, f"SELECT 1 FROM user_privacy WHERE user_id = {ph}::uuid", (uid,))
+        if existing:
+            sets, params = [], []
+            if body.profile_visibility is not None:
+                sets.append(f"profile_visibility = {ph}")
+                params.append(body.profile_visibility)
+            if body.show_activity is not None:
+                sets.append(f"show_activity = {ph}")
+                params.append(body.show_activity)
+            if body.show_saved is not None:
+                sets.append(f"show_saved = {ph}")
+                params.append(body.show_saved)
+            if sets:
+                sets.append(f"updated_at = NOW()")
+                params.append(uid)
+                db._execute(conn, f"UPDATE user_privacy SET {', '.join(sets)} WHERE user_id = {ph}::uuid", params)
+        else:
+            db._execute(conn, f"""
+                INSERT INTO user_privacy (user_id, profile_visibility, show_activity, show_saved)
+                VALUES ({ph}::uuid, {ph}, {ph}, {ph})
+            """, (uid, body.profile_visibility or "public", body.show_activity if body.show_activity is not None else True, body.show_saved if body.show_saved is not None else True))
+
+    return await get_privacy(request)
+
+
 # ── Auth helpers (used by other modules) ──
 
 def _extract_token(request: Request) -> str | None:
