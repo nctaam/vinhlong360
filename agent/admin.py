@@ -309,6 +309,8 @@ async def update_entity(entity_id: str, update: EntityUpdate):
     existing["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
     db.upsert_entity(existing)
     _sync_kb()
+    from public_api import invalidate_entity_cache
+    invalidate_entity_cache(entity_id)
     return {"status": "updated", "entity": existing}
 
 

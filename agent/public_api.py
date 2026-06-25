@@ -30,6 +30,18 @@ import time as _time
 _homepage_cache: dict = {"month": None, "data": None, "ts": 0.0}
 _HOMEPAGE_TTL = 120  # giây
 
+_entity_cache: dict[str, tuple[float, dict]] = {}
+_ENTITY_TTL = 60  # 60s cache per entity
+
+def invalidate_entity_cache(entity_id: str | None = None):
+    """Clear entity cache entry or all entries."""
+    if entity_id:
+        to_del = [k for k in _entity_cache if k.startswith(f"{entity_id}:")]
+        for k in to_del:
+            del _entity_cache[k]
+    else:
+        _entity_cache.clear()
+
 
 def _is_public(e: dict) -> bool:
     """Entity được hiển thị công khai (listing/homepage): loại entity provisional /
@@ -167,6 +179,12 @@ async def get_entity(
     entity_id: str,
     relationship_limit: int = Query(DEFAULT_RELATIONSHIP_LIMIT, ge=0, le=100),
 ):
+    cache_key = f"{entity_id}:{relationship_limit}"
+    now = _time.time()
+    cached = _entity_cache.get(cache_key)
+    if cached and now - cached[0] < _ENTITY_TTL:
+        return cached[1]
+
     entity = db.get_entity(entity_id)
     if not entity:
         return JSONResponse(status_code=404, content={"error": "not_found"})
@@ -175,6 +193,13 @@ async def get_entity(
     entity["relationships"] = rels
     _enrich_entity_place(entity)
     entity["quality"] = entity_quality(entity)
+
+    _entity_cache[cache_key] = (now, entity)
+    if len(_entity_cache) > 500:
+        oldest = sorted(_entity_cache, key=lambda k: _entity_cache[k][0])[:250]
+        for k in oldest:
+            del _entity_cache[k]
+
     return entity
 
 
