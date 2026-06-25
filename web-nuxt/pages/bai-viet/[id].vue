@@ -270,7 +270,7 @@ async function saveEdit() {
 
 // ── Threaded reply ──
 function startReply(c: any) {
-  if (!isLoggedIn.value) { openAuth(); return }
+  if (!isLoggedIn.value) { openAuth(() => startReply(c)); return }
   replyingTo.value = c
   scrollToCompose()
 }

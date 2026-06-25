@@ -143,7 +143,7 @@ const { confirmDialog } = useConfirm()
 const { openAuth } = useAuthModal()
 
 async function toggleHelpful(r: any) {
-  if (!user.value) { openAuth(); return }
+  if (!user.value) { openAuth(() => toggleHelpful(r)); return }
   const flip = () => { r.user_liked = !r.user_liked; r.likes = (r.likes || 0) + (r.user_liked ? 1 : -1) }
   flip()
   try {

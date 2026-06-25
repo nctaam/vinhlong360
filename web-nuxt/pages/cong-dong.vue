@@ -557,7 +557,7 @@ function focusComposer() {
 
 // ── Trích dẫn (quote) ──
 async function startQuote(postId: string) {
-  if (!isLoggedIn.value) { openAuth(); return }
+  if (!isLoggedIn.value) { openAuth(() => startQuote(postId)); return }
   let p: any = posts.value.find((x: any) => x.id === postId)
   if (!p) {
     try { const r = await $fetch<any>(`/api/posts/${postId}`, { headers: authHeaders() }); p = r?.post } catch {}

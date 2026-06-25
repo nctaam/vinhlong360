@@ -6,7 +6,7 @@ export function useRepost() {
   const { show: showToast } = useToast()
 
   async function repost(postId: string, onDone?: () => void): Promise<boolean> {
-    if (!isLoggedIn.value) { openAuth(); return false }
+    if (!isLoggedIn.value) { openAuth(() => { repost(postId, onDone) }); return false }
     if (!await confirmDialog('Đăng lại bài này lên trang của bạn?', { confirmText: 'Đăng lại' })) return false
     try {
       await $fetch('/api/posts', { method: 'POST', headers: authHeaders(), body: { repost_of: postId, content: '' } })
@@ -20,7 +20,7 @@ export function useRepost() {
   }
   // Trích dẫn: mở composer cộng-đồng ở chế-độ quote (composer chỉ có ở /cong-dong).
   function quote(postId: string) {
-    if (!isLoggedIn.value) { openAuth(); return }
+    if (!isLoggedIn.value) { openAuth(() => quote(postId)); return }
     navigateTo(`/cong-dong?quote=${encodeURIComponent(postId)}`)
   }
 

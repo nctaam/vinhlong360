@@ -428,7 +428,7 @@ const rsvpGoing = ref(false)
 const rsvpCount = ref(0)
 
 async function toggleRsvp() {
-  if (!isLoggedIn.value) { openAuth(); return }
+  if (!isLoggedIn.value) { openAuth(() => toggleRsvp()); return }
   try {
     const r = await $fetch<{ going: boolean; count: number }>(`/api/events/${encodeURIComponent(id.value)}/rsvp`, { method: 'POST', headers: authHeaders() })
     rsvpGoing.value = r.going
@@ -438,7 +438,7 @@ async function toggleRsvp() {
 }
 
 async function setVisit(status: 'visited' | 'want') {
-  if (!isLoggedIn.value) { openAuth(); return }
+  if (!isLoggedIn.value) { openAuth(() => setVisit(status)); return }
   const prev = visitStatus.value
   try {
     if (visitStatus.value === status) {
@@ -453,7 +453,7 @@ async function setVisit(status: 'visited' | 'want') {
 }
 
 async function toggleFollowPlace() {
-  if (!isLoggedIn.value) { openAuth(); return }
+  if (!isLoggedIn.value) { openAuth(() => toggleFollowPlace()); return }
   const prev = isFollowingPlace.value
   isFollowingPlace.value = !prev
   try {
