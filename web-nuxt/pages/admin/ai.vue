@@ -311,6 +311,7 @@ async function triage() {
 }
 
 async function reload() {
+  if (!confirm('Reload Knowledge Base? Hệ thống sẽ tải lại toàn bộ dữ liệu.')) return
   try {
     await $fetch('/reload', { method: 'POST', headers: authHeaders() })
     triggerResult.value = 'KB reloaded'

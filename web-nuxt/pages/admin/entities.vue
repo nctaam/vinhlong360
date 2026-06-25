@@ -417,6 +417,7 @@ async function addRel() {
       body: { from_id: form.value.id, to_id: to, type: newRel.value.type } })
     newRel.value.to_id = ''
     await fetchRels(form.value.id)
+    showToast('Đã thêm quan hệ', 'success')
   } catch (e: unknown) { showToast(e?.data?.detail || 'Thêm quan hệ lỗi (id đích tồn tại?)', 'error') }
 }
 async function removeRel(r: Record<string, unknown>) {

@@ -349,6 +349,8 @@ async function unban(id: string) {
 }
 
 async function changeRole(id: string, role: string) {
+  const current = users.value.find(u => u.id === id)
+  if (current?.role === role) return
   if (!confirm(`Đổi role thành "${role}"?`)) return
   acting.value = id
   try {
