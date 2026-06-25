@@ -63,7 +63,7 @@ export function useNotifications() {
     stopPolling()
     fetchNotifications()
     _connectSSE()
-    pollTimer = setInterval(fetchNotifications, 30_000)
+    if (!pollTimer) pollTimer = setInterval(fetchNotifications, 30_000)
     if (import.meta.client) {
       document.addEventListener('visibilitychange', _onVisibility)
     }
@@ -84,7 +84,7 @@ export function useNotifications() {
     } else {
       fetchNotifications()
       _connectSSE()
-      pollTimer = setInterval(fetchNotifications, 30_000)
+      if (!pollTimer) pollTimer = setInterval(fetchNotifications, 30_000)
     }
   }
 

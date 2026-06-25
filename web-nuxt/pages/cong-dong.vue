@@ -825,11 +825,15 @@ function _copies(postId: string) {
   return [...posts.value, ...bookmarks.value, ...searchResults.value].filter(p => p.id === postId)
 }
 
+const pendingActions = reactive(new Set<string>())
+
 async function toggleLike(postId: string) {
   if (!isLoggedIn.value) {
     showToast('Đăng nhập để thích bài viết', 'info')
     return
   }
+  if (pendingActions.has(`like:${postId}`)) return
+  pendingActions.add(`like:${postId}`)
   const copies = _copies(postId)
   const flip = () => copies.forEach(p => {
     p.user_liked = !p.user_liked
@@ -839,9 +843,9 @@ async function toggleLike(postId: string) {
   try {
     await $fetch(`/api/posts/${postId}/like`, { method: 'POST', headers: authHeaders() })
   } catch {
-    flip()  // rollback mọi bản
+    flip()
     showToast('Không thể thích bài viết', 'error')
-  }
+  } finally { pendingActions.delete(`like:${postId}`) }
 }
 
 async function toggleBookmark(postId: string) {
@@ -849,6 +853,8 @@ async function toggleBookmark(postId: string) {
     showToast('Đăng nhập để lưu bài viết', 'info')
     return
   }
+  if (pendingActions.has(`bm:${postId}`)) return
+  pendingActions.add(`bm:${postId}`)
   const copies = _copies(postId)
   const wasBookmarked = copies[0]?.user_bookmarked
   copies.forEach(p => { p.user_bookmarked = !p.user_bookmarked })
@@ -859,9 +865,9 @@ async function toggleBookmark(postId: string) {
       if (!sessionBookmarked.value) sessionBookmarked.value = true
     }
   } catch {
-    copies.forEach(p => { p.user_bookmarked = !p.user_bookmarked })  // rollback
+    copies.forEach(p => { p.user_bookmarked = !p.user_bookmarked })
     showToast('Không thể lưu bài viết', 'error')
-  }
+  } finally { pendingActions.delete(`bm:${postId}`) }
 }
 
 async function deletePost(postId: string) {

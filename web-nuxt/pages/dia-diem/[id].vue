@@ -37,14 +37,14 @@
           </ClientOnly>
           <ClientOnly>
             <div class="dc-trip">
-              <button v-if="entity.type === 'event'" type="button" :class="['trip-btn', { active: rsvpGoing }]" :aria-pressed="rsvpGoing" @click="toggleRsvp">
+              <button v-if="entity.type === 'event'" type="button" :class="['trip-btn', { active: rsvpGoing }]" :aria-pressed="rsvpGoing" :disabled="actionPending" @click="toggleRsvp">
                 {{ rsvpGoing ? '✓ Sẽ đi' : '🎉 Tôi sẽ đi' }}<span v-if="rsvpCount" class="trip-count">{{ rsvpCount }}</span>
               </button>
               <template v-else>
-                <button type="button" :class="['trip-btn', { active: visitStatus === 'visited' }]" :aria-pressed="visitStatus === 'visited'" @click="setVisit('visited')">✓ Đã đến</button>
-                <button type="button" :class="['trip-btn', { active: visitStatus === 'want' }]" :aria-pressed="visitStatus === 'want'" @click="setVisit('want')">♡ Muốn đến</button>
+                <button type="button" :class="['trip-btn', { active: visitStatus === 'visited' }]" :aria-pressed="visitStatus === 'visited'" :disabled="actionPending" @click="setVisit('visited')">✓ Đã đến</button>
+                <button type="button" :class="['trip-btn', { active: visitStatus === 'want' }]" :aria-pressed="visitStatus === 'want'" :disabled="actionPending" @click="setVisit('want')">♡ Muốn đến</button>
               </template>
-              <button type="button" :class="['trip-btn', { active: isFollowingPlace }]" :aria-pressed="isFollowingPlace" @click="toggleFollowPlace">{{ isFollowingPlace ? '🔔 Đang theo dõi' : '🔔 Theo dõi' }}</button>
+              <button type="button" :class="['trip-btn', { active: isFollowingPlace }]" :aria-pressed="isFollowingPlace" :disabled="actionPending" @click="toggleFollowPlace">{{ isFollowingPlace ? '🔔 Đang theo dõi' : '🔔 Theo dõi' }}</button>
             </div>
           </ClientOnly>
         </div>
@@ -419,19 +419,25 @@ const visitStatus = ref<string | null>(null)
 const isFollowingPlace = ref(false)
 const rsvpGoing = ref(false)
 const rsvpCount = ref(0)
+const actionPending = ref(false)
 
 async function toggleRsvp() {
   if (!isLoggedIn.value) { openAuth(() => toggleRsvp()); return }
+  if (actionPending.value) return
+  actionPending.value = true
   try {
     const r = await $fetch<{ going: boolean; count: number }>(`/api/events/${encodeURIComponent(id.value)}/rsvp`, { method: 'POST', headers: authHeaders() })
     rsvpGoing.value = r.going
     rsvpCount.value = r.count
     if (r.going) _showToast('Đã đăng ký đi sự kiện này 🎉', 'success')
   } catch { _showToast('Không thể đăng ký, thử lại', 'error') }
+  finally { actionPending.value = false }
 }
 
 async function setVisit(status: 'visited' | 'want') {
   if (!isLoggedIn.value) { openAuth(() => setVisit(status)); return }
+  if (actionPending.value) return
+  actionPending.value = true
   const prev = visitStatus.value
   try {
     if (visitStatus.value === status) {
@@ -443,16 +449,20 @@ async function setVisit(status: 'visited' | 'want') {
       _showToast(status === 'visited' ? 'Đã đánh dấu Đã đến' : 'Đã thêm vào Muốn đến', 'success')
     }
   } catch { visitStatus.value = prev; _showToast('Không thể lưu, thử lại', 'error') }
+  finally { actionPending.value = false }
 }
 
 async function toggleFollowPlace() {
   if (!isLoggedIn.value) { openAuth(() => toggleFollowPlace()); return }
+  if (actionPending.value) return
+  actionPending.value = true
   const prev = isFollowingPlace.value
   isFollowingPlace.value = !prev
   try {
     await $fetch(`/api/follow/entity/${encodeURIComponent(id.value)}`, { method: 'POST', headers: authHeaders() })
     if (!prev) _showToast('Đang theo dõi — sẽ báo khi có bài mới', 'success')
   } catch { isFollowingPlace.value = prev; _showToast('Không thể theo dõi, thử lại', 'error') }
+  finally { actionPending.value = false }
 }
 
 onMounted(async () => {
