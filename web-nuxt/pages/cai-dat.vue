@@ -277,6 +277,7 @@ const { openAuth } = useAuthModal()
 const { show: showToast } = useToast()
 const colorModeState = useColorMode()
 const colorMode = computed(() => colorModeState.preference)
+watch(isLoggedIn, (v) => { if (!v) navigateTo('/') })
 function setColorMode(mode: 'light' | 'dark' | 'system') {
   colorModeState.preference = mode
 }

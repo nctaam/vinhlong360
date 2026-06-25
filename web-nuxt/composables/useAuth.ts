@@ -94,6 +94,16 @@ export function useAuth() {
     return token.value ? { Authorization: `Bearer ${token.value}` } : {}
   }
 
+  function handleSessionExpired() {
+    if (!token.value) return
+    token.value = null
+    user.value = null
+    const { show } = useToast()
+    show('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'warning', 5000)
+    const { openAuth } = useAuthModal()
+    openAuth()
+  }
+
   async function authFetch<T>(url: string, opts: Parameters<typeof $fetch>[1] = {}): Promise<T> {
     try {
       return await $fetch<T>(url, {
@@ -102,12 +112,11 @@ export function useAuth() {
       })
     } catch (e: any) {
       if (e?.response?.status === 401 && token.value) {
-        token.value = null
-        user.value = null
+        handleSessionExpired()
       }
       throw e
     }
   }
 
-  return { user, isLoggedIn, loading, token, fetchMe, requestOtp, verifyOtp, checkPhone, login, setPassword, logout, authHeaders, authFetch }
+  return { user, isLoggedIn, loading, token, fetchMe, requestOtp, verifyOtp, checkPhone, login, setPassword, logout, authHeaders, authFetch, handleSessionExpired }
 }
