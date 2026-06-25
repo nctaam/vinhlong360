@@ -26,7 +26,8 @@ from datetime import datetime, timedelta, timezone
 logger = logging.getLogger("auth")
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
+from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, field_validator
 
 from database import db
@@ -449,6 +450,32 @@ async def update_profile(body: ProfileUpdate, request: Request):
         user = db.update_user(str(user["id"]), **fields)
 
     return {"user": _safe_user(user)}
+
+
+@router.post("/avatar")
+async def upload_avatar(request: Request, file: UploadFile = File(...)):
+    user = await _get_current_user_or_none(request)
+    if not user:
+        raise HTTPException(401, "Chưa đăng nhập")
+
+    from storage import storage, MAX_IMAGE_SIZE, sniff_image_type
+
+    data = await file.read()
+    if len(data) > MAX_IMAGE_SIZE:
+        raise HTTPException(400, f"Ảnh quá lớn (tối đa {MAX_IMAGE_SIZE // 1024 // 1024}MB)")
+    if not sniff_image_type(data):
+        raise HTTPException(400, "File không phải ảnh hợp lệ (JPEG/PNG/GIF/WebP)")
+
+    try:
+        urls = await run_in_threadpool(storage.upload_image_set, data, "avatars", str(user["id"])[:8])
+    except ValueError as e:
+        raise HTTPException(400, f"Ảnh không hợp lệ: {e}")
+    except Exception as e:
+        raise HTTPException(500, f"Lỗi upload ảnh: {e}")
+
+    avatar_url = urls.get("md") or urls.get("sm")
+    db.update_user(str(user["id"]), avatar_url=avatar_url)
+    return {"avatar_url": avatar_url, "sizes": urls}
 
 
 # ── Auth helpers (used by other modules) ──

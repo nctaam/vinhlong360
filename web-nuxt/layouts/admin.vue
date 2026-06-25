@@ -33,6 +33,7 @@
           <NuxtLink to="/admin/chua-phan-loai" :class="{ active: route.path === '/admin/chua-phan-loai' }" :title="sidebarCollapsed ? 'Chưa phân loại' : undefined">
             <span class="nav-icon">&#128205;</span>
             <span class="nav-text" v-if="!sidebarCollapsed">Chưa phân loại</span>
+            <span v-if="badges.unclassified" class="nav-badge">{{ badges.unclassified }}</span>
           </NuxtLink>
           <NuxtLink to="/admin/danh-ba" :class="{ active: route.path === '/admin/danh-ba' }" :title="sidebarCollapsed ? 'Danh bạ HC' : undefined">
             <span class="nav-icon">&#127963;</span>
@@ -53,10 +54,12 @@
           <NuxtLink to="/admin/kiem-duyet" :class="{ active: route.path === '/admin/kiem-duyet' }" :title="sidebarCollapsed ? 'Kiểm duyệt' : undefined">
             <span class="nav-icon">&#128737;</span>
             <span class="nav-text" v-if="!sidebarCollapsed">Kiểm duyệt</span>
+            <span v-if="badges.moderation" class="nav-badge">{{ badges.moderation }}</span>
           </NuxtLink>
           <NuxtLink to="/admin/duyet-anh" :class="{ active: route.path === '/admin/duyet-anh' }" :title="sidebarCollapsed ? 'Duyệt ảnh' : undefined">
             <span class="nav-icon">&#128247;</span>
             <span class="nav-text" v-if="!sidebarCollapsed">Duyệt ảnh</span>
+            <span v-if="badges.images" class="nav-badge">{{ badges.images }}</span>
           </NuxtLink>
           <NuxtLink to="/admin/users" :class="{ active: route.path === '/admin/users' }" :title="sidebarCollapsed ? 'Users' : undefined">
             <span class="nav-icon">&#128101;</span>
@@ -65,6 +68,7 @@
           <NuxtLink to="/admin/bao-cao" :class="{ active: route.path === '/admin/bao-cao' }" :title="sidebarCollapsed ? 'Báo cáo' : undefined">
             <span class="nav-icon">&#128681;</span>
             <span class="nav-text" v-if="!sidebarCollapsed">Báo cáo</span>
+            <span v-if="badges.reports" class="nav-badge">{{ badges.reports }}</span>
           </NuxtLink>
         </div>
 
@@ -73,6 +77,7 @@
           <NuxtLink to="/admin/duyet-tu-hoc" :class="{ active: route.path === '/admin/duyet-tu-hoc' }" :title="sidebarCollapsed ? 'Duyệt & Tools' : undefined">
             <span class="nav-icon">&#129514;</span>
             <span class="nav-text" v-if="!sidebarCollapsed">Duyệt & Tools</span>
+            <span v-if="badges.provisional" class="nav-badge">{{ badges.provisional }}</span>
           </NuxtLink>
           <NuxtLink to="/admin/ai" :class="{ active: route.path === '/admin/ai' }" :title="sidebarCollapsed ? 'Knowledge Agent' : undefined">
             <span class="nav-icon">&#129302;</span>
@@ -113,8 +118,16 @@
 
 <script setup lang="ts">
 const route = useRoute()
-const { user, fetchMe, token } = useAuth()
+const { user, fetchMe, token, authHeaders } = useAuth()
 const sidebarCollapsed = ref(false)
+const badges = ref<Record<string, number>>({ moderation: 0, images: 0, unclassified: 0, provisional: 0, reports: 0 })
+
+async function loadBadges() {
+  try {
+    const data = await $fetch<Record<string, number>>('/admin/badge-counts', { headers: authHeaders() })
+    badges.value = data
+  } catch { /* ignore */ }
+}
 
 const ADMIN_PAGE_LABELS: Record<string, string> = {
   '/admin/thong-ke': 'Thống kê',
@@ -149,6 +162,7 @@ useHead({
 onMounted(async () => {
   if (!user.value && token.value) await fetchMe()
   if (window.innerWidth < 1024) sidebarCollapsed.value = true
+  loadBadges()
 })
 </script>
 
@@ -236,6 +250,16 @@ onMounted(async () => {
 .nav-icon { font-size: 1.05rem; flex-shrink: 0; width: 24px; text-align: center; transition: transform .35s cubic-bezier(.2,1,.4,1); }
 .admin-nav a:hover .nav-icon { transform: scale(1.1); }
 .nav-text { white-space: nowrap; overflow: hidden; transition: opacity .2s; }
+.nav-badge {
+  margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px;
+  border-radius: 10px; background: var(--error, #D94F3D); color: #fff;
+  font-size: .65rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  line-height: 1; flex-shrink: 0;
+}
+.collapsed .nav-badge {
+  position: absolute; top: 4px; right: 4px; min-width: 16px; height: 16px;
+  padding: 0 4px; font-size: .6rem;
+}
 .collapsed .nav-icon { font-size: 1.2rem; }
 .collapsed .admin-nav a { justify-content: center; padding: var(--space-2); }
 .collapsed .admin-nav a[title]:hover::after {

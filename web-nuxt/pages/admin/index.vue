@@ -52,18 +52,17 @@
       </div>
     </div>
 
-    <!-- Alert cards -->
-    <div class="dash-alerts" v-if="modStats.pending || infoReports">
-      <NuxtLink v-if="modStats.pending" to="/admin/kiem-duyet" class="dash-alert warn">
-        <span class="dash-alert-num">{{ modStats.pending }}</span>
-        <span class="dash-alert-text">bài viết chờ duyệt</span>
+    <!-- Dynamic priority alerts -->
+    <div class="dash-alerts" v-if="alerts.length">
+      <NuxtLink v-for="a in alerts" :key="a.type" :to="a.link" :class="['dash-alert', a.priority <= 2 ? 'warn' : a.priority <= 3 ? 'error' : 'info']">
+        <span class="dash-alert-icon">{{ a.icon }}</span>
+        <span class="dash-alert-num">{{ a.count }}</span>
+        <span class="dash-alert-text">{{ a.label.replace(String(a.count) + ' ', '') }}</span>
         <span class="dash-alert-arrow">&#8594;</span>
       </NuxtLink>
-      <NuxtLink v-if="infoReports" to="/admin/bao-cao" class="dash-alert error">
-        <span class="dash-alert-num">{{ infoReports }}</span>
-        <span class="dash-alert-text">báo cáo sai thông tin</span>
-        <span class="dash-alert-arrow">&#8594;</span>
-      </NuxtLink>
+    </div>
+    <div v-else-if="!loading" class="dash-all-clear">
+      <span>&#10003;</span> Không có mục nào cần xử lý
     </div>
 
     <!-- Quick actions -->
@@ -153,8 +152,7 @@ definePageMeta({ layout: 'admin', middleware: 'admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const stats = ref<Record<string, unknown>>({})
-const modStats = ref<Record<string, unknown>>({})
-const infoReports = ref<number | null>(null)
+const alerts = ref<Array<{ type: string; count: number; label: string; icon: string; link: string; priority: number }>>([])
 const loading = ref(true)
 const partialDegraded = ref(false)
 
@@ -207,15 +205,13 @@ async function fetchDashboard() {
   loading.value = true
   partialDegraded.value = false
   try {
-    const [s, m, ir] = await Promise.all([
+    const [s, a] = await Promise.all([
       $fetch<Record<string, unknown>>('/admin-api/stats', { headers: authHeaders() }),
-      $fetch<Record<string, unknown>>('/admin-api/moderation/stats', { headers: authHeaders() }).catch(() => DEGRADED),
-      $fetch<Record<string, unknown>>('/admin-api/info-reports?limit=1', { headers: authHeaders() }).catch(() => DEGRADED),
+      $fetch<{ alerts: typeof alerts.value }>('/admin-api/dashboard-alerts', { headers: authHeaders() }).catch(() => DEGRADED),
     ])
     stats.value = s
-    if (m !== DEGRADED) modStats.value = m as Record<string, unknown>
-    if (ir && ir !== DEGRADED) infoReports.value = (ir as Record<string, unknown>).total as number ?? 0
-    partialDegraded.value = m === DEGRADED || ir === DEGRADED
+    if (a !== DEGRADED) alerts.value = (a as { alerts: typeof alerts.value }).alerts
+    partialDegraded.value = a === DEGRADED
   } catch {
     showToast('Không thể tải dữ liệu dashboard', 'error')
   }
@@ -278,8 +274,15 @@ onMounted(fetchDashboard)
 .dash-alert:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 .dash-alert.warn { background: rgba(255,159,10,.1); color: #c67a00; border: .5px solid rgba(255,159,10,.2); }
 .dash-alert.error { background: rgba(217,79,61,.1); color: #b33a2a; border: .5px solid rgba(217,79,61,.2); }
+.dash-alert.info { background: rgba(52,120,246,.08); color: #2563EB; border: .5px solid rgba(52,120,246,.15); }
+.dash-alert-icon { font-size: 1.1rem; flex-shrink: 0; }
 .dash-alert-num { font-size: 1.3rem; font-weight: 800; min-width: 32px; }
 .dash-alert-arrow { margin-left: auto; opacity: .5; }
+.dash-all-clear {
+  display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4);
+  border-radius: 10px; margin-bottom: var(--space-8); font-size: .88rem; font-weight: 500;
+  background: rgba(33,150,83,.08); color: var(--primary, #219653); border: .5px solid rgba(33,150,83,.15);
+}
 
 /* ── Quick actions ── */
 .dash-section { margin-bottom: var(--space-6); }

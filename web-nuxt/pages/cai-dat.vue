@@ -11,6 +11,22 @@
     <div v-else class="settings-card card">
       <h1>Cài đặt hồ sơ</h1>
       <form class="settings-form" @submit.prevent="save">
+        <div class="sf-avatar-section">
+          <div class="sf-avatar-preview" @click="($refs.avatarInput as HTMLInputElement)?.click()">
+            <img v-if="avatarPreview || user?.avatar_url" :src="avatarPreview || user?.avatar_url!" alt="Avatar" class="sf-avatar-img" />
+            <AvatarPlaceholder v-else :initial="user?.display_name?.[0]?.toUpperCase()" />
+            <span class="sf-avatar-overlay">📷</span>
+          </div>
+          <div class="sf-avatar-info">
+            <span class="sf-label">Ảnh đại diện</span>
+            <span class="sf-hint">JPEG, PNG hoặc WebP. Tối đa 12MB.</span>
+            <button type="button" class="btn btn-ghost btn-sm" :disabled="uploadingAvatar" @click="($refs.avatarInput as HTMLInputElement)?.click()">
+              {{ uploadingAvatar ? 'Đang tải...' : 'Đổi ảnh' }}
+            </button>
+          </div>
+          <input ref="avatarInput" type="file" accept="image/jpeg,image/png,image/webp" hidden @change="onAvatarChange" />
+        </div>
+
         <label class="sf-field">
           <span class="sf-label">Tên hiển thị</span>
           <input
@@ -63,6 +79,33 @@ const displayName = ref(user.value?.display_name || '')
 const bio = ref('')
 const saving = ref(false)
 const nameError = ref('')
+const uploadingAvatar = ref(false)
+const avatarPreview = ref('')
+
+async function onAvatarChange(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  avatarPreview.value = URL.createObjectURL(file)
+  uploadingAvatar.value = true
+  try {
+    const form = new FormData()
+    form.append('file', file)
+    const res = await $fetch<{ avatar_url: string }>('/auth/avatar', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: form,
+    })
+    if (res.avatar_url) {
+      await fetchMe()
+      showToast('Đã cập nhật ảnh đại diện', 'success')
+    }
+  } catch (err: any) {
+    avatarPreview.value = ''
+    showToast(err?.data?.detail || 'Không thể tải ảnh lên', 'error')
+  } finally {
+    uploadingAvatar.value = false
+  }
+}
 
 // Prefill bio from the public profile (User type doesn't carry bio).
 onMounted(async () => {
@@ -117,4 +160,19 @@ async function save() {
 .sf-textarea { resize: vertical; min-height: 90px; }
 .sf-error { color: var(--danger, #c0392b); font-size: .85rem; }
 .sf-actions { display: flex; gap: .75rem; align-items: center; }
+.sf-avatar-section { display: flex; align-items: center; gap: 1rem; }
+.sf-avatar-preview {
+  width: 80px; height: 80px; border-radius: 50%; overflow: hidden; cursor: pointer;
+  position: relative; flex-shrink: 0; border: 2px solid var(--border-input);
+}
+.sf-avatar-preview:hover .sf-avatar-overlay { opacity: 1; }
+.sf-avatar-img { width: 100%; height: 100%; object-fit: cover; }
+.sf-avatar-overlay {
+  position: absolute; inset: 0; background: rgba(0,0,0,.45); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+  opacity: 0; transition: opacity .2s;
+}
+.sf-avatar-info { display: flex; flex-direction: column; gap: .25rem; }
+.sf-avatar-info .sf-hint { font-size: .8rem; }
+.btn-sm { padding: .3rem .7rem; font-size: .85rem; }
 </style>

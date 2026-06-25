@@ -1,7 +1,9 @@
 export interface User {
-  id: number
+  id: string
   phone: string
   display_name: string | null
+  avatar_url: string | null
+  bio: string
   role: string
   created_at: string
   has_password?: boolean

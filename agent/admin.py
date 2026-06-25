@@ -802,6 +802,77 @@ async def admin_stats():
     }
 
 
+@router.get("/badge-counts")
+async def badge_counts():
+    """Lightweight counts cho sidebar badges — moderation/images/unclassified/provisional."""
+    counts = {"moderation": 0, "images": 0, "unclassified": 0, "provisional": 0, "reports": 0}
+    with db._conn() as conn:
+        row = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ('pending','review','flagged')", ())
+        if row:
+            counts["moderation"] = db._row_to_dict(row)["c"]
+    try:
+        counts["images"] = _imgq.status_counts().get("pending", 0)
+    except Exception:
+        pass
+    unc = [e for e in db.all_entities() if e.get("type") != "place" and not e.get("placeId")]
+    counts["unclassified"] = len(unc)
+    try:
+        import kb_curation
+        s = kb_curation.stats()
+        counts["provisional"] = s.get("pending", 0)
+    except Exception:
+        pass
+    if _INFO_REPORTS_FILE.exists():
+        try:
+            lines = _INFO_REPORTS_FILE.read_text(encoding="utf-8").strip().split("\n")
+            counts["reports"] = sum(1 for l in lines if l.strip() and json.loads(l).get("status", "open") == "open")
+        except Exception:
+            pass
+    return counts
+
+
+@router.get("/dashboard-alerts")
+async def dashboard_alerts():
+    """Priority-sorted alerts cho admin dashboard."""
+    alerts: list[dict] = []
+    with db._conn() as conn:
+        mod = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ('flagged')", ())
+        flagged = db._row_to_dict(mod)["c"] if mod else 0
+        mod2 = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ('pending','review')", ())
+        pending_mod = db._row_to_dict(mod2)["c"] if mod2 else 0
+    if flagged:
+        alerts.append({"type": "flagged", "count": flagged, "label": f"{flagged} bài viết bị gắn cờ", "icon": "🚩", "link": "/admin/kiem-duyet?tab=flagged", "priority": 1})
+    if pending_mod:
+        alerts.append({"type": "moderation", "count": pending_mod, "label": f"{pending_mod} bài chờ duyệt", "icon": "📝", "link": "/admin/kiem-duyet", "priority": 2})
+    if _INFO_REPORTS_FILE.exists():
+        try:
+            lines = _INFO_REPORTS_FILE.read_text(encoding="utf-8").strip().split("\n")
+            open_reports = sum(1 for l in lines if l.strip() and json.loads(l).get("status", "open") == "open")
+            if open_reports:
+                alerts.append({"type": "reports", "count": open_reports, "label": f"{open_reports} báo sai chưa xử lý", "icon": "⚠️", "link": "/admin/bao-cao", "priority": 3})
+        except Exception:
+            pass
+    try:
+        img_pending = _imgq.status_counts().get("pending", 0)
+        if img_pending:
+            alerts.append({"type": "images", "count": img_pending, "label": f"{img_pending} ảnh chờ duyệt", "icon": "🖼️", "link": "/admin/duyet-anh", "priority": 4})
+    except Exception:
+        pass
+    unc = [e for e in db.all_entities() if e.get("type") != "place" and not e.get("placeId")]
+    if unc:
+        alerts.append({"type": "unclassified", "count": len(unc), "label": f"{len(unc)} entity chưa phân loại", "icon": "📍", "link": "/admin/chua-phan-loai", "priority": 5})
+    try:
+        import kb_curation
+        s = kb_curation.stats()
+        prov = s.get("pending", 0)
+        if prov:
+            alerts.append({"type": "provisional", "count": prov, "label": f"{prov} entity chờ xét duyệt", "icon": "🔬", "link": "/admin/duyet-tu-hoc", "priority": 6})
+    except Exception:
+        pass
+    alerts.sort(key=lambda a: a["priority"])
+    return {"alerts": alerts[:5]}
+
+
 @router.post("/trigger-learn")
 async def trigger_learn(category: Optional[str] = None, topics: int = 3):
     """Trigger 1 vòng auto-learn (chạy background)."""
