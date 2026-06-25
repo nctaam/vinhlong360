@@ -185,28 +185,32 @@ async def toggle_follow(target_type: str, target_id: str, user=Depends(require_u
     if target_type == "user" and target_id == str(user["id"]):
         raise HTTPException(400, "Không thể tự follow chính mình")
 
-    # Guard: không tạo follow rác trỏ entity không tồn-tại (bug-hunt 2026-06-24)
+    # Guard: không tạo follow rác trỏ đối tượng không tồn tại
     if target_type == "entity" and not db.get_entity(target_id):
         raise HTTPException(404, "Không tìm thấy địa điểm")
+    if target_type == "user":
+        ph = db._ph
+        with db._conn() as conn:
+            if not db._fetchone(conn, f"SELECT 1 FROM users WHERE id::text = {ph} AND is_active = TRUE", (target_id,)):
+                raise HTTPException(404, "Không tìm thấy người dùng")
 
     ph = db._ph
+    uid = str(user["id"])
     with db._conn() as conn:
-        existing = db._fetchone(conn, f"""
-            SELECT 1 FROM follows
+        deleted = db._fetchone(conn, f"""
+            DELETE FROM follows
             WHERE follower_id = {ph}::uuid AND target_type = {ph} AND target_id = {ph}
-        """, (str(user["id"]), target_type, target_id))
+            RETURNING 1
+        """, (uid, target_type, target_id))
 
-        if existing:
-            db._execute(conn, f"""
-                DELETE FROM follows
-                WHERE follower_id = {ph}::uuid AND target_type = {ph} AND target_id = {ph}
-            """, (str(user["id"]), target_type, target_id))
+        if deleted:
             following = False
         else:
             db._execute(conn, f"""
                 INSERT INTO follows (follower_id, target_type, target_id)
                 VALUES ({ph}::uuid, {ph}, {ph})
-            """, (str(user["id"]), target_type, target_id))
+                ON CONFLICT DO NOTHING
+            """, (uid, target_type, target_id))
             following = True
 
             if target_type == "user":
@@ -305,28 +309,27 @@ async def toggle_block(blocked_id: str, user=Depends(require_user)):
         raise HTTPException(400, "Không thể tự chặn chính mình")
 
     ph = db._ph
+    uid = str(user["id"])
     with db._conn() as conn:
-        existing = db._fetchone(conn, f"""
-            SELECT 1 FROM blocks
+        deleted = db._fetchone(conn, f"""
+            DELETE FROM blocks
             WHERE blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid
-        """, (str(user["id"]), blocked_id))
+            RETURNING 1
+        """, (uid, blocked_id))
 
-        if existing:
-            db._execute(conn, f"""
-                DELETE FROM blocks
-                WHERE blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid
-            """, (str(user["id"]), blocked_id))
+        if deleted:
             blocked = False
         else:
             db._execute(conn, f"""
                 INSERT INTO blocks (blocker_id, blocked_id)
                 VALUES ({ph}::uuid, {ph}::uuid)
-            """, (str(user["id"]), blocked_id))
+                ON CONFLICT DO NOTHING
+            """, (uid, blocked_id))
             db._execute(conn, f"""
                 DELETE FROM follows
                 WHERE follower_id = {ph}::uuid AND followed_id = {ph}::uuid
                    OR follower_id = {ph}::uuid AND followed_id = {ph}::uuid
-            """, (str(user["id"]), blocked_id, blocked_id, str(user["id"])))
+            """, (uid, blocked_id, blocked_id, uid))
             blocked = True
 
     return {"blocked": blocked}
@@ -393,13 +396,12 @@ async def toggle_rsvp(entity_id: str, user=Depends(require_user)):
     ph = db._ph
     uid = str(user["id"])
     with db._conn() as conn:
-        existing = db._fetchone(conn,
-            f"SELECT 1 FROM event_rsvp WHERE user_id = {ph}::uuid AND entity_id = {ph}", (uid, entity_id))
-        if existing:
-            db._execute(conn, f"DELETE FROM event_rsvp WHERE user_id = {ph}::uuid AND entity_id = {ph}", (uid, entity_id))
+        deleted = db._fetchone(conn,
+            f"DELETE FROM event_rsvp WHERE user_id = {ph}::uuid AND entity_id = {ph} RETURNING 1", (uid, entity_id))
+        if deleted:
             going = False
         else:
-            db._execute(conn, f"INSERT INTO event_rsvp (user_id, entity_id) VALUES ({ph}::uuid, {ph})", (uid, entity_id))
+            db._execute(conn, f"INSERT INTO event_rsvp (user_id, entity_id) VALUES ({ph}::uuid, {ph}) ON CONFLICT DO NOTHING", (uid, entity_id))
             going = True
         cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM event_rsvp WHERE entity_id = {ph}", (entity_id,))
     return {"going": going, "count": int(db._row_to_dict(cnt)["c"]) if cnt else 0}
