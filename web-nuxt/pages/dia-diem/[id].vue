@@ -587,6 +587,11 @@ const practicalTips = computed(() => {
   if (a.family_friendly || a.suitable_for?.includes('family'))
     tips.push({ icon: '👨‍👩‍👧‍👦', label: 'Gia đình', value: 'Phù hợp cho gia đình có trẻ em' })
   if (a.parking) tips.push({ icon: '🅿️', label: 'Đậu xe', value: a.parking })
+  if (Array.isArray(a.travel_tips)) {
+    for (const t of a.travel_tips.slice(0, 3)) {
+      if (t) tips.push({ icon: '💡', label: 'Mẹo', value: t })
+    }
+  }
   return tips
 })
 

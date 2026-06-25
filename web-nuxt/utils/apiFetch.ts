@@ -9,7 +9,7 @@
 //
 // CÁCH: trên SERVER fetch qua origin công-khai; trên CLIENT dùng relative (bình-thường).
 // $fetch là global của Nuxt; utils/ auto-import → dùng apiFetch(...) thẳng trong page.
-const SSR_ORIGIN = 'https://vinhlong360.vn'
+const SSR_ORIGIN = import.meta.dev ? 'http://localhost:8360' : 'https://vinhlong360.vn'
 
 export function apiFetch<T = unknown>(url: string, opts: Record<string, unknown> = {}): Promise<T> {
   const base = import.meta.server ? SSR_ORIGIN : ''
