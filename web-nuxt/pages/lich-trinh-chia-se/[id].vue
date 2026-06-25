@@ -23,6 +23,7 @@
       <NuxtLink to="/tao-lich-trinh" class="btn btn-primary">Tạo lịch trình của bạn</NuxtLink>
     </div>
 
+    <SkeletonList v-else-if="status === 'pending'" :count="4" />
     <EmptyState v-else icon="🗺️" title="Không tìm thấy lịch trình" message="Lịch trình này không tồn tại hoặc chưa được công khai.">
       <NuxtLink to="/lich-trinh" class="btn btn-outline">Xem lịch trình gợi ý</NuxtLink>
     </EmptyState>
@@ -33,7 +34,7 @@
 const route = useRoute()
 const planId = String(route.params.id || '')
 
-const { data: plan } = await useAsyncData(`shared-plan-${planId}`, async () => {
+const { data: plan, status } = await useAsyncData(`shared-plan-${planId}`, async () => {
   try {
     const res = await apiFetch<{ plan: any }>(`/api/shared-plans/${encodeURIComponent(planId)}`)
     return res?.plan ?? null

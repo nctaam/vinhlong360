@@ -82,6 +82,14 @@
       </NuxtErrorBoundary>
     </div>
   </section>
+  <div v-else-if="pending" class="page">
+    <SkeletonList :count="4" />
+  </div>
+  <div v-else-if="fetchError" class="page">
+    <EmptyState icon="⚠️" tone="error" title="Không thể tải lịch trình" message="Lỗi kết nối. Vui lòng thử lại.">
+      <template #actions><NuxtLink to="/lich-trinh" class="btn btn-outline btn-sm">Về danh sách</NuxtLink></template>
+    </EmptyState>
+  </div>
   <div v-else class="page">
     <EmptyState message="Không tìm thấy lịch trình." />
   </div>
@@ -97,11 +105,12 @@ useReveal()
 const route = useRoute()
 const id = route.params.id as string
 
-const { data: itinerary, error: fetchError } = await useAsyncData(`itinerary-${id}`, () =>
+const { data: itinerary, error: fetchError, status } = await useAsyncData(`itinerary-${id}`, () =>
   apiFetch<Itinerary>(`/api/itineraries/${id}`)
 )
+const pending = computed(() => status.value === 'pending')
 
-if (fetchError.value) {
+if (import.meta.server && fetchError.value) {
   throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy lịch trình' })
 }
 
