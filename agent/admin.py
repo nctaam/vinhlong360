@@ -932,6 +932,37 @@ async def admin_stats():
     }
 
 
+@router.post("/backup-trigger")
+async def trigger_backup():
+    """B5c: trigger manual backup from admin UI."""
+    script = Path(__file__).resolve().parent.parent / "scripts" / "backup_data.py"
+    if not script.exists():
+        raise HTTPException(500, "backup_data.py not found")
+    try:
+        result = subprocess.run(
+            [sys.executable, str(script), "--label", "admin-manual"],
+            capture_output=True, text=True, timeout=30,
+        )
+        if result.returncode != 0:
+            raise HTTPException(500, result.stderr or "Backup failed")
+        backup_dir = Path(__file__).resolve().parent.parent / "scratch" / "backups"
+        dirs = sorted(backup_dir.iterdir(), key=lambda p: p.name, reverse=True)
+        latest = dirs[0] if dirs else None
+        size_mb = round(sum(f.stat().st_size for f in latest.rglob("*") if f.is_file()) / 1048576, 1) if latest else 0
+        return {
+            "success": True,
+            "backup_name": latest.name if latest else None,
+            "size_mb": size_mb,
+            "output": result.stdout.strip(),
+        }
+    except subprocess.TimeoutExpired:
+        raise HTTPException(504, "Backup timed out")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+
 @router.get("/badge-counts")
 async def badge_counts():
     """Lightweight counts cho sidebar badges — moderation/images/unclassified/provisional."""
@@ -1186,6 +1217,36 @@ async def batch_moderation(body: BatchModerationBody):
     for pid in body.post_ids:
         _log_mod_action("post", pid, status, body.reason.strip() or None)
     return {"success": True, "updated": updated}
+
+
+class ModNoteBody(BaseModel):
+    note: str = Field(..., min_length=1, max_length=500)
+
+
+@router.post("/moderation/{post_id}/note")
+async def add_moderation_note(post_id: str, body: ModNoteBody):
+    """B3d: Add internal admin note (not visible to poster)."""
+    ph = db._ph
+    with db._conn() as conn:
+        post = db._fetchone(conn, f"SELECT id FROM posts WHERE id::text = {ph}", (post_id,))
+        if not post:
+            raise HTTPException(404, "Post not found")
+        db._execute(conn, f"""
+            UPDATE posts SET moderation_notes = COALESCE(moderation_notes, '[]'::jsonb) || {ph}::jsonb
+            WHERE id::text = {ph}
+        """, (json.dumps({"text": body.note, "at": datetime.now().isoformat()}), post_id))
+    return {"success": True}
+
+
+@router.get("/moderation/{post_id}/notes")
+async def get_moderation_notes(post_id: str):
+    ph = db._ph
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"SELECT moderation_notes FROM posts WHERE id::text = {ph}", (post_id,))
+    if not row:
+        raise HTTPException(404, "Post not found")
+    notes = db._row_to_dict(row).get("moderation_notes") or []
+    return {"notes": notes}
 
 
 @router.get("/moderation/stats")
@@ -1484,6 +1545,7 @@ def _mod_post(row: dict) -> dict:
         "phone": _mask(row.get("phone", "")),
         "entity_name": row.get("entity_name"),
         "created_at": str(row.get("created_at", "")),
+        "moderation_notes": row.get("moderation_notes") or [],
     }
 
 

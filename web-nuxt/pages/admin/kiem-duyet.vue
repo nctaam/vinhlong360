@@ -164,6 +164,21 @@
         <div v-if="previewPost.images?.length" class="mod-preview-images">
           <img v-for="(img, i) in previewPost.images" :key="i" :src="img" :alt="`Ảnh ${i+1}`" loading="lazy" />
         </div>
+        <!-- Moderation notes -->
+        <div class="mod-notes-section">
+          <strong class="mod-notes-title">Ghi chú nội bộ</strong>
+          <div v-if="previewPost.moderation_notes?.length" class="mod-notes-list">
+            <div v-for="(n, i) in previewPost.moderation_notes" :key="i" class="mod-note-item">
+              <span class="mod-note-text">{{ n.text }}</span>
+              <time class="mod-note-time">{{ formatDate(n.at) }}</time>
+            </div>
+          </div>
+          <div v-else class="mod-notes-empty">Chưa có ghi chú</div>
+          <div class="mod-note-add">
+            <input v-model="newNote" type="text" class="mod-note-input" placeholder="Thêm ghi chú…" @keyup.enter="addNote(previewPost.id)" />
+            <button type="button" class="btn btn-sm btn-outline" :disabled="!newNote.trim() || noteSaving" @click="addNote(previewPost.id)">Thêm</button>
+          </div>
+        </div>
         <div class="mod-preview-actions">
           <button v-if="previewPost.moderation_status !== 'approved'" type="button" class="btn btn-success" @click="approve(previewPost.id); previewPost = null">Duyệt</button>
           <button v-if="previewPost.moderation_status !== 'rejected'" type="button" class="btn btn-danger" @click="startReject(previewPost.id); previewPost = null">Từ chối</button>
@@ -213,6 +228,8 @@ const rejectingId = ref<string | null>(null)
 const rejectReason = ref('')
 const batchSelected = ref<Set<string>>(new Set())
 const batchBusy = ref(false)
+const newNote = ref('')
+const noteSaving = ref(false)
 
 const allBatchSelected = computed(() => queue.value.length > 0 && queue.value.every(p => batchSelected.value.has(p.id)))
 function toggleBatch(id: string) { batchSelected.value.has(id) ? batchSelected.value.delete(id) : batchSelected.value.add(id); batchSelected.value = new Set(batchSelected.value) }
@@ -337,6 +354,27 @@ function onKeydown(e: KeyboardEvent) {
   else if (e.key === 'r' && focusedPost.value && focusedPost.value.moderation_status !== 'rejected') { startReject(focusedPost.value.id); e.preventDefault() }
 }
 
+async function addNote(postId: string) {
+  const text = newNote.value.trim()
+  if (!text) return
+  noteSaving.value = true
+  try {
+    await $fetch(`/admin-api/moderation/${postId}/note`, { method: 'POST', headers: authHeaders(), body: { note: text } })
+    if (previewPost.value) {
+      if (!previewPost.value.moderation_notes) previewPost.value.moderation_notes = []
+      previewPost.value.moderation_notes.push({ text, at: new Date().toISOString() })
+    }
+    const q = queue.value.find(p => p.id === postId)
+    if (q) {
+      if (!q.moderation_notes) q.moderation_notes = []
+      q.moderation_notes.push({ text, at: new Date().toISOString() })
+    }
+    newNote.value = ''
+    showToast('Đã thêm ghi chú', 'success')
+  } catch { showToast('Lỗi thêm ghi chú', 'error') }
+  noteSaving.value = false
+}
+
 onMounted(() => {
   fetchQueue()
   window.addEventListener('keydown', onKeydown)
@@ -459,4 +497,14 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-preview-images { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-4); }
 .mod-preview-images img { max-width: 200px; max-height: 200px; border-radius: 8px; object-fit: cover; }
 .mod-preview-actions { display: flex; gap: var(--space-2); justify-content: flex-end; }
+.mod-notes-section { border-top: 1px solid var(--line); padding-top: var(--space-3); margin-bottom: var(--space-4); }
+.mod-notes-title { font-size: .82rem; display: block; margin-bottom: var(--space-2); }
+.mod-notes-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--space-2); }
+.mod-note-item { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); padding: 6px 10px; background: var(--bg-alt); border-radius: 8px; font-size: .82rem; }
+.mod-note-text { flex: 1; }
+.mod-note-time { font-size: .72rem; color: var(--muted); white-space: nowrap; }
+.mod-notes-empty { font-size: .78rem; color: var(--muted); font-style: italic; margin-bottom: var(--space-2); }
+.mod-note-add { display: flex; gap: var(--space-2); }
+.mod-note-input { flex: 1; padding: 7px 12px; border: .5px solid var(--line); border-radius: 8px; font-size: .82rem; background: var(--bg); color: var(--ink); }
+.mod-note-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(33,150,83,.1); }
 </style>

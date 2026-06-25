@@ -3,6 +3,7 @@ vinhlong360 — Notifications + Community Features.
 
 Endpoints:
   GET  /api/notifications          — list notifications (polling)
+  GET  /api/notifications/stream   — SSE real-time stream
   POST /api/notifications/read-all — mark all as read
   POST /api/follow/{type}/{id}     — toggle follow user/entity
   GET  /api/following              — list follows
@@ -10,9 +11,12 @@ Endpoints:
   POST /api/block/{user_id}        — toggle block user
 """
 
+import asyncio
+import json
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from starlette.responses import StreamingResponse
 from pydantic import BaseModel, field_validator
 
 from auth_middleware import get_current_user, require_user
@@ -105,6 +109,52 @@ async def mark_notification_read(notif_id: str, user=Depends(require_user)):
     return {"success": True}
 
 
+_sse_subscribers: dict[str, list[asyncio.Queue]] = {}
+
+
+def _notify_sse(user_id: str, data: dict):
+    queues = _sse_subscribers.get(user_id, [])
+    for q in queues:
+        try:
+            q.put_nowait(data)
+        except asyncio.QueueFull:
+            pass
+
+
+@router.get("/notifications/stream")
+async def notification_stream(request: Request, token: str = Query(None)):
+    from auth import _hash_token
+    if not token:
+        raise HTTPException(401, "Token required")
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"""
+            SELECT u.id FROM user_sessions s
+            JOIN users u ON u.id = s.user_id
+            WHERE s.token = {db._ph} AND s.expires_at > NOW() AND u.is_active = TRUE
+        """, (_hash_token(token),))
+    if not row:
+        raise HTTPException(401, "Invalid token")
+    uid = str(db._row_to_dict(row)["id"])
+    queue: asyncio.Queue = asyncio.Queue(maxsize=50)
+    _sse_subscribers.setdefault(uid, []).append(queue)
+
+    async def event_generator():
+        try:
+            while True:
+                if await request.is_disconnected():
+                    break
+                try:
+                    data = await asyncio.wait_for(queue.get(), timeout=30)
+                    yield f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
+                except asyncio.TimeoutError:
+                    yield ": keepalive\n\n"
+        finally:
+            _sse_subscribers.get(uid, []).remove(queue) if queue in _sse_subscribers.get(uid, []) else None
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
 def create_notification(user_id: str, notif_type: str, title: str,
                         body: str = None, ref_type: str = None, ref_id: str = None,
                         actor_id: str = None):
@@ -121,6 +171,8 @@ def create_notification(user_id: str, notif_type: str, title: str,
             INSERT INTO notifications (user_id, type, title, body, ref_type, ref_id)
             VALUES ({ph}::uuid, {ph}, {ph}, {ph}, {ph}, {ph})
         """, (user_id, notif_type, title, body, ref_type, ref_id))
+    _notify_sse(user_id, {"type": notif_type, "title": title, "body": body,
+                          "ref_type": ref_type, "ref_id": ref_id})
 
 
 # ── Follow ──

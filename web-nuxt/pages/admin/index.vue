@@ -91,7 +91,9 @@
         <span v-if="health.memory_mb">RAM: <b>{{ health.memory_mb }}MB</b></span>
         <span>LLM: <b :class="health.llm_api === 'ok' ? '' : 'dash-health-warn'">{{ health.llm_api || 'chưa kiểm' }}</b></span>
         <span v-if="health.data_quality">Dữ liệu: <b>{{ health.data_quality.coverage_pct }}%</b></span>
-        <span v-if="stats.backup">Backup: <b>{{ stats.backup.last }}</b> ({{ stats.backup.size_mb }}MB, {{ stats.backup.count }} bản)</span>
+        <span v-if="stats.backup">Backup: <b>{{ stats.backup.last }}</b> ({{ stats.backup.size_mb }}MB, {{ stats.backup.count }} bản)
+          <button type="button" class="dash-backup-btn" :disabled="backupRunning" @click="triggerBackup">{{ backupRunning ? 'Đang chạy…' : 'Tạo backup' }}</button>
+        </span>
       </div>
     </div>
 
@@ -214,6 +216,7 @@ const health = ref<Record<string, any> | null>(null)
 const recentActivity = ref<Array<{ method: string; path: string; ts: string }>>([])
 const loading = ref(true)
 const partialDegraded = ref(false)
+const backupRunning = ref(false)
 
 function formatNum(n: unknown): string {
   const num = Number(n) || 0
@@ -294,6 +297,16 @@ async function fetchDashboard() {
     showToast('Không thể tải dữ liệu dashboard', 'error')
   }
   loading.value = false
+}
+
+async function triggerBackup() {
+  backupRunning.value = true
+  try {
+    const r = await $fetch<{ success: boolean; backup_name: string; size_mb: number }>('/admin-api/backup-trigger', { method: 'POST', headers: authHeaders() })
+    showToast(`Backup thành công: ${r.backup_name} (${r.size_mb}MB)`, 'success')
+    await fetchDashboard()
+  } catch (e: any) { showToast(e?.data?.detail || 'Backup thất bại', 'error') }
+  backupRunning.value = false
 }
 
 onMounted(fetchDashboard)
@@ -379,6 +392,13 @@ onMounted(fetchDashboard)
 }
 .dash-health-metrics b { color: var(--ink); font-weight: 600; }
 .dash-health-warn { color: #FF9F0A !important; }
+.dash-backup-btn {
+  display: inline-block; margin-left: 8px; padding: 2px 10px; border-radius: 6px;
+  border: .5px solid var(--line); background: var(--bg); color: var(--primary-fg, #219653);
+  font-size: .72rem; font-weight: 600; cursor: pointer; transition: background .2s;
+}
+.dash-backup-btn:hover:not(:disabled) { background: rgba(33,150,83,.08); }
+.dash-backup-btn:disabled { opacity: .5; cursor: wait; }
 .dark .dash-health { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 
 /* ── Entity completeness ── */
