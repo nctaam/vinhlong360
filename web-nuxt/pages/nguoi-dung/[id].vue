@@ -378,6 +378,17 @@ const showMoreMenu = ref(false)
 const isBlocked = ref(false)
 const { confirm } = useConfirm()
 
+function onClickOutsideMore(e: MouseEvent) {
+  const wrap = (e.target as HTMLElement)?.closest('.profile-more-wrap')
+  if (!wrap) showMoreMenu.value = false
+}
+watch(showMoreMenu, (v) => {
+  if (import.meta.client) {
+    if (v) setTimeout(() => document.addEventListener('click', onClickOutsideMore), 0)
+    else document.removeEventListener('click', onClickOutsideMore)
+  }
+})
+
 async function checkBlocked() {
   if (!isLoggedIn.value || isSelf.value) return
   try {
