@@ -103,10 +103,17 @@ async def mark_notification_read(notif_id: str, user=Depends(require_user)):
 
 
 def create_notification(user_id: str, notif_type: str, title: str,
-                        body: str = None, ref_type: str = None, ref_id: str = None):
+                        body: str = None, ref_type: str = None, ref_id: str = None,
+                        actor_id: str = None):
     """Create a notification (called internally by other modules)."""
     ph = db._ph
     with db._conn() as conn:
+        if actor_id:
+            blocked = db._fetchone(conn, f"""
+                SELECT 1 FROM blocks WHERE blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid
+            """, (user_id, actor_id))
+            if blocked:
+                return
         db._execute(conn, f"""
             INSERT INTO notifications (user_id, type, title, body, ref_type, ref_id)
             VALUES ({ph}::uuid, {ph}, {ph}, {ph}, {ph}, {ph})
@@ -257,9 +264,27 @@ async def toggle_block(blocked_id: str, user=Depends(require_user)):
                 INSERT INTO blocks (blocker_id, blocked_id)
                 VALUES ({ph}::uuid, {ph}::uuid)
             """, (str(user["id"]), blocked_id))
+            db._execute(conn, f"""
+                DELETE FROM follows
+                WHERE follower_id = {ph}::uuid AND followed_id = {ph}::uuid
+                   OR follower_id = {ph}::uuid AND followed_id = {ph}::uuid
+            """, (str(user["id"]), blocked_id, blocked_id, str(user["id"])))
             blocked = True
 
     return {"blocked": blocked}
+
+
+@router.get("/blocked-users")
+async def list_blocked_users(user=Depends(require_user)):
+    ph = db._ph
+    with db._conn() as conn:
+        rows = db._fetchall(conn, f"""
+            SELECT u.id, u.display_name, u.avatar_url, b.created_at
+            FROM blocks b JOIN users u ON u.id = b.blocked_id
+            WHERE b.blocker_id = {ph}::uuid
+            ORDER BY b.created_at DESC
+        """, (str(user["id"]),))
+    return {"blocked": [{"id": str(db._row_to_dict(r)["id"]), "display_name": db._row_to_dict(r).get("display_name"), "avatar_url": db._row_to_dict(r).get("avatar_url"), "blocked_at": str(db._row_to_dict(r).get("created_at", ""))} for r in rows]}
 
 
 # ── Helpers ──

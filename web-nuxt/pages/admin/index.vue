@@ -50,6 +50,20 @@
           <div class="dash-stat-label">Lịch trình</div>
         </div>
       </div>
+      <div v-if="stats.total_users" class="dash-stat-card">
+        <div class="dash-stat-icon" style="background: rgba(88,86,214,.1); color: #5856D6;">&#128101;</div>
+        <div class="dash-stat-body">
+          <div class="dash-stat-value">{{ formatNum(stats.total_users) }}<span v-if="stats.users_week" class="dash-delta">+{{ stats.users_week }}</span></div>
+          <div class="dash-stat-label">Users</div>
+        </div>
+      </div>
+      <div v-if="stats.total_posts" class="dash-stat-card">
+        <div class="dash-stat-icon" style="background: rgba(255,69,58,.1); color: #FF453A;">&#128172;</div>
+        <div class="dash-stat-body">
+          <div class="dash-stat-value">{{ formatNum(stats.total_posts) }}<span v-if="stats.posts_week" class="dash-delta">+{{ stats.posts_week }}</span></div>
+          <div class="dash-stat-label">Bài viết</div>
+        </div>
+      </div>
     </div>
 
     <!-- Dynamic priority alerts -->
@@ -275,6 +289,7 @@ onMounted(fetchDashboard)
 .dash-stat-card:hover .dash-stat-icon { transform: scale(1.08); }
 .dash-stat-value { font-size: 1.5rem; font-weight: 800; line-height: 1.2; }
 .dash-stat-label { font-size: .75rem; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: .5px; }
+.dash-delta { font-size: .7rem; font-weight: 600; color: #34C759; margin-left: 4px; }
 
 /* ── Partial-degradation banner ── */
 .dash-degraded {

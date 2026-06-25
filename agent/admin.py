@@ -60,6 +60,9 @@ def _safe(fn, default):
 _AUDIT_FILE = Path(__file__).resolve().parent / "data" / "admin_audit.jsonl"
 
 
+_AUDIT_MAX_LINES = 5000
+
+
 def _log_admin_audit(actor: str, method: str, path: str, ip: str) -> None:
     """P2-7: ghi nhật ký thao tác admin (ai/làm-gì/khi-nào) — JSONL nhẹ, không chặn request."""
     try:
@@ -68,8 +71,23 @@ def _log_admin_audit(actor: str, method: str, path: str, ip: str) -> None:
                "method": method, "path": path, "ip": ip}
         with open(_AUDIT_FILE, "a", encoding="utf-8") as f:
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+        _maybe_rotate_audit()
     except Exception:
-        pass  # audit không bao giờ chặn thao tác
+        pass
+
+
+def _maybe_rotate_audit() -> None:
+    try:
+        if not _AUDIT_FILE.exists():
+            return
+        lines = _AUDIT_FILE.read_text(encoding="utf-8").splitlines()
+        if len(lines) <= _AUDIT_MAX_LINES:
+            return
+        archive = _AUDIT_FILE.with_suffix(f".{datetime.now().strftime('%Y%m%d%H%M%S')}.jsonl")
+        archive.write_text("\n".join(lines[:-_AUDIT_MAX_LINES]) + "\n", encoding="utf-8")
+        _AUDIT_FILE.write_text("\n".join(lines[-_AUDIT_MAX_LINES:]) + "\n", encoding="utf-8")
+    except Exception:
+        pass
 
 
 async def require_admin(request: Request):
@@ -793,12 +811,30 @@ async def admin_stats():
             by_type[d["type"]] = d["c"]
             total_entities += d["c"]
 
+    deltas = {}
+    if db._use_pg:
+        try:
+            with db._conn() as pg:
+                users_week = db._fetchone(pg, "SELECT COUNT(*) as c FROM users WHERE created_at > NOW() - INTERVAL '7 days'", ())
+                posts_week = db._fetchone(pg, "SELECT COUNT(*) as c FROM posts WHERE created_at > NOW() - INTERVAL '7 days'", ())
+                total_users = db._fetchone(pg, "SELECT COUNT(*) as c FROM users", ())
+                total_posts = db._fetchone(pg, "SELECT COUNT(*) as c FROM posts", ())
+            deltas = {
+                "users_week": db._row_to_dict(users_week)["c"] if users_week else 0,
+                "posts_week": db._row_to_dict(posts_week)["c"] if posts_week else 0,
+                "total_users": db._row_to_dict(total_users)["c"] if total_users else 0,
+                "total_posts": db._row_to_dict(total_posts)["c"] if total_posts else 0,
+            }
+        except Exception:
+            pass
+
     return {
         "total_entities": total_entities,
         "total_places": total_places,
         "total_relationships": rel_count["c"] if rel_count else 0,
         "total_itineraries": itin_count["c"] if itin_count else 0,
         "by_type": by_type,
+        **deltas,
     }
 
 

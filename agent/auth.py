@@ -117,6 +117,7 @@ class PasswordLogin(BaseModel):
 
 class SetPassword(BaseModel):
     password: str
+    current_password: str | None = None
 
     @field_validator("password")
     @classmethod
@@ -307,6 +308,9 @@ async def verify_otp(body: OTPVerify, request: Request):
         if not body.consent:
             raise HTTPException(400, "Vui lòng đồng ý Điều khoản sử dụng và Chính sách bảo mật")
         user = db.create_user(phone, consent_version=CONSENT_VERSION)
+    elif not user.get("is_active", True):
+        db.update_user(str(user["id"]), is_active=True)
+        user["is_active"] = True
 
     token = _generate_token()
     expires = datetime.now(timezone.utc) + timedelta(days=SESSION_EXPIRE_DAYS)
@@ -384,6 +388,12 @@ async def set_password(body: SetPassword, request: Request):
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
 
+    if user.get("password_hash"):
+        if not body.current_password:
+            raise HTTPException(400, "Vui lòng nhập mật khẩu hiện tại")
+        if not _verify_password(body.current_password, user["password_hash"]):
+            raise HTTPException(400, "Mật khẩu hiện tại không đúng")
+
     hashed = _hash_password(body.password)
     db.update_user(str(user["id"]), password_hash=hashed)
 
@@ -410,12 +420,65 @@ async def logout(request: Request):
     return {"success": True}
 
 
+@router.get("/sessions")
+async def list_sessions(request: Request):
+    user = await _get_current_user_or_none(request)
+    if not user:
+        raise HTTPException(401, "Chưa đăng nhập")
+    cur_token = _extract_token(request)
+    cur_hash = _hash_token(cur_token) if cur_token else None
+    with db._conn() as conn:
+        rows = db._fetchall(conn, f"""
+            SELECT id, user_agent, ip_address, created_at, expires_at, token
+            FROM user_sessions
+            WHERE user_id::text = {db._ph} AND expires_at > NOW()
+            ORDER BY created_at DESC
+        """, (str(user["id"]),))
+    sessions = []
+    for r in rows:
+        rd = db._row_to_dict(r)
+        sessions.append({
+            "id": str(rd["id"]),
+            "user_agent": rd.get("user_agent", ""),
+            "ip_address": rd.get("ip_address", ""),
+            "created_at": str(rd.get("created_at", "")),
+            "expires_at": str(rd.get("expires_at", "")),
+            "is_current": rd.get("token") == cur_hash,
+        })
+    return {"sessions": sessions}
+
+
+@router.delete("/sessions/{session_id}")
+async def revoke_session(session_id: str, request: Request):
+    user = await _get_current_user_or_none(request)
+    if not user:
+        raise HTTPException(401, "Chưa đăng nhập")
+    with db._conn() as conn:
+        db._execute(conn, f"""
+            DELETE FROM user_sessions
+            WHERE id::text = {db._ph} AND user_id::text = {db._ph}
+        """, (session_id, str(user["id"])))
+    return {"success": True}
+
+
 @router.get("/me")
 async def get_me(request: Request):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
     return {"user": _safe_user(user)}
+
+
+@router.post("/deactivate")
+async def deactivate_account(request: Request):
+    user = await _get_current_user_or_none(request)
+    if not user:
+        raise HTTPException(401, "Chưa đăng nhập")
+    uid = str(user["id"])
+    db.update_user(uid, is_active=False)
+    with db._conn() as conn:
+        db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph}", (uid,))
+    return {"success": True, "message": "Tài khoản đã bị vô hiệu hóa. Đăng nhập lại bằng OTP để kích hoạt."}
 
 
 @router.delete("/account")

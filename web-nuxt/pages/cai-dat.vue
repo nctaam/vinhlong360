@@ -61,6 +61,65 @@
         </div>
       </form>
     </div>
+
+    <!-- Password management -->
+    <div v-if="isLoggedIn" class="settings-card card">
+      <h2>Mật khẩu</h2>
+      <p v-if="!user?.has_password" class="sf-hint">Bạn chưa đặt mật khẩu. Đặt mật khẩu để đăng nhập nhanh hơn.</p>
+      <form class="settings-form" @submit.prevent="savePassword">
+        <label v-if="user?.has_password" class="sf-field">
+          <span class="sf-label">Mật khẩu hiện tại</span>
+          <input v-model="currentPw" type="password" class="sf-input" autocomplete="current-password" required />
+        </label>
+        <label class="sf-field">
+          <span class="sf-label">{{ user?.has_password ? 'Mật khẩu mới' : 'Đặt mật khẩu' }}</span>
+          <input v-model="newPw" type="password" class="sf-input" minlength="6" autocomplete="new-password" required />
+        </label>
+        <div class="sf-actions">
+          <button type="submit" class="btn btn-primary" :disabled="savingPw">
+            {{ savingPw ? 'Đang lưu...' : (user?.has_password ? 'Đổi mật khẩu' : 'Đặt mật khẩu') }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Active sessions -->
+    <div v-if="isLoggedIn" class="settings-card card">
+      <h2>Phiên đăng nhập</h2>
+      <div v-if="sessionsLoading" class="sf-hint">Đang tải...</div>
+      <div v-else-if="sessions.length" class="sessions-list">
+        <div v-for="s in sessions" :key="s.id" :class="['session-item', { current: s.is_current }]">
+          <div class="session-info">
+            <span class="session-ua">{{ shortUA(s.user_agent) }}</span>
+            <span class="sf-hint">{{ s.ip_address }} &middot; {{ timeAgo(s.created_at) }}</span>
+          </div>
+          <span v-if="s.is_current" class="session-badge">Hiện tại</span>
+          <button v-else type="button" class="btn btn-ghost btn-sm btn-danger-text" @click="revokeSession(s.id)">Thu hồi</button>
+        </div>
+      </div>
+      <p v-else class="sf-hint">Không có phiên nào.</p>
+    </div>
+
+    <!-- Danger zone -->
+    <div v-if="isLoggedIn" class="settings-card card settings-danger">
+      <h2>Vùng nguy hiểm</h2>
+      <div class="danger-actions">
+        <div class="danger-item">
+          <div>
+            <strong>Vô hiệu hóa tài khoản</strong>
+            <p class="sf-hint">Tạm khóa — đăng nhập lại bằng OTP để kích hoạt.</p>
+          </div>
+          <button type="button" class="btn btn-ghost btn-danger-text" @click="deactivate">Vô hiệu hóa</button>
+        </div>
+        <div class="danger-item">
+          <div>
+            <strong>Xóa tài khoản</strong>
+            <p class="sf-hint">Xóa vĩnh viễn tài khoản và toàn bộ dữ liệu.</p>
+          </div>
+          <button type="button" class="btn btn-ghost btn-danger-text" @click="deleteAccount">Xóa tài khoản</button>
+        </div>
+      </div>
+    </div>
   </section>
 </template>
 
@@ -116,7 +175,80 @@ onMounted(async () => {
     if (u?.bio) bio.value = u.bio
     if (!displayName.value && u?.display_name) displayName.value = u.display_name
   } catch { /* prefill is best-effort */ }
+  loadSessions()
 })
+
+const currentPw = ref('')
+const newPw = ref('')
+const savingPw = ref(false)
+
+async function savePassword() {
+  savingPw.value = true
+  try {
+    const body: Record<string, string> = { password: newPw.value }
+    if (currentPw.value) body.current_password = currentPw.value
+    await $fetch('/auth/set-password', { method: 'POST', headers: authHeaders(), body })
+    showToast('Đã cập nhật mật khẩu', 'success')
+    currentPw.value = ''
+    newPw.value = ''
+    await fetchMe()
+  } catch (e: any) {
+    showToast(e?.data?.detail || 'Không thể đổi mật khẩu', 'error')
+  } finally { savingPw.value = false }
+}
+
+const sessions = ref<any[]>([])
+const sessionsLoading = ref(true)
+
+async function loadSessions() {
+  sessionsLoading.value = true
+  try {
+    const res = await $fetch<{ sessions: any[] }>('/auth/sessions', { headers: authHeaders() })
+    sessions.value = res.sessions || []
+  } catch { /* ignore */ }
+  sessionsLoading.value = false
+}
+
+function shortUA(ua: string): string {
+  if (!ua) return 'Không rõ'
+  if (ua.includes('Mobile')) return 'Di động'
+  if (ua.includes('Windows')) return 'Windows'
+  if (ua.includes('Mac')) return 'macOS'
+  if (ua.includes('Linux')) return 'Linux'
+  return ua.slice(0, 30)
+}
+
+async function revokeSession(id: string) {
+  try {
+    await $fetch(`/auth/sessions/${id}`, { method: 'DELETE', headers: authHeaders() })
+    sessions.value = sessions.value.filter(s => s.id !== id)
+    showToast('Đã thu hồi phiên', 'success')
+  } catch { showToast('Không thể thu hồi phiên', 'error') }
+}
+
+const { confirm } = useConfirm()
+
+async function deactivate() {
+  const ok = await confirm({ title: 'Vô hiệu hóa tài khoản?', message: 'Tài khoản sẽ bị khóa tạm thời. Đăng nhập lại bằng OTP để kích hoạt.', confirmText: 'Vô hiệu hóa', danger: true })
+  if (!ok) return
+  try {
+    await $fetch('/auth/deactivate', { method: 'POST', headers: authHeaders() })
+    showToast('Tài khoản đã bị vô hiệu hóa', 'success')
+    navigateTo('/')
+  } catch (e: any) { showToast(e?.data?.detail || 'Lỗi', 'error') }
+}
+
+async function deleteAccount() {
+  const ok = await confirm({ title: 'Xóa tài khoản vĩnh viễn?', message: 'Toàn bộ dữ liệu sẽ bị xóa và không thể khôi phục.', confirmText: 'Xóa tài khoản', danger: true })
+  if (!ok) return
+  try {
+    await $fetch('/auth/account', { method: 'DELETE', headers: authHeaders() })
+    showToast('Đã xóa tài khoản', 'success')
+    navigateTo('/')
+  } catch (e: any) { showToast(e?.data?.detail || 'Lỗi', 'error') }
+}
+
+const { timeAgo } = useTimeAgo()
 
 async function save() {
   nameError.value = ''
@@ -175,4 +307,17 @@ async function save() {
 .sf-avatar-info { display: flex; flex-direction: column; gap: .25rem; }
 .sf-avatar-info .sf-hint { font-size: .8rem; }
 .btn-sm { padding: .3rem .7rem; font-size: .85rem; }
+.settings-card h2 { margin: 0 0 1rem; font-size: 1.2rem; }
+.settings-card + .settings-card { margin-top: 1.25rem; }
+.sessions-list { display: flex; flex-direction: column; gap: .5rem; }
+.session-item { display: flex; align-items: center; gap: .75rem; padding: .6rem .8rem; border: 1px solid var(--border-input); border-radius: var(--radius-md); }
+.session-item.current { border-color: var(--accent); background: color-mix(in oklab, var(--accent) 5%, transparent); }
+.session-info { flex: 1; display: flex; flex-direction: column; gap: .15rem; }
+.session-ua { font-weight: 600; font-size: .9rem; }
+.session-badge { font-size: .75rem; font-weight: 600; color: var(--accent); background: color-mix(in oklab, var(--accent) 12%, transparent); padding: .15rem .5rem; border-radius: var(--radius-full); }
+.settings-danger { border-color: rgba(192,57,43,.2); }
+.danger-actions { display: flex; flex-direction: column; gap: .75rem; }
+.danger-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.danger-item p { margin: 0; }
+.btn-danger-text { color: var(--danger, #c0392b) !important; }
 </style>
