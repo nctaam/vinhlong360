@@ -230,6 +230,16 @@ class Database:
                         created_at TEXT DEFAULT (datetime('now'))
                     );
 
+                    CREATE TABLE IF NOT EXISTS entity_changes (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        entity_id TEXT NOT NULL,
+                        field TEXT NOT NULL,
+                        old_value TEXT,
+                        new_value TEXT,
+                        actor TEXT DEFAULT 'admin',
+                        created_at TEXT DEFAULT (datetime('now'))
+                    );
+
                     CREATE TABLE IF NOT EXISTS relationships (
                         from_id TEXT NOT NULL,
                         to_id TEXT NOT NULL,
@@ -1125,6 +1135,36 @@ class Database:
             row = self._fetchone(conn,
                 f"UPDATE users SET {', '.join(sets)} WHERE id::text = {ph} RETURNING *", params)
             return self._row_to_dict(row)
+
+    # ── Entity change history ──
+
+    def log_entity_changes(self, entity_id: str, old: dict, new: dict, actor: str = "admin"):
+        tracked = ("name", "type", "summary", "placeId", "confidence", "season", "attributes", "images", "coordinates", "area")
+        changes = []
+        for field in tracked:
+            old_val = str(old.get(field, "")) if old.get(field) is not None else ""
+            new_val = str(new.get(field, "")) if new.get(field) is not None else ""
+            if old_val != new_val:
+                changes.append((entity_id, field, old_val[:2000], new_val[:2000], actor))
+        if not changes:
+            return
+        with self._conn() as conn:
+            for c in changes:
+                self._execute(conn, """
+                    INSERT INTO entity_changes (entity_id, field, old_value, new_value, actor)
+                    VALUES (?, ?, ?, ?, ?)
+                """, c)
+
+    def get_entity_history(self, entity_id: str, limit: int = 50) -> list[dict]:
+        with self._conn() as conn:
+            rows = self._fetchall(conn, """
+                SELECT id, entity_id, field, old_value, new_value, actor, created_at
+                FROM entity_changes
+                WHERE entity_id = ?
+                ORDER BY created_at DESC
+                LIMIT ?
+            """, (entity_id, limit))
+        return [self._row_to_dict(r) for r in rows]
 
     # ── Helpers ──
 

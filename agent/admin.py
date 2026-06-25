@@ -304,14 +304,23 @@ async def update_entity(entity_id: str, update: EntityUpdate):
     if not existing:
         raise HTTPException(404, f"Entity '{entity_id}' not found")
 
+    old_snapshot = {k: v for k, v in existing.items()}
     updates = update.model_dump(exclude_none=True)
     existing.update(updates)
     existing["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
     db.upsert_entity(existing)
+    db.log_entity_changes(entity_id, old_snapshot, existing)
     _sync_kb()
     from public_api import invalidate_entity_cache
     invalidate_entity_cache(entity_id)
     return {"status": "updated", "entity": existing}
+
+
+@router.get("/entities/{entity_id}/history")
+async def get_entity_history(entity_id: str, limit: int = Query(50, ge=1, le=200)):
+    """Lịch sử thay đổi entity."""
+    history = db.get_entity_history(entity_id, limit)
+    return {"history": history}
 
 
 @router.post("/entities")

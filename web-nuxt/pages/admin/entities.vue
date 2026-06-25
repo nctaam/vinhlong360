@@ -190,6 +190,17 @@
             </div>
           </div>
         </div>
+
+        <div v-if="editingEntity && entityHistory.length" class="ent-history">
+          <strong class="admin-label">Lịch sử thay đổi ({{ entityHistory.length }})</strong>
+          <div v-for="h in entityHistory" :key="h.id" class="ent-history-item">
+            <span class="ent-history-field">{{ h.field }}</span>
+            <span class="ent-history-arrow">&rarr;</span>
+            <span class="ent-history-val" :title="h.new_value">{{ truncVal(h.new_value) }}</span>
+            <span class="ent-history-time">{{ timeAgo(h.created_at) }}</span>
+          </div>
+        </div>
+
         <div class="admin-modal-actions">
           <button type="button" class="btn btn-outline" @click="showModal = false">Hủy</button>
           <button type="button" class="btn btn-primary" :disabled="saving" @click="saveEntity">
@@ -209,6 +220,7 @@ definePageMeta({ layout: 'admin', middleware: 'admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
+const { timeAgo } = useTimeAgo()
 
 const types = Object.keys(TYPE_META)
 const search = ref('')
@@ -338,6 +350,7 @@ function openEdit(e: Entity) {
   newRel.value = { to_id: '', type: 'related_to' }
   fieldErrors.value = {}
   fetchRels(e.id)
+  fetchEntityHistory(e.id)
   showModal.value = true
 }
 
@@ -396,6 +409,19 @@ async function removeRel(r: Record<string, unknown>) {
     await $fetch(`/admin-api/relationships?${params}`, { method: 'DELETE', headers: authHeaders() })
     await fetchRels(form.value.id)
   } catch { showToast('Xóa quan hệ lỗi', 'error') }
+}
+
+const entityHistory = ref<any[]>([])
+async function fetchEntityHistory(id: string) {
+  entityHistory.value = []
+  try {
+    const r = await $fetch<{ history: any[] }>(`/admin-api/entities/${id}/history`, { headers: authHeaders() })
+    entityHistory.value = r.history || []
+  } catch { /* ignore — table may not exist yet */ }
+}
+function truncVal(v: string): string {
+  if (!v) return '(trống)'
+  return v.length > 60 ? v.slice(0, 57) + '…' : v
 }
 
 function clearFieldError(key: string) {
@@ -662,6 +688,19 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .dark .ent-search-clear:hover { background: rgba(255,255,255,.08); color: #fff; }
 .dark .admin-actions button:focus-visible,
 .dark .ent-search-clear:focus-visible { outline-color: var(--primary-fg, #D98A6F); }
+/* ── Entity change history ── */
+.ent-history { border-top: .5px solid var(--line); padding-top: var(--space-3); margin-top: var(--space-3); }
+.ent-history-item {
+  display: flex; align-items: baseline; gap: var(--space-2);
+  padding: var(--space-1) 0; font-size: .82rem;
+  border-bottom: .5px solid var(--line);
+}
+.ent-history-item:last-child { border-bottom: none; }
+.ent-history-field { font-weight: 600; color: var(--ink); min-width: 70px; }
+.ent-history-arrow { color: var(--muted); flex-shrink: 0; }
+.ent-history-val { color: var(--primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px; }
+.ent-history-time { color: var(--muted); font-size: .75rem; margin-left: auto; white-space: nowrap; }
+
 /* ── Inline edit ── */
 .ent-inline-label { cursor: default; }
 .ent-inline-label:hover { outline: 1px dashed var(--line); outline-offset: 2px; border-radius: 4px; }
