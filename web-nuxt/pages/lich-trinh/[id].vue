@@ -217,7 +217,7 @@ async function renderMap(result: RouteResult | null) {
     el.innerHTML = `<div class="rm-num">${num}</div>`
     const marker = new maplibre.Marker({ element: el })
       .setLngLat([s.coords[1], s.coords[0]])
-      .setPopup(new maplibre.Popup({ offset: 25 }).setHTML(`<strong>${num}. ${s.name}</strong>`))
+      .setPopup(new maplibre.Popup({ offset: 25 }).setHTML(`<strong>${num}. ${escapeHtml(s.name)}</strong>`))
       .addTo(mapInstance)
     markers.push(marker)
   })
