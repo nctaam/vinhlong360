@@ -235,6 +235,40 @@
 .pt-content span { font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
 .dark .pt-item { background: var(--card); }
 
+/* ── Highlight tagline ── */
+.entity-highlight { margin: var(--space-4) 0 var(--space-2); padding: var(--space-4) var(--space-5); background: linear-gradient(135deg, rgba(var(--primary-rgb), .06) 0%, rgba(var(--primary-rgb), .02) 100%); border-left: 3px solid var(--primary); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+.entity-highlight p { margin: 0; font-size: var(--text-base); font-style: italic; line-height: var(--leading-relaxed); color: var(--ink-secondary); }
+.dark .entity-highlight { background: linear-gradient(135deg, rgba(var(--primary-rgb), .12) 0%, rgba(var(--primary-rgb), .04) 100%); }
+
+/* ── Best time callout ── */
+.best-time-callout { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-4); background: var(--bg-warm); border: .5px solid var(--line); border-radius: var(--radius-md); margin-top: var(--space-4); }
+.btc-icon { font-size: var(--text-xl); flex-shrink: 0; }
+.btc-body { display: flex; flex-direction: column; gap: 2px; }
+.btc-body strong { font-size: var(--text-sm); font-weight: var(--weight-bold); color: var(--ink); }
+.btc-body span { font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
+
+/* ── Food specialties ── */
+.food-specialties { margin-top: var(--space-5); }
+.fs-list { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-2); }
+.fs-item { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--bg-warm); border: .5px solid var(--line); border-radius: var(--radius-sm); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle); }
+.fs-item:hover { background: var(--bg-alt); transform: translateY(-1px); }
+.fs-icon { font-size: var(--text-lg); flex-shrink: 0; line-height: 1.3; }
+.fs-content { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fs-content strong { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); }
+.fs-content span { font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
+
+/* ── Season notes ── */
+.season-note { margin: var(--space-3) 0 0; font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
+.season-note.peak-event { color: var(--ink-secondary); font-weight: var(--weight-semibold); }
+
+/* ── Rating display (sidebar) ── */
+.rating-display { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--bg-warm); border-radius: var(--radius-md); }
+.rd-stars { display: flex; gap: 1px; }
+.rd-star { color: var(--line); font-size: var(--text-base); }
+.rd-star.filled { color: #f59e0b; }
+.rd-score { font-size: var(--text-base); font-weight: var(--weight-bold); color: var(--ink); }
+.rd-count { font-size: var(--text-xs); color: var(--muted); }
+
 /* ── Season block (was inline style) ── */
 .season-block { margin-top: var(--space-5); }
 .section-subtitle { font-size: var(--text-lg); font-weight: var(--weight-semibold); margin: 0 0 var(--space-2); }

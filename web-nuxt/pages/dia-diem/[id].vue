@@ -104,6 +104,11 @@
         </div>
         <p class="lead">{{ entity.summary }}</p>
 
+        <!-- Highlight tagline -->
+        <blockquote v-if="entity.attributes?.highlight" class="entity-highlight">
+          <p>{{ entity.attributes.highlight }}</p>
+        </blockquote>
+
         <!-- Mô tả chi tiết -->
         <div v-if="descriptionParagraphs.length" class="entity-description">
           <div ref="descContentRef" class="desc-content" :class="{ expanded: descExpanded || descriptionParagraphs.length <= 3 }">
@@ -131,6 +136,29 @@
           </ul>
         </div>
 
+        <!-- Best time callout -->
+        <div v-if="bestTimeText && !practicalTips.some(t => t.label === 'Thời điểm tốt nhất')" class="best-time-callout reveal">
+          <span class="btc-icon" aria-hidden="true">🕐</span>
+          <div class="btc-body">
+            <strong>Thời điểm lý tưởng</strong>
+            <span>{{ bestTimeText }}</span>
+          </div>
+        </div>
+
+        <!-- Food specialties (dish/product only) -->
+        <div v-if="foodSpecialties.length" class="food-specialties reveal">
+          <h2 class="section-subtitle">🍽️ Nên thử</h2>
+          <ul class="fs-list">
+            <li v-for="item in foodSpecialties" :key="item.label" class="fs-item">
+              <span class="fs-icon" aria-hidden="true">{{ item.icon }}</span>
+              <div class="fs-content">
+                <strong>{{ item.label }}</strong>
+                <span>{{ item.value }}</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
         <!-- Month strip -->
         <div v-if="entity.season?.months" class="season-block reveal">
           <h2 class="section-subtitle">{{ ss('labels.detail.season_heading', 'Mùa vụ') }}</h2>
@@ -145,6 +173,8 @@
             <span class="ms-cell on ms-legend-swatch"></span> {{ ss('labels.detail.season_legend_in', 'Có mùa') }}
             <span class="ms-cell on peak ms-legend-swatch"></span> {{ ss('labels.detail.season_legend_peak', 'Rộ nhất') }}
           </div>
+          <p v-if="entity.attributes?.season_note" class="season-note">{{ entity.attributes.season_note }}</p>
+          <p v-if="entity.attributes?.peak_event" class="season-note peak-event">🎉 {{ entity.attributes.peak_event }}</p>
         </div>
 
         <!-- Relationships -->
@@ -207,6 +237,15 @@
           </div>
           <strong>{{ ss('labels.detail.ocop_product_prefix', 'Sản phẩm OCOP') }} {{ entity.attributes.ocop }}</strong>
           <small>{{ ss('labels.detail.ocop_program', 'Chương trình Mỗi xã Một sản phẩm') }}</small>
+        </div>
+
+        <!-- Rating -->
+        <div v-if="entity.attributes?.rating" class="rating-display">
+          <div class="rd-stars">
+            <span v-for="s in 5" :key="s" :class="['rd-star', { filled: s <= Math.round(Number(entity.attributes.rating)) }]">★</span>
+          </div>
+          <span class="rd-score">{{ entity.attributes.rating }}</span>
+          <span v-if="entity.attributes?.review_count" class="rd-count">({{ entity.attributes.review_count }} đánh giá)</span>
         </div>
 
         <h2 class="facts-heading"><span class="facts-heading-icon" aria-hidden="true">📑</span>{{ ss('labels.detail.info_heading', 'Thông tin') }}</h2>
@@ -282,6 +321,31 @@
             <span class="fact-ic" aria-hidden="true">✅</span>
             <span class="k">{{ ss('labels.detail.fact_amenities', 'Tiện ích') }}</span>
             <span class="v">{{ Array.isArray(entity.attributes.amenities) ? entity.attributes.amenities.join(', ') : entity.attributes.amenities }}</span>
+          </div>
+          <div v-if="entity.attributes?.price_range" class="fact">
+            <span class="fact-ic" aria-hidden="true">💵</span>
+            <span class="k">Mức giá</span>
+            <span class="v">{{ entity.attributes.price_range }}</span>
+          </div>
+          <div v-if="entity.attributes?.suggested_duration" class="fact">
+            <span class="fact-ic" aria-hidden="true">⏱️</span>
+            <span class="k">Thời gian tham quan</span>
+            <span class="v">{{ entity.attributes.suggested_duration }}</span>
+          </div>
+          <div v-if="entity.attributes?.atmosphere" class="fact">
+            <span class="fact-ic" aria-hidden="true">🌿</span>
+            <span class="k">Không gian</span>
+            <span class="v">{{ entity.attributes.atmosphere }}</span>
+          </div>
+          <div v-if="entity.attributes?.famous_for" class="fact">
+            <span class="fact-ic" aria-hidden="true">🏆</span>
+            <span class="k">Nổi tiếng với</span>
+            <span class="v">{{ entity.attributes.famous_for }}</span>
+          </div>
+          <div v-if="entity.attributes?.significance" class="fact">
+            <span class="fact-ic" aria-hidden="true">📜</span>
+            <span class="k">Ý nghĩa</span>
+            <span class="v">{{ entity.attributes.significance }}</span>
           </div>
         </div>
 
@@ -595,6 +659,22 @@ const practicalTips = computed(() => {
   return tips
 })
 
+const bestTimeText = computed(() => entity.value?.attributes?.best_time || '')
+
+const foodSpecialties = computed(() => {
+  const a = entity.value?.attributes
+  const t = entity.value?.type
+  if (!a || (t !== 'dish' && t !== 'product' && t !== 'craft_village')) return []
+  const items: { icon: string; label: string; value: string }[] = []
+  if (a.must_order) items.push({ icon: '⭐', label: 'Phải thử', value: Array.isArray(a.must_order) ? a.must_order.join(', ') : a.must_order })
+  if (a.signature_dish) items.push({ icon: '👨‍🍳', label: 'Món đặc trưng', value: a.signature_dish })
+  if (a.best_dish) items.push({ icon: '🥇', label: 'Món hay gọi nhất', value: a.best_dish })
+  if (a.specialty) items.push({ icon: '🎯', label: 'Đặc sản', value: Array.isArray(a.specialty) ? a.specialty.join(', ') : a.specialty })
+  if (a.ingredients) items.push({ icon: '🧄', label: 'Nguyên liệu', value: Array.isArray(a.ingredients) ? a.ingredients.join(', ') : a.ingredients })
+  if (a.what_to_buy) items.push({ icon: '🛍️', label: 'Nên mua', value: Array.isArray(a.what_to_buy) ? a.what_to_buy.join(', ') : a.what_to_buy })
+  return items
+})
+
 const quality = computed(() => entity.value?.quality || {})
 const qualityMissingLabels = computed(() => {
   const labels: Record<string, string> = {
@@ -771,6 +851,14 @@ if (entity.value && !entity.value.error) {
     }
     ld.eventStatus = 'https://schema.org/EventScheduled'
     ld.eventAttendanceMode = 'https://schema.org/OfflineEventAttendanceMode'
+  }
+  if (e.attributes?.rating) {
+    ld.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: e.attributes.rating,
+      bestRating: '5',
+      ...(e.attributes.review_count ? { reviewCount: String(e.attributes.review_count) } : { ratingCount: '1' }),
+    }
   }
   if (ldType === 'Product') {
     if (e.attributes?.price) {
