@@ -597,7 +597,8 @@ async def upload_cover(request: Request, file: UploadFile = File(...)):
 # ── Login history ──
 
 def _log_login(phone: str, method: str, success: bool, request: Request, user_id: str | None = None):
-    ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "")
+    from middleware import get_client_ip
+    ip = get_client_ip(request)
     ua = request.headers.get("user-agent", "")[:500]
     try:
         ph = db._ph

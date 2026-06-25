@@ -182,7 +182,6 @@
     </section>
 
     <!-- 5. Từ cộng đồng — compact + trending tags -->
-    <ClientOnly>
       <section class="block reveal">
         <div class="section-head">
           <div class="sh-text">
@@ -236,7 +235,6 @@
           <NuxtLink to="/cong-dong" class="btn btn-outline">💬 Tham gia cộng đồng</NuxtLink>
         </div>
       </section>
-    </ClientOnly>
 
     <!-- 6. Cá nhân hóa — client-only (saved + AI recommendations) -->
     <ClientOnly>
@@ -317,18 +315,19 @@ const ssrBase = import.meta.server ? 'https://vinhlong360.vn' : ''
 const { data: homeData, error: homeError, pending: homePending, refresh: refreshHome } = await useAsyncData('homepage',
   () => $fetch<Record<string, unknown>>('/api/homepage', ssrBase ? { baseURL: ssrBase } : {}))
 
+const fetchOpts = ssrBase ? { baseURL: ssrBase } : {}
 const { data: communityData } = await useAsyncData('home-community', async () => {
   const [feed, cstats, lb, tags] = await Promise.all([
-    $fetch<any>('/api/feed?limit=10').catch(() => ({ posts: [] })),
-    $fetch<any>('/api/community/stats').catch(() => null),
-    $fetch<any>('/api/community/leaderboard?limit=3').catch(() => ({ leaders: [] })),
-    $fetch<any>('/api/community/trending-tags?limit=8').catch(() => ({ tags: [] })),
+    $fetch<any>('/api/feed?limit=10', fetchOpts).catch(() => ({ posts: [] })),
+    $fetch<any>('/api/community/stats', fetchOpts).catch(() => null),
+    $fetch<any>('/api/community/leaderboard?limit=3', fetchOpts).catch(() => ({ leaders: [] })),
+    $fetch<any>('/api/community/trending-tags?limit=8', fetchOpts).catch(() => ({ tags: [] })),
   ])
   const posts = (feed.posts || [])
     .filter((p: any) => ((p.content || '').trim().length > 0) || (p.images && p.images.length))
     .slice(0, 6)
   return { posts, stats: cstats, leaders: lb.leaders || [], tags: tags.tags || [] }
-}, { server: false, lazy: true })
+}, { lazy: true })
 const communityPosts = computed(() => communityData.value?.posts || [])
 const communityStats = computed(() => communityData.value?.stats || null)
 const topMembers = computed(() => communityData.value?.leaders || [])
@@ -421,7 +420,7 @@ function formatEventMonth(ev: any) {
 }
 
 function formatRating(rating: number): string {
-  return rating.toFixed(1)
+  return rating > 0 ? rating.toFixed(1) : 'Mới'
 }
 
 function openChat() {
