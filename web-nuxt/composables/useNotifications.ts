@@ -42,10 +42,25 @@ export function useNotifications() {
     stopPolling()
     fetchNotifications()
     pollTimer = setInterval(fetchNotifications, 30_000)
+    if (import.meta.client) {
+      document.addEventListener('visibilitychange', _onVisibility)
+    }
   }
 
   function stopPolling() {
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null }
+    if (import.meta.client) {
+      document.removeEventListener('visibilitychange', _onVisibility)
+    }
+  }
+
+  function _onVisibility() {
+    if (document.hidden) {
+      if (pollTimer) { clearInterval(pollTimer); pollTimer = null }
+    } else {
+      fetchNotifications()
+      pollTimer = setInterval(fetchNotifications, 30_000)
+    }
   }
 
   return { notifications, unreadCount, loading, fetchError, fetchNotifications, markAllRead, markRead, startPolling, stopPolling }

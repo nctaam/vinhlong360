@@ -642,9 +642,18 @@ async def community_stats():
     return {"posts": _c(posts), "reviews": _c(reviews), "members": _c(members)}
 
 
+_trending_cache: dict = {"ts": 0.0, "data": {}}
+_TRENDING_TTL = 120
+
 @router.get("/community/trending-tags")
 async def trending_tags(limit: int = Query(10, ge=1, le=20)):
     """Hashtag thịnh hành: đếm hashtag trên bài ĐÃ DUYỆT trong 30 ngày gần nhất."""
+    import time as _t
+    now = _t.time()
+    cache_key = f"tags:{limit}"
+    if now - _trending_cache["ts"] < _TRENDING_TTL and cache_key in _trending_cache.get("data", {}):
+        return _trending_cache["data"][cache_key]
+
     ph = db._ph
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
@@ -657,7 +666,10 @@ async def trending_tags(limit: int = Query(10, ge=1, le=20)):
             LIMIT {ph}
         """, (limit,))
     tags = [{"tag": db._row_to_dict(r)["tag"], "count": int(db._row_to_dict(r)["c"])} for r in rows]
-    return {"tags": tags}
+    result = {"tags": tags}
+    _trending_cache["ts"] = now
+    _trending_cache["data"] = {cache_key: result}
+    return result
 
 
 @router.get("/community/leaderboard")
