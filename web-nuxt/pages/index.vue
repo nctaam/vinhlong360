@@ -277,7 +277,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Itinerary, Entity } from '~/types'
+import type { Entity } from '~/types'
 import { TYPE_META, AREA_META } from '~/composables/useConstants'
 import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 
