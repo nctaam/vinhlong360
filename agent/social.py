@@ -594,12 +594,19 @@ async def search_posts(
 async def search_users(
     q: str = Query(..., min_length=2, max_length=50),
     page: int = Query(1, ge=1),
+    user=Depends(get_current_user),
 ):
     """Tìm người dùng theo tên hiển thị (không phân-biệt-dấu). Thông tin hồ-sơ công-khai."""
     ph = db._ph
     limit = 20
     offset = (page - 1) * limit
     pattern = "%" + q.strip().lower() + "%"
+    block_clause = ""
+    params: list = [pattern]
+    if user:
+        block_clause = f"AND u.id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = {ph}::uuid)"
+        params.append(str(user["id"]))
+    params.extend([limit, offset])
 
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
@@ -609,9 +616,10 @@ async def search_users(
             FROM users u
             WHERE u.is_active = TRUE
               AND f_unaccent(lower(u.display_name)) LIKE f_unaccent({ph})
+              {block_clause}
             ORDER BY post_count DESC, u.display_name
             LIMIT {ph} OFFSET {ph}
-        """, (pattern, limit, offset))
+        """, tuple(params))
 
     users = []
     for r in rows:
@@ -655,10 +663,16 @@ async def trending_tags(limit: int = Query(10, ge=1, le=20)):
 
 
 @router.get("/community/leaderboard")
-async def community_leaderboard(limit: int = Query(10, ge=1, le=50)):
+async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depends(get_current_user)):
     """Bảng xếp hạng: thành viên tích cực theo điểm danh-tiếng (1 query gộp)."""
+    ph = db._ph
+    block_clause = ""
+    params: list = []
+    if user:
+        block_clause = f"AND u.id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = {ph}::uuid)"
+        params.append(str(user["id"]))
     with db._conn() as conn:
-        rows = db._fetchall(conn, """
+        rows = db._fetchall(conn, f"""
             SELECT u.id, u.display_name, u.avatar_url,
                    COUNT(p.id) FILTER (WHERE p.post_type='review') AS reviews,
                    COUNT(p.id) AS posts,
@@ -675,9 +689,10 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50)):
                          WHERE target_type='user' GROUP BY target_id) fc
                    ON fc.target_id = u.id::text
             WHERE u.is_active = TRUE AND u.display_name IS NOT NULL
+            {block_clause}
             GROUP BY u.id, u.display_name, u.avatar_url, fc.c
             HAVING COUNT(p.id) > 0
-        """, ())
+        """, tuple(params))
 
     leaders = []
     for r in rows:
@@ -758,8 +773,9 @@ async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge
               AND u.id::text <> {ph}
               AND u.id::text NOT IN (SELECT target_id FROM follows
                                        WHERE follower_id = {ph}::uuid AND target_type='user')
+              AND u.id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = {ph}::uuid)
             GROUP BY u.id, u.display_name, u.avatar_url, fc.c
-        """, (me, me))
+        """, (me, me, me))
     cands = []
     for r in rows:
         d = db._row_to_dict(r)
@@ -832,16 +848,22 @@ async def get_entity_feed(
 # ── Comments ──
 
 @router.get("/posts/{post_id}/comments")
-async def get_comments(post_id: str):
+async def get_comments(post_id: str, request: Request, user=Depends(get_current_user)):
     ph = db._ph
+    block_clause = ""
+    params: list = [post_id]
+    if user:
+        block_clause = f"AND c.user_id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = {ph}::uuid)"
+        params.append(str(user["id"]))
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
             SELECT c.*, u.display_name, u.avatar_url, u.phone
             FROM comments c
             JOIN users u ON u.id = c.user_id
             WHERE c.post_id::text = {ph} AND c.moderation_status = 'approved'
+            {block_clause}
             ORDER BY c.created_at ASC
-        """, (post_id,))
+        """, tuple(params))
 
     comments = [_format_comment(db._row_to_dict(r)) for r in rows]
 
