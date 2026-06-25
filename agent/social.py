@@ -1195,19 +1195,41 @@ def _level_for(points: int) -> tuple[int, str]:
 
 
 def _reputation(conn, user_id: str, posts: int, reviews: int) -> dict:
-    """Danh tiếng compute-on-fly từ đóng-góp ĐÃ-DUYỆT (§1.4-safe, 0 lưu trữ)."""
+    """Danh tiếng compute-on-fly từ đóng-góp ĐÃ-DUYỆT (§1.4-safe, 0 lưu trữ).
+    Gom thành 3 query thay vì 8 (N+1 fix)."""
     ph = db._ph
-    def _c(sql, params):
-        r = db._fetchone(conn, sql, params)
-        return int(db._row_to_dict(r)["c"]) if r else 0
-    photos = _c(f"""SELECT COUNT(*) c FROM posts WHERE user_id::text={ph} AND moderation_status='approved'
-                    AND (CASE WHEN jsonb_typeof(images)='array' THEN jsonb_array_length(images) ELSE 0 END) > 0""", (user_id,))
-    followers = _c(f"SELECT COUNT(*) c FROM follows WHERE target_type='user' AND target_id={ph}", (user_id,))
-    places = _c(f"""SELECT COUNT(DISTINCT entity_id) c FROM posts WHERE user_id::text={ph}
-                    AND moderation_status='approved' AND entity_id IS NOT NULL""", (user_id,))
-    likes = _c(f"""SELECT COALESCE(SUM(CASE WHEN jsonb_typeof(likes)='number' THEN likes::int
-                   WHEN jsonb_typeof(likes)='array' THEN jsonb_array_length(likes) ELSE 0 END), 0) c
-                   FROM posts WHERE user_id::text={ph} AND moderation_status='approved'""", (user_id,))
+    def _v(row, col):
+        return int(row[col]) if row and row[col] else 0
+
+    agg = db._fetchone(conn, f"""
+        SELECT
+            COUNT(*) FILTER (WHERE (CASE WHEN jsonb_typeof(images)='array'
+                THEN jsonb_array_length(images) ELSE 0 END) > 0) AS photos,
+            COUNT(DISTINCT entity_id) FILTER (WHERE entity_id IS NOT NULL) AS places,
+            COALESCE(SUM(CASE WHEN jsonb_typeof(likes)='number' THEN likes::int
+                WHEN jsonb_typeof(likes)='array' THEN jsonb_array_length(likes) ELSE 0 END), 0) AS total_likes
+        FROM posts WHERE user_id::text = {ph} AND moderation_status = 'approved'
+    """, (user_id,))
+    agg = db._row_to_dict(agg) if agg else {}
+    photos = _v(agg, "photos")
+    places = _v(agg, "places")
+    likes = _v(agg, "total_likes")
+
+    followers_row = db._fetchone(conn, f"SELECT COUNT(*) c FROM follows WHERE target_type='user' AND target_id={ph}", (user_id,))
+    followers = _v(db._row_to_dict(followers_row) if followers_row else {}, "c")
+
+    visit_agg = db._fetchone(conn, f"""
+        SELECT COUNT(*) AS visit_count,
+               COUNT(DISTINCT e.area) FILTER (WHERE e.area IS NOT NULL) AS areas,
+               (SELECT EXTRACT(DAY FROM NOW() - created_at)::int FROM users WHERE id::text = {ph}) AS age_days
+        FROM user_visits uv LEFT JOIN entities e ON e.id = uv.entity_id
+        WHERE uv.user_id::text = {ph} AND uv.status = 'visited'
+    """, (user_id, user_id))
+    visit_agg = db._row_to_dict(visit_agg) if visit_agg else {}
+    visits = _v(visit_agg, "visit_count")
+    areas_visited = _v(visit_agg, "areas")
+    account_age_days = _v(visit_agg, "age_days")
+
     points = _calc_points(reviews, posts, photos, followers, places, likes)
     level, label = _level_for(points)
     badges = []
@@ -1219,14 +1241,8 @@ def _reputation(conn, user_id: str, posts: int, reviews: int) -> dict:
     if likes >= 50:     badges.append({"id": "quality", "label": "Nội dung chất lượng", "icon": "🏆"})
     if places >= 3 and reviews >= 5 and photos >= 3:
         badges.append({"id": "allrounder", "label": "Đa năng", "icon": "🌟"})
-    visits = _c(f"SELECT COUNT(*) c FROM user_visits WHERE user_id::text={ph} AND status='visited'", (user_id,))
     if visits >= 10:    badges.append({"id": "traveler", "label": "Lữ khách", "icon": "🎒"})
-    areas_visited = _c(f"""SELECT COUNT(DISTINCT e.area) c FROM user_visits uv
-                           JOIN entities e ON e.id = uv.entity_id
-                           WHERE uv.user_id::text={ph} AND uv.status='visited' AND e.area IS NOT NULL""", (user_id,))
     if areas_visited >= 3: badges.append({"id": "local", "label": "Người địa phương", "icon": "🏡"})
-    account_age_days = _c(f"""SELECT EXTRACT(DAY FROM NOW() - created_at)::int c
-                              FROM users WHERE id::text={ph}""", (user_id,))
     if account_age_days >= 180: badges.append({"id": "veteran", "label": "Thành viên kỳ cựu", "icon": "🎖️"})
     return {"points": points, "level": level, "level_label": label, "badges": badges,
             "photos": photos, "followers": followers, "places": places, "likes": likes}
@@ -1260,14 +1276,11 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
     reviews_n = review_count["c"] if review_count else 0
     with db._conn() as conn:
         reputation = _reputation(conn, user_id, posts_n, reviews_n)
-        follower_row = db._fetchone(conn, f"""
-            SELECT COUNT(*) as c FROM follows
-            WHERE target_type = 'user' AND target_id = {ph}
-        """, (user_id,))
         following_row = db._fetchone(conn, f"""
             SELECT COUNT(*) as c FROM follows
             WHERE follower_id::text = {ph} AND target_type = 'user'
         """, (user_id,))
+    follower_count = reputation["followers"]
 
     privacy = None
     try:
@@ -1300,7 +1313,7 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
                 "cover_url": profile.get("cover_url"),
                 "bio": "",
                 "created_at": str(profile["created_at"]),
-                "stats": {"posts": 0, "reviews": 0, "followers": follower_row["c"] if follower_row else 0, "following": 0},
+                "stats": {"posts": 0, "reviews": 0, "followers": follower_count, "following": 0},
                 "reputation": None,
                 "is_private": True,
             },
@@ -1320,7 +1333,7 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
             "stats": {
                 "posts": posts_n,
                 "reviews": reviews_n,
-                "followers": follower_row["c"] if follower_row else 0,
+                "followers": follower_count,
                 "following": following_row["c"] if following_row else 0,
             },
             "reputation": reputation,
