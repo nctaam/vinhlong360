@@ -136,6 +136,26 @@
       </div>
     </div>
 
+    <!-- Tab: Giao diện -->
+    <div v-if="activeTab === 'giao-dien'" class="settings-card card" role="tabpanel">
+      <h2>Giao diện</h2>
+      <div class="sf-field">
+        <span class="sf-label">Chế độ màu</span>
+        <div class="theme-options">
+          <button type="button" :class="['theme-btn', { active: colorMode === 'light' }]" @click="setColorMode('light')">
+            <span class="theme-icon">☀️</span> Sáng
+          </button>
+          <button type="button" :class="['theme-btn', { active: colorMode === 'dark' }]" @click="setColorMode('dark')">
+            <span class="theme-icon">🌙</span> Tối
+          </button>
+          <button type="button" :class="['theme-btn', { active: colorMode === 'system' }]" @click="setColorMode('system')">
+            <span class="theme-icon">💻</span> Hệ thống
+          </button>
+        </div>
+        <span class="sf-hint">Chế độ "Hệ thống" tự động theo cài đặt thiết bị của bạn.</span>
+      </div>
+    </div>
+
     <!-- Tab: Người chặn -->
     <div v-if="activeTab === 'chan'" class="settings-card card" role="tabpanel">
       <h2>Người bị chặn</h2>
@@ -179,6 +199,11 @@
 const { user, isLoggedIn, authHeaders, fetchMe } = useAuth()
 const { openAuth } = useAuthModal()
 const { show: showToast } = useToast()
+const colorModeState = useColorMode()
+const colorMode = computed(() => colorModeState.preference)
+function setColorMode(mode: 'light' | 'dark' | 'system') {
+  colorModeState.preference = mode
+}
 const route = useRoute()
 
 useHead({
@@ -191,6 +216,7 @@ const TABS = [
   { key: 'ho-so', label: 'Hồ sơ', icon: '\u{1F464}' },
   { key: 'bao-mat', label: 'Bảo mật', icon: '\u{1F512}' },
   { key: 'thong-bao', label: 'Thông báo', icon: '🔔' },
+  { key: 'giao-dien', label: 'Giao diện', icon: '🎨' },
   { key: 'chan', label: 'Chặn', icon: '\u{1F6AB}' },
   { key: 'nguy-hiem', label: 'Nguy hiểm', icon: '⚠️' },
 ] as const
@@ -463,6 +489,18 @@ async function save() {
 .toggle:checked { background: var(--accent, var(--primary)); }
 .toggle:checked::after { transform: translateX(18px); }
 .toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ── Theme toggle ── */
+.theme-options { display: flex; gap: .5rem; flex-wrap: wrap; }
+.theme-btn {
+  display: flex; align-items: center; gap: .4rem; padding: .6rem 1rem;
+  border: 2px solid var(--border-input); border-radius: var(--radius-md);
+  background: var(--bg); color: var(--ink-700); cursor: pointer; font-size: .9rem;
+  transition: border-color .2s, background .2s;
+}
+.theme-btn:hover { border-color: var(--ink-500); }
+.theme-btn.active { border-color: var(--accent, var(--primary)); background: color-mix(in oklab, var(--accent, var(--primary)) 8%, transparent); color: var(--ink); font-weight: 600; }
+.theme-icon { font-size: 1.1rem; }
 
 /* ── Dark mode ── */
 .dark .sf-input { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }

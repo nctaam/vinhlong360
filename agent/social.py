@@ -238,6 +238,19 @@ POST_TYPE_LABELS = {
 async def create_post(body: CreatePost, user=Depends(require_user)):
     check_rate(f"post:{user['id']}", RL_POST_LIMIT, RL_POST_WINDOW,
                "Bạn đăng bài quá nhanh. Vui lòng đợi ít phút rồi thử lại.")
+
+    if body.content.strip() and not body.repost_of:
+        ph = db._ph
+        with db._conn() as conn:
+            dup = db._fetchone(conn, f"""
+                SELECT 1 FROM posts
+                WHERE user_id = {ph}::uuid AND content = {ph}
+                  AND created_at > NOW() - INTERVAL '1 hour'
+                LIMIT 1
+            """, (str(user["id"]), body.content.strip()))
+        if dup:
+            raise HTTPException(409, "Bài viết trùng nội dung. Vui lòng chỉnh sửa trước khi đăng lại.")
+
     if body.post_type in ENTITY_LINK_REQUIRED and not body.entity_id:
         raise HTTPException(400, "Đánh giá phải gắn với một địa điểm hoặc sản phẩm")
 
