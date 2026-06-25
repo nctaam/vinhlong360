@@ -50,6 +50,30 @@ POST_TYPES = ("review", "share", "recommend", "question")
 ENTITY_LINK_REQUIRED = ("review",)  # These types must link to an entity
 
 
+def _enrich_user_status(posts: list[dict], user) -> list[dict]:
+    """Add is_liked + is_bookmarked to a list of posts for the given user."""
+    if not user or not posts:
+        return posts
+    ph = db._ph
+    post_ids = [p["id"] for p in posts]
+    uid = str(user["id"])
+    with db._conn() as conn:
+        liked = db._fetchall(conn, f"""
+            SELECT post_id::text as pid FROM likes
+            WHERE user_id = {ph}::uuid AND post_id::text = ANY({ph}::text[])
+        """, (uid, post_ids))
+        liked_set = {r["pid"] for r in liked}
+        bookmarked = db._fetchall(conn, f"""
+            SELECT post_id::text as pid FROM bookmarks
+            WHERE user_id = {ph}::uuid AND post_id::text = ANY({ph}::text[])
+        """, (uid, post_ids))
+        bm_set = {r["pid"] for r in bookmarked}
+    for p in posts:
+        p["is_liked"] = p["id"] in liked_set
+        p["is_bookmarked"] = p["id"] in bm_set
+    return posts
+
+
 def _extract_hashtags(content: str) -> list[str]:
     """Trích #hashtag (Unicode, tiếng Việt OK) → lowercase, dedup, cap 10."""
     seen, out = set(), []
@@ -473,17 +497,7 @@ async def get_feed(
 
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
 
-    if user:
-        post_ids = [p["id"] for p in posts]
-        if post_ids:
-            with db._conn() as conn:
-                liked = db._fetchall(conn, f"""
-                    SELECT post_id::text as pid FROM likes
-                    WHERE user_id = {ph}::uuid AND post_id::text = ANY({ph}::text[])
-                """, (str(user["id"]), post_ids))
-                liked_set = {r["pid"] for r in liked}
-                for p in posts:
-                    p["is_liked"] = p["id"] in liked_set
+    _enrich_user_status(posts, user)
 
     return {
         "posts": posts,
@@ -528,16 +542,7 @@ async def get_following_feed(
         """, (uid, uid))
 
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
-    post_ids = [p["id"] for p in posts]
-    if post_ids:
-        with db._conn() as conn:
-            liked = db._fetchall(conn, f"""
-                SELECT post_id::text as pid FROM likes
-                WHERE user_id = {ph}::uuid AND post_id::text = ANY({ph}::text[])
-            """, (uid, post_ids))
-            liked_set = {r["pid"] for r in liked}
-            for p in posts:
-                p["is_liked"] = p["user_liked"] = p["id"] in liked_set
+    _enrich_user_status(posts, user)
 
     total_c = total["c"] if total else 0
     return {"posts": posts, "page": page, "total": total_c,
@@ -576,18 +581,7 @@ async def search_posts(
         """, (pattern,))
 
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
-
-    if user:
-        post_ids = [p["id"] for p in posts]
-        if post_ids:
-            with db._conn() as conn:
-                liked = db._fetchall(conn, f"""
-                    SELECT post_id::text as pid FROM likes
-                    WHERE user_id = {ph}::uuid AND post_id::text = ANY({ph}::text[])
-                """, (str(user["id"]), post_ids))
-                liked_set = {r["pid"] for r in liked}
-                for p in posts:
-                    p["is_liked"] = p["user_liked"] = p["id"] in liked_set
+    _enrich_user_status(posts, user)
 
     total_c = total["c"] if total else 0
     return {"posts": posts, "q": q, "total": total_c,
@@ -846,7 +840,7 @@ async def get_entity_feed(
             "avg": round(rating_row["avg_rating"], 1) if rating_row else 0,
             "count": rating_row["rating_count"] if rating_row else 0,
         },
-        "posts": [_format_post(db._row_to_dict(r)) for r in rows],
+        "posts": _enrich_user_status([_format_post(db._row_to_dict(r)) for r in rows], user),
         "total": total["c"] if total else 0,
     }
 
