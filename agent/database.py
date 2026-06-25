@@ -399,6 +399,18 @@ class Database:
             row = self._fetchone(conn, f"SELECT * FROM entities WHERE id = {ph}", (entity_id,))
             return self._parse_entity(row) if row else None
 
+    def get_entities_batch(self, entity_ids: list[str]) -> dict[str, dict]:
+        """Get multiple entities by ID in one query. Returns {id: entity}."""
+        if not entity_ids:
+            return {}
+        self.initialize()
+        ph = self._ph
+        unique_ids = list(dict.fromkeys(entity_ids))
+        placeholders = ", ".join(ph for _ in unique_ids)
+        with self._conn() as conn:
+            rows = self._fetchall(conn, f"SELECT * FROM entities WHERE id IN ({placeholders})", tuple(unique_ids))
+        return {e["id"]: e for row in rows if (e := self._parse_entity(row))}
+
     def delete_entity(self, entity_id: str) -> bool:
         """Delete entity and its relationships."""
         self.initialize()
@@ -659,9 +671,18 @@ class Database:
         offset: int = 0,
         rel_type: str | None = None,
         include_near: bool = True,
-    ) -> list[dict]:
+        return_total: bool = False,
+    ) -> list[dict] | tuple[list[dict], int]:
         self.initialize()
         ph = self._ph
+        conditions = [f"(r.from_id = {ph} OR r.to_id = {ph})"]
+        params: list = [entity_id, entity_id]
+        if rel_type:
+            conditions.append(f"r.type = {ph}")
+            params.append(rel_type)
+        if not include_near:
+            conditions.append("r.type != 'near'")
+        where = " AND ".join(conditions)
         with self._conn() as conn:
             rows = self._fetchall(conn, f"""
                 SELECT
@@ -679,8 +700,8 @@ class Database:
                 FROM relationships r
                 JOIN entities src ON src.id = r.from_id
                 JOIN entities dst ON dst.id = r.to_id
-                WHERE r.from_id = {ph} OR r.to_id = {ph}
-            """, (entity_id, entity_id))
+                WHERE {where}
+            """, tuple(params))
 
         entity_area = ""
         relationships = []
@@ -689,10 +710,6 @@ class Database:
             source_id = rel.get("from_id")
             target_id = rel.get("to_id")
             kind = rel.get("type")
-            if rel_type and kind != rel_type:
-                continue
-            if kind == "near" and not include_near:
-                continue
 
             source_coords = self._parse_coordinates(rel.pop("source_coordinates", None))
             target_coords = self._parse_coordinates(rel.pop("target_coordinates", None))
@@ -726,11 +743,14 @@ class Database:
             relationships.append(item)
 
         relationships.sort(key=lambda rel: self._relationship_sort_key(rel, entity_id, entity_area))
+        total = len(relationships)
         offset = max(int(offset or 0), 0)
         if offset:
             relationships = relationships[offset:]
         if limit is not None:
             relationships = relationships[:max(int(limit), 0)]
+        if return_total:
+            return relationships, total
         return relationships
 
     def count_relationships(self, entity_id: str, *, rel_type: str | None = None, include_near: bool = True) -> int:

@@ -19,6 +19,7 @@ dist/
 
 # Scratch / ETL intermediates (xem GĐ0.2)
 scratch/
+scripts/_*.json
 tmp_*.json
 tmp2_*.json
 prov_*.json

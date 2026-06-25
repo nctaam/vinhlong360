@@ -66,11 +66,16 @@ def _get_place(place_id: str) -> dict | None:
     return _place_cache.get(place_id)
 
 def _enrich_place(entities: list[dict]):
+    uncached = {e["placeId"] for e in entities if e.get("placeId") and e["placeId"] not in _place_cache}
+    if uncached:
+        batch = db.get_entities_batch(list(uncached))
+        for pid, place in batch.items():
+            _place_cache[pid] = {"name": place["name"], "area": place.get("area")}
     for e in entities:
         explicit_area = e.get("area")
         pid = e.get("placeId")
         if pid:
-            p = _get_place(pid)
+            p = _place_cache.get(pid)
             if p:
                 e["place_name"] = p["name"]
                 e["place_area"] = explicit_area or p.get("area")
@@ -141,14 +146,14 @@ async def get_entity_relationships(
     entity = db.get_entity(entity_id)
     if not entity:
         return JSONResponse(status_code=404, content={"error": "not_found"})
-    relationships = db.get_relationships(
+    relationships, total = db.get_relationships(
         entity_id,
         limit=limit,
         offset=offset,
         rel_type=type,
         include_near=include_near,
+        return_total=True,
     )
-    total = db.count_relationships(entity_id, rel_type=type, include_near=include_near)
     return {
         "entity_id": entity_id,
         "total": total,
@@ -165,8 +170,9 @@ async def get_entity(
     entity = db.get_entity(entity_id)
     if not entity:
         return JSONResponse(status_code=404, content={"error": "not_found"})
-    entity["relationship_total"] = db.count_relationships(entity_id)
-    entity["relationships"] = db.get_relationships(entity_id, limit=relationship_limit)
+    rels, rel_total = db.get_relationships(entity_id, limit=relationship_limit, return_total=True)
+    entity["relationship_total"] = rel_total
+    entity["relationships"] = rels
     _enrich_entity_place(entity)
     entity["quality"] = entity_quality(entity)
     return entity
@@ -248,8 +254,10 @@ async def get_itinerary(itin_id: str):
     it = db.get_itinerary(itin_id)
     if not it:
         return JSONResponse(status_code=404, content={"error": "not_found"})
+    stop_ids = [s.get("id", "") for s in it.get("stops", []) if s.get("id")]
+    entities = db.get_entities_batch(stop_ids)
     for stop in it.get("stops", []):
-        entity = db.get_entity(stop.get("id", ""))
+        entity = entities.get(stop.get("id", ""))
         if entity:
             stop["name"] = entity["name"]
             if not stop.get("summary"):
