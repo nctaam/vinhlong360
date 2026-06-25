@@ -105,6 +105,7 @@
         <span>Tóm tắt: {{ stats.completeness.has_summary }}/{{ stats.completeness.total }}</span>
         <span>Ảnh: {{ stats.completeness.has_images }}/{{ stats.completeness.total }}</span>
         <span>Phường/xã: {{ stats.completeness.has_place }}/{{ stats.completeness.total }}</span>
+        <span v-if="stats.completeness.orphans">Mồ côi: <b style="color:#FF9F0A">{{ stats.completeness.orphans }}</b></span>
       </div>
     </div>
 

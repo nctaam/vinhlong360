@@ -113,6 +113,7 @@
       </div>
       <slot />
     </main>
+    <ClientOnly><CommandPalette /></ClientOnly>
   </div>
 </template>
 

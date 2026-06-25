@@ -5,9 +5,12 @@
         <h1>Thống kê & Phân tích</h1>
         <p class="tk-subtitle">User hỏi gì, bot bí ở đâu, chi phí LLM</p>
       </div>
-      <button type="button" class="admin-refresh" :disabled="loading" @click="fetchData">
-        <span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới
-      </button>
+      <div class="tk-head-actions">
+        <button type="button" class="btn btn-outline btn-sm" :disabled="loading || !data.popular" @click="exportCSV">&#128190; Xuất CSV</button>
+        <button type="button" class="admin-refresh" :disabled="loading" @click="fetchData">
+          <span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới
+        </button>
+      </div>
     </div>
 
     <!-- Skeleton placeholders while loading (replaces flash of empty spinner) -->
@@ -168,10 +171,27 @@ async function fetchData() {
   loading.value = false
 }
 
+function exportCSV() {
+  const rows: string[][] = [['Danh mục', 'Truy vấn/Entity', 'Lượt']]
+  for (const it of (data.value.popular || []) as Record<string, unknown>[])
+    rows.push(['Phổ biến', String(label(it)), String(count(it))])
+  for (const it of (data.value.gaps || []) as Record<string, unknown>[])
+    rows.push(['Knowledge gap', String(label(it)), String(count(it))])
+  for (const it of (data.value.top_entities || []) as Record<string, unknown>[])
+    rows.push(['Entity', String(label(it)), String(count(it))])
+  const csv = rows.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n')
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = `analytics-${new Date().toISOString().slice(0, 10)}.csv`
+  a.click(); URL.revokeObjectURL(url)
+}
+
 onMounted(fetchData)
 </script>
 
 <style scoped>
+.tk-head-actions { display: flex; gap: var(--space-2); align-items: center; }
 .tk-subtitle { font-size: .82rem; color: var(--muted); margin-top: 2px; }
 .refresh-spin { display: inline-block; animation: admin-spin .6s linear infinite; }
 

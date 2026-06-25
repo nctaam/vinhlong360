@@ -815,11 +815,18 @@ async def admin_stats():
     has_summary = sum(1 for e in all_ents if e.get("summary"))
     has_images = sum(1 for e in all_ents if e.get("images"))
     has_place = sum(1 for e in all_ents if e.get("placeId"))
+    ent_ids_with_rels = set()
+    with db._conn() as c2:
+        for r in db._fetchall(c2, "SELECT DISTINCT from_id FROM relationships UNION SELECT DISTINCT to_id FROM relationships", ()):
+            d = db._row_to_dict(r)
+            ent_ids_with_rels.add(d.get("from_id") or d.get("to_id"))
+    orphan_count = sum(1 for e in all_ents if e["id"] not in ent_ids_with_rels)
     completeness = {
         "total": len(all_ents),
         "has_summary": has_summary,
         "has_images": has_images,
         "has_place": has_place,
+        "orphans": orphan_count,
         "pct": round((has_summary + has_images + has_place) / (len(all_ents) * 3) * 100, 1) if all_ents else 0,
     }
 
