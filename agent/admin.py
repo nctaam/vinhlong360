@@ -538,6 +538,28 @@ async def delete_relationship(from_id: str, to_id: str, type: str):
     return {"status": "deleted"}
 
 
+@router.post("/relationships/bulk")
+async def add_relationships_bulk(body: dict):
+    """B7b: thêm nhiều quan hệ cùng lúc. Body: {from_id, pairs: [{to_id, type}]}."""
+    from_id = body.get("from_id", "")
+    pairs = body.get("pairs", [])
+    if not from_id or not pairs:
+        raise HTTPException(400, "Cần from_id và pairs")
+    added = 0
+    errors = []
+    for p in pairs[:50]:
+        to_id = p.get("to_id", "").strip()
+        rel_type = p.get("type", "related_to")
+        if not to_id:
+            continue
+        try:
+            db.add_relationship(from_id, to_id, rel_type)
+            added += 1
+        except Exception as e:
+            errors.append({"to_id": to_id, "error": str(e)})
+    return {"added": added, "errors": errors}
+
+
 # ── Bulk operations ──
 
 # Data quality review queue

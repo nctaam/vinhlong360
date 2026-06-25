@@ -188,6 +188,18 @@
               <input v-model="newRel.to_id" class="input" placeholder="ID entity đích" aria-label="ID entity đích" @keyup.enter="addRel" />
               <button type="button" class="btn btn-secondary btn-sm" :disabled="!newRel.to_id.trim()" @click="addRel">Thêm</button>
             </div>
+            <details class="bulk-rel-details">
+              <summary class="btn btn-ghost btn-sm">Thêm hàng loạt…</summary>
+              <div class="bulk-rel-inner">
+                <select v-model="bulkRelType" class="input" aria-label="Loại quan hệ hàng loạt" style="max-width:160px">
+                  <option v-for="t in relTypes" :key="t" :value="t">{{ t }}</option>
+                </select>
+                <textarea v-model="bulkRelIds" class="input" placeholder="Mỗi dòng 1 entity ID đích" rows="3" aria-label="Danh sách entity ID đích"></textarea>
+                <button type="button" class="btn btn-secondary btn-sm" :disabled="!bulkRelIds.trim() || bulkRelSaving" @click="addBulkRels">
+                  {{ bulkRelSaving ? 'Đang thêm…' : 'Thêm tất cả' }}
+                </button>
+              </div>
+            </details>
           </div>
         </div>
 
@@ -409,6 +421,26 @@ async function removeRel(r: Record<string, unknown>) {
     await $fetch(`/admin-api/relationships?${params}`, { method: 'DELETE', headers: authHeaders() })
     await fetchRels(form.value.id)
   } catch { showToast('Xóa quan hệ lỗi', 'error') }
+}
+
+const bulkRelType = ref('related_to')
+const bulkRelIds = ref('')
+const bulkRelSaving = ref(false)
+async function addBulkRels() {
+  if (!editingEntity.value || !bulkRelIds.value.trim()) return
+  const pairs = bulkRelIds.value.split('\n').map(l => l.trim()).filter(Boolean).map(id => ({ to_id: id, type: bulkRelType.value }))
+  if (!pairs.length) return
+  bulkRelSaving.value = true
+  try {
+    const r = await $fetch<{ added: number; errors: any[] }>('/admin-api/relationships/bulk', {
+      method: 'POST', headers: authHeaders(),
+      body: { from_id: form.value.id, pairs },
+    })
+    showToast(`Đã thêm ${r.added} quan hệ${r.errors?.length ? `, ${r.errors.length} lỗi` : ''}`, r.errors?.length ? 'warning' : 'success')
+    bulkRelIds.value = ''
+    await fetchRels(form.value.id as string)
+  } catch { showToast('Thêm hàng loạt lỗi', 'error') }
+  bulkRelSaving.value = false
 }
 
 const entityHistory = ref<any[]>([])
@@ -688,6 +720,11 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .dark .ent-search-clear:hover { background: rgba(255,255,255,.08); color: #fff; }
 .dark .admin-actions button:focus-visible,
 .dark .ent-search-clear:focus-visible { outline-color: var(--primary-fg, #D98A6F); }
+/* ── Bulk relationship add ── */
+.bulk-rel-details { margin-top: var(--space-2); }
+.bulk-rel-details summary { cursor: pointer; font-size: .82rem; }
+.bulk-rel-inner { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-2); }
+
 /* ── Entity change history ── */
 .ent-history { border-top: .5px solid var(--line); padding-top: var(--space-3); margin-top: var(--space-3); }
 .ent-history-item {

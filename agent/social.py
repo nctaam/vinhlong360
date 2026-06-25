@@ -1190,13 +1190,22 @@ def _reputation(conn, user_id: str, posts: int, reviews: int) -> dict:
     level, label = _level_for(points)
     badges = []
     if reviews >= 1:    badges.append({"id": "first_review", "label": "Đánh giá đầu tiên", "icon": "✍️"})
-    if reviews >= 25:   badges.append({"id": "reviewer_25", "label": "Nhà phê bình", "icon": "⭐"})
+    if reviews >= 25:   badges.append({"id": "review_master", "label": "Bậc thầy đánh giá", "icon": "⭐"})
     if photos >= 10:    badges.append({"id": "photographer", "label": "Nhiếp ảnh cộng đồng", "icon": "📸"})
     if places >= 10:    badges.append({"id": "explorer", "label": "Người khám phá", "icon": "🧭"})
     if followers >= 20: badges.append({"id": "popular", "label": "Được yêu thích", "icon": "💛"})
     if likes >= 50:     badges.append({"id": "quality", "label": "Nội dung chất lượng", "icon": "🏆"})
     if places >= 3 and reviews >= 5 and photos >= 3:
         badges.append({"id": "allrounder", "label": "Đa năng", "icon": "🌟"})
+    visits = _c(f"SELECT COUNT(*) c FROM user_visits WHERE user_id::text={ph} AND status='visited'", (user_id,))
+    if visits >= 10:    badges.append({"id": "traveler", "label": "Lữ khách", "icon": "🎒"})
+    areas_visited = _c(f"""SELECT COUNT(DISTINCT e.area) c FROM user_visits uv
+                           JOIN entities e ON e.id = uv.entity_id
+                           WHERE uv.user_id::text={ph} AND uv.status='visited' AND e.area IS NOT NULL""", (user_id,))
+    if areas_visited >= 3: badges.append({"id": "local", "label": "Người địa phương", "icon": "🏡"})
+    account_age_days = _c(f"""SELECT EXTRACT(DAY FROM NOW() - created_at)::int c
+                              FROM users WHERE id::text={ph}""", (user_id,))
+    if account_age_days >= 180: badges.append({"id": "veteran", "label": "Thành viên kỳ cựu", "icon": "🎖️"})
     return {"points": points, "level": level, "level_label": label, "badges": badges,
             "photos": photos, "followers": followers, "places": places, "likes": likes}
 
