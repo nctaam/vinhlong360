@@ -25,19 +25,24 @@
 
       <SkeletonList v-if="loading && !items.length" :count="6" />
       <EmptyState v-else-if="!filtered.length" icon="🔔" :title="filter === 'all' ? 'Chưa có thông báo' : 'Không có thông báo loại này'" message="Khi có hoạt động mới, bạn sẽ thấy ở đây." />
-      <ul v-else class="tb-list">
-        <li v-for="n in filtered" :key="n.id">
-          <button type="button" :class="['tb-item', { unread: !n.is_read }]" @click="open(n)">
-            <span class="tb-icon" aria-hidden="true">{{ icon(n) }}</span>
-            <span class="tb-body">
-              <span class="tb-title">{{ n.title }}<span v-if="n.group_count > 1" class="tb-group"> +{{ n.group_count - 1 }}</span></span>
-              <span v-if="n.body" class="tb-sub">{{ n.body }}</span>
-              <time class="tb-time" :datetime="n.created_at">{{ timeAgo(n.created_at) }}</time>
-            </span>
-            <span v-if="!n.is_read" class="tb-dot" aria-label="Chưa đọc"></span>
-          </button>
-        </li>
-      </ul>
+      <template v-else>
+        <ul class="tb-list">
+          <li v-for="n in filtered" :key="n.id">
+            <button type="button" :class="['tb-item', { unread: !n.is_read }]" @click="open(n)">
+              <span class="tb-icon" aria-hidden="true">{{ icon(n) }}</span>
+              <span class="tb-body">
+                <span class="tb-title">{{ n.title }}<span v-if="n.group_count > 1" class="tb-group"> +{{ n.group_count - 1 }}</span></span>
+                <span v-if="n.body" class="tb-sub">{{ n.body }}</span>
+                <time class="tb-time" :datetime="n.created_at">{{ timeAgo(n.created_at) }}</time>
+              </span>
+              <span v-if="!n.is_read" class="tb-dot" aria-label="Chưa đọc"></span>
+            </button>
+          </li>
+        </ul>
+        <button v-if="hasMore" type="button" class="btn btn-outline btn-sm tb-load-more" :disabled="loadingMore" @click="loadMore">
+          {{ loadingMore ? 'Đang tải...' : 'Xem thêm' }}
+        </button>
+      </template>
     </template>
   </section>
 </template>
@@ -57,9 +62,12 @@ const FILTERS = [
 ] as const
 type FilterKey = typeof FILTERS[number]['key']
 
+const PAGE_SIZE = 50
 const filter = ref<FilterKey>('all')
 const items = ref<any[]>([])
 const loading = ref(true)
+const loadingMore = ref(false)
+const hasMore = ref(false)
 const filtered = computed(() => {
   if (filter.value === 'all') return items.value
   return items.value.filter(n => n.type === filter.value)
@@ -68,9 +76,20 @@ const filtered = computed(() => {
 async function load() {
   if (!isLoggedIn.value) { loading.value = false; return }
   try {
-    const res = await $fetch<any>('/api/notifications?limit=50', { headers: authHeaders() })
+    const res = await $fetch<any>(`/api/notifications?limit=${PAGE_SIZE}`, { headers: authHeaders() })
     items.value = res.notifications || []
+    hasMore.value = (res.notifications || []).length >= PAGE_SIZE
   } catch { /* non-critical */ } finally { loading.value = false }
+}
+
+async function loadMore() {
+  loadingMore.value = true
+  try {
+    const res = await $fetch<any>(`/api/notifications?limit=${PAGE_SIZE}&offset=${items.value.length}`, { headers: authHeaders() })
+    const more = res.notifications || []
+    items.value.push(...more)
+    hasMore.value = more.length >= PAGE_SIZE
+  } catch { /* non-critical */ } finally { loadingMore.value = false }
 }
 
 function icon(n: any): string {
@@ -125,6 +144,7 @@ useHead({
 .tb-filters { display: flex; gap: var(--space-2); margin-bottom: var(--space-4); overflow-x: auto; padding-bottom: var(--space-1); scrollbar-width: none; }
 .tb-filters::-webkit-scrollbar { display: none; }
 .tb-filters .chip { white-space: nowrap; }
+.tb-load-more { display: block; width: 100%; margin-top: var(--space-3); }
 
 /* ── Dark mode ── */
 .dark .tb-item { background: var(--bg-alt); border-color: var(--line); }

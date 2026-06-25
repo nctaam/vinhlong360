@@ -58,6 +58,7 @@ class ReportRequest(BaseModel):
 @router.get("/notifications")
 async def get_notifications(
     limit: int = Query(20, ge=1, le=50),
+    offset: int = Query(0, ge=0),
     user=Depends(require_user),
 ):
     ph = db._ph
@@ -66,8 +67,8 @@ async def get_notifications(
             SELECT * FROM notifications
             WHERE user_id = {ph}::uuid
             ORDER BY created_at DESC
-            LIMIT {ph}
-        """, (str(user["id"]), limit))
+            LIMIT {ph} OFFSET {ph}
+        """, (str(user["id"]), limit, offset))
 
         unread = db._fetchone(conn, f"""
             SELECT COUNT(*) as c FROM notifications
@@ -169,17 +170,20 @@ async def toggle_follow(target_type: str, target_id: str, user=Depends(require_u
 @router.get("/following")
 async def get_following(
     target_type: Optional[str] = None,
+    limit: int = Query(50, ge=1, le=100),
+    offset: int = Query(0, ge=0),
     user=Depends(require_user),
 ):
     ph = db._ph
     conditions = [f"f.follower_id = {ph}::uuid"]
-    params = [str(user["id"])]
+    params: list = [str(user["id"])]
 
     if target_type:
         conditions.append(f"f.target_type = {ph}")
         params.append(target_type)
 
     where = " AND ".join(conditions)
+    params.extend([limit, offset])
 
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
@@ -192,17 +196,17 @@ async def get_following(
             LEFT JOIN entities e ON f.target_type = 'entity' AND e.id = f.target_id
             WHERE {where}
             ORDER BY f.created_at DESC
+            LIMIT {ph} OFFSET {ph}
         """, params)
 
-    return {
-        "following": [{
-            "target_type": r["target_type"],
-            "target_id": r["target_id"],
-            "target_name": r.get("target_name"),
-            "entity_type": r.get("entity_type"),
-            "created_at": str(r.get("created_at", "")),
-        } for r in [db._row_to_dict(row) for row in rows]],
-    }
+    items = [{
+        "target_type": r["target_type"],
+        "target_id": r["target_id"],
+        "target_name": r.get("target_name"),
+        "entity_type": r.get("entity_type"),
+        "created_at": str(r.get("created_at", "")),
+    } for r in [db._row_to_dict(row) for row in rows]]
+    return {"following": items, "has_more": len(items) == limit}
 
 
 @router.get("/followers/count/{target_type}/{target_id}")

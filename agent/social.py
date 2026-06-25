@@ -32,6 +32,8 @@ from ratelimit import check_rate
 RL_POST_LIMIT, RL_POST_WINDOW = 10, 600        # 10 bài / 10 phút
 RL_COMMENT_LIMIT, RL_COMMENT_WINDOW = 20, 300  # 20 bình luận / 5 phút
 RL_UPLOAD_LIMIT, RL_UPLOAD_WINDOW = 40, 600    # 40 ảnh / 10 phút
+RL_LIKE_LIMIT, RL_LIKE_WINDOW = 60, 60         # 60 like / 1 phút
+RL_DELETE_LIMIT, RL_DELETE_WINDOW = 10, 300     # 10 xóa / 5 phút
 
 
 def _require_pg():
@@ -327,6 +329,8 @@ async def get_post(post_id: str, user=Depends(get_current_user)):
 
 @router.delete("/posts/{post_id}")
 async def delete_post(post_id: str, user=Depends(require_user)):
+    check_rate(f"delete:{user['id']}", RL_DELETE_LIMIT, RL_DELETE_WINDOW,
+               "Bạn xóa quá nhanh. Vui lòng đợi ít phút.")
     ph = db._ph
     with db._conn() as conn:
         row = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
@@ -717,7 +721,7 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
 
 
 @router.get("/users/{user_id}/following")
-async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100)):
+async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0)):
     """Danh sách NGƯỜI mà user này đang theo dõi (hồ-sơ công-khai)."""
     ph = db._ph
     with db._conn() as conn:
@@ -725,15 +729,16 @@ async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100
             SELECT u.id, u.display_name, u.avatar_url
             FROM follows f JOIN users u ON u.id::text = f.target_id
             WHERE f.follower_id = {ph}::uuid AND f.target_type = 'user' AND u.is_active = TRUE
-            ORDER BY f.created_at DESC LIMIT {ph}
-        """, (user_id, limit))
-    return {"users": [{"id": str(db._row_to_dict(r)["id"]),
-                       "display_name": db._row_to_dict(r)["display_name"],
-                       "avatar_url": db._row_to_dict(r).get("avatar_url")} for r in rows]}
+            ORDER BY f.created_at DESC LIMIT {ph} OFFSET {ph}
+        """, (user_id, limit, offset))
+    users = [{"id": str(db._row_to_dict(r)["id"]),
+              "display_name": db._row_to_dict(r)["display_name"],
+              "avatar_url": db._row_to_dict(r).get("avatar_url")} for r in rows]
+    return {"users": users, "has_more": len(users) == limit}
 
 
 @router.get("/users/{user_id}/followers")
-async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100)):
+async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0)):
     """Danh sách NGƯỜI đang theo dõi user này (hồ-sơ công-khai)."""
     ph = db._ph
     with db._conn() as conn:
@@ -741,11 +746,12 @@ async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100)):
             SELECT u.id, u.display_name, u.avatar_url
             FROM follows f JOIN users u ON u.id = f.follower_id
             WHERE f.target_type = 'user' AND f.target_id = {ph} AND u.is_active = TRUE
-            ORDER BY f.created_at DESC LIMIT {ph}
-        """, (user_id, limit))
-    return {"users": [{"id": str(db._row_to_dict(r)["id"]),
-                       "display_name": db._row_to_dict(r)["display_name"],
-                       "avatar_url": db._row_to_dict(r).get("avatar_url")} for r in rows]}
+            ORDER BY f.created_at DESC LIMIT {ph} OFFSET {ph}
+        """, (user_id, limit, offset))
+    users = [{"id": str(db._row_to_dict(r)["id"]),
+              "display_name": db._row_to_dict(r)["display_name"],
+              "avatar_url": db._row_to_dict(r).get("avatar_url")} for r in rows]
+    return {"users": users, "has_more": len(users) == limit}
 
 
 @router.get("/community/suggested-follows")
@@ -963,6 +969,8 @@ async def set_best_answer(post_id: str, body: BestAnswerBody, user=Depends(requi
 
 @router.post("/posts/{post_id}/like")
 async def toggle_like(post_id: str, user=Depends(require_user)):
+    check_rate(f"like:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW,
+               "Bạn thao tác quá nhanh. Vui lòng đợi chút.")
     ph = db._ph
     with db._conn() as conn:
         existing = db._fetchone(conn, f"""
@@ -998,6 +1006,8 @@ async def toggle_like(post_id: str, user=Depends(require_user)):
 
 @router.post("/posts/{post_id}/bookmark")
 async def toggle_bookmark(post_id: str, user=Depends(require_user)):
+    check_rate(f"bookmark:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW,
+               "Bạn thao tác quá nhanh. Vui lòng đợi chút.")
     ph = db._ph
     with db._conn() as conn:
         existing = db._fetchone(conn, f"""
