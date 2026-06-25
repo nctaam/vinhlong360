@@ -439,17 +439,27 @@ useSeoMeta({
 })
 
 const eventListSchema = computed(() => {
-  const events = upcomingEvents.value.map((ev: any) => ({
-    '@type': 'Event',
-    name: ev.name,
-    startDate: ev.attributes?.date_start,
-    endDate: ev.attributes?.date_end || ev.attributes?.date_start,
-    url: `https://vinhlong360.vn/dia-diem/${ev.id}`,
-    eventStatus: 'https://schema.org/EventScheduled',
-    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-    location: { '@type': 'Place', name: ev.place_name || 'Vĩnh Long', address: { '@type': 'PostalAddress', addressRegion: ev.place_area || 'Vĩnh Long', addressCountry: 'VN' } },
+  const events = upcomingEvents.value.map((ev: any, i: number) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    item: {
+      '@type': 'Event',
+      name: ev.name,
+      startDate: ev.attributes?.date_start,
+      endDate: ev.attributes?.date_end || ev.attributes?.date_start,
+      url: `https://vinhlong360.vn/dia-diem/${ev.id}`,
+      eventStatus: 'https://schema.org/EventScheduled',
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      location: { '@type': 'Place', name: ev.place_name || 'Vĩnh Long', address: { '@type': 'PostalAddress', addressRegion: ev.place_area || 'Vĩnh Long', addressCountry: 'VN' } },
+    },
   }))
-  return events.length ? JSON.stringify(events) : ''
+  if (!events.length) return ''
+  return JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Sự kiện sắp tới tại Vĩnh Long',
+    itemListElement: events,
+  })
 })
 
 useHead({
