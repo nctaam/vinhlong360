@@ -133,8 +133,10 @@
             <input id="ent-place" v-model="form.placeId" class="input" placeholder="Place ID (xã/phường)" aria-label="Place ID" />
           </div>
           <div class="ent-field">
-            <label class="form-label" for="ent-summary">Tóm tắt</label>
-            <textarea id="ent-summary" v-model="form.summary" class="input admin-textarea" placeholder="Tóm tắt" aria-label="Tóm tắt" rows="3"></textarea>
+            <label class="form-label" for="ent-summary">Tóm tắt <span class="ent-char-count">{{ (form.summary || '').length }}/500</span></label>
+            <textarea v-if="!previewSummary" id="ent-summary" v-model="form.summary" class="input admin-textarea" placeholder="Tóm tắt" aria-label="Tóm tắt" rows="3" maxlength="500"></textarea>
+            <div v-else class="ent-summary-preview" v-html="form.summary"></div>
+            <button type="button" class="btn btn-ghost btn-sm" @click="previewSummary = !previewSummary">{{ previewSummary ? 'Sửa' : 'Xem trước' }}</button>
           </div>
           <!-- Quản lý ảnh (chỉ khi sửa) -->
           <div v-if="editingEntity" class="img-mgr">
@@ -337,6 +339,7 @@ async function saveEntity() {
 
 // ── Quản lý ảnh entity (chỉ khi đang sửa) ──
 const newImage = ref('')
+const previewSummary = ref(false)
 async function addImage() {
   const url = newImage.value.trim()
   if (!url || !editingEntity.value) return
@@ -561,4 +564,6 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .dark .ent-search-clear:hover { background: rgba(255,255,255,.08); color: #fff; }
 .dark .admin-actions button:focus-visible,
 .dark .ent-search-clear:focus-visible { outline-color: var(--primary-fg, #D98A6F); }
+.ent-char-count { font-weight: 400; font-size: .78rem; color: var(--muted); }
+.ent-summary-preview { padding: .5rem .8rem; border: 1px solid var(--line); border-radius: 6px; min-height: 60px; font-size: .9rem; line-height: 1.6; white-space: pre-wrap; }
 </style>

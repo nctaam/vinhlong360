@@ -84,6 +84,7 @@
             <td><span class="mod-badge" :class="badgeOf(p.moderation_status).cls">{{ badgeOf(p.moderation_status).label }}</span></td>
             <td class="admin-td-muted"><time :datetime="p.created_at">{{ formatDate(p.created_at) }}</time></td>
             <td class="admin-actions">
+              <button type="button" class="btn btn-ghost btn-sm" @click="previewPost = p">Xem</button>
               <template v-if="p.moderation_status !== 'approved'">
                 <button type="button" class="btn-success" :disabled="acting === p.id" @click="approve(p.id)">
                   <span v-if="acting === p.id" class="mod-btn-spin" aria-hidden="true"></span>{{ acting === p.id ? 'Đang duyệt' : 'Duyệt' }}
@@ -132,6 +133,33 @@
       Xem thêm
     </button>
 
+    <!-- Content preview modal -->
+    <Transition name="modal-fade">
+    <div v-if="previewPost" class="modal-overlay show" role="dialog" aria-modal="true" aria-label="Xem bài viết" @click.self="previewPost = null" @keyup.escape="previewPost = null">
+      <div class="modal admin-modal-md">
+        <div class="mod-preview-header">
+          <div class="mod-author">
+            <div class="mod-author-avatar">{{ (previewPost.display_name || '?')[0] }}</div>
+            <div>
+              <strong>{{ previewPost.display_name || previewPost.author || '—' }}</strong>
+              <div class="mod-preview-meta">{{ previewPost.post_type }} &middot; {{ formatDate(previewPost.created_at) }}</div>
+            </div>
+          </div>
+          <span class="mod-badge" :class="badgeOf(previewPost.moderation_status).cls">{{ badgeOf(previewPost.moderation_status).label }}</span>
+        </div>
+        <div class="mod-preview-body">{{ previewPost.content }}</div>
+        <div v-if="previewPost.images?.length" class="mod-preview-images">
+          <img v-for="(img, i) in previewPost.images" :key="i" :src="img" :alt="`Ảnh ${i+1}`" loading="lazy" />
+        </div>
+        <div class="mod-preview-actions">
+          <button v-if="previewPost.moderation_status !== 'approved'" type="button" class="btn btn-success" @click="approve(previewPost.id); previewPost = null">Duyệt</button>
+          <button v-if="previewPost.moderation_status !== 'rejected'" type="button" class="btn btn-danger" @click="startReject(previewPost.id); previewPost = null">Từ chối</button>
+          <button type="button" class="btn btn-ghost" @click="previewPost = null">Đóng</button>
+        </div>
+      </div>
+    </div>
+    </Transition>
+
     </template>
   </div>
 </template>
@@ -163,6 +191,7 @@ const total = ref(0)
 const page = ref(1)
 const loading = ref(true)
 const acting = ref<string | null>(null)
+const previewPost = ref<any>(null)
 const status = ref<ModStatus>('review')
 const expanded = ref<Set<string>>(new Set())
 const rejectingId = ref<string | null>(null)
@@ -383,4 +412,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .dark .mod-author-avatar { background: rgba(52,120,246,.15); }
 .dark .mod-type-badge { background: rgba(255,255,255,.06); }
 .dark .mod-tab.active .mod-tab-count { background: rgba(255,255,255,.2); color: #fff; }
+.mod-preview-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); }
+.mod-preview-meta { font-size: .78rem; color: var(--muted); }
+.mod-preview-body { white-space: pre-wrap; line-height: 1.7; margin-bottom: var(--space-4); }
+.mod-preview-images { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-4); }
+.mod-preview-images img { max-width: 200px; max-height: 200px; border-radius: 8px; object-fit: cover; }
+.mod-preview-actions { display: flex; gap: var(--space-2); justify-content: flex-end; }
 </style>

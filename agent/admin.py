@@ -811,6 +811,18 @@ async def admin_stats():
             by_type[d["type"]] = d["c"]
             total_entities += d["c"]
 
+    all_ents = [e for e in db.all_entities() if e.get("type") != "place"]
+    has_summary = sum(1 for e in all_ents if e.get("summary"))
+    has_images = sum(1 for e in all_ents if e.get("images"))
+    has_place = sum(1 for e in all_ents if e.get("placeId"))
+    completeness = {
+        "total": len(all_ents),
+        "has_summary": has_summary,
+        "has_images": has_images,
+        "has_place": has_place,
+        "pct": round((has_summary + has_images + has_place) / (len(all_ents) * 3) * 100, 1) if all_ents else 0,
+    }
+
     deltas = {}
     if db._use_pg:
         try:
@@ -834,6 +846,7 @@ async def admin_stats():
         "total_relationships": rel_count["c"] if rel_count else 0,
         "total_itineraries": itin_count["c"] if itin_count else 0,
         "by_type": by_type,
+        "completeness": completeness,
         **deltas,
     }
 

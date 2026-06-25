@@ -94,6 +94,20 @@
       </div>
     </div>
 
+    <!-- Entity completeness -->
+    <div v-if="stats.completeness" class="dash-completeness">
+      <div class="dash-comp-header">
+        <strong>Chất lượng entity</strong>
+        <span class="dash-comp-pct">{{ stats.completeness.pct }}%</span>
+      </div>
+      <div class="dash-comp-bar"><div class="dash-comp-fill" :style="{ width: stats.completeness.pct + '%' }"></div></div>
+      <div class="dash-comp-details">
+        <span>Tóm tắt: {{ stats.completeness.has_summary }}/{{ stats.completeness.total }}</span>
+        <span>Ảnh: {{ stats.completeness.has_images }}/{{ stats.completeness.total }}</span>
+        <span>Phường/xã: {{ stats.completeness.has_place }}/{{ stats.completeness.total }}</span>
+      </div>
+    </div>
+
     <!-- Quick actions -->
     <div class="dash-section">
       <h2 class="admin-section-title">Thao tác nhanh</h2>
@@ -341,6 +355,18 @@ onMounted(fetchDashboard)
 .dash-health-metrics b { color: var(--ink); font-weight: 600; }
 .dash-health-warn { color: #FF9F0A !important; }
 .dark .dash-health { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
+
+/* ── Entity completeness ── */
+.dash-completeness {
+  background: var(--bg); border: .5px solid var(--line); border-radius: 14px;
+  padding: var(--space-4) var(--space-5); margin-bottom: var(--space-6);
+}
+.dash-comp-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-2); font-size: .88rem; }
+.dash-comp-pct { font-weight: 800; font-size: 1.1rem; }
+.dash-comp-bar { height: 8px; background: rgba(142,142,147,.1); border-radius: 4px; overflow: hidden; }
+.dash-comp-fill { height: 100%; background: var(--primary, #219653); border-radius: 4px; transition: width .5s ease-out; }
+.dash-comp-details { display: flex; gap: var(--space-4); margin-top: var(--space-3); font-size: .78rem; color: var(--muted); }
+.dark .dash-completeness { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 
 /* ── Quick actions ── */
 .dash-section { margin-bottom: var(--space-6); }

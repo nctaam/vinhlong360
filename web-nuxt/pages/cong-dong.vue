@@ -416,6 +416,7 @@ const searchPage = ref(1)
 const searchHasMore = ref(false)
 const searchLoading = ref(false)
 const searchMode = computed(() => !!searchQuery.value)
+const { saveDraft, loadDraft, clearDraft } = useDrafts()
 const newContent = ref('')
 const newType = ref('share')
 const posting = ref(false)
@@ -752,6 +753,7 @@ async function submitPost() {
     newType.value = 'share'
     imageFiles.value = []
     previewImages.value = []
+    clearDraft()
     resetMention()
     const wasQuote = !!quotingPost.value
     quotingPost.value = null
@@ -853,7 +855,15 @@ function goToPost(postId: string) {
 
 watch(reportEntityId, () => fetchReportEntity())
 
+let draftTimer: ReturnType<typeof setTimeout> | null = null
+watch(newContent, (v) => {
+  if (draftTimer) clearTimeout(draftTimer)
+  draftTimer = setTimeout(() => saveDraft(v, newType.value), 3000)
+})
+
 onMounted(() => {
+  const draft = loadDraft()
+  if (draft && draft.content) { newContent.value = draft.content; newType.value = draft.postType }
   fetchReportEntity()
   fetchFeed(true)
   loadCommunityStats()
