@@ -226,6 +226,20 @@
           hint="Mở hồ sơ người dùng hoặc trang địa điểm rồi nhấn “Theo dõi”."
         >
           <template #actions>
+            <div v-if="suggestedUsers.length" class="onboard-follows">
+              <p class="onboard-title">Gợi ý theo dõi</p>
+              <div class="onboard-list">
+                <div v-for="s in suggestedUsers.slice(0, 5)" :key="s.id" class="onboard-user">
+                  <NuxtLink :to="`/nguoi-dung/${s.id}`" class="onboard-info">
+                    <span class="avatar avatar-sm">{{ (s.display_name || '?').charAt(0).toUpperCase() }}</span>
+                    <span class="onboard-name">{{ s.display_name }}</span>
+                  </NuxtLink>
+                  <button type="button" class="btn btn-primary btn-xs" :disabled="s._following" @click="followSuggested(s)">
+                    {{ s._following ? 'Đã theo dõi' : 'Theo dõi' }}
+                  </button>
+                </div>
+              </div>
+            </div>
             <NuxtLink to="/tim-kiem" class="btn btn-outline btn-sm">Tìm người để theo dõi</NuxtLink>
           </template>
         </EmptyState>
@@ -1252,4 +1266,11 @@ useHead({
   .momentum-fade-leave-active { transition: none; }
   .bm-dismiss:active { transform: none; }
 }
+.onboard-follows { width: 100%; margin-bottom: var(--space-3); text-align: left; }
+.onboard-title { font-size: var(--text-sm); font-weight: 600; margin-bottom: var(--space-2); color: var(--muted); }
+.onboard-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.onboard-user { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); background: var(--bg-alt); }
+.onboard-info { display: flex; align-items: center; gap: var(--space-2); text-decoration: none; color: inherit; font-weight: 500; }
+.onboard-name { font-size: var(--text-sm); }
+.btn-xs { padding: 4px 10px; font-size: .72rem; border-radius: var(--radius-sm); }
 </style>

@@ -21,6 +21,8 @@
         <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
       </select>
       <button type="button" class="btn btn-primary" @click="openCreate">+ Tạo mới</button>
+      <button type="button" class="btn btn-outline btn-sm" title="Tải JSON" @click="exportJSON">&#x2B73; JSON</button>
+      <button type="button" class="btn btn-outline btn-sm" title="Tải CSV" @click="exportCSV">&#x2B73; CSV</button>
     </div>
 
     <div v-if="selected.size" class="bulk-bar">
@@ -268,6 +270,25 @@ function cloneEntity(e: Entity) {
   newImage.value = ''
   fieldErrors.value = {}
   showModal.value = true
+}
+
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(entities.value, null, 2)], { type: 'application/json' })
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = `entities-${new Date().toISOString().slice(0, 10)}.json`
+  a.click(); URL.revokeObjectURL(a.href)
+}
+function exportCSV() {
+  const cols = ['id', 'name', 'type', 'placeId', 'summary']
+  const esc = (v: string) => `"${String(v ?? '').replace(/"/g, '""')}"`
+  const rows = entities.value.map(e => cols.map(c => esc((e as Record<string, any>)[c])).join(','))
+  const csv = '﻿' + cols.join(',') + '\n' + rows.join('\n')
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = `entities-${new Date().toISOString().slice(0, 10)}.csv`
+  a.click(); URL.revokeObjectURL(a.href)
 }
 
 // ── Quản lý quan hệ ──

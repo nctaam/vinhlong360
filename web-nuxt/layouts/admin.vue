@@ -553,4 +553,20 @@ onMounted(async () => {
 @media (prefers-reduced-motion: reduce) {
   .admin-toast { animation: none; }
 }
+/* ── Help tooltip ── */
+.admin-help {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: rgba(142,142,147,.12); color: var(--muted);
+  font-size: .65rem; font-weight: 700; cursor: help;
+  position: relative; vertical-align: middle; margin-left: 4px;
+}
+.admin-help::after {
+  content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%); padding: 6px 10px; border-radius: 8px;
+  background: var(--ink, #1a1a2e); color: #fff; font-size: .72rem; font-weight: 400;
+  white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .15s;
+  z-index: 100; max-width: 260px; white-space: normal; line-height: 1.4;
+}
+.admin-help:hover::after, .admin-help:focus::after { opacity: 1; }
 </style>

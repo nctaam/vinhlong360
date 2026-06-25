@@ -145,8 +145,10 @@ const props = defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ (e: 'close'): void }>()
 
 const { requestOtp, verifyOtp, checkPhone, login, setPassword } = useAuth()
+const { onLoginSuccess } = useAuthModal()
 
 const step = ref<'phone' | 'password' | 'otp' | 'set-password' | 'done'>('phone')
+watch(step, (v) => { if (v === 'done') onLoginSuccess() })
 const phone = ref('')
 const password = ref('')
 const newPassword = ref('')
