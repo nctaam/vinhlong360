@@ -81,7 +81,7 @@
           <input v-model="planTitle" class="input builder-title" placeholder="Tên lịch trình (VD: 2 ngày khám phá Vĩnh Long)" aria-label="Tên lịch trình" />
           <div class="builder-actions">
             <button type="button" class="btn btn-sm btn-ghost" @click="clearPlan" :disabled="!stops.length">Xóa tất cả</button>
-            <button type="button" :class="['btn', 'btn-sm', 'btn-primary', { 'save-pulse': savePulse }]" @click="savePlan" :disabled="!stops.length">Lưu lịch trình</button>
+            <button type="button" :class="['btn', 'btn-sm', 'btn-primary', { 'save-pulse': savePulse }]" @click="savePlan" :disabled="!stops.length || saving">{{ saving ? 'Đang lưu…' : 'Lưu lịch trình' }}</button>
           </div>
         </div>
 
@@ -231,6 +231,7 @@ const routeMapEl = ref<HTMLElement | null>(null)
 const addingId = ref<string | null>(null)
 let addingTimer: ReturnType<typeof setTimeout> | null = null
 const savePulse = ref(false)
+const saving = ref(false)
 let savePulseTimer: ReturnType<typeof setTimeout> | null = null
 
 const { createMap: createNDAMap } = useNDAMap()
@@ -328,7 +329,11 @@ async function clearPlan() {
 }
 
 async function savePlan() {
-  if (!stops.value.length) return
+  if (!stops.value.length || saving.value) return
+  saving.value = true
+  try { await _doSave() } finally { saving.value = false }
+}
+async function _doSave() {
   const plan: SavedPlan = {
     title: planTitle.value.trim() || 'Lịch trình chưa đặt tên',
     stops: JSON.parse(JSON.stringify(stops.value)),

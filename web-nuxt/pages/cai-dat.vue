@@ -89,8 +89,8 @@
 
         <div class="sf-actions">
           <button type="submit" class="btn btn-primary" :disabled="saving" :aria-busy="saving">
-            <span v-if="!saving">Lưu thay đổi</span>
-            <span v-else class="spinner spinner-sm" aria-label="Đang lưu"></span>
+            <span v-if="saving" class="spinner spinner-sm" aria-hidden="true"></span>
+            {{ saving ? 'Đang lưu…' : 'Lưu thay đổi' }}
           </button>
           <NuxtLink v-if="user" :to="`/nguoi-dung/${user.id}`" class="btn btn-ghost">Xem hồ sơ</NuxtLink>
         </div>
