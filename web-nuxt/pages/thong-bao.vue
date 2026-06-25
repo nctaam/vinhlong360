@@ -125,4 +125,16 @@ useHead({
 .tb-filters { display: flex; gap: var(--space-2); margin-bottom: var(--space-4); overflow-x: auto; padding-bottom: var(--space-1); scrollbar-width: none; }
 .tb-filters::-webkit-scrollbar { display: none; }
 .tb-filters .chip { white-space: nowrap; }
+
+/* ── Dark mode ── */
+.dark .tb-item { background: var(--bg-alt); border-color: var(--line); }
+.dark .tb-item:hover { background: color-mix(in srgb, var(--bg-alt) 80%, var(--ink) 5%); }
+.dark .tb-item.unread { background: color-mix(in srgb, var(--primary) 8%, var(--bg-alt)); border-color: var(--primary); }
+
+/* ── Mobile ── */
+@media (max-width: 600px) {
+  .tb-page { padding: var(--space-4) var(--space-3); }
+  .tb-item { padding: var(--space-2) var(--space-3); gap: var(--space-2); }
+  .tb-title { font-size: var(--text-xs); }
+}
 </style>

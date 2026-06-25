@@ -213,6 +213,13 @@
           </ClientOnly>
         </NuxtErrorBoundary>
 
+        <!-- Community Feed -->
+        <NuxtErrorBoundary>
+          <ClientOnly>
+            <EntityFeed :entity-id="id" :entity-name="entity.name" />
+          </ClientOnly>
+        </NuxtErrorBoundary>
+
         <!-- AI Travel Tips -->
         <NuxtErrorBoundary>
           <ClientOnly>

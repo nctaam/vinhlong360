@@ -118,6 +118,24 @@
       </div>
     </div>
 
+    <!-- Tab: Thông báo -->
+    <div v-if="activeTab === 'thong-bao'" class="settings-card card" role="tabpanel">
+      <h2>Tùy chọn thông báo</h2>
+      <p class="sf-hint" style="margin-bottom: 1rem;">Chọn loại thông báo bạn muốn nhận.</p>
+      <div class="notif-prefs">
+        <label v-for="np in NOTIF_TYPES" :key="np.key" class="notif-pref-item">
+          <div class="notif-pref-info">
+            <span class="notif-pref-icon" aria-hidden="true">{{ np.icon }}</span>
+            <div>
+              <strong>{{ np.label }}</strong>
+              <span class="sf-hint">{{ np.desc }}</span>
+            </div>
+          </div>
+          <input type="checkbox" :checked="notifPrefs[np.key]" class="toggle" @change="toggleNotifPref(np.key)" />
+        </label>
+      </div>
+    </div>
+
     <!-- Tab: Người chặn -->
     <div v-if="activeTab === 'chan'" class="settings-card card" role="tabpanel">
       <h2>Người bị chặn</h2>
@@ -172,6 +190,7 @@ useHead({
 const TABS = [
   { key: 'ho-so', label: 'Hồ sơ', icon: '\u{1F464}' },
   { key: 'bao-mat', label: 'Bảo mật', icon: '\u{1F512}' },
+  { key: 'thong-bao', label: 'Thông báo', icon: '🔔' },
   { key: 'chan', label: 'Chặn', icon: '\u{1F6AB}' },
   { key: 'nguy-hiem', label: 'Nguy hiểm', icon: '⚠️' },
 ] as const
@@ -297,6 +316,26 @@ async function unblockUser(id: string, name: string) {
   } catch { showToast('Không thể bỏ chặn', 'error') }
 }
 
+const NOTIF_TYPES = [
+  { key: 'like', icon: '❤️', label: 'Lượt thích', desc: 'Khi ai đó thích bài viết của bạn' },
+  { key: 'comment', icon: '💬', label: 'Bình luận', desc: 'Khi ai đó bình luận bài viết của bạn' },
+  { key: 'follow', icon: '👤', label: 'Theo dõi', desc: 'Khi ai đó theo dõi bạn' },
+  { key: 'mention', icon: '📣', label: 'Nhắc đến', desc: 'Khi ai đó nhắc đến bạn' },
+] as const
+
+const notifPrefs = ref<Record<string, boolean>>({ like: true, comment: true, follow: true, mention: true })
+onMounted(() => {
+  try {
+    const saved = localStorage.getItem('vl360_notif_prefs')
+    if (saved) Object.assign(notifPrefs.value, JSON.parse(saved))
+  } catch { /* ignore */ }
+})
+function toggleNotifPref(key: string) {
+  notifPrefs.value[key] = !notifPrefs.value[key]
+  localStorage.setItem('vl360_notif_prefs', JSON.stringify(notifPrefs.value))
+  showToast('Đã lưu tùy chọn thông báo', 'success')
+}
+
 const { confirm } = useConfirm()
 
 async function deactivate() {
@@ -411,4 +450,36 @@ async function save() {
 .danger-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .danger-item p { margin: 0; }
 .btn-danger-text { color: var(--danger, #c0392b) !important; }
+.blocked-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem; }
+.notif-prefs { display: flex; flex-direction: column; gap: .5rem; }
+.notif-pref-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .75rem .8rem; border: 1px solid var(--border-input); border-radius: var(--radius-md); cursor: pointer; transition: background .2s; }
+.notif-pref-item:hover { background: var(--bg-warm); }
+.notif-pref-info { display: flex; align-items: center; gap: .75rem; }
+.notif-pref-icon { font-size: 1.25rem; flex-shrink: 0; }
+.notif-pref-info strong { display: block; font-size: .9rem; }
+.notif-pref-info .sf-hint { display: block; margin-top: .1rem; }
+.toggle { appearance: none; width: 40px; height: 22px; background: var(--muted); border-radius: 11px; position: relative; cursor: pointer; transition: background .2s; flex-shrink: 0; }
+.toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: transform .2s; }
+.toggle:checked { background: var(--accent, var(--primary)); }
+.toggle:checked::after { transform: translateX(18px); }
+.toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ── Dark mode ── */
+.dark .sf-input { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
+.dark .session-item { border-color: var(--line); background: var(--bg-alt); }
+.dark .session-item.current { border-color: var(--accent); background: color-mix(in oklab, var(--accent) 8%, var(--bg-alt)); }
+.dark .settings-danger { border-color: rgba(192,57,43,.3); }
+.dark .sf-avatar-preview { border-color: var(--line); }
+.dark .notif-pref-item { border-color: var(--line); }
+.dark .notif-pref-item:hover { background: var(--bg-alt); }
+
+/* ── Mobile ── */
+@media (max-width: 600px) {
+  .settings-page { padding: var(--space-4) var(--space-3); }
+  .settings-card, .settings-guest { padding: var(--space-4); }
+  .sf-avatar-section { flex-direction: column; align-items: flex-start; }
+  .danger-item { flex-direction: column; align-items: flex-start; gap: .5rem; }
+  .settings-tabs { gap: 0; }
+  .settings-tab { padding: .5rem .65rem; font-size: .8rem; }
+}
 </style>
