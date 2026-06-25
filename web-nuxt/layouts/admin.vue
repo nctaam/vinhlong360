@@ -158,9 +158,6 @@ const ADMIN_PAGE_LABELS: Record<string, string> = {
   '/admin/ai': 'Knowledge Agent',
   '/admin/nhat-ky': 'Nhật ký',
   '/admin/media': 'Thư viện ảnh',
-  '/admin/lich-trinh': 'Lịch trình',
-  '/admin/danh-ba': 'Danh bạ HC',
-  '/admin/duyet-anh': 'Duyệt ảnh',
   '/admin/cai-dat': 'Cài đặt trang',
 }
 const currentPageLabel = computed(() => {
