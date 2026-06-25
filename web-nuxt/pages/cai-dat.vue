@@ -100,6 +100,21 @@
       <p v-else class="sf-hint">Không có phiên nào.</p>
     </div>
 
+    <!-- Blocked users -->
+    <div v-if="isLoggedIn" class="settings-card card">
+      <h2>Người bị chặn</h2>
+      <div v-if="blockedLoading" class="sf-hint">Đang tải...</div>
+      <div v-else-if="blockedUsers.length" class="sessions-list">
+        <div v-for="b in blockedUsers" :key="b.id" class="session-item">
+          <div class="session-info">
+            <NuxtLink :to="`/nguoi-dung/${b.id}`" class="session-ua">{{ b.display_name || 'Người dùng' }}</NuxtLink>
+          </div>
+          <button type="button" class="btn btn-ghost btn-sm" @click="unblockUser(b.id, b.display_name)">Bỏ chặn</button>
+        </div>
+      </div>
+      <p v-else class="sf-hint">Bạn chưa chặn ai.</p>
+    </div>
+
     <!-- Danger zone -->
     <div v-if="isLoggedIn" class="settings-card card settings-danger">
       <h2>Vùng nguy hiểm</h2>
@@ -176,6 +191,7 @@ onMounted(async () => {
     if (!displayName.value && u?.display_name) displayName.value = u.display_name
   } catch { /* prefill is best-effort */ }
   loadSessions()
+  loadBlocked()
 })
 
 const currentPw = ref('')
@@ -224,6 +240,26 @@ async function revokeSession(id: string) {
     sessions.value = sessions.value.filter(s => s.id !== id)
     showToast('Đã thu hồi phiên', 'success')
   } catch { showToast('Không thể thu hồi phiên', 'error') }
+}
+
+const blockedUsers = ref<any[]>([])
+const blockedLoading = ref(true)
+
+async function loadBlocked() {
+  blockedLoading.value = true
+  try {
+    const res = await $fetch<{ users: any[] }>('/api/blocked-users', { headers: authHeaders() })
+    blockedUsers.value = res.users || []
+  } catch { /* ignore */ }
+  blockedLoading.value = false
+}
+
+async function unblockUser(id: string, name: string) {
+  try {
+    await $fetch(`/api/notifications/block/${id}`, { method: 'POST', headers: authHeaders() })
+    blockedUsers.value = blockedUsers.value.filter(u => u.id !== id)
+    showToast(`${name || 'Người dùng'} đã được bỏ chặn`, 'success')
+  } catch { showToast('Không thể bỏ chặn', 'error') }
 }
 
 const { confirm } = useConfirm()

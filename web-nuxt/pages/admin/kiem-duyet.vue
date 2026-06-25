@@ -52,11 +52,20 @@
       <kbd>r</kbd> từ chối
     </div>
 
+    <!-- Batch action bar -->
+    <div v-if="batchSelected.size" class="bulk-bar">
+      <span>Đã chọn {{ batchSelected.size }}</span>
+      <button type="button" class="btn-success" :disabled="batchBusy" @click="batchAction('approve')">Duyệt tất cả</button>
+      <button type="button" class="btn-danger" :disabled="batchBusy" @click="batchAction('reject')">Từ chối tất cả</button>
+      <button type="button" class="btn btn-outline btn-sm" @click="batchSelected = new Set()">Bỏ chọn</button>
+    </div>
+
     <!-- Queue table -->
     <div class="admin-table-wrap">
     <table class="admin-table">
       <thead>
         <tr>
+          <th class="admin-th-check"><input type="checkbox" :checked="allBatchSelected" @change="toggleBatchAll" aria-label="Chọn tất cả" /></th>
           <th>Tác giả</th>
           <th>Nội dung</th>
           <th>Loại</th>
@@ -68,6 +77,7 @@
       <tbody>
         <template v-for="(p, idx) in queue" :key="p.id">
           <tr :class="{ 'mod-focused': idx === focusIdx }" @click="focusIdx = idx">
+            <td><input type="checkbox" :checked="batchSelected.has(p.id)" @change="toggleBatch(p.id)" :aria-label="`Chọn bài ${p.id}`" @click.stop /></td>
             <td>
               <div class="mod-author">
                 <div class="mod-author-avatar">{{ (p.display_name || p.author || '?')[0] }}</div>
@@ -94,7 +104,7 @@
             </td>
           </tr>
           <tr v-if="rejectingId === p.id" class="mod-reject-row">
-            <td colspan="6">
+            <td colspan="7">
               <div class="mod-reject-container">
               <div class="mod-reject">
                 <span class="mod-reject-label" aria-hidden="true">&#9888; Lý do:</span>
@@ -113,7 +123,7 @@
           </tr>
         </template>
         <tr v-if="!queue.length">
-          <td colspan="6">
+          <td colspan="7">
             <div class="admin-empty-state">
               <div class="admin-empty-state-icon">{{ emptyState.icon }}</div>
               <div class="admin-empty-state-text">{{ emptyState.text }}</div>
@@ -196,6 +206,24 @@ const status = ref<ModStatus>('review')
 const expanded = ref<Set<string>>(new Set())
 const rejectingId = ref<string | null>(null)
 const rejectReason = ref('')
+const batchSelected = ref<Set<string>>(new Set())
+const batchBusy = ref(false)
+
+const allBatchSelected = computed(() => queue.value.length > 0 && queue.value.every(p => batchSelected.value.has(p.id)))
+function toggleBatch(id: string) { batchSelected.value.has(id) ? batchSelected.value.delete(id) : batchSelected.value.add(id); batchSelected.value = new Set(batchSelected.value) }
+function toggleBatchAll() { if (allBatchSelected.value) { batchSelected.value = new Set() } else { batchSelected.value = new Set(queue.value.map(p => p.id)) } }
+
+async function batchAction(action: 'approve' | 'reject') {
+  batchBusy.value = true
+  try {
+    await $fetch('/admin-api/moderation/batch', { method: 'POST', headers: authHeaders(), body: { post_ids: [...batchSelected.value], action } })
+    showToast(`${batchSelected.value.size} bài đã ${action === 'approve' ? 'duyệt' : 'từ chối'}`, 'success')
+    batchSelected.value = new Set()
+    fetchQueue()
+    fetchStats()
+  } catch { showToast('Lỗi batch moderation', 'error') }
+  batchBusy.value = false
+}
 
 const hasMore = computed(() => queue.value.length < total.value)
 

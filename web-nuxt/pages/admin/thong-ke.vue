@@ -93,6 +93,8 @@
             <span class="tk-rank">{{ i + 1 }}</span>
             <span class="tk-query">{{ label(it) }}</span>
             <span class="tk-hits">{{ count(it) }}</span>
+            <NuxtLink :to="`/admin/entities?search=${encodeURIComponent(String(label(it)))}`" class="tk-gap-action" title="Tìm entity">&#128269;</NuxtLink>
+            <NuxtLink to="/admin/entities?create=1" class="tk-gap-action" title="Tạo entity">&#10010;</NuxtLink>
           </li>
         </ol>
         <div v-else class="tk-empty tk-empty-ok">
@@ -387,4 +389,6 @@ onMounted(fetchData)
 @media (prefers-reduced-motion: reduce) {
   .tk-sk-card, .tk-sk-panel { animation: none; }
 }
+.tk-gap-action { text-decoration: none; font-size: .8rem; opacity: .4; transition: opacity .15s; margin-left: 2px; }
+.tk-gap-action:hover { opacity: 1; }
 </style>

@@ -1090,6 +1090,30 @@ async def reject_post(post_id: str, body: RejectBody = RejectBody()):
     return {"success": True}
 
 
+class BatchModerationBody(BaseModel):
+    post_ids: list[str]
+    action: str  # 'approve' or 'reject'
+    reason: str = ""
+
+
+@router.post("/moderation/batch")
+async def batch_moderation(body: BatchModerationBody):
+    if body.action not in ("approve", "reject"):
+        raise HTTPException(400, "action must be 'approve' or 'reject'")
+    if not body.post_ids or len(body.post_ids) > 100:
+        raise HTTPException(400, "post_ids: 1-100 items")
+    status = "approved" if body.action == "approve" else "rejected"
+    ph = db._ph
+    updated = 0
+    with db._conn() as conn:
+        for pid in body.post_ids:
+            db._execute(conn, f"UPDATE posts SET moderation_status = {ph} WHERE id::text = {ph}", (status, pid))
+            updated += 1
+    for pid in body.post_ids:
+        _log_mod_action("post", pid, status, body.reason.strip() or None)
+    return {"success": True, "updated": updated}
+
+
 @router.get("/moderation/stats")
 async def moderation_stats():
     with db._conn() as conn:

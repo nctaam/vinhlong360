@@ -109,6 +109,18 @@
       </div>
     </div>
 
+    <!-- Recent activity -->
+    <div v-if="recentActivity.length" class="dash-section">
+      <h2 class="admin-section-title">Hoạt động gần đây</h2>
+      <div class="dash-activity">
+        <div v-for="(a, i) in recentActivity" :key="i" class="activity-row">
+          <span :class="['activity-method', a.method?.toLowerCase()]">{{ a.method }}</span>
+          <span class="activity-path">{{ a.path }}</span>
+          <span class="activity-time">{{ timeAgo(a.ts) }}</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Quick actions -->
     <div class="dash-section">
       <h2 class="admin-section-title">Thao tác nhanh</h2>
@@ -198,6 +210,7 @@ const { show: showToast } = useToast()
 const stats = ref<Record<string, unknown>>({})
 const alerts = ref<Array<{ type: string; count: number; label: string; icon: string; link: string; priority: number }>>([])
 const health = ref<Record<string, any> | null>(null)
+const recentActivity = ref<Array<{ method: string; path: string; ts: string }>>([])
 const loading = ref(true)
 const partialDegraded = ref(false)
 
@@ -213,6 +226,14 @@ function formatUptime(s: number): string {
   if (d > 0) return `${d}d ${h}h`
   if (h > 0) return `${h}h ${m}m`
   return `${m}m`
+}
+
+function timeAgo(ts: string): string {
+  const diff = (Date.now() - new Date(ts).getTime()) / 1000
+  if (diff < 60) return 'vừa xong'
+  if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`
+  if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`
+  return `${Math.floor(diff / 86400)} ngày trước`
 }
 
 const TYPE_COLORS: Record<string, string> = {
@@ -257,14 +278,16 @@ async function fetchDashboard() {
   loading.value = true
   partialDegraded.value = false
   try {
-    const [s, a, h] = await Promise.all([
+    const [s, a, h, auditRes] = await Promise.all([
       $fetch<Record<string, unknown>>('/admin-api/stats', { headers: authHeaders() }),
       $fetch<{ alerts: typeof alerts.value }>('/admin-api/dashboard-alerts', { headers: authHeaders() }).catch(() => DEGRADED),
       $fetch<Record<string, any>>('/api/health').catch(() => DEGRADED),
+      $fetch<{ entries: any[] }>('/admin-api/audit-log?limit=10', { headers: authHeaders() }).catch(() => DEGRADED),
     ])
     stats.value = s
     if (a !== DEGRADED) alerts.value = (a as { alerts: typeof alerts.value }).alerts
     if (h !== DEGRADED) health.value = h as Record<string, any>
+    if (auditRes !== DEGRADED) recentActivity.value = (auditRes as { entries: any[] }).entries || []
     partialDegraded.value = a === DEGRADED || h === DEGRADED
   } catch {
     showToast('Không thể tải dữ liệu dashboard', 'error')
@@ -490,4 +513,13 @@ onMounted(fetchDashboard)
   .dash-donut-legend { gap: 3px 6px; }
   .dash-legend-item { font-size: .65rem; }
 }
+.dash-activity { display: flex; flex-direction: column; gap: 2px; }
+.activity-row { display: flex; align-items: center; gap: .5rem; padding: .4rem .6rem; border-radius: var(--radius-sm); font-size: .8rem; }
+.activity-row:nth-child(odd) { background: var(--bg-alt); }
+.activity-method { font-weight: 700; font-size: .7rem; padding: 1px 6px; border-radius: var(--radius-sm); text-transform: uppercase; }
+.activity-method.post { background: rgba(52,199,89,.15); color: #219653; }
+.activity-method.put, .activity-method.patch { background: rgba(255,159,10,.15); color: #FF9F0A; }
+.activity-method.delete { background: rgba(255,69,58,.15); color: #FF453A; }
+.activity-path { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
+.activity-time { color: var(--muted); font-size: .72rem; white-space: nowrap; }
 </style>

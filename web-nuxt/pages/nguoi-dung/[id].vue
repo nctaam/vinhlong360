@@ -61,6 +61,21 @@
         </div>
       </div>
 
+      <div v-if="isSelf && profileCompletion < 100" class="profile-completion">
+        <div class="pc-row">
+          <span class="pc-label">Hồ sơ hoàn thiện {{ profileCompletion }}%</span>
+          <NuxtLink to="/cai-dat" class="pc-link">Hoàn thiện</NuxtLink>
+        </div>
+        <div class="pc-bar"><div class="pc-fill" :style="{ width: profileCompletion + '%' }"></div></div>
+        <div class="pc-hints">
+          <span v-if="!profile.display_name" class="pc-hint">Thêm tên hiển thị</span>
+          <span v-if="!profile.avatar" class="pc-hint">Thêm ảnh đại diện</span>
+          <span v-if="!profile.bio" class="pc-hint">Viết giới thiệu</span>
+          <span v-if="(profile.post_count || 0) === 0" class="pc-hint">Đăng bài đầu tiên</span>
+          <span v-if="(profile.review_count || 0) === 0" class="pc-hint">Viết đánh giá</span>
+        </div>
+      </div>
+
       <div class="profile-tabs">
         <button type="button" :class="['chip', { active: tab === 'posts' }]" :aria-pressed="tab === 'posts'" @click="tab = 'posts'">Bài viết</button>
         <button type="button" :class="['chip', { active: tab === 'reviews' }]" :aria-pressed="tab === 'reviews'" @click="tab = 'reviews'">Đánh giá</button>
@@ -225,6 +240,18 @@ const initial = computed(() => {
 const joinDate = computed(() => {
   if (!profile.value?.created_at) return ''
   return new Date(profile.value.created_at).toLocaleDateString('vi-VN')
+})
+
+const profileCompletion = computed(() => {
+  if (!profile.value) return 0
+  const p = profile.value
+  let score = 0
+  if (p.display_name) score += 20
+  if (p.avatar) score += 20
+  if (p.bio) score += 20
+  if ((p.post_count || 0) > 0) score += 20
+  if ((p.review_count || 0) > 0) score += 20
+  return score
 })
 
 const filteredPosts = computed(() => {
@@ -454,4 +481,12 @@ if (profile.value) {
   .profile-tabs .chip:active { transform: none; }
   .saved-cta .btn:active { transform: none; }
 }
+.profile-completion { padding: 0 var(--space-4); margin-bottom: var(--space-3); }
+.pc-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-1); }
+.pc-label { font-size: var(--text-sm); font-weight: 600; color: var(--muted); }
+.pc-link { font-size: var(--text-sm); color: var(--primary); text-decoration: none; }
+.pc-bar { height: 6px; background: var(--bg-alt); border-radius: var(--radius-full); overflow: hidden; }
+.pc-fill { height: 100%; background: var(--accent); border-radius: var(--radius-full); transition: width .4s var(--ease-out); }
+.pc-hints { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: var(--space-2); }
+.pc-hint { font-size: .72rem; color: var(--muted); padding: 2px 8px; border: 1px solid var(--border-input); border-radius: var(--radius-full); }
 </style>
