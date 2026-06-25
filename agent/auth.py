@@ -12,6 +12,7 @@ Endpoints:
 
 Tuân thủ NĐ 147/2024: xác thực SĐT VN trước khi cho đăng bài/bình luận.
 """
+import html as _html
 
 import base64
 import hashlib
@@ -505,9 +506,9 @@ async def update_profile(body: ProfileUpdate, request: Request):
         name = body.display_name.strip()[:50]
         if len(name) < 2:
             raise HTTPException(400, "Tên hiển thị phải từ 2 ký tự trở lên")
-        fields["display_name"] = name
+        fields["display_name"] = _html.escape(name)
     if body.bio is not None:
-        fields["bio"] = body.bio.strip()[:300]
+        fields["bio"] = _html.escape(body.bio.strip()[:300])
 
     if fields:
         user = db.update_user(str(user["id"]), **fields)

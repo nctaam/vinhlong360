@@ -148,6 +148,13 @@ class CreatePost(BaseModel):
             raise ValueError("Đánh giá từ 1 đến 5 sao")
         return v
 
+    @field_validator("images")
+    @classmethod
+    def validate_images(cls, v):
+        if len(v) > 20:
+            raise ValueError("Tối đa 20 ảnh")
+        return v
+
 
 class CreateComment(BaseModel):
     content: str
@@ -168,6 +175,25 @@ class CreateComment(BaseModel):
 class UpdatePost(BaseModel):
     content: Optional[str] = None
     rating: Optional[int] = None
+
+    @field_validator("content")
+    @classmethod
+    def validate_content(cls, v):
+        if v is None:
+            return v
+        v = v.strip()
+        if 0 < len(v) < 10:
+            raise ValueError("Nội dung cần ít nhất 10 ký tự")
+        if len(v) > 5000:
+            raise ValueError("Nội dung tối đa 5000 ký tự")
+        return v
+
+    @field_validator("rating")
+    @classmethod
+    def validate_rating(cls, v):
+        if v is not None and (v < 1 or v > 5):
+            raise ValueError("Đánh giá từ 1 đến 5 sao")
+        return v
 
 
 # ── Post label mapping (Vietnamese) ──
@@ -650,6 +676,7 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50)):
                    ON fc.target_id = u.id::text
             WHERE u.is_active = TRUE AND u.display_name IS NOT NULL
             GROUP BY u.id, u.display_name, u.avatar_url, fc.c
+            HAVING COUNT(p.id) > 0
         """, ())
 
     leaders = []

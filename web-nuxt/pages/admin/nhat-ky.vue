@@ -125,4 +125,14 @@ onMounted(fetchLog)
 .audit-path { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .audit-actor { font-weight: 500; }
 .audit-ip { font-size: .8rem; }
+
+.dark .audit-method.post { background: rgba(52,199,89,.2); color: #34c759; }
+.dark .audit-method.put, .dark .audit-method.patch { background: rgba(255,159,10,.2); color: #ffb340; }
+.dark .audit-method.delete { background: rgba(255,69,58,.2); color: #ff6961; }
+
+@media (max-width: 600px) {
+  .audit-filters { flex-direction: column; }
+  .audit-filters .input, .audit-select { max-width: 100%; }
+  .audit-path { max-width: 160px; }
+}
 </style>

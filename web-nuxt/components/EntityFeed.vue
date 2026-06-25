@@ -1,6 +1,9 @@
 <template>
-  <section v-if="posts.length" class="entity-feed">
+  <section v-if="loading || posts.length" class="entity-feed">
     <h3 class="ef-title">Cộng đồng chia sẻ về {{ entityName }}</h3>
+    <div v-if="loading" class="ef-skeleton">
+      <div v-for="i in 2" :key="i" class="ef-sk-item"><div class="ef-sk-avatar"></div><div class="ef-sk-lines"><div class="ef-sk-line w60"></div><div class="ef-sk-line w90"></div><div class="ef-sk-line w40"></div></div></div>
+    </div>
     <ul class="ef-list">
       <li v-for="p in posts" :key="p.id" class="ef-item">
         <NuxtLink :to="`/bai-viet/${p.id}`" class="ef-link">
@@ -30,13 +33,14 @@ const { timeAgo } = useTimeAgo()
 
 const posts = ref<any[]>([])
 const total = ref(0)
+const loading = ref(true)
 
 onMounted(async () => {
   try {
     const res = await $fetch<any>(`/api/entities/${props.entityId}/feed?limit=5`)
     posts.value = res.posts || []
     total.value = res.total || 0
-  } catch { /* non-critical */ }
+  } catch { /* non-critical */ } finally { loading.value = false }
 })
 
 function truncate(text: string, max: number): string {
@@ -81,4 +85,14 @@ function firstImage(p: any): string | null {
 @media (max-width: 600px) {
   .ef-thumb { width: 48px; height: 48px; }
 }
+
+.ef-skeleton { display: flex; flex-direction: column; gap: var(--space-2); }
+.ef-sk-item { display: flex; gap: var(--space-3); padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); }
+.ef-sk-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--bg-alt); flex-shrink: 0; animation: skPulse 1.2s ease-in-out infinite; }
+.ef-sk-lines { flex: 1; display: flex; flex-direction: column; gap: 6px; padding-top: 4px; }
+.ef-sk-line { height: 10px; border-radius: 4px; background: var(--bg-alt); animation: skPulse 1.2s ease-in-out infinite; }
+.ef-sk-line.w60 { width: 60%; }
+.ef-sk-line.w90 { width: 90%; }
+.ef-sk-line.w40 { width: 40%; }
+@keyframes skPulse { 0%, 100% { opacity: .4; } 50% { opacity: .8; } }
 </style>

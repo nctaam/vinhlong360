@@ -118,4 +118,10 @@ defineExpose({ open })
 :global(.dark) .cmd-palette { background: var(--card, #2c2c2e); }
 :global(.dark) .cmd-item.active { background: rgba(52,120,246,.15); }
 :global(.dark) .cmd-footer kbd { background: rgba(255,255,255,.08); }
+@media (max-width: 600px) {
+  .cmd-overlay { padding-top: 0; align-items: flex-end; }
+  .cmd-palette { width: 100%; border-radius: 16px 16px 0 0; max-height: 85vh; }
+  .cmd-results { max-height: 50vh; }
+  .cmd-footer { display: none; }
+}
 </style>

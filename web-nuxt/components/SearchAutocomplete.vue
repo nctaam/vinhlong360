@@ -207,12 +207,13 @@ function typeLabel(type: string) {
 
 function highlightMatch(name: string): string {
   const q = query.value.trim()
-  if (!q) return name
+  const safe = escapeHtml(name)
+  if (!q) return safe
   const idx = name.toLowerCase().indexOf(q.toLowerCase())
-  if (idx === -1) return name
-  const before = name.slice(0, idx)
-  const match = name.slice(idx, idx + q.length)
-  const after = name.slice(idx + q.length)
+  if (idx === -1) return safe
+  const before = escapeHtml(name.slice(0, idx))
+  const match = escapeHtml(name.slice(idx, idx + q.length))
+  const after = escapeHtml(name.slice(idx + q.length))
   return `${before}<mark>${match}</mark>${after}`
 }
 
