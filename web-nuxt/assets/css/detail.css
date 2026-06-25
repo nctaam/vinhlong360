@@ -35,7 +35,7 @@
 .dc-place { animation-delay: .2s; }
 .dc-actions { animation-delay: .28s; }
 .dc-trip { display: inline-flex; flex-wrap: wrap; gap: .4rem; }
-.trip-btn { font-size: var(--text-sm); padding: .4rem .75rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink); cursor: pointer; min-height: 40px; transition: background .2s, border-color .2s; }
+.trip-btn { font-size: var(--text-sm); padding: .5rem .85rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink); cursor: pointer; min-height: 44px; transition: background .2s, border-color .2s; }
 .trip-btn:hover { background: var(--bg-alt); }
 .trip-btn.active { background: color-mix(in srgb, var(--primary) 14%, var(--bg)); border-color: var(--primary); color: var(--primary-fg); font-weight: var(--weight-medium); }
 .trip-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
