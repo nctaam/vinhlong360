@@ -20,6 +20,11 @@
         <span v-if="cardMeta.price" class="cm-item">💰 {{ cardMeta.price }}</span>
         <span v-if="cardMeta.hours" class="cm-item">🕒 {{ cardMeta.hours }}</span>
       </div>
+      <div v-if="ratingDisplay" class="card-rating">
+        <span class="cr-stars">{{ ratingDisplay.stars }}</span>
+        <span class="cr-score">{{ ratingDisplay.score }}</span>
+        <span class="cr-count">({{ ratingDisplay.count }})</span>
+      </div>
       <div class="badges">
         <span v-if="isPeak" class="badge peak">🔥 Đang rộ</span>
         <span v-if="isYearRoundSeason" class="badge year">Quanh năm</span>
@@ -73,11 +78,22 @@ const cardMeta = computed(() => {
   return (price || hours) ? { price, hours } : null
 })
 const ocopStars = computed(() => parseInt(props.entity.attributes?.ocop) || 0)
+const ratingDisplay = computed(() => {
+  const a = props.entity.attributes
+  const r = parseFloat(a?.rating)
+  const c = parseInt(a?.review_count) || 0
+  if (!r || r <= 0 || c < 1) return null
+  const full = Math.floor(r)
+  const half = r - full >= 0.5 ? '½' : ''
+  return { stars: '★'.repeat(full) + half, score: r.toFixed(1), count: c }
+})
 </script>
 
 <style scoped>
-/* Star-tier color coding for OCOP badge — additive on top of global .badge.ocop (cards.css).
-   Higher star ratings read as more premium; falls back to base .badge.ocop styling. */
+.card-rating { display: flex; align-items: center; gap: .25rem; font-size: .8rem; margin-top: .25rem; }
+.cr-stars { color: var(--secondary, #d4a017); letter-spacing: -1px; }
+.cr-score { font-weight: 600; color: var(--text-primary); }
+.cr-count { color: var(--text-secondary); font-size: .75rem; }
 .badge.ocop-5 {
   background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
   color: var(--text-on-dark, #fff);
