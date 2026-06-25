@@ -547,6 +547,8 @@ async def upload_avatar(request: Request, file: UploadFile = File(...)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
+    from ratelimit import check_rate
+    check_rate(f"avatar:{user['id']}", 5, 600, "Upload ảnh quá nhanh. Vui lòng thử lại sau.")
 
     from storage import storage, MAX_IMAGE_SIZE, sniff_image_type
 
@@ -573,6 +575,8 @@ async def upload_cover(request: Request, file: UploadFile = File(...)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
+    from ratelimit import check_rate
+    check_rate(f"cover:{user['id']}", 5, 600, "Upload ảnh quá nhanh. Vui lòng thử lại sau.")
 
     from storage import storage, MAX_IMAGE_SIZE, sniff_image_type
 

@@ -570,6 +570,8 @@ async def search_posts(
 ):
     """Tìm bài viết cộng đồng theo nội dung (PG trigram `lower(content) LIKE`,
     không phân biệt hoa-thường; chỉ bài ĐÃ DUYỆT). v1 phân-biệt-dấu."""
+    uid = user["id"] if user else "anon"
+    check_rate(f"search:{uid}", 30, 60, "Tìm kiếm quá nhanh. Vui lòng thử lại sau.")
     ph = db._ph
     limit = 20
     offset = (page - 1) * limit
@@ -608,6 +610,8 @@ async def search_users(
     user=Depends(get_current_user),
 ):
     """Tìm người dùng theo tên hiển thị (không phân-biệt-dấu). Thông tin hồ-sơ công-khai."""
+    uid = user["id"] if user else "anon"
+    check_rate(f"search:{uid}", 30, 60, "Tìm kiếm quá nhanh. Vui lòng thử lại sau.")
     ph = db._ph
     limit = 20
     offset = (page - 1) * limit

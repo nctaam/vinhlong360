@@ -295,11 +295,14 @@ async def get_itinerary(itin_id: str):
 
 @router.get("/search")
 async def search(
+    request: Request,
     q: str = Query(..., min_length=1, max_length=200),
     type: Optional[str] = None,
     area: Optional[str] = None,
     limit: int = Query(20, le=100),
 ):
+    from ratelimit import check_rate
+    check_rate(f"search:{get_client_ip(request)}", 30, 60, "Tìm kiếm quá nhanh. Vui lòng thử lại sau.")
     results = db.search_entities(q=q, entity_type=type, area=area, limit=limit)
     _enrich_place(results)
     total = db.count_entities_filtered(entity_type=type, area=area, q=q)
