@@ -71,8 +71,8 @@ def test_auth_pg_guard_on_sqlite():
     if not db._use_pg:
         assert client.post("/auth/request-otp", json={"phone": "0901234567"}).status_code == 503
         assert client.post("/auth/verify-otp", json={"phone": "0901234567", "code": "123456"}).status_code == 503
-        assert client.post("/auth/login", json={"phone": "0901234567", "password": "secret1"}).status_code == 503
-        assert client.post("/auth/set-password", json={"password": "secret1"}).status_code == 503
+        assert client.post("/auth/login", json={"phone": "0901234567", "password": "secret1x"}).status_code == 503
+        assert client.post("/auth/set-password", json={"password": "secret1x"}).status_code == 503
         assert client.get("/auth/me").status_code == 503
     else:
         # Postgres: endpoints exist & enforce auth (not 404, not the 503 guard).
@@ -103,11 +103,19 @@ class TestOTPRequestValidation:
 
 class TestSetPasswordValidation:
     def test_valid_password(self):
-        assert auth.SetPassword(password="secret1").password == "secret1"
+        assert auth.SetPassword(password="secure1x").password == "secure1x"
 
     def test_too_short_rejected(self):
         with pytest.raises(ValidationError):
-            auth.SetPassword(password="123")
+            auth.SetPassword(password="abc1")
+
+    def test_no_digit_rejected(self):
+        with pytest.raises(ValidationError):
+            auth.SetPassword(password="abcdefgh")
+
+    def test_no_letter_rejected(self):
+        with pytest.raises(ValidationError):
+            auth.SetPassword(password="12345678")
 
 
 # ── Pure crypto/normalization helpers ─────────────────────────────────────
@@ -166,7 +174,7 @@ def test_request_otp_rate_limit_per_phone(monkeypatch):
 def test_set_password_requires_auth():
     """set-password without a session token → 401 (not 503, PG is live)."""
     client = _client()
-    resp = client.post("/auth/set-password", json={"password": "secret1"})
+    resp = client.post("/auth/set-password", json={"password": "secret1x"})
     assert resp.status_code == 401
 
 

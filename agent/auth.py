@@ -123,8 +123,12 @@ class SetPassword(BaseModel):
     @field_validator("password")
     @classmethod
     def validate_password(cls, v: str) -> str:
-        if len(v) < 6:
-            raise ValueError("Mật khẩu phải từ 6 ký tự trở lên")
+        if len(v) < 8:
+            raise ValueError("Mật khẩu phải từ 8 ký tự trở lên")
+        if not any(c.isdigit() for c in v):
+            raise ValueError("Mật khẩu cần có ít nhất 1 chữ số")
+        if not any(c.isalpha() for c in v):
+            raise ValueError("Mật khẩu cần có ít nhất 1 chữ cái")
         return v
 
 

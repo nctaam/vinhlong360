@@ -11,6 +11,7 @@ Chỉ gửi nội dung bài (không kèm định danh user) sang API nước ngo
 
 import json
 import os
+import re
 from datetime import datetime, timezone
 
 import httpx
@@ -34,9 +35,10 @@ async def moderate_content(content: str, image_urls: list[str] = None) -> dict:
     """
     text_result = await _moderate_text(content)
     image_result = await _moderate_images(image_urls or [])
+    link_result = _check_links(content)
 
-    max_score = max(text_result["score"], image_result["score"])
-    reasons = text_result["reasons"] + image_result["reasons"]
+    max_score = max(text_result["score"], image_result["score"], link_result["score"])
+    reasons = text_result["reasons"] + image_result["reasons"] + link_result["reasons"]
 
     if max_score < AUTO_APPROVE_THRESHOLD:
         status = "approved"
@@ -52,6 +54,33 @@ async def moderate_content(content: str, image_urls: list[str] = None) -> dict:
         "text_scores": text_result.get("categories", {}),
         "image_scores": image_result.get("categories", {}),
     }
+
+
+_SHORTENER_PATTERN = re.compile(
+    r'https?://(?:bit\.ly|tinyurl\.com|t\.co|goo\.gl|ow\.ly|is\.gd|buff\.ly|adf\.ly|shorte\.st)\b',
+    re.IGNORECASE,
+)
+_URL_PATTERN = re.compile(r'https?://\S+', re.IGNORECASE)
+
+
+def _check_links(content: str) -> dict:
+    """Step 4: flag posts with suspicious link patterns (spam, phishing)."""
+    if not content:
+        return {"score": 0.0, "reasons": []}
+    urls = _URL_PATTERN.findall(content)
+    if not urls:
+        return {"score": 0.0, "reasons": []}
+    reasons = []
+    score = 0.0
+    if _SHORTENER_PATTERN.search(content):
+        score = max(score, 0.6)
+        reasons.append("link:shortener")
+    if len(urls) >= 3:
+        score = max(score, 0.5)
+        reasons.append("link:excessive")
+    elif len(urls) >= 1 and not reasons:
+        score = max(score, 0.15)
+    return {"score": score, "reasons": reasons}
 
 
 async def _moderate_text(content: str) -> dict:
