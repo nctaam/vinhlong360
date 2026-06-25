@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, Query, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from database import db
@@ -65,8 +65,9 @@ import site_settings
 
 
 @router.get("/site-settings")
-async def get_site_settings():
+async def get_site_settings(response: Response):
     """Public flat {key: value} dict of all site settings (cached 60s)."""
+    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
     return site_settings.get_all_public()
 
 def _get_place(place_id: str) -> dict | None:
@@ -177,8 +178,10 @@ async def get_entity_relationships(
 @router.get("/entities/{entity_id}")
 async def get_entity(
     entity_id: str,
+    response: Response,
     relationship_limit: int = Query(DEFAULT_RELATIONSHIP_LIMIT, ge=0, le=100),
 ):
+    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
     cache_key = f"{entity_id}:{relationship_limit}"
     now = _time.time()
     cached = _entity_cache.get(cache_key)
@@ -204,7 +207,8 @@ async def get_entity(
 
 
 @router.get("/places")
-async def list_places(area: Optional[str] = None):
+async def list_places(response: Response, area: Optional[str] = None):
+    response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=7200"
     db.initialize()
     ph = db._ph
     with db._conn() as conn:
@@ -413,8 +417,9 @@ def _diverse_pick(entities: list[dict], max_per_type: int = 2,
 
 
 @router.get("/homepage")
-async def homepage_curated():
+async def homepage_curated(response: Response):
     """Curated homepage: smart-scored, type/area diverse, seasonal-aware, deduped."""
+    response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
     month = datetime.now().month
 
     # Perf-P0: trả cache nếu còn hạn + cùng tháng (tránh scan toàn bảng mỗi request)
@@ -611,10 +616,12 @@ async def homepage_curated():
 
 @router.get("/events")
 async def list_events(
+    response: Response,
     area: Optional[str] = None,
     include_past: bool = False,
     limit: int = Query(50, le=200),
 ):
+    response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     """Sự kiện: sắp xếp theo date_start, mặc định ẩn sự kiện đã qua."""
     today = datetime.now().date()
     all_ents = db.list_entities(entity_type="event", limit=100000, offset=0)

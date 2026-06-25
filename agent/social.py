@@ -682,7 +682,7 @@ async def trending_tags(limit: int = Query(10, ge=1, le=20)):
             ORDER BY c DESC, tag
             LIMIT {ph}
         """, (limit,))
-    tags = [{"tag": db._row_to_dict(r)["tag"], "count": int(db._row_to_dict(r)["c"])} for r in rows]
+    tags = [{"tag": (d := db._row_to_dict(r))["tag"], "count": int(d["c"])} for r in rows]
     result = {"tags": tags}
     _trending_cache["ts"] = now
     _trending_cache["data"] = {cache_key: result}

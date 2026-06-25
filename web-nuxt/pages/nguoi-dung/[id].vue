@@ -171,8 +171,8 @@
 
     <!-- Modal danh sách theo dõi -->
     <Teleport to="body">
-      <div v-if="followModalOpen" class="fm-overlay" @click.self="followModalOpen = false">
-        <div class="fm-dialog" role="dialog" aria-modal="true" aria-label="Danh sách theo dõi">
+      <div v-if="followModalOpen" class="fm-overlay" @click.self="followModalOpen = false" @keydown.escape="followModalOpen = false">
+        <div class="fm-dialog" role="dialog" aria-modal="true" aria-label="Danh sách theo dõi" tabindex="-1" ref="followDialogEl">
           <header class="fm-head">
             <div class="fm-tabs">
               <button type="button" :class="['fm-tab', { active: followModalTab === 'followers' }]" @click="followModalTab = 'followers'">Người theo dõi</button>
@@ -348,10 +348,12 @@ async function loadFollowList(which: 'followers' | 'following') {
   } catch { followLists.value[which] = []; showToast('Không thể tải danh sách', 'error') }
   followLoadingList.value = false
 }
+const followDialogEl = ref<HTMLElement | null>(null)
 function openFollowModal(tab: 'followers' | 'following') {
   followModalTab.value = tab
   followModalOpen.value = true
   loadFollowList(tab)
+  nextTick(() => followDialogEl.value?.focus())
 }
 watch(followModalTab, (t) => loadFollowList(t))
 

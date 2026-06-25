@@ -28,7 +28,10 @@ async function share() {
     await navigator.clipboard.writeText(url)
     copied.value = true
     setTimeout(() => { copied.value = false }, 2000)
-  } catch { /* clipboard not available */ }
+  } catch {
+    const { show } = useToast()
+    show('Không thể sao chép link', 'error')
+  }
 }
 </script>
 
