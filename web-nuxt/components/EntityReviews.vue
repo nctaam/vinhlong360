@@ -63,7 +63,7 @@
           />
           <span>{{ uploadingImage ? 'Đang tải ảnh…' : (formImages.length >= 4 ? 'Tối đa 4 ảnh' : '+ Thêm ảnh') }}</span>
         </label>
-        <p v-if="uploadError" class="rf-error">{{ uploadError }}</p>
+        <p v-if="uploadError" class="rf-error" role="alert">{{ uploadError }}</p>
       </div>
 
       <button type="button"
@@ -73,7 +73,7 @@
       >
         {{ submitting ? 'Đang gửi…' : 'Gửi đánh giá' }}
       </button>
-      <p v-if="submitError" class="rf-error">{{ submitError }}</p>
+      <p v-if="submitError" class="rf-error" role="alert">{{ submitError }}</p>
     </div>
     <p v-else class="review-login-hint">
       Đăng nhập (nút phía trên) để viết đánh giá.

@@ -14,7 +14,21 @@
     </section>
 
     <div class="search-row search-row-spaced" :class="{ error: hasError }">
-      <input v-model="searchInput" type="search" enterkeyhint="search" placeholder="Tìm đặc sản, trải nghiệm…" aria-label="Tìm kiếm" :aria-invalid="hasError || undefined" autocomplete="off" @keyup.enter="doSearch" />
+      <div class="search-input-wrap" role="combobox" :aria-expanded="showSuggestions" aria-haspopup="listbox" aria-owns="search-suggestions">
+        <input v-model="searchInput" type="search" enterkeyhint="search" placeholder="Tìm đặc sản, trải nghiệm…" aria-label="Tìm kiếm" :aria-invalid="hasError || undefined" autocomplete="off" aria-autocomplete="list" :aria-activedescendant="activeSuggestionId" @input="onTypeahead" @keyup.enter="onEnter" @keydown.down.prevent="sugNext" @keydown.up.prevent="sugPrev" @keydown.escape="sugClose" @blur="sugBlur" />
+        <Transition name="sug-fade">
+          <ul v-if="showSuggestions && suggestions.length" id="search-suggestions" class="search-suggestions" role="listbox" aria-label="Gợi ý tìm kiếm">
+            <li v-for="(s, i) in suggestions" :key="s.id" :id="`sug-${s.id}`" role="option" :aria-selected="i === sugIdx" :class="['sug-item', { active: i === sugIdx }]" @mousedown.prevent="goToSuggestion(s)">
+              <span class="sug-emoji" aria-hidden="true">{{ TYPE_META[s.type]?.emoji || '📍' }}</span>
+              <span class="sug-name">{{ s.name }}</span>
+              <span v-if="s.place_name" class="sug-place">{{ s.place_name }}</span>
+            </li>
+            <li class="sug-item sug-all" role="option" :aria-selected="sugIdx === suggestions.length" :class="{ active: sugIdx === suggestions.length }" @mousedown.prevent="doSearch">
+              🔍 Tìm tất cả "{{ searchInput.trim() }}"
+            </li>
+          </ul>
+        </Transition>
+      </div>
       <button type="button" class="btn btn-primary" @click="doSearch">Tìm</button>
     </div>
 
@@ -221,12 +235,58 @@ const typeBreakdown = computed(() => {
 })
 
 function doSearch() {
+  sugClose()
   if (searchInput.value.trim()) {
     navigateTo(`/tim-kiem?q=${encodeURIComponent(searchInput.value.trim())}`)
   }
 }
 
-watch(q, (v) => { searchInput.value = v })
+const suggestions = ref<any[]>([])
+const sugIdx = ref(-1)
+const showSuggestions = ref(false)
+let sugTimer: ReturnType<typeof setTimeout> | null = null
+const activeSuggestionId = computed(() => {
+  if (sugIdx.value < 0 || !showSuggestions.value) return undefined
+  if (sugIdx.value < suggestions.value.length) return `sug-${suggestions.value[sugIdx.value].id}`
+  return undefined
+})
+
+function onTypeahead() {
+  const term = searchInput.value.trim()
+  if (sugTimer) clearTimeout(sugTimer)
+  if (term.length < 2) { sugClose(); return }
+  sugTimer = setTimeout(async () => {
+    try {
+      const res = await $fetch<any>(`/api/entities?q=${encodeURIComponent(term)}&limit=5`)
+      suggestions.value = res.entities || []
+      sugIdx.value = -1
+      showSuggestions.value = suggestions.value.length > 0
+    } catch { suggestions.value = [] }
+  }, 300)
+}
+function sugNext() {
+  if (!showSuggestions.value) return
+  sugIdx.value = Math.min(sugIdx.value + 1, suggestions.value.length)
+}
+function sugPrev() {
+  if (!showSuggestions.value) return
+  sugIdx.value = Math.max(sugIdx.value - 1, -1)
+}
+function sugClose() { showSuggestions.value = false; sugIdx.value = -1 }
+function sugBlur() { setTimeout(sugClose, 150) }
+function goToSuggestion(s: any) {
+  sugClose()
+  navigateTo(`/dia-diem/${s.id}`)
+}
+function onEnter() {
+  if (showSuggestions.value && sugIdx.value >= 0 && sugIdx.value < suggestions.value.length) {
+    goToSuggestion(suggestions.value[sugIdx.value])
+  } else {
+    doSearch()
+  }
+}
+
+watch(q, (v) => { searchInput.value = v; sugClose() })
 
 useSeoMeta({
   title: () => q.value.trim() ? `"${q.value.trim()}" — Tìm kiếm — vinhlong360` : pc('seo_title'),
@@ -300,6 +360,33 @@ useHead({
 .quick-pick-icon { font-size: var(--text-2xl); transition: transform .35s var(--ease-spring-gentle); }
 .quick-pick:hover .quick-pick-icon { transform: scale(1.15); }
 .quick-pick-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); }
+
+/* Autocomplete suggestions */
+.search-input-wrap { position: relative; flex: 1; min-width: 0; }
+.search-suggestions {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 20;
+  margin: var(--space-1) 0 0; padding: var(--space-1); list-style: none;
+  background: var(--card); border: .5px solid var(--line);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+  max-height: 320px; overflow-y: auto;
+}
+.sug-item {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-3); border-radius: var(--radius-md);
+  cursor: pointer; font-size: var(--text-sm); color: var(--ink);
+  transition: background .15s;
+}
+.sug-item:hover, .sug-item.active { background: var(--bg-alt); }
+.sug-emoji { flex-shrink: 0; }
+.sug-name { font-weight: var(--weight-medium); }
+.sug-place { color: var(--muted); font-size: var(--text-xs); margin-left: auto; flex-shrink: 0; }
+.sug-all { color: var(--primary-fg); font-weight: var(--weight-semibold); border-top: .5px solid var(--line); margin-top: var(--space-1); padding-top: var(--space-2); }
+.sug-fade-enter-active { transition: opacity .15s, transform .15s; }
+.sug-fade-leave-active { transition: opacity .1s; }
+.sug-fade-enter-from { opacity: 0; transform: translateY(-4px); }
+.sug-fade-leave-to { opacity: 0; }
+.dark .search-suggestions { background: var(--card); border-color: rgba(255,255,255,.1); }
+.dark .sug-item:hover, .dark .sug-item.active { background: rgba(255,255,255,.06); }
 
 /* Search input polish */
 .search-row-spaced input {

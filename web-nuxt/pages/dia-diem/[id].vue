@@ -68,7 +68,7 @@
     <!-- Lightbox (replaces old ImageGallery) -->
     <Teleport to="body">
       <Transition name="lb-fade">
-      <div v-if="lightboxOpen" class="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh" @click.self="lightboxOpen = false" @keydown.escape="lightboxOpen = false" @keydown.left="lbPrev" @keydown.right="lbNext" tabindex="-1" ref="lightboxEl"
+      <div v-if="lightboxOpen" class="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh" @click.self="lightboxOpen = false" @keydown.escape="lightboxOpen = false" @keydown.left="lbPrev" @keydown.right="lbNext" @keydown.tab="lbFocusTrap" tabindex="-1" ref="lightboxEl"
         @touchstart.passive="lbTouchStart" @touchmove.passive="lbTouchMove" @touchend="lbTouchEnd">
         <button type="button" class="lb-close" aria-label="Đóng" @click="lightboxOpen = false">&times;</button>
         <button type="button" v-if="entity.images?.length > 1" class="lb-prev" aria-label="Ảnh trước" @click="lbPrev">&#8249;</button>
@@ -538,6 +538,16 @@ function lbPrev() {
 function lbNext() {
   const len = entity.value?.images?.length || 1
   lbIndex.value = (lbIndex.value + 1) % len
+}
+function lbFocusTrap(e: KeyboardEvent) {
+  const el = lightboxEl.value
+  if (!el) return
+  const focusable = el.querySelectorAll<HTMLElement>('button:not([disabled])')
+  if (!focusable.length) return
+  const first = focusable[0]
+  const last = focusable[focusable.length - 1]
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
 }
 // Lightbox swipe gestures (mobile)
 const lbTouchX = ref(0)

@@ -64,7 +64,7 @@
 definePageMeta({ layout: 'admin' })
 
 const { authHeaders } = useAuth()
-const { showToast } = useToast()
+const { show: showToast } = useToast()
 
 const entries = ref<any[]>([])
 const total = ref(0)

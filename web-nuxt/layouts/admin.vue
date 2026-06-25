@@ -122,6 +122,7 @@
       <slot />
     </main>
     <ClientOnly><CommandPalette /></ClientOnly>
+    <ClientOnly><ToastContainer /></ClientOnly>
   </div>
 </template>
 
