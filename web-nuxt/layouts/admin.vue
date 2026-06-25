@@ -119,7 +119,11 @@
 <script setup lang="ts">
 const route = useRoute()
 const { user, fetchMe, token, authHeaders } = useAuth()
-const sidebarCollapsed = ref(false)
+const { prefs, setPref } = useAdminPrefs()
+const sidebarCollapsed = computed({
+  get: () => prefs.value.sidebarCollapsed,
+  set: (v: boolean) => setPref('sidebarCollapsed', v),
+})
 const badges = ref<Record<string, number>>({ moderation: 0, images: 0, unclassified: 0, provisional: 0, reports: 0 })
 
 async function loadBadges() {

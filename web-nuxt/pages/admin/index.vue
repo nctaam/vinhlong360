@@ -65,6 +65,21 @@
       <span>&#10003;</span> Không có mục nào cần xử lý
     </div>
 
+    <!-- System health -->
+    <div v-if="health" class="dash-health">
+      <div class="dash-health-header">
+        <span :class="['dash-health-dot', health.status]"></span>
+        <strong>Hệ thống {{ health.status === 'ok' ? 'hoạt động tốt' : 'degraded' }}</strong>
+        <span class="dash-health-ver">v{{ health.version }}</span>
+      </div>
+      <div class="dash-health-metrics">
+        <span>Uptime: <b>{{ formatUptime(health.uptime_seconds) }}</b></span>
+        <span v-if="health.memory_mb">RAM: <b>{{ health.memory_mb }}MB</b></span>
+        <span>LLM: <b :class="health.llm_api === 'ok' ? '' : 'dash-health-warn'">{{ health.llm_api || 'chưa kiểm' }}</b></span>
+        <span v-if="health.data_quality">Dữ liệu: <b>{{ health.data_quality.coverage_pct }}%</b></span>
+      </div>
+    </div>
+
     <!-- Quick actions -->
     <div class="dash-section">
       <h2 class="admin-section-title">Thao tác nhanh</h2>
@@ -153,6 +168,7 @@ const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const stats = ref<Record<string, unknown>>({})
 const alerts = ref<Array<{ type: string; count: number; label: string; icon: string; link: string; priority: number }>>([])
+const health = ref<Record<string, any> | null>(null)
 const loading = ref(true)
 const partialDegraded = ref(false)
 
@@ -161,6 +177,13 @@ function formatNum(n: unknown): string {
   if (num >= 10000) return (num / 1000).toFixed(1) + 'k'
   if (num >= 1000) return num.toLocaleString()
   return String(num)
+}
+
+function formatUptime(s: number): string {
+  const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60)
+  if (d > 0) return `${d}d ${h}h`
+  if (h > 0) return `${h}h ${m}m`
+  return `${m}m`
 }
 
 const TYPE_COLORS: Record<string, string> = {
@@ -205,13 +228,15 @@ async function fetchDashboard() {
   loading.value = true
   partialDegraded.value = false
   try {
-    const [s, a] = await Promise.all([
+    const [s, a, h] = await Promise.all([
       $fetch<Record<string, unknown>>('/admin-api/stats', { headers: authHeaders() }),
       $fetch<{ alerts: typeof alerts.value }>('/admin-api/dashboard-alerts', { headers: authHeaders() }).catch(() => DEGRADED),
+      $fetch<Record<string, any>>('/api/health').catch(() => DEGRADED),
     ])
     stats.value = s
     if (a !== DEGRADED) alerts.value = (a as { alerts: typeof alerts.value }).alerts
-    partialDegraded.value = a === DEGRADED
+    if (h !== DEGRADED) health.value = h as Record<string, any>
+    partialDegraded.value = a === DEGRADED || h === DEGRADED
   } catch {
     showToast('Không thể tải dữ liệu dashboard', 'error')
   }
@@ -283,6 +308,24 @@ onMounted(fetchDashboard)
   border-radius: 10px; margin-bottom: var(--space-8); font-size: .88rem; font-weight: 500;
   background: rgba(33,150,83,.08); color: var(--primary, #219653); border: .5px solid rgba(33,150,83,.15);
 }
+
+/* ── System health ── */
+.dash-health {
+  background: var(--bg); border: .5px solid var(--line); border-radius: 14px;
+  padding: var(--space-4) var(--space-5); margin-bottom: var(--space-6);
+}
+.dash-health-header { display: flex; align-items: center; gap: var(--space-2); font-size: .88rem; }
+.dash-health-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dash-health-dot.ok { background: #34C759; }
+.dash-health-dot.degraded { background: #FF9F0A; }
+.dash-health-ver { margin-left: auto; font-size: .75rem; color: var(--muted); }
+.dash-health-metrics {
+  display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5);
+  margin-top: var(--space-3); font-size: .82rem; color: var(--muted);
+}
+.dash-health-metrics b { color: var(--ink); font-weight: 600; }
+.dash-health-warn { color: #FF9F0A !important; }
+.dark .dash-health { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 
 /* ── Quick actions ── */
 .dash-section { margin-bottom: var(--space-6); }
