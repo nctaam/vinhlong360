@@ -181,17 +181,22 @@ def _hash_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
 
+_PBKDF2_ITERATIONS = 310_000
+
 def _hash_password(password: str) -> str:
     salt = os.urandom(16)
-    key = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, 200_000)
+    key = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, _PBKDF2_ITERATIONS)
     return base64.b64encode(salt + key).decode()
 
 
 def _verify_password(password: str, stored: str) -> bool:
     decoded = base64.b64decode(stored)
     salt, stored_key = decoded[:16], decoded[16:]
-    key = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, 200_000)
-    return hmac.compare_digest(key, stored_key)
+    key = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, _PBKDF2_ITERATIONS)
+    if hmac.compare_digest(key, stored_key):
+        return True
+    key_legacy = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, 200_000)
+    return hmac.compare_digest(key_legacy, stored_key)
 
 
 async def _send_sms(phone: str, message: str) -> bool:
@@ -560,10 +565,11 @@ async def upload_avatar(request: Request, file: UploadFile = File(...)):
 
     try:
         urls = await run_in_threadpool(storage.upload_image_set, data, "avatars", str(user["id"])[:8])
-    except ValueError as e:
-        raise HTTPException(400, f"Ảnh không hợp lệ: {e}")
-    except Exception as e:
-        raise HTTPException(500, f"Lỗi upload ảnh: {e}")
+    except ValueError:
+        raise HTTPException(400, "Ảnh không hợp lệ hoặc đã hỏng")
+    except Exception:
+        logger.exception("Avatar upload failed for user %s", user["id"])
+        raise HTTPException(500, "Không thể upload ảnh, vui lòng thử lại")
 
     avatar_url = urls.get("md") or urls.get("sm")
     db.update_user(str(user["id"]), avatar_url=avatar_url)
@@ -588,10 +594,11 @@ async def upload_cover(request: Request, file: UploadFile = File(...)):
 
     try:
         urls = await run_in_threadpool(storage.upload_image_set, data, "covers", str(user["id"])[:8])
-    except ValueError as e:
-        raise HTTPException(400, f"Ảnh không hợp lệ: {e}")
-    except Exception as e:
-        raise HTTPException(500, f"Lỗi upload ảnh: {e}")
+    except ValueError:
+        raise HTTPException(400, "Ảnh không hợp lệ hoặc đã hỏng")
+    except Exception:
+        logger.exception("Cover upload failed for user %s", user["id"])
+        raise HTTPException(500, "Không thể upload ảnh, vui lòng thử lại")
 
     cover_url = urls.get("lg") or urls.get("md")
     db.update_user(str(user["id"]), cover_url=cover_url)

@@ -12,6 +12,7 @@ Mount vào FastAPI app chính qua router.
 """
 
 import json
+import logging
 import os
 import re
 import subprocess
@@ -26,6 +27,8 @@ from pydantic import BaseModel, Field, field_validator
 import data_quality
 import knowledge
 import analytics
+
+logger = logging.getLogger("admin")
 import site_settings
 from database import db
 
@@ -420,10 +423,11 @@ async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
         raise HTTPException(400, "Tối đa 10 ảnh mỗi entity")
     try:
         urls = await run_in_threadpool(storage.upload_image_set, data, "entities", entity_id)
-    except ValueError as e:
-        raise HTTPException(400, f"Ảnh không hợp lệ: {e}")
-    except Exception as e:  # noqa: BLE001
-        raise HTTPException(500, f"Lỗi xử lý/upload ảnh: {e}")
+    except ValueError:
+        raise HTTPException(400, "Ảnh không hợp lệ hoặc đã hỏng")
+    except Exception:
+        logger.exception("Entity image upload failed for %s", entity_id)
+        raise HTTPException(500, "Không thể upload ảnh, vui lòng thử lại")
 
     cover = urls.get("md") or urls.get("lg")
     images = list(entity.get("images") or [])
@@ -798,8 +802,9 @@ async def approve_image_suggestion(suggestion_id: str):
 
     try:
         urls = await run_in_threadpool(storage.upload_image_set, data, "entities", s["entity_id"])
-    except Exception as e:  # noqa: BLE001
-        raise HTTPException(500, f"Lỗi xử lý/upload ảnh: {str(e)[:120]}")
+    except Exception:
+        logger.exception("Suggestion image upload failed for %s", s.get("entity_id"))
+        raise HTTPException(500, "Không thể upload ảnh, vui lòng thử lại")
 
     cover = urls.get("md") or urls.get("lg") or urls.get("sm")
     if cover and cover not in images:

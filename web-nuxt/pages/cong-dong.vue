@@ -159,6 +159,9 @@
           <button type="button" v-if="isLoggedIn" :class="['threads-tab', { active: activeTab === 'bookmarks' }]" :aria-pressed="activeTab === 'bookmarks'" @click="setTab('bookmarks')">
             <svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>Đã lưu
           </button>
+          <button type="button" class="threads-tab threads-refresh" :disabled="loading" aria-label="Tải lại bảng tin" @click="refreshFeed">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" :class="{ spinning: loading }"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </button>
         </div>
 
         <!-- Đang lọc theo hashtag -->
@@ -695,6 +698,12 @@ async function fetchBookmarks(reset = false) {
   bookmarksLoading.value = false
 }
 
+function refreshFeed() {
+  if (searchMode.value) { fetchSearch(true); return }
+  if (activeTab.value === 'bookmarks') { fetchBookmarks(true); return }
+  fetchFeed(true)
+}
+
 function loadMore() {
   if (searchMode.value) {
     searchPage.value++
@@ -1056,6 +1065,11 @@ useHead({
 .threads-tab.active { color: var(--ink); border-bottom-color: transparent; }
 .threads-tab.active::after { transform: scaleX(1); }
 .dark .threads-tab.active { color: var(--ink); }
+.threads-refresh { margin-left: auto; padding: .5rem; border-bottom: none; }
+.threads-refresh::after { display: none; }
+.threads-refresh svg { display: block; }
+.threads-refresh .spinning { animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* ── Type filter ── */
 .type-filter-row {
