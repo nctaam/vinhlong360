@@ -54,6 +54,7 @@ export default defineNuxtConfig({
         { name: 'theme-color', content: '#9C3D22', media: '(prefers-color-scheme: light)' },
         { name: 'theme-color', content: '#1a1a1a', media: '(prefers-color-scheme: dark)' },
         { name: 'color-scheme', content: 'light dark' },
+        { name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1' },
         { name: 'format-detection', content: 'telephone=no' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },

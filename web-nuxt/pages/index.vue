@@ -213,7 +213,7 @@
           <div class="scroll-row" role="region" aria-label="Bài viết cộng đồng mới">
             <NuxtLink v-for="p in communityPosts" :key="p.id" :to="`/bai-viet/${p.id}`" class="cm-card">
               <div v-if="p.images && p.images.length" class="cm-img">
-                <img :src="p.images[0]" alt="" loading="lazy" decoding="async" width="280" height="150" />
+                <img :src="p.images[0]" :alt="p.display_name || 'Bài viết'" loading="lazy" decoding="async" width="280" height="150" />
               </div>
               <div class="cm-body">
                 <div class="cm-author">
