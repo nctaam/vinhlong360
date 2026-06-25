@@ -86,7 +86,7 @@ function itemKey(item: any, i: number): string {
 
 watch(() => props.items, (val) => {
   localItems.value = JSON.parse(JSON.stringify(val || []))
-}, { immediate: true, deep: true })
+}, { immediate: true })
 
 function emitUpdate() {
   emit('update:items', JSON.parse(JSON.stringify(localItems.value)))

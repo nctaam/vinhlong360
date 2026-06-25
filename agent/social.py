@@ -13,6 +13,7 @@ Post types:
 """
 
 import json
+import logging
 import math
 import re
 from datetime import datetime, timezone
@@ -27,6 +28,8 @@ from moderation import moderate_content, log_moderation
 from notifications import create_notification
 from storage import storage
 from ratelimit import check_rate
+
+logger = logging.getLogger("social")
 
 # Chống spam UGC (per-user sliding-window). Đủ rộng cho dùng bình thường, chặn flood.
 RL_POST_LIMIT, RL_POST_WINDOW = 10, 600        # 10 bài / 10 phút
@@ -114,7 +117,7 @@ def _notify_mentions(mentions: list[dict], author_id: str, author_name, post_id:
             create_notification(uid, "mention", f"{author_name or 'Ai đó'} đã nhắc đến bạn",
                                 body=preview, ref_type="post", ref_id=post_id)
         except Exception:
-            pass
+            logger.exception("Failed to notify mention for user %s on post %s", uid, post_id)
 
 
 def _notify_entity_followers(entity_id, author_id, author_name, post_id: str) -> None:
@@ -135,9 +138,9 @@ def _notify_entity_followers(entity_id, author_id, author_name, post_id: str) ->
                                     f"{author_name or 'Ai đó'} đã đăng về địa điểm bạn theo dõi",
                                     ref_type="post", ref_id=post_id)
             except Exception:
-                pass
+                logger.exception("Failed to notify entity follower %s on post %s", uid, post_id)
     except Exception:
-        pass
+        logger.exception("Failed to load entity followers for entity %s", entity_id)
 
 
 class CreatePost(BaseModel):
@@ -318,7 +321,7 @@ async def create_post(body: CreatePost, user=Depends(require_user)):
                                     f"{user.get('display_name') or 'Ai đó'} đã đăng lại bài của bạn",
                                     ref_type="post", ref_id=str(post["id"]))
             except Exception:
-                pass
+                logger.exception("Failed to notify repost to user %s", orig_author_id)
 
     result = _enrich_post(post, user)
     if status != "approved":
@@ -1267,7 +1270,7 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
             if prow:
                 privacy = db._row_to_dict(prow)
     except Exception:
-        pass
+        logger.warning("Failed to load privacy settings for user %s", user_id)
 
     viewer_id = str(user["id"]) if user else None
     is_self = viewer_id == user_id

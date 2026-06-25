@@ -187,7 +187,7 @@ const changedCount = computed(() => {
   } catch { return 0 }
 })
 
-watch(() => [props.fields, props.objectValue], initValues, { immediate: true, deep: true })
+watch(() => [props.fields, props.objectValue], initValues, { immediate: true })
 
 function validateJson(key: string): boolean {
   try {
