@@ -112,7 +112,12 @@
           </div>
         </div>
 
-        <div v-if="!comments.length && !loading" class="comment-empty">
+        <div v-if="commentError && !loading" class="comment-empty">
+          <span class="comment-empty-halo"><span class="comment-empty-icon">⚠️</span></span>
+          <p>Không thể tải bình luận.</p>
+          <button type="button" class="btn btn-outline btn-sm" @click="fetchComments()">Thử lại</button>
+        </div>
+        <div v-else-if="!comments.length && !loading" class="comment-empty">
           <span class="comment-empty-halo"><span class="comment-empty-icon">💬</span></span>
           <p>Chưa có bình luận nào.</p>
           <p class="comment-empty-hint">{{ isLoggedIn ? 'Hãy là người đầu tiên trả lời!' : 'Đăng nhập để bình luận.' }}</p>
@@ -185,6 +190,7 @@ const commentText = ref('')
 const comments = ref<Entity[]>([])
 const submitting = ref(false)
 const loading = ref(true)
+const commentError = ref(false)
 const replyingTo = ref<any | null>(null)
 
 // @-mention trong ô bình luận (dùng composable chung)
@@ -214,6 +220,7 @@ async function setBestAnswer(commentId: string) {
   } catch { bestAnswerId.value = prev; showToast('Không thể chọn, thử lại', 'error') }
 }
 async function deletePost() {
+  if (!confirm('Bạn có chắc muốn xoá bài viết này? Hành động không thể hoàn tác.')) return
   try {
     await $fetch(`/api/posts/${postId}`, { method: 'DELETE', headers: authHeaders() })
     showToast('Đã xoá bài viết', 'success')
@@ -289,10 +296,13 @@ bestAnswerId.value = (post.value as any)?.best_answer_id ?? null
 
 async function fetchComments() {
   loading.value = true
+  commentError.value = false
   try {
     const res = await $fetch<Post>(`/api/posts/${postId}/comments`)
     comments.value = res.comments || res || []
-  } catch { /* comments are non-critical */ }
+  } catch {
+    commentError.value = true
+  }
   loading.value = false
 }
 

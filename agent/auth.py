@@ -69,6 +69,10 @@ LOGIN_IP_LIMIT = 10       # tối đa 10 lần / cửa sổ
 LOGIN_IP_WINDOW = 300     # 5 phút
 _login_ip_rate: dict[str, list[float]] = {}
 
+LOGIN_PHONE_LIMIT = 5     # 5 sai → khoá phone 15 phút
+LOGIN_PHONE_WINDOW = 900  # 15 phút
+_login_phone_fails: dict[str, list[float]] = {}
+
 
 # ── Models ──
 
@@ -358,16 +362,27 @@ async def login_password(body: PasswordLogin, request: Request):
     _login_ip_rate[ip] = hits
 
     phone = _normalize_phone(body.phone)
+
+    phone_hits = [t for t in _login_phone_fails.get(phone, []) if now - t < LOGIN_PHONE_WINDOW]
+    if len(phone_hits) >= LOGIN_PHONE_LIMIT:
+        raise HTTPException(429, "Tài khoản tạm khoá do đăng nhập sai nhiều lần. Thử lại sau 15 phút.")
+
     user = db.get_user_by_phone(phone)
 
     if not user or not user.get("password_hash"):
+        phone_hits.append(now)
+        _login_phone_fails[phone] = phone_hits
         raise HTTPException(401, "Số điện thoại hoặc mật khẩu không đúng")
 
     if not user.get("is_active", True):
         raise HTTPException(403, "Tài khoản đã bị vô hiệu hóa")
 
     if not _verify_password(body.password, user["password_hash"]):
+        phone_hits.append(now)
+        _login_phone_fails[phone] = phone_hits
         raise HTTPException(401, "Số điện thoại hoặc mật khẩu không đúng")
+
+    _login_phone_fails.pop(phone, None)
 
     token = _generate_token()
     expires = datetime.now(timezone.utc) + timedelta(days=SESSION_EXPIRE_DAYS)

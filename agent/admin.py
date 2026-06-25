@@ -1527,3 +1527,19 @@ async def admin_reset_category(category: str):
     from seed_site_settings import DEFAULTS
     count = site_settings.reset_category(category, DEFAULTS)
     return {"success": True, "reset": count}
+
+
+@router.post("/notifications/cleanup")
+async def admin_cleanup_notifications(days: int = Query(90, ge=7, le=365)):
+    """Delete read notifications older than N days."""
+    if not db._use_pg:
+        raise HTTPException(503, detail="Notifications require PostgreSQL")
+    ph = db._ph
+    with db._conn() as conn:
+        cur = db._execute(conn, f"""
+            DELETE FROM notifications
+            WHERE is_read = TRUE
+              AND created_at < NOW() - MAKE_INTERVAL(days => {ph})
+        """, (days,))
+        deleted = cur.rowcount if cur else 0
+    return {"success": True, "deleted": deleted, "days": days}

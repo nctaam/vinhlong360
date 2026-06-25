@@ -865,6 +865,7 @@ async function toggleBookmark(postId: string) {
 }
 
 async function deletePost(postId: string) {
+  if (!confirm('Bạn có chắc muốn xoá bài viết này? Hành động không thể hoàn tác.')) return
   try {
     await $fetch(`/api/posts/${postId}`, { method: 'DELETE', headers: authHeaders() })
     posts.value = posts.value.filter(p => p.id !== postId)
