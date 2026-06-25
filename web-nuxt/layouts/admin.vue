@@ -83,6 +83,10 @@
             <span class="nav-icon">&#129302;</span>
             <span class="nav-text" v-if="!sidebarCollapsed">Knowledge Agent</span>
           </NuxtLink>
+          <NuxtLink to="/admin/nhat-ky" :class="{ active: route.path === '/admin/nhat-ky' }" :title="sidebarCollapsed ? 'Nhật ký' : undefined">
+            <span class="nav-icon">&#128220;</span>
+            <span class="nav-text" v-if="!sidebarCollapsed">Nhật ký</span>
+          </NuxtLink>
           <NuxtLink to="/admin/cai-dat" :class="{ active: route.path.startsWith('/admin/cai-dat') }" :title="sidebarCollapsed ? 'Cài đặt trang' : undefined">
             <span class="nav-icon">&#9881;</span>
             <span class="nav-text" v-if="!sidebarCollapsed">Cài đặt trang</span>
