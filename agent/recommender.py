@@ -15,11 +15,14 @@ Tich hop voi:
   - memory.py (user profiles)
 """
 
+import logging
 import math
 import time
 from collections import defaultdict
 from datetime import datetime
 from threading import Lock
+
+logger = logging.getLogger(__name__)
 
 # Entity types recognized by the platform
 CARD_TYPES = [

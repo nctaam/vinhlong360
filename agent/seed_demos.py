@@ -1,4 +1,7 @@
-"""Seed curated high-quality demos vào pool và compile fewshot artifact."""
+"""DEPRECATED: This module is dead code (zero references in codebase).
+One-time seed script, no longer needed. See docs/DEAD-CODE-AUDIT.md.
+
+Seed curated high-quality demos vào pool và compile fewshot artifact."""
 import json, sys, os
 sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, os.path.dirname(__file__))

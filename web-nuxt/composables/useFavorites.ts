@@ -13,6 +13,12 @@ const STORAGE_KEY = 'vl360_favorites'
 let loaded = false
 let syncSetup = false
 
+function isValidFavorite(v: unknown): v is FavoriteItem {
+  if (!v || typeof v !== 'object') return false
+  const o = v as Record<string, unknown>
+  return typeof o.id === 'string' && typeof o.name === 'string' && typeof o.type === 'string'
+}
+
 export function useFavorites() {
   const favorites = useState<FavoriteItem[]>('favorites', () => [])
   const { isLoggedIn, authHeaders } = useAuth()
@@ -23,7 +29,7 @@ export function useFavorites() {
       const raw = localStorage.getItem(STORAGE_KEY)
       if (raw) {
         const parsed = JSON.parse(raw)
-        if (Array.isArray(parsed)) favorites.value = parsed
+        if (Array.isArray(parsed)) favorites.value = parsed.filter(isValidFavorite)
         else localStorage.removeItem(STORAGE_KEY)
       }
     } catch {

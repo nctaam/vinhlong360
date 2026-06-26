@@ -68,18 +68,21 @@ export function useModalA11y(
   }
 
   function activate() {
-    if (typeof document === 'undefined') return
+    if (!import.meta.client) return
     triggerEl = document.activeElement as HTMLElement
     document.body.style.overflow = 'hidden'
     document.addEventListener('keydown', onKeydown)
     nextTick(() => {
+      if (modalRef.value && !modalRef.value.hasAttribute('tabindex')) {
+        modalRef.value.setAttribute('tabindex', '-1')
+      }
       const list = focusableEls()
       ;(list[0] ?? modalRef.value)?.focus?.()
     })
   }
 
   function deactivate(restore = true) {
-    if (typeof document === 'undefined') return
+    if (!import.meta.client) return
     document.body.style.overflow = ''
     document.removeEventListener('keydown', onKeydown)
     if (restore && triggerEl) {

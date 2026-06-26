@@ -45,8 +45,8 @@ def _audit(record: dict):
     try:
         with open(AUDIT_LOG, "a", encoding="utf-8") as f:
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
-    except Exception:
-        pass
+    except Exception as exc:
+        _logger.debug("Failed to write audit log: %s", exc)
 
 
 def guarded_evolve(name: str, apply_fn, snapshot_id: str | None = None,
@@ -67,7 +67,7 @@ def guarded_evolve(name: str, apply_fn, snapshot_id: str | None = None,
     try:
         before = self_eval.compute_fitness()
     except Exception as e:
-        _logger.error(f"[{name}] fitness_before failed: {e}")
+        _logger.error("[%s] fitness_before failed: %s", name, e)
         before = None
 
     # 2. Snapshot (rollback point)
@@ -80,19 +80,19 @@ def guarded_evolve(name: str, apply_fn, snapshot_id: str | None = None,
         change_result = apply_fn()
     except Exception as e:
         apply_error = f"{e}\n{traceback.format_exc()}"
-        _logger.error(f"[{name}] apply_fn failed: {e}")
+        _logger.error("[%s] apply_fn failed: %s", name, e)
 
     # Ensure live KB reflects any file changes
     try:
         knowledge.reload()
-    except Exception:
-        pass
+    except Exception as exc:
+        _logger.warning("knowledge.reload after apply failed: %s", exc)
 
     # 4. Fitness after
     try:
         after = self_eval.compute_fitness()
     except Exception as e:
-        _logger.error(f"[{name}] fitness_after failed: {e}")
+        _logger.error("[%s] fitness_after failed: %s", name, e)
         after = None
 
     # 5. Gate decision
@@ -113,8 +113,8 @@ def guarded_evolve(name: str, apply_fn, snapshot_id: str | None = None,
         rollback_result = kb_versioning.rollback(snap["id"])
         try:
             knowledge.reload()
-        except Exception:
-            pass
+        except Exception as exc:
+            _logger.warning("knowledge.reload after rollback failed: %s", exc)
 
     summary = {
         "name": name,
@@ -128,7 +128,7 @@ def guarded_evolve(name: str, apply_fn, snapshot_id: str | None = None,
         "change_result": change_result if isinstance(change_result, (dict, list, str, int, float, type(None))) else str(change_result),
     }
     _audit(summary)
-    _logger.info(f"[{name}] decision={decision} reason={reason}")
+    _logger.info("[%s] decision=%s reason=%s", name, decision, reason)
     return summary
 
 
@@ -142,10 +142,11 @@ def recent_decisions(limit: int = 20) -> list:
         for line in lines[-limit:]:
             try:
                 out.append(json.loads(line))
-            except Exception:
+            except (json.JSONDecodeError, ValueError):
                 pass
         return out
-    except Exception:
+    except Exception as exc:
+        _logger.warning("Failed to read audit log: %s", exc)
         return []
 
 

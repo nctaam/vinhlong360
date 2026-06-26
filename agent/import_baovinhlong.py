@@ -17,6 +17,9 @@ ROOT = Path(__file__).resolve().parent.parent
 DATA_JSON = ROOT / "web" / "data.json"
 CRAWLED = Path(__file__).resolve().parent / "crawled" / "baovinhlong_raw.json"
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from text_utils import slugify
+
 # placeId mapping — BT districts → xa-an-binh, TV districts → xa-tra-on
 PLACE_KEYWORDS = {
     # Bến Tre (province old) → phường/xã thuộc VL mới
@@ -74,16 +77,6 @@ ITEM_TYPE_OVERRIDE = {
     "product": "product",
     "experience": "experience",
 }
-
-
-def slugify(text):
-    text = unicodedata.normalize("NFD", text)
-    text = "".join(c for c in text if unicodedata.category(c) != "Mn")
-    text = text.lower().strip()
-    text = re.sub(r"[đĐ]", "d", text)
-    text = re.sub(r"[^a-z0-9\s-]", "", text)
-    text = re.sub(r"[\s-]+", "-", text).strip("-")
-    return text[:80]
 
 
 def guess_place_id(addr, province_old=None):

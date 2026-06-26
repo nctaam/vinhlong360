@@ -31,8 +31,8 @@
 .btn-ghost:hover:not(:disabled) { background: var(--bg-warm); color: var(--ink); }
 
 .btn-sm { padding: 8px 16px; font-size: var(--text-sm); min-height: 44px; }
-.btn-lg { padding: 14px 28px; font-size: 1rem; }
-.btn-icon { padding: var(--space-2); border-radius: 50%; }
+.btn-lg { padding: 14px 28px; font-size: 1rem; min-height: var(--touch-min); }
+.btn-icon { padding: var(--space-2); border-radius: 50%; min-width: var(--touch-min); min-height: var(--touch-min); display: inline-flex; align-items: center; justify-content: center; }
 
 /* ── Inputs (Apple HIG) ── */
 .input, .textarea, .select {
@@ -168,6 +168,8 @@
 .tag-secondary { background: rgba(var(--secondary-rgb), .1); color: var(--secondary-fg); }
 .tag-tertiary { background: rgba(51, 100, 110, .1); color: var(--tertiary-fg); }
 .tag-muted { background: var(--bg-warm); color: var(--muted); }
+a.tag, button.tag, .tag[role="button"] { min-height: var(--touch-min); cursor: pointer; transition: background .2s var(--ease-out); }
+a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.95); }
 
 /* ── Auth section (topbar) ── */
 .auth-area { display: flex; align-items: center; gap: var(--space-3); margin-inline-start: auto; }
@@ -306,10 +308,11 @@
 .dropdown-menu.show { display: block; animation: dropdownIn .25s var(--ease-spring-gentle); }
 @keyframes dropdownIn { from { opacity: 0; transform: translateY(-6px) scale(.97); } }
 .dropdown-item {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: var(--space-2);
   padding: 10px 14px; border-radius: var(--radius-sm);
   font-size: .9rem; cursor: pointer; border: none; background: none;
   width: 100%; text-align: left; color: var(--ink);
+  min-height: var(--touch-min);
   transition: background .3s var(--ease-out), transform .3s;
 }
 .dropdown-item:hover { background: var(--bg-warm); }

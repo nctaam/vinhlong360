@@ -30,7 +30,8 @@ raw = [
   {'name': 'Nhà hàng Lửa Hồng', 'specialty': 'Lẩu, nướng đặc sản', 'address': 'TP. Bến Tre', 'price_range': '200.000 - 600.000', 'open_hours': '11:00 - 23:00', 'best_dish': 'Lẩu cá kèo bông súng', 'rating_note': 'Nổi tiếng với lẩu đặc sản đồng bằng, đông khách cuối tuần', '_stream': 'restaurant', '_type': 'place', '_category': 'restaurant', '_province': 'Bến Tre', '_area': 'ben-tre'},
 ]
 
-data = json.load(open('C:/Code/vinhlong360/web/data.json', 'r', encoding='utf-8-sig'))
+with open('C:/Code/vinhlong360/web/data.json', 'r', encoding='utf-8-sig') as f:
+    data = json.load(f)
 entities = data['entities']
 existing_ids = set(e.get('id') for e in entities)
 existing_names = set(e.get('name') for e in entities)

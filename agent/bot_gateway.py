@@ -32,7 +32,6 @@ import os
 import re
 import sys
 import time
-import traceback
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -246,6 +245,7 @@ class UserRateLimiter:
 _sessions: dict[str, dict] = {}
 _sessions_lock = Lock()
 MAX_HISTORY = 20
+MAX_SESSIONS = int(os.environ.get("BOT_MAX_SESSIONS", "5000"))
 SESSION_TTL = 24 * 3600  # 24 hours
 
 
@@ -276,14 +276,20 @@ def _add_message(platform: str, user_id: str, role: str, content: str):
 
 
 def _cleanup_stale_sessions():
-    """Remove sessions inactive for more than SESSION_TTL."""
+    """Remove sessions inactive for more than SESSION_TTL; enforce MAX_SESSIONS cap."""
     now = time.time()
     with _sessions_lock:
         stale = [k for k, v in _sessions.items() if now - v.get("last_active", 0) > SESSION_TTL]
         for k in stale:
             del _sessions[k]
+        if len(_sessions) > MAX_SESSIONS:
+            by_age = sorted(_sessions.items(), key=lambda kv: kv[1].get("last_active", 0))
+            evict = len(_sessions) - MAX_SESSIONS
+            for k, _ in by_age[:evict]:
+                del _sessions[k]
+            _bot_logger.warning("Session cap reached (%d); evicted %d oldest", MAX_SESSIONS, evict)
     if stale:
-        _bot_logger.info(f"Cleaned up {len(stale)} stale bot sessions")
+        _bot_logger.info("Cleaned up %d stale bot sessions", len(stale))
 
 
 # ======================================================================
@@ -345,7 +351,7 @@ class BotGateway:
                         },
                     )
                     if resp.status_code >= 500:
-                        _bot_logger.warning(f"Agent returned {resp.status_code}, attempt {attempt+1}/{max_retries+1}")
+                        _bot_logger.warning("Agent returned %d, attempt %d/%d", resp.status_code, attempt + 1, max_retries + 1)
                         if attempt < max_retries:
                             await _async_sleep(1.5 * (attempt + 1))
                             continue
@@ -354,7 +360,7 @@ class BotGateway:
                             "suggestions": [],
                         }
                     if resp.status_code >= 400:
-                        _bot_logger.error(f"Agent returned {resp.status_code}: {resp.text[:200]}")
+                        _bot_logger.error("Agent returned %d: %s", resp.status_code, resp.text[:200])
                         return {
                             "reply": "Xin lỗi, yêu cầu không hợp lệ. Vui lòng thử lại.",
                             "suggestions": [],
@@ -362,7 +368,7 @@ class BotGateway:
                     try:
                         data = resp.json()
                     except (json.JSONDecodeError, ValueError) as je:
-                        _bot_logger.error(f"Agent returned invalid JSON: {je}, body={resp.text[:200]}")
+                        _bot_logger.error("Agent returned invalid JSON: %s, body=%s", je, resp.text[:200])
                         return {
                             "reply": "Xin lỗi, hệ thống trả lời không hợp lệ. Vui lòng thử lại.",
                             "suggestions": [],
@@ -372,7 +378,7 @@ class BotGateway:
                         "suggestions": data.get("suggestions", []),
                     }
             except httpx.TimeoutException:
-                _bot_logger.warning(f"Agent timeout, attempt {attempt+1}/{max_retries+1}, session={session_id}")
+                _bot_logger.warning("Agent timeout, attempt %d/%d, session=%s", attempt + 1, max_retries + 1, session_id)
                 if attempt < max_retries:
                     await _async_sleep(2)
                     continue
@@ -381,13 +387,13 @@ class BotGateway:
                     "suggestions": [],
                 }
             except httpx.ConnectError:
-                _bot_logger.error(f"Cannot connect to agent at {self.agent_url}")
+                _bot_logger.error("Cannot connect to agent at %s", self.agent_url)
                 return {
                     "reply": "Xin lỗi, không thể kết nối đến hệ thống. Vui lòng thử lại sau.",
                     "suggestions": [],
                 }
             except Exception as e:
-                _bot_logger.error(f"Unexpected error sending to agent: {e}\n{traceback.format_exc()}")
+                _bot_logger.error("Unexpected error sending to agent: %s", e, exc_info=True)
                 return {
                     "reply": "Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại sau.",
                     "suggestions": [],
@@ -608,7 +614,7 @@ class BotGateway:
             )
             return
 
-        _bot_logger.info(f"TG message from {update.effective_user.first_name}: {text[:80]}")
+        _bot_logger.info("TG message from %s: %s", update.effective_user.first_name, text[:80])
 
         # Record user message
         _add_message("telegram", user_id, "user", text)
@@ -646,7 +652,7 @@ class BotGateway:
                 )
             except Exception as md_err:
                 # Fallback: send without markdown if parsing fails
-                _bot_logger.debug(f"Markdown parse failed, sending plain text: {md_err}")
+                _bot_logger.debug("Markdown parse failed, sending plain text: %s", md_err)
                 await update.message.reply_text(
                     chunk,
                     reply_markup=keyboard if i == len(chunks) - 1 else None,
@@ -670,7 +676,7 @@ class BotGateway:
             )
             return
 
-        _bot_logger.info(f"TG callback from {query.from_user.first_name}: {text[:64]}")
+        _bot_logger.info("TG callback from %s: %s", query.from_user.first_name, text[:64])
 
         _add_message("telegram", user_id, "user", text)
         result = await self.send_to_agent(text, user_key)
@@ -698,7 +704,7 @@ class BotGateway:
                     disable_web_page_preview=True,
                 )
             except Exception as md_err:
-                _bot_logger.debug(f"Markdown parse failed in callback, sending plain: {md_err}")
+                _bot_logger.debug("Markdown parse failed in callback, sending plain: %s", md_err)
                 await query.message.reply_text(
                     chunk,
                     reply_markup=keyboard if i == len(chunks) - 1 else None,
@@ -721,7 +727,7 @@ class BotGateway:
         """
         self._zalo_oa_id = oa_id
         self._zalo_oa_secret = oa_secret
-        _bot_logger.info(f"Zalo OA registered (ID: {oa_id[:8]}...)")
+        _bot_logger.info("Zalo OA registered (ID: %s...)", oa_id[:8])
 
     def verify_zalo_signature(self, raw_body: bytes, signature: str) -> bool:
         """Verify Zalo webhook signature.
@@ -774,7 +780,7 @@ class BotGateway:
                 )
                 return {"status": "rate_limited"}
 
-            _bot_logger.info(f"Zalo message from {user_id}: {text[:80]}")
+            _bot_logger.info("Zalo message from %s: %s", user_id, text[:80])
 
             _add_message("zalo", user_id, "user", text)
             result = await self.send_to_agent(text, user_key)
@@ -816,10 +822,21 @@ class BotGateway:
         chunks = [text[i:i + 1900] for i in range(0, len(text), 1900)]
         async with httpx.AsyncClient(timeout=30) as client:
             for chunk in chunks:
-                await client.post(url, headers=headers, json={
-                    "recipient": {"user_id": user_id},
-                    "message": {"text": chunk},
-                })
+                for attempt in range(2):
+                    try:
+                        resp = await client.post(url, headers=headers, json={
+                            "recipient": {"user_id": user_id},
+                            "message": {"text": chunk},
+                        })
+                        if resp.status_code >= 500 and attempt == 0:
+                            _bot_logger.warning("Zalo API 5xx (%d), retrying", resp.status_code)
+                            continue
+                        break
+                    except Exception as exc:
+                        _bot_logger.warning("Zalo send failed (attempt %d): %s", attempt + 1, exc)
+                        if attempt == 0:
+                            continue
+                        break
 
     async def _zalo_send_with_buttons(self, user_id: str, suggestions: list[str]):
         """Send quick-reply buttons for suggestions via Zalo OA API.
@@ -859,7 +876,10 @@ class BotGateway:
             },
         }
         async with httpx.AsyncClient(timeout=30) as client:
-            await client.post(url, headers=headers, json=payload)
+            try:
+                await client.post(url, headers=headers, json=payload)
+            except Exception as exc:
+                _bot_logger.warning("Zalo send_with_buttons failed: %s", exc)
 
 
 # ======================================================================
@@ -1004,7 +1024,7 @@ if __name__ == "__main__":
             try:
                 gw.start_telegram(token=TELEGRAM_TOKEN)
             except Exception as e:
-                _bot_logger.error(f"Telegram polling error: {e}\n{traceback.format_exc()}")
+                _bot_logger.error("Telegram polling error: %s", e, exc_info=True)
 
         tg_thread = threading.Thread(target=_run_telegram, daemon=True)
         tg_thread.start()

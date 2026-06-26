@@ -70,4 +70,7 @@ onUnmounted(() => { if (popTimer) clearTimeout(popTimer) })
   .jb-count-pop { animation: none; }
   .jb-slide-enter-active, .jb-slide-leave-active { transition: none; }
 }
+@media (forced-colors: active) {
+  .journey-bar { border-top: 2px solid CanvasText; background: Canvas; }
+}
 </style>
