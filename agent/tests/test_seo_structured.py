@@ -1678,3 +1678,70 @@ def test_parse_coordinates_parameterized(input_val, expected):
 ])
 def test_safe_date_parameterized(input_val, fallback, expected):
     assert seo._safe_date(input_val, fallback) == expected
+
+
+# ── _parse_duration extended formats ─────────────────────────────────
+
+
+@pytest.mark.parametrize("input_val,expected", [
+    ("1 ngày", "P1D"),
+    ("3 giờ", "PT3H"),
+    ("2 đêm", "P3D"),
+    ("2 ngày 1 đêm", "P2D"),
+    ("30 phút", "PT30M"),
+    (None, None),
+    (42, None),
+    ("random text", None),
+])
+def test_parse_duration_parameterized(input_val, expected):
+    assert seo._parse_duration(input_val) == expected
+
+
+# ── _is_external_url hardening ───────────────────────────────────────
+
+
+def test_is_external_url_rejects_self():
+    assert seo._is_external_url("https://vinhlong360.vn/page") is False
+    assert seo._is_external_url("https://www.vinhlong360.vn/page") is False
+    assert seo._is_external_url("http://vinhlong360.vn") is False
+
+
+def test_is_external_url_accepts_external():
+    assert seo._is_external_url("https://example.com") is True
+    assert seo._is_external_url("https://vi.wikipedia.org/wiki/X") is True
+
+
+def test_is_external_url_rejects_invalid():
+    assert seo._is_external_url("") is False
+    assert seo._is_external_url("not-a-url") is False
+    assert seo._is_external_url(None) is False
+    assert seo._is_external_url(42) is False
+
+
+def test_is_external_url_rejects_self_case_insensitive():
+    assert seo._is_external_url("https://VINHLONG360.VN/page") is False
+
+
+# ── Collection sorting stability ─────────────────────────────────────
+
+
+def test_collection_sorts_stably_with_same_confidence():
+    entities = [
+        {"id": "z", "name": "Zzz", "type": "attraction", "confidence": 0.8},
+        {"id": "a", "name": "Aaa", "type": "attraction", "confidence": 0.8},
+        {"id": "m", "name": "Mmm", "type": "attraction", "confidence": 0.8},
+    ]
+    data = {"entities": entities, "relationships": [], "itineraries": []}
+    ld = seo.build_collection_jsonld("du-lich", data)
+    names = [el["name"] for el in ld["itemListElement"]]
+    assert names == ["Aaa", "Mmm", "Zzz"]
+
+
+def test_collection_handles_none_confidence():
+    entities = [
+        {"id": "no-conf", "name": "No conf", "type": "attraction"},
+        {"id": "high", "name": "High", "type": "attraction", "confidence": 0.95},
+    ]
+    data = {"entities": entities, "relationships": [], "itineraries": []}
+    ld = seo.build_collection_jsonld("du-lich", data)
+    assert ld["itemListElement"][0]["name"] == "High"

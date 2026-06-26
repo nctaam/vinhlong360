@@ -1707,6 +1707,23 @@ def test_quality_score_parameterized(entity, max_score) -> None:
     assert score <= max_score
 
 
+# ── Parameterized normalized_coordinates ─────────────────────────────
+
+
+@pytest.mark.parametrize("input_val,expected", [
+    ([10.25, 106.0], [10.25, 106.0]),
+    ({"lat": 10.25, "lng": 106.0}, [10.25, 106.0]),
+    ("[10.25, 106.0]", [10.25, 106.0]),
+    ([106.0, 10.25], [10.25, 106.0]),
+    (None, None),
+    ("not json", None),
+    ([1, 2, 3], None),
+    (42, None),
+])
+def test_normalized_coordinates_parameterized(input_val, expected) -> None:
+    assert validate_data.normalized_coordinates(input_val) == expected
+
+
 @pytest.mark.parametrize("summary,expected_penalty", [
     ("", True),
     ("Quá ngắn", True),

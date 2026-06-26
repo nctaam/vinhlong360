@@ -223,8 +223,9 @@ def _is_external_url(url: Any) -> bool:
     """Valid http(s) URL that is NOT our own site (self-citation is not a source)."""
     if not _is_valid_url(url):
         return False
-    u = str(url).lower()
-    return ("//vinhlong360.vn" not in u) and ("//www.vinhlong360.vn" not in u)
+    parsed = urlparse(str(url).strip())
+    host = (parsed.hostname or "").lower()
+    return host not in ("vinhlong360.vn", "www.vinhlong360.vn")
 
 
 def _source_info(entity: dict[str, Any]) -> tuple[str | None, str | None]:
@@ -641,6 +642,12 @@ def _parse_duration(value: Any) -> str | None:
     if m:
         days = int(m.group(1)) + 1
         return f"P{days}D"
+    m = re.match(r"(\d+)\s*ngày\s*(\d+)\s*đêm", text)
+    if m:
+        return f"P{m.group(1)}D"
+    m = re.match(r"(\d+)\s*phút", text)
+    if m:
+        return f"PT{m.group(1)}M"
     return None
 
 
