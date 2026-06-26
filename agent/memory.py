@@ -444,7 +444,8 @@ class SkillDocumentStore:
         try:
             if self._skills_file.exists():
                 self._skills = json.loads(self._skills_file.read_text(encoding="utf-8"))
-        except Exception:
+        except Exception as e:
+            logger.warning("Failed to load skill documents: %s", e)
             self._skills = []
 
     def _save(self):
@@ -455,8 +456,8 @@ class SkillDocumentStore:
                 encoding="utf-8"
             )
             tmp.replace(self._skills_file)
-        except Exception:
-            logger.debug("Failed to save skills file")
+        except Exception as e:
+            logger.debug("Failed to save skills file: %s", e)
 
     def add_skill(self, query_pattern: str, tool_sequence: list[str],
                   success_strategy: str, category: str = "general"):
@@ -756,7 +757,8 @@ class MemoryExtractor:
                 from agent import knowledge as _knowledge
             _knowledge._ensure()
             knowledge_entities = _knowledge._entities or {}
-        except Exception:
+        except Exception as e:
+            logger.debug("Failed to load knowledge entities for memory extraction: %s", e)
             knowledge_entities = {}
 
         # 1. Extract preferences

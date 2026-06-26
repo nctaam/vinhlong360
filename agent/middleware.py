@@ -95,8 +95,8 @@ class StructuredLogger:
             # Rotate if too large
             if self._flush_count > self.max_entries:
                 self._rotate()
-        except Exception:
-            pass
+        except Exception as e:
+            self._py_logger.debug("Failed to flush log buffer to file: %s", e)
 
     def _rotate(self):
         """Keep only last N entries."""
@@ -107,8 +107,8 @@ class StructuredLogger:
                     keep = lines[-self.max_entries:]
                     self.log_file.write_text("\n".join(keep) + "\n", encoding="utf-8")
             self._flush_count = 0
-        except Exception:
-            pass
+        except Exception as e:
+            self._py_logger.debug("Failed to rotate log file: %s", e)
 
     def flush(self):
         with self._lock:
@@ -127,10 +127,11 @@ class StructuredLogger:
                         if level and entry.get("level") != level:
                             continue
                         entries.append(entry)
-                    except Exception:
+                    except Exception as e:
+                        self._py_logger.debug("Skipping malformed log line: %s", e)
                         continue
-        except Exception:
-            pass
+        except Exception as e:
+            self._py_logger.warning("Failed to read log file: %s", e)
         return entries[-limit:]
 
 

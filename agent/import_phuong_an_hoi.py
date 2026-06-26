@@ -20,6 +20,9 @@ ROOT = Path(__file__).resolve().parent.parent
 DATA_JSON = ROOT / "web" / "data.json"
 CRAWLED = Path(__file__).resolve().parent / "crawled" / "phuong_an_hoi_raw.json"
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from text_utils import slugify
+
 PLACE_KEYWORDS = {
     "Phường An Hội": "xa-an-binh",
     "TP Bến Tre": "xa-an-binh",
@@ -55,16 +58,6 @@ SECTIONS = [
     ("ben_tre_products_new", "product"),
     ("tra_vinh_events", "event"),
 ]
-
-
-def slugify(text):
-    text = unicodedata.normalize("NFD", text)
-    text = "".join(c for c in text if unicodedata.category(c) != "Mn")
-    text = text.lower().strip()
-    text = re.sub(r"[đĐ]", "d", text)
-    text = re.sub(r"[^a-z0-9\s-]", "", text)
-    text = re.sub(r"[\s-]+", "-", text).strip("-")
-    return text[:80]
 
 
 def guess_place_id(addr, province_old=None):

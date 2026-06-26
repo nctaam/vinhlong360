@@ -29,6 +29,7 @@ Hoặc bật tự động qua scheduler: task "continuous-discovery" (xem schedu
 
 import argparse
 import json
+import logging
 import os
 import re
 import sys
@@ -52,6 +53,8 @@ from openai import OpenAI
 import geocode as geo
 import kb_curation
 import kb_versioning
+
+logger = logging.getLogger(__name__)
 
 DATA = PROJECT_DIR / "web" / "data.json"
 CURSOR_FILE = AGENT_DIR / "data" / "discovery_cursor.json"
@@ -118,7 +121,8 @@ def _district_regions():
     """Build finer per-district regions from KB places' legacyArea (deeper sweep)."""
     try:
         data = json.loads(DATA.read_text(encoding="utf-8"))
-    except Exception:
+    except Exception as e:
+        logger.debug("Failed to load data.json for district regions: %s", e)
         return REGIONS
     seen, out = set(), []
     for e in data["entities"]:
@@ -157,7 +161,8 @@ def discover_stream(region, category, etype, model):
         return []
     try:
         items = json.loads(m.group(0))
-    except Exception:
+    except Exception as e:
+        logger.debug("Failed to parse LLM JSON response: %s", e)
         return []
 
     out = []
@@ -282,8 +287,8 @@ def run_discovery(topics, regions, workers, model, apply, label="manual"):
         scheduler.sync_data_json_to_js()
         import knowledge
         knowledge.reload()
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Post-discovery sync/reload failed: %s", e)
     return summary
 
 
@@ -298,13 +303,14 @@ def _next_topic():
     try:
         if CURSOR_FILE.exists():
             idx = json.loads(CURSOR_FILE.read_text(encoding="utf-8")).get("idx", 0)
-    except Exception:
+    except Exception as e:
+        logger.debug("Failed to read discovery cursor: %s", e)
         idx = 0
     topic = _TOPIC_ORDER[idx % len(_TOPIC_ORDER)]
     try:
         CURSOR_FILE.write_text(json.dumps({"idx": (idx + 1) % len(_TOPIC_ORDER)}), encoding="utf-8")
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Failed to write discovery cursor: %s", e)
     return topic
 
 

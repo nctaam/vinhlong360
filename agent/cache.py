@@ -50,7 +50,14 @@ def _init_redis():
             _redis_client = None
             _use_redis = False
 
-_init_redis()
+_redis_initialized = False
+
+def _ensure_redis():
+    global _redis_initialized
+    if _redis_initialized:
+        return
+    _redis_initialized = True
+    _init_redis()
 
 # --- In-memory fallback ---
 _cache: OrderedDict = OrderedDict()
@@ -79,6 +86,7 @@ def _normalize_key(message: str, session_id: str = "") -> str:
 
 def get(message: str) -> dict | None:
     """Lấy cached response. Trả về None nếu miss."""
+    _ensure_redis()
     key = _normalize_key(message)
 
     if _use_redis:
@@ -102,6 +110,7 @@ def get(message: str) -> dict | None:
 
 def put(message: str, response: dict, ttl: int = DEFAULT_TTL):
     """Lưu response vào cache."""
+    _ensure_redis()
     key = _normalize_key(message)
 
     if _use_redis:
@@ -170,7 +179,8 @@ def _redis_get(key: str) -> dict | None:
         _stats["misses"] += 1
         _track_cache_metric("miss")
         return None
-    except Exception:
+    except Exception as e:
+        logger.warning("Redis GET failed: %s", e)
         _stats["misses"] += 1
         _track_cache_metric("miss")
         return None
@@ -216,8 +226,8 @@ def _redis_stats_summary() -> dict:
             if cursor == 0:
                 break
         key_count = len(keys)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Redis SCAN for stats failed: %s", e)
     return {
         "size": key_count,
         "max_size": "unlimited (Redis)",
