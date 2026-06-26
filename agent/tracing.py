@@ -345,7 +345,7 @@ def trace_llm_call(
                 if ct is not None:
                     final_attrs["gen_ai.usage.completion_tokens"] = ct
             except Exception:
-                pass
+                logger.debug("Could not read token usage from LLM span attributes")
             _record_span(
                 trace_id=format(ctx.trace_id, "032x"),
                 span_id=format(ctx.span_id, "016x"),
@@ -402,7 +402,7 @@ def trace_rag_retrieval(
                 if rc is not None:
                     final_attrs["rag.results_count"] = rc
             except Exception:
-                pass
+                logger.debug("Could not read results_count from RAG span attributes")
             _record_span(
                 trace_id=format(ctx.trace_id, "032x"),
                 span_id=format(ctx.span_id, "016x"),

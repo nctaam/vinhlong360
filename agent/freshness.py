@@ -388,8 +388,9 @@ def schedule_refresh(entity_ids: list[str]) -> dict:
     queue["pending"] = pending
     queue["last_updated"] = now_str
 
-    with open(REFRESH_QUEUE_FILE, "w", encoding="utf-8") as f:
-        json.dump(queue, f, ensure_ascii=False, indent=2)
+    tmp = REFRESH_QUEUE_FILE.with_suffix(".tmp")
+    tmp.write_text(json.dumps(queue, ensure_ascii=False, indent=2), encoding="utf-8")
+    tmp.replace(REFRESH_QUEUE_FILE)
 
     return {
         "scheduled": added,

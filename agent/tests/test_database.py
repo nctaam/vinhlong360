@@ -939,3 +939,21 @@ def test_conn_rollback_on_error(db):
     except ValueError:
         pass
     assert db.get_entity("rb1")["name"] == "Before"
+
+
+# ── export_all (public API for export_data.py) ──
+
+def test_export_all_returns_all_data(db):
+    db.upsert_entity({"id": "ex1", "type": "place", "name": "Place A", "level": "xa"})
+    db.upsert_entity({"id": "ex2", "type": "restaurant", "name": "Quán B"})
+    db.add_relationship("ex2", "ex1", "located_in")
+    result = db.export_all()
+    assert "entities" in result
+    assert "relationships" in result
+    assert "itineraries" in result
+    ids = {e["id"] for e in result["entities"]}
+    assert "ex1" in ids
+    assert "ex2" in ids
+    assert len(result["relationships"]) >= 1
+    rel = result["relationships"][0]
+    assert "from" in rel and "to" in rel and "type" in rel

@@ -850,6 +850,21 @@ class Database:
                 rows = self._fetchall(conn, "SELECT * FROM itineraries")
             return [self._parse_itinerary(r) for r in rows]
 
+    def export_all(self) -> dict:
+        """Export all entities, relationships, and itineraries for data dump."""
+        self.initialize()
+        with self._conn() as conn:
+            entity_rows = self._fetchall(conn, "SELECT * FROM entities")
+            rel_rows = self._fetchall(conn, "SELECT from_id, to_id, type FROM relationships")
+            itin_rows = self._fetchall(conn, "SELECT * FROM itineraries")
+        entities = [self._parse_entity(r) for r in entity_rows]
+        relationships = []
+        for r in rel_rows:
+            d = self._row_to_dict(r)
+            relationships.append({"from": d["from_id"], "to": d["to_id"], "type": d["type"]})
+        itineraries = [self._parse_itinerary(r) for r in itin_rows]
+        return {"entities": entities, "relationships": relationships, "itineraries": itineraries}
+
     # ── Feedback ──
 
     def save_feedback(self, user_id: str, query: str, rating: int, entity_id: str = None):

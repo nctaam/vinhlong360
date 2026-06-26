@@ -15,10 +15,13 @@ Backend: Redis (if REDIS_URL is set and redis is installed) or in-memory Ordered
 
 import hashlib
 import json
+import logging
 import os
 import time
 from collections import OrderedDict
 from threading import Lock
+
+logger = logging.getLogger(__name__)
 
 try:
     import redis as _redis_lib
@@ -43,7 +46,7 @@ def _init_redis():
             _redis_client.ping()
             _use_redis = True
         except Exception as e:
-            print(f"  [cache] Redis unavailable ({e}), falling back to in-memory")
+            logger.warning("Redis unavailable (%s), falling back to in-memory", e)
             _redis_client = None
             _use_redis = False
 
@@ -53,6 +56,15 @@ _init_redis()
 _cache: OrderedDict = OrderedDict()
 _lock = Lock()
 _stats = {"hits": 0, "misses": 0, "evictions": 0}
+
+
+def _track_cache_metric(operation: str) -> None:
+    """Feed cache operation into Prometheus metrics (best-effort)."""
+    try:
+        from agent.metrics import track_cache
+        track_cache(operation)
+    except Exception:
+        pass
 
 
 def _normalize_key(message: str, session_id: str = "") -> str:
@@ -78,13 +90,13 @@ def get(message: str) -> dict | None:
             # Check TTL
             if time.time() - entry["timestamp"] < entry.get("ttl", DEFAULT_TTL):
                 _stats["hits"] += 1
-                # Move to end (most recently used)
                 _cache.move_to_end(key)
+                _track_cache_metric("hit")
                 return entry["response"]
             else:
-                # Expired
                 del _cache[key]
         _stats["misses"] += 1
+        _track_cache_metric("miss")
         return None
 
 
@@ -97,10 +109,10 @@ def put(message: str, response: dict, ttl: int = DEFAULT_TTL):
         return
 
     with _lock:
-        # Evict if full
         while len(_cache) >= MAX_SIZE:
             _cache.popitem(last=False)
             _stats["evictions"] += 1
+            _track_cache_metric("eviction")
 
         _cache[key] = {
             "response": response,
@@ -153,11 +165,14 @@ def _redis_get(key: str) -> dict | None:
         if raw is not None:
             entry = json.loads(raw)
             _stats["hits"] += 1
+            _track_cache_metric("hit")
             return entry["response"]
         _stats["misses"] += 1
+        _track_cache_metric("miss")
         return None
     except Exception:
         _stats["misses"] += 1
+        _track_cache_metric("miss")
         return None
 
 
@@ -171,7 +186,7 @@ def _redis_put(key: str, response: dict, message: str, ttl: int):
         }
         _redis_client.set(_redis_key(key), json.dumps(entry, ensure_ascii=False), ex=ttl)
     except Exception as e:
-        print(f"  [cache] Redis SET failed: {e}")
+        logger.warning("Redis SET failed: %s", e)
 
 
 def _redis_invalidate_all():
@@ -185,7 +200,7 @@ def _redis_invalidate_all():
             if cursor == 0:
                 break
     except Exception as e:
-        print(f"  [cache] Redis invalidate failed: {e}")
+        logger.warning("Redis invalidate failed: %s", e)
 
 
 def _redis_stats_summary() -> dict:

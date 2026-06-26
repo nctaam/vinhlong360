@@ -27,29 +27,7 @@ from database import db
 
 
 def export_from_db() -> dict:
-    db.initialize()
-    all_entities = db.list_entities(limit=10000)
-
-    with db._conn() as conn:
-        place_rows = db._fetchall(conn, "SELECT * FROM entities WHERE type = 'place'")
-        rel_rows = db._fetchall(conn, "SELECT from_id, to_id, type FROM relationships")
-        itin_rows = db._fetchall(conn, "SELECT * FROM itineraries")
-
-    places = [db._parse_entity(r) for r in place_rows]
-    entities = all_entities + places
-
-    relationships = []
-    for r in rel_rows:
-        d = db._row_to_dict(r)
-        relationships.append({"from": d["from_id"], "to": d["to_id"], "type": d["type"]})
-
-    itineraries = [db._parse_itinerary(r) for r in itin_rows]
-
-    return {
-        "entities": entities,
-        "relationships": relationships,
-        "itineraries": itineraries,
-    }
+    return db.export_all()
 
 
 def write_data_js(data: dict, path: Path):
