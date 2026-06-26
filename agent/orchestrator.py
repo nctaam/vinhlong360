@@ -492,7 +492,7 @@ class Orchestrator:
                     _rounds = int(tuned.get("max_rounds", _rounds))
                     _tool_cap = int(tuned.get("max_tool_calls", _tool_cap))
             except Exception:
-                pass
+                logger.debug("get_params_fn failed for category %s, using defaults", category.value, exc_info=True)
 
         # Try specialist first, fall back to general on failure
         for attempt, current_agent in enumerate([agent, GENERAL_AGENT]):
@@ -512,7 +512,7 @@ class Orchestrator:
                     rank = {name: i for i, name in enumerate(order)}
                     tools.sort(key=lambda t: rank.get(t["function"]["name"], 999))
                 except Exception:
-                    pass
+                    logger.debug("tool_order_fn failed for category %s, using default order", category.value, exc_info=True)
 
             try:
                 result = self._agent_loop(
@@ -586,14 +586,14 @@ class Orchestrator:
                         suggestions.clear()
                         suggestions.extend(sug)
                 except Exception:
-                    pass
+                    logger.debug("Failed to parse suggest_followups result", exc_info=True)
             if fn_name == "search":
                 try:
                     parsed = json.loads(result)
                     if isinstance(parsed, list) and len(parsed) == 0:
                         return True
                 except Exception:
-                    pass
+                    logger.debug("Failed to parse search result for empty-check", exc_info=True)
             return False
 
         tools_used: list[str] = []
@@ -627,6 +627,7 @@ class Orchestrator:
                 try:
                     fn_args = json.loads(tc.function.arguments)
                 except Exception:
+                    logger.warning("Failed to parse tool call arguments for %s, using empty dict", tc.function.name, exc_info=True)
                     fn_args = {}
                 fn_name = tc.function.name
                 tools_used.append(f"{fn_name}({json.dumps(fn_args, ensure_ascii=False)})")
@@ -641,6 +642,7 @@ class Orchestrator:
                 try:
                     exec_results = tool_executor.execute_smart(pending)
                 except Exception:
+                    logger.warning("Parallel tool executor failed, falling back to serial execution", exc_info=True)
                     exec_results = [
                         {"id": c["id"], "name": c["name"], "result": call_tool_fn(c["name"], c["args"])}
                         for c in pending
@@ -692,6 +694,7 @@ class Orchestrator:
                     final_resp = llm_call_fn(messages, [], temperature)
                     last_content = (final_resp.choices[0].message.content or "").strip()
                 except Exception:
+                    logger.warning("Final synthesis LLM call failed after rounds exhausted", exc_info=True)
                     last_content = ""
             if not last_content:
                 last_content = "Xin lỗi, tôi không thể trả lời đầy đủ câu hỏi này."

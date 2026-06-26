@@ -20,6 +20,7 @@ Chạy:
 """
 
 import json
+import logging
 import os
 import re
 import sys
@@ -39,6 +40,8 @@ from openai import OpenAI
 from ddgs import DDGS
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
+logger = logging.getLogger(__name__)
 
 client = OpenAI(
     api_key=os.environ["LLM_API_KEY"],
@@ -226,7 +229,7 @@ def web_search(query: str, max_results: int = 5) -> list[dict]:
             results = list(ddgs.text(query, region="vn-vi", max_results=max_results))
         return results
     except Exception as e:
-        print(f"  ⚠ Search error: {e}")
+        logger.warning("Search error: %s", e)
         return []
 
 
@@ -244,6 +247,7 @@ def fetch_url(url: str) -> str | None:
         text = re.sub(r"\s+", " ", text).strip()
         return text[:6000]
     except Exception:
+        logger.debug("Failed to fetch URL: %s", url)
         return None
 
 
@@ -280,7 +284,7 @@ Chỉ trả JSON, không text khác."""
         content = re.sub(r"\s*```$", "", content)
         return json.loads(content)
     except Exception as e:
-        print(f"  ⚠ Gap analysis error: {e}")
+        logger.warning("Gap analysis error: %s", e)
         return []
 
 
@@ -329,7 +333,7 @@ Chỉ trả JSON array, không text khác."""
             return []
         return items
     except Exception as e:
-        print(f"  ⚠ Extract error: {e}")
+        logger.warning("Extract error: %s", e)
         return []
 
 
@@ -362,7 +366,7 @@ def to_entity(raw: dict, source_url: str) -> dict:
         if coords:
             entity["coords"] = coords
     except Exception:
-        pass
+        logger.debug("Geocode unavailable for entity: %s", name)
 
     return entity
 
@@ -514,10 +518,10 @@ def filter_entity(raw: dict, known_names: set) -> tuple[bool, str]:
 
 def learn_from_query(query: str, known: set) -> list[dict]:
     """Tìm kiếm 1 query, trích xuất entities mới."""
-    print(f"\n  🔍 \"{query}\"")
+    logger.info("Searching: \"%s\"", query)
     results = web_search(query, max_results=3)
     if not results:
-        print("    → 0 kết quả")
+        logger.info("No results for query: %s", query)
         return []
 
     new_entities = []
@@ -543,39 +547,38 @@ def learn_from_query(query: str, known: set) -> list[dict]:
             # ── Noise filter ──
             keep, reason = filter_entity(raw, known)
             if not keep:
-                print(f"    ✗ [{reason}] {name}")
+                logger.debug("Filtered [%s] %s", reason, name)
                 continue
 
             entity = to_entity(raw, url)
             if entity["id"] and entity["id"] not in {e["id"] for e in new_entities}:
                 new_entities.append(entity)
                 known.add(name.lower())
-                print(f"    ✓ [{entity['type']}] {name}")
+                logger.info("Found [%s] %s", entity['type'], name)
 
     return new_entities
 
 
 def learn_round(category: str = None, num_topics: int = 5) -> list[dict]:
     """1 vòng học: tìm gaps → search → extract → deduplicate."""
-    print("═══ Auto-Learn Round ═══")
-    print(f"  Thời gian: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+    logger.info("Auto-Learn Round started at %s", datetime.now().strftime('%Y-%m-%d %H:%M'))
 
     known = existing_names()
-    print(f"  Knowledge base: {len(known)} thực thể")
+    logger.info("Knowledge base: %d entities", len(known))
 
     # Chọn queries
     queries = []
     if category and category in CATEGORIES:
         cat = CATEGORIES[category]
-        print(f"  Danh mục: {cat['label']}")
+        logger.info("Category: %s", cat['label'])
         queries = cat["seed_queries"][:num_topics]
     else:
         # LLM phân tích gaps + lấy từ seed
-        print("  Phân tích lỗ hổng kiến thức...")
+        logger.info("Analyzing knowledge gaps...")
         gap_queries = analyze_gaps(known, category)
         if gap_queries:
             queries = gap_queries[:num_topics]
-            print(f"  LLM đề xuất {len(queries)} truy vấn mới")
+            logger.info("LLM suggested %d new queries", len(queries))
         else:
             # Fallback: random seed queries
             import random
@@ -585,7 +588,7 @@ def learn_round(category: str = None, num_topics: int = 5) -> list[dict]:
             random.shuffle(all_seeds)
             queries = all_seeds[:num_topics]
 
-    print(f"  Sẽ tìm kiếm {len(queries)} topics\n")
+    logger.info("Will search %d topics", len(queries))
 
     all_new = []
     for q in queries:
@@ -601,8 +604,7 @@ def learn_round(category: str = None, num_topics: int = 5) -> list[dict]:
             seen_ids.add(e["id"])
             unique.append(e)
 
-    print(f"\n═══ Kết quả ═══")
-    print(f"  Entities mới: {len(unique)}")
+    logger.info("Round complete — new entities: %d", len(unique))
 
     if unique:
         # Group by type
@@ -611,17 +613,17 @@ def learn_round(category: str = None, num_topics: int = 5) -> list[dict]:
             by_type.setdefault(e["type"], []).append(e)
         for t, items in sorted(by_type.items()):
             label = ENTITY_TYPES.get(t, t)
-            print(f"  [{t}] {label}: {len(items)}")
+            logger.info("[%s] %s: %d", t, label, len(items))
             for e in items:
                 place = e.get("placeId", "?")
-                print(f"    - {e['name']} → {place} (conf: {e['confidence']})")
+                logger.debug("  - %s -> %s (conf: %s)", e['name'], place, e['confidence'])
 
         # Save
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         out_file = LEARN_DIR / f"learned_{timestamp}.json"
         with open(out_file, "w", encoding="utf-8") as f:
             json.dump(unique, f, ensure_ascii=False, indent=2)
-        print(f"\n  Lưu: {out_file}")
+        logger.info("Saved: %s", out_file)
 
         # Log
         log_entry = {
@@ -651,14 +653,14 @@ def apply_learned(entities: list[dict]):
             added.append(e)
 
     if added:
-        print(f"\n✓ Đã thêm {len(added)} entity vào DB")
+        logger.info("Added %d entities to DB", len(added))
         try:
             import knowledge
             knowledge.reload()
         except Exception:
-            pass
+            logger.debug("Could not reload knowledge after adding entities")
     else:
-        print("\n  Không có entity mới để thêm (tất cả đã trùng)")
+        logger.info("No new entities to add (all duplicates)")
     return added
 
 
@@ -668,16 +670,14 @@ def continuous_learn(interval_minutes: int = 30):
     i = 0
     while True:
         cat = categories[i % len(categories)]
-        print(f"\n{'='*60}")
-        print(f"  Vòng {i+1} — Danh mục: {CATEGORIES[cat]['label']}")
-        print(f"{'='*60}")
+        logger.info("Round %d — Category: %s", i + 1, CATEGORIES[cat]['label'])
 
         entities = learn_round(category=cat, num_topics=3)
         if entities:
             apply_learned(entities)
 
         i += 1
-        print(f"\n  ⏰ Nghỉ {interval_minutes} phút...")
+        logger.info("Sleeping %d minutes...", interval_minutes)
         time.sleep(interval_minutes * 60)
 
 

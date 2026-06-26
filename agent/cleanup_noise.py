@@ -8,6 +8,7 @@ Chạy:
 """
 
 import json
+import logging
 import os
 import re
 import sys
@@ -17,6 +18,8 @@ os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 if sys.stdout.encoding != "utf-8":
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stderr.reconfigure(encoding="utf-8")
+
+logger = logging.getLogger(__name__)
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA_JSON = ROOT / "web" / "data.json"
@@ -137,15 +140,13 @@ def main():
         else:
             clean.append(e)
 
-    print(f"═══ Cleanup Noise ═══\n")
-    print(f"Tổng entities: {len(entities)}")
-    print(f"Nhiễu:         {len(noisy)}")
-    print(f"Giữ lại:       {len(clean)}")
+    logger.info("Cleanup Noise — total: %d, noisy: %d, clean: %d",
+                len(entities), len(noisy), len(clean))
 
     if noisy:
-        print(f"\n── Entities nhiễu ──")
+        logger.info("Noisy entities:")
         for e, reason in noisy:
-            print(f"  ✗ [{reason}] {e['name']} (id={e['id']})")
+            logger.info("  [%s] %s (id=%s)", reason, e['name'], e['id'])
 
     if "--apply" in sys.argv and noisy:
         # GĐ-audit (B1-invariant): backup TRƯỚC khi xoá file dữ liệu không tái tạo được.
@@ -153,7 +154,7 @@ def main():
             import subprocess
             subprocess.run([sys.executable, str(ROOT / "scripts" / "backup_data.py")], check=False)
         except Exception as exc:
-            print(f"  ⚠ backup that bai ({exc}) — van tiep tuc vi co --apply")
+            logger.warning("Backup failed (%s) — continuing with --apply", exc)
         data["entities"] = clean
         tmp = DATA_JSON.with_suffix(".cleanup.tmp")  # ghi atomic (tránh hỏng file giữa chừng)
         tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -164,11 +165,11 @@ def main():
             for e, _r in noisy:
                 db.delete_entity(e["id"])  # cascade rels + FTS
         except Exception as exc:
-            print(f"  ⚠ xoa DB that bai: {exc}")
-        print(f"\n✓ Đã xóa {len(noisy)} entity nhiễu (DB + data.json)")
-        print(f"  Còn lại: {len(clean)} entities")
+            logger.error("DB deletion failed: %s", exc)
+        logger.info("Removed %d noisy entities (DB + data.json), %d remaining",
+                    len(noisy), len(clean))
     elif noisy:
-        print(f"\nChạy với --apply để xóa: python agent/cleanup_noise.py --apply")
+        logger.info("Run with --apply to remove: python agent/cleanup_noise.py --apply")
 
 
 if __name__ == "__main__":

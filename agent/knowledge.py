@@ -6,10 +6,13 @@ cho Knowledge Agent (tương đương store.js phía Python).
 """
 
 import json
+import logging
 import re
 import threading
 import unicodedata
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "web"
 
@@ -75,8 +78,7 @@ def _load():
             _data_source = "db"
             return entities, relationships, itineraries
     except Exception as exc:  # noqa: BLE001 - degrade gracefully
-        print(f"[knowledge] CANH BAO: nap tu DB that bai ({type(exc).__name__}: {exc}); "
-              f"fallback web/data.json")
+        logger.warning("DB load failed (%s: %s); falling back to data.json", type(exc).__name__, exc)
     _data_source = "json"
     return _load_from_json()
 
@@ -86,12 +88,17 @@ _entities, _relationships, _itineraries = None, None, None
 # khi _relationships đổi identity (qua reload HOẶC test patch trực tiếp).
 _adjacency = None
 _adj_src = None
+_adj_lock = threading.Lock()
 
 
 def _get_adjacency() -> dict:
     """Trả index kề, dựng lại nếu chưa có hoặc _relationships đã đổi (đối tượng khác)."""
     global _adjacency, _adj_src
-    if _adjacency is None or _adj_src is not _relationships:
+    if _adjacency is not None and _adj_src is _relationships:
+        return _adjacency
+    with _adj_lock:
+        if _adjacency is not None and _adj_src is _relationships:
+            return _adjacency
         adj: dict[str, list] = {}
         for r in (_relationships or []):
             f, t = r.get("from"), r.get("to")

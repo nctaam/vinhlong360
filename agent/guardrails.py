@@ -462,7 +462,7 @@ class OutputValidator:
                     if value > 500:
                         issues.append(f"Gia tri bat thuong: {value} {unit}")
             except (ValueError, OverflowError):
-                pass
+                logger.debug("Skipping unparseable price value: %s", value_str)
 
         return issues
 

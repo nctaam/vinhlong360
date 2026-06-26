@@ -22,6 +22,7 @@ Dependencies: stdlib only (json, threading, time, pathlib, collections)
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import time
@@ -31,6 +32,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from threading import Lock
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 
 # ── Paths ────────────────────────────────────────
@@ -181,7 +184,7 @@ class MemoryGraph:
                 self._adjacency[edge.target].add(key)
 
         except Exception as e:
-            print(f"  [memory_graph] Failed to load graph: {e}")
+            logger.error("Failed to load graph: %s", e)
 
     def save(self):
         """Persist graph to disk with atomic write (write .tmp then rename)."""
@@ -207,7 +210,7 @@ class MemoryGraph:
 
             self._mutations_since_save = 0
         except Exception as e:
-            print(f"  [memory_graph] Failed to save graph: {e}")
+            logger.error("Failed to save graph: %s", e)
 
     def _maybe_auto_save(self):
         """Auto-save if we've hit the mutation threshold. Caller must hold lock."""
@@ -809,7 +812,7 @@ class MemoryGraph:
                 self.add_node(obj, type="entity", properties={"name": obj})
                 self.add_edge(subj, obj, normalized_rel)
         except Exception:
-            pass  # Fact extraction is best-effort
+            logger.debug("Fact extraction failed (best-effort)", exc_info=True)
 
         # Final save
         self.save()

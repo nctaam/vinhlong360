@@ -15,12 +15,15 @@ Kiến trúc:
 """
 
 import json
+import logging
 import math
 import re
 import time
 from collections import Counter
 from pathlib import Path
 from threading import Lock
+
+logger = logging.getLogger(__name__)
 
 # ── Config ──
 
@@ -131,7 +134,7 @@ class TFIDFStore:
                 # Định dạng cũ (dense "tfidf") → KHÔNG nạp (tránh phình RAM 208MB);
                 # để build_index() dựng lại dạng sparse ở lần build kế tiếp.
         except Exception:
-            pass
+            logger.warning("Failed to load embeddings from %s", EMBEDDINGS_FILE)
         self._loaded = True
 
     def _save(self):
@@ -152,7 +155,7 @@ class TFIDFStore:
                 encoding="utf-8"
             )
         except Exception:
-            pass
+            logger.error("Failed to save embeddings to %s", EMBEDDINGS_FILE)
 
     def build_index(self, entities: dict, force: bool = False):
         """
@@ -384,7 +387,7 @@ def hybrid_search(
                 if e:
                     merged.append(e)
             except Exception:
-                pass
+                logger.debug("Could not fetch entity %s from knowledge", eid)
 
     return merged
 

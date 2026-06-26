@@ -107,7 +107,7 @@ class ContextualRetrieval:
                 raw = json.loads(CONTEXTUAL_FILE.read_text(encoding="utf-8"))
                 self._cache = raw.get("texts", {})
         except Exception:
-            pass
+            logger.warning("Failed to load contextual cache from %s", CONTEXTUAL_FILE, exc_info=True)
         self._loaded = True
 
     def _save_cache(self):

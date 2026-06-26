@@ -14,11 +14,14 @@ Safety / politeness:
 """
 
 import json
+import logging
 import re
 import time
 import unicodedata
 from pathlib import Path
 from threading import Lock
+
+logger = logging.getLogger(__name__)
 
 try:
     import requests
@@ -46,18 +49,24 @@ _last_request = [0.0]
 _cache = None
 
 
+_cache_lock = Lock()
+
+
 def _load_cache() -> dict:
     global _cache
     if _cache is not None:
         return _cache
-    if CACHE_FILE.exists():
-        try:
-            _cache = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
-        except Exception:
+    with _cache_lock:
+        if _cache is not None:
+            return _cache
+        if CACHE_FILE.exists():
+            try:
+                _cache = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
+            except Exception:
+                _cache = {}
+        else:
             _cache = {}
-    else:
-        _cache = {}
-    return _cache
+        return _cache
 
 
 def _save_cache():
@@ -65,8 +74,8 @@ def _save_cache():
         tmp = CACHE_FILE.with_suffix(".tmp")
         tmp.write_text(json.dumps(_cache, ensure_ascii=False, indent=2), encoding="utf-8")
         tmp.replace(CACHE_FILE)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Geocode cache write failed: %s", e)
 
 
 def _norm(text: str) -> str:
@@ -104,8 +113,8 @@ def _query_nominatim(query: str) -> list | None:
         lat, lon = float(data[0]["lat"]), float(data[0]["lon"])
         if in_box(lat, lon):
             return [round(lat, 7), round(lon, 7)]
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Nominatim query failed: %s", e)
     return None
 
 
