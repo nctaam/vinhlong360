@@ -106,8 +106,8 @@ class ContextualRetrieval:
             if CONTEXTUAL_FILE.exists():
                 raw = json.loads(CONTEXTUAL_FILE.read_text(encoding="utf-8"))
                 self._cache = raw.get("texts", {})
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("contextual cache load failed: %s", exc)
         self._loaded = True
 
     def _save_cache(self):
@@ -383,7 +383,7 @@ class LLMReranker:
         if not api_key or not base_url:
             raise RuntimeError("LLM_API_KEY and LLM_BASE_URL must be set for reranking")
 
-        self._client = OpenAI(api_key=api_key, base_url=base_url)
+        self._client = OpenAI(api_key=api_key, base_url=base_url, timeout=15)
 
     def rerank(
         self, query: str, candidates: list[dict], top_k: int = 5

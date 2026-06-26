@@ -355,3 +355,571 @@ class TestCircuitBreakerStats:
         for name in ("llm", "weather", "web_search"):
             assert "state" in stats[name]
             assert "failure_count" in stats[name]
+
+
+# ═══════════════════════════════════════════════════════
+# Timeout enforcement: EVERY LLM client has timeout
+# ═══════════════════════════════════════════════════════
+
+class TestTimeoutEnforcement:
+    """Every OpenAI client constructor must pass timeout=."""
+
+    def test_image_recognition_client_has_timeout(self):
+        """image_recognition._get_client must set timeout on OpenAI client."""
+        import inspect
+        from image_recognition import _get_client
+        source = inspect.getsource(_get_client)
+        assert "timeout" in source, \
+            "image_recognition._get_client must pass timeout= to OpenAI()"
+
+    def test_contextual_reranker_client_has_timeout(self):
+        """LLMReranker._ensure_client must set timeout on OpenAI client."""
+        import inspect
+        from contextual_retrieval import LLMReranker
+        source = inspect.getsource(LLMReranker._ensure_client)
+        assert "timeout" in source, \
+            "LLMReranker._ensure_client must pass timeout= to OpenAI()"
+
+    def test_llm_judge_client_has_timeout_param(self):
+        """LLMJudge._get_client must set timeout on OpenAI client."""
+        import inspect
+        from llm_judge import LLMJudge
+        source = inspect.getsource(LLMJudge._get_client)
+        assert "timeout" in source
+
+
+# ═══════════════════════════════════════════════════════
+# Error swallowing: no bare except/pass in owned files
+# ═══════════════════════════════════════════════════════
+
+class TestErrorSwallowing:
+    """Owned modules must not silently swallow exceptions."""
+
+    @pytest.mark.parametrize("module_file", [
+        "orchestrator.py",
+        "contextual_retrieval.py",
+        "guardrails.py",
+        "llm_judge.py",
+        "image_recognition.py",
+        "circuit_breaker.py",
+    ])
+    def test_no_bare_except_pass(self, module_file):
+        """No 'except Exception:\\n...pass' without logging in production code."""
+        import re as _re
+        source = (AGENT_DIR / module_file).read_text(encoding="utf-8")
+        # Strip __main__ block — CLI test code is allowed to swallow
+        main_idx = source.find('if __name__ == "__main__"')
+        if main_idx > 0:
+            source = source[:main_idx]
+        pattern = _re.compile(
+            r"except\s+(?:Exception)?\s*:\s*\n\s+pass\s*$",
+            _re.MULTILINE,
+        )
+        matches = pattern.findall(source)
+        assert not matches, \
+            f"{module_file} has bare 'except: pass' — must log the error"
+
+
+# ═══════════════════════════════════════════════════════
+# Orchestrator: malformed tool output, rounds exhaustion
+# ═══════════════════════════════════════════════════════
+
+class TestOrchestratorResilience:
+    """Orchestrator edge cases: malformed args, max rounds, forced synthesis."""
+
+    def _make_tool_call(self, tc_id, fn_name, args_str):
+        """Helper: create a mock tool call object."""
+        tc = MagicMock()
+        tc.id = tc_id
+        tc.function.name = fn_name
+        tc.function.arguments = args_str
+        return tc
+
+    def _make_msg(self, content=None, tool_calls=None):
+        """Helper: create a mock LLM response message."""
+        msg = MagicMock()
+        msg.content = content
+        msg.tool_calls = tool_calls
+        return msg
+
+    def _make_response(self, msg):
+        """Helper: wrap message in a response object."""
+        resp = MagicMock()
+        resp.choices = [MagicMock()]
+        resp.choices[0].message = msg
+        return resp
+
+    def test_malformed_tool_arguments_fallback(self):
+        """json.loads on malformed tool args must not crash the loop."""
+        from orchestrator import Orchestrator
+
+        orch = Orchestrator(tools_list=[
+            {"type": "function", "function": {"name": "search"}},
+            {"type": "function", "function": {"name": "suggest_followups"}},
+        ])
+
+        # Round 1: LLM returns tool call with invalid JSON args
+        tc = self._make_tool_call("tc1", "search", "{{NOT VALID JSON}}")
+        msg_r1 = self._make_msg(tool_calls=[tc])
+        resp_r1 = self._make_response(msg_r1)
+
+        # Round 2: LLM gives text reply
+        msg_r2 = self._make_msg(content="Kết quả tìm kiếm.", tool_calls=None)
+        resp_r2 = self._make_response(msg_r2)
+
+        call_count = [0]
+        def fake_llm(messages, tools, temperature):
+            call_count[0] += 1
+            return resp_r1 if call_count[0] == 1 else resp_r2
+
+        def fake_tool(name, args):
+            return json.dumps({"results": []})
+
+        result = orch.run(
+            message="test query",
+            history=[],
+            session_id="test",
+            base_system_prompt="Base prompt.",
+            call_tool_fn=fake_tool,
+            llm_call_fn=fake_llm,
+        )
+        assert result["reply"] == "Kết quả tìm kiếm."
+        # The malformed args should fall back to {} instead of crashing
+        assert any("search" in t for t in result["tools_used"])
+
+    def test_max_rounds_forces_synthesis(self):
+        """When max_rounds exhausted, orchestrator must force a final synthesis."""
+        from orchestrator import Orchestrator
+
+        orch = Orchestrator(tools_list=[
+            {"type": "function", "function": {"name": "search"}},
+        ])
+
+        # Every round: LLM keeps calling tools, never gives text
+        def make_tool_round():
+            tc = self._make_tool_call("tc_x", "search", '{"q":"test"}')
+            msg = self._make_msg(tool_calls=[tc])
+            return self._make_response(msg)
+
+        # Final forced synthesis (no tools)
+        final_msg = self._make_msg(content="Tổng hợp kết quả.", tool_calls=None)
+        final_resp = self._make_response(final_msg)
+
+        call_count = [0]
+        def fake_llm(messages, tools, temperature):
+            call_count[0] += 1
+            if not tools:
+                # Forced synthesis (tools=[])
+                return final_resp
+            return make_tool_round()
+
+        def fake_tool(name, args):
+            return json.dumps([{"id": "test", "name": "Test Entity"}])
+
+        result = orch.run(
+            message="test query",
+            history=[],
+            session_id="test",
+            base_system_prompt="Base prompt.",
+            call_tool_fn=fake_tool,
+            llm_call_fn=fake_llm,
+        )
+        assert result["reply"] == "Tổng hợp kết quả."
+
+    def test_tool_call_limit_returns_error_to_model(self):
+        """When max_tool_calls exceeded, remaining calls get error stubs."""
+        from orchestrator import Orchestrator
+
+        orch = Orchestrator(tools_list=[
+            {"type": "function", "function": {"name": "search"}},
+        ])
+
+        # Round 1: 3 tool calls, but max=2
+        tcs = [
+            self._make_tool_call(f"tc{i}", "search", f'{{"q":"q{i}"}}')
+            for i in range(3)
+        ]
+        msg_r1 = self._make_msg(tool_calls=tcs)
+        resp_r1 = self._make_response(msg_r1)
+
+        # Round 2: text response
+        msg_r2 = self._make_msg(content="Done.", tool_calls=None)
+        resp_r2 = self._make_response(msg_r2)
+
+        call_count = [0]
+        def fake_llm(messages, tools, temperature):
+            call_count[0] += 1
+            return resp_r1 if call_count[0] == 1 else resp_r2
+
+        def fake_tool(name, args):
+            return json.dumps([])
+
+        result = orch.run(
+            message="test query",
+            history=[],
+            session_id="test",
+            base_system_prompt="Base prompt.",
+            call_tool_fn=fake_tool,
+            llm_call_fn=fake_llm,
+            max_tool_calls=2,
+        )
+        # Only 2 tool calls should be counted, 3rd gets error stub
+        tool_call_count = sum(1 for t in result["tools_used"] if "search" in t)
+        assert tool_call_count == 2
+        assert result["reply"] == "Done."
+
+    def test_specialist_failure_falls_back_to_general(self):
+        """If specialist agent loop raises, orchestrator falls back to GeneralAgent."""
+        from orchestrator import Orchestrator
+
+        orch = Orchestrator(tools_list=[
+            {"type": "function", "function": {"name": "search"}},
+            {"type": "function", "function": {"name": "suggest_followups"}},
+        ])
+
+        attempt = [0]
+        def fake_llm(messages, tools, temperature):
+            attempt[0] += 1
+            if attempt[0] == 1:
+                raise ConnectionError("LLM temporarily unavailable")
+            msg = self._make_msg(content="Fallback reply.", tool_calls=None)
+            return self._make_response(msg)
+
+        result = orch.run(
+            message="Gợi ý du lịch Vĩnh Long",
+            history=[],
+            session_id="test",
+            base_system_prompt="Base prompt.",
+            call_tool_fn=lambda n, a: "{}",
+            llm_call_fn=fake_llm,
+        )
+        assert result["fallback"] is True
+        assert result["agent_used"] == "GeneralAgent"
+        assert result["reply"] == "Fallback reply."
+
+    def test_get_params_fn_error_logged_not_crash(self):
+        """get_params_fn failure must not crash orchestration."""
+        from orchestrator import Orchestrator
+
+        orch = Orchestrator(tools_list=[
+            {"type": "function", "function": {"name": "search"}},
+        ])
+
+        msg = self._make_msg(content="OK.", tool_calls=None)
+        resp = self._make_response(msg)
+
+        def bad_params(cat):
+            raise RuntimeError("params DB down")
+
+        result = orch.run(
+            message="test",
+            history=[],
+            session_id="test",
+            base_system_prompt="Base.",
+            call_tool_fn=lambda n, a: "{}",
+            llm_call_fn=lambda m, t, temp: resp,
+            get_params_fn=bad_params,
+        )
+        assert result["reply"] == "OK."
+
+
+# ═══════════════════════════════════════════════════════
+# Knowledge search edge cases
+# ═══════════════════════════════════════════════════════
+
+class TestKnowledgeSearchEdgeCases:
+    """Knowledge search handles empty, special-char, diacritic queries."""
+
+    def _seed_entities(self):
+        """Seed knowledge module with test entities."""
+        import knowledge
+        knowledge._entities = {
+            "test-1": {
+                "id": "test-1", "name": "Chùa Vĩnh Tràng", "type": "attraction",
+                "summary": "Ngôi chùa nổi tiếng tại Mỹ Tho",
+            },
+            "test-2": {
+                "id": "test-2", "name": "Cam sành Tam Bình", "type": "product",
+                "summary": "Đặc sản cam sành nổi tiếng",
+                "season": {"months": [10, 11, 12], "peak": [11]},
+            },
+            "place-1": {
+                "id": "place-1", "name": "Xã Tam Bình", "type": "place",
+                "level": "xa", "area": "vinh-long", "parentId": "root",
+            },
+        }
+        knowledge._relationships = []
+        knowledge._itineraries = {}
+
+    def test_empty_query_returns_results(self):
+        """search_entities with q='' should return results (no keyword filter)."""
+        self._seed_entities()
+        from knowledge import search_entities
+        results = search_entities(q="")
+        assert len(results) >= 1
+
+    def test_none_query_returns_results(self):
+        """search_entities with q=None should return results."""
+        self._seed_entities()
+        from knowledge import search_entities
+        results = search_entities(q=None)
+        assert len(results) >= 1
+
+    def test_special_chars_no_crash(self):
+        """Queries with regex-special chars must not crash."""
+        self._seed_entities()
+        from knowledge import search_entities
+        for q in ["cam (sành)", "du lịch [VL]", "test.*", "a+b", "price $100"]:
+            results = search_entities(q=q)
+            assert isinstance(results, list)
+
+    def test_diacritics_stripped_match(self):
+        """Queries without diacritics should still match via _normalize_vn."""
+        self._seed_entities()
+        from knowledge import search_entities
+        # "Cam sanh" (no diacritics) should match "Cam sành" entity
+        results = search_entities(q="cam sanh")
+        assert any("Cam" in r.get("name", "") for r in results), \
+            "Diacritic-stripped query should match diacriticed entity"
+
+    def test_very_long_query_no_crash(self):
+        """Extremely long query must not crash."""
+        self._seed_entities()
+        from knowledge import search_entities
+        long_q = "du lịch " * 500
+        results = search_entities(q=long_q)
+        assert isinstance(results, list)
+
+    def test_whitespace_only_query(self):
+        """Whitespace-only query returns results (treated as empty)."""
+        self._seed_entities()
+        from knowledge import search_entities
+        results = search_entities(q="   ")
+        assert isinstance(results, list)
+
+
+# ═══════════════════════════════════════════════════════
+# Image recognition: vision API fallback
+# ═══════════════════════════════════════════════════════
+
+class TestImageRecognitionResilience:
+    """Image recognition handles API failures gracefully."""
+
+    def test_vision_api_failure_uses_filename_fallback(self):
+        """When vision API fails, recognize_image must use filename fallback."""
+        from image_recognition import recognize_image
+
+        fake_entities = {
+            "keo-dua": {"id": "keo-dua", "name": "Kẹo dừa", "type": "product",
+                        "summary": "Kẹo dừa Bến Tre", "tags": ["dừa", "kẹo"]},
+        }
+
+        with patch("image_recognition._get_client") as mock_gc:
+            mock_gc.side_effect = Exception("API unreachable")
+            result = recognize_image(
+                image_data=b"\x89PNG\r\n\x1a\n" + b"\x00" * 100,
+                entities=fake_entities,
+                filename="keo-dua-ben-tre.jpg",
+            )
+
+        assert result.get("fallback") is True
+        assert "description" in result
+
+    def test_vision_api_invalid_json_response(self):
+        """When vision API returns non-JSON, must not crash."""
+        from image_recognition import recognize_image
+
+        mock_client = MagicMock()
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = "This is not JSON at all!"
+        mock_client.chat.completions.create.return_value = mock_response
+
+        with patch("image_recognition._get_client", return_value=mock_client):
+            result = recognize_image(
+                image_data=b"\x89PNG" + b"\x00" * 100,
+                entities={},
+                filename="test.png",
+            )
+
+        assert "description" in result
+        assert "category" in result
+
+    def test_process_upload_rejects_oversized_file(self):
+        """process_upload must reject files over MAX_FILE_SIZE."""
+        from image_recognition import process_upload, MAX_FILE_SIZE
+
+        big_data = b"\x00" * (MAX_FILE_SIZE + 1)
+        with pytest.raises(ValueError, match="quá lớn"):
+            process_upload(big_data, "big.jpg", "image/jpeg")
+
+    def test_process_upload_rejects_invalid_content_type(self):
+        """process_upload must reject non-image content types."""
+        from image_recognition import process_upload
+
+        with pytest.raises(ValueError, match="không được hỗ trợ"):
+            process_upload(b"data", "test.txt", "text/plain")
+
+
+# ═══════════════════════════════════════════════════════
+# Contextual retrieval: reranker resilience
+# ═══════════════════════════════════════════════════════
+
+class TestContextualRetrievalResilience:
+    """LLMReranker and BM25 handle failures gracefully."""
+
+    def test_reranker_returns_original_on_api_failure(self):
+        """When reranker LLM call fails, must return original order."""
+        from contextual_retrieval import LLMReranker
+
+        rr = LLMReranker()
+        rr._client = MagicMock()
+        rr._model = "test-model"
+        rr._client.chat.completions.create.side_effect = ConnectionError("down")
+
+        candidates = [
+            {"id": "a", "name": "Entity A", "type": "attraction", "summary": "A"},
+            {"id": "b", "name": "Entity B", "type": "product", "summary": "B"},
+        ]
+
+        result = rr.rerank("test query", candidates, top_k=5)
+        assert len(result) == 2
+        assert result[0]["id"] == "a"
+
+    def test_reranker_empty_candidates(self):
+        """Reranker on empty list must return empty."""
+        from contextual_retrieval import LLMReranker
+        rr = LLMReranker()
+        assert rr.rerank("query", [], top_k=5) == []
+
+    def test_reranker_single_candidate_no_llm_call(self):
+        """Reranker on single candidate must return it without calling LLM."""
+        from contextual_retrieval import LLMReranker
+        rr = LLMReranker()
+        rr._client = MagicMock()
+        candidates = [{"id": "a", "name": "A"}]
+        result = rr.rerank("query", candidates, top_k=5)
+        assert result == [{"id": "a", "name": "A"}]
+        if rr._client.chat:
+            rr._client.chat.completions.create.assert_not_called()
+
+    def test_bm25_empty_query_returns_empty(self):
+        """BM25 on empty query must return empty results."""
+        from contextual_retrieval import BM25
+        b = BM25()
+        b.build_index({"d1": "test document about travel"})
+        assert b.score("", top_k=5) == []
+
+    def test_bm25_unbuilt_index_returns_empty(self):
+        """BM25 on unbuilt index must return empty results."""
+        from contextual_retrieval import BM25
+        b = BM25()
+        assert b.score("some query", top_k=5) == []
+
+    def test_contextual_cache_load_corrupt_file_no_crash(self):
+        """ContextualRetrieval must handle corrupt cache file gracefully."""
+        from contextual_retrieval import ContextualRetrieval, CONTEXTUAL_FILE
+        import tempfile
+
+        cr = ContextualRetrieval()
+        cr._loaded = False
+
+        # Write corrupt data to cache
+        original = None
+        if CONTEXTUAL_FILE.exists():
+            original = CONTEXTUAL_FILE.read_text(encoding="utf-8")
+
+        try:
+            CONTEXTUAL_FILE.write_text("{{{CORRUPT", encoding="utf-8")
+            cr._load_cache()
+            assert cr._loaded is True
+            assert isinstance(cr._cache, dict)
+        finally:
+            if original is not None:
+                CONTEXTUAL_FILE.write_text(original, encoding="utf-8")
+            elif CONTEXTUAL_FILE.exists():
+                CONTEXTUAL_FILE.unlink()
+
+
+# ═══════════════════════════════════════════════════════
+# Guardrail: generate_followups timeout + json.loads
+# ═══════════════════════════════════════════════════════
+
+class TestGuardrailJsonParsing:
+    """LLM output json.loads has try/except + fallback."""
+
+    def test_llm_judge_parse_scores_malformed_json(self):
+        """LLMJudge._parse_scores must return None on garbage input."""
+        from llm_judge import LLMJudge
+        judge = LLMJudge()
+        assert judge._parse_scores("NOT JSON AT ALL") is None
+        assert judge._parse_scores("") is None
+        assert judge._parse_scores("{broken") is None
+
+    def test_llm_judge_parse_scores_code_fenced(self):
+        """LLMJudge._parse_scores must strip markdown code fences."""
+        from llm_judge import LLMJudge
+        judge = LLMJudge()
+        fenced = '```json\n{"relevance": 8, "accuracy": 7, "completeness": 8, "helpfulness": 7, "format": 6, "feedback": "Good"}\n```'
+        result = judge._parse_scores(fenced)
+        assert result is not None
+        assert result["relevance"] == 8
+
+    def test_llm_judge_evaluate_fallback_on_api_crash(self):
+        """LLMJudge.evaluate must return rule-based fallback when API crashes."""
+        from llm_judge import LLMJudge
+        judge = LLMJudge()
+
+        with patch.object(judge, "_can_use_llm", return_value=True):
+            with patch.object(judge, "_get_client", side_effect=Exception("boom")):
+                result = judge.evaluate("test query", "test reply about Vinh Long tourism and beautiful places")
+
+        assert result.is_llm_judged is False
+        assert result.weighted_score > 0
+
+    def test_orchestrator_post_process_invalid_suggest_json(self):
+        """_post_process must not crash on malformed suggest_followups result."""
+        from orchestrator import Orchestrator
+
+        orch = Orchestrator(tools_list=[
+            {"type": "function", "function": {"name": "suggest_followups"}},
+        ])
+
+        # Tool returns suggest_followups with malformed tool result, then LLM text
+        tc = MagicMock()
+        tc.id = "tc1"
+        tc.function.name = "suggest_followups"
+        tc.function.arguments = '{"context":"test"}'
+
+        msg_r1 = MagicMock()
+        msg_r1.content = None
+        msg_r1.tool_calls = [tc]
+        resp_r1 = MagicMock()
+        resp_r1.choices = [MagicMock()]
+        resp_r1.choices[0].message = msg_r1
+
+        msg_r2 = MagicMock()
+        msg_r2.content = "Final answer."
+        msg_r2.tool_calls = None
+        resp_r2 = MagicMock()
+        resp_r2.choices = [MagicMock()]
+        resp_r2.choices[0].message = msg_r2
+
+        call_count = [0]
+        def fake_llm(messages, tools, temp):
+            call_count[0] += 1
+            return resp_r1 if call_count[0] == 1 else resp_r2
+
+        def fake_tool(name, args):
+            return "NOT VALID JSON {{{"
+
+        result = orch.run(
+            message="test",
+            history=[],
+            session_id="test",
+            base_system_prompt="Base.",
+            call_tool_fn=fake_tool,
+            llm_call_fn=fake_llm,
+        )
+        assert result["reply"] == "Final answer."
+        assert result["suggestions"] == []

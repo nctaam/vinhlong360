@@ -53,6 +53,7 @@ def _get_client() -> OpenAI:
             _client = OpenAI(
                 api_key=os.environ.get("LLM_API_KEY", ""),
                 base_url=os.environ["LLM_BASE_URL"],
+                timeout=30,
             )
         return _client
 

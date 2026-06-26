@@ -491,8 +491,8 @@ class Orchestrator:
                     _temp = tuned.get("temperature", _temp)
                     _rounds = int(tuned.get("max_rounds", _rounds))
                     _tool_cap = int(tuned.get("max_tool_calls", _tool_cap))
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.warning("get_params_fn failed: %s", exc)
 
         # Try specialist first, fall back to general on failure
         for attempt, current_agent in enumerate([agent, GENERAL_AGENT]):
@@ -511,8 +511,8 @@ class Orchestrator:
                     order = tool_order_fn(category.value)
                     rank = {name: i for i, name in enumerate(order)}
                     tools.sort(key=lambda t: rank.get(t["function"]["name"], 999))
-                except Exception:
-                    pass
+                except Exception as exc:
+                    logger.warning("tool_order_fn failed: %s", exc)
 
             try:
                 result = self._agent_loop(
@@ -585,15 +585,15 @@ class Orchestrator:
                     if sug:
                         suggestions.clear()
                         suggestions.extend(sug)
-                except Exception:
-                    pass
+                except Exception as exc:
+                    logger.debug("suggest_followups parse failed: %s", exc)
             if fn_name == "search":
                 try:
                     parsed = json.loads(result)
                     if isinstance(parsed, list) and len(parsed) == 0:
                         return True
-                except Exception:
-                    pass
+                except Exception as exc:
+                    logger.debug("search result parse failed: %s", exc)
             return False
 
         tools_used: list[str] = []
