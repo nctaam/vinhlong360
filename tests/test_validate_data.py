@@ -1818,6 +1818,13 @@ def test_validate_no_coords_without_address_when_has_address(tmp_path: Path) -> 
     assert stats["coords_without_address"] == 0
 
 
+def test_seo_required_covers_craft_village_and_drink() -> None:
+    assert "craft_village" in validate_data.SEO_REQUIRED
+    assert "drink" in validate_data.SEO_REQUIRED
+    assert "specialty" in validate_data.SEO_REQUIRED["craft_village"]
+    assert "price_range" in validate_data.SEO_REQUIRED["drink"]
+
+
 def test_validate_places_excluded_from_coords_without_address(tmp_path: Path) -> None:
     data = {
         "entities": [

@@ -138,6 +138,8 @@ SEO_REQUIRED: dict[str, list[str]] = {
     "experience": ["admission"],
     "nature": ["admission"],
     "person": ["role"],
+    "craft_village": ["specialty", "phone"],
+    "drink": ["specialty", "price_range"],
 }
 
 

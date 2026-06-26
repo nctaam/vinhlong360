@@ -287,8 +287,14 @@ def _itinerary_url(itinerary_id: str) -> str:
 
 
 def _safe_date(value: Any, fallback: str | None = None) -> str | None:
-    if isinstance(value, str) and re.match(r"^\d{4}-\d{2}-\d{2}$", value.strip()):
-        return value.strip()
+    if not isinstance(value, str):
+        return fallback
+    text = value.strip()
+    if re.match(r"^\d{4}-\d{2}-\d{2}$", text):
+        return text
+    m = re.match(r"^(\d{4}-\d{2}-\d{2})[T ]", text)
+    if m:
+        return m.group(1)
     return fallback
 
 

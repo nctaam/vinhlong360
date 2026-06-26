@@ -1686,6 +1686,8 @@ def test_parse_coordinates_parameterized(input_val, expected):
 @pytest.mark.parametrize("input_val,fallback,expected", [
     ("2026-06-15", None, "2026-06-15"),
     ("  2026-06-15  ", None, "2026-06-15"),
+    ("2026-06-15T10:30:00", None, "2026-06-15"),
+    ("2026-06-15 14:00:00", None, "2026-06-15"),
     ("not-a-date", "fb", "fb"),
     (None, "fb", "fb"),
     (12345, None, None),
