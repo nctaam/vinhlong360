@@ -168,12 +168,6 @@ export interface ChatResponse {
   tool_calls: ChatToolCall[]
 }
 
-export interface SmartSearchResult {
-  reply: string
-  entities: Entity[]
-  suggestions: string[]
-}
-
 export interface Place {
   id: string
   name: string
@@ -181,22 +175,6 @@ export interface Place {
   area?: string
   parent_id?: string
   coordinates?: Coordinates | [number, number] | null
-}
-
-export interface Facility {
-  id: string
-  name: string
-  type?: string
-  place_id?: string
-  attributes?: Record<string, string | number | boolean>
-}
-
-export interface EventEntity extends Entity {
-  attributes?: Record<string, string | number | boolean | string[]> & {
-    category?: string
-    date_start?: string
-    date_end?: string
-  }
 }
 
 export interface Report {
@@ -221,21 +199,3 @@ export interface InfoReport {
   user_id?: string
 }
 
-export interface WeatherData {
-  temp?: number
-  description?: string
-  icon?: string
-  humidity?: number
-}
-
-export interface RouteLeg {
-  distance: number
-  duration: number
-  steps: RouteStep[]
-}
-
-export interface RouteStep {
-  instruction: string
-  distance: number
-  duration: number
-}
