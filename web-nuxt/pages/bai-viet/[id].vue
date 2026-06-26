@@ -131,7 +131,7 @@
           <h3 class="related-title">Bài viết liên quan</h3>
           <div class="related-grid">
             <NuxtLink v-for="rp in relatedPosts" :key="rp.id" :to="`/bai-viet/${rp.id}`" class="related-card">
-              <img v-if="rp.images?.[0]" :src="rp.images[0]" alt="" class="related-thumb" loading="lazy" decoding="async" />
+              <img v-if="rp.images?.[0]" :src="rp.images[0]" :alt="rp.display_name || 'Bài viết liên quan'" class="related-thumb" loading="lazy" decoding="async" />
               <div class="related-body">
                 <span class="related-author">{{ rp.display_name }}</span>
                 <p class="related-text">{{ (rp.content || '').slice(0, 80) }}{{ (rp.content || '').length > 80 ? '…' : '' }}</p>
@@ -292,6 +292,9 @@ const { data: post, pending } = await useAsyncData(`post-${postId}`, async () =>
     return null
   }
 })
+if (import.meta.server && !post.value && !postFetchFailed.value) {
+  throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy bài viết' })
+}
 bestAnswerId.value = (post.value as any)?.best_answer_id ?? null
 
 async function fetchComments() {

@@ -278,7 +278,7 @@ function onTypeahead() {
       suggestions.value = res.entities || []
       sugIdx.value = -1
       showSuggestions.value = suggestions.value.length > 0
-    } catch { suggestions.value = [] }
+    } catch { suggestions.value = []; showSuggestions.value = false }
   }, 300)
 }
 function sugNext() {

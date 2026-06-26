@@ -154,6 +154,9 @@ const { data } = await useAsyncData(`ward-${id.value}`, async () => {
     return null
   }
 })
+if (import.meta.server && !data.value?.place && !fetchFailed.value) {
+  throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy xã/phường' })
+}
 
 const areaMeta = computed(() => AREA_META[data.value?.place?.area] || { name: '', emoji: '📍', blurb: '' })
 

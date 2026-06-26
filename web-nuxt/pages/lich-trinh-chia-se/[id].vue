@@ -42,6 +42,9 @@ const { data: plan, status } = await useAsyncData(`shared-plan-${planId}`, async
     return null
   }
 })
+if (import.meta.server && !plan.value) {
+  throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy lịch trình' })
+}
 
 useSeoMeta({
   title: () => plan.value ? `${plan.value.title} — Lịch trình chia sẻ` : 'Lịch trình chia sẻ',

@@ -90,7 +90,7 @@
 
             <div v-if="previewImages.length" class="img-preview-row">
               <div v-for="(src, i) in previewImages" :key="i" class="img-preview-item">
-                <img :src="src" alt="Ảnh xem trước" width="120" height="120" loading="lazy" />
+                <img :src="src" :alt="`Ảnh đính kèm ${i + 1}`" width="120" height="120" loading="lazy" />
                 <button type="button" class="remove" aria-label="Xóa ảnh" @click="removeImage(i)">&times;</button>
               </div>
             </div>
@@ -545,9 +545,9 @@ async function startQuote(postId: string) {
   if (!isLoggedIn.value) { openAuth(() => startQuote(postId)); return }
   let p: any = posts.value.find((x: any) => x.id === postId)
   if (!p) {
-    try { const r = await $fetch<any>(`/api/posts/${postId}`, { headers: authHeaders() }); p = r?.post } catch {}
+    try { const r = await $fetch<any>(`/api/posts/${postId}`, { headers: authHeaders() }); p = r?.post } catch { /* post may be deleted */ }
   }
-  quotingPost.value = p || { id: postId, content: '' }
+  quotingPost.value = p || { id: postId, content: '(Bài viết không khả dụng)' }
   activeTab.value = 'latest'
   focusComposer()
 }

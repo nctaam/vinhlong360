@@ -252,6 +252,9 @@ const { data: profile } = await useAsyncData(`user-${userId}`, async () => {
     return null
   }
 })
+if (import.meta.server && !profile.value && !profileFetchFailed.value) {
+  throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy người dùng' })
+}
 
 const initial = computed(() => {
   const name = profile.value?.display_name || profile.value?.phone || '?'
