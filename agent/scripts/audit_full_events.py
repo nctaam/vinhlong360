@@ -43,7 +43,7 @@ for e in sorted(events, key=lambda x: (x.get("attributes") or {}).get("date_star
             print(f"  LONG SPAN ({span}d): {e['id']} | {e['name']} | {ds}~{de}")
         if d1.year != 2026:
             print(f"  WRONG YEAR: {e['id']} | {ds}")
-    except:
+    except (ValueError, TypeError):
         print(f"  BAD DATE: {e['id']} | {ds}~{de}")
 
 # 3. Missing fields

@@ -28,8 +28,8 @@ try:
 except ImportError:
     _redis_lib = None
 
-MAX_SIZE = 500
-DEFAULT_TTL = 3600  # 1 giờ
+MAX_SIZE = int(os.environ.get("CACHE_MAX_SIZE", "500"))
+DEFAULT_TTL = int(os.environ.get("CACHE_DEFAULT_TTL", "3600"))
 _KEY_PREFIX = "vl360:cache:"
 
 # --- Redis connection (lazy, optional) ---

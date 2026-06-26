@@ -281,7 +281,7 @@ def run_discovery(topics, regions, workers, model, apply, label="manual"):
             if ent:
                 db.upsert_entity(ent)  # upsert nhận alias "coords"->"coordinates"
     except Exception as exc:  # noqa: BLE001
-        print(f"[discover] CANH BAO: ghi DB that bai: {exc}")
+        logger.warning("ghi DB that bai: %s", exc)
     try:
         import scheduler
         scheduler.sync_data_json_to_js()

@@ -322,11 +322,13 @@ def _load_feedback() -> list[dict]:
 
 
 def _save_feedback(data: list[dict]):
-    """Save feedback history."""
-    FEEDBACK_FILE.write_text(
+    """Save feedback history (atomic write)."""
+    tmp = FEEDBACK_FILE.with_suffix(".tmp")
+    tmp.write_text(
         json.dumps(data[-1000:], ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
+    tmp.replace(FEEDBACK_FILE)
 
 
 def record_feedback(query: str, rating: int, entity_id: str = None, session_id: str = None):
@@ -550,7 +552,9 @@ def _log_event(event_type: str, data: dict):
         if LEARN_LOG.exists() and LEARN_LOG.stat().st_size > 2 * 1024 * 1024:
             lines = LEARN_LOG.read_text(encoding="utf-8").strip().split("\n")
             if len(lines) > _MAX_LEARN_LOG_LINES:
-                LEARN_LOG.write_text("\n".join(lines[-_MAX_LEARN_LOG_LINES:]) + "\n", encoding="utf-8")
+                tmp = LEARN_LOG.with_suffix(".tmp")
+                tmp.write_text("\n".join(lines[-_MAX_LEARN_LOG_LINES:]) + "\n", encoding="utf-8")
+                tmp.replace(LEARN_LOG)
                 _logger.info("Trimmed learn_loop_log to %d lines", _MAX_LEARN_LOG_LINES)
     except Exception as exc:
         _logger.debug("Failed to write learn log: %s", exc)
