@@ -61,6 +61,7 @@
         <button type="button"
           v-for="(meta, key) in AREA_META" :key="key"
           :class="['quick-pick', { active: areaFilter === key }]"
+          :aria-pressed="areaFilter === key"
           @click="areaFilter = areaFilter === key ? 'all' : (key as string)"
         >
           <span class="quick-pick-icon">{{ meta.emoji }}</span>

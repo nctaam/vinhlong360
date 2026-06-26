@@ -136,7 +136,7 @@
           </NuxtLink>
           <div class="spot-body">
             <span class="spot-kicker">{{ spotMeta?.emoji }} {{ spotMeta?.label }} · Nổi bật</span>
-            <h2>{{ spotlight.name }}</h2>
+            <h3 class="spot-name">{{ spotlight.name }}</h3>
             <p v-if="spotlight.summary" class="spot-sum">{{ spotlight.summary }}</p>
             <NuxtLink :to="`/dia-diem/${spotlight.id}`" class="btn btn-primary spot-cta">Khám phá ngay →</NuxtLink>
           </div>
@@ -970,7 +970,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 }
 @media (max-width: 760px) { .spot-body { padding: var(--space-5); } }
 .spot-kicker { font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .05em; color: var(--primary-fg-strong); }
-.spot-body h2 { margin: 0; font-size: clamp(1.5rem, 3.2vw, 2.1rem); line-height: var(--leading-snug); letter-spacing: -.01em; }
+.spot-body .spot-name { margin: 0; font-size: clamp(1.5rem, 3.2vw, 2.1rem); line-height: var(--leading-snug); letter-spacing: -.01em; }
 .spot-sum { margin: 0; color: var(--text-muted); line-height: var(--leading-relaxed); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 .spot-cta { align-self: flex-start; margin-top: var(--space-2); }
 
