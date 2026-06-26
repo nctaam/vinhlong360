@@ -2069,3 +2069,102 @@ class TestGeocodeLogging:
         assert not matches, (
             f"geocode.py has {len(matches)} 'except Exception: pass' — must log"
         )
+
+
+# ═══════════════════════════════════════════════════════
+# Management bot hardening
+# ═══════════════════════════════════════════════════════
+
+
+class TestBotGatewaySessionCap:
+    """bot_gateway must enforce MAX_SESSIONS cap."""
+
+    def test_max_sessions_defined(self):
+        import bot_gateway
+        assert hasattr(bot_gateway, "MAX_SESSIONS")
+        assert bot_gateway.MAX_SESSIONS > 0
+
+    def test_cleanup_evicts_over_cap(self):
+        import bot_gateway
+        original_max = bot_gateway.MAX_SESSIONS
+        original_sessions = bot_gateway._sessions.copy()
+        try:
+            bot_gateway.MAX_SESSIONS = 3
+            bot_gateway._sessions.clear()
+            for i in range(5):
+                bot_gateway._sessions[f"test:{i}"] = {
+                    "messages": [], "last_active": time.time() - i * 100
+                }
+            bot_gateway._cleanup_stale_sessions()
+            assert len(bot_gateway._sessions) <= 3
+        finally:
+            bot_gateway.MAX_SESSIONS = original_max
+            bot_gateway._sessions.clear()
+            bot_gateway._sessions.update(original_sessions)
+
+
+class TestSchedulerTaskTimeout:
+    """ScheduledTask must support timeout."""
+
+    def test_task_has_timeout_field(self):
+        from scheduler import ScheduledTask
+        task = ScheduledTask("test", lambda: None, 60)
+        assert hasattr(task, "timeout")
+        assert task.timeout > 0
+
+    def test_task_timeout_enforced(self):
+        from scheduler import ScheduledTask
+        import time as _time
+
+        def _slow():
+            _time.sleep(10)
+
+        task = ScheduledTask("slow_test", _slow, 60, timeout=1)
+        task.run()
+        assert task.last_error is not None
+        assert "timed out" in task.last_error.lower()
+
+
+class TestLearnLoopLogCap:
+    """learn_loop must cap log file size."""
+
+    def test_max_log_lines_defined(self):
+        import learn_loop
+        assert hasattr(learn_loop, "_MAX_LEARN_LOG_LINES")
+        assert learn_loop._MAX_LEARN_LOG_LINES > 0
+
+    def test_log_event_does_not_crash(self):
+        import learn_loop
+        original = learn_loop.LEARN_LOG
+        try:
+            learn_loop.LEARN_LOG = Path(os.path.join(
+                os.environ.get("TEMP", "/tmp"), "test_learn_log.jsonl"
+            ))
+            learn_loop._log_event("test", {"data": "value"})
+            assert learn_loop.LEARN_LOG.exists()
+        finally:
+            if learn_loop.LEARN_LOG.exists():
+                learn_loop.LEARN_LOG.unlink()
+            learn_loop.LEARN_LOG = original
+
+
+class TestEvalFrameworkTimeout:
+    """EvalRunner.run_single must enforce call timeout."""
+
+    def test_eval_timeout_defined(self):
+        from eval_framework import EvalRunner
+        assert hasattr(EvalRunner, "_EVAL_TIMEOUT")
+        assert EvalRunner._EVAL_TIMEOUT > 0
+
+    def test_eval_report_retention_cap(self):
+        from eval_framework import EvalRunner
+        assert hasattr(EvalRunner, "_MAX_REPORTS")
+        assert EvalRunner._MAX_REPORTS >= 10
+
+
+class TestCostTrackerSaveFrequency:
+    """cost_tracker save interval should be ≤ 20 to reduce data loss."""
+
+    def test_auto_save_interval(self):
+        from cost_tracker import _AUTO_SAVE_INTERVAL
+        assert _AUTO_SAVE_INTERVAL <= 20

@@ -129,9 +129,12 @@ def sync_data_json_to_js():
 #  SCHEDULED TASKS
 # ══════════════════════════════════════════════════
 
+_TASK_TIMEOUT = int(os.environ.get("SCHEDULER_TASK_TIMEOUT", "600"))
+
+
 class ScheduledTask:
     def __init__(self, name: str, func, interval_seconds: int, enabled: bool = True,
-                 run_immediately: bool = True):
+                 run_immediately: bool = True, timeout: int | None = None):
         self.name = name
         self.func = func
         self.interval = interval_seconds
@@ -139,6 +142,7 @@ class ScheduledTask:
         self.last_run = 0
         self.run_count = 0
         self.last_error = None
+        self.timeout = timeout or _TASK_TIMEOUT
         self.next_run_after = 0 if run_immediately else time.time() + interval_seconds
 
     def should_run(self) -> bool:
@@ -150,17 +154,37 @@ class ScheduledTask:
 
     def run(self):
         try:
-            _sched_logger.info(f"Running task: {self.name}")
+            _sched_logger.info("Running task: %s (timeout=%ds)", self.name, self.timeout)
             start = time.time()
-            self.func()
+            result_holder = [None]
+            error_holder = [None]
+
+            def _target():
+                try:
+                    result_holder[0] = self.func()
+                except Exception as exc:
+                    error_holder[0] = exc
+
+            worker = threading.Thread(target=_target, daemon=True)
+            worker.start()
+            worker.join(timeout=self.timeout)
+
+            if worker.is_alive():
+                self.last_error = f"Task timed out after {self.timeout}s"
+                _sched_logger.error("Task timed out: %s (%ds)", self.name, self.timeout)
+                return
+
+            if error_holder[0] is not None:
+                raise error_holder[0]
+
             elapsed = round(time.time() - start, 1)
             self.last_run = time.time()
             self.run_count += 1
             self.last_error = None
-            _sched_logger.info(f"Task done: {self.name} ({elapsed}s)")
+            _sched_logger.info("Task done: %s (%.1fs)", self.name, elapsed)
         except Exception as e:
             self.last_error = str(e)
-            _sched_logger.error(f"Task failed: {self.name} — {e}\n{traceback.format_exc()}")
+            _sched_logger.error("Task failed: %s — %s\n%s", self.name, e, traceback.format_exc())
 
 
 def task_auto_learn():

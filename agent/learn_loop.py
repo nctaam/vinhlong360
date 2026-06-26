@@ -534,8 +534,11 @@ def enrich_entities(max_entities: int = 10, dry_run: bool = False) -> dict:
 #  4. LEARNING STATUS & LOGGING
 # ══════════════════════════════════════════════════
 
+_MAX_LEARN_LOG_LINES = 5000
+
+
 def _log_event(event_type: str, data: dict):
-    """Ghi log event vào file."""
+    """Ghi log event vào file; cap tại _MAX_LEARN_LOG_LINES dòng."""
     try:
         entry = {
             "type": event_type,
@@ -544,8 +547,13 @@ def _log_event(event_type: str, data: dict):
         }
         with open(LEARN_LOG, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
-    except Exception:
-        pass
+        if LEARN_LOG.exists() and LEARN_LOG.stat().st_size > 2 * 1024 * 1024:
+            lines = LEARN_LOG.read_text(encoding="utf-8").strip().split("\n")
+            if len(lines) > _MAX_LEARN_LOG_LINES:
+                LEARN_LOG.write_text("\n".join(lines[-_MAX_LEARN_LOG_LINES:]) + "\n", encoding="utf-8")
+                _logger.info("Trimmed learn_loop_log to %d lines", _MAX_LEARN_LOG_LINES)
+    except Exception as exc:
+        _logger.debug("Failed to write learn log: %s", exc)
 
 
 def learning_status() -> dict:

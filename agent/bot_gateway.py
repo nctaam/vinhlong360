@@ -246,6 +246,7 @@ class UserRateLimiter:
 _sessions: dict[str, dict] = {}
 _sessions_lock = Lock()
 MAX_HISTORY = 20
+MAX_SESSIONS = int(os.environ.get("BOT_MAX_SESSIONS", "5000"))
 SESSION_TTL = 24 * 3600  # 24 hours
 
 
@@ -276,14 +277,20 @@ def _add_message(platform: str, user_id: str, role: str, content: str):
 
 
 def _cleanup_stale_sessions():
-    """Remove sessions inactive for more than SESSION_TTL."""
+    """Remove sessions inactive for more than SESSION_TTL; enforce MAX_SESSIONS cap."""
     now = time.time()
     with _sessions_lock:
         stale = [k for k, v in _sessions.items() if now - v.get("last_active", 0) > SESSION_TTL]
         for k in stale:
             del _sessions[k]
+        if len(_sessions) > MAX_SESSIONS:
+            by_age = sorted(_sessions.items(), key=lambda kv: kv[1].get("last_active", 0))
+            evict = len(_sessions) - MAX_SESSIONS
+            for k, _ in by_age[:evict]:
+                del _sessions[k]
+            _bot_logger.warning("Session cap reached (%d); evicted %d oldest", MAX_SESSIONS, evict)
     if stale:
-        _bot_logger.info(f"Cleaned up {len(stale)} stale bot sessions")
+        _bot_logger.info("Cleaned up %d stale bot sessions", len(stale))
 
 
 # ======================================================================
@@ -816,10 +823,21 @@ class BotGateway:
         chunks = [text[i:i + 1900] for i in range(0, len(text), 1900)]
         async with httpx.AsyncClient(timeout=30) as client:
             for chunk in chunks:
-                await client.post(url, headers=headers, json={
-                    "recipient": {"user_id": user_id},
-                    "message": {"text": chunk},
-                })
+                for attempt in range(2):
+                    try:
+                        resp = await client.post(url, headers=headers, json={
+                            "recipient": {"user_id": user_id},
+                            "message": {"text": chunk},
+                        })
+                        if resp.status_code >= 500 and attempt == 0:
+                            _bot_logger.warning("Zalo API 5xx (%d), retrying", resp.status_code)
+                            continue
+                        break
+                    except Exception as exc:
+                        _bot_logger.warning("Zalo send failed (attempt %d): %s", attempt + 1, exc)
+                        if attempt == 0:
+                            continue
+                        break
 
     async def _zalo_send_with_buttons(self, user_id: str, suggestions: list[str]):
         """Send quick-reply buttons for suggestions via Zalo OA API.
@@ -859,7 +877,10 @@ class BotGateway:
             },
         }
         async with httpx.AsyncClient(timeout=30) as client:
-            await client.post(url, headers=headers, json=payload)
+            try:
+                await client.post(url, headers=headers, json=payload)
+            except Exception as exc:
+                _bot_logger.warning("Zalo send_with_buttons failed: %s", exc)
 
 
 # ======================================================================

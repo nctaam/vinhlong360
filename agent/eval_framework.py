@@ -25,6 +25,7 @@ import logging
 import os
 import re
 import sys
+import threading
 import time
 import unicodedata
 from collections import defaultdict
@@ -910,18 +911,35 @@ class EvalRunner:
         except Exception as exc:
             logger.warning("Eval: failed to load entities: %s", exc)
 
+    _EVAL_TIMEOUT = int(os.environ.get("EVAL_CALL_TIMEOUT", "30"))
+
     def run_single(self, call_fn: CallFn, test_case: TestCase) -> dict:
         """Run one test case through call_fn, return all scores.
 
         call_fn(query) -> (reply: str, tools_used: list[str])
         """
         start = time.time()
-        try:
-            reply, tools_used = call_fn(test_case.query)
-        except Exception as exc:
-            logger.error("Eval: call_fn failed for %r: %s", test_case.query[:60], exc)
-            reply = ""
-            tools_used = []
+        result_holder = [("", [])]
+        error_holder = [None]
+
+        def _target():
+            try:
+                result_holder[0] = call_fn(test_case.query)
+            except Exception as exc:
+                error_holder[0] = exc
+
+        worker = threading.Thread(target=_target, daemon=True)
+        worker.start()
+        worker.join(timeout=self._EVAL_TIMEOUT)
+
+        if worker.is_alive():
+            logger.error("Eval: call_fn timed out for %r (%ds)", test_case.query[:60], self._EVAL_TIMEOUT)
+            reply, tools_used = "", []
+        elif error_holder[0] is not None:
+            logger.error("Eval: call_fn failed for %r: %s", test_case.query[:60], error_holder[0])
+            reply, tools_used = "", []
+        else:
+            reply, tools_used = result_holder[0]
         elapsed = time.time() - start
 
         factuality = FactualityScorer.score(reply, test_case, self._entities)
@@ -1065,8 +1083,10 @@ class EvalRunner:
 
     # --- Persistence ---
 
+    _MAX_REPORTS = 100
+
     def _save_report(self, report: EvalReport):
-        """Save report to agent/data/eval/ with timestamp filename."""
+        """Save report to agent/data/eval/ with timestamp filename; keep last _MAX_REPORTS."""
         with self._lock:
             ts = time.strftime("%Y%m%d_%H%M%S", time.localtime(report.timestamp))
             path = EVAL_DIR / f"report_{ts}.json"
@@ -1076,6 +1096,12 @@ class EvalRunner:
                 logger.info("Eval: report saved to %s", path)
             except Exception as exc:
                 logger.error("Eval: failed to save report: %s", exc)
+            old = sorted(EVAL_DIR.glob("report_*.json"))[:-self._MAX_REPORTS]
+            for old_path in old:
+                try:
+                    old_path.unlink()
+                except OSError:
+                    pass
 
     def _load_latest_report(self) -> Optional[EvalReport]:
         """Load the most recent report from disk."""
