@@ -708,7 +708,7 @@ onUnmounted(() => {
 .toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* ── Cover photo ── */
-.sf-cover-section { display: flex; align-items: flex-start; gap: 1rem; }
+.sf-cover-section { display: flex; align-items: flex-start; gap: 1rem; overflow: hidden; }
 .sf-cover-preview {
   width: 200px; height: 68px; border-radius: var(--radius-md); overflow: hidden; cursor: pointer;
   position: relative; flex-shrink: 0; border: 2px solid var(--border-input);

@@ -606,7 +606,7 @@ if (profile.value) {
 @media (max-width: 480px) {
   .profile-name-row { flex-direction: column; align-items: flex-start; }
   .profile-name-row .btn { width: 100%; justify-content: center; }
-  .profile-stats { gap: var(--space-3); flex-wrap: wrap; }
+  .profile-stats { gap: var(--space-3); flex-wrap: wrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 }
 
 @media (prefers-reduced-motion: reduce) {
