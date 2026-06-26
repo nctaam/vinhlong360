@@ -1,5 +1,5 @@
 <template>
-  <section class="page dd-page">
+  <main class="page dd-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Địa điểm' }]" />
 
     <header class="dd-hero">
@@ -8,7 +8,7 @@
     </header>
 
     <!-- Editorial -->
-    <section class="page-article">
+    <section class="page-article" aria-label="Giới thiệu">
       <h2>Khám phá toàn bộ điểm đến miền Tây</h2>
       <p>Danh bạ địa điểm tổng hợp mọi điểm đến, trải nghiệm, sản phẩm, lưu trú và di tích trên toàn vùng Vĩnh Long, Bến Tre và Trà Vinh. Mỗi mục đều có thông tin thực tế: địa chỉ, số điện thoại, giờ mở cửa, giá tham khảo và mùa vụ phù hợp. Bạn có thể lọc theo loại hình (du lịch, ẩm thực, lưu trú, OCOP) và khu vực để tìm nhanh điều mình cần.</p>
       <p>Dữ liệu được thu thập từ nhiều nguồn: trang thông tin chính quyền địa phương, khảo sát thực địa và đóng góp từ cộng đồng. Nếu bạn phát hiện thông tin sai hoặc thiếu, hãy báo cho chúng tôi qua nút "Báo sai dữ liệu" trên mỗi trang chi tiết.</p>
@@ -47,6 +47,17 @@
     <SkeletonGrid v-if="pending && !items.length" :count="9" />
 
     <EmptyState
+      v-else-if="listError && !items.length"
+      icon="⚠️" title="Không thể tải danh sách"
+      message="Đã có lỗi khi tải dữ liệu. Vui lòng thử lại."
+      tone="error"
+    >
+      <template #actions>
+        <button type="button" class="btn btn-primary btn-sm" @click="refresh">Thử lại</button>
+      </template>
+    </EmptyState>
+
+    <EmptyState
       v-else-if="!items.length"
       icon="🔍" title="Không tìm thấy địa điểm"
       message="Thử bỏ bớt bộ lọc hoặc đổi từ khoá tìm kiếm."
@@ -57,14 +68,15 @@
     </EmptyState>
 
     <template v-else>
-      <div class="grid dd-grid">
+      <div class="grid dd-grid" role="list" aria-label="Danh sách địa điểm">
         <EntityCard v-for="e in items" :key="e.id" :entity="e" />
       </div>
+      <p v-if="loadMoreError" class="dd-load-error" role="alert">Không tải thêm được. <button type="button" class="btn-text" @click="loadMore">Thử lại</button></p>
       <button v-if="hasMore" type="button" class="btn btn-ghost dd-more" :disabled="loadingMore" @click="loadMore">
         {{ loadingMore ? 'Đang tải…' : `Xem thêm (còn ${total - items.length})` }}
       </button>
     </template>
-  </section>
+  </main>
 </template>
 
 <script setup lang="ts">
@@ -92,7 +104,7 @@ function buildUrl(offset: number) {
 }
 
 // Trang đầu (SSR-friendly cho SEO); load-more nối client-side.
-const { data, pending, refresh } = await useAsyncData(
+const { data, pending, refresh, error: listError } = await useAsyncData(
   'dia-diem-list',
   () => apiFetch<{ total: number; entities: any[] }>(buildUrl(0)),
   { watch: [] },
@@ -104,14 +116,18 @@ const extra = ref<any[]>([])
 const items = computed(() => [...firstPage.value, ...extra.value])
 const hasMore = computed(() => items.value.length < total.value)
 const loadingMore = ref(false)
+const loadMoreError = ref(false)
 
 async function loadMore() {
   if (loadingMore.value) return
   loadingMore.value = true
+  loadMoreError.value = false
   try {
     const res = await $fetch<{ entities: any[] }>(buildUrl(items.value.length))
     extra.value.push(...(res.entities || []))
-  } catch { /* bỏ qua */ }
+  } catch {
+    loadMoreError.value = true
+  }
   loadingMore.value = false
 }
 
@@ -140,7 +156,20 @@ useSeoMeta({
   ogTitle: 'Danh bạ địa điểm — vinhlong360',
   ogDescription: 'Điểm đến, đặc sản, làng nghề, lưu trú và di tích miền Tây — tìm theo loại và khu vực.',
 })
-useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/dia-diem') }] })
+
+// JSON-LD: ItemList structured data for search engines
+const listJsonLd = computed(() => {
+  return itemListJsonLd(
+    'Danh bạ địa điểm — vinhlong360',
+    'Tất cả điểm đến, đặc sản, làng nghề, lưu trú và di tích của Vĩnh Long, Bến Tre, Trà Vinh.',
+    '/dia-diem',
+    firstPage.value,
+  )
+})
+useHead({
+  link: [{ rel: 'canonical', href: canonicalUrl('/dia-diem') }],
+  script: [{ type: 'application/ld+json', innerHTML: () => JSON.stringify(listJsonLd.value) }],
+})
 </script>
 
 <style scoped>
@@ -164,4 +193,6 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/dia-diem') }] })
 
 .dd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-4); }
 .dd-more { display: block; margin: var(--space-5) auto 0; }
+.dd-load-error { text-align: center; color: var(--danger, #dc2626); font-size: var(--text-sm); margin: var(--space-3) 0; }
+.dd-load-error .btn-text { color: var(--primary-fg); font-weight: var(--weight-semibold); background: none; border: none; cursor: pointer; text-decoration: underline; }
 </style>
