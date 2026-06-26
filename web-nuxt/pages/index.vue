@@ -250,8 +250,28 @@
         </div>
       </section>
 
-    <!-- 6. Cá nhân hóa — client-only (saved + AI recommendations) -->
+    <!-- 6. Cá nhân hóa — client-only (recently viewed + saved + AI recommendations) -->
     <ClientOnly>
+      <section v-if="recentlyViewed.length" class="block">
+        <div class="section-head">
+          <h2>Xem gần đây</h2>
+        </div>
+        <div class="scroll-row" role="region" aria-label="Xem gần đây">
+          <NuxtLink v-for="rv in recentlyViewed" :key="rv.id" :to="`/dia-diem/${rv.id}`" class="card card-mini">
+            <div v-if="rv.image" class="cover cover-img">
+              <NuxtImg v-if="isRemoteUrl(rv.image)" :src="rv.image" :alt="rv.name" loading="lazy" decoding="async" width="320" height="180" sizes="sm:50vw md:33vw lg:320px" />
+              <img v-else :src="rv.image" :alt="rv.name" loading="lazy" decoding="async" width="320" height="180" />
+            </div>
+            <div v-else class="cover cover-img cover-generated" :class="`cat-${getFavTypeMeta(rv.type).cat}`" :style="{ backgroundImage: genPlaceholder(rv.id, getFavTypeMeta(rv.type).cat) }">
+              <span class="cover-svg-icon" v-html="genIcon(getFavTypeMeta(rv.type).cat)" />
+            </div>
+            <div class="card-b">
+              <span class="card-type">{{ getFavTypeMeta(rv.type).label }}</span>
+              <h3>{{ rv.name }}</h3>
+            </div>
+          </NuxtLink>
+        </div>
+      </section>
       <section v-if="recentSaved.length" class="block">
         <div class="section-head">
           <h2>Đã lưu gần đây</h2>
@@ -310,6 +330,11 @@ const heroPills = computed(() => ss('homepage.hero_pills', DEFAULT_HERO_PILLS) a
 const { favorites } = useFavorites()
 const recentSaved = computed(() => favorites.value.slice(0, 4))
 const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
+
+const { recentItems } = useRecentlyViewed()
+const recentlyViewed = computed(() => recentItems.value.slice(0, 6))
+const genPlaceholder = generateCategoryPlaceholder
+const genIcon = generateCategoryIcon
 
 const { isLoggedIn } = useAuth()
 const { show: showToast } = useToast()
@@ -1125,4 +1150,9 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   .dish-item:hover, .dish-item:active { transform: none; }
   .cat-tile:hover, .cat-tile:active { transform: none; }
 }
+
+/* Recently viewed cards — compact */
+.card.card-mini { min-width: 160px; max-width: 200px; }
+.card.card-mini .cover { aspect-ratio: 16/10; }
+.card.card-mini h3 { font-size: .85rem; }
 </style>

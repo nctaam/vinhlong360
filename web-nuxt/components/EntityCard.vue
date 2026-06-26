@@ -25,6 +25,9 @@
         <span class="cr-score">{{ ratingDisplay.score }}</span>
         <span class="cr-count">({{ ratingDisplay.count }})</span>
       </div>
+      <div v-if="amenityIcons.length" class="card-amenities" :aria-label="amenityIcons.map(a => a.label).join(', ')">
+        <span v-for="a in amenityIcons" :key="a.key" class="ca-icon" :title="a.label">{{ a.icon }}</span>
+      </div>
       <div class="badges">
         <span v-if="isPeak" class="badge peak">🔥 Đang rộ</span>
         <span v-if="isYearRoundSeason" class="badge year">Quanh năm</span>
@@ -77,6 +80,21 @@ const cardMeta = computed(() => {
   const hours = a.hours || null
   return (price || hours) ? { price, hours } : null
 })
+const AMENITY_ICONS: Record<string, { icon: string; label: string }> = {
+  wifi: { icon: '📶', label: 'Wi-Fi' },
+  free_entry: { icon: '🆓', label: 'Miễn phí' },
+  kid_friendly: { icon: '👶', label: 'Trẻ em OK' },
+  wheelchair: { icon: '♿', label: 'Xe lăn' },
+  pet_friendly: { icon: '🐕', label: 'Thú cưng OK' },
+  air_conditioned: { icon: '❄️', label: 'Máy lạnh' },
+  restroom: { icon: '🚻', label: 'WC' },
+  photography: { icon: '📸', label: 'Chụp ảnh OK' },
+}
+const amenityIcons = computed(() => {
+  const badges = props.entity.attributes?.amenity_badges
+  if (!Array.isArray(badges) || !badges.length) return []
+  return badges.slice(0, 3).map((k: string) => ({ key: k, ...AMENITY_ICONS[k] })).filter((a: any) => a.icon)
+})
 const ocopStars = computed(() => parseInt(props.entity.attributes?.ocop) || 0)
 const ratingDisplay = computed(() => {
   const a = props.entity.attributes
@@ -90,6 +108,8 @@ const ratingDisplay = computed(() => {
 </script>
 
 <style scoped>
+.card-amenities { display: flex; gap: 2px; margin-top: .25rem; }
+.ca-icon { font-size: .7rem; opacity: .7; cursor: default; }
 .card-rating { display: flex; align-items: center; gap: .25rem; font-size: .8rem; margin-top: .25rem; }
 .cr-stars { color: var(--secondary, #d4a017); letter-spacing: -1px; }
 .cr-score { font-weight: 600; color: var(--text-primary); }

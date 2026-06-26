@@ -15,6 +15,7 @@
 
     <div class="itin-actions">
       <ClientOnly>
+        <SaveButton :entity="itinerarySaveShape" :show-label="true" />
         <ShareButton :title="itinerary.title || itinerary.name" :text="itinerary.summary || itinerary.description" />
       </ClientOnly>
         <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-outline btn-sm">+ Tự tạo lịch trình</NuxtLink>
@@ -115,6 +116,14 @@ if (import.meta.server && fetchError.value) {
 }
 
 const areaMeta = computed(() => AREA_META[itinerary.value?.area] || { emoji: '📍', name: itinerary.value?.area || '' })
+
+const itinerarySaveShape = computed(() => ({
+  id: `itinerary-${id}`,
+  name: itinerary.value?.title || itinerary.value?.name || '',
+  type: 'itinerary',
+  summary: itinerary.value?.summary || itinerary.value?.description || '',
+  images: [] as string[],
+}))
 
 function typeEmoji(type: string) {
   return TYPE_META[type]?.emoji || '📍'
