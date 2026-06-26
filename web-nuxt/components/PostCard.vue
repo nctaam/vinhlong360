@@ -22,7 +22,7 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
         </button>
         <Transition name="menu-pop">
-          <div v-if="showMenu" class="thread-menu" role="menu">
+          <div v-if="showMenu" class="thread-menu" role="menu" aria-label="Tùy chọn bài viết" @keydown.escape="showMenu = false">
             <button v-if="isOwner" type="button" role="menuitem" @click="$emit('edit', post.id); showMenu = false">Sửa bài</button>
             <button v-if="isOwner" type="button" role="menuitem" class="menu-danger" @click="confirmDelete">Xoá bài</button>
             <button v-if="!isOwner" type="button" role="menuitem" @click="$emit('report', post.id); showMenu = false">Báo cáo</button>
@@ -82,7 +82,7 @@
           <button type="button" class="thread-act" @click="repostMenu = !repostMenu" :aria-expanded="repostMenu" aria-haspopup="true" aria-label="Đăng lại hoặc trích dẫn">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
           </button>
-          <div v-if="repostMenu" class="thread-repost-menu" role="menu">
+          <div v-if="repostMenu" class="thread-repost-menu" role="menu" aria-label="Đăng lại hoặc trích dẫn" @keydown.escape="repostMenu = false">
             <button type="button" role="menuitem" @click="$emit('repost', post.id); repostMenu = false">🔁 Đăng lại</button>
             <button type="button" role="menuitem" @click="$emit('quote', post.id); repostMenu = false">✍️ Trích dẫn</button>
           </div>
