@@ -207,6 +207,14 @@ class Database:
                 with self._conn() as conn:
                     cur = conn.cursor()
                     cur.execute("SELECT 1 FROM entities LIMIT 1")
+                    for col, coldef in [("status", "TEXT"), ("verified", "INTEGER DEFAULT 1")]:
+                        cur.execute(
+                            "SELECT 1 FROM information_schema.columns "
+                            "WHERE table_name='entities' AND column_name=%s", (col,)
+                        )
+                        if not cur.fetchone():
+                            cur.execute(f"ALTER TABLE entities ADD COLUMN {col} {coldef}")
+                    conn.commit()
                 self._initialized = True
                 return
 
