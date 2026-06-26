@@ -155,7 +155,15 @@ async function saveColumns() {
   saving.value = false
 }
 
-onMounted(reload)
+onMounted(() => { reload(); window.addEventListener('keydown', onFooterKeydown) })
+onUnmounted(() => window.removeEventListener('keydown', onFooterKeydown))
+
+function onFooterKeydown(e: KeyboardEvent) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault()
+    if (!saving.value) { saveColumns(); saveLegalLinks(); saveSocial() }
+  }
+}
 </script>
 
 <style scoped>

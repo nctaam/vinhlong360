@@ -201,9 +201,14 @@ function validateJson(key: string): boolean {
   }
 }
 
+function isSafeUrl(url: string): boolean {
+  try { return /^https?:$/i.test(new URL(url).protocol) } catch { return false }
+}
 function isImageUrl(url: string): boolean {
   try {
-    return /\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(new URL(url).pathname)
+    const u = new URL(url)
+    if (!/^https?:$/i.test(u.protocol)) return false
+    return /\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(u.pathname)
   } catch { return false }
 }
 
@@ -219,7 +224,11 @@ async function onSave() {
   try {
     if (props.objectKey) {
       // Nested mode: merge fields into one object, save under the single key.
-      const obj: Record<string, any> = { ...(props.objectValue || {}) }
+      const src = props.objectValue || {}
+      const obj: Record<string, any> = {}
+      for (const k of Object.keys(src)) {
+        if (k !== '__proto__' && k !== 'constructor' && k !== 'prototype') obj[k] = (src as any)[k]
+      }
       for (const f of props.fields) obj[f.key] = localValues.value[f.key]
       await $fetch(`/admin-api/site-settings/${props.objectKey}`, {
         method: 'PUT',
@@ -241,10 +250,19 @@ async function onSave() {
     showToast('Đã lưu cài đặt', 'success')
     emit('saved')
   } catch (e: any) {
-    showToast(e?.data?.detail || 'Lỗi khi lưu', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi lưu', 'error')
   }
   saving.value = false
 }
+
+function onKeydown(e: KeyboardEvent) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault()
+    if (!saving.value) onSave()
+  }
+}
+onMounted(() => window.addEventListener('keydown', onKeydown))
+onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
 async function onReset() {
   if (props.objectKey) {
@@ -259,7 +277,7 @@ async function onReset() {
       showToast('Đã đặt lại về mặc định', 'success')
       emit('saved')
     } catch (e: any) {
-      showToast(e?.data?.detail || 'Lỗi', 'error')
+      showToast(getErrorDetail(e, 'Lỗi', 'error')
     }
     saving.value = false
     return
@@ -274,7 +292,7 @@ async function onReset() {
     showToast('Đã đặt lại về mặc định', 'success')
     emit('saved')
   } catch (e: any) {
-    showToast(e?.data?.detail || 'Lỗi', 'error')
+    showToast(getErrorDetail(e, 'Lỗi', 'error')
   }
   saving.value = false
 }
@@ -342,7 +360,8 @@ async function onReset() {
 
 /* ── Toggle ── */
 .sf-toggle { display: flex; align-items: center; gap: var(--space-3); cursor: pointer; min-height: 44px; }
-.sf-toggle input { display: none; }
+.sf-toggle input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.sf-toggle input:focus-visible + .sf-toggle-track { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .sf-toggle-track {
   width: 51px; height: 31px; border-radius: 16px;
   background: rgba(142,142,147,.3); position: relative; flex-shrink: 0;

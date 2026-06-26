@@ -57,7 +57,14 @@ async function reload() {
   loading.value = false
 }
 
+function onKeydown(e: KeyboardEvent) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); if (!saving.value) onSave() }
+}
+onMounted(() => window.addEventListener('keydown', onKeydown))
+onUnmounted(() => window.removeEventListener('keydown', onKeydown))
+
 async function onSave() {
+  if (saving.value) return
   saving.value = true
   try {
     await $fetch('/admin-api/site-settings/navigation.nav_groups', {
@@ -71,6 +78,7 @@ async function onSave() {
 }
 
 async function onReset() {
+  if (saving.value) return
   if (!await confirmDialog('Đặt lại menu điều hướng về mặc định?', { danger: true })) return
   saving.value = true
   try {

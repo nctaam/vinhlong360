@@ -49,7 +49,7 @@
 
     <!-- Image grid -->
     <div class="media-grid">
-      <div v-for="item in items" :key="item.url + item.entity_id" class="media-card" role="button" tabindex="0" @click="previewItem = item" @keydown.enter="previewItem = item">
+      <div v-for="item in items" :key="item.url + item.entity_id" class="media-card" role="button" tabindex="0" :aria-label="`Xem ảnh ${item.entity_name || item.entity_id}`" @click="previewItem = item" @keydown.enter="previewItem = item" @keydown.space.prevent="previewItem = item">
         <div class="media-img-wrap">
           <img :src="item.url" :alt="item.entity_name" loading="lazy" decoding="async" @error="onImgError" />
           <span v-if="item.usage_count > 1" class="media-dup-badge" title="Dùng bởi nhiều entity">{{ item.usage_count }}x</span>
@@ -64,13 +64,13 @@
     </div>
 
     <!-- Load more -->
-    <button v-if="hasMore" type="button" class="btn btn-outline media-load-more" :disabled="loading" @click="loadMore">Xem thêm ({{ total - items.length }} còn lại)</button>
+    <button v-if="hasMore" type="button" class="btn btn-outline media-load-more" :disabled="loading || loadingMore" @click="loadMore">{{ loadingMore ? 'Đang tải...' : 'Xem thêm' }} ({{ total - items.length }} còn lại)</button>
 
     </template>
 
     <!-- Preview modal -->
     <Transition name="modal-fade">
-    <div v-if="previewItem" class="modal-overlay show" role="dialog" aria-modal="true" @click.self="previewItem = null" @keyup.escape="previewItem = null">
+    <div v-if="previewItem" ref="mediaModalRef" class="modal-overlay show" role="dialog" aria-modal="true" @click.self="previewItem = null">
       <div class="modal admin-modal-lg">
         <div class="media-preview-header">
           <strong>{{ previewItem.entity_name }}</strong>
@@ -99,6 +99,7 @@ definePageMeta({ layout: 'admin', middleware: 'admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
+const { confirmDialog } = useConfirm()
 
 const FILTERS = [
   { key: 'all', label: 'Tất cả' },
@@ -113,12 +114,17 @@ const page = ref(1)
 const loading = ref(true)
 const filter = ref('all')
 const previewItem = ref<any>(null)
+const mediaModalRef = ref<HTMLElement | null>(null)
+const mediaModalOpen = computed(() => !!previewItem.value)
+useModalA11y(mediaModalOpen, mediaModalRef, { onClose: () => { previewItem.value = null } })
 const removing = ref(false)
 
 const hasMore = computed(() => items.value.length < total.value)
 
+const loadingMore = ref(false)
 async function fetchMedia(append = false) {
-  loading.value = true
+  if (append) loadingMore.value = true
+  else loading.value = true
   try {
     const res = await $fetch<any>(`/admin-api/media?page=${page.value}&limit=50&filter=${filter.value}`, { headers: authHeaders() })
     items.value = append ? [...items.value, ...(res.items || [])] : (res.items || [])
@@ -126,6 +132,7 @@ async function fetchMedia(append = false) {
     stats.value = res.stats || null
   } catch { showToast('Không thể tải thư viện ảnh', 'error') }
   loading.value = false
+  loadingMore.value = false
 }
 
 function setFilter(f: string) {
@@ -135,7 +142,7 @@ function setFilter(f: string) {
   fetchMedia()
 }
 
-function loadMore() { page.value++; fetchMedia(true) }
+function loadMore() { if (loadingMore.value) return; page.value++; fetchMedia(true) }
 
 function onImgError(e: Event) {
   const img = e.target as HTMLImageElement
@@ -144,19 +151,21 @@ function onImgError(e: Event) {
 
 async function removeFromEntity(item: any) {
   if (!item?.entity_id || !item?.url) return
+  if (!await confirmDialog('Xóa ảnh này khỏi entity?', { danger: true })) return
   removing.value = true
   try {
     const entity = await $fetch<any>(`/admin-api/entities/${item.entity_id}`, { headers: authHeaders() })
     const images: any[] = Array.isArray(entity.images) ? entity.images : []
     const idx = images.findIndex((img: any) => (typeof img === 'string' ? img : img?.url) === item.url)
-    if (idx === -1) { showToast('Không tìm thấy ảnh trong entity', 'error'); removing.value = false; return }
+    if (idx === -1) { showToast('Không tìm thấy ảnh trong entity', 'error'); return }
     await $fetch(`/admin-api/entities/${item.entity_id}/images/${idx}`, { method: 'DELETE', headers: authHeaders() })
     items.value = items.value.filter(i => !(i.url === item.url && i.entity_id === item.entity_id))
     total.value = Math.max(0, total.value - 1)
     previewItem.value = null
     showToast('Đã xóa ảnh khỏi entity', 'success')
-  } catch { showToast('Lỗi khi xóa ảnh', 'error') }
-  removing.value = false
+  } catch { showToast('Lỗi khi xóa ảnh', 'error') } finally {
+    removing.value = false
+  }
 }
 
 onMounted(fetchMedia)

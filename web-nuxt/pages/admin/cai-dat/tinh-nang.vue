@@ -80,7 +80,14 @@ async function reload() {
   loading.value = false
 }
 
+function onKeydown(e: KeyboardEvent) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); if (!saving.value) onSave() }
+}
+onMounted(() => window.addEventListener('keydown', onKeydown))
+onUnmounted(() => window.removeEventListener('keydown', onKeydown))
+
 async function onSave() {
+  if (saving.value) return
   saving.value = true
   try {
     // Persist an explicit boolean for every known flag (so defaults are captured).
@@ -95,6 +102,7 @@ async function onSave() {
 }
 
 async function onReset() {
+  if (saving.value) return
   if (!await confirmDialog('Bật lại tất cả tính năng?', { danger: true })) return
   saving.value = true
   try {

@@ -41,7 +41,7 @@
       <table class="admin-table">
         <thead>
           <tr>
-            <th>User</th><th>SĐT</th><th>Role</th><th>Trạng thái</th><th>Ngày tạo</th><th>Thao tác</th>
+            <th scope="col">User</th><th scope="col">SĐT</th><th scope="col">Role</th><th scope="col">Trạng thái</th><th scope="col">Ngày tạo</th><th scope="col">Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -56,28 +56,28 @@
       <table class="admin-table">
         <thead>
           <tr>
-            <th>
+            <th scope="col">
               <button type="button" class="usr-sort-th" :class="sortIndicatorClass('display_name')" :aria-sort="ariaSort('display_name')" @click="toggleSort('display_name')">
                 User <span class="usr-sort-arrow" aria-hidden="true">{{ sortArrow('display_name') }}</span>
               </button>
             </th>
-            <th>SĐT</th>
-            <th>
+            <th scope="col">SĐT</th>
+            <th scope="col">
               <button type="button" class="usr-sort-th" :class="sortIndicatorClass('role')" :aria-sort="ariaSort('role')" @click="toggleSort('role')">
                 Role <span class="usr-sort-arrow" aria-hidden="true">{{ sortArrow('role') }}</span>
               </button>
             </th>
-            <th>
+            <th scope="col">
               <button type="button" class="usr-sort-th" :class="sortIndicatorClass('is_banned')" :aria-sort="ariaSort('is_banned')" @click="toggleSort('is_banned')">
                 Trạng thái <span class="usr-sort-arrow" aria-hidden="true">{{ sortArrow('is_banned') }}</span>
               </button>
             </th>
-            <th>
+            <th scope="col">
               <button type="button" class="usr-sort-th" :class="sortIndicatorClass('created_at')" :aria-sort="ariaSort('created_at')" @click="toggleSort('created_at')">
                 Ngày tạo <span class="usr-sort-arrow" aria-hidden="true">{{ sortArrow('created_at') }}</span>
               </button>
             </th>
-            <th>Thao tác</th>
+            <th scope="col">Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -148,7 +148,7 @@
 
     <!-- User detail drawer -->
     <Teleport to="body">
-      <div v-if="detailUser" class="ud-overlay" @click.self="detailUser = null">
+      <div v-if="detailUser" ref="drawerRef" class="ud-overlay" @click.self="detailUser = null">
         <div class="ud-drawer" role="dialog" aria-modal="true" :aria-label="`Chi tiết ${detailUser.display_name || detailUser.phone}`">
           <header class="ud-head">
             <div class="ud-head-user">
@@ -211,7 +211,7 @@
 import type { Entity } from '~/types'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 
-const { authHeaders } = useAuth()
+const { authHeaders, user: currentUser } = useAuth()
 const { show: showToast } = useToast()
 const search = ref('')
 const page = ref(1)
@@ -224,9 +224,14 @@ const acting = ref<string | null>(null)
 const confirmingId = ref<string | null>(null)
 const confirmAction = ref<'ban' | 'unban' | 'role' | null>(null)
 const confirmRoleValue = ref<string | null>(null)
-function requestBan(id: string) { confirmingId.value = id; confirmAction.value = 'ban' }
+function isSelf(id: string) { return currentUser.value?.id === id }
+function requestBan(id: string) {
+  if (isSelf(id)) { showToast('Không thể cấm chính mình', 'error'); return }
+  confirmingId.value = id; confirmAction.value = 'ban'
+}
 function requestUnban(id: string) { confirmingId.value = id; confirmAction.value = 'unban' }
 function requestRoleChange(id: string, role: string) {
+  if (isSelf(id)) { showToast('Không thể đổi role chính mình', 'error'); return }
   const current = users.value.find(u => u.id === id)
   if (current?.role === role) return
   confirmingId.value = id; confirmAction.value = 'role'; confirmRoleValue.value = role
@@ -335,44 +340,51 @@ async function fetchUsers(reset = false) {
     if ((res as any).role_counts) serverRoleCounts.value = (res as any).role_counts
   } catch {
     showToast('Không thể tải danh sách user', 'error')
+  } finally {
+    loading.value = false
   }
-  loading.value = false
 }
 
 async function ban(id: string) {
+  if (acting.value) return
   acting.value = id
   try {
     await $fetch(`/admin-api/users/${id}/ban`, { method: 'POST', headers: authHeaders() })
     showToast('Đã cấm user', 'success')
     await fetchUsers()
   } catch (e: unknown) {
-    showToast((e as any)?.data?.detail || 'Lỗi khi cấm user', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi cấm user', 'error')
+  } finally {
+    acting.value = null
   }
-  acting.value = null
 }
 
 async function unban(id: string) {
+  if (acting.value) return
   acting.value = id
   try {
     await $fetch(`/admin-api/users/${id}/unban`, { method: 'POST', headers: authHeaders() })
     showToast('Đã mở cấm user', 'success')
     await fetchUsers()
   } catch (e: unknown) {
-    showToast((e as any)?.data?.detail || 'Lỗi khi mở cấm user', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi mở cấm user', 'error')
+  } finally {
+    acting.value = null
   }
-  acting.value = null
 }
 
 async function changeRole(id: string, role: string) {
+  if (acting.value) return
   acting.value = id
   try {
     await $fetch(`/admin-api/users/${id}/role`, { method: 'POST', headers: authHeaders(), query: { role } })
     showToast(`Đã đổi role thành ${role}`, 'success')
     await fetchUsers()
   } catch (e: unknown) {
-    showToast((e as any)?.data?.detail || 'Lỗi khi đổi role', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi đổi role', 'error')
+  } finally {
+    acting.value = null
   }
-  acting.value = null
 }
 
 function formatDate(d: string) {
@@ -405,6 +417,9 @@ function exportCSV() {
 
 // ── User detail drawer ──
 const detailUser = ref<any | null>(null)
+const drawerRef = ref<HTMLElement | null>(null)
+const drawerOpen = computed(() => !!detailUser.value)
+useModalA11y(drawerOpen, drawerRef, { onClose: () => { detailUser.value = null } })
 const detailProfile = ref<any | null>(null)
 const detailPosts = ref<any[]>([])
 const detailPostsLoading = ref(false)
@@ -513,7 +528,7 @@ onMounted(() => fetchUsers())
 .usr-rolecounts { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: calc(var(--space-3) * -1) 0 var(--space-4); }
 .usr-rolecount {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 4px 10px; min-height: 32px;
+  padding: 6px 12px; min-height: 44px;
   font-size: .78rem; font-weight: 500; color: var(--muted);
   background: var(--bg); border: .5px solid var(--line); border-radius: 100px;
   cursor: pointer;

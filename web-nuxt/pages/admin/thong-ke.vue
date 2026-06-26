@@ -19,13 +19,19 @@
     </div>
 
     <!-- Skeleton placeholders while loading (replaces flash of empty spinner) -->
-    <div v-if="loading" class="tk-skeleton" aria-hidden="true">
-      <div class="stat-grid">
-        <div v-for="n in 4" :key="'sk-card-' + n" class="tk-sk-card" :style="{ animationDelay: (n * 80) + 'ms' }"></div>
+    <div v-if="loading" role="status" aria-label="Đang tải thống kê">
+      <div class="tk-skeleton" aria-hidden="true">
+        <div class="stat-grid">
+          <div v-for="n in 4" :key="'sk-card-' + n" class="tk-sk-card" :style="{ animationDelay: (n * 80) + 'ms' }"></div>
+        </div>
+        <div class="tk-panels">
+          <div v-for="n in 3" :key="'sk-panel-' + n" class="tk-sk-panel" :style="{ animationDelay: (n * 100) + 'ms' }"></div>
+        </div>
       </div>
-      <div class="tk-panels">
-        <div v-for="n in 3" :key="'sk-panel-' + n" class="tk-sk-panel" :style="{ animationDelay: (n * 100) + 'ms' }"></div>
-      </div>
+    </div>
+    <div v-else-if="loadError" class="admin-empty">
+      <p>Không tải được thống kê.</p>
+      <button type="button" class="btn btn-secondary" @click="fetchData">Thử lại</button>
     </div>
     <template v-else>
 
@@ -67,11 +73,11 @@
 
     <!-- Three-column panels -->
     <section class="tk-section" aria-label="Phân tích chi tiết">
-    <h3 class="tk-section-title">Phân tích chi tiết</h3>
+    <h2 class="tk-section-title">Phân tích chi tiết</h2>
     <div class="tk-panels">
       <section class="tk-panel">
         <div class="tk-panel-head">
-          <h2>Câu hỏi phổ biến</h2>
+          <h3>Câu hỏi phổ biến</h3>
           <span class="tk-count-badge" v-if="(data.popular || []).length">{{ (data.popular || []).length }}</span>
         </div>
         <ol v-if="(data.popular || []).length" class="tk-list">
@@ -90,7 +96,7 @@
 
       <section class="tk-panel">
         <div class="tk-panel-head">
-          <h2>Bot bí (cần bổ sung KB)</h2>
+          <h3>Bot bí (cần bổ sung KB)</h3>
           <span class="tk-count-badge tk-count-warn" v-if="(data.gaps || []).length">{{ (data.gaps || []).length }}</span>
         </div>
         <ol v-if="(data.gaps || []).length" class="tk-list">
@@ -111,7 +117,7 @@
 
       <section class="tk-panel">
         <div class="tk-panel-head">
-          <h2>Entity được xem nhiều</h2>
+          <h3>Entity được xem nhiều</h3>
           <span class="tk-count-badge" v-if="(data.top_entities || []).length">{{ (data.top_entities || []).length }}</span>
         </div>
         <ol v-if="(data.top_entities || []).length" class="tk-list">
@@ -143,6 +149,7 @@ const { show: showToast } = useToast()
 
 const data = ref<Record<string, unknown>>({})
 const loading = ref(true)
+const loadError = ref(false)
 
 const RANGES = [
   { days: 7, label: '7 ngày' },
@@ -193,13 +200,16 @@ const costScope = computed(() => {
 
 async function fetchData() {
   loading.value = true
+  loadError.value = false
   try {
     const params = rangeDays.value ? `?days=${rangeDays.value}` : ''
     data.value = await $fetch<Record<string, unknown>>(`/admin-api/analytics-overview${params}`, { headers: authHeaders() })
   } catch (e: unknown) {
-    showToast((e as any)?.data?.detail || 'Không thể tải thống kê', 'error')
+    loadError.value = true
+    showToast(getErrorDetail(e, 'Không thể tải thống kê', 'error')
+  } finally {
+    loading.value = false
   }
-  loading.value = false
 }
 
 function exportCSV() {

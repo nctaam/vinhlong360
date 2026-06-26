@@ -1,7 +1,7 @@
 <template>
   <Transition name="cmd-fade">
   <div v-if="open" class="cmd-overlay" @click.self="open = false">
-    <div class="cmd-palette" role="dialog" aria-modal="true" aria-label="Tìm nhanh">
+    <div ref="paletteRef" class="cmd-palette" role="dialog" aria-modal="true" aria-label="Tìm nhanh">
       <input
         ref="inputEl"
         v-model="query"
@@ -43,6 +43,8 @@ const open = ref(false)
 const query = ref('')
 const active = ref(0)
 const inputEl = ref<HTMLInputElement>()
+const paletteRef = ref<HTMLElement | null>(null)
+useModalA11y(open, paletteRef, { onClose: () => { open.value = false } })
 
 const PAGES = [
   { icon: '📊', label: 'Dashboard', to: '/admin', hint: 'Tổng quan' },
@@ -91,10 +93,6 @@ function onKeydown(e: KeyboardEvent) {
     open.value = !open.value
   }
 }
-
-watch(open, (v) => {
-  if (v) nextTick(() => inputEl.value?.focus())
-})
 
 onMounted(() => document.addEventListener('keydown', onKeydown))
 onUnmounted(() => document.removeEventListener('keydown', onKeydown))

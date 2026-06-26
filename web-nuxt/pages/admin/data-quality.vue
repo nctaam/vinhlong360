@@ -114,13 +114,13 @@
       <table class="admin-table dq-table">
         <thead>
           <tr>
-            <th class="dq-th-checkbox"></th>
-            <th class="dq-th-sev">Mức<span class="admin-help" data-tip="Auto (xanh) = apply tự động. Duyệt (cam) = cần kiểm tra. Loại (đỏ) = bỏ qua." tabindex="0" role="img" aria-label="Giải thích mức">?</span></th>
-            <th>Entity</th>
-            <th>Field</th>
-            <th>Đề xuất</th>
-            <th>Evidence</th>
-            <th>Lý do</th>
+            <th scope="col" class="dq-th-checkbox"></th>
+            <th scope="col" class="dq-th-sev">Mức<span class="admin-help" data-tip="Auto (xanh) = apply tự động. Duyệt (cam) = cần kiểm tra. Loại (đỏ) = bỏ qua." tabindex="0" role="img" aria-label="Giải thích mức">?</span></th>
+            <th scope="col">Entity</th>
+            <th scope="col">Field</th>
+            <th scope="col">Đề xuất</th>
+            <th scope="col">Evidence</th>
+            <th scope="col">Lý do</th>
           </tr>
         </thead>
         <tbody>
@@ -147,7 +147,7 @@
               <a
                 v-for="url in (c.evidence_urls || []).slice(0, 2)"
                 :key="url"
-                :href="url"
+                :href="url.startsWith('http') ? url : '#'"
                 :title="url"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -339,7 +339,7 @@ async function fetchCandidates(reset = false, refresh = false) {
     total.value = res.total || 0
     selectedIds.value = selectedIds.value.filter((id) => candidates.value.some((c) => c.candidate_id === id))
   } catch (e: unknown) {
-    showToast(e.data?.detail || 'Không thể tải review queue', 'error')
+    showToast(getErrorDetail(e, 'Không thể tải review queue', 'error')
   }
   loading.value = false
 }
@@ -348,7 +348,7 @@ async function refreshAll(refresh = false) {
   try {
     await Promise.all([fetchSummary(refresh), fetchCandidates(false, refresh), fetchHistory()])
   } catch (e: unknown) {
-    showToast(e.data?.detail || 'Không thể làm mới dữ liệu', 'error')
+    showToast(getErrorDetail(e, 'Không thể làm mới dữ liệu', 'error')
   }
 }
 
@@ -361,13 +361,13 @@ async function fetchHistory() {
     })
     history.value = res.history || []
   } catch (e: unknown) {
-    showToast(e.data?.detail || 'Không thể tải lịch sử apply', 'error')
+    showToast(getErrorDetail(e, 'Không thể tải lịch sử apply', 'error')
   }
   historyLoading.value = false
 }
 
 async function runApply(dryRun: boolean) {
-  if (!autoApplyIds.value.length) return
+  if (!autoApplyIds.value.length || applying.value) return
   applying.value = true
   try {
     applyResult.value = await $fetch<Record<string, unknown>>('/admin-api/data-quality/apply', {
@@ -378,13 +378,14 @@ async function runApply(dryRun: boolean) {
     showToast(dryRun ? 'Dry-run hoàn tất' : 'Đã apply candidate được chọn', 'success')
     if (!dryRun) await refreshAll(true)
   } catch (e: unknown) {
-    showToast(e.data?.detail || 'Không thể apply candidate', 'error')
+    showToast(getErrorDetail(e, 'Không thể apply candidate', 'error')
+  } finally {
+    applying.value = false
   }
-  applying.value = false
 }
 
-function dryRunSelected() {
-  runApply(true)
+async function dryRunSelected() {
+  await runApply(true)
 }
 
 function applyFieldBreakdown() {
@@ -411,7 +412,7 @@ async function applySelected() {
     `Xác nhận apply ${n} candidate?`,
   ].join('\n')
   if (!await confirmDialog(msg, { danger: true })) return
-  runApply(false)
+  await runApply(false)
 }
 
 async function rollbackBatch(batchId: string) {
@@ -436,7 +437,7 @@ async function rollbackBatch(batchId: string) {
     showToast('Đã rollback batch', 'success')
     await refreshAll(true)
   } catch (e: unknown) {
-    showToast(e.data?.detail || 'Không thể rollback batch', 'error')
+    showToast(getErrorDetail(e, 'Không thể rollback batch', 'error')
   }
   rollingBack.value = ''
 }
