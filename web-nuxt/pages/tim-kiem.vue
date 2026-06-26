@@ -16,6 +16,7 @@
     <div class="search-row search-row-spaced" :class="{ error: hasError }" role="search" aria-label="Tìm kiếm địa điểm">
       <div class="search-input-wrap" role="combobox" :aria-expanded="showSuggestions" aria-haspopup="listbox" aria-owns="search-suggestions">
         <input v-model="searchInput" type="search" enterkeyhint="search" placeholder="Tìm đặc sản, trải nghiệm…" aria-label="Tìm kiếm" :aria-invalid="hasError || undefined" autocomplete="off" aria-autocomplete="list" :aria-activedescendant="activeSuggestionId" @input="onTypeahead" @keyup.enter="onEnter" @keydown.down.prevent="sugNext" @keydown.up.prevent="sugPrev" @keydown.escape="sugClose" @blur="sugBlur" />
+        <div v-if="sugLoading" class="sug-loading" aria-hidden="true"><span class="spinner spinner-xs"></span></div>
         <Transition name="sug-fade">
           <ul v-if="showSuggestions && suggestions.length" id="search-suggestions" class="search-suggestions" role="listbox" aria-label="Gợi ý tìm kiếm">
             <li v-for="(s, i) in suggestions" :key="s.id" :id="`sug-${s.id}`" role="option" :aria-selected="i === sugIdx" :class="['sug-item', { active: i === sugIdx }]" @mousedown.prevent="goToSuggestion(s)">
@@ -35,6 +36,9 @@
     <NuxtErrorBoundary>
       <ClientOnly>
         <AISearchAssist v-if="q" :query="q" />
+        <template #fallback>
+          <div v-if="q" class="ai-loading ai-loading-padded" aria-hidden="true"><div class="spinner spinner-center"></div></div>
+        </template>
       </ClientOnly>
     </NuxtErrorBoundary>
 
@@ -261,7 +265,9 @@ function doSearch() {
 const suggestions = ref<any[]>([])
 const sugIdx = ref(-1)
 const showSuggestions = ref(false)
+const sugLoading = ref(false)
 let sugTimer: ReturnType<typeof setTimeout> | null = null
+let sugAbort: AbortController | null = null
 const activeSuggestionId = computed(() => {
   if (sugIdx.value < 0 || !showSuggestions.value) return undefined
   if (sugIdx.value < suggestions.value.length) return `sug-${suggestions.value[sugIdx.value].id}`
@@ -272,14 +278,20 @@ const activeSuggestionId = computed(() => {
 function onTypeahead() {
   const term = searchInput.value.trim()
   if (sugTimer) clearTimeout(sugTimer)
-  if (term.length < 2) { sugClose(); return }
+  if (term.length < 2) { sugClose(); sugLoading.value = false; return }
+  sugLoading.value = true
   sugTimer = setTimeout(async () => {
+    sugAbort?.abort()
+    const ctrl = new AbortController()
+    sugAbort = ctrl
     try {
-      const res = await $fetch<any>(`/api/entities?q=${encodeURIComponent(term)}&limit=5`)
+      const res = await $fetch<any>(`/api/entities?q=${encodeURIComponent(term)}&limit=5`, { signal: ctrl.signal })
+      if (ctrl.signal.aborted) return
       suggestions.value = res.entities || []
       sugIdx.value = -1
       showSuggestions.value = suggestions.value.length > 0
-    } catch { suggestions.value = []; showSuggestions.value = false }
+    } catch { if (!ctrl.signal.aborted) { suggestions.value = []; showSuggestions.value = false } }
+    sugLoading.value = false
   }, 300)
 }
 function sugNext() {
@@ -291,7 +303,8 @@ function sugPrev() {
   sugIdx.value = Math.max(sugIdx.value - 1, -1)
 }
 function sugClose() { showSuggestions.value = false; sugIdx.value = -1 }
-function sugBlur() { setTimeout(sugClose, 150) }
+let blurTimer: ReturnType<typeof setTimeout> | null = null
+function sugBlur() { blurTimer = setTimeout(sugClose, 150) }
 function goToSuggestion(s: any) {
   sugClose()
   navigateTo(`/dia-diem/${s.id}`)
@@ -305,6 +318,12 @@ function onEnter() {
 }
 
 watch(q, (v) => { searchInput.value = v; sugClose() })
+
+onBeforeUnmount(() => {
+  if (sugTimer) clearTimeout(sugTimer)
+  if (blurTimer) clearTimeout(blurTimer)
+  sugAbort?.abort()
+})
 
 useSeoMeta({
   title: () => q.value.trim() ? `"${q.value.trim()}" — Tìm kiếm — vinhlong360` : pc('seo_title'),
@@ -334,6 +353,7 @@ useHead({
 
 <style scoped>
 .search-row-spaced { margin-bottom: var(--space-5); }
+.sug-loading { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; }
 .fetch-error { color: var(--error); text-align: center; padding: var(--space-5); }
 
 /* Result summary header (SERPs-style query echo + type breakdown) */

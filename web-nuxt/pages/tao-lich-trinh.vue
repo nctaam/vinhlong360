@@ -78,7 +78,10 @@
       <!-- Right: Itinerary builder -->
       <div class="planner-builder">
         <div class="builder-header">
-          <input v-model="planTitle" class="input builder-title" placeholder="Tên lịch trình (VD: 2 ngày khám phá Vĩnh Long)" aria-label="Tên lịch trình" />
+          <div class="builder-title-wrap">
+            <input v-model="planTitle" class="input builder-title" placeholder="Tên lịch trình (VD: 2 ngày khám phá Vĩnh Long)" aria-label="Tên lịch trình" maxlength="100" />
+            <span v-if="planTitle.length > 80" class="title-counter" :class="{ warn: planTitle.length >= 95 }">{{ planTitle.length }}/100</span>
+          </div>
           <div class="builder-actions">
             <button type="button" class="btn btn-sm btn-ghost" @click="clearPlan" :disabled="!stops.length">Xóa tất cả</button>
             <button type="button" :class="['btn', 'btn-sm', 'btn-primary', { 'save-pulse': savePulse }]" @click="savePlan" :disabled="!stops.length || saving">{{ saving ? 'Đang lưu…' : 'Lưu lịch trình' }}</button>
@@ -98,6 +101,8 @@
           <div v-else-if="routeError" class="route-total route-err" role="status">⚠️ Chưa tính được lộ trình (thử lại sau)</div>
         </div>
 
+        <p v-if="stops.length >= 20" class="max-stops-warn" role="status">Tối đa 20 điểm mỗi lịch trình.</p>
+        <span class="sr-only" aria-live="polite" aria-atomic="true">{{ stopAnnounce }}</span>
         <div v-if="!stops.length" class="builder-empty">
           <EmptyState message="Chưa có điểm nào. Chọn điểm đến từ danh sách bên trái để bắt đầu." />
         </div>
@@ -232,6 +237,8 @@ const addingId = ref<string | null>(null)
 let addingTimer: ReturnType<typeof setTimeout> | null = null
 const savePulse = ref(false)
 const saving = ref(false)
+const stopAnnounce = ref('')
+const MAX_STOPS = 20
 let savePulseTimer: ReturnType<typeof setTimeout> | null = null
 
 const { createMap: createNDAMap } = useNDAMap()
@@ -283,7 +290,11 @@ function extractCoords(entity: Entity): [number, number] | null {
 }
 
 async function addStop(entity: Entity) {
-  // reactive() so a later coords backfill (below) re-triggers route/map
+  if (stops.value.length >= MAX_STOPS) {
+    stopAnnounce.value = ''
+    nextTick(() => { stopAnnounce.value = `Tối đa ${MAX_STOPS} điểm.` })
+    return
+  }
   const stop = reactive({
     id: entity.id,
     name: entity.name,
@@ -294,7 +305,8 @@ async function addStop(entity: Entity) {
     notes: '',
   })
   stops.value.push(stop)
-  // brief highlight to confirm the item was added
+  stopAnnounce.value = ''
+  nextTick(() => { stopAnnounce.value = `Đã thêm ${entity.name}. ${stops.value.length} điểm.` })
   addingId.value = entity.id
   if (addingTimer) clearTimeout(addingTimer)
   addingTimer = setTimeout(() => { addingId.value = null }, 300)
@@ -310,7 +322,10 @@ async function addStop(entity: Entity) {
 }
 
 function removeStop(idx: number) {
+  const name = stops.value[idx]?.name || ''
   stops.value.splice(idx, 1)
+  stopAnnounce.value = ''
+  nextTick(() => { stopAnnounce.value = `Đã xóa ${name}. ${stops.value.length} điểm.` })
 }
 
 function moveStop(idx: number, dir: number) {
@@ -319,6 +334,8 @@ function moveStop(idx: number, dir: number) {
   const temp = stops.value[idx]
   stops.value[idx] = stops.value[target]
   stops.value[target] = temp
+  stopAnnounce.value = ''
+  nextTick(() => { stopAnnounce.value = `${temp.name} chuyển sang vị trí ${target + 1}.` })
 }
 
 async function clearPlan() {
@@ -423,12 +440,14 @@ function sharePlan(idx: number) {
 
   if (navigator.share) {
     navigator.share({ title: plan.title, text }).catch(() => {})
-  } else {
+  } else if (navigator.clipboard?.writeText) {
     navigator.clipboard.writeText(text).then(() => {
       showToast('Đã sao chép lịch trình vào clipboard', 'success')
     }).catch(() => {
       showToast('Không thể sao chép', 'error')
     })
+  } else {
+    showToast('Trình duyệt không hỗ trợ sao chép', 'error')
   }
 }
 
@@ -461,15 +480,20 @@ function scheduleRouteCalc() {
 
 let pendingUpdate = false
 let lastRouteResult: RouteResult | null = null
+let updatingMap = false
 
 async function updateMap(result: RouteResult | null) {
   if (!import.meta.client) return
   lastRouteResult = result
+  if (updatingMap) { pendingUpdate = true; return }
 
   if (!routeMapEl.value) {
     pendingUpdate = true
     return
   }
+
+  updatingMap = true
+  try {
 
   if (!mapInstance) {
     const res = await createNDAMap(routeMapEl.value)
@@ -528,6 +552,8 @@ async function updateMap(result: RouteResult | null) {
     )
     mapInstance.fitBounds(bounds, { padding: 40 })
   }
+
+  } finally { updatingMap = false }
 }
 
 watch(routeMapEl, (el) => {
@@ -547,7 +573,10 @@ onMounted(async () => {
   let local: SavedPlan[] = []
   try {
     const raw = localStorage.getItem('vl360_plans')
-    if (raw) local = JSON.parse(raw)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) local = parsed
+    }
   } catch { /* ignore */ }
 
   if (isLoggedIn.value) {
@@ -575,6 +604,9 @@ onBeforeUnmount(() => {
   if (routeTimer) clearTimeout(routeTimer)
   if (addingTimer) clearTimeout(addingTimer)
   if (savePulseTimer) clearTimeout(savePulseTimer)
+  if (mapInstance && typeof (mapInstance as any).remove === 'function') (mapInstance as any).remove()
+  mapInstance = null
+  markers = []
 })
 
 useSeoMeta({
@@ -600,6 +632,12 @@ useHead({
 </script>
 
 <style scoped>
+.builder-title-wrap { position: relative; flex: 1; min-width: 0; }
+.title-counter { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: var(--text-xs); color: var(--muted); pointer-events: none; }
+.title-counter.warn { color: var(--error, #d32); font-weight: var(--weight-semibold); }
+.max-stops-warn { font-size: var(--text-sm); color: var(--warning, #c90); margin: var(--space-2) 0; }
+.stop-card-actions .btn-icon-sm { min-width: 36px; min-height: 36px; }
+@media (pointer: coarse) { .stop-card-actions .btn-icon-sm { min-width: 44px; min-height: 44px; } }
 .picker-list { max-height: 50vh; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
 .picker-list::-webkit-scrollbar { width: 6px; }
 .picker-list::-webkit-scrollbar-track { background: transparent; }

@@ -64,7 +64,21 @@ useSeoMeta({
   ogTitle: 'Bảng xếp hạng — vinhlong360',
   ogDescription: 'Thành viên đóng góp tích cực nhất cộng đồng vinhlong360.',
 })
-useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/bang-xep-hang') }] })
+useHead({
+  link: [{ rel: 'canonical', href: canonicalUrl('/bang-xep-hang') }],
+  script: [{
+    type: 'application/ld+json',
+    innerHTML: JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
+        { '@type': 'ListItem', position: 2, name: 'Cộng đồng', item: 'https://vinhlong360.vn/cong-dong' },
+        { '@type': 'ListItem', position: 3, name: 'Bảng xếp hạng' },
+      ],
+    }),
+  }],
+})
 </script>
 
 <style scoped>
@@ -80,7 +94,8 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/bang-xep-hang') }] })
 .bxh-row:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .bxh-row:active { transform: scale(.98); transition-duration: .08s; }
 .bxh-rank { flex-shrink: 0; width: 28px; text-align: center; font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--muted); }
-.bxh-rank-1 { color: #d4a017; } .bxh-rank-2 { color: #8a8d91; } .bxh-rank-3 { color: #b07b4f; }
+.bxh-rank-1 { color: var(--rank-gold, #d4a017); } .bxh-rank-2 { color: var(--rank-silver, #8a8d91); } .bxh-rank-3 { color: var(--rank-bronze, #b07b4f); }
+.dark .bxh-rank-1 { --rank-gold: #f0c040; } .dark .bxh-rank-2 { --rank-silver: #b0b3b8; } .dark .bxh-rank-3 { --rank-bronze: #d4956a; }
 .bxh-avatar { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--primary-fg, #fff); font-weight: var(--weight-semibold); flex-shrink: 0; }
 .bxh-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .1rem; }
 .bxh-name { font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

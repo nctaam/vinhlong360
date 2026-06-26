@@ -57,7 +57,7 @@
     </div>
     <ClientOnly>
       <p class="sr-only" id="map-instructions">Sử dụng phím +/- để phóng to/thu nhỏ. Kéo chuột hoặc dùng phím mũi tên để di chuyển bản đồ. Nhấp vào điểm đánh dấu để xem thông tin chi tiết.</p>
-      <div ref="mapEl" id="mapContainer" role="application" aria-label="Bản đồ tương tác du lịch Vĩnh Long" aria-describedby="map-instructions" tabindex="0"></div>
+      <div ref="mapEl" id="mapContainer" v-show="!mapLoadError && !fetchError" role="application" aria-label="Bản đồ tương tác du lịch Vĩnh Long" aria-describedby="map-instructions" tabindex="0"></div>
       <div aria-live="polite" class="sr-only">{{ popupAnnouncement }}</div>
       <template #fallback>
         <div id="mapContainer" class="map-fallback" role="status" aria-label="Đang tải bản đồ">
@@ -86,7 +86,7 @@ const MARKER_COLORS: Record<string, string> = {
 }
 
 const typeFilters = [
-  { value: 'all', label: 'Tất cả' },
+  { value: 'all', label: '🌐 Tất cả' },
   { value: 'attraction', label: '🛕 Tham quan' },
   { value: 'experience', label: '🌾 Trải nghiệm' },
   { value: 'nature', label: '🌿 Thiên nhiên' },
@@ -100,6 +100,7 @@ const typeFilters = [
 const route = useRoute()
 const activeTypes = ref(new Set(['all']))
 
+let updateRaf: number | null = null
 function toggleType(type: string) {
   if (type === 'all') {
     activeTypes.value = new Set(['all'])
@@ -111,7 +112,8 @@ function toggleType(type: string) {
     if (next.size === 0) next.add('all')
     activeTypes.value = next
   }
-  updateMarkers()
+  if (updateRaf) cancelAnimationFrame(updateRaf)
+  updateRaf = requestAnimationFrame(() => { updateRaf = null; updateMarkers() })
 }
 
 const mapEl = ref<HTMLElement | null>(null)
@@ -169,8 +171,8 @@ function buildGeoJSON() {
 }
 
 function updateMarkers() {
-  // Lọc theo type = nạp lại dữ liệu nguồn (clustering tự dựng lại).
-  mapRef?.getSource?.('entities')?.setData(buildGeoJSON())
+  const src = mapRef?.getSource?.('entities')
+  if (src) src.setData(buildGeoJSON())
 }
 
 // Seed result-meta đếm số điểm ngay khi có dữ liệu (trước khi map style load xong),
@@ -179,8 +181,10 @@ onMounted(() => { buildGeoJSON() })
 
 const popupAnnouncement = ref('')
 const mapLoadError = ref(false)
+let loadTimer: ReturnType<typeof setTimeout> | null = null
 
 function retryMapLoad() {
+  if (loadTimer) { clearTimeout(loadTimer); loadTimer = null }
   mapLoadError.value = false
   mapInited = false
   mapRef = null
@@ -208,8 +212,9 @@ watch(mapEl, async (el) => {
   mapRef = map
   // Fallback if the style/tiles never load (bad key, host down, offline). Generous
   // timeout for slow rural connections; self-clears the moment the map loads.
-  const loadTimer = setTimeout(() => { if (!map.isStyleLoaded()) mapLoadError.value = true }, 15000)
-  map.on('load', () => { clearTimeout(loadTimer); mapLoadError.value = false })
+  if (loadTimer) clearTimeout(loadTimer)
+  loadTimer = setTimeout(() => { loadTimer = null; if (!map.isStyleLoaded()) mapLoadError.value = true }, 15000)
+  map.on('load', () => { if (loadTimer) { clearTimeout(loadTimer); loadTimer = null }; mapLoadError.value = false })
 
   function addClusterLayers() {
     if (map.getSource('entities')) return
@@ -308,14 +313,29 @@ useHead({
       name: 'Bản đồ du lịch vinhlong360',
       description: 'Bản đồ tương tác hiển thị điểm du lịch, đặc sản, lưu trú và làng nghề tại Vĩnh Long, Bến Tre, Trà Vinh.',
       url: canonicalUrl('/ban-do'),
+      spatialCoverage: {
+        '@type': 'Place',
+        name: 'Vĩnh Long – Bến Tre – Trà Vinh',
+        geo: {
+          '@type': 'GeoShape',
+          box: '9.8 105.8 10.4 106.7',
+        },
+      },
     }),
   }],
+})
+
+onBeforeUnmount(() => {
+  if (updateRaf) cancelAnimationFrame(updateRaf)
+  if (loadTimer) { clearTimeout(loadTimer); loadTimer = null }
+  if (mapRef && typeof (mapRef as any).remove === 'function') (mapRef as any).remove()
+  mapRef = null
 })
 </script>
 
 <style scoped>
 #mapContainer {
-  height: 65vh; min-height: 400px;
+  height: 65vh; height: 65dvh; min-height: 400px;
   border-radius: var(--radius-lg, 16px);
   overflow: hidden;
   box-shadow: var(--shadow-md);
@@ -323,6 +343,7 @@ useHead({
   transition: box-shadow .35s var(--ease-out-expo), transform .35s var(--ease-out-expo);
   will-change: transform;
 }
+#mapContainer:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 /* Refined elevation: stacked brand-tinted + ambient depth shadow with a hair of lift. */
 #mapContainer:hover {
   box-shadow:

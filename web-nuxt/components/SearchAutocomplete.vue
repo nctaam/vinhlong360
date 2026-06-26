@@ -99,8 +99,15 @@
         🔍 Xem tất cả kết quả cho "{{ query.trim() }}"
       </NuxtLink>
 
+      <!-- Fetch error -->
+      <div v-if="fetchFailed && !loading && query.trim()" class="ac-empty" role="status">
+        <span class="ac-empty-icon" aria-hidden="true">⚠️</span>
+        <p class="ac-empty-title">Lỗi kết nối</p>
+        <p class="ac-empty-hint">Không thể tải gợi ý. Thử nhập lại hoặc tìm theo danh mục.</p>
+      </div>
+
       <!-- Empty state -->
-      <div v-if="query.trim() && !suggestions.length && !loading" class="ac-empty">
+      <div v-if="query.trim() && !suggestions.length && !loading && !fetchFailed" class="ac-empty">
         <span class="ac-empty-icon" aria-hidden="true">🔍</span>
         <p class="ac-empty-title">Chưa tìm thấy nơi nào khớp</p>
         <p class="ac-empty-hint">Thử từ khóa khác, hoặc xem gợi ý theo danh mục:</p>
@@ -140,13 +147,13 @@ const suggestions = ref<Entity[]>([])
 const highlightIndex = ref(-1)
 const showDropdown = ref(false)
 const loading = ref(false)
-// Delayed loading flag: only flips true 150ms after a fetch starts, so the
-// spinner never flickers on fast responses. Mirrors `loading` otherwise.
+const fetchFailed = ref(false)
 const showLoading = ref(false)
 let loadingTimer: ReturnType<typeof setTimeout> | null = null
 const inputEl = ref<HTMLInputElement | null>(null)
 const recentSearches = ref<string[]>([])
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
+let fetchAbort: AbortController | null = null
 
 // Initial-state discovery chips (frictionless category jump when no query).
 const quickCategories = [
@@ -171,7 +178,10 @@ const totalItems = computed(() => {
 function loadRecents() {
   try {
     const raw = localStorage.getItem(RECENT_KEY)
-    recentSearches.value = raw ? JSON.parse(raw) : []
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      recentSearches.value = Array.isArray(parsed) ? parsed.filter((s: unknown) => typeof s === 'string') : []
+    }
   } catch { recentSearches.value = [] }
 }
 
@@ -222,14 +232,17 @@ async function fetchSuggestions(q: string) {
     suggestions.value = []
     return
   }
+  fetchAbort?.abort()
+  const ctrl = new AbortController()
+  fetchAbort = ctrl
   loading.value = true
   if (loadingTimer) clearTimeout(loadingTimer)
   loadingTimer = setTimeout(() => { if (loading.value) showLoading.value = true }, 150)
   try {
-    const data = await $fetch<any>(`/api/entities?q=${encodeURIComponent(q)}&limit=5`)
-    suggestions.value = data?.entities || []
+    const data = await $fetch<any>(`/api/entities?q=${encodeURIComponent(q)}&limit=5`, { signal: ctrl.signal })
+    if (!ctrl.signal.aborted) { suggestions.value = data?.entities || []; fetchFailed.value = false }
   } catch {
-    suggestions.value = []
+    if (!ctrl.signal.aborted) { suggestions.value = []; fetchFailed.value = true }
   }
   loading.value = false
   if (loadingTimer) { clearTimeout(loadingTimer); loadingTimer = null }
@@ -264,15 +277,24 @@ function clearQuery() {
   inputEl.value?.focus()
 }
 
+function scrollHighlightedIntoView() {
+  nextTick(() => {
+    const el = document.getElementById(`ac-opt-${highlightIndex.value}`)
+    el?.scrollIntoView({ block: 'nearest' })
+  })
+}
+
 function moveDown() {
   const max = totalItems.value - 1
   highlightIndex.value = highlightIndex.value < max ? highlightIndex.value + 1 : 0
   showDropdown.value = true
+  scrollHighlightedIntoView()
 }
 
 function moveUp() {
   const max = totalItems.value - 1
   highlightIndex.value = highlightIndex.value > 0 ? highlightIndex.value - 1 : max
+  scrollHighlightedIntoView()
 }
 
 function goTo(item: Entity) {
@@ -284,10 +306,10 @@ function goTo(item: Entity) {
 
 function onSubmit() {
   const q = query.value.trim()
-  if (!q) return
-
-  if (!query.value.trim() && highlightIndex.value >= 0 && highlightIndex.value < recentSearches.value.length) {
-    useRecent(recentSearches.value[highlightIndex.value])
+  if (!q) {
+    if (highlightIndex.value >= 0 && highlightIndex.value < recentSearches.value.length) {
+      useRecent(recentSearches.value[highlightIndex.value])
+    }
     return
   }
 
@@ -309,7 +331,12 @@ if (import.meta.client) {
     }
   }
   onMounted(() => { document.addEventListener('click', onClick); loadRecents() })
-  onUnmounted(() => document.removeEventListener('click', onClick))
+  onUnmounted(() => {
+    document.removeEventListener('click', onClick)
+    if (debounceTimer) clearTimeout(debounceTimer)
+    if (loadingTimer) clearTimeout(loadingTimer)
+    fetchAbort?.abort()
+  })
 }
 </script>
 
@@ -379,6 +406,7 @@ if (import.meta.client) {
 :global(.dark) .ac-empty-title { color: rgba(255, 255, 255, .9); }
 
 /* ── Reduced motion ────────────────────────────────────────────────────────*/
+@media (pointer: coarse) { .ac-chip { min-height: 44px; } }
 @media (prefers-reduced-motion: reduce) {
   .ac-loading { animation: none; }
   .ac-chip:hover { transform: none; }
