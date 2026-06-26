@@ -206,7 +206,7 @@ async function fetchData() {
     data.value = await $fetch<Record<string, unknown>>(`/admin-api/analytics-overview${params}`, { headers: authHeaders() })
   } catch (e: unknown) {
     loadError.value = true
-    showToast(getErrorDetail(e, 'Không thể tải thống kê', 'error')
+    showToast(getErrorDetail(e, 'Không thể tải thống kê'), 'error')
   } finally {
     loading.value = false
   }

@@ -338,7 +338,7 @@ async function save() {
     showModal.value = false
     await fetchItineraries()
   } catch (e: unknown) {
-    showToast(getErrorDetail(e, 'Lỗi khi lưu lịch trình', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi lưu lịch trình'), 'error')
   } finally {
     saving.value = false
   }
@@ -352,7 +352,7 @@ async function deleteItinerary(id: string) {
     showToast('Đã xóa lịch trình', 'success')
     await fetchItineraries()
   } catch (e: unknown) {
-    showToast(getErrorDetail(e, 'Lỗi khi xóa', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi xóa'), 'error')
   } finally {
     acting.value = null
   }

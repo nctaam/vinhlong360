@@ -125,7 +125,7 @@ async function approve(e: Entity) {
     await $fetch(`/admin-api/provisional/${e.id}/approve`, { method: 'POST', headers: authHeaders() })
     provisional.value = provisional.value.filter(x => x.id !== e.id)
     showToast(`Đã duyệt ${e.name}`, 'success')
-  } catch (err: unknown) { showToast(getErrorDetail(err, 'Duyệt lỗi', 'error') }
+  } catch (err: unknown) { showToast(getErrorDetail(err, 'Duyệt lỗi'), 'error') }
   acting.value = null
 }
 async function reject(e: Entity) {
@@ -135,7 +135,7 @@ async function reject(e: Entity) {
     await $fetch(`/admin-api/provisional/${e.id}/reject`, { method: 'POST', headers: authHeaders() })
     provisional.value = provisional.value.filter(x => x.id !== e.id)
     showToast('Đã từ chối', 'success')
-  } catch (err: unknown) { showToast(getErrorDetail(err, 'Từ chối lỗi', 'error') }
+  } catch (err: unknown) { showToast(getErrorDetail(err, 'Từ chối lỗi'), 'error') }
   acting.value = null
 }
 

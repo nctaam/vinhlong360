@@ -242,7 +242,7 @@ async function assign(e: Entity) {
     removeItem(e.id)
     showToast(`Đã gán ${e.name}`, 'success')
   } catch (err: unknown) {
-    showToast(getErrorDetail(err, 'Gán thất bại', 'error')
+    showToast(getErrorDetail(err, 'Gán thất bại'), 'error')
   } finally {
     busy.value = { ...busy.value, [e.id]: false }
   }

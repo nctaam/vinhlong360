@@ -353,7 +353,7 @@ async function ban(id: string) {
     showToast('Đã cấm user', 'success')
     await fetchUsers()
   } catch (e: unknown) {
-    showToast(getErrorDetail(e, 'Lỗi khi cấm user', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi cấm user'), 'error')
   } finally {
     acting.value = null
   }
@@ -367,7 +367,7 @@ async function unban(id: string) {
     showToast('Đã mở cấm user', 'success')
     await fetchUsers()
   } catch (e: unknown) {
-    showToast(getErrorDetail(e, 'Lỗi khi mở cấm user', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi mở cấm user'), 'error')
   } finally {
     acting.value = null
   }
@@ -381,7 +381,7 @@ async function changeRole(id: string, role: string) {
     showToast(`Đã đổi role thành ${role}`, 'success')
     await fetchUsers()
   } catch (e: unknown) {
-    showToast(getErrorDetail(e, 'Lỗi khi đổi role', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi đổi role'), 'error')
   } finally {
     acting.value = null
   }

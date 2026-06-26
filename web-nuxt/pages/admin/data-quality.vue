@@ -339,7 +339,7 @@ async function fetchCandidates(reset = false, refresh = false) {
     total.value = res.total || 0
     selectedIds.value = selectedIds.value.filter((id) => candidates.value.some((c) => c.candidate_id === id))
   } catch (e: unknown) {
-    showToast(getErrorDetail(e, 'Không thể tải review queue', 'error')
+    showToast(getErrorDetail(e, 'Không thể tải review queue'), 'error')
   }
   loading.value = false
 }
@@ -348,7 +348,7 @@ async function refreshAll(refresh = false) {
   try {
     await Promise.all([fetchSummary(refresh), fetchCandidates(false, refresh), fetchHistory()])
   } catch (e: unknown) {
-    showToast(getErrorDetail(e, 'Không thể làm mới dữ liệu', 'error')
+    showToast(getErrorDetail(e, 'Không thể làm mới dữ liệu'), 'error')
   }
 }
 
@@ -361,7 +361,7 @@ async function fetchHistory() {
     })
     history.value = res.history || []
   } catch (e: unknown) {
-    showToast(getErrorDetail(e, 'Không thể tải lịch sử apply', 'error')
+    showToast(getErrorDetail(e, 'Không thể tải lịch sử apply'), 'error')
   }
   historyLoading.value = false
 }
@@ -378,7 +378,7 @@ async function runApply(dryRun: boolean) {
     showToast(dryRun ? 'Dry-run hoàn tất' : 'Đã apply candidate được chọn', 'success')
     if (!dryRun) await refreshAll(true)
   } catch (e: unknown) {
-    showToast(getErrorDetail(e, 'Không thể apply candidate', 'error')
+    showToast(getErrorDetail(e, 'Không thể apply candidate'), 'error')
   } finally {
     applying.value = false
   }
@@ -437,7 +437,7 @@ async function rollbackBatch(batchId: string) {
     showToast('Đã rollback batch', 'success')
     await refreshAll(true)
   } catch (e: unknown) {
-    showToast(getErrorDetail(e, 'Không thể rollback batch', 'error')
+    showToast(getErrorDetail(e, 'Không thể rollback batch'), 'error')
   }
   rollingBack.value = ''
 }

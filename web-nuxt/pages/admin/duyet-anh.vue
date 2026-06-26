@@ -231,7 +231,7 @@ async function approve(id: string) {
     showToast('Đã duyệt và gắn ảnh vào entity', 'success')
     await refresh()
   } catch (e: unknown) {
-    showToast(getErrorDetail(e, 'Lỗi khi duyệt ảnh', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi duyệt ảnh'), 'error')
   } finally {
     acting.value = null
   }
@@ -253,7 +253,7 @@ async function confirmReject(id: string) {
     rejectReason.value = ''
     await refresh()
   } catch (e: unknown) {
-    showToast(getErrorDetail(e, 'Lỗi khi từ chối', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi từ chối'), 'error')
   } finally {
     acting.value = null
   }

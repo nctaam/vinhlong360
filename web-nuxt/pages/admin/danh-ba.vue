@@ -197,7 +197,7 @@ async function create() {
     formErrors.value = {}
     await loadFacilities()
   } catch (e: unknown) {
-    showToast(getErrorDetail(e, 'Thêm thất bại (id trùng?)', 'error')
+    showToast(getErrorDetail(e, 'Thêm thất bại (id trùng?)'), 'error')
   }
   busy.value = false
 }

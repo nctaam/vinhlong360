@@ -335,7 +335,7 @@ async function approve(id: string) {
     removeFromQueue(id)
     fetchStats()
   } catch (e: unknown) {
-    showToast(getErrorDetail(e, 'Lỗi khi duyệt', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi duyệt'), 'error')
   } finally {
     acting.value = null
   }
@@ -359,7 +359,7 @@ async function confirmReject(id: string) {
     removeFromQueue(id)
     fetchStats()
   } catch (e: unknown) {
-    showToast(getErrorDetail(e, 'Lỗi khi từ chối', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi từ chối'), 'error')
   } finally {
     acting.value = null
   }

@@ -250,7 +250,7 @@ async function onSave() {
     showToast('Đã lưu cài đặt', 'success')
     emit('saved')
   } catch (e: any) {
-    showToast(getErrorDetail(e, 'Lỗi khi lưu', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi lưu'), 'error')
   }
   saving.value = false
 }
@@ -277,7 +277,7 @@ async function onReset() {
       showToast('Đã đặt lại về mặc định', 'success')
       emit('saved')
     } catch (e: any) {
-      showToast(getErrorDetail(e, 'Lỗi', 'error')
+      showToast(getErrorDetail(e, 'Lỗi'), 'error')
     }
     saving.value = false
     return
@@ -292,7 +292,7 @@ async function onReset() {
     showToast('Đã đặt lại về mặc định', 'success')
     emit('saved')
   } catch (e: any) {
-    showToast(getErrorDetail(e, 'Lỗi', 'error')
+    showToast(getErrorDetail(e, 'Lỗi'), 'error')
   }
   saving.value = false
 }

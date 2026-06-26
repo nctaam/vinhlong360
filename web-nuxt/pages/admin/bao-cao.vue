@@ -295,7 +295,7 @@ async function infoAction(r: Record<string, unknown>, status: string) {
     await $fetch('/admin-api/info-reports/action', { method: 'POST', headers: authHeaders(), body: { ts: r.ts, status } })
     r.status = status
     infoOpen.value = infoReports.value.filter(x => (x.status || 'open') === 'open').length
-  } catch (e: unknown) { showToast(getErrorDetail(e, 'Lỗi cập nhật', 'error') }
+  } catch (e: unknown) { showToast(getErrorDetail(e, 'Lỗi cập nhật'), 'error') }
   infoActing.value = null
 }
 
@@ -330,7 +330,7 @@ async function resolve(id: string) {
     showToast('Đã xử lý báo cáo', 'success')
     await fetchReports()
   } catch (e: unknown) {
-    showToast(getErrorDetail(e, 'Lỗi khi xử lý báo cáo', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi xử lý báo cáo'), 'error')
   }
   acting.value = null
 }
@@ -343,7 +343,7 @@ async function dismiss(id: string) {
     showToast('Đã bỏ qua báo cáo', 'success')
     await fetchReports()
   } catch (e: unknown) {
-    showToast(getErrorDetail(e, 'Lỗi khi bỏ qua', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi bỏ qua'), 'error')
   }
   acting.value = null
 }
