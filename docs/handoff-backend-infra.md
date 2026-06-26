@@ -1,4 +1,5 @@
-# Session 10: Backend Infra — Core + Scripts + Legacy Cleanup
+# Session 10: Hạ tầng Backend
+<!-- Phạm vi: Database core (database.py), cache, storage, config, metrics, tracing, feature flags, scheduler, autonomous budget, data pipeline (freshness/checkpoints/export), legacy import/crawl modules -->
 
 > Paste toàn bộ nội dung này làm message đầu tiên.
 

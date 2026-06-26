@@ -1,4 +1,5 @@
-# Session 3: Interactive — Map + Search + Itinerary + Chat
+# Session 3: Bản đồ, Tìm kiếm & Lịch trình
+<!-- Phạm vi: Bản đồ, tìm kiếm, tạo lịch trình, chat AI, khám phá theo sở thích, bảng xếp hạng + component riêng (ChatWidget, SearchAutocomplete, ItineraryCard, AI*.vue) -->
 
 > Paste toàn bộ nội dung này làm message đầu tiên.
 

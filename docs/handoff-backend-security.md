@@ -1,4 +1,5 @@
-# Session 6: Backend Security — Auth/Moderation Hardening
+# Session 6: Bảo mật API
+<!-- Phạm vi: Middleware xác thực (auth_middleware.py), middleware chung, kiểm duyệt nội dung (moderation.py), giới hạn tốc độ (ratelimit.py) + test bảo mật -->
 
 > Paste toàn bộ nội dung này làm message đầu tiên.
 
