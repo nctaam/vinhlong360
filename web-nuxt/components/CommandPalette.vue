@@ -25,7 +25,10 @@
           <span class="cmd-label">{{ item.label }}</span>
           <span class="cmd-hint">{{ item.hint }}</span>
         </button>
-        <div v-if="!results.length && query" class="cmd-empty">Không tìm thấy</div>
+        <div v-if="!results.length && query" class="cmd-empty">
+          <span>Không tìm thấy "{{ query }}"</span>
+          <span class="cmd-empty-hint">Thử: Entities, Kiểm duyệt, Users, Báo cáo…</span>
+        </div>
       </div>
       <div class="cmd-footer">
         <kbd>↑↓</kbd> di chuyển <kbd>Enter</kbd> chọn <kbd>Esc</kbd> đóng
@@ -110,14 +113,15 @@ defineExpose({ open })
 .cmd-icon { font-size: 1.1rem; flex-shrink: 0; width: 24px; text-align: center; }
 .cmd-label { font-weight: 500; flex: 1; }
 .cmd-hint { font-size: .78rem; color: var(--muted); }
-.cmd-empty { padding: 20px; text-align: center; color: var(--muted); font-size: .9rem; }
+.cmd-empty { padding: 20px; text-align: center; color: var(--muted); font-size: .9rem; display: flex; flex-direction: column; gap: 6px; }
+.cmd-empty-hint { font-size: .75rem; opacity: .6; }
 .cmd-footer { padding: 8px 20px; border-top: .5px solid var(--line); font-size: .72rem; color: var(--muted); }
 .cmd-footer kbd { background: rgba(0,0,0,.06); padding: 1px 5px; border-radius: 3px; font-family: inherit; }
 .cmd-fade-enter-active, .cmd-fade-leave-active { transition: opacity .15s; }
 .cmd-fade-enter-from, .cmd-fade-leave-to { opacity: 0; }
 :global(.dark) .cmd-palette { background: var(--card, #2c2c2e); }
 :global(.dark) .cmd-item.active { background: rgba(52,120,246,.15); }
-:global(.dark) .cmd-footer kbd { background: rgba(255,255,255,.08); }
+:global(.dark) .cmd-footer kbd { background: rgba(255,255,255,.12); color: rgba(255,255,255,.7); }
 @media (max-width: 600px) {
   .cmd-overlay { padding-top: 0; align-items: flex-end; }
   .cmd-palette { width: 100%; border-radius: 16px 16px 0 0; max-height: 85vh; }

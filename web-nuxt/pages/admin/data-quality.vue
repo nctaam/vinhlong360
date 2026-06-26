@@ -74,6 +74,7 @@
         <option value="reject">Reject</option>
         <option value="">Tất cả bucket</option>
       </select>
+      <span class="admin-help" data-tip="Auto = đủ evidence, apply an toàn. Duyệt = cần admin kiểm tra. Loại = evidence yếu hoặc trùng." tabindex="0" role="img" aria-label="Giải thích bucket">?</span>
       <label v-if="pageAutoApplyIds.length" class="dq-select-all">
         <input
           type="checkbox"
@@ -114,7 +115,7 @@
         <thead>
           <tr>
             <th class="dq-th-checkbox"></th>
-            <th class="dq-th-sev">Mức</th>
+            <th class="dq-th-sev">Mức<span class="admin-help" data-tip="Auto (xanh) = apply tự động. Duyệt (cam) = cần kiểm tra. Loại (đỏ) = bỏ qua." tabindex="0" role="img" aria-label="Giải thích mức">?</span></th>
             <th>Entity</th>
             <th>Field</th>
             <th>Đề xuất</th>

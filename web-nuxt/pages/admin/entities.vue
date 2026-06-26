@@ -59,7 +59,7 @@
             <th class="ent-sortable" @click="toggleSort('name')">Tên <span class="ent-sort-arrow">{{ sortArrow('name') }}</span></th>
             <th class="ent-sortable" @click="toggleSort('type')">Loại <span class="ent-sort-arrow">{{ sortArrow('type') }}</span></th>
             <th class="ent-sortable" @click="toggleSort('place_name')">Địa điểm <span class="ent-sort-arrow">{{ sortArrow('place_name') }}</span></th>
-            <th><span title="Tóm tắt / Ảnh / Địa điểm">Chất lượng</span></th>
+            <th><span title="Tóm tắt / Ảnh / Địa điểm">Chất lượng</span><span class="admin-help" data-tip="● xanh = có, ● đỏ = thiếu. Thứ tự: Tóm tắt · Ảnh · Địa điểm" tabindex="0" role="img" aria-label="Giải thích chất lượng">?</span></th>
             <th>Thao tác</th>
           </tr>
         </thead>
@@ -161,7 +161,7 @@
             </datalist>
           </div>
           <div class="ent-field">
-            <label class="form-label" for="ent-summary">Tóm tắt <span class="ent-char-count">{{ (form.summary || '').length }}/500</span></label>
+            <label class="form-label" for="ent-summary">Tóm tắt <span class="ent-char-count" :class="{ 'ent-char-warn': (form.summary || '').length > 400, 'ent-char-danger': (form.summary || '').length > 450 }">{{ (form.summary || '').length }}/500</span></label>
             <textarea v-if="!previewSummary" id="ent-summary" v-model="form.summary" class="input admin-textarea" placeholder="Tóm tắt" aria-label="Tóm tắt" rows="3" maxlength="500"></textarea>
             <div v-else class="ent-summary-preview" v-html="form.summary"></div>
             <button type="button" class="btn btn-ghost btn-sm" @click="previewSummary = !previewSummary">{{ previewSummary ? 'Sửa' : 'Xem trước' }}</button>
@@ -896,15 +896,19 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .ent-sortable:hover { color: var(--primary, #219653); }
 .ent-sort-arrow { font-size: .65rem; opacity: .7; margin-left: 2px; }
 
-.ent-char-count { font-weight: 400; font-size: .78rem; color: var(--muted); }
+.ent-char-count { font-weight: 400; font-size: .78rem; color: var(--muted); transition: color .2s; }
+.ent-char-warn { color: #FF9F0A; font-weight: 600; }
+.ent-char-danger { color: #D94F3D; font-weight: 600; }
 .ent-summary-preview { padding: .5rem .8rem; border: 1px solid var(--line); border-radius: 6px; min-height: 60px; font-size: .9rem; line-height: 1.6; white-space: pre-wrap; }
 
 /* ── Health indicator dots ── */
 .ent-health-cell { white-space: nowrap; }
 .ent-dot {
   display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-  margin-right: 3px; vertical-align: middle;
+  margin-right: 3px; vertical-align: middle; transition: transform .15s, box-shadow .15s;
 }
+.ent-health-cell:hover .ent-dot { transform: scale(1.4); }
+.ent-health-cell:hover .dot-miss { box-shadow: 0 0 0 3px rgba(255,59,48,.15); }
 .dot-ok { background: #34C759; }
 .dot-miss { background: #FF3B30; opacity: .45; }
 
