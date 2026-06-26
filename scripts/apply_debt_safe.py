@@ -11,7 +11,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT/"web/data.json"
 APPLY = "--apply" in sys.argv
-d = json.load(open(DATA, encoding="utf-8"))
+with open(DATA, encoding="utf-8") as f:
+    d = json.load(f)
 ents = d["entities"]; rels = d["relationships"]; itins = d.get("itineraries", [])
 byid = {e["id"]: e for e in ents}
 stats = collections.Counter()

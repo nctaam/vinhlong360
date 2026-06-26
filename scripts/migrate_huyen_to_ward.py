@@ -115,7 +115,8 @@ NUMBERED = { (norm(c), norm("Phường " + str(n))): w for c, n, w in [
 # chua-vam-ray ghi "xã Hàm Thuận" (không tồn tại) — thực là Hàm Tân → Hàm Giang (k53).
 ENTITY_OVERRIDE = {"chua-vam-ray-wat-samrong": "xa-ham-giang"}
 
-d = json.load(open(DATA, encoding="utf-8"))
+with open(DATA, encoding="utf-8") as f:
+    d = json.load(f)
 ents = d["entities"]
 places = [e for e in ents if e.get("type") == "place"]
 place_ids = {p["id"] for p in places}

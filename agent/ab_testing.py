@@ -235,6 +235,7 @@ class ABTestManager:
         Raises:
             KeyError: If experiment does not exist.
         """
+        _ensure_defaults()
         with self._lock:
             exp = self._get_experiment(experiment_name)
 
@@ -275,6 +276,7 @@ class ABTestManager:
         Raises:
             KeyError: If experiment does not exist.
         """
+        _ensure_defaults()
         with self._lock:
             self._get_experiment(experiment_name)  # validate existence
             bucket = self._outcomes.setdefault(experiment_name, {})
@@ -303,6 +305,7 @@ class ABTestManager:
         Raises:
             KeyError: If experiment does not exist.
         """
+        _ensure_defaults()
         with self._lock:
             exp = self._get_experiment(experiment_name)
             assignments = self._assignments.get(experiment_name, {})
@@ -342,6 +345,7 @@ class ABTestManager:
         Raises:
             KeyError: If experiment does not exist.
         """
+        _ensure_defaults()
         with self._lock:
             exp = self._get_experiment(experiment_name)
             assignments = self._assignments.get(experiment_name, {})
@@ -382,6 +386,7 @@ class ABTestManager:
         Returns:
             List of dicts with name, metric_name, active, description, variant_count.
         """
+        _ensure_defaults()
         with self._lock:
             results = []
             for exp in self._experiments.values():
@@ -622,11 +627,21 @@ def create_default_experiments(manager: ABTestManager):
 
 
 # ---------------------------------------------------------------------------
-# Module-level singleton
+# Module-level singleton (defaults loaded lazily on first use)
 # ---------------------------------------------------------------------------
 
 ab_manager = ABTestManager()
-create_default_experiments(ab_manager)
+
+_defaults_initialized = False
+
+
+def _ensure_defaults():
+    """Load default experiments on first public use, not at import time."""
+    global _defaults_initialized
+    if _defaults_initialized:
+        return
+    _defaults_initialized = True
+    create_default_experiments(ab_manager)
 
 
 # ---------------------------------------------------------------------------

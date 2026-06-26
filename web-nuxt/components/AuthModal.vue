@@ -347,4 +347,7 @@ function onOtpPaste(e: ClipboardEvent) {
   .otp-done h3 { animation: none; }
   .otp-step { animation: none; }
 }
+@media (forced-colors: active) {
+  .consent-checkbox { outline: 1px solid ButtonText; }
+}
 </style>

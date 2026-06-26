@@ -112,4 +112,8 @@ onUnmounted(() => { stopPolling(); document.removeEventListener('keydown', onEsc
   .notif-retry { transition: none; }
   .notif-retry:active { transform: none; }
 }
+@media (forced-colors: active) {
+  .notif-retry { border: 1px solid ButtonText; background: Canvas; }
+  .notif-see-all { border-top: 1px solid CanvasText; }
+}
 </style>

@@ -9,23 +9,33 @@ interface RecentItem {
 const STORAGE_KEY = 'vl360_recent'
 const MAX_ITEMS = 12
 
-const items = ref<RecentItem[]>([])
 let loaded = false
 
-function load() {
-  if (loaded || !import.meta.client) return
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) items.value = JSON.parse(raw)
-  } catch { /* corrupt data */ }
-  loaded = true
-}
-
-function save() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items.value)) } catch {}
+function isValidItem(v: unknown): v is RecentItem {
+  if (!v || typeof v !== 'object') return false
+  const o = v as Record<string, unknown>
+  return typeof o.id === 'string' && typeof o.name === 'string' && typeof o.type === 'string'
 }
 
 export function useRecentlyViewed() {
+  const items = useState<RecentItem[]>('recentlyViewed', () => [])
+
+  function load() {
+    if (loaded || !import.meta.client) return
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed)) items.value = parsed.filter(isValidItem)
+      }
+    } catch { /* corrupt data */ }
+    loaded = true
+  }
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items.value)) } catch {}
+  }
+
   load()
 
   function track(entity: { id: string; name: string; type: string; images?: string[] }) {
