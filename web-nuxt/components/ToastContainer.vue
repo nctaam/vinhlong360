@@ -1,12 +1,12 @@
 <template>
   <Teleport to="body">
-    <div v-if="toasts.length" class="toast-container">
+    <div v-if="toasts.length" class="toast-container" aria-label="Thông báo" role="region">
       <TransitionGroup name="toast">
         <div v-for="t in toasts" :key="t.id" :class="['toast', t.type]" :role="t.type === 'error' || t.type === 'warning' ? 'alert' : 'status'" :aria-live="t.type === 'error' || t.type === 'warning' ? 'assertive' : 'polite'">
           <span class="toast-icon" aria-hidden="true">{{ iconFor(t.type) }}</span>
           <span class="toast-msg">{{ t.message }}</span>
           <button type="button" class="toast-dismiss" aria-label="Đóng" @click="dismiss(t.id)">&times;</button>
-          <span v-if="(t.duration ?? 3000) > 0" class="toast-progress" :style="{ animationDuration: (t.duration ?? 3000) / 1000 + 's' }" />
+          <span v-if="(t.duration ?? 3000) > 0" class="toast-progress" aria-hidden="true" :style="{ animationDuration: (t.duration ?? 3000) / 1000 + 's' }" />
         </div>
       </TransitionGroup>
     </div>

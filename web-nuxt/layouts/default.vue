@@ -1,7 +1,7 @@
 <template>
   <div>
     <a href="#main-content" class="skip-link">Bỏ qua điều hướng</a>
-    <header class="topbar" :class="{ scrolled: topbarScrolled }">
+    <header class="topbar" role="banner" :class="{ scrolled: topbarScrolled }">
       <div class="topbar-inner">
         <NuxtLink class="brand" to="/">
           <span class="logo">{{ ss('branding.site_name', 'vinhlong360').replace('360', '') }}<span class="dot">360</span></span>
@@ -11,7 +11,7 @@
           <span></span><span></span><span></span>
         </button>
         <div class="nav-backdrop" :class="{ show: mobileNav, closing: navClosing }" aria-hidden="true" @click="closeNav"></div>
-        <nav id="main-nav" class="main-nav" :class="{ open: mobileNav, closing: navClosing }" @keydown="onNavKeydown">
+        <nav id="main-nav" class="main-nav" aria-label="Menu chính" :class="{ open: mobileNav, closing: navClosing }" @keydown="onNavKeydown">
           <template v-for="(g, i) in navGroups" :key="g.label">
             <NuxtLink v-if="g.to" :to="g.to" :class="{ active: isActive(g) }" :aria-current="isActive(g) ? 'page' : undefined" @click="closeAll">{{ g.label }}</NuxtLink>
             <div v-else class="nav-group" :class="{ open: openGroup === i }">
@@ -54,7 +54,7 @@
       </div>
     </Transition>
 
-    <main id="main-content">
+    <main id="main-content" role="main" tabindex="-1">
       <slot />
     </main>
 
@@ -71,7 +71,7 @@
       <ToastContainer />
     </ClientOnly>
 
-    <footer class="site-footer">
+    <footer class="site-footer" role="contentinfo">
       <div class="footer-inner">
         <div class="footer-top">
           <div class="footer-brand">
@@ -234,7 +234,15 @@ function isActive(g: { to?: string; children?: { to: string }[] }) {
   return !!g.children?.some(c => route.path === c.to || route.path.startsWith(c.to + '/'))
 }
 
-watch(() => route.path, () => { closeAll() })
+watch(() => route.path, () => {
+  closeAll()
+  // T4 a11y: move focus to main content on route change so screen readers
+  // announce the new page. nextTick waits for DOM update after navigation.
+  nextTick(() => {
+    const main = document.getElementById('main-content')
+    if (main) main.focus({ preventScroll: true })
+  })
+})
 
 watch(mobileNav, (open) => {
   if (typeof document === 'undefined') return
