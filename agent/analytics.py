@@ -12,6 +12,7 @@ Dữ liệu lưu: agent/data/analytics.json
 """
 
 import json
+import logging
 import os
 import sys
 import time
@@ -19,6 +20,8 @@ from collections import Counter
 from datetime import datetime, timedelta
 from pathlib import Path
 from threading import Lock
+
+logger = logging.getLogger(__name__)
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 if hasattr(sys.stdout, "reconfigure") and sys.stdout.encoding != "utf-8":
@@ -58,8 +61,11 @@ def _load() -> dict:
 
 
 def _save(data: dict):
-    with open(ANALYTICS_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    try:
+        with open(ANALYTICS_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+    except OSError as exc:
+        logger.warning("Failed to save analytics: %s", exc)
 
 
 def track_query(message: str, tools_used: list[str], reply: str, session_id: str = None):

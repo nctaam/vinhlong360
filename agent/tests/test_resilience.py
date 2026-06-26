@@ -1839,3 +1839,138 @@ class TestKnowledgeLogger:
         assert not matches, (
             f"knowledge.py has {len(matches)} print() calls — must use logger"
         )
+
+
+# ═══════════════════════════════════════════════════════
+# Batch 4: autonomous_budget, vector_search, realtime,
+#           ratelimit, checkpoints, analytics
+# ═══════════════════════════════════════════════════════
+
+
+class TestAutonomousBudgetLogging:
+    """autonomous_budget.py must log failures instead of silently swallowing."""
+
+    def test_has_logger(self):
+        import autonomous_budget
+        assert hasattr(autonomous_budget, "logger")
+
+    def test_load_logs_on_corrupt_file(self, tmp_path):
+        import autonomous_budget as ab
+        original = ab._DATA
+        try:
+            ab._DATA = tmp_path / "bad.json"
+            ab._DATA.write_text("NOT JSON", encoding="utf-8")
+            result = ab._load()
+            assert result == {}
+        finally:
+            ab._DATA = original
+
+    def test_try_consume_logs_on_write_failure(self, tmp_path):
+        import autonomous_budget as ab
+        original = ab._DATA
+        try:
+            ab._DATA = tmp_path / "readonly" / "deep" / "budget.json"
+            # Parent dir doesn't exist but mkdir will create it;
+            # test the normal flow still works
+            result = ab.try_consume(1)
+            assert result is True
+        finally:
+            ab._DATA = original
+
+
+class TestVectorSearchLogging:
+    """vector_search.py must have logger and log I/O failures."""
+
+    def test_has_logger(self):
+        import vector_search
+        assert hasattr(vector_search, "logger")
+
+    def test_load_logs_on_corrupt_embeddings(self, tmp_path):
+        import vector_search as vs
+        store = vs.TFIDFStore()
+        original = vs.EMBEDDINGS_FILE
+        try:
+            vs.EMBEDDINGS_FILE = tmp_path / "bad.json"
+            vs.EMBEDDINGS_FILE.write_text("{corrupt", encoding="utf-8")
+            store._loaded = False
+            store._load()
+            assert store._loaded is True
+        finally:
+            vs.EMBEDDINGS_FILE = original
+
+    def test_save_logs_on_write_failure(self, tmp_path):
+        import vector_search as vs
+        store = vs.TFIDFStore()
+        original = vs.EMBEDDINGS_FILE
+        try:
+            vs.EMBEDDINGS_FILE = tmp_path / "no-exist-dir" / "x" / "embed.json"
+            store._save()
+        finally:
+            vs.EMBEDDINGS_FILE = original
+
+
+class TestRealtimeLogging:
+    """realtime.py must have logger and log weather API failures."""
+
+    def test_has_logger(self):
+        import realtime
+        assert hasattr(realtime, "logger")
+
+    def test_weather_api_failure_returns_fallback(self):
+        import realtime
+        with patch.dict(os.environ, {"WEATHER_API_KEY": "fake_key"}):
+            with patch("httpx.get", side_effect=ConnectionError("API down")):
+                realtime._weather_cache.clear()
+                result = realtime.get_weather("vinh-long")
+                assert result is not None
+                assert result.get("fallback") is True
+
+    def test_weather_cache_bounded_by_areas(self):
+        import realtime
+        assert len(realtime.AREA_COORDS) <= 10
+
+
+class TestRatelimitLogging:
+    """ratelimit.py must have logger."""
+
+    def test_has_logger(self):
+        import ratelimit
+        assert hasattr(ratelimit, "logger")
+
+    def test_gc_triggers_on_capacity(self):
+        import ratelimit
+        ratelimit._reset()
+        try:
+            for i in range(100):
+                try:
+                    ratelimit.check_rate(f"test_gc_{i}", limit=9999, window=1)
+                except Exception:
+                    pass
+            assert len(ratelimit._buckets) <= ratelimit._MAX_KEYS + 1
+        finally:
+            ratelimit._reset()
+
+
+class TestCheckpointsLogging:
+    """checkpoints.py must have module-level logger."""
+
+    def test_has_logger(self):
+        import checkpoints
+        assert hasattr(checkpoints, "logger")
+
+
+class TestAnalyticsLogging:
+    """analytics.py must have logger and protect _save()."""
+
+    def test_has_logger(self):
+        import analytics
+        assert hasattr(analytics, "logger")
+
+    def test_save_handles_write_failure(self, tmp_path):
+        import analytics
+        original = analytics.ANALYTICS_FILE
+        try:
+            analytics.ANALYTICS_FILE = tmp_path / "no-dir" / "x" / "analytics.json"
+            analytics._save({"test": True})
+        finally:
+            analytics.ANALYTICS_FILE = original

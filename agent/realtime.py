@@ -11,11 +11,14 @@ Fallback: nếu API không khả dụng, dùng seasonal data có sẵn.
 """
 
 import json
+import logging
 import os
 import time
 from datetime import datetime
 from pathlib import Path
 from threading import Lock
+
+logger = logging.getLogger(__name__)
 
 # ── Config ──
 
@@ -95,7 +98,8 @@ def get_weather(area: str = "vinh-long") -> dict | None:
 
         return result
 
-    except Exception:
+    except Exception as exc:
+        logger.warning("Weather API failed for %s: %s", area, exc)
         return _fallback_weather(area)
 
 

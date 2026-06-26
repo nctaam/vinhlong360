@@ -6,9 +6,12 @@ luận/upload ảnh). Login/OTP đã có limit riêng trong auth.py.
     from ratelimit import check_rate
     check_rate(f"post:{user_id}", limit=10, window=600)   # raise HTTPException(429) nếu vượt
 """
+import logging
 import time
 
 from fastapi import HTTPException
+
+logger = logging.getLogger(__name__)
 
 # key -> list[timestamp] (chỉ giữ trong cửa sổ hiện tại)
 _buckets: dict[str, list[float]] = {}
@@ -31,6 +34,7 @@ def check_rate(key: str, limit: int, window: int,
     hits.append(now)
     _buckets[key] = hits
     if len(_buckets) > _MAX_KEYS:
+        logger.warning("Rate-limit buckets at capacity (%d); running GC", len(_buckets))
         _gc(now)
 
 
