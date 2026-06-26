@@ -48,14 +48,17 @@
       </EmptyState>
     </div>
     <div v-if="mapLoadError" class="block fetch-error">
-      <EmptyState title="Không tải được bản đồ" message="Không tải được bản đồ. Vui lòng kiểm tra kết nối và thử lại." icon="🗺️" tone="error">
+      <EmptyState title="Không tải được bản đồ" message="Bản đồ không thể tải — có thể do kết nối mạng hoặc máy chủ bản đồ. Vui lòng thử lại." icon="🗺️" tone="error">
         <template #actions>
-          <button type="button" class="btn btn-outline btn-sm" @click="$router.go(0)">Tải lại trang</button>
+          <button type="button" class="btn btn-outline btn-sm" @click="retryMapLoad">Thử lại</button>
+          <NuxtLink to="/" class="btn btn-ghost btn-sm">Về trang chủ</NuxtLink>
         </template>
       </EmptyState>
     </div>
     <ClientOnly>
-      <div ref="mapEl" id="mapContainer"></div>
+      <p class="sr-only" id="map-instructions">Sử dụng phím +/- để phóng to/thu nhỏ. Kéo chuột hoặc dùng phím mũi tên để di chuyển bản đồ. Nhấp vào điểm đánh dấu để xem thông tin chi tiết.</p>
+      <div ref="mapEl" id="mapContainer" role="application" aria-label="Bản đồ tương tác du lịch Vĩnh Long" aria-describedby="map-instructions" tabindex="0"></div>
+      <div aria-live="polite" class="sr-only">{{ popupAnnouncement }}</div>
       <template #fallback>
         <div id="mapContainer" class="map-fallback" role="status" aria-label="Đang tải bản đồ">
           <div class="spinner"></div>
@@ -174,7 +177,21 @@ function updateMarkers() {
 // tránh nháy "0 địa điểm" trong pill. Chỉ chạy client (pill nằm trong ClientOnly).
 onMounted(() => { buildGeoJSON() })
 
+const popupAnnouncement = ref('')
 const mapLoadError = ref(false)
+
+function retryMapLoad() {
+  mapLoadError.value = false
+  mapInited = false
+  mapRef = null
+  // Re-trigger the watcher by toggling the ref
+  const el = mapEl.value
+  if (el) {
+    mapEl.value = null
+    nextTick(() => { mapEl.value = el })
+  }
+}
+
 watch(mapEl, async (el) => {
   if (!el || mapInited) return
   mapInited = true
@@ -243,6 +260,8 @@ watch(mapEl, async (el) => {
         .setLngLat(f.geometry.coordinates)
         .setHTML(popupHTML(esc(p.emoji), esc(p.name), esc(p.label), pColor, esc(p.id)))
         .addTo(map)
+      // Announce popup content to screen readers
+      popupAnnouncement.value = `${p.name}, ${p.label}. Nhấn Enter để xem chi tiết.`
     })
     for (const lid of ['clusters', 'unclustered']) {
       map.on('mouseenter', lid, () => { map.getCanvas().style.cursor = 'pointer' })
@@ -339,8 +358,14 @@ useHead({
 }
 
 /* Reduced motion: no scale/transform on hover; keep the elevation cue. */
+/* Mobile: reduce min-height so the map doesn't push controls off-screen on small viewports */
+@media (max-width: 640px) {
+  #mapContainer { min-height: 300px; height: 55vh; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   #mapContainer { transition: box-shadow .35s var(--ease-out-expo); will-change: auto; }
   #mapContainer:hover { transform: none; }
 }
+
 </style>
