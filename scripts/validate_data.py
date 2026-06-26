@@ -287,6 +287,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     invalid_phone_format = 0
     invalid_website_urls = 0
     invalid_entity_ids = 0
+    coords_without_address = 0
 
     for index, entity in enumerate(entities):
         if not isinstance(entity, dict):
@@ -402,6 +403,10 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
             parsed_w = urlparse(website.strip())
             if parsed_w.scheme not in ("http", "https") or not parsed_w.netloc:
                 invalid_website_urls += 1
+
+        # DI-028: coordinates without address (hurts local SEO)
+        if not is_place and entity.get("coordinates") and not attrs.get("address"):
+            coords_without_address += 1
 
         if is_place:
             level = entity.get("level", "")
@@ -840,6 +845,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         "produced_in_source_type_errors": produced_in_source_type_errors,
         "duplicate_name_type": stats_dup_name_type,
         "unknown_rel_types": len(unknown_rel_types),
+        "coords_without_address": coords_without_address,
         "data_js_status": data_js_status,
     }
 
@@ -999,6 +1005,7 @@ def print_report(issues: list[Issue], stats: dict[str, Any]) -> None:
         "orphan_entities",
         "invalid_entity_ids",
         "produced_in_source_type_errors",
+        "coords_without_address",
     ]:
         print(f"  {key}: {stats.get(key)}")
 

@@ -506,8 +506,15 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
         ld["eventAttendanceMode"] = "https://schema.org/OfflineEventAttendanceMode"
         if attrs.get("organizer"):
             ld["organizer"] = {"@type": "Organization", "name": attrs["organizer"]}
-        if place:
-            ld["location"] = {"@type": "Place", "name": place.get("name"), "address": ld.get("address")}
+        if place or coordinates:
+            loc: dict[str, Any] = {"@type": "Place"}
+            if place:
+                loc["name"] = place.get("name")
+            if ld.get("address"):
+                loc["address"] = ld["address"]
+            if coordinates:
+                loc["geo"] = ld["geo"]
+            ld["location"] = loc
 
     if schema_type == "Person" and attrs.get("role"):
         ld["jobTitle"] = attrs["role"]
@@ -575,6 +582,7 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
         "url": _entity_url(entity_id),
     }
     ld["inLanguage"] = "vi-VN"
+    ld["availableLanguage"] = "vi"
     ld["isPartOf"] = {"@id": f"{SITE}/#website"}
     ld["breadcrumb"] = _build_breadcrumb(entity, by_id)
 

@@ -1895,3 +1895,57 @@ def test_collection_handles_none_confidence():
     data = {"entities": entities, "relationships": [], "itineraries": []}
     ld = seo.build_collection_jsonld("du-lich", data)
     assert ld["itemListElement"][0]["name"] == "High"
+
+
+# ── Event location enhancement ──────────────────────────────────────
+
+
+def test_event_coordinates_only_emits_location_with_geo():
+    """Event with coordinates but no placeId should still emit location."""
+    event = {
+        "id": "ev-coords", "name": "Lễ hội rồng", "type": "event",
+        "coordinates": [10.25, 106.0],
+        "attributes": {"date_start": "2026-07-01"},
+    }
+    ld = seo.build_entity_jsonld(event, {})
+    assert "location" in ld
+    loc = ld["location"]
+    assert loc["@type"] == "Place"
+    assert "name" not in loc
+    assert "geo" in loc
+    assert loc["geo"]["latitude"] == 10.25
+
+
+def test_event_place_and_coordinates_emits_full_location():
+    """Event with both placeId + coordinates should emit name + geo."""
+    place = {"id": "xa-b", "name": "Xã B", "type": "place", "area": "vinh-long"}
+    event = {
+        "id": "ev-full", "name": "Hội chợ", "type": "event",
+        "placeId": "xa-b",
+        "coordinates": [10.3, 105.9],
+        "attributes": {"date_start": "2026-08-01"},
+    }
+    by_id = _by_id([place, event])
+    ld = seo.build_entity_jsonld(event, by_id)
+    loc = ld["location"]
+    assert loc["name"] == "Xã B"
+    assert loc["geo"]["latitude"] == 10.3
+
+
+def test_event_no_place_no_coordinates_no_location():
+    """Event with neither place nor coordinates should not emit location."""
+    event = {
+        "id": "ev-bare", "name": "Sự kiện trực tuyến", "type": "event",
+        "attributes": {"date_start": "2026-09-01"},
+    }
+    ld = seo.build_entity_jsonld(event, {})
+    assert "location" not in ld
+
+
+# ── availableLanguage ───────────────────────────────────────────────
+
+
+def test_entity_jsonld_has_available_language():
+    entity = {"id": "lang-test", "name": "Test", "type": "attraction"}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["availableLanguage"] == "vi"

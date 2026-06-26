@@ -1691,6 +1691,7 @@ def test_print_report_includes_new_keys(tmp_path: Path, capsys: "pytest.CaptureF
     out = capsys.readouterr().out
     assert "invalid_website_urls" in out
     assert "orphan_entities" in out
+    assert "coords_without_address" in out
     assert "Confidence distribution" in out
 
 
@@ -1784,3 +1785,49 @@ def test_quality_score_summary_penalties(summary, expected_penalty) -> None:
         assert score < 100
     else:
         assert score == 100
+
+
+def test_validate_flags_coords_without_address(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "no-addr", "type": "attraction", "name": "No Address",
+             "coordinates": [10.25, 106.0], "attributes": {}},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    data_path = tmp_path / "data.json"
+    data_path.write_text(json.dumps(data), encoding="utf-8")
+    _, stats = validate_data.validate(data, data_path)
+    assert stats["coords_without_address"] == 1
+
+
+def test_validate_no_coords_without_address_when_has_address(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "has-addr", "type": "attraction", "name": "Has Address",
+             "coordinates": [10.25, 106.0],
+             "attributes": {"address": "123 Đường Trần Phú, Vĩnh Long"}},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    data_path = tmp_path / "data.json"
+    data_path.write_text(json.dumps(data), encoding="utf-8")
+    _, stats = validate_data.validate(data, data_path)
+    assert stats["coords_without_address"] == 0
+
+
+def test_validate_places_excluded_from_coords_without_address(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "p-test", "type": "place", "name": "Place",
+             "coordinates": [10.25, 106.0], "attributes": {}},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    data_path = tmp_path / "data.json"
+    data_path.write_text(json.dumps(data), encoding="utf-8")
+    _, stats = validate_data.validate(data, data_path)
+    assert stats["coords_without_address"] == 0
