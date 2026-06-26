@@ -1738,6 +1738,38 @@ def test_is_external_url_rejects_self_case_insensitive():
     assert seo._is_external_url("https://VINHLONG360.VN/page") is False
 
 
+def test_source_info_maps_fallback():
+    """When source has no url but has maps, use maps as external URL."""
+    title, url = seo._source_info({"source": {"title": "Place", "maps": "https://goo.gl/maps/x"}})
+    assert title == "Place"
+    assert url == "https://goo.gl/maps/x"
+
+
+def test_source_info_prefers_url_over_maps():
+    title, url = seo._source_info({"source": {
+        "title": "Place", "url": "https://example.com", "maps": "https://goo.gl/maps/x"
+    }})
+    assert url == "https://example.com"
+
+
+def test_same_as_includes_maps_url():
+    entity = {
+        "source": [{"title": "Place", "maps": "https://goo.gl/maps/xyz"}],
+        "attributes": {},
+    }
+    values = seo._same_as_values(entity)
+    assert "https://goo.gl/maps/xyz" in values
+
+
+def test_same_as_no_duplicate_maps():
+    entity = {
+        "source": [{"url": "https://goo.gl/maps/xyz", "maps": "https://goo.gl/maps/xyz"}],
+        "attributes": {},
+    }
+    values = seo._same_as_values(entity)
+    assert values.count("https://goo.gl/maps/xyz") == 1
+
+
 # ── Collection sorting stability ─────────────────────────────────────
 
 

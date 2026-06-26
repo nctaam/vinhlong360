@@ -236,7 +236,10 @@ def _source_info(entity: dict[str, Any]) -> tuple[str | None, str | None]:
         return (source, source if _is_external_url(source) else None)
     if isinstance(source, dict):
         url = source.get("url")
-        return (source.get("title") or source.get("name") or None, url if _is_external_url(url) else None)
+        maps_url = source.get("maps")
+        title = source.get("title") or source.get("name") or None
+        ext_url = url if _is_external_url(url) else (maps_url if _is_external_url(maps_url) else None)
+        return (title, ext_url)
     return (None, None)
 
 
@@ -298,6 +301,13 @@ def _same_as_values(entity: dict[str, Any]) -> list[str]:
     _title, source_url = _source_info(entity)
     if source_url and source_url not in values:
         values.append(source_url)
+    source = entity.get("source")
+    if isinstance(source, list):
+        source = source[0] if source else None
+    if isinstance(source, dict):
+        maps_url = source.get("maps")
+        if _is_valid_url(maps_url) and str(maps_url) not in values:
+            values.append(str(maps_url))
     return values
 
 
