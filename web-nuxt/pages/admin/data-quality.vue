@@ -244,6 +244,7 @@ definePageMeta({ layout: 'admin', middleware: 'admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
+const { confirmDialog } = useConfirm()
 
 const summary = ref<Record<string, unknown> | null>(null)
 const candidates = ref<Entity[]>([])
@@ -395,7 +396,7 @@ function applyFieldBreakdown() {
   return Object.entries(counts).map(([f, n]) => `  • ${f}: ${n}`).join('\n')
 }
 
-function applySelected() {
+async function applySelected() {
   const n = autoApplyIds.value.length
   if (!n) return
   const msg = [
@@ -408,7 +409,7 @@ function applySelected() {
     '',
     `Xác nhận apply ${n} candidate?`,
   ].join('\n')
-  if (!confirm(msg)) return
+  if (!await confirmDialog(msg, { danger: true })) return
   runApply(false)
 }
 
@@ -424,7 +425,7 @@ async function rollbackBatch(batchId: string) {
     '',
     'Xác nhận rollback?',
   ].filter(Boolean).join('\n')
-  if (!confirm(msg)) return
+  if (!await confirmDialog(msg, { danger: true })) return
   rollingBack.value = batchId
   try {
     await $fetch(`/admin-api/data-quality/rollback/${encodeURIComponent(batchId)}`, {

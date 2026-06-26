@@ -113,6 +113,7 @@ definePageMeta({ layout: 'admin', middleware: 'admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
+const { confirmDialog } = useConfirm()
 const ADMIN_LEVELS = ['phuong', 'xa', 'tinh']
 
 const EMPTY_FORM = { name: '', office_kind: '', placeId: '', phone: '', address: '', hours: '', sourceUrl: '' }
@@ -202,7 +203,7 @@ async function create() {
 }
 
 async function del(e: Entity) {
-  if (!confirm(`Xóa "${e.name}"?`)) return
+  if (!await confirmDialog(`Xóa "${e.name}"?`, { danger: true })) return
   deleting.value = e.id
   try {
     await $fetch(`/admin-api/entities/${e.id}`, { method: 'DELETE', headers: authHeaders() })

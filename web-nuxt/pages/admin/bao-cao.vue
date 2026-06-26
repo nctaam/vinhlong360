@@ -166,6 +166,7 @@ definePageMeta({ layout: 'admin', middleware: 'admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
+const { confirmDialog } = useConfirm()
 const reports = ref<Entity[]>([])
 const infoReports = ref<Entity[]>([])
 const infoOpen = ref(0)
@@ -260,7 +261,7 @@ async function bulkAction(kind: 'resolve' | 'dismiss') {
   const ids = [...selectedIds.value]
   if (!ids.length) return
   const verb = kind === 'resolve' ? 'xử lý' : 'bỏ qua'
-  if (!confirm(`Xác nhận ${verb} ${ids.length} báo cáo đã chọn?`)) return
+  if (!await confirmDialog(`Xác nhận ${verb} ${ids.length} báo cáo đã chọn?`, { danger: kind === 'dismiss' })) return
   bulkActing.value = true
   try {
     await $fetch('/admin-api/reports/bulk', { method: 'POST', headers: authHeaders(), body: { ids, action: kind } })
@@ -286,8 +287,8 @@ async function fetchInfoReports() {
 }
 
 async function infoAction(r: Record<string, unknown>, status: string) {
-  if (status === 'dismissed' && !confirm('Bỏ qua báo sai này?')) return
-  if (status === 'resolved' && !confirm('Đánh dấu đã xử lý?')) return
+  if (status === 'dismissed' && !await confirmDialog('Bỏ qua báo sai này?', { danger: true })) return
+  if (status === 'resolved' && !await confirmDialog('Đánh dấu đã xử lý?')) return
   infoActing.value = r.ts
   try {
     await $fetch('/admin-api/info-reports/action', { method: 'POST', headers: authHeaders(), body: { ts: r.ts, status } })
@@ -321,7 +322,7 @@ async function fetchReports() {
 }
 
 async function resolve(id: string) {
-  if (!confirm('Xác nhận xử lý báo cáo này?')) return
+  if (!await confirmDialog('Xác nhận xử lý báo cáo này?')) return
   acting.value = id
   try {
     await $fetch(`/admin-api/reports/${id}/resolve`, { method: 'POST', headers: authHeaders() })
@@ -334,7 +335,7 @@ async function resolve(id: string) {
 }
 
 async function dismiss(id: string) {
-  if (!confirm('Bỏ qua báo cáo này?')) return
+  if (!await confirmDialog('Bỏ qua báo cáo này?', { danger: true })) return
   acting.value = id
   try {
     await $fetch(`/admin-api/reports/${id}/dismiss`, { method: 'POST', headers: authHeaders() })

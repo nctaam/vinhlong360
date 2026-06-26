@@ -48,6 +48,7 @@ import { FEATURE_FLAGS, featureFlagDefault } from '~/utils/featureFlags'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
+const { confirmDialog } = useConfirm()
 
 const loading = ref(true)
 const saving = ref(false)
@@ -94,7 +95,7 @@ async function onSave() {
 }
 
 async function onReset() {
-  if (!confirm('Bật lại tất cả tính năng?')) return
+  if (!await confirmDialog('Bật lại tất cả tính năng?', { danger: true })) return
   saving.value = true
   try {
     await $fetch('/admin-api/site-settings/features.flags', {

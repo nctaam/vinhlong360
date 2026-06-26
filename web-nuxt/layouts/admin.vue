@@ -123,6 +123,7 @@
     </main>
     <ClientOnly><CommandPalette /></ClientOnly>
     <ClientOnly><ToastContainer /></ClientOnly>
+    <ClientOnly><ConfirmDialog /></ClientOnly>
   </div>
 </template>
 

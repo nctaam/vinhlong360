@@ -24,8 +24,8 @@
         {{ orphansOnly ? '&#10003; Mồ côi' : 'Mồ côi' }}
       </button>
       <button type="button" class="btn btn-primary" @click="openCreate">+ Tạo mới</button>
-      <button type="button" class="btn btn-outline btn-sm" title="Tải JSON" @click="exportJSON">&#x2B73; JSON</button>
-      <button type="button" class="btn btn-outline btn-sm" title="Tải CSV" @click="exportCSV">&#x2B73; CSV</button>
+      <button type="button" class="btn btn-outline btn-sm" :title="`Tải JSON (${entities.length} entity trang này)`" @click="exportJSON">&#x2B73; JSON ({{ entities.length }})</button>
+      <button type="button" class="btn btn-outline btn-sm" :title="`Tải CSV (${entities.length} entity trang này)`" @click="exportCSV">&#x2B73; CSV ({{ entities.length }})</button>
     </div>
 
     <div v-if="selected.size" class="bulk-bar">
@@ -244,6 +244,7 @@ definePageMeta({ layout: 'admin', middleware: 'admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
+const { confirmDialog } = useConfirm()
 const { timeAgo } = useTimeAgo()
 
 const types = Object.keys(TYPE_META)
@@ -448,7 +449,7 @@ async function addRel() {
   } catch (e: unknown) { showToast(e?.data?.detail || 'Thêm quan hệ lỗi (id đích tồn tại?)', 'error') }
 }
 async function removeRel(r: Record<string, unknown>) {
-  if (!confirm(`Xóa quan hệ "${r.type}" → ${r.target_name || r.to_id}?`)) return
+  if (!await confirmDialog(`Xóa quan hệ "${r.type}" → ${r.target_name || r.to_id}?`, { danger: true })) return
   const params = new URLSearchParams({ from_id: r.from_id, to_id: r.to_id, type: r.type })
   try {
     await $fetch(`/admin-api/relationships?${params}`, { method: 'DELETE', headers: authHeaders() })
@@ -541,7 +542,7 @@ async function addImage() {
 }
 async function removeImage(idx: number) {
   if (!editingEntity.value) return
-  if (!confirm('Xóa ảnh này?')) return
+  if (!await confirmDialog('Xóa ảnh này?', { danger: true })) return
   try {
     const r = await $fetch<Record<string, unknown>>(`/admin-api/entities/${form.value.id}/images/${idx}`, {
       method: 'DELETE', headers: authHeaders() })
@@ -578,7 +579,7 @@ function toggleAll() {
 }
 async function bulkDelete() {
   const ids = [...selected.value]
-  if (!ids.length || !confirm(`Xóa ${ids.length} entity đã chọn?`)) return
+  if (!ids.length || !await confirmDialog(`Xóa ${ids.length} entity đã chọn?`, { danger: true })) return
   bulkBusy.value = true
   try {
     const r = await $fetch<Record<string, unknown>>('/admin-api/entities/bulk-delete', { method: 'POST', headers: authHeaders(), body: ids })
@@ -589,7 +590,7 @@ async function bulkDelete() {
   bulkBusy.value = false
 }
 async function deleteEntity(id: string) {
-  if (!confirm(`Xóa entity "${id}"?`)) return
+  if (!await confirmDialog(`Xóa entity "${id}"?`, { danger: true })) return
   acting.value = id
   try {
     await $fetch(`/admin-api/entities/${id}`, { method: 'DELETE', headers: authHeaders() })

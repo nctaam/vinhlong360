@@ -41,6 +41,7 @@
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
+const { confirmDialog } = useConfirm()
 
 const navGroups = ref<any[]>([])
 const loading = ref(true)
@@ -70,7 +71,7 @@ async function onSave() {
 }
 
 async function onReset() {
-  if (!confirm('Đặt lại menu điều hướng về mặc định?')) return
+  if (!await confirmDialog('Đặt lại menu điều hướng về mặc định?', { danger: true })) return
   saving.value = true
   try {
     await $fetch('/admin-api/site-settings/reset/navigation', { method: 'POST', headers: authHeaders() })

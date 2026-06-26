@@ -218,6 +218,7 @@ import type { Entity } from '~/types'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
+const { confirmDialog } = useConfirm()
 
 const refreshing = ref(false)
 async function refreshAll() {
@@ -311,7 +312,7 @@ async function triage() {
 }
 
 async function reload() {
-  if (!confirm('Reload Knowledge Base? Hệ thống sẽ tải lại toàn bộ dữ liệu.')) return
+  if (!await confirmDialog('Reload Knowledge Base? Hệ thống sẽ tải lại toàn bộ dữ liệu.', { danger: true })) return
   try {
     await $fetch('/reload', { method: 'POST', headers: authHeaders() })
     triggerResult.value = 'KB reloaded'

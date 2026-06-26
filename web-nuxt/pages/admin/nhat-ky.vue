@@ -12,15 +12,15 @@
 
     <div class="audit-filters">
       <input v-model="search" class="input" placeholder="Tìm theo path hoặc actor..." aria-label="Tìm nhật ký" @input="applyFilter" />
-      <select v-model="methodFilter" class="input audit-select" @change="applyFilter">
+      <select v-model="methodFilter" class="input audit-select" @change="applyFilterImmediate">
         <option value="">Tất cả method</option>
         <option value="POST">POST</option>
         <option value="PUT">PUT</option>
         <option value="PATCH">PATCH</option>
         <option value="DELETE">DELETE</option>
       </select>
-      <input v-model="dateFrom" type="date" class="input audit-date" aria-label="Từ ngày" @change="applyFilter" />
-      <input v-model="dateTo" type="date" class="input audit-date" aria-label="Đến ngày" @change="applyFilter" />
+      <input v-model="dateFrom" type="date" class="input audit-date" aria-label="Từ ngày" @change="applyFilterImmediate" />
+      <input v-model="dateTo" type="date" class="input audit-date" aria-label="Đến ngày" @change="applyFilterImmediate" />
       <button type="button" class="btn btn-outline btn-sm" :disabled="!filtered.length" @click="exportCSV">CSV</button>
     </div>
 
@@ -79,33 +79,24 @@ const dateTo = ref('')
 const page = ref(1)
 const PAGE_SIZE = 50
 
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+
 async function fetchLog() {
   loading.value = true
   try {
-    const res = await $fetch<{ entries: any[]; total: number }>('/admin-api/audit-log?limit=1000', { headers: authHeaders() })
+    const params = new URLSearchParams({ limit: '5000' })
+    if (methodFilter.value) params.set('method', methodFilter.value)
+    if (search.value.trim()) params.set('q', search.value.trim())
+    if (dateFrom.value) params.set('date_from', dateFrom.value)
+    if (dateTo.value) params.set('date_to', dateTo.value)
+    const res = await $fetch<{ entries: any[]; total: number }>(`/admin-api/audit-log?${params}`, { headers: authHeaders() })
     entries.value = res.entries || []
     total.value = res.total || 0
   } catch { showToast('Không thể tải nhật ký', 'error') }
   loading.value = false
 }
 
-const filtered = computed(() => {
-  let list = entries.value
-  if (methodFilter.value) list = list.filter(e => e.method === methodFilter.value)
-  if (search.value) {
-    const q = search.value.toLowerCase()
-    list = list.filter(e => (e.path || '').toLowerCase().includes(q) || (e.actor || '').toLowerCase().includes(q))
-  }
-  if (dateFrom.value) {
-    const from = dateFrom.value
-    list = list.filter(e => (e.ts || '').slice(0, 10) >= from)
-  }
-  if (dateTo.value) {
-    const to = dateTo.value
-    list = list.filter(e => (e.ts || '').slice(0, 10) <= to)
-  }
-  return list
-})
+const filtered = computed(() => entries.value)
 
 const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / PAGE_SIZE)))
 const paginated = computed(() => {
@@ -113,7 +104,15 @@ const paginated = computed(() => {
   return filtered.value.slice(start, start + PAGE_SIZE)
 })
 
-function applyFilter() { page.value = 1 }
+function applyFilter() {
+  page.value = 1
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => fetchLog(), 300)
+}
+function applyFilterImmediate() {
+  page.value = 1
+  fetchLog()
+}
 
 function exportCSV() {
   const rows = filtered.value

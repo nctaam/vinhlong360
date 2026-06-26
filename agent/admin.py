@@ -1459,8 +1459,14 @@ async def get_info_reports(limit: int = Query(100, ge=1, le=500)):
 _audit_cache: dict = {"mtime": 0.0, "items": []}
 
 @router.get("/audit-log")
-async def get_audit_log(limit: int = Query(200, ge=1, le=1000)):
-    """P2-7: nhật ký thao tác admin (mutation), mới nhất trước."""
+async def get_audit_log(
+    limit: int = Query(200, ge=1, le=5000),
+    method: Optional[str] = None,
+    q: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+):
+    """P2-7: nhật ký thao tác admin (mutation), mới nhất trước. Hỗ trợ filter server-side."""
     if not _AUDIT_FILE.exists():
         return {"entries": [], "total": 0}
     try:
@@ -1481,7 +1487,18 @@ async def get_audit_log(limit: int = Query(200, ge=1, le=1000)):
         _audit_cache["mtime"] = mtime
         _audit_cache["items"] = items
     items = _audit_cache["items"]
-    return {"entries": list(reversed(items[-limit:])), "total": len(items)}
+    filtered = items
+    if method:
+        filtered = [e for e in filtered if e.get("method") == method.upper()]
+    if q:
+        q_lower = q.lower()
+        filtered = [e for e in filtered if q_lower in (e.get("path") or "").lower() or q_lower in (e.get("actor") or "").lower()]
+    if date_from:
+        filtered = [e for e in filtered if (e.get("ts") or "")[:10] >= date_from]
+    if date_to:
+        filtered = [e for e in filtered if (e.get("ts") or "")[:10] <= date_to]
+    total = len(filtered)
+    return {"entries": list(reversed(filtered[-limit:])), "total": total}
 
 
 class ReportActionRequest(BaseModel):

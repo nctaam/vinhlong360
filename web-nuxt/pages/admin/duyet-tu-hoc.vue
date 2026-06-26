@@ -91,6 +91,7 @@ import type { Entity } from '~/types'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
+const { confirmDialog } = useConfirm()
 
 const provisional = ref<Entity[]>([])
 const sources = ref<Record<string, unknown>[]>([])
@@ -110,7 +111,7 @@ async function loadProvisional() {
   loading.value = false
 }
 async function approve(e: Entity) {
-  if (!confirm(`Duyệt "${e.name}" vào hệ thống?`)) return
+  if (!await confirmDialog(`Duyệt "${e.name}" vào hệ thống?`)) return
   acting.value = e.id
   try {
     await $fetch(`/admin-api/provisional/${e.id}/approve`, { method: 'POST', headers: authHeaders() })
@@ -120,7 +121,7 @@ async function approve(e: Entity) {
   acting.value = null
 }
 async function reject(e: Entity) {
-  if (!confirm(`Từ chối + xóa "${e.name}"?`)) return
+  if (!await confirmDialog(`Từ chối + xóa "${e.name}"?`, { danger: true })) return
   acting.value = e.id
   try {
     await $fetch(`/admin-api/provisional/${e.id}/reject`, { method: 'POST', headers: authHeaders() })

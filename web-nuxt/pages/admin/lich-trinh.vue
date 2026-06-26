@@ -95,7 +95,7 @@
                 <div class="lt-stop-fields">
                   <div class="lt-stop-grid">
                     <input v-model="s.time" class="input lt-stop-input" placeholder="Thời điểm (VD: Sáng, Trưa)" aria-label="Thời điểm" />
-                    <input v-model="s.entityId" class="input lt-stop-input" placeholder="ID điểm đến (slug)" aria-label="ID điểm đến" />
+                    <input v-model="s.entityId" class="input lt-stop-input" placeholder="ID điểm đến (slug)" aria-label="ID điểm đến" list="lt-entity-list" @input="onEntityInput" />
                   </div>
                   <input v-model="s.name" class="input lt-stop-input" placeholder="Tên hiển thị (tùy chọn)" aria-label="Tên hiển thị" />
                   <input v-model="s.note" class="input lt-stop-input" placeholder="Ghi chú (tùy chọn)" aria-label="Ghi chú" />
@@ -104,6 +104,9 @@
               </li>
             </ul>
             <button type="button" class="lt-add-stop" @click="addStop">+ Thêm điểm dừng</button>
+            <datalist id="lt-entity-list">
+              <option v-for="ent in entitySuggestions" :key="ent.id" :value="ent.id">{{ ent.name }} ({{ ent.type }})</option>
+            </datalist>
           </template>
         </div>
         <div class="admin-modal-actions lt-modal-actions">
@@ -125,6 +128,7 @@ definePageMeta({ layout: 'admin', middleware: 'admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
+const { confirmDialog } = useConfirm()
 const itineraries = ref<Itinerary[]>([])
 const searchText = ref('')
 const filteredItineraries = computed(() => {
@@ -154,6 +158,21 @@ interface StopRow {
 const stops = ref<StopRow[]>([])
 const jsonMode = ref(false)
 let stopKeySeq = 0
+
+// Entity typeahead for stop entityId inputs
+const entitySuggestions = ref<{ id: string; name: string; type?: string }[]>([])
+let entitySearchTimer: ReturnType<typeof setTimeout> | null = null
+function onEntityInput(e: Event) {
+  const val = (e.target as HTMLInputElement).value.trim()
+  if (entitySearchTimer) clearTimeout(entitySearchTimer)
+  if (val.length < 2) { entitySuggestions.value = []; return }
+  entitySearchTimer = setTimeout(async () => {
+    try {
+      const res = await $fetch<{ entities: any[] }>(`/admin-api/entities?q=${encodeURIComponent(val)}&limit=12`, { headers: authHeaders() })
+      entitySuggestions.value = (res.entities || []).map((ent: any) => ({ id: ent.id, name: ent.name, type: ent.type || '' }))
+    } catch { /* ignore */ }
+  }, 300)
+}
 
 // Dirty-state tracking (display + accidental-save guard only; never alters the
 // save/data path). Snapshot is captured when the modal opens.
@@ -314,7 +333,7 @@ async function save() {
 }
 
 async function deleteItinerary(id: string) {
-  if (!confirm(`Xóa lịch trình "${id}"?`)) return
+  if (!await confirmDialog(`Xóa lịch trình "${id}"?`, { danger: true })) return
   acting.value = id
   try {
     await $fetch(`/admin-api/itineraries/${id}`, { method: 'DELETE', headers: authHeaders() })

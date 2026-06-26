@@ -31,7 +31,15 @@
       <button v-for="f in FILTERS" :key="f.key" type="button" class="media-tab" :class="{ active: filter === f.key }" @click="setFilter(f.key)">{{ f.label }}</button>
     </div>
 
-    <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
+    <div v-if="loading" class="media-grid media-skeleton-grid">
+      <div v-for="n in 12" :key="n" class="media-card media-skeleton">
+        <div class="media-img-wrap media-skeleton-img"></div>
+        <div class="media-card-info">
+          <span class="media-skeleton-line" style="width: 70%"></span>
+          <span class="media-skeleton-line" style="width: 40%"></span>
+        </div>
+      </div>
+    </div>
     <template v-else>
 
     <div v-if="!items.length" class="admin-empty-state">
@@ -156,6 +164,29 @@ onMounted(fetchMedia)
 
 <style scoped>
 .media-subtitle { font-size: .82rem; color: var(--muted); margin-top: 2px; }
+
+/* Skeleton loading */
+@keyframes media-shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
+}
+.media-skeleton-img {
+  aspect-ratio: 4/3; border-radius: 10px;
+  background: linear-gradient(90deg, rgba(0,0,0,.06) 25%, rgba(0,0,0,.1) 50%, rgba(0,0,0,.06) 75%);
+  background-size: 400px 100%;
+  animation: media-shimmer 1.4s ease infinite;
+}
+.media-skeleton-line {
+  display: block; height: 10px; border-radius: 4px; margin-top: 6px;
+  background: linear-gradient(90deg, rgba(0,0,0,.06) 25%, rgba(0,0,0,.1) 50%, rgba(0,0,0,.06) 75%);
+  background-size: 400px 100%;
+  animation: media-shimmer 1.4s ease infinite;
+}
+.dark .media-skeleton-img,
+.dark .media-skeleton-line {
+  background: linear-gradient(90deg, rgba(255,255,255,.06) 25%, rgba(255,255,255,.1) 50%, rgba(255,255,255,.06) 75%);
+  background-size: 400px 100%;
+}
 .media-tabs { display: flex; gap: var(--space-2); margin-bottom: var(--space-5); }
 .media-tab {
   padding: 7px 14px; border-radius: 100px; border: .5px solid var(--line);
