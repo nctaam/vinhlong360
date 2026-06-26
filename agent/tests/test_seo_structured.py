@@ -1705,6 +1705,7 @@ def test_safe_date_parameterized(input_val, fallback, expected):
     ("2 đêm", "P3D"),
     ("2 ngày 1 đêm", "P2D"),
     ("30 phút", "PT30M"),
+    ("2 giờ 30 phút", "PT2H30M"),
     (None, None),
     (42, None),
     ("random text", None),
@@ -2064,3 +2065,33 @@ def test_entity_jsonld_no_opening_hours_when_missing():
     }
     ld = seo.build_entity_jsonld(entity, {})
     assert "openingHours" not in ld
+
+
+# ── Event maximumAttendeeCapacity ────────────────────────────────────
+
+
+def test_event_maximum_attendee_capacity():
+    event = {
+        "id": "ev-cap", "name": "Lễ hội lớn", "type": "event",
+        "attributes": {"date_start": "2026-07-01", "capacity": 5000},
+    }
+    ld = seo.build_entity_jsonld(event, {})
+    assert ld["maximumAttendeeCapacity"] == 5000
+
+
+def test_event_no_capacity_when_zero():
+    event = {
+        "id": "ev-no-cap", "name": "Lễ hội", "type": "event",
+        "attributes": {"date_start": "2026-07-01", "capacity": 0},
+    }
+    ld = seo.build_entity_jsonld(event, {})
+    assert "maximumAttendeeCapacity" not in ld
+
+
+def test_event_no_capacity_when_string():
+    event = {
+        "id": "ev-str-cap", "name": "Lễ hội", "type": "event",
+        "attributes": {"date_start": "2026-07-01", "capacity": "many"},
+    }
+    ld = seo.build_entity_jsonld(event, {})
+    assert "maximumAttendeeCapacity" not in ld

@@ -516,6 +516,9 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
             if coordinates:
                 loc["geo"] = ld["geo"]
             ld["location"] = loc
+        capacity = attrs.get("capacity")
+        if isinstance(capacity, int) and capacity > 0:
+            ld["maximumAttendeeCapacity"] = capacity
 
     if schema_type == "Person" and attrs.get("role"):
         ld["jobTitle"] = attrs["role"]
@@ -680,6 +683,12 @@ def _parse_duration(value: Any) -> str | None:
     if not isinstance(value, str):
         return None
     text = value.strip().lower()
+    m = re.match(r"(\d+)\s*ngày\s*(\d+)\s*đêm", text)
+    if m:
+        return f"P{m.group(1)}D"
+    m = re.match(r"(\d+)\s*giờ\s*(\d+)\s*phút", text)
+    if m:
+        return f"PT{m.group(1)}H{m.group(2)}M"
     m = re.match(r"(\d+)\s*ngày", text)
     if m:
         return f"P{m.group(1)}D"
@@ -690,9 +699,6 @@ def _parse_duration(value: Any) -> str | None:
     if m:
         days = int(m.group(1)) + 1
         return f"P{days}D"
-    m = re.match(r"(\d+)\s*ngày\s*(\d+)\s*đêm", text)
-    if m:
-        return f"P{m.group(1)}D"
     m = re.match(r"(\d+)\s*phút", text)
     if m:
         return f"PT{m.group(1)}M"
