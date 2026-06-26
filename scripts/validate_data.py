@@ -291,6 +291,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     invalid_entity_ids = 0
     coords_without_address = 0
     summary_truncated = 0
+    source_url_reuse: Counter[str] = Counter()
 
     for index, entity in enumerate(entities):
         if not isinstance(entity, dict):
@@ -387,14 +388,17 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
             elif elen > 100:
                 name_too_long += 1
 
-        # DI-019: source URL validation
+        # DI-019: source URL validation + DI-030: source URL reuse tracking
         if isinstance(source, list):
             for src_item in source:
                 url_val = src_item.get("url") if isinstance(src_item, dict) else (src_item if isinstance(src_item, str) else None)
                 if isinstance(url_val, str) and url_val.strip():
-                    parsed = urlparse(url_val.strip())
+                    clean_url = url_val.strip()
+                    parsed = urlparse(clean_url)
                     if parsed.scheme not in ("http", "https", "") or (parsed.scheme and not parsed.netloc):
                         invalid_source_urls += 1
+                    else:
+                        source_url_reuse[clean_url] += 1
 
         # DI-020: phone format validation
         attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
@@ -854,6 +858,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         "unknown_rel_types": len(unknown_rel_types),
         "coords_without_address": coords_without_address,
         "summary_truncated": summary_truncated,
+        "duplicate_source_urls": sum(1 for c in source_url_reuse.values() if c > 1),
         "data_js_status": data_js_status,
     }
 
@@ -1015,6 +1020,7 @@ def print_report(issues: list[Issue], stats: dict[str, Any]) -> None:
         "produced_in_source_type_errors",
         "coords_without_address",
         "summary_truncated",
+        "duplicate_source_urls",
     ]:
         print(f"  {key}: {stats.get(key)}")
 

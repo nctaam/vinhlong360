@@ -603,6 +603,35 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
     if date_created:
         ld["dateCreated"] = date_created
 
+    season = entity.get("season")
+    if isinstance(season, dict):
+        months = season.get("months")
+        peak = season.get("peak")
+        MONTH_NAMES = {1: "Tháng 1", 2: "Tháng 2", 3: "Tháng 3", 4: "Tháng 4",
+                       5: "Tháng 5", 6: "Tháng 6", 7: "Tháng 7", 8: "Tháng 8",
+                       9: "Tháng 9", 10: "Tháng 10", 11: "Tháng 11", 12: "Tháng 12"}
+        props: list[dict[str, Any]] = []
+        if isinstance(months, list) and months:
+            props.append({
+                "@type": "PropertyValue",
+                "propertyID": "seasonMonths",
+                "name": "Mùa vụ",
+                "value": ", ".join(MONTH_NAMES.get(m, str(m)) for m in sorted(months) if isinstance(m, int)),
+            })
+        if isinstance(peak, list) and peak:
+            props.append({
+                "@type": "PropertyValue",
+                "propertyID": "peakSeason",
+                "name": "Mùa cao điểm",
+                "value": ", ".join(MONTH_NAMES.get(m, str(m)) for m in sorted(peak) if isinstance(m, int)),
+            })
+        if props:
+            existing = ld.get("additionalProperty")
+            if isinstance(existing, list):
+                existing.extend(props)
+            else:
+                ld["additionalProperty"] = props
+
     rating_val = attrs.get("rating")
     review_count = attrs.get("review_count")
     if isinstance(rating_val, (int, float)) and 0 < rating_val <= 5:

@@ -1818,6 +1818,40 @@ def test_validate_no_coords_without_address_when_has_address(tmp_path: Path) -> 
     assert stats["coords_without_address"] == 0
 
 
+def test_validate_flags_duplicate_source_urls(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A",
+             "source": [{"url": "https://same.com/page"}]},
+            {"id": "b", "type": "attraction", "name": "B",
+             "source": [{"url": "https://same.com/page"}]},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    data_path = tmp_path / "data.json"
+    data_path.write_text(json.dumps(data), encoding="utf-8")
+    _, stats = validate_data.validate(data, data_path)
+    assert stats["duplicate_source_urls"] == 1
+
+
+def test_validate_no_duplicate_source_urls_when_unique(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A",
+             "source": [{"url": "https://a.com"}]},
+            {"id": "b", "type": "attraction", "name": "B",
+             "source": [{"url": "https://b.com"}]},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    data_path = tmp_path / "data.json"
+    data_path.write_text(json.dumps(data), encoding="utf-8")
+    _, stats = validate_data.validate(data, data_path)
+    assert stats["duplicate_source_urls"] == 0
+
+
 def test_seo_required_covers_craft_village_and_drink() -> None:
     assert "craft_village" in validate_data.SEO_REQUIRED
     assert "drink" in validate_data.SEO_REQUIRED

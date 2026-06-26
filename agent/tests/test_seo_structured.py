@@ -2247,6 +2247,27 @@ def test_entity_jsonld_keywords_with_type_and_area():
     assert "Vĩnh Long" in ld["keywords"]
 
 
+def test_entity_jsonld_season_months():
+    entity = {
+        "id": "season-test", "name": "Cam", "type": "product",
+        "season": {"months": [10, 11, 12, 1, 2], "peak": [11, 12]},
+        "attributes": {"price": "50.000"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "additionalProperty" in ld
+    props = ld["additionalProperty"]
+    season_prop = next(p for p in props if p["propertyID"] == "seasonMonths")
+    assert "Tháng 10" in season_prop["value"]
+    peak_prop = next(p for p in props if p["propertyID"] == "peakSeason")
+    assert "Tháng 11" in peak_prop["value"]
+
+
+def test_entity_jsonld_no_season_when_absent():
+    entity = {"id": "no-season", "name": "No Season", "type": "attraction"}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "additionalProperty" not in ld
+
+
 def test_entity_jsonld_keywords_without_area():
     entity = {"id": "kw-no-area", "name": "Test", "type": "attraction"}
     ld = seo.build_entity_jsonld(entity, {})
