@@ -2138,6 +2138,48 @@ def test_breadcrumb_no_area_skips_area_tier():
     assert "No Area" in names
 
 
+# ── Itinerary duration from days fallback ────────────────────────────
+
+
+def test_itinerary_duration_from_days_field():
+    it = {"id": "days-it", "title": "2-day trip", "days": 2, "stops": []}
+    ld = seo.build_itinerary_jsonld(it, {})
+    assert ld["duration"] == "P2D"
+
+
+def test_itinerary_duration_prefers_explicit_over_days():
+    it = {"id": "explicit-dur", "title": "Trip", "duration": "3 ngày", "days": 5, "stops": []}
+    ld = seo.build_itinerary_jsonld(it, {})
+    assert ld["duration"] == "P3D"
+
+
+def test_itinerary_no_duration_when_days_zero():
+    it = {"id": "zero-days", "title": "No days", "days": 0, "stops": []}
+    ld = seo.build_itinerary_jsonld(it, {})
+    assert "duration" not in ld
+
+
+# ── _source_info edge cases ──────────────────────────────────────────
+
+
+def test_source_info_empty_list_returns_none():
+    title, url = seo._source_info({"source": []})
+    assert title is None
+    assert url is None
+
+
+def test_source_info_string_external():
+    title, url = seo._source_info({"source": "https://example.com"})
+    assert title == "https://example.com"
+    assert url == "https://example.com"
+
+
+def test_source_info_string_self_link():
+    title, url = seo._source_info({"source": "https://vinhlong360.vn/page"})
+    assert title == "https://vinhlong360.vn/page"
+    assert url is None
+
+
 def test_sitemap_url_has_hreflang(monkeypatch):
     data = {
         "entities": [{"id": "a", "name": "A", "type": "attraction", "confidence": 0.9}],

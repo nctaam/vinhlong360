@@ -723,7 +723,10 @@ def build_itinerary_jsonld(itinerary: dict[str, Any], by_id: dict[str, dict[str,
     }
     if itinerary.get("summary"):
         ld["description"] = itinerary["summary"]
+    days = itinerary.get("days")
     duration = _parse_duration(itinerary.get("duration"))
+    if not duration and isinstance(days, int) and days > 0:
+        duration = f"P{days}D"
     if duration:
         ld["duration"] = duration
     area = itinerary.get("area")
