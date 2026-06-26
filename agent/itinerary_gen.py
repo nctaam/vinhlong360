@@ -12,7 +12,11 @@ Output: lịch trình chi tiết với thời gian, điểm dừng, ghi chú, ă
 """
 
 import json
+import logging
+
 import knowledge
+
+logger = logging.getLogger(__name__)
 
 # ── Interest → entity_type mapping ──
 

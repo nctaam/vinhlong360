@@ -20,11 +20,14 @@ shape, so the loop keeps learning during API outages.
 """
 
 import json
+import logging
 import re
 import sys
 import unicodedata
 from pathlib import Path
 from threading import Lock
+
+logger = logging.getLogger(__name__)
 
 AGENT_DIR = Path(__file__).resolve().parent
 MEM_DIR = AGENT_DIR / "data" / "memory"
@@ -68,7 +71,8 @@ def _load() -> list:
     if BANK_FILE.exists():
         try:
             return json.loads(BANK_FILE.read_text(encoding="utf-8"))
-        except Exception:
+        except Exception as exc:
+            logger.warning("Failed to load experience bank: %s", exc)
             return []
     return []
 

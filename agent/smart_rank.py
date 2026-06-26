@@ -6,9 +6,12 @@ Entities được hỏi nhiều → xếp hạng cao hơn.
 """
 
 import json
+import logging
 import time
 from pathlib import Path
 from threading import Lock
+
+logger = logging.getLogger(__name__)
 
 ANALYTICS_FILE = Path(__file__).resolve().parent / "data" / "analytics.json"
 
@@ -26,8 +29,8 @@ def _load_popularity():
             data = json.loads(ANALYTICS_FILE.read_text(encoding="utf-8"))
             _popularity = data.get("entity_hits", {})
             _last_load = time.time()
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.warning("Failed to load popularity data: %s", exc)
 
 
 def get_popularity(entity_id: str) -> int:

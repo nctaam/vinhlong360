@@ -184,6 +184,63 @@ def _noop_span(name: str = "", **kwargs: Any) -> Generator[Any, None, None]:
 
 
 # ==============================================================
+#  SHARED SPAN HELPER
+# ==============================================================
+
+@contextmanager
+def _traced_span(
+    span_name: str,
+    attrs: Dict[str, Any],
+    collect_keys: Optional[List[str]] = None,
+) -> Generator[Any, None, None]:
+    """Shared boilerplate for all GenAI span creators.
+
+    Args:
+        span_name: OTel span name (e.g. "chat", "tool.search").
+        attrs: Initial span attributes.
+        collect_keys: Attribute keys to read back from the span after yield
+                      (for caller-set values like token usage).
+    """
+    with _tracer.start_as_current_span(span_name) as span:
+        start = time.monotonic()
+        for k, v in attrs.items():
+            span.set_attribute(k, v)
+
+        status = "OK"
+        try:
+            yield span
+        except Exception as exc:
+            status = "ERROR"
+            span.set_status(Status(StatusCode.ERROR, str(exc)))
+            span.record_exception(exc)
+            raise
+        else:
+            span.set_status(Status(StatusCode.OK))
+        finally:
+            duration_ms = (time.monotonic() - start) * 1000
+            span.set_attribute("duration_ms", round(duration_ms, 2))
+            final_attrs = dict(attrs)
+            if collect_keys:
+                try:
+                    for ck in collect_keys:
+                        val = span.attributes.get(ck)
+                        if val is not None:
+                            final_attrs[ck] = val
+                except Exception:
+                    logger.debug("Could not read caller-set attrs from span %s", span_name)
+            ctx = span.get_span_context()
+            _record_span(
+                trace_id=format(ctx.trace_id, "032x"),
+                span_id=format(ctx.span_id, "016x"),
+                name=span_name,
+                start_time=start,
+                duration_ms=duration_ms,
+                status=status,
+                attributes=final_attrs,
+            )
+
+
+# ==============================================================
 #  GENAI-COMPATIBLE SPAN CREATORS
 # ==============================================================
 
@@ -193,52 +250,18 @@ def trace_chat_request(
     session_id: str,
     model: str = "unknown",
 ) -> Generator[Any, None, None]:
-    """Tao root span cho mot chat request.
-
-    GenAI Semantic Conventions:
-      - gen_ai.system = "vinhlong360"
-      - gen_ai.request.model
-      - user.session_id
-      - gen_ai.prompt (200 ky tu dau)
-    """
+    """Root span for a chat request (GenAI Semantic Conventions)."""
     if _tracer is None:
         yield None
         return
-
-    with _tracer.start_as_current_span("chat") as span:
-        start = time.monotonic()
-        attrs = {
-            "gen_ai.system": "vinhlong360",
-            "gen_ai.request.model": model,
-            "user.session_id": session_id,
-            "gen_ai.prompt": message[:200],
-        }
-        for k, v in attrs.items():
-            span.set_attribute(k, v)
-
-        status = "OK"
-        try:
-            yield span
-        except Exception as exc:
-            status = "ERROR"
-            span.set_status(Status(StatusCode.ERROR, str(exc)))
-            span.record_exception(exc)
-            raise
-        else:
-            span.set_status(Status(StatusCode.OK))
-        finally:
-            duration_ms = (time.monotonic() - start) * 1000
-            span.set_attribute("duration_ms", round(duration_ms, 2))
-            ctx = span.get_span_context()
-            _record_span(
-                trace_id=format(ctx.trace_id, "032x"),
-                span_id=format(ctx.span_id, "016x"),
-                name="chat",
-                start_time=start,
-                duration_ms=duration_ms,
-                status=status,
-                attributes=attrs,
-            )
+    attrs = {
+        "gen_ai.system": "vinhlong360",
+        "gen_ai.request.model": model,
+        "user.session_id": session_id,
+        "gen_ai.prompt": message[:200],
+    }
+    with _traced_span("chat", attrs) as span:
+        yield span
 
 
 @contextmanager
@@ -246,53 +269,14 @@ def trace_tool_call(
     tool_name: str,
     arguments: Optional[Dict[str, Any]] = None,
 ) -> Generator[Any, None, None]:
-    """Tao child span cho viec goi mot tool.
-
-    Span name: "tool.<tool_name>"
-    Attributes:
-      - tool.name
-      - tool.arguments (JSON)
-      - tool.result_size (set boi caller sau khi co ket qua)
-    """
+    """Child span for a tool invocation."""
     if _tracer is None:
         yield None
         return
-
-    span_name = f"tool.{tool_name}"
-    with _tracer.start_as_current_span(span_name) as span:
-        start = time.monotonic()
-        args_json = json.dumps(arguments or {}, ensure_ascii=False, default=str)
-        attrs: Dict[str, Any] = {
-            "tool.name": tool_name,
-            "tool.arguments": args_json[:500],  # Gioi han kich thuoc
-        }
-        for k, v in attrs.items():
-            span.set_attribute(k, v)
-
-        status = "OK"
-        try:
-            yield span
-        except Exception as exc:
-            status = "ERROR"
-            span.set_status(Status(StatusCode.ERROR, str(exc)))
-            span.record_exception(exc)
-            raise
-        else:
-            span.set_status(Status(StatusCode.OK))
-            # Caller co the set tool.result_size tren span truoc khi exit
-        finally:
-            duration_ms = (time.monotonic() - start) * 1000
-            span.set_attribute("duration_ms", round(duration_ms, 2))
-            ctx = span.get_span_context()
-            _record_span(
-                trace_id=format(ctx.trace_id, "032x"),
-                span_id=format(ctx.span_id, "016x"),
-                name=span_name,
-                start_time=start,
-                duration_ms=duration_ms,
-                status=status,
-                attributes=attrs,
-            )
+    args_json = json.dumps(arguments or {}, ensure_ascii=False, default=str)
+    attrs = {"tool.name": tool_name, "tool.arguments": args_json[:500]}
+    with _traced_span(f"tool.{tool_name}", attrs) as span:
+        yield span
 
 
 @contextmanager
@@ -300,61 +284,15 @@ def trace_llm_call(
     model: str,
     messages_count: int = 0,
 ) -> Generator[Any, None, None]:
-    """Tao span cho mot LLM completion call.
-
-    Attributes:
-      - gen_ai.request.model
-      - gen_ai.request.messages_count
-      - gen_ai.usage.prompt_tokens     (set boi caller)
-      - gen_ai.usage.completion_tokens (set boi caller)
-    """
+    """Span for an LLM completion call (caller sets token usage on span)."""
     if _tracer is None:
         yield None
         return
-
-    with _tracer.start_as_current_span("llm.completion") as span:
-        start = time.monotonic()
-        attrs: Dict[str, Any] = {
-            "gen_ai.request.model": model,
-            "gen_ai.request.messages_count": messages_count,
-        }
-        for k, v in attrs.items():
-            span.set_attribute(k, v)
-
-        status = "OK"
-        try:
-            yield span
-        except Exception as exc:
-            status = "ERROR"
-            span.set_status(Status(StatusCode.ERROR, str(exc)))
-            span.record_exception(exc)
-            raise
-        else:
-            span.set_status(Status(StatusCode.OK))
-        finally:
-            duration_ms = (time.monotonic() - start) * 1000
-            span.set_attribute("duration_ms", round(duration_ms, 2))
-            ctx = span.get_span_context()
-            # Thu thap token usage tu span attributes (caller da set)
-            final_attrs = dict(attrs)
-            try:
-                pt = span.attributes.get("gen_ai.usage.prompt_tokens")
-                ct = span.attributes.get("gen_ai.usage.completion_tokens")
-                if pt is not None:
-                    final_attrs["gen_ai.usage.prompt_tokens"] = pt
-                if ct is not None:
-                    final_attrs["gen_ai.usage.completion_tokens"] = ct
-            except Exception:
-                pass
-            _record_span(
-                trace_id=format(ctx.trace_id, "032x"),
-                span_id=format(ctx.span_id, "016x"),
-                name="llm.completion",
-                start_time=start,
-                duration_ms=duration_ms,
-                status=status,
-                attributes=final_attrs,
-            )
+    attrs = {"gen_ai.request.model": model, "gen_ai.request.messages_count": messages_count}
+    with _traced_span("llm.completion", attrs,
+                      collect_keys=["gen_ai.usage.prompt_tokens",
+                                    "gen_ai.usage.completion_tokens"]) as span:
+        yield span
 
 
 @contextmanager
@@ -362,56 +300,14 @@ def trace_rag_retrieval(
     query: str,
     strategy: str = "default",
 ) -> Generator[Any, None, None]:
-    """Tao span cho RAG retrieval operation.
-
-    Attributes:
-      - rag.query
-      - rag.strategy (vd: "semantic", "hybrid", "bm25")
-      - rag.results_count (set boi caller)
-    """
+    """Span for RAG retrieval (caller sets rag.results_count on span)."""
     if _tracer is None:
         yield None
         return
-
-    with _tracer.start_as_current_span("rag.retrieve") as span:
-        start = time.monotonic()
-        attrs: Dict[str, Any] = {
-            "rag.query": query[:200],
-            "rag.strategy": strategy,
-        }
-        for k, v in attrs.items():
-            span.set_attribute(k, v)
-
-        status = "OK"
-        try:
-            yield span
-        except Exception as exc:
-            status = "ERROR"
-            span.set_status(Status(StatusCode.ERROR, str(exc)))
-            span.record_exception(exc)
-            raise
-        else:
-            span.set_status(Status(StatusCode.OK))
-        finally:
-            duration_ms = (time.monotonic() - start) * 1000
-            span.set_attribute("duration_ms", round(duration_ms, 2))
-            ctx = span.get_span_context()
-            final_attrs = dict(attrs)
-            try:
-                rc = span.attributes.get("rag.results_count")
-                if rc is not None:
-                    final_attrs["rag.results_count"] = rc
-            except Exception:
-                pass
-            _record_span(
-                trace_id=format(ctx.trace_id, "032x"),
-                span_id=format(ctx.span_id, "016x"),
-                name="rag.retrieve",
-                start_time=start,
-                duration_ms=duration_ms,
-                status=status,
-                attributes=final_attrs,
-            )
+    attrs = {"rag.query": query[:200], "rag.strategy": strategy}
+    with _traced_span("rag.retrieve", attrs,
+                      collect_keys=["rag.results_count"]) as span:
+        yield span
 
 
 @contextmanager
@@ -419,50 +315,13 @@ def trace_memory_operation(
     operation: str,
     user_id: str = "unknown",
 ) -> Generator[Any, None, None]:
-    """Tao span cho memory read/write operations.
-
-    Span name: "memory.<operation>" (vd: memory.read, memory.write, memory.compress)
-    Attributes:
-      - memory.operation
-      - user.id
-    """
+    """Span for memory read/write operations."""
     if _tracer is None:
         yield None
         return
-
-    span_name = f"memory.{operation}"
-    with _tracer.start_as_current_span(span_name) as span:
-        start = time.monotonic()
-        attrs: Dict[str, Any] = {
-            "memory.operation": operation,
-            "user.id": user_id,
-        }
-        for k, v in attrs.items():
-            span.set_attribute(k, v)
-
-        status = "OK"
-        try:
-            yield span
-        except Exception as exc:
-            status = "ERROR"
-            span.set_status(Status(StatusCode.ERROR, str(exc)))
-            span.record_exception(exc)
-            raise
-        else:
-            span.set_status(Status(StatusCode.OK))
-        finally:
-            duration_ms = (time.monotonic() - start) * 1000
-            span.set_attribute("duration_ms", round(duration_ms, 2))
-            ctx = span.get_span_context()
-            _record_span(
-                trace_id=format(ctx.trace_id, "032x"),
-                span_id=format(ctx.span_id, "016x"),
-                name=span_name,
-                start_time=start,
-                duration_ms=duration_ms,
-                status=status,
-                attributes=attrs,
-            )
+    attrs = {"memory.operation": operation, "user.id": user_id}
+    with _traced_span(f"memory.{operation}", attrs) as span:
+        yield span
 
 
 # ==============================================================

@@ -1,4 +1,7 @@
 """
+DEPRECATED: This module is dead code (not imported anywhere).
+Use learn_loop.py + scheduler.py instead. See docs/DEAD-CODE-AUDIT.md.
+
 vinhlong360 — Learn NOW (one-shot learning burst).
 
 Chạy NGAY toàn bộ chuỗi tự học, không chờ lịch scheduler — dùng khi muốn

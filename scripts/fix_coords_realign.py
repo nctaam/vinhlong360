@@ -24,7 +24,7 @@ def A(e):
     a=e.get("attributes")
     if isinstance(a,str):
         try:a=json.loads(a)
-        except:a={}
+        except (ValueError, json.JSONDecodeError): a = {}
     return a if isinstance(a,dict) else {}
 
 realign=[]; nulled=[]; flagged_only=0

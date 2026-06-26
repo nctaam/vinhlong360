@@ -20,10 +20,13 @@ Usage::
 
 from __future__ import annotations
 
+import logging
 import time
 import threading
 from concurrent.futures import ThreadPoolExecutor, Future
 from typing import Callable, Optional
+
+logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -282,8 +285,8 @@ class ParallelToolExecutor:
         if self.on_tool_start is not None:
             try:
                 self.on_tool_start(name, tool_id)
-            except Exception:
-                pass  # Never let a callback crash the tool call.
+            except Exception as exc:
+                logger.debug("on_tool_start callback failed: %s", exc)
 
         t0 = time.perf_counter()
         error: str | None = None
@@ -292,14 +295,15 @@ class ParallelToolExecutor:
         except Exception as exc:
             result_str = _error_json(str(exc))
             error = str(exc)
+            logger.warning("Tool call %s failed: %s", name, exc)
         duration_ms = (time.perf_counter() - t0) * 1000.0
 
         # Notify done (thread-safe).
         if self.on_tool_done is not None:
             try:
                 self.on_tool_done(name, tool_id, duration_ms)
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.debug("on_tool_done callback failed: %s", exc)
 
         return result_str, duration_ms, error
 

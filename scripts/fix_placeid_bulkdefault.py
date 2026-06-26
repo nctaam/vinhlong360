@@ -19,7 +19,7 @@ def A(e):
     a=e.get("attributes")
     if isinstance(a,str):
         try:a=json.loads(a)
-        except:a={}
+        except (ValueError, json.JSONDecodeError): a = {}
     return a if isinstance(a,dict) else {}
 def norm(s):
     s=unicodedata.normalize("NFC",(s or "")).strip().lower()

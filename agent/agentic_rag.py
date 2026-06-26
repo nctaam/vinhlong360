@@ -26,12 +26,15 @@ Tham khảo: Agentic RAG Survey 2026 (arXiv:2501.09136v4)
 
 import heapq
 import json
+import logging
 import re
 import unicodedata
 from collections import deque
 from typing import Literal
 
 import knowledge
+
+logger = logging.getLogger(__name__)
 
 
 # ══════════════════════════════════════════════════
