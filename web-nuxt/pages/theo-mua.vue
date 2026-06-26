@@ -62,7 +62,11 @@
       </div>
     </section>
 
-    <EmptyState v-if="fetchError" icon="⚠️" tone="error" title="Không thể tải dữ liệu" message="Vui lòng thử lại sau." />
+    <EmptyState v-if="fetchError" icon="⚠️" tone="error" title="Không thể tải dữ liệu" message="Mạng có thể đang chập chờn. Thử tải lại nhé.">
+      <template #actions>
+        <button type="button" class="btn btn-outline" @click="refreshNuxtData('season-entities')">Thử lại</button>
+      </template>
+    </EmptyState>
     <ClientOnly>
       <SkeletonGrid v-if="!data && !fetchError" :count="12" />
       <template #fallback>
@@ -274,10 +278,9 @@ const ranked = computed(() =>
     .sort((a: Entity, b: Entity) => score(b) - score(a)),
 )
 const inSeasonItems = computed(() => wedge.value.filter((e: Entity) => isInSeason(e)))
-const peakCount = computed(() => wedge.value.filter((e: Entity) => isPeak(e)).length)
-const peakItems = computed(() =>
-  wedge.value.filter((e: Entity) => isPeak(e)).slice(0, 8)
-)
+const allPeakItems = computed(() => wedge.value.filter((e: Entity) => isPeak(e)))
+const peakCount = computed(() => allPeakItems.value.length)
+const peakItems = computed(() => allPeakItems.value.slice(0, 8))
 
 const typeStats = computed(() =>
   WEDGE_TYPES
@@ -313,8 +316,18 @@ const emptyTypes = computed(() =>
     }))
 )
 
+const monthCountMap = computed(() => {
+  const counts = new Map<number, number>()
+  for (const e of wedge.value) {
+    for (const m of (e.season?.months || [])) {
+      counts.set(m, (counts.get(m) || 0) + 1)
+    }
+  }
+  return counts
+})
+
 function countByMonth(m: number) {
-  return wedge.value.filter((e: Entity) => (e.season?.months || []).includes(m)).length
+  return monthCountMap.value.get(m) || 0
 }
 
 useSeoMeta({
@@ -333,6 +346,16 @@ useHead(() => ({
       name: `Tháng ${month.value}: đi đâu, ăn gì ở Vĩnh Long`,
       description: `Những mục đang mùa, ngon nhất vào tháng ${month.value} — trái cây, nông sản, ẩm thực, trải nghiệm miệt vườn.`,
       url: canonicalUrl('/theo-mua'),
+    }),
+  }, {
+    type: 'application/ld+json',
+    innerHTML: JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
+        { '@type': 'ListItem', position: 2, name: 'Theo mùa' },
+      ],
     }),
   }],
 }))

@@ -404,12 +404,12 @@ const SPOTLIGHT_TYPE_WEIGHT: Record<string, number> = { experience: 3, place: 2,
 const spotlight = computed<any>(() => {
   const pool = [...experiences.value.slice(0, 8), ...productsAll.value.slice(0, 8)]
   if (!pool.length) return null
-  return pool.slice().sort((a: any, b: any) => {
-    const wa = SPOTLIGHT_TYPE_WEIGHT[a?.type] ?? 1
-    const wb = SPOTLIGHT_TYPE_WEIGHT[b?.type] ?? 1
-    if (wb !== wa) return wb - wa
-    return (b?.summary || '').length - (a?.summary || '').length
-  })[0] || null
+  return pool.reduce((best: any, cur: any) => {
+    const wc = SPOTLIGHT_TYPE_WEIGHT[cur?.type] ?? 1
+    const wb = SPOTLIGHT_TYPE_WEIGHT[best?.type] ?? 1
+    if (wc !== wb) return wc > wb ? cur : best
+    return (cur?.summary || '').length > (best?.summary || '').length ? cur : best
+  })
 })
 const spotId = computed(() => spotlight.value?.id)
 const spotMeta = computed(() => spotlight.value ? (TYPE_META[spotlight.value.type] || { emoji: '📍', label: spotlight.value.type, cat: 'place' }) : null)
@@ -419,7 +419,7 @@ const spotRegion = computed(() => {
   const a = spotlight.value?.area || spotlight.value?.attributes?.area || spotlight.value?.attributes?.province
   if (!a) return ''
   const meta = (AREA_META as Record<string, { name: string }>)[String(a)]
-  return meta ? meta.name : String(a)
+  return meta ? meta.name : ''
 })
 
 const heroFeature = computed<any>(() => experiences.value.find((e: any) => e.id !== spotId.value) || spotlight.value || null)
@@ -430,7 +430,7 @@ const hfRegion = computed(() => {
   const a = heroFeature.value?.area || heroFeature.value?.attributes?.area || heroFeature.value?.attributes?.province
   if (!a) return ''
   const meta = (AREA_META as Record<string, { name: string }>)[String(a)]
-  return meta ? meta.name : String(a)
+  return meta ? meta.name : ''
 })
 
 const stats = computed(() => homeData.value?.stats || null)
@@ -473,7 +473,7 @@ function onImgError(e: Event) {
 function areaName(slug: string | undefined): string {
   if (!slug) return ''
   const meta = (AREA_META as Record<string, { name: string }>)[slug]
-  return meta ? meta.name : slug
+  return meta ? meta.name : ''
 }
 
 function openChat() {

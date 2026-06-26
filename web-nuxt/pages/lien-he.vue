@@ -15,7 +15,7 @@
 
     <div class="contact-cards">
       <section v-if="isClaim" class="contact-card card-claim">
-        <div class="card-icon">🏷️</div>
+        <div class="card-icon" aria-hidden="true">🏷️</div>
         <h2>Đăng ký quản lý trang</h2>
         <p>Bạn là chủ cơ sở kinh doanh, homestay, nhà vườn, hoặc điểm du lịch? Đăng ký để cập nhật thông tin, ảnh, giờ mở cửa và nhận đánh giá từ khách.</p>
         <div class="card-action">
@@ -25,7 +25,7 @@
       </section>
 
       <section class="contact-card card-general">
-        <div class="card-icon">📬</div>
+        <div class="card-icon" aria-hidden="true">📬</div>
         <h2>Gửi yêu cầu</h2>
         <p>Mọi yêu cầu về nội dung, dữ liệu cá nhân, báo cáo vi phạm hoặc khiếu nại bản quyền.</p>
         <div class="card-action">
@@ -34,7 +34,7 @@
       </section>
 
       <section class="contact-card card-partner">
-        <div class="card-icon">🤝</div>
+        <div class="card-icon" aria-hidden="true">🤝</div>
         <h2>Hợp tác quảng bá</h2>
         <p>Đối tác du lịch, OCOP, cơ quan địa phương muốn giới thiệu sản phẩm, điểm đến trên vinhlong360.</p>
         <div class="card-action">
@@ -43,13 +43,13 @@
       </section>
 
       <section class="contact-card card-report">
-        <div class="card-icon">🛡️</div>
+        <div class="card-icon" aria-hidden="true">🛡️</div>
         <h2>Báo cáo vi phạm</h2>
         <p>Dùng nút <strong>Báo cáo</strong> ngay trên mỗi bài đăng/bình luận. Chúng tôi xử lý trong vòng 48 giờ.</p>
       </section>
 
       <section class="contact-card card-privacy">
-        <div class="card-icon">🔒</div>
+        <div class="card-icon" aria-hidden="true">🔒</div>
         <h2>Dữ liệu cá nhân</h2>
         <p>Theo <NuxtLink to="/chinh-sach-bao-mat">Chính sách bảo mật</NuxtLink>: truy cập/chỉnh sửa (10 ngày), rút đồng ý (15 ngày), xoá dữ liệu (20 ngày). Bạn cũng có thể tự xoá tài khoản trong phần tài khoản.</p>
       </section>
@@ -90,7 +90,7 @@ const zaloName = computed(() => ss('contact.zalo', 'vinhlong360'))
 
 const route = useRoute()
 const isClaim = computed(() => route.query.ref === 'claim')
-const claimEntity = computed(() => route.query.entity ? decodeURIComponent(String(route.query.entity)) : '')
+const claimEntity = computed(() => route.query.entity ? decodeURIComponent(String(route.query.entity)).slice(0, 200) : '')
 const claimSubject = computed(() => {
   const base = 'Đăng ký quản lý trang'
   return claimEntity.value ? `${base}: ${claimEntity.value}` : base

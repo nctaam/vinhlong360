@@ -9,7 +9,7 @@
         <div>
           <h1>{{ pc('hero_title') }}</h1>
           <p>{{ pc('hero_subtitle') }}</p>
-          <div class="hero-creds" aria-hidden="true">
+          <div class="hero-creds">
             <span class="hero-cred hero-cred-seal">🏅 Chuẩn OCOP <em>Nhà nước</em></span>
             <span class="hero-cred">✓ Kiểm chứng</span>
             <span v-if="allOcop.length" class="hero-cred">📊 {{ allOcop.length }} sản phẩm</span>

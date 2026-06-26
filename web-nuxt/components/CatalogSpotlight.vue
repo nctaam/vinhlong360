@@ -28,7 +28,9 @@ const props = defineProps<{ items: Entity[] }>()
 const pick = computed<any>(() => {
   const pool = (props.items || []).filter((e: any) => (e?.summary || '').trim().length >= 80)
   if (!pool.length) return null
-  return pool.slice().sort((a: any, b: any) => (b?.summary || '').length - (a?.summary || '').length)[0] || null
+  return pool.reduce((best: any, cur: any) =>
+    (cur?.summary || '').length > (best?.summary || '').length ? cur : best
+  )
 })
 const meta = computed(() => pick.value ? (TYPE_META[pick.value.type] || { emoji: '📍', label: pick.value.type, cat: 'place' }) : null)
 const bg = computed(() => pick.value && meta.value ? generateCategoryPlaceholder(pick.value.id, meta.value.cat) : '')

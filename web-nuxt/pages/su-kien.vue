@@ -157,7 +157,7 @@
             v-for="(cell, i) in calendarCells" :key="i"
             class="cal-cell"
             role="gridcell"
-            :tabindex="-1"
+            :tabindex="cell.events?.length ? 0 : -1"
             :class="{ 'cal-empty': !cell.day, 'cal-today': cell.isToday, 'cal-has-events': cell.events?.length }"
             :aria-label="cell.day ? `Ngày ${cell.day}${cell.events?.length ? `, ${cell.events.length} sự kiện` : ''}` : undefined"
           >
@@ -227,19 +227,23 @@ const allEvents = computed(() =>
   (data.value?.events || []).filter((e: Entity) => (e.attributes?.category || 'su-kien') !== 'le-hoi')
 )
 
-const areaCounts = computed(() => {
+const areaCountMap = computed(() => {
   const counts: Record<string, number> = {}
   for (const e of allEvents.value) {
     const area = getArea(e)
     if (area) counts[area] = (counts[area] || 0) + 1
   }
-  return Object.entries(AREA_META)
-    .filter(([key]) => counts[key])
-    .map(([key, meta]) => ({ key, name: meta.name, count: counts[key] }))
+  return counts
 })
 
+const areaCounts = computed(() =>
+  Object.entries(AREA_META)
+    .filter(([key]) => areaCountMap.value[key])
+    .map(([key, meta]) => ({ key, name: meta.name, count: areaCountMap.value[key] }))
+)
+
 function countByArea(key: string) {
-  return allEvents.value.filter((e: Entity) => getArea(e) === key).length
+  return areaCountMap.value[key] || 0
 }
 
 const upcoming = computed(() => {
@@ -339,25 +343,34 @@ const calendarCells = computed(() => {
   if (startDow === 0) startDow = 7
   startDow--
 
+  const monthStart = `${y}-${String(m + 1).padStart(2, '0')}-01`
+  const monthEnd = `${y}-${String(m + 1).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}`
+  const dateMap = new Map<number, Entity[]>()
+  for (const e of allEvents.value) {
+    const attrs = e.attributes || {}
+    const ds = attrs.date_start
+    const de = attrs.date_end || ds
+    if (!ds || de < monthStart || ds > monthEnd) continue
+    const span = (new Date(de).getTime() - new Date(ds).getTime()) / 86400000
+    if (span > 30) continue
+    const from = Math.max(1, ds > monthStart ? parseInt(ds.slice(8), 10) : 1)
+    const to = Math.min(daysInMonth, de < monthEnd ? parseInt(de.slice(8), 10) : daysInMonth)
+    for (let d = from; d <= to; d++) {
+      const arr = dateMap.get(d)
+      if (arr) arr.push(e)
+      else dateMap.set(d, [e])
+    }
+  }
+
   const cells: { day: number; isToday?: boolean; events?: Entity[]; lunar?: string; lunarFirst?: boolean; lunarMid?: boolean }[] = []
   for (let i = 0; i < startDow; i++) cells.push({ day: 0 })
 
   for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
     const isToday = y === today.getFullYear() && m === today.getMonth() && d === today.getDate()
-    const events = allEvents.value.filter((e: Entity) => {
-      const attrs = e.attributes || {}
-      const ds = attrs.date_start
-      const de = attrs.date_end || ds
-      if (!ds) return false
-      if (dateStr < ds || dateStr > de) return false
-      const span = (new Date(de).getTime() - new Date(ds).getTime()) / 86400000
-      return span <= 30
-    })
     const lunar = lunarLabel(d, m + 1, y)
     const lunarFirst = isLunarFirstDay(d, m + 1, y)
     const lunarMid = isLunarFull(d, m + 1, y)
-    cells.push({ day: d, isToday, events, lunar, lunarFirst, lunarMid })
+    cells.push({ day: d, isToday, events: dateMap.get(d), lunar, lunarFirst, lunarMid })
   }
   return cells
 })
@@ -368,7 +381,34 @@ useSeoMeta({
   ogTitle: () => pc('og_title'),
   ogDescription: () => pc('og_description'),
 })
-useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/su-kien') }] })
+const eventListSchema = computed(() => {
+  const items = allEvents.value.slice(0, 30).map((e: Entity, i: number) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    item: {
+      '@type': 'Event',
+      name: e.name,
+      ...(e.attributes?.date_start ? { startDate: e.attributes.date_start } : {}),
+      ...(e.attributes?.date_end ? { endDate: e.attributes.date_end } : {}),
+      url: `https://vinhlong360.vn/dia-diem/${e.id}`,
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      ...(e.place_name ? { location: { '@type': 'Place', name: e.place_name } } : {}),
+    },
+  }))
+  if (!items.length) return ''
+  return JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Sự kiện',
+    numberOfItems: allEvents.value.length,
+    itemListElement: items,
+  })
+})
+
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl('/su-kien') }],
+  script: eventListSchema.value ? [{ type: 'application/ld+json', innerHTML: eventListSchema.value }] : [],
+}))
 </script>
 
 <!-- events.css nạp theo route (bỏ khỏi global entry.css) — dùng .event-*/.cal-*/.toggle-btn -->

@@ -48,7 +48,7 @@
 
     <!-- Checklist -->
     <div v-if="checklist.length" class="kbyg-checklist">
-      <h3 class="kbyg-checklist-title">🧳 Nên chuẩn bị</h3>
+      <h3 class="kbyg-checklist-title"><span aria-hidden="true">🧳</span> Nên chuẩn bị</h3>
       <ul class="kbyg-check-list">
         <li v-for="(item, i) in checklist" :key="i" class="kbyg-check-item">
           <span class="kbyg-check-box" aria-hidden="true">☐</span>

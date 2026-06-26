@@ -366,25 +366,34 @@ const calendarCells = computed(() => {
   if (startDow === 0) startDow = 7
   startDow--
 
+  const monthStart = `${y}-${String(m + 1).padStart(2, '0')}-01`
+  const monthEnd = `${y}-${String(m + 1).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}`
+  const dateMap = new Map<number, Entity[]>()
+  for (const e of allEvents.value) {
+    const attrs = e.attributes || {}
+    const ds = attrs.date_start
+    const de = attrs.date_end || ds
+    if (!ds || de < monthStart || ds > monthEnd) continue
+    const span = (new Date(de).getTime() - new Date(ds).getTime()) / 86400000
+    if (span > 30) continue
+    const from = Math.max(1, ds > monthStart ? parseInt(ds.slice(8), 10) : 1)
+    const to = Math.min(daysInMonth, de < monthEnd ? parseInt(de.slice(8), 10) : daysInMonth)
+    for (let d = from; d <= to; d++) {
+      const arr = dateMap.get(d)
+      if (arr) arr.push(e)
+      else dateMap.set(d, [e])
+    }
+  }
+
   const cells: { day: number; isToday?: boolean; events?: Entity[]; lunar?: string; lunarFirst?: boolean; lunarMid?: boolean }[] = []
   for (let i = 0; i < startDow; i++) cells.push({ day: 0 })
 
   for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
     const isToday = y === today.getFullYear() && m === today.getMonth() && d === today.getDate()
-    const events = allEvents.value.filter((e: Entity) => {
-      const attrs = e.attributes || {}
-      const ds = attrs.date_start
-      const de = attrs.date_end || ds
-      if (!ds) return false
-      if (dateStr < ds || dateStr > de) return false
-      const span = (new Date(de).getTime() - new Date(ds).getTime()) / 86400000
-      return span <= 30
-    })
     const lunar = lunarLabel(d, m + 1, y)
     const lunarFirst = isLunarFirstDay(d, m + 1, y)
     const lunarMid = isLunarFull(d, m + 1, y)
-    cells.push({ day: d, isToday, events, lunar, lunarFirst, lunarMid })
+    cells.push({ day: d, isToday, events: dateMap.get(d), lunar, lunarFirst, lunarMid })
   }
   return cells
 })
@@ -394,6 +403,30 @@ useSeoMeta({
   description: () => pc('seo_description'),
   ogTitle: () => pc('og_title'),
   ogDescription: () => pc('og_description'),
+})
+
+const festivalListSchema = computed(() => {
+  const items = allEvents.value.slice(0, 30).map((e: Entity, i: number) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    item: {
+      '@type': 'Event',
+      name: e.name,
+      ...(e.attributes?.date_start ? { startDate: e.attributes.date_start } : {}),
+      ...(e.attributes?.date_end ? { endDate: e.attributes.date_end } : {}),
+      url: `https://vinhlong360.vn/dia-diem/${e.id}`,
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      ...(e.place_name ? { location: { '@type': 'Place', name: e.place_name } } : {}),
+    },
+  }))
+  if (!items.length) return ''
+  return JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Lễ hội truyền thống',
+    numberOfItems: allEvents.value.length,
+    itemListElement: items,
+  })
 })
 
 useHead({
@@ -420,6 +453,7 @@ useHead({
         ],
       }),
     },
+    ...(festivalListSchema.value ? [{ type: 'application/ld+json' as const, innerHTML: festivalListSchema.value }] : []),
   ],
 })
 </script>

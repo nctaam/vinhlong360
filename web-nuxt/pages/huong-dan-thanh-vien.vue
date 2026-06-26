@@ -34,9 +34,9 @@
         <table class="points-table">
           <thead>
             <tr>
-              <th>Hoạt động</th>
-              <th>Cách tính</th>
-              <th>Tối đa</th>
+              <th scope="col">Hoạt động</th>
+              <th scope="col">Cách tính</th>
+              <th scope="col">Tối đa</th>
             </tr>
           </thead>
           <tbody>
@@ -149,7 +149,21 @@ useSeoMeta({
   ogTitle: 'Hướng dẫn thành viên — vinhlong360',
   ogDescription: 'Cách tính điểm danh tiếng, cấp bậc và huy hiệu trên vinhlong360.',
 })
-useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan-thanh-vien') }] })
+useHead({
+  link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan-thanh-vien') }],
+  script: [{
+    type: 'application/ld+json',
+    innerHTML: JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
+        { '@type': 'ListItem', position: 2, name: 'Cộng đồng', item: 'https://vinhlong360.vn/cong-dong' },
+        { '@type': 'ListItem', position: 3, name: 'Hướng dẫn thành viên' },
+      ],
+    }),
+  }],
+})
 </script>
 
 <style scoped>

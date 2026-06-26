@@ -47,7 +47,20 @@ useSeoMeta({
   ogTitle: () => doc.value.seo_title,
   ogDescription: () => doc.value.seo_description,
 })
-useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/dieu-khoan-su-dung') }] })
+useHead({
+  link: [{ rel: 'canonical', href: canonicalUrl('/dieu-khoan-su-dung') }],
+  script: [{
+    type: 'application/ld+json',
+    innerHTML: JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
+        { '@type': 'ListItem', position: 2, name: 'Điều khoản sử dụng' },
+      ],
+    }),
+  }],
+})
 </script>
 
 <style scoped>

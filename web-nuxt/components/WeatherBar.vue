@@ -26,16 +26,17 @@ const weatherIcon = computed(() => {
   return '🌤️'
 })
 
-async function fetchWeather() {
+async function fetchWeather(retries = 1) {
   try {
     const res = await $fetch<Record<string, any>>('/weather?area=vinh-long')
     if (res && !res.error) weather.value = res
-  } catch { /* weather unavailable — keep last value or stay hidden */ }
+  } catch {
+    if (retries > 0) setTimeout(() => fetchWeather(retries - 1), 5000)
+  }
 }
 
 onMounted(() => {
   fetchWeather()
-  // Refresh every 30 min so the bar doesn't go stale if the page stays open.
   timer = setInterval(fetchWeather, 30 * 60 * 1000)
 })
 onUnmounted(() => { if (timer) clearInterval(timer) })

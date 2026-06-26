@@ -25,8 +25,9 @@
         <span class="cr-score">{{ ratingDisplay.score }}</span>
         <span class="cr-count">({{ ratingDisplay.count }})</span>
       </div>
-      <div v-if="amenityIcons.length" class="card-amenities" :aria-label="amenityIcons.map(a => a.label).join(', ')">
+      <div v-if="amenityIcons.length" class="card-amenities" :aria-label="amenityIcons.map(a => a.label).join(', ') + (amenityExtra > 0 ? ` và ${amenityExtra} tiện ích khác` : '')">
         <span v-for="a in amenityIcons" :key="a.key" class="ca-icon" :title="a.label">{{ a.icon }}</span>
+        <span v-if="amenityExtra > 0" class="ca-more" :title="`${amenityExtra} tiện ích khác`">+{{ amenityExtra }}</span>
       </div>
       <div class="badges">
         <span v-if="isPeak" class="badge peak">🔥 Đang rộ</span>
@@ -90,11 +91,16 @@ const AMENITY_ICONS: Record<string, { icon: string; label: string }> = {
   restroom: { icon: '🚻', label: 'WC' },
   photography: { icon: '📸', label: 'Chụp ảnh OK' },
 }
-const amenityIcons = computed(() => {
+const allAmenities = computed(() => {
   const badges = props.entity.attributes?.amenity_badges
   if (!Array.isArray(badges) || !badges.length) return []
-  return badges.slice(0, 3).map((k: string) => ({ key: k, ...AMENITY_ICONS[k] })).filter((a: any) => a.icon)
+  return badges.map((k: string) => {
+    const meta = AMENITY_ICONS[k]
+    return meta ? { key: k, ...meta } : null
+  }).filter(Boolean) as { key: string; icon: string; label: string }[]
 })
+const amenityIcons = computed(() => allAmenities.value.slice(0, 3))
+const amenityExtra = computed(() => Math.max(0, allAmenities.value.length - 3))
 const ocopStars = computed(() => parseInt(props.entity.attributes?.ocop) || 0)
 const ratingDisplay = computed(() => {
   const a = props.entity.attributes
@@ -108,8 +114,9 @@ const ratingDisplay = computed(() => {
 </script>
 
 <style scoped>
-.card-amenities { display: flex; gap: 2px; margin-top: .25rem; }
+.card-amenities { display: flex; align-items: center; gap: 2px; margin-top: .25rem; }
 .ca-icon { font-size: .7rem; opacity: .7; cursor: default; }
+.ca-more { font-size: .65rem; color: var(--muted); font-weight: 600; margin-left: 1px; }
 .card-rating { display: flex; align-items: center; gap: .25rem; font-size: .8rem; margin-top: .25rem; }
 .cr-stars { color: var(--secondary, #d4a017); letter-spacing: -1px; }
 .cr-score { font-weight: 600; color: var(--text-primary); }
