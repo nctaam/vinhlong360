@@ -100,7 +100,7 @@ except ImportError:
     logger.info("Realtime data disabled (optional dependency)")
 
 try:
-    from circuit_breaker import safe_llm_call, all_breaker_stats, llm_breaker
+    from circuit_breaker import safe_llm_call, all_breaker_stats, llm_breaker, web_search_breaker, weather_breaker
     HAS_CIRCUIT_BREAKER = True
 except ImportError:
     HAS_CIRCUIT_BREAKER = False
@@ -279,11 +279,21 @@ MODEL_MINI = os.environ.get("LLM_MODEL_MINI", "cx/gpt-5.4-mini")
 # ── Web search (DuckDuckGo) ──
 
 def web_search(query: str, max_results: int = 5) -> list[dict]:
-    try:
+    """DuckDuckGo web search with circuit breaker protection (P0-7).
+
+    After 3 consecutive failures the web_search_breaker opens for 60s,
+    returning [] immediately instead of hammering a broken service.
+    """
+    def _do_search():
         from ddgs import DDGS
-        with DDGS(timeout=10) as ddgs:  # EH-04: timeout để 1 request DDG chậm không treo tool call
+        with DDGS(timeout=10) as ddgs:  # EH-04: timeout to avoid blocking
             results = list(ddgs.text(query, region="vn-vi", max_results=max_results))
         return [{"title": r.get("title", ""), "url": r.get("href", ""), "snippet": r.get("body", "")} for r in results]
+
+    try:
+        if HAS_CIRCUIT_BREAKER:
+            return web_search_breaker.call(_do_search)
+        return _do_search()
     except Exception as e:
         logger.error(f"Web search error: {e}")
         return []
@@ -698,9 +708,20 @@ def _call_tool_impl(name: str, args: dict) -> str:
     elif name == "weather":
         if HAS_REALTIME:
             area = args.get("area", "vinh-long")
-            weather = get_weather(area)
+            # P0-7: wrap weather call with circuit breaker — after 3 failures,
+            # skip weather for 120s and return fallback instead of hanging.
+            def _do_weather():
+                return get_weather(area)
+            try:
+                if HAS_CIRCUIT_BREAKER:
+                    weather_data = weather_breaker.call(_do_weather)
+                else:
+                    weather_data = _do_weather()
+            except Exception as _we:
+                logger.warning(f"Weather API error (circuit breaker): {_we}")
+                weather_data = None
             events = get_upcoming_events(days_ahead=14, area=area)
-            return json.dumps({"weather": weather, "events": events}, ensure_ascii=False, default=str)
+            return json.dumps({"weather": weather_data, "events": events}, ensure_ascii=False, default=str)
         return json.dumps({"error": "Weather API not available"})
 
     elif name == "directory_lookup":
