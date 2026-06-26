@@ -12,11 +12,13 @@
         </div>
 
         <div ref="messagesEl" class="chat-panel-msgs" aria-live="polite">
-          <div v-for="(msg, i) in messages" :key="i" :class="['cmsg', msg.role]">
-            {{ msg.content }}
+          <div v-for="(msg, i) in renderedMessages" :key="i" :class="['cmsg', msg.role, { 'cmsg-failed': msg.failed }]">
+            <span v-if="msg.role === 'assistant'" v-html="formatMd(msg.content)"></span>
+            <template v-else>{{ msg.content }}</template>
+            <button v-if="msg.failed" type="button" class="cmsg-retry" aria-label="Gửi lại" @click="resend(msg)">↻ Thử lại</button>
           </div>
           <div v-if="streaming && streamText" class="cmsg assistant">
-            {{ streamText }}
+            <span v-html="formatMd(streamText)"></span>
           </div>
           <div v-else-if="streaming" class="c-typing" role="status" aria-label="Đang trả lời...">
             <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
@@ -27,7 +29,7 @@
         </div>
 
         <div class="chat-panel-input">
-          <input v-model="inputText" :placeholder="chatPlaceholder" aria-label="Nhập câu hỏi" :disabled="streaming" @keyup.enter="sendMessage(inputText)" />
+          <input v-model="inputText" :placeholder="chatPlaceholder" aria-label="Nhập câu hỏi" :disabled="streaming" maxlength="500" @keyup.enter="sendMessage(inputText)" />
           <button v-if="streaming" type="button" aria-label="Dừng trả lời" @click="stopStream">Dừng</button>
           <button v-else type="button" aria-label="Gửi tin nhắn" :disabled="!inputText.trim()" @click="sendMessage(inputText)">Gửi</button>
         </div>
@@ -47,7 +49,7 @@ const chatPlaceholder = computed(() => ss('chat.placeholder', 'Hỏi gì đó v�
 const chatDisclaimer = computed(() => ss('chat.disclaimer', 'Nội dung do AI tạo, có thể chưa chính xác — vui lòng kiểm chứng.'))
 const open = ref(false)
 const inputText = ref('')
-const messages = ref<{ role: string; content: string }[]>([])
+const messages = ref<{ role: string; content: string; failed?: boolean }[]>([])
 const panelEl = ref<HTMLElement | null>(null)
 
 // Body-scroll lock, focus trap, Escape-to-close + focus restore (SSR-safe).
@@ -101,10 +103,36 @@ const streamText = ref('')
 const abortCtrl = ref<AbortController | null>(null)  // P1-1: cho phép dừng/timeout SSE
 function stopStream() { abortCtrl.value?.abort() }
 const sessionId = ref('')
+if (import.meta.client) {
+  try { sessionId.value = sessionStorage.getItem('chat_sid') || '' } catch { /* private/disabled */ }
+}
 const messagesEl = ref<HTMLElement | null>(null)
+const renderedMessages = computed(() => messages.value.slice(-50))
 
+function sanitize(t: string) {
+  return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
+function formatMd(text: string) {
+  const s = sanitize(text)
+  return s.replace(/\*\*(.*?)\*\*/g, (_, g) => `<strong>${g}</strong>`).replace(/\n/g, '<br>')
+}
+
+async function resend(msg: { role: string; content: string; failed?: boolean }) {
+  if (streaming.value) return
+  const idx = messages.value.indexOf(msg)
+  if (idx === -1) return
+  messages.value.splice(idx, 1)
+  const errIdx = messages.value.findIndex((m, i) => i >= idx && m.role === 'assistant' && (m.content === 'Xin lỗi, có lỗi xảy ra.' || m.content === 'Xin lỗi, không thể kết nối. Vui lòng thử lại.'))
+  if (errIdx !== -1) messages.value.splice(errIdx, 1)
+  await sendMessage(msg.content)
+}
+
+let scrollRaf: number | null = null
 function scrollBottom() {
-  nextTick(() => {
+  if (scrollRaf) return
+  scrollRaf = requestAnimationFrame(() => {
+    scrollRaf = null
     if (messagesEl.value) messagesEl.value.scrollTop = messagesEl.value.scrollHeight
   })
 }
@@ -122,9 +150,11 @@ async function sendMessage(text: string) {
 
   const history = messages.value.slice(-10).map(m => ({ role: m.role, content: m.content }))
 
+  abortCtrl.value?.abort()
   const controller = new AbortController()
   abortCtrl.value = controller
-  const timeoutId = setTimeout(() => controller.abort(), 45000)  // P1-1: chặn treo vô hạn
+  const timeoutId = setTimeout(() => controller.abort(), 45000)
+  let reader: ReadableStreamDefaultReader<Uint8Array> | null = null
   try {
     const params = new URLSearchParams({
       message: userMsg,
@@ -139,7 +169,7 @@ async function sendMessage(text: string) {
       scrollBottom()
       return
     }
-    const reader = res.body.getReader()
+    reader = res.body.getReader()
     const decoder = new TextDecoder()
     let fullText = ''
 
@@ -156,7 +186,10 @@ async function sendMessage(text: string) {
             streamText.value = fullText
             scrollBottom()
           } else if (data.type === 'done') {
-            if (data.session_id) sessionId.value = data.session_id
+            if (data.session_id) {
+              sessionId.value = data.session_id
+              try { sessionStorage.setItem('chat_sid', data.session_id) } catch { /* */ }
+            }
             if (data.suggestions?.length) suggestions.value = data.suggestions
           }
         } catch { /* skip malformed SSE line */ }
@@ -166,18 +199,27 @@ async function sendMessage(text: string) {
     messages.value.push({ role: 'assistant', content: fullText || 'Không có phản hồi.' })
   } catch {
     const aborted = controller.signal.aborted
+    const userMsg2 = messages.value.findLast(m => m.role === 'user')
+    if (userMsg2 && !aborted) userMsg2.failed = true
     messages.value.push({
       role: 'assistant',
-      content: aborted ? 'Đã dừng hoặc quá thời gian chờ. Vui lòng thử lại.' : 'Xin lỗi, có lỗi xảy ra. Vui lòng thử lại.',
+      content: aborted ? 'Đã dừng hoặc quá thời gian chờ.' : 'Xin lỗi, có lỗi xảy ra.',
     })
   } finally {
     clearTimeout(timeoutId)
+    try { reader?.cancel() } catch { /* already closed */ }
     abortCtrl.value = null
     streaming.value = false
     streamText.value = ''
+    if (messages.value.length > 200) messages.value = messages.value.slice(-100)
     scrollBottom()
   }
 }
+
+onBeforeUnmount(() => {
+  abortCtrl.value?.abort()
+  if (scrollRaf) cancelAnimationFrame(scrollRaf)
+})
 </script>
 
 <style scoped>
@@ -189,4 +231,10 @@ async function sendMessage(text: string) {
   color: var(--c-text-muted, #888);
   text-align: center;
 }
+.cmsg-failed { opacity: .7; border-left: 2px solid var(--error, #d32); }
+.cmsg-retry { display: inline-block; margin-top: 4px; font-size: 11px; color: var(--primary-fg); background: none; border: none; cursor: pointer; text-decoration: underline; padding: 2px 4px; min-height: 36px; border-radius: var(--radius-sm, 4px); }
+.cmsg-retry:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.csuggestions button { min-height: 44px; }
+.chat-panel-input button { min-height: 36px; }
+@media (pointer: coarse) { .chat-panel-input button { min-height: 44px; } }
 </style>

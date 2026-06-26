@@ -213,8 +213,11 @@ function switchMode(mode: TransportMode) {
   computeRoute()
 }
 
+let renderingMap = false
 async function renderMap(result: RouteResult | null) {
-  if (!import.meta.client || !routeMapEl.value) return
+  if (!import.meta.client || !routeMapEl.value || renderingMap) return
+  renderingMap = true
+  try {
 
   if (!mapInstance) {
     const res = await createNDAMap(routeMapEl.value)
@@ -277,6 +280,8 @@ async function renderMap(result: RouteResult | null) {
   } else {
     mapInstance.once('load', addRouteLine)
   }
+
+  } finally { renderingMap = false }
 }
 
 watch(routeMapEl, (el) => {
@@ -288,6 +293,11 @@ watch(routeMapEl, (el) => {
 onMounted(() => {
   loadCoords()
   computeRoute()
+})
+
+onBeforeUnmount(() => {
+  if (mapInstance && typeof (mapInstance as any).remove === 'function') (mapInstance as any).remove()
+  mapInstance = null
 })
 
 // --- SEO ---
