@@ -436,6 +436,9 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
         if attrs.get("tourist_type"):
             ld["touristType"] = attrs["tourist_type"]
 
+    if attrs.get("ocop"):
+        ld["identifier"] = {"@type": "PropertyValue", "propertyID": "OCOP", "value": str(attrs["ocop"])}
+
     if schema_type == "Product":
         if attrs.get("price"):
             price_digits = re.sub(r"[^0-9]", "", str(attrs["price"]))
@@ -699,6 +702,12 @@ def build_itinerary_jsonld(itinerary: dict[str, Any], by_id: dict[str, dict[str,
                 for i, st in enumerate(sub_trips)
             ],
         }
+    date_modified = _safe_date(itinerary.get("updatedAt"))
+    if date_modified:
+        ld["dateModified"] = date_modified
+    date_created = _safe_date(itinerary.get("created_at"))
+    if date_created:
+        ld["dateCreated"] = date_created
     ld["isPartOf"] = {"@id": f"{SITE}/#website"}
     return {k: v for k, v in ld.items() if v not in (None, "", [], {})}
 

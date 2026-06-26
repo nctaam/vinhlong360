@@ -1162,6 +1162,19 @@ def test_entity_jsonld_related_link_no_duplicates():
     assert len(ld["relatedLink"]) == 1
 
 
+def test_entity_jsonld_related_link_from_id_to_id():
+    """Relationships using from_id/to_id field names should work too."""
+    entities = [
+        {"id": "a", "name": "A", "type": "attraction"},
+        {"id": "b", "name": "B", "type": "dish"},
+    ]
+    by_id = _by_id(entities)
+    relationships = [{"from_id": "a", "to_id": "b", "type": "near"}]
+    ld = seo.build_entity_jsonld(by_id["a"], by_id, relationships=relationships)
+    assert "relatedLink" in ld
+    assert seo._entity_url("b") in ld["relatedLink"]
+
+
 def test_entity_jsonld_endpoint_passes_relationships(monkeypatch):
     data = {
         "entities": [
@@ -1755,6 +1768,60 @@ def test_collection_sorts_stably_with_same_confidence():
     ld = seo.build_collection_jsonld("du-lich", data)
     names = [el["name"] for el in ld["itemListElement"]]
     assert names == ["Aaa", "Mmm", "Zzz"]
+
+
+# ── Itinerary date enrichment ────────────────────────────────────────
+
+
+def test_itinerary_jsonld_date_modified():
+    it = {
+        "id": "dated-it", "title": "Dated", "stops": [],
+        "updatedAt": "2026-06-20",
+    }
+    ld = seo.build_itinerary_jsonld(it, {})
+    assert ld["dateModified"] == "2026-06-20"
+
+
+def test_itinerary_jsonld_date_created():
+    it = {
+        "id": "created-it", "title": "Created", "stops": [],
+        "created_at": "2026-01-15",
+    }
+    ld = seo.build_itinerary_jsonld(it, {})
+    assert ld["dateCreated"] == "2026-01-15"
+
+
+def test_itinerary_jsonld_no_dates_when_invalid():
+    it = {
+        "id": "no-date-it", "title": "No date", "stops": [],
+        "updatedAt": "bad", "created_at": None,
+    }
+    ld = seo.build_itinerary_jsonld(it, {})
+    assert "dateModified" not in ld
+    assert "dateCreated" not in ld
+
+
+# ── OCOP identifier ──────────────────────────────────────────────────
+
+
+def test_entity_jsonld_ocop_identifier():
+    entity = {
+        "id": "ocop-id", "name": "SP OCOP", "type": "product",
+        "attributes": {"ocop": "4 sao", "price": "100.000"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "identifier" in ld
+    assert ld["identifier"]["propertyID"] == "OCOP"
+    assert ld["identifier"]["value"] == "4 sao"
+
+
+def test_entity_jsonld_no_identifier_without_ocop():
+    entity = {
+        "id": "no-ocop", "name": "SP", "type": "product",
+        "attributes": {"price": "50.000"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "identifier" not in ld
 
 
 def test_collection_handles_none_confidence():
