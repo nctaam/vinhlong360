@@ -726,7 +726,7 @@ async function fetchSearch(reset = false) {
 
 function runSearch() {
   const q = searchInput.value.trim()
-  if (q.length < 2) { showToast('Nhập ít nhất 2 ký tự để tìm', 'info'); return }
+  if (q.length < 2) { showToast('Nhập ít nhất 2 ký tự để tìm kiếm', 'info'); return }
   searchQuery.value = q
   fetchSearch(true)
 }

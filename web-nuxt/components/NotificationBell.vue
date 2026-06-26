@@ -1,12 +1,12 @@
 <template>
   <div class="notif-bell" v-if="isLoggedIn">
-    <button type="button" class="notif-trigger" @click="toggle" aria-label="Thông báo" :aria-expanded="open">
+    <button type="button" class="notif-trigger" @click="toggle" :aria-label="unreadCount > 0 ? `${unreadCount} thông báo chưa đọc` : 'Thông báo'" :aria-expanded="open">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
     </button>
 
     <Transition name="notif-drop">
-      <div v-if="open" class="notif-dropdown">
+      <div v-if="open" class="notif-dropdown" role="region" aria-label="Thông báo">
         <div class="notif-header">
           <strong>Thông báo</strong>
           <button type="button" v-if="unreadCount > 0" class="notif-mark-read" @click="doMarkRead">Đọc tất cả</button>

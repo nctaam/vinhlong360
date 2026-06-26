@@ -212,7 +212,7 @@ import { TYPE_META } from '~/composables/useConstants'
 useReveal()
 const route = useRoute()
 const userId = route.params.id as string
-const { isLoggedIn, authHeaders } = useAuth()
+const { isLoggedIn, authHeaders, handleSessionExpired } = useAuth()
 const { show: showToast } = useToast()
 const { reportPost } = useReport()
 const { repost, quote } = useRepost()
@@ -401,9 +401,10 @@ async function toggleFollow() {
   followerCount.value += was ? -1 : 1
   try {
     await $fetch(`/api/follow/user/${userId}`, { method: 'POST', headers: authHeaders() })
-  } catch {
+  } catch (e: any) {
     isFollowing.value = was
     followerCount.value += was ? 1 : -1
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast('Không thể theo dõi', 'error')
   }
   followLoading.value = false
@@ -435,9 +436,14 @@ async function checkBlocked() {
 
 async function toggleBlock() {
   if (isBlocked.value) {
-    await $fetch(`/api/block/${userId}`, { method: 'POST', headers: authHeaders() })
-    isBlocked.value = false
-    showToast('Đã bỏ chặn', 'success')
+    try {
+      await $fetch(`/api/block/${userId}`, { method: 'POST', headers: authHeaders() })
+      isBlocked.value = false
+      showToast('Đã bỏ chặn', 'success')
+    } catch (e: any) {
+      if (e?.response?.status === 401) { handleSessionExpired(); return }
+      showToast('Không thể bỏ chặn', 'error')
+    }
     return
   }
   const ok = await confirmDialog(
@@ -454,7 +460,10 @@ async function toggleBlock() {
     isBlocked.value = true
     if (isFollowing.value) { isFollowing.value = false; followerCount.value-- }
     showToast('Đã chặn người dùng', 'success')
-  } catch { showToast('Không thể chặn', 'error') }
+  } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    showToast('Không thể chặn', 'error')
+  }
 }
 
 function reportUser() {

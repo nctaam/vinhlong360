@@ -51,8 +51,11 @@
       </div>
 
       <NuxtLink v-if="post.repost" :to="`/bai-viet/${post.repost.id}`" class="thread-repost-embed">
-        <span class="tre-head">🔁 <strong>{{ post.repost.author || 'Người dùng' }}</strong></span>
-        <span class="tre-content">{{ post.repost.content }}</span>
+        <template v-if="post.repost.content">
+          <span class="tre-head">🔁 <strong>{{ post.repost.author || 'Người dùng' }}</strong></span>
+          <span class="tre-content">{{ post.repost.content }}</span>
+        </template>
+        <span v-else class="tre-deleted">🔁 Bài viết gốc đã bị xoá</span>
       </NuxtLink>
 
       <div v-if="post.images?.length" class="thread-images" :class="imgLayoutClass">
@@ -62,8 +65,8 @@
           class="thread-img-wrap"
           @click="openLightbox(i)"
         >
-          <NuxtImg v-if="isRemoteUrl(img)" :src="img" :alt="`Ảnh ${i + 1}`" loading="lazy" decoding="async" width="400" height="300" sizes="sm:100vw md:50vw lg:400px" @error="onImgError" />
-          <img v-else :src="img" :alt="`Ảnh ${i + 1}`" loading="lazy" decoding="async" width="400" height="300" @error="onImgError" />
+          <NuxtImg v-if="isRemoteUrl(img)" :src="img" :alt="`${post.display_name || 'Bài viết'} — ảnh ${i + 1}`" loading="lazy" decoding="async" width="400" height="300" sizes="sm:100vw md:50vw lg:400px" @error="onImgError" />
+          <img v-else :src="img" :alt="`${post.display_name || 'Bài viết'} — ảnh ${i + 1}`" loading="lazy" decoding="async" width="400" height="300" @error="onImgError" />
           <span v-if="i === 3 && extraCount > 0" class="thread-img-more">+{{ extraCount }}</span>
         </button>
       </div>
@@ -234,7 +237,9 @@ async function sharePost() {
     try {
       await navigator.clipboard.writeText(url)
       showToast('Đã sao chép liên kết', 'success')
-    } catch {}
+    } catch {
+      showToast('Không thể sao chép liên kết', 'error')
+    }
   }
 }
 
@@ -335,3 +340,7 @@ if (import.meta.client) {
 
 const { timeAgo } = useTimeAgo()
 </script>
+
+<style scoped>
+.tre-deleted { font-size: var(--text-sm); color: var(--muted); font-style: italic; }
+</style>

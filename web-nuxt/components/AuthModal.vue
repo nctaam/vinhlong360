@@ -148,7 +148,10 @@ const { requestOtp, verifyOtp, checkPhone, login, setPassword } = useAuth()
 const { onLoginSuccess } = useAuthModal()
 
 const step = ref<'phone' | 'password' | 'otp' | 'set-password' | 'done'>('phone')
-watch(step, (v) => { if (v === 'done') onLoginSuccess() })
+watch(step, (v) => {
+  if (v === 'done') onLoginSuccess()
+  nextTick(() => modalEl.value?.querySelector<HTMLElement>('h3')?.focus())
+})
 const phone = ref('')
 const password = ref('')
 const newPassword = ref('')
@@ -257,6 +260,7 @@ async function sendOtp() {
 }
 
 async function verifyCode() {
+  if (sending.value) return
   const code = otpDigits.value.join('')
   if (code.length !== 6) {
     error.value = 'Vui lòng nhập đủ 6 chữ số'
@@ -349,4 +353,8 @@ function onOtpPaste(e: ClipboardEvent) {
   .otp-done h3 { animation: none; }
   .otp-step { animation: none; }
 }
+@media (max-width: 600px) {
+  .otp-step .input { font-size: 16px; }
+}
+.otp-step h3 { outline: none; }
 </style>

@@ -15,8 +15,10 @@
     <nav class="settings-tabs" role="tablist" aria-label="Cài đặt">
       <button
         v-for="t in TABS" :key="t.key" type="button" role="tab"
+        :id="`tab-${t.key}`"
         class="settings-tab" :class="{ active: activeTab === t.key }"
         :aria-selected="activeTab === t.key"
+        :aria-controls="`panel-${t.key}`"
         @click="setTab(t.key)"
       >
         <span class="settings-tab-icon" aria-hidden="true">{{ t.icon }}</span>
@@ -25,7 +27,7 @@
     </nav>
 
     <!-- Tab: Hồ sơ -->
-    <div v-if="activeTab === 'ho-so'" class="settings-card card" role="tabpanel">
+    <div v-if="activeTab === 'ho-so'" :id="`panel-ho-so`" class="settings-card card" role="tabpanel" aria-labelledby="tab-ho-so">
       <h2>Hồ sơ cá nhân</h2>
       <form class="settings-form" @submit.prevent="save">
         <div class="sf-avatar-section">
@@ -98,7 +100,7 @@
     </div>
 
     <!-- Tab: Bảo mật -->
-    <div v-if="activeTab === 'bao-mat'" role="tabpanel">
+    <div v-if="activeTab === 'bao-mat'" id="panel-bao-mat" role="tabpanel" aria-labelledby="tab-bao-mat">
       <div class="settings-card card">
         <h2>Mật khẩu</h2>
         <p v-if="!user?.has_password" class="sf-hint">Bạn chưa đặt mật khẩu. Đặt mật khẩu để đăng nhập nhanh hơn.</p>
@@ -152,7 +154,7 @@
     </div>
 
     <!-- Tab: Thông báo -->
-    <div v-if="activeTab === 'thong-bao'" class="settings-card card" role="tabpanel">
+    <div v-if="activeTab === 'thong-bao'" id="panel-thong-bao" class="settings-card card" role="tabpanel" aria-labelledby="tab-thong-bao">
       <h2>Tùy chọn thông báo</h2>
       <p class="sf-hint" style="margin-bottom: 1rem;">Chọn loại thông báo bạn muốn nhận.</p>
       <div v-if="notifPrefsLoading" class="sf-hint">Đang tải...</div>
@@ -171,7 +173,7 @@
     </div>
 
     <!-- Tab: Giao diện -->
-    <div v-if="activeTab === 'giao-dien'" class="settings-card card" role="tabpanel">
+    <div v-if="activeTab === 'giao-dien'" id="panel-giao-dien" class="settings-card card" role="tabpanel" aria-labelledby="tab-giao-dien">
       <h2>Giao diện</h2>
       <div class="sf-field">
         <span class="sf-label">Chế độ màu</span>
@@ -191,7 +193,7 @@
     </div>
 
     <!-- Tab: Quyền riêng tư -->
-    <div v-if="activeTab === 'rieng-tu'" class="settings-card card" role="tabpanel">
+    <div v-if="activeTab === 'rieng-tu'" id="panel-rieng-tu" class="settings-card card" role="tabpanel" aria-labelledby="tab-rieng-tu">
       <h2>Quyền riêng tư</h2>
       <div v-if="privacyLoading" class="sf-hint">Đang tải...</div>
       <div v-else class="settings-form">
@@ -234,7 +236,7 @@
     </div>
 
     <!-- Tab: Người chặn -->
-    <div v-if="activeTab === 'chan'" class="settings-card card" role="tabpanel">
+    <div v-if="activeTab === 'chan'" id="panel-chan" class="settings-card card" role="tabpanel" aria-labelledby="tab-chan">
       <h2>Người bị chặn</h2>
       <div v-if="blockedLoading" class="sf-hint">Đang tải...</div>
       <div v-else-if="blockedUsers.length" class="sessions-list">
@@ -249,7 +251,7 @@
     </div>
 
     <!-- Tab: Nguy hiểm -->
-    <div v-if="activeTab === 'nguy-hiem'" class="settings-card card settings-danger" role="tabpanel">
+    <div v-if="activeTab === 'nguy-hiem'" id="panel-nguy-hiem" class="settings-card card settings-danger" role="tabpanel" aria-labelledby="tab-nguy-hiem">
       <h2>Vùng nguy hiểm</h2>
       <div class="danger-actions">
         <div class="danger-item">
@@ -318,6 +320,7 @@ const avatarPreview = ref('')
 async function onAvatarChange(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0]
   if (!file) return
+  if (avatarPreview.value?.startsWith('blob:')) URL.revokeObjectURL(avatarPreview.value)
   avatarPreview.value = URL.createObjectURL(file)
   uploadingAvatar.value = true
   try {
@@ -361,6 +364,14 @@ const newPw = ref('')
 const savingPw = ref(false)
 
 async function savePassword() {
+  if (user.value?.has_password && !currentPw.value) {
+    showToast('Vui lòng nhập mật khẩu hiện tại', 'error')
+    return
+  }
+  if (!newPw.value || newPw.value.length < 6) {
+    showToast('Mật khẩu mới phải từ 6 ký tự trở lên', 'error')
+    return
+  }
   savingPw.value = true
   try {
     const body: Record<string, string> = { password: newPw.value }
@@ -410,6 +421,7 @@ const coverPreview = ref('')
 async function onCoverChange(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0]
   if (!file) return
+  if (coverPreview.value?.startsWith('blob:')) URL.revokeObjectURL(coverPreview.value)
   coverPreview.value = URL.createObjectURL(file)
   uploadingCover.value = true
   try {
@@ -642,7 +654,7 @@ async function save() {
 .notif-pref-icon { font-size: 1.25rem; flex-shrink: 0; }
 .notif-pref-info strong { display: block; font-size: .9rem; }
 .notif-pref-info .sf-hint { display: block; margin-top: .1rem; }
-.toggle { appearance: none; width: 40px; height: 22px; background: var(--muted); border-radius: 11px; position: relative; cursor: pointer; transition: background .2s; flex-shrink: 0; }
+.toggle { appearance: none; width: 40px; height: 22px; background: var(--muted); border-radius: 11px; position: relative; cursor: pointer; transition: background .2s; flex-shrink: 0; min-height: 44px; padding: 11px 0; box-sizing: content-box; }
 .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: transform .2s; }
 .toggle:checked { background: var(--accent, var(--primary)); }
 .toggle:checked::after { transform: translateX(18px); }
@@ -693,5 +705,6 @@ async function save() {
   .danger-item { flex-direction: column; align-items: flex-start; gap: .5rem; }
   .settings-tabs { gap: 0; }
   .settings-tab { padding: .5rem .65rem; font-size: .8rem; }
+  .sf-input { font-size: 16px; }
 }
 </style>
