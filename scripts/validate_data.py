@@ -315,10 +315,22 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     )
     place_coords_pct = round(100 * place_with_coords / max(place_xa_phuong, 1), 1)
 
+    # Check place entities with level=None (data integrity gap)
+    place_level_none = 0
+    for entity in entities:
+        if not isinstance(entity, dict):
+            continue
+        if entity.get("type") == "place" and entity.get("level") is None:
+            place_level_none += 1
+    if place_level_none:
+        issues.append(Issue("warning", "place_level_none",
+            f"{place_level_none} place entities have level=None (should be xa/phuong/thi-tran/tp/huyen/tinh)"))
+
     broken_relationships = 0
     missing_relationship_fields = 0
     area_place_conflicts = 0
     produced_in_area_conflicts = 0
+    produced_in_target_type_errors = 0  # produced_in should target place or craft_village
     far_near_relationships = 0
     near_missing_location = 0
     self_loop_relationships = 0  # DI-005: rel có source==target
@@ -389,8 +401,15 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
             if distance is not None and distance > MAX_NEAR_DISTANCE_KM:
                 far_near_relationships += 1
         elif kind == "produced_in":
+            dst_entity = entity_by_id.get(dst)
+            # produced_in should target place or craft_village (a product is produced
+            # in a location or workshop). Targeting another product is wrong.
+            if isinstance(dst_entity, dict) and dst_entity.get("type") not in (
+                "place", "craft_village", None
+            ):
+                produced_in_target_type_errors += 1
             src_area = effective_area(entity_by_id.get(src))
-            dst_area = effective_area(entity_by_id.get(dst))
+            dst_area = effective_area(dst_entity)
             if src_area and dst_area and src_area != dst_area:
                 produced_in_area_conflicts += 1
 
@@ -408,6 +427,8 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         issues.append(Issue("error", "far_near_relationships", f"{far_near_relationships} near relationships are farther than {MAX_NEAR_DISTANCE_KM:g} km"))
     if produced_in_area_conflicts:
         issues.append(Issue("error", "produced_in_area_conflicts", f"{produced_in_area_conflicts} produced_in relationships cross conflicting entity areas"))
+    if produced_in_target_type_errors:
+        issues.append(Issue("error", "produced_in_target_type", f"{produced_in_target_type_errors} produced_in relationships target an entity that is not place or craft_village"))
     if self_loop_relationships:
         issues.append(Issue("error", "self_loop_relationships", f"{self_loop_relationships} relationships have source==target"))
     # DI-005: itinerary stop trỏ entity không tồn tại (free-text stop không có id → bỏ qua)
@@ -483,6 +504,8 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         "near_missing_location": near_missing_location,
         "far_near_relationships": far_near_relationships,
         "produced_in_area_conflicts": produced_in_area_conflicts,
+        "produced_in_target_type_errors": produced_in_target_type_errors,
+        "place_level_none": place_level_none,
         "relationship_fanout_over_limit": high_fanout_count,
         "broken_relationships": broken_relationships,
         "duplicate_names": len(duplicate_names),
@@ -524,6 +547,8 @@ def print_report(issues: list[Issue], stats: dict[str, Any]) -> None:
         "near_missing_location",
         "far_near_relationships",
         "produced_in_area_conflicts",
+        "produced_in_target_type_errors",
+        "place_level_none",
         "relationship_fanout_over_limit",
         "duplicate_names",
         "source_not_list",

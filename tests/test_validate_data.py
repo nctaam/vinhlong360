@@ -152,3 +152,62 @@ def test_validate_flags_produced_in_area_conflicts(tmp_path: Path) -> None:
 
     assert stats["produced_in_area_conflicts"] == 1
     assert "produced_in_area_conflicts" in {issue.code for issue in issues}
+
+
+def test_validate_flags_produced_in_targeting_wrong_type(tmp_path: Path) -> None:
+    """produced_in should target place or craft_village, not product."""
+    data = {
+        "entities": [
+            {"id": "product-a", "type": "product", "name": "Product A", "summary": "A", "area": "vinh-long", "coordinates": [10.25, 106.0]},
+            {"id": "product-b", "type": "product", "name": "Product B", "summary": "B", "area": "vinh-long", "coordinates": [10.26, 106.01]},
+            {"id": "village-ok", "type": "craft_village", "name": "Village OK", "summary": "V", "area": "vinh-long", "coordinates": [10.27, 106.02]},
+        ],
+        "relationships": [
+            {"from": "product-a", "to": "product-b", "type": "produced_in"},  # wrong target type
+            {"from": "product-a", "to": "village-ok", "type": "produced_in"},  # correct
+        ],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["produced_in_target_type_errors"] == 1
+    assert "produced_in_target_type" in {issue.code for issue in issues}
+
+
+def test_validate_produced_in_allows_place_and_craft_village(tmp_path: Path) -> None:
+    """produced_in targeting place or craft_village should NOT flag errors."""
+    data = {
+        "entities": [
+            {"id": "product-a", "type": "product", "name": "Product A", "summary": "A", "area": "vinh-long", "coordinates": [10.25, 106.0]},
+            {"id": "place-1", "type": "place", "name": "Place 1", "summary": "P", "area": "vinh-long", "coordinates": [10.26, 106.01]},
+            {"id": "village-1", "type": "craft_village", "name": "Village 1", "summary": "V", "area": "vinh-long", "coordinates": [10.27, 106.02]},
+        ],
+        "relationships": [
+            {"from": "product-a", "to": "place-1", "type": "produced_in"},
+            {"from": "product-a", "to": "village-1", "type": "produced_in"},
+        ],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["produced_in_target_type_errors"] == 0
+    assert "produced_in_target_type" not in {issue.code for issue in issues}
+
+
+def test_validate_flags_place_level_none(tmp_path: Path) -> None:
+    """Place entities with level=None should be flagged."""
+    data = {
+        "entities": [
+            {"id": "place-ok", "type": "place", "name": "Place OK", "summary": "OK", "level": "xa", "area": "vinh-long", "coordinates": [10.25, 106.0]},
+            {"id": "place-no-level", "type": "place", "name": "Place No Level", "summary": "No level", "area": "vinh-long", "coordinates": [10.26, 106.01]},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["place_level_none"] == 1
+    assert "place_level_none" in {issue.code for issue in issues}
