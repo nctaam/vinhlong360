@@ -8,7 +8,11 @@
       <button type="button" class="admin-refresh" :disabled="refreshing" @click="refreshAll"><span :class="{ 'refresh-spin': refreshing }">&#8635;</span> Làm mới</button>
     </div>
 
-    <div v-if="!health" class="admin-loading"><div class="spinner"></div></div>
+    <div v-if="!health && !healthError" class="admin-loading"><div class="spinner"></div></div>
+    <div v-else-if="!health && healthError" class="admin-empty">
+      <p>Không kết nối được Knowledge Agent.</p>
+      <button type="button" class="btn btn-secondary" @click="refreshAll">Thử lại</button>
+    </div>
     <template v-else>
 
     <!-- Health Status -->
@@ -228,6 +232,7 @@ async function refreshAll() {
 }
 
 const health = ref<Record<string, unknown> | null>(null)
+const healthError = ref(false)
 const triggerLoading = ref(false)
 const triggerResult = ref('')
 
@@ -271,7 +276,7 @@ const subsystems = computed(() => {
 })
 
 async function fetchHealth() {
-  try { health.value = await $fetch<Record<string, unknown>>('/health') } catch { showToast('Không kết nối được agent', 'error') }
+  try { health.value = await $fetch<Record<string, unknown>>('/health'); healthError.value = false } catch { healthError.value = true; showToast('Không kết nối được agent', 'error') }
 }
 
 async function triggerLearn() {

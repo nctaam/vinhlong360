@@ -148,7 +148,7 @@
 
     <!-- User detail drawer -->
     <Teleport to="body">
-      <div v-if="detailUser" class="ud-overlay" @click.self="detailUser = null">
+      <div v-if="detailUser" ref="drawerRef" class="ud-overlay" @click.self="detailUser = null">
         <div class="ud-drawer" role="dialog" aria-modal="true" :aria-label="`Chi tiết ${detailUser.display_name || detailUser.phone}`">
           <header class="ud-head">
             <div class="ud-head-user">
@@ -405,6 +405,9 @@ function exportCSV() {
 
 // ── User detail drawer ──
 const detailUser = ref<any | null>(null)
+const drawerRef = ref<HTMLElement | null>(null)
+const drawerOpen = computed(() => !!detailUser.value)
+useModalA11y(drawerOpen, drawerRef, { onClose: () => { detailUser.value = null } })
 const detailProfile = ref<any | null>(null)
 const detailPosts = ref<any[]>([])
 const detailPostsLoading = ref(false)

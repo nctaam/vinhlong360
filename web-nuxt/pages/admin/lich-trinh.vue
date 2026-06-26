@@ -58,7 +58,7 @@
     </template>
 
     <Transition name="modal-fade">
-    <div v-if="showModal" class="modal-overlay show" role="dialog" aria-modal="true" aria-labelledby="lt-modal-title" @click.self="showModal = false" @keyup.escape="showModal = false">
+    <div v-if="showModal" ref="ltModalRef" class="modal-overlay show" role="dialog" aria-modal="true" aria-labelledby="lt-modal-title" @click.self="showModal = false">
       <div class="modal admin-modal-md">
         <div class="modal-head">
           <h2 id="lt-modal-title">{{ editing ? 'Sửa Lịch trình' : 'Tạo Lịch trình' }}</h2>
@@ -137,6 +137,8 @@ const filteredItineraries = computed(() => {
   return itineraries.value.filter(it => (it.name || '').toLowerCase().includes(q) || (it.area || '').toLowerCase().includes(q) || it.id.toLowerCase().includes(q))
 })
 const showModal = ref(false)
+const ltModalRef = ref<HTMLElement | null>(null)
+useModalA11y(showModal, ltModalRef, { onClose: () => { showModal.value = false } })
 const editing = ref<Record<string, unknown> | null>(null)
 const form = ref<Record<string, unknown>>({})
 const stopsJson = ref('[]')

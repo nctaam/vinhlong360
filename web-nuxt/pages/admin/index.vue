@@ -27,48 +27,48 @@
     <!-- Partial-degradation banner -->
     <div v-if="partialDegraded" class="dash-degraded" role="status">
       <span class="dash-degraded-icon" aria-hidden="true">&#9888;</span>
-      <span>Một phần dữ liệu dashboard chưa tải được — bấm "Làm mới" để thử lại.</span>
+      <span>Chưa tải được: {{ degradedDetail }} — bấm "Làm mới" để thử lại.</span>
     </div>
 
     <!-- Primary stats -->
-    <div class="dash-stats">
-      <div class="dash-stat-card">
-        <div class="dash-stat-icon" style="background: rgba(33,150,83,.1); color: #219653;">&#127759;</div>
+    <div class="dash-stats" role="group" aria-label="Thống kê tổng quan">
+      <div class="dash-stat-card" role="group" aria-label="Entities">
+        <div class="dash-stat-icon" aria-hidden="true" style="background: rgba(33,150,83,.1); color: #219653;">&#127759;</div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ stats.total_entities || 0 }}<span v-if="stats.entities_week" class="dash-delta">+{{ stats.entities_week }}</span></div>
           <div class="dash-stat-label">Entities</div>
         </div>
       </div>
       <div class="dash-stat-card">
-        <div class="dash-stat-icon" style="background: rgba(52,120,246,.1); color: #3478F6;">&#127963;</div>
+        <div class="dash-stat-icon" aria-hidden="true" style="background: rgba(52,120,246,.1); color: #3478F6;">&#127963;</div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ stats.total_places || 0 }}</div>
           <div class="dash-stat-label">Địa điểm HC</div>
         </div>
       </div>
       <div class="dash-stat-card">
-        <div class="dash-stat-icon" style="background: rgba(175,82,222,.1); color: #AF52DE;">&#128279;</div>
+        <div class="dash-stat-icon" aria-hidden="true" style="background: rgba(175,82,222,.1); color: #AF52DE;">&#128279;</div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ formatNum(stats.total_relationships) }}</div>
           <div class="dash-stat-label">Quan hệ</div>
         </div>
       </div>
       <div class="dash-stat-card">
-        <div class="dash-stat-icon" style="background: rgba(255,159,10,.1); color: #FF9F0A;">&#128506;</div>
+        <div class="dash-stat-icon" aria-hidden="true" style="background: rgba(255,159,10,.1); color: #FF9F0A;">&#128506;</div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ stats.total_itineraries || 0 }}</div>
           <div class="dash-stat-label">Lịch trình</div>
         </div>
       </div>
       <div v-if="stats.total_users" class="dash-stat-card">
-        <div class="dash-stat-icon" style="background: rgba(88,86,214,.1); color: #5856D6;">&#128101;</div>
+        <div class="dash-stat-icon" aria-hidden="true" style="background: rgba(88,86,214,.1); color: #5856D6;">&#128101;</div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ formatNum(stats.total_users) }}<span v-if="stats.users_week" class="dash-delta">+{{ stats.users_week }}</span></div>
           <div class="dash-stat-label">Users</div>
         </div>
       </div>
       <div v-if="stats.total_posts" class="dash-stat-card">
-        <div class="dash-stat-icon" style="background: rgba(255,69,58,.1); color: #FF453A;">&#128172;</div>
+        <div class="dash-stat-icon" aria-hidden="true" style="background: rgba(255,69,58,.1); color: #FF453A;">&#128172;</div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ formatNum(stats.total_posts) }}<span v-if="stats.posts_week" class="dash-delta">+{{ stats.posts_week }}</span></div>
           <div class="dash-stat-label">Bài viết</div>
@@ -194,7 +194,7 @@
         </div>
 
         <!-- Horizontal bar chart -->
-        <div class="dash-chart-card dash-bars-wrap">
+        <div class="dash-chart-card dash-bars-wrap" role="img" aria-label="Biểu đồ cột phân bố entity theo loại">
           <div v-for="(bar, i) in sortedBars" :key="bar.type" class="dash-bar-row">
             <span class="dash-bar-name">{{ bar.type }}</span>
             <div class="dash-bar-track">
@@ -228,6 +228,7 @@ const recentActivity = ref<Array<{ method: string; path: string; ts: string }>>(
 const loading = ref(true)
 const loadError = ref(false)
 const partialDegraded = ref(false)
+const degradedDetail = ref('')
 const backupRunning = ref(false)
 
 /** Extract error detail from a caught error (safe for e:unknown from $fetch). */
@@ -314,7 +315,12 @@ async function fetchDashboard() {
     if (a !== DEGRADED) alerts.value = (a as { alerts: typeof alerts.value }).alerts
     if (h !== DEGRADED) health.value = h as Record<string, any>
     if (auditRes !== DEGRADED) recentActivity.value = (auditRes as { entries: any[] }).entries || []
-    partialDegraded.value = a === DEGRADED || h === DEGRADED
+    const degradedParts: string[] = []
+    if (a === DEGRADED) degradedParts.push('cảnh báo')
+    if (h === DEGRADED) degradedParts.push('trạng thái agent')
+    if (auditRes === DEGRADED) degradedParts.push('nhật ký')
+    partialDegraded.value = degradedParts.length > 0
+    degradedDetail.value = degradedParts.join(', ')
   } catch {
     loadError.value = true
     showToast('Không thể tải dữ liệu dashboard', 'error')

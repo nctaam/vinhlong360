@@ -49,7 +49,7 @@
 
     <!-- Image grid -->
     <div class="media-grid">
-      <div v-for="item in items" :key="item.url + item.entity_id" class="media-card" role="button" tabindex="0" @click="previewItem = item" @keydown.enter="previewItem = item">
+      <div v-for="item in items" :key="item.url + item.entity_id" class="media-card" role="button" tabindex="0" :aria-label="`Xem ảnh ${item.entity_name || item.entity_id}`" @click="previewItem = item" @keydown.enter="previewItem = item">
         <div class="media-img-wrap">
           <img :src="item.url" :alt="item.entity_name" loading="lazy" decoding="async" @error="onImgError" />
           <span v-if="item.usage_count > 1" class="media-dup-badge" title="Dùng bởi nhiều entity">{{ item.usage_count }}x</span>
@@ -70,7 +70,7 @@
 
     <!-- Preview modal -->
     <Transition name="modal-fade">
-    <div v-if="previewItem" class="modal-overlay show" role="dialog" aria-modal="true" @click.self="previewItem = null" @keyup.escape="previewItem = null">
+    <div v-if="previewItem" ref="mediaModalRef" class="modal-overlay show" role="dialog" aria-modal="true" @click.self="previewItem = null">
       <div class="modal admin-modal-lg">
         <div class="media-preview-header">
           <strong>{{ previewItem.entity_name }}</strong>
@@ -113,6 +113,9 @@ const page = ref(1)
 const loading = ref(true)
 const filter = ref('all')
 const previewItem = ref<any>(null)
+const mediaModalRef = ref<HTMLElement | null>(null)
+const mediaModalOpen = computed(() => !!previewItem.value)
+useModalA11y(mediaModalOpen, mediaModalRef, { onClose: () => { previewItem.value = null } })
 const removing = ref(false)
 
 const hasMore = computed(() => items.value.length < total.value)

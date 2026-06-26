@@ -152,7 +152,7 @@
 
     <!-- Content preview modal -->
     <Transition name="modal-fade">
-    <div v-if="previewPost" class="modal-overlay show" role="dialog" aria-modal="true" aria-label="Xem bài viết" @click.self="previewPost = null" @keyup.escape="previewPost = null">
+    <div v-if="previewPost" ref="modModalRef" class="modal-overlay show" role="dialog" aria-modal="true" aria-label="Xem bài viết" @click.self="previewPost = null">
       <div class="modal admin-modal-md">
         <div class="mod-preview-header">
           <div class="mod-author">
@@ -233,6 +233,9 @@ const page = ref(1)
 const loading = ref(true)
 const acting = ref<string | null>(null)
 const previewPost = ref<any>(null)
+const modModalRef = ref<HTMLElement | null>(null)
+const modModalOpen = computed(() => !!previewPost.value)
+useModalA11y(modModalOpen, modModalRef, { onClose: () => { previewPost.value = null } })
 function openPreview(p: any) { previewPost.value = { ...p, moderation_notes: [...(p.moderation_notes || [])] } }
 const status = ref<ModStatus>('review')
 const expanded = ref<Set<string>>(new Set())

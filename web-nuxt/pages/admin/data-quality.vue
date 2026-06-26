@@ -114,13 +114,13 @@
       <table class="admin-table dq-table">
         <thead>
           <tr>
-            <th class="dq-th-checkbox"></th>
-            <th class="dq-th-sev">Mức<span class="admin-help" data-tip="Auto (xanh) = apply tự động. Duyệt (cam) = cần kiểm tra. Loại (đỏ) = bỏ qua." tabindex="0" role="img" aria-label="Giải thích mức">?</span></th>
-            <th>Entity</th>
-            <th>Field</th>
-            <th>Đề xuất</th>
-            <th>Evidence</th>
-            <th>Lý do</th>
+            <th scope="col" class="dq-th-checkbox"></th>
+            <th scope="col" class="dq-th-sev">Mức<span class="admin-help" data-tip="Auto (xanh) = apply tự động. Duyệt (cam) = cần kiểm tra. Loại (đỏ) = bỏ qua." tabindex="0" role="img" aria-label="Giải thích mức">?</span></th>
+            <th scope="col">Entity</th>
+            <th scope="col">Field</th>
+            <th scope="col">Đề xuất</th>
+            <th scope="col">Evidence</th>
+            <th scope="col">Lý do</th>
           </tr>
         </thead>
         <tbody>

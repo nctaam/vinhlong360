@@ -52,7 +52,7 @@
             <div
               class="img-conf-bar" :class="confClass(s.match_confidence)"
               :title="`Độ khớp tên: ${Math.round((s.match_confidence ?? 0) * 100)}%`"
-              role="img" :aria-label="`Độ khớp tên ${Math.round((s.match_confidence ?? 0) * 100)} phần trăm`"
+              role="progressbar" :aria-valuenow="Math.round((s.match_confidence ?? 0) * 100)" aria-valuemin="0" aria-valuemax="100" :aria-label="`Độ khớp tên ${Math.round((s.match_confidence ?? 0) * 100)} phần trăm`"
             >
               <span class="img-conf-fill" :style="{ width: Math.round((s.match_confidence ?? 0) * 100) + '%' }"></span>
             </div>

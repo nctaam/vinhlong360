@@ -19,12 +19,14 @@
     </div>
 
     <!-- Skeleton placeholders while loading (replaces flash of empty spinner) -->
-    <div v-if="loading" class="tk-skeleton" aria-hidden="true">
-      <div class="stat-grid">
-        <div v-for="n in 4" :key="'sk-card-' + n" class="tk-sk-card" :style="{ animationDelay: (n * 80) + 'ms' }"></div>
-      </div>
-      <div class="tk-panels">
-        <div v-for="n in 3" :key="'sk-panel-' + n" class="tk-sk-panel" :style="{ animationDelay: (n * 100) + 'ms' }"></div>
+    <div v-if="loading" role="status" aria-label="Đang tải thống kê">
+      <div class="tk-skeleton" aria-hidden="true">
+        <div class="stat-grid">
+          <div v-for="n in 4" :key="'sk-card-' + n" class="tk-sk-card" :style="{ animationDelay: (n * 80) + 'ms' }"></div>
+        </div>
+        <div class="tk-panels">
+          <div v-for="n in 3" :key="'sk-panel-' + n" class="tk-sk-panel" :style="{ animationDelay: (n * 100) + 'ms' }"></div>
+        </div>
       </div>
     </div>
     <template v-else>

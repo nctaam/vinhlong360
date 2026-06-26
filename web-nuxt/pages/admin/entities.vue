@@ -55,12 +55,12 @@
         <thead>
           <tr>
             <th class="admin-th-check"><input type="checkbox" :checked="allSelected" @change="toggleAll" aria-label="Chọn tất cả" /></th>
-            <th class="ent-sortable" @click="toggleSort('id')">ID <span class="ent-sort-arrow">{{ sortArrow('id') }}</span></th>
-            <th class="ent-sortable" @click="toggleSort('name')">Tên <span class="ent-sort-arrow">{{ sortArrow('name') }}</span></th>
-            <th class="ent-sortable" @click="toggleSort('type')">Loại <span class="ent-sort-arrow">{{ sortArrow('type') }}</span></th>
-            <th class="ent-sortable" @click="toggleSort('place_name')">Địa điểm <span class="ent-sort-arrow">{{ sortArrow('place_name') }}</span></th>
-            <th><span title="Tóm tắt / Ảnh / Địa điểm">Chất lượng</span><span class="admin-help" data-tip="● xanh = có, ● đỏ = thiếu. Thứ tự: Tóm tắt · Ảnh · Địa điểm" tabindex="0" role="img" aria-label="Giải thích chất lượng">?</span></th>
-            <th>Thao tác</th>
+            <th scope="col" class="ent-sortable" role="button" tabindex="0" @click="toggleSort('id')" @keydown.enter="toggleSort('id')" @keydown.space.prevent="toggleSort('id')">ID <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('id') }}</span></th>
+            <th scope="col" class="ent-sortable" role="button" tabindex="0" @click="toggleSort('name')" @keydown.enter="toggleSort('name')" @keydown.space.prevent="toggleSort('name')">Tên <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('name') }}</span></th>
+            <th scope="col" class="ent-sortable" role="button" tabindex="0" @click="toggleSort('type')" @keydown.enter="toggleSort('type')" @keydown.space.prevent="toggleSort('type')">Loại <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('type') }}</span></th>
+            <th scope="col" class="ent-sortable" role="button" tabindex="0" @click="toggleSort('place_name')" @keydown.enter="toggleSort('place_name')" @keydown.space.prevent="toggleSort('place_name')">Địa điểm <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('place_name') }}</span></th>
+            <th scope="col"><span title="Tóm tắt / Ảnh / Địa điểm">Chất lượng</span><span class="admin-help" data-tip="● xanh = có, ● đỏ = thiếu. Thứ tự: Tóm tắt · Ảnh · Địa điểm" tabindex="0" role="img" aria-label="Giải thích chất lượng">?</span></th>
+            <th scope="col">Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -129,7 +129,7 @@
 
     <!-- Edit/Create Modal -->
     <Transition name="modal-fade">
-    <div v-if="showModal" class="modal-overlay show" role="dialog" aria-modal="true" :aria-label="editingEntity ? 'Sửa Entity' : 'Tạo Entity'" @click.self="showModal = false" @keyup.escape="showModal = false">
+    <div v-if="showModal" ref="modalRef" class="modal-overlay show" role="dialog" aria-modal="true" :aria-label="editingEntity ? 'Sửa Entity' : 'Tạo Entity'" @click.self="showModal = false">
       <div class="modal admin-modal-md">
         <h2>{{ editingEntity ? 'Sửa Entity' : 'Tạo Entity' }}</h2>
         <div class="admin-form-col">
@@ -310,6 +310,8 @@ const limit = 30
 const entities = ref<Entity[]>([])
 const totalEntities = ref(0)
 const showModal = ref(false)
+const modalRef = ref<HTMLElement | null>(null)
+useModalA11y(showModal, modalRef, { onClose: () => { showModal.value = false } })
 const editingEntity = ref<Record<string, unknown> | null>(null)
 const placesList = ref<{ id: string; name: string; area?: string }[]>([])
 const form = ref<Record<string, unknown>>({})
