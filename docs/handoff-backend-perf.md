@@ -1,4 +1,5 @@
-# Session 7: Backend Resilience — LLM Pipeline
+# Session 7: Chịu lỗi pipeline AI
+<!-- Phạm vi: Pipeline LLM — orchestrator, knowledge search, contextual retrieval, guardrails, circuit breaker, LLM judge, image recognition + test resilience -->
 
 > Paste toàn bộ nội dung này làm message đầu tiên.
 

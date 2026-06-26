@@ -1,4 +1,5 @@
-# Session 4: AdminCP — Admin CMS
+# Session 4: Quản trị (AdminCP)
+<!-- Phạm vi: Toàn bộ admin/** — dashboard, quản lý entity, kiểm duyệt, duyệt ảnh, chất lượng dữ liệu, thống kê, quản lý user, nhật ký, media, AI tools, cài đặt CMS + CommandPalette + admin layout -->
 
 > Paste toàn bộ nội dung này làm message đầu tiên.
 

@@ -1,4 +1,5 @@
-# Session 8: Data + SEO — Data Validation + SEO Optimization
+# Session 8: Dữ liệu & SEO
+<!-- Phạm vi: Scripts kiểm tra/sửa dữ liệu (validate_data, fix_entity_types, find_duplicates), SEO backend (seo.py — JSON-LD/sitemap/og), web/data.json (qua script dry-run) -->
 
 > Paste toàn bộ nội dung này làm message đầu tiên.
 
