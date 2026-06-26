@@ -9,12 +9,15 @@ older coordinate/source shapes do not break structured data endpoints.
 from __future__ import annotations
 
 import json
+import logging
 import re
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote, urlparse
 from xml.sax.saxutils import escape as xml_escape
+
+logger = logging.getLogger(__name__)
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse, Response

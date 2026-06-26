@@ -561,8 +561,9 @@ def task_relations(entities, dry_run=False, workers=12):
                 if not dry_run:
                     try:
                         db.add_relationship(rel["from_id"], rel["to_id"], rel["type"])
-                    except Exception:
-                        pass
+                    except Exception as exc:
+                        log.debug("Failed to add relationship %s→%s: %s",
+                                  rel.get("from_id"), rel.get("to_id"), exc)
                 total_rels += 1
             if total_rels % 50 == 0 and total_rels > 0:
                 log.info(f"  Relations: {total_rels} found ... tokens: {tokens_used['output']:,}")

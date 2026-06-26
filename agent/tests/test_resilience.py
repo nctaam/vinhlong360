@@ -2335,3 +2335,83 @@ class TestMCPServerLogging:
                 assert hasattr(mod, "logger")
         except Exception:
             pytest.skip("mcp_server import requires mcp package")
+
+
+# ═══════════════════════════════════════════════════════
+# Batch 10: burn_gpt55, moderation, seo, public_api
+# ═══════════════════════════════════════════════════════
+
+
+class TestBurnGpt55RelFailureLogged:
+    """burn_gpt55 db.add_relationship failure must be logged, not swallowed."""
+
+    def test_has_log(self):
+        import burn_gpt55
+        assert hasattr(burn_gpt55, "log")
+        assert burn_gpt55.log.name == "burn"
+
+
+class TestModerationLogging:
+    """moderation must have a module-level logger and log API errors."""
+
+    def test_has_logger(self):
+        import moderation
+        assert hasattr(moderation, "logger")
+        assert moderation.logger.name == "moderation"
+
+    def test_text_moderation_error_logged(self):
+        import asyncio
+        import moderation
+        old_key = moderation.OPENAI_API_KEY
+        moderation.OPENAI_API_KEY = "test-key"
+        try:
+            with patch.object(moderation, "logger") as mock_log:
+                with patch("moderation.httpx") as mock_httpx:
+                    mock_client = MagicMock()
+                    mock_client.__aenter__ = MagicMock(return_value=mock_client)
+                    mock_client.__aexit__ = MagicMock(return_value=False)
+                    mock_client.post = MagicMock(side_effect=RuntimeError("API down"))
+                    mock_httpx.AsyncClient.return_value = mock_client
+                    result = asyncio.run(
+                        moderation._moderate_text("test text"))
+                assert result["score"] == 0.0
+                mock_log.warning.assert_called()
+        finally:
+            moderation.OPENAI_API_KEY = old_key
+
+    def test_image_moderation_error_logged(self):
+        import asyncio
+        import moderation
+        old_key = moderation.VISION_API_KEY
+        moderation.VISION_API_KEY = "test-key"
+        try:
+            with patch.object(moderation, "logger") as mock_log:
+                with patch("moderation.httpx") as mock_httpx:
+                    mock_client = MagicMock()
+                    mock_client.__aenter__ = MagicMock(return_value=mock_client)
+                    mock_client.__aexit__ = MagicMock(return_value=False)
+                    mock_client.post = MagicMock(side_effect=RuntimeError("Vision down"))
+                    mock_httpx.AsyncClient.return_value = mock_client
+                    result = asyncio.run(
+                        moderation._moderate_images(["http://test.jpg"]))
+                mock_log.warning.assert_called()
+        finally:
+            moderation.VISION_API_KEY = old_key
+
+
+class TestSeoLogging:
+    """seo module must have a module-level logger."""
+
+    def test_has_logger(self):
+        import seo
+        assert hasattr(seo, "logger")
+        assert seo.logger.name == "seo"
+
+
+class TestPublicApiLogging:
+    """public_api module must have a module-level logger."""
+
+    def test_has_logger(self):
+        import public_api
+        assert hasattr(public_api, "logger")
+        assert public_api.logger.name == "public_api"
