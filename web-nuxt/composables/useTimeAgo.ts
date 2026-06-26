@@ -3,6 +3,7 @@ export function useTimeAgo() {
     if (!dateStr) return ''
     const now = Date.now()
     const then = new Date(dateStr).getTime()
+    if (Number.isNaN(then)) return ''
     const diff = Math.floor((now - then) / 1000)
     if (diff < 60) return 'Vừa xong'
     if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`

@@ -45,19 +45,29 @@ MEMORY_DIR.mkdir(parents=True, exist_ok=True)
 
 _KEY_FILE = MEMORY_DIR / ".key"
 
+_encryption_key: bytes | None = None
+
 
 def _get_encryption_key() -> bytes:
     """
     Return the Fernet key (or base64 key) for encrypting profile data.
     Priority: MEMORY_ENCRYPTION_KEY env var > .key file > auto-generate.
+
+    The result is cached after the first call to avoid repeated disk I/O.
     """
+    global _encryption_key
+    if _encryption_key is not None:
+        return _encryption_key
+
     env_key = os.environ.get("MEMORY_ENCRYPTION_KEY")
     if env_key:
         # Fernet keys are url-safe base64 of 32 bytes — accept as-is
-        return env_key.encode("utf-8")
+        _encryption_key = env_key.encode("utf-8")
+        return _encryption_key
 
     if _KEY_FILE.exists():
-        return _KEY_FILE.read_bytes().strip()
+        _encryption_key = _KEY_FILE.read_bytes().strip()
+        return _encryption_key
 
     # Auto-generate
     if _HAS_FERNET:
@@ -66,7 +76,8 @@ def _get_encryption_key() -> bytes:
         # 32 random bytes, base64-encoded (used for obfuscation fallback)
         key = base64.urlsafe_b64encode(os.urandom(32))
     _KEY_FILE.write_bytes(key)
-    return key
+    _encryption_key = key
+    return _encryption_key
 
 
 def _encrypt(plaintext: str) -> str:

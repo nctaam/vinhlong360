@@ -104,4 +104,8 @@ function onToggle() {
   .save-btn:hover { transform: none; }
   .save-btn:active { transform: none; }
 }
+@media (forced-colors: active) {
+  .save-btn { border: 1px solid ButtonText; background: Canvas; }
+  .save-btn.saved { border-color: Highlight; color: Highlight; }
+}
 </style>
