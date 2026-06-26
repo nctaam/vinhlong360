@@ -37,7 +37,7 @@
         </div>
 
         <!-- Create post (Threads style) -->
-        <div v-if="isLoggedIn" ref="composeEl" class="threads-compose">
+        <div v-if="isLoggedIn" ref="composeEl" class="threads-compose" role="form" aria-label="Viết bài mới">
           <div class="compose-left">
             <span class="avatar thread-avatar">{{ userInitial }}</span>
           </div>
@@ -384,6 +384,7 @@ const MAX_CHARS = 500
 
 const { isLoggedIn, authHeaders, user } = useAuth()
 const { openAuth } = useAuthModal()
+const { confirmDialog } = useConfirm()
 const { repost } = useRepost()
 function repostPost(postId: string) {
   repost(postId, () => { activeTab.value = 'latest'; fetchFeed(true) })
@@ -667,7 +668,7 @@ async function fetchBookmarks(reset = false) {
     const res = await $fetch<{ bookmarks: Post[] }>(`/api/me/bookmarks?page=${bookmarksPage.value}&limit=20`, {
       headers: authHeaders(),
     })
-    const newPosts = res.posts || res || []
+    const newPosts = res.bookmarks || res.posts || res || []
     if (reset) {
       bookmarks.value = newPosts
     } else {
@@ -767,7 +768,8 @@ async function submitPost() {
     activeTab.value = 'latest'
     await fetchFeed(true)
   } catch (e: unknown) {
-    showToast(e.data?.detail || 'Gửi bài thất bại', 'error')
+    const detail = (e as any)?.data?.detail
+    showToast(detail || 'Gửi bài thất bại — vui lòng thử lại', 'error')
   }
   posting.value = false
 }
@@ -804,7 +806,8 @@ async function submitEntityReport() {
     delete nextQuery.report
     router.replace({ query: nextQuery })
   } catch (e: unknown) {
-    showToast(e.data?.detail || 'Không thể gửi báo cáo', 'error')
+    const detail = (e as any)?.data?.detail
+    showToast(detail || 'Không thể gửi báo cáo', 'error')
   }
   reportSubmitting.value = false
 }
@@ -862,10 +865,13 @@ async function toggleBookmark(postId: string) {
 }
 
 async function deletePost(postId: string) {
-  if (!confirm('Bạn có chắc muốn xoá bài viết này? Hành động không thể hoàn tác.')) return
+  const ok = await confirmDialog('Bạn có chắc muốn xoá bài viết này? Hành động không thể hoàn tác.', { confirmText: 'Xoá', danger: true })
+  if (!ok) return
   try {
     await $fetch(`/api/posts/${postId}`, { method: 'DELETE', headers: authHeaders() })
     posts.value = posts.value.filter(p => p.id !== postId)
+    bookmarks.value = bookmarks.value.filter(p => p.id !== postId)
+    searchResults.value = searchResults.value.filter(p => p.id !== postId)
     showToast('Đã xoá bài viết', 'success')
   } catch { showToast('Không thể xoá bài viết', 'error') }
 }

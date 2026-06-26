@@ -24,7 +24,7 @@
         </div>
 
         <!-- Comment form (Threads style) -->
-        <div v-if="isLoggedIn" ref="composeRef" class="thread-comment-compose">
+        <div v-if="isLoggedIn" ref="composeRef" class="thread-comment-compose" role="form" aria-label="Viết bình luận">
           <div class="compose-left">
             <span class="avatar thread-avatar avatar-sm">{{ userInitial }}</span>
           </div>
@@ -168,6 +168,7 @@ const route = useRoute()
 const postId = route.params.id as string
 const { isLoggedIn, authHeaders, user } = useAuth()
 const { openAuth } = useAuthModal()
+const { confirmDialog } = useConfirm()
 const { repost, quote } = useRepost()
 
 // Linkify @-mention + #hashtag trong bình luận (content escape trước → an toàn v-html)
@@ -220,7 +221,8 @@ async function setBestAnswer(commentId: string) {
   } catch { bestAnswerId.value = prev; showToast('Không thể chọn, thử lại', 'error') }
 }
 async function deletePost() {
-  if (!confirm('Bạn có chắc muốn xoá bài viết này? Hành động không thể hoàn tác.')) return
+  const ok = await confirmDialog('Bạn có chắc muốn xoá bài viết này? Hành động không thể hoàn tác.', { confirmText: 'Xoá', danger: true })
+  if (!ok) return
   try {
     await $fetch(`/api/posts/${postId}`, { method: 'DELETE', headers: authHeaders() })
     showToast('Đã xoá bài viết', 'success')
@@ -340,7 +342,10 @@ async function submitComment() {
     showToast(t ? 'Đã gửi trả lời' : 'Đã gửi bình luận', 'success')
     if (post.value) post.value.comments_count = (post.value.comments_count || 0) + 1
     await fetchComments()
-  } catch { showToast('Gửi bình luận thất bại', 'error') }
+  } catch (e: unknown) {
+    const detail = (e as any)?.data?.detail
+    showToast(detail || 'Gửi bình luận thất bại — vui lòng thử lại', 'error')
+  }
   submitting.value = false
 }
 
