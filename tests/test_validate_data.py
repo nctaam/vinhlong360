@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from pathlib import Path
 
@@ -1232,3 +1233,90 @@ def test_vn_phone_regex_patterns() -> None:
     assert validate_data.VN_PHONE.match("02703822456")
     assert not validate_data.VN_PHONE.match("12345")
     assert not validate_data.VN_PHONE.match("abc")
+
+
+# ── CLI main() ──────────────────────────────────────────────────────────
+
+
+def test_main_returns_zero_on_clean_data(tmp_path: Path, monkeypatch: "pytest.MonkeyPatch") -> None:
+    import pytest  # noqa: F811
+    data = {"entities": [], "relationships": [], "itineraries": []}
+    f = tmp_path / "data.json"
+    f.write_text(json.dumps(data), encoding="utf-8")
+    monkeypatch.setattr("sys.argv", ["validate_data", "--data", str(f)])
+    assert validate_data.main() == 0
+
+
+def test_main_returns_one_on_errors(tmp_path: Path, monkeypatch: "pytest.MonkeyPatch") -> None:
+    import pytest  # noqa: F811
+    data = {
+        "entities": [{"type": "attraction", "name": "Test"}],
+        "relationships": [],
+        "itineraries": [],
+    }
+    f = tmp_path / "data.json"
+    f.write_text(json.dumps(data), encoding="utf-8")
+    monkeypatch.setattr("sys.argv", ["validate_data", "--data", str(f)])
+    assert validate_data.main() == 1
+
+
+def test_main_json_output(tmp_path: Path, monkeypatch: "pytest.MonkeyPatch", capsys: "pytest.CaptureFixture[str]") -> None:
+    import pytest  # noqa: F811
+    data = {"entities": [], "relationships": [], "itineraries": []}
+    f = tmp_path / "data.json"
+    f.write_text(json.dumps(data), encoding="utf-8")
+    monkeypatch.setattr("sys.argv", ["validate_data", "--data", str(f), "--json"])
+    validate_data.main()
+    out = capsys.readouterr().out
+    parsed = json.loads(out)
+    assert "stats" in parsed
+    assert "issues" in parsed
+
+
+def test_main_warnings_as_errors(tmp_path: Path, monkeypatch: "pytest.MonkeyPatch") -> None:
+    import pytest  # noqa: F811
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    f = tmp_path / "data.json"
+    f.write_text(json.dumps(data), encoding="utf-8")
+    monkeypatch.setattr("sys.argv", ["validate_data", "--data", str(f), "--warnings-as-errors"])
+    assert validate_data.main() == 1
+
+
+# ── print_report coverage ──────────────────────────────────────────────
+
+
+def test_print_report_runs_without_error(tmp_path: Path, capsys: "pytest.CaptureFixture[str]") -> None:
+    import pytest  # noqa: F811
+    data = {
+        "entities": [
+            {"id": "a", "type": "restaurant", "name": "A", "summary": "A test restaurant",
+             "area": "vinh-long", "coordinates": [10.25, 106.0],
+             "attributes": {"specialty": "Hải sản"}},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+    validate_data.print_report(issues, stats)
+    out = capsys.readouterr().out
+    assert "VinhLong360 data validation" in out
+    assert "Entity quality score" in out
+    assert "Graph connectivity" in out
+
+
+# ── SEO_REQUIRED constant ──────────────────────────────────────────────
+
+
+def test_seo_required_covers_main_types() -> None:
+    """SEO_REQUIRED should cover the most important entity types."""
+    assert "restaurant" in validate_data.SEO_REQUIRED
+    assert "product" in validate_data.SEO_REQUIRED
+    assert "event" in validate_data.SEO_REQUIRED
+    assert "accommodation" in validate_data.SEO_REQUIRED
+    assert "place" not in validate_data.SEO_REQUIRED

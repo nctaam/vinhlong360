@@ -1293,3 +1293,99 @@ def test_event_with_place_emits_location():
     ld = seo.build_entity_jsonld(event, by_id)
     assert "location" in ld
     assert ld["location"]["name"] == "Xã A"
+
+
+# ── Collection hardening ────────────────────────────────────────────────
+
+
+def test_collection_sorts_by_confidence():
+    entities = [
+        {"id": "low", "name": "Low", "type": "attraction", "confidence": 0.3},
+        {"id": "high", "name": "High", "type": "attraction", "confidence": 0.95},
+        {"id": "mid", "name": "Mid", "type": "attraction", "confidence": 0.7},
+    ]
+    data = {"entities": entities, "relationships": [], "itineraries": []}
+    ld = seo.build_collection_jsonld("du-lich", data)
+    names = [el["name"] for el in ld["itemListElement"]]
+    assert names[0] == "High"
+
+
+def test_collection_description_truncated():
+    entity = {
+        "id": "verbose", "name": "Verbose", "type": "attraction",
+        "summary": "X" * 500,
+    }
+    data = {"entities": [entity], "relationships": [], "itineraries": []}
+    ld = seo.build_collection_jsonld("du-lich", data)
+    desc = ld["itemListElement"][0].get("description", "")
+    assert len(desc) <= 200
+
+
+def test_itinerary_jsonld_duration_none_for_unknown():
+    it = {"id": "no-dur", "title": "No duration", "duration": "unknown", "stops": []}
+    ld = seo.build_itinerary_jsonld(it, {})
+    assert "duration" not in ld
+
+
+def test_itinerary_jsonld_location_area():
+    it = {"id": "area-it", "title": "Area trip", "area": "ben-tre", "stops": []}
+    ld = seo.build_itinerary_jsonld(it, {})
+    assert ld["contentLocation"]["name"] == "Bến Tre"
+    assert ld["touristType"] == "Sightseeing"
+
+
+def test_area_jsonld_all_three_areas():
+    for slug in ["vinh-long", "ben-tre", "tra-vinh"]:
+        ld = seo.build_area_jsonld(slug)
+        assert ld is not None
+        assert ld["@type"] == "TouristDestination"
+
+
+def test_faq_jsonld_all_four_question_types():
+    entity = {
+        "id": "full-faq",
+        "name": "Test",
+        "type": "attraction",
+        "attributes": {
+            "travel_tip": "Tip answer",
+            "tip": "Warning answer",
+            "booking_note": "Booking answer",
+            "best_time": "Best time answer",
+        },
+    }
+    faq = seo.build_faq_jsonld(entity)
+    assert faq is not None
+    assert len(faq["mainEntity"]) == 4
+
+
+def test_product_brand_ocop_format():
+    entity = {
+        "id": "ocop-prod",
+        "name": "Sản phẩm OCOP",
+        "type": "product",
+        "attributes": {"ocop": "4 sao", "price": "150.000"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["brand"]["name"] == "OCOP 4 sao"
+    assert ld["offers"]["priceCurrency"] == "VND"
+
+
+def test_lodging_amenities_skips_empty():
+    entity = {
+        "id": "ks-empty-amen",
+        "name": "KS",
+        "type": "accommodation",
+        "attributes": {"amenities": ["WiFi", None, "", "Pool"]},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    names = [a["name"] for a in ld["amenityFeature"]]
+    assert "WiFi" in names
+    assert "Pool" in names
+    assert None not in names
+    assert "" not in names
+
+
+def test_sitemap_index_has_lastmod():
+    resp = seo.sitemap_index()
+    xml = resp.body.decode()
+    assert "<lastmod>" in xml
