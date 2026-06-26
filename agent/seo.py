@@ -314,6 +314,10 @@ def _same_as_values(entity: dict[str, Any]) -> list[str]:
         maps_url = source.get("maps")
         if _is_valid_url(maps_url) and str(maps_url) not in values:
             values.append(str(maps_url))
+    for key in ("facebook", "zalo_url"):
+        social = attrs.get(key) if attrs else None
+        if _is_valid_url(social) and str(social) not in values:
+            values.append(str(social))
     return values
 
 
@@ -470,6 +474,9 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
                 }
         if attrs.get("ocop"):
             ld["brand"] = {"@type": "Brand", "name": f"OCOP {attrs['ocop']}"}
+        if attrs.get("material"):
+            ld["material"] = attrs["material"]
+        ld["countryOfOrigin"] = {"@type": "Country", "name": "Việt Nam"}
 
     if schema_type in ("FoodEstablishment", "Restaurant", "CafeOrCoffeeShop"):
         cuisine = attrs.get("specialty") or attrs.get("food_type")

@@ -2199,6 +2199,54 @@ def test_sitemap_media_has_caption(monkeypatch):
     assert "<image:caption>Beautiful place in VL</image:caption>" in xml
 
 
+def test_product_country_of_origin():
+    entity = {
+        "id": "vn-prod", "name": "SP VN", "type": "product",
+        "attributes": {"price": "50.000"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["countryOfOrigin"]["name"] == "Việt Nam"
+
+
+def test_product_material():
+    entity = {
+        "id": "mat-prod", "name": "SP Material", "type": "product",
+        "attributes": {"price": "50.000", "material": "Tre và lá dừa"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["material"] == "Tre và lá dừa"
+
+
+def test_product_no_material_when_absent():
+    entity = {
+        "id": "no-mat", "name": "SP", "type": "product",
+        "attributes": {"price": "50.000"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "material" not in ld
+
+
+def test_same_as_includes_facebook():
+    entity = {
+        "source": [],
+        "attributes": {"facebook": "https://facebook.com/test"},
+    }
+    values = seo._same_as_values(entity)
+    assert "https://facebook.com/test" in values
+
+
+def test_same_as_no_duplicate_social():
+    entity = {
+        "source": [],
+        "attributes": {
+            "website": "https://example.com",
+            "facebook": "https://example.com",
+        },
+    }
+    values = seo._same_as_values(entity)
+    assert values.count("https://example.com") == 1
+
+
 def test_sitemap_media_no_caption_without_summary(monkeypatch):
     data = {
         "entities": [
