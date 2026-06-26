@@ -80,6 +80,12 @@
       <div class="controls">
         <div class="search-row">
           <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm trong sản phẩm…" aria-label="Tìm sản phẩm" />
+          <select v-model="sortBy" aria-label="Sắp xếp">
+            <option value="relevant">Phù hợp nhất</option>
+            <option value="popular">Phổ biến</option>
+            <option value="newest">Mới nhất</option>
+            <option value="name">Tên A-Z</option>
+          </select>
         </div>
         <p class="control-label">Theo tháng</p>
         <div class="chip-row" role="group" aria-label="Lọc theo tháng">
@@ -92,21 +98,33 @@
         <div class="chip-row chip-row-extra" role="group" aria-label="Lọc nâng cao">
           <button type="button" :class="['chip', { active: ocopOnly }]" :aria-pressed="ocopOnly" aria-label="Chỉ sản phẩm OCOP" @click="ocopOnly = !ocopOnly">⭐ Chỉ sản phẩm OCOP</button>
         </div>
+        <div v-if="activeFilterCount > 0" class="filter-status">
+          <span class="filter-count">{{ activeFilterCount }} bộ lọc</span>
+          <button type="button" class="filter-clear" @click="clearFilters">Xóa tất cả</button>
+        </div>
       </div>
-      <p class="result-meta" aria-live="polite">{{ filtered.length }} kết quả</p>
+      <div class="result-bar">
+        <p class="result-meta" aria-live="polite">{{ filtered.length }} kết quả{{ sortBy !== 'relevant' ? ` · ${sortLabels[sortBy]}` : '' }}</p>
+        <div class="view-toggle" role="group" aria-label="Chế độ hiển thị">
+          <button type="button" :class="['vt-btn', { active: viewMode === 'grid' }]" :aria-pressed="viewMode === 'grid'" @click="viewMode = 'grid'" title="Dạng lưới">⊞</button>
+          <button type="button" :class="['vt-btn', { active: viewMode === 'list' }]" :aria-pressed="viewMode === 'list'" @click="viewMode = 'list'" title="Dạng danh sách">☰</button>
+        </div>
+      </div>
       <EmptyState v-if="fetchError" icon="⚠️" title="Không thể tải dữ liệu" message="Lỗi kết nối. Thử tải lại nhé.">
         <template #actions>
           <button type="button" class="btn btn-outline" @click="refreshNuxtData('catalog-products')">Thử lại</button>
         </template>
       </EmptyState>
       <SkeletonGrid v-else-if="!data" :count="6" />
-      <div v-else-if="filtered.length" class="grid">
+      <div v-else-if="filtered.length" :class="viewMode === 'list' ? 'list-view' : 'grid'">
         <EntityCard v-for="e in filtered" :key="e.id" :entity="e" :season-filter="seasonFilter" />
       </div>
       <EmptyState v-else icon="🍊" title="Không tìm thấy sản phẩm" message="Thử chọn tháng khác hoặc bỏ bộ lọc OCOP.">
         <template #actions>
-          <button type="button" class="btn btn-outline" @click="seasonFilter = 'all'; ocopOnly = false; q = ''">Xóa bộ lọc</button>
-          <NuxtLink to="/ocop" class="btn btn-outline">Xem sản phẩm OCOP</NuxtLink>
+          <button type="button" class="btn btn-outline" @click="clearFilters">Xóa bộ lọc</button>
+          <NuxtLink to="/ocop" class="btn btn-outline">⭐ OCOP</NuxtLink>
+          <NuxtLink to="/du-lich" class="btn btn-outline">🌿 Du lịch</NuxtLink>
+          <NuxtLink to="/theo-mua" class="btn btn-outline">🗓️ Theo mùa</NuxtLink>
         </template>
       </EmptyState>
     </section>
@@ -147,9 +165,13 @@ const currentMonth = new Date().getMonth() + 1
 const q = ref('')
 const seasonFilter = ref(String(currentMonth))
 const ocopOnly = ref(false)
+const sortBy = ref('relevant')
+const sortLabels: Record<string, string> = { popular: 'Phổ biến', newest: 'Mới nhất', name: 'Tên A-Z' }
+const viewMode = ref('grid')
 const gridSection = ref<HTMLElement | null>(null)
 
-useFilterUrl({ mua: seasonFilter }, { mua: String(currentMonth) })
+useFilterUrl({ mua: seasonFilter, sort: sortBy }, { mua: String(currentMonth), sort: 'relevant' })
+const { sortByRegion } = useRegionPref()
 
 const { data, error: fetchError } = await useAsyncData('catalog-products', () =>
   apiFetch<{ entities: Entity[] }>('/api/entities?type=product&limit=200')
@@ -181,6 +203,21 @@ function scrollToGrid() {
   nextTick(() => gridSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
 }
 
+const activeFilterCount = computed(() => {
+  let n = 0
+  if (seasonFilter.value !== 'all' && seasonFilter.value !== String(currentMonth)) n++
+  if (ocopOnly.value) n++
+  if (q.value.trim()) n++
+  return n
+})
+
+function clearFilters() {
+  seasonFilter.value = String(currentMonth)
+  ocopOnly.value = false
+  q.value = ''
+  sortBy.value = 'relevant'
+}
+
 const filtered = computed(() => {
   let list = allEntities.value
 
@@ -200,10 +237,24 @@ const filtered = computed(() => {
     )
   }
 
-  if (seasonFilter.value !== 'all') {
-    list = [...list].sort((a: Entity, b: Entity) => (relevanceScore(b, seasonFilter.value) || 0) - (relevanceScore(a, seasonFilter.value) || 0))
+  list = [...list]
+  switch (sortBy.value) {
+    case 'popular':
+      list.sort((a: Entity, b: Entity) => (b.relationship_total || 0) - (a.relationship_total || 0))
+      break
+    case 'newest':
+      list.sort((a: Entity, b: Entity) => (b.updatedAt || '').localeCompare(a.updatedAt || ''))
+      break
+    case 'name':
+      list.sort((a: Entity, b: Entity) => (a.name || '').localeCompare(b.name || '', 'vi'))
+      break
+    default:
+      if (seasonFilter.value !== 'all') {
+        list.sort((a: Entity, b: Entity) => (relevanceScore(b, seasonFilter.value) || 0) - (relevanceScore(a, seasonFilter.value) || 0))
+      }
+      break
   }
-  return list
+  return sortByRegion(list)
 })
 
 useSeoMeta({
@@ -288,5 +339,96 @@ useHead(() => ({
 @media (max-width: 640px) {
   /* Keep the month chip from crowding the copy on small screens */
   .seasonal-banner-month { display: none; }
+}
+
+.controls {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.filter-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: .5px solid var(--line);
+}
+.filter-count {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  font-weight: var(--weight-medium);
+}
+.filter-clear {
+  font-size: var(--text-xs);
+  color: var(--primary-fg);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: var(--weight-semibold);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: background .2s;
+}
+.filter-clear:hover {
+  background: rgba(var(--primary-rgb), .08);
+}
+.result-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.view-toggle {
+  display: flex;
+  gap: 2px;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+}
+.vt-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-xs);
+  font-size: var(--text-sm);
+  color: var(--muted);
+  transition: background .15s, color .15s;
+  line-height: 1;
+}
+.vt-btn.active {
+  background: var(--card);
+  color: var(--fg);
+  box-shadow: var(--shadow-xs);
+}
+.list-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.list-view :deep(.card) {
+  flex-direction: row;
+  align-items: stretch;
+}
+.list-view :deep(.cover) {
+  width: 180px;
+  min-height: 120px;
+  flex-shrink: 0;
+  aspect-ratio: auto;
+}
+.list-view :deep(.card-b) {
+  flex: 1;
+  min-width: 0;
+}
+.list-view :deep(.card-b h3) {
+  -webkit-line-clamp: 1;
+}
+.list-view :deep(.summary) {
+  -webkit-line-clamp: 2;
+}
+@media (max-width: 600px) {
+  .list-view :deep(.card) { flex-direction: column; }
+  .list-view :deep(.cover) { width: 100%; min-height: 140px; aspect-ratio: 16/9; }
 }
 </style>

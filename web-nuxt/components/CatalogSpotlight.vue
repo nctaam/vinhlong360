@@ -8,6 +8,11 @@
       <div class="cspot-body">
         <span class="cspot-kicker">{{ meta?.emoji }} {{ meta?.label }} · Nổi bật</span>
         <h2>{{ pick.name }}</h2>
+        <div class="cspot-badges">
+          <span v-if="isPeak" class="cspot-badge cspot-badge-peak">Đang mùa</span>
+          <span v-else-if="isAllYear" class="cspot-badge cspot-badge-year">Quanh năm</span>
+          <span v-if="relCount >= 3" class="cspot-badge cspot-badge-pop">{{ relCount }} liên kết</span>
+        </div>
         <p v-if="pick.summary" class="cspot-sum">{{ pick.summary }}</p>
         <NuxtLink :to="`/dia-diem/${pick.id}`" class="btn btn-primary cspot-cta">Khám phá ngay →</NuxtLink>
       </div>
@@ -22,6 +27,7 @@
 import type { Entity } from '~/types'
 import { TYPE_META, AREA_META } from '~/composables/useConstants'
 import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
+import { inSeason, isYearRound } from '~/composables/useSeason'
 
 const props = defineProps<{ items: Entity[] }>()
 
@@ -41,6 +47,11 @@ const region = computed(() => {
   const m = (AREA_META as Record<string, { name: string }>)[String(a)]
   return m ? m.name : String(a)
 })
+
+const currentMonth = String(new Date().getMonth() + 1)
+const isPeak = computed(() => pick.value && inSeason(pick.value, currentMonth))
+const isAllYear = computed(() => pick.value && isYearRound(pick.value?.season))
+const relCount = computed(() => pick.value?.relationship_total || 0)
 </script>
 
 <style scoped>
@@ -83,6 +94,14 @@ const region = computed(() => {
 .cspot-kicker { font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .05em; color: var(--primary-fg-strong); }
 .cspot-body h2 { margin: 0; font-size: clamp(1.4rem, 3vw, 2rem); line-height: var(--leading-snug); letter-spacing: -.01em; }
 .cspot-sum { margin: 0; color: var(--text-muted); line-height: var(--leading-relaxed); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.cspot-badges { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.cspot-badge { font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: var(--space-1) var(--space-2); border-radius: var(--radius-full); }
+.cspot-badge-peak { background: rgba(239,68,68,.12); color: #dc2626; }
+.cspot-badge-year { background: rgba(16,185,129,.12); color: #059669; }
+.cspot-badge-pop { background: rgba(59,130,246,.1); color: #2563eb; }
+.dark .cspot-badge-peak { background: rgba(239,68,68,.2); color: #fca5a5; }
+.dark .cspot-badge-year { background: rgba(16,185,129,.2); color: #6ee7b7; }
+.dark .cspot-badge-pop { background: rgba(59,130,246,.2); color: #93c5fd; }
 .cspot-cta { align-self: flex-start; margin-top: var(--space-2); }
 @media (prefers-reduced-motion: reduce) { .cspot-visual::before { animation: none; } }
 </style>

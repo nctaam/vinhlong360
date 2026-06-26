@@ -97,6 +97,11 @@
       <div class="search-row">
         <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm lễ hội…" aria-label="Tìm lễ hội" />
       </div>
+      <div class="chip-row" role="group" aria-label="Lọc theo trạng thái">
+        <button type="button" :class="['chip', { active: statusFilter === 'all' }]" :aria-pressed="statusFilter === 'all'" @click="statusFilter = 'all'">Tất cả</button>
+        <button type="button" :class="['chip', { active: statusFilter === 'now' }]" :aria-pressed="statusFilter === 'now'" @click="statusFilter = statusFilter === 'now' ? 'all' : 'now'">🔴 Đang diễn ra</button>
+        <button type="button" :class="['chip', { active: statusFilter === 'soon' }]" :aria-pressed="statusFilter === 'soon'" @click="statusFilter = statusFilter === 'soon' ? 'all' : 'soon'">🟡 Sắp khai mạc</button>
+      </div>
       <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
         <button type="button" :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả vùng</button>
         <button type="button" v-for="(meta, slug) in AREA_META" :key="slug" :class="['chip', { active: areaFilter === slug }]" :aria-pressed="areaFilter === slug" @click="areaFilter = slug">
@@ -146,10 +151,11 @@
           </div>
         </NuxtLink>
       </div>
-      <EmptyState v-else icon="🎋" title="Không tìm thấy lễ hội" message="Thử thay đổi khu vực hoặc từ khóa tìm kiếm.">
+      <EmptyState v-else icon="🎋" title="Không tìm thấy lễ hội" message="Thử thay đổi trạng thái, khu vực hoặc từ khóa tìm kiếm.">
         <template #actions>
-          <button type="button" class="btn btn-outline" @click="areaFilter = 'all'; q = ''">Xóa bộ lọc</button>
-          <button type="button" class="btn btn-outline" @click="view = 'calendar'">Xem lịch</button>
+          <button type="button" class="btn btn-outline" @click="statusFilter = 'all'; areaFilter = 'all'; q = ''">Xóa bộ lọc</button>
+          <button type="button" class="btn btn-outline" @click="view = 'calendar'">📅 Xem lịch</button>
+          <NuxtLink to="/su-kien" class="btn btn-outline">🎪 Sự kiện</NuxtLink>
         </template>
       </EmptyState>
     </template>
@@ -225,9 +231,10 @@ const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
 
 const q = ref('')
 const areaFilter = ref('all')
+const statusFilter = ref('all')
 const view = ref('list')
 
-useFilterUrl({ vung: areaFilter }, { vung: 'all' })
+useFilterUrl({ vung: areaFilter, trang_thai: statusFilter }, { vung: 'all', trang_thai: 'all' })
 
 const { data, error: fetchError } = await useAsyncData('festivals', () =>
   apiFetch<{ events: Entity[] }>('/api/events?limit=200&include_past=true')
@@ -265,6 +272,9 @@ const upcoming = computed(() => {
 
 const filtered = computed(() => {
   let list = allEvents.value
+  if (statusFilter.value !== 'all') {
+    list = list.filter((e: Entity) => eventStatus(e) === statusFilter.value)
+  }
   if (areaFilter.value !== 'all') {
     list = list.filter((e: Entity) => getArea(e) === areaFilter.value)
   }

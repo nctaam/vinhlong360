@@ -30,7 +30,8 @@
         <span v-if="amenityExtra > 0" class="ca-more" :title="`${amenityExtra} tiện ích khác`">+{{ amenityExtra }}</span>
       </div>
       <div class="badges">
-        <span v-if="isPeak" class="badge peak">🔥 Đang rộ</span>
+        <span v-if="isNew" class="badge new-badge">Mới</span>
+        <span v-if="isPeak" class="badge peak"><span class="peak-dot" aria-hidden="true"></span> Đang mùa {{ peakLabel }}</span>
         <span v-if="isYearRoundSeason" class="badge year">Quanh năm</span>
         <span v-else class="badge season">{{ seasonLabel }}</span>
         <span v-if="entity.attributes?.ocop" :class="['badge', 'ocop', { 'ocop-5': ocopStars === 5, 'ocop-4': ocopStars === 4, 'ocop-3': ocopStars === 3 }]">⭐ {{ entity.attributes.ocop }}</span>
@@ -105,6 +106,18 @@ const allAmenities = computed(() => {
 const amenityIcons = computed(() => allAmenities.value.slice(0, 3))
 const amenityExtra = computed(() => Math.max(0, allAmenities.value.length - 3))
 const ocopStars = computed(() => parseInt(props.entity.attributes?.ocop) || 0)
+const isNew = computed(() => {
+  const u = props.entity.updatedAt
+  if (!u) return false
+  const diff = Date.now() - new Date(u).getTime()
+  return diff > 0 && diff < 14 * 86400000
+})
+const peakLabel = computed(() => {
+  const sf = props.seasonFilter
+  if (!sf || sf === 'all') return ''
+  if (sf === 'flood') return 'nước nổi'
+  return `T${sf}`
+})
 const ratingDisplay = computed(() => {
   const a = props.entity.attributes
   const r = parseFloat(a?.rating)
@@ -138,4 +151,21 @@ const ratingDisplay = computed(() => {
 }
 .dark .badge.ocop-5 { box-shadow: 0 0 0 2px rgba(var(--secondary-rgb), .35); }
 .dark .badge.ocop-4 { color: var(--secondary-fg); }
+.badge.new-badge {
+  background: rgba(52, 199, 89, .14);
+  color: #1a8a3c;
+  font-weight: 600;
+}
+.dark .badge.new-badge {
+  background: rgba(52, 199, 89, .22);
+  color: #34c759;
+}
+.peak-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  vertical-align: middle;
+}
 </style>
