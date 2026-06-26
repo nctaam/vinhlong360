@@ -103,9 +103,7 @@
   </main>
 </template>
 
-<script setup lang="ts">
-useReveal()
-
+<script lang="ts">
 const levels = [
   { level: 1, icon: '🌱', label: 'Người mới', req: '0 – 19 điểm' },
   { level: 2, icon: '🤝', label: 'Người đóng góp', req: '20 – 79 điểm' },
@@ -122,8 +120,7 @@ const categories = [
   { icon: '❤️', name: 'Lượt thích nhận được', formula: '50 đầu ×1', max: 50 },
 ]
 
-// 8 reviews=40, 0 extra posts, 3 photos=9, 12 followers=12, 4 places=8, 15 likes=15
-const examplePoints = 40 + 0 + 9 + 12 + 8 + 15  // = 84
+const examplePoints = 40 + 0 + 9 + 12 + 8 + 15
 const exampleLevel = examplePoints >= 200 ? 'Đại sứ' : examplePoints >= 80 ? 'Đóng góp tích cực' : examplePoints >= 20 ? 'Người đóng góp' : 'Người mới'
 
 const badges = [
@@ -142,6 +139,10 @@ const tips = [
   { title: 'Đính kèm ảnh', desc: 'Ảnh vừa tăng điểm ảnh (3 điểm/bài), vừa giúp bài viết nhận nhiều lượt thích hơn.' },
   { title: 'Khám phá nhiều nơi', desc: 'Đánh giá ở nhiều địa điểm khác nhau thay vì lặp lại một chỗ — mỗi địa điểm mới mang thêm 2 điểm.' },
 ]
+</script>
+
+<script setup lang="ts">
+useReveal()
 
 useSeoMeta({
   title: 'Hướng dẫn thành viên — Hệ thống cấp bậc & điểm danh tiếng — vinhlong360',

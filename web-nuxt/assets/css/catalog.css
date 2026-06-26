@@ -138,6 +138,7 @@
   scrollbar-width: none;
 }
 .scroll-row::-webkit-scrollbar { display: none; }
+.scroll-row:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-md); }
 .scroll-row > * { flex: 0 0 260px; scroll-snap-align: start; min-width: 0; }
 .scroll-row > .card { flex: 0 0 260px; }
 @media (max-width: 640px) {

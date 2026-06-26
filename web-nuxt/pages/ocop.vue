@@ -58,7 +58,7 @@
         <span class="honor-banner-icon" aria-hidden="true">👑</span>
         <span class="honor-banner-text">Danh sách vinh dự</span>
       </div>
-      <div class="scroll-row honor-roll" role="region" aria-label="Sản phẩm OCOP 5 sao">
+      <div class="scroll-row honor-roll" role="region" aria-label="Sản phẩm OCOP 5 sao" tabindex="0">
         <EntityCard v-for="e in fiveStarHighlights" :key="e.id" :entity="e" />
       </div>
     </section>
@@ -85,7 +85,7 @@
     </section>
 
     <!-- Editorial -->
-    <section class="page-article reveal">
+    <section v-once class="page-article reveal">
       <h2>OCOP là gì?</h2>
       <p>OCOP (One Commune One Product — Mỗi xã Một sản phẩm) là chương trình quốc gia nhằm phát triển kinh tế nông thôn thông qua việc nâng cao chất lượng và giá trị sản phẩm địa phương. Mỗi xã, phường xác định một hoặc vài sản phẩm thế mạnh, được hỗ trợ chuẩn hoá quy trình sản xuất, bao bì, truy xuất nguồn gốc và kết nối thị trường.</p>
 
@@ -293,6 +293,7 @@ useHead({
         name: 'Sản phẩm OCOP Vĩnh Long',
         description: 'Sản phẩm đạt chuẩn OCOP từ Vĩnh Long, Bến Tre, Trà Vinh.',
         url: 'https://vinhlong360.vn/ocop',
+        numberOfItems: allOcop.value.length,
       }),
     },
     {

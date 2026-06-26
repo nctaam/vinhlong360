@@ -40,7 +40,7 @@
         </div>
         <span class="seasonal-banner-month" aria-hidden="true">Tháng {{ currentMonth }}</span>
       </div>
-      <div class="scroll-row" role="region" aria-label="Đặc sản đang mùa">
+      <div class="scroll-row" role="region" aria-label="Đặc sản đang mùa" tabindex="0">
         <EntityCard v-for="e in seasonalHighlights" :key="e.id" :entity="e" :season-filter="String(currentMonth)" />
       </div>
     </section>
@@ -52,13 +52,13 @@
         <button type="button" class="see-all" @click="ocopOnly = true; scrollToGrid()">Xem tất cả →</button>
       </div>
       <p class="section-desc">Sản phẩm đạt chuẩn OCOP — Mỗi xã một sản phẩm, chất lượng được chứng nhận.</p>
-      <div class="scroll-row" role="region" aria-label="Sản phẩm OCOP nổi bật">
+      <div class="scroll-row" role="region" aria-label="Sản phẩm OCOP nổi bật" tabindex="0">
         <EntityCard v-for="e in ocopHighlights" :key="e.id" :entity="e" />
       </div>
     </section>
 
     <!-- Editorial -->
-    <section class="page-article reveal">
+    <section v-once class="page-article reveal">
       <h2>Đặc sản vùng sông nước</h2>
       <p>Đồng bằng sông Cửu Long là vựa trái cây và nông sản lớn nhất cả nước. Riêng Vĩnh Long, Bến Tre và Trà Vinh đóng góp hàng chục loại đặc sản mang đậm bản sắc vùng miệt vườn: bưởi Năm Roi vỏ mỏng ruột ngọt, kẹo dừa Bến Tre dẻo thơm, nem chua Lai Vung chua cay đậm đà, hay bánh tráng Mỹ Lồng giòn rụm nướng than.</p>
       <p>Mỗi sản phẩm gắn liền với một vùng đất, một mùa vụ và một câu chuyện sản xuất riêng. Nhiều sản phẩm đã được chứng nhận OCOP (Mỗi xã Một sản phẩm) — đạt tiêu chuẩn chất lượng quốc gia từ 3 đến 5 sao.</p>
@@ -224,6 +224,7 @@ useHead({
         name: 'Sản phẩm địa phương Vĩnh Long',
         description: 'Đặc sản & sản phẩm OCOP Vĩnh Long theo mùa.',
         url: 'https://vinhlong360.vn/san-pham',
+        numberOfItems: allEntities.value.length,
       }),
     },
     {

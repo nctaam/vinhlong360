@@ -62,6 +62,7 @@ const aboutJsonLd = {
     '@type': 'Organization',
     name: 'vinhlong360',
     url: canonicalUrl('/'),
+    logo: 'https://vinhlong360.vn/icons/icon-512.png',
     areaServed: ['Vĩnh Long', 'Bến Tre', 'Trà Vinh'],
   },
 }

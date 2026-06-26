@@ -107,7 +107,7 @@
 
       <div v-if="seasonal.length" class="happening-section">
         <p class="happening-label">🔥 Đang vào mùa tháng {{ currentMonth }}</p>
-        <div class="scroll-row" role="region" aria-label="Đặc sản theo mùa">
+        <div class="scroll-row" role="region" aria-label="Đặc sản theo mùa" tabindex="0">
           <EntityCard v-for="e in seasonal" :key="e.id" :entity="e" :season-filter="String(currentMonth)" />
         </div>
       </div>
@@ -172,7 +172,7 @@
           <p class="sh-sub">Điểm đến nhiều người tìm kiếm nhất tuần qua</p>
         </div>
       </div>
-      <div class="scroll-row" role="region" aria-label="Điểm đến đang hot">
+      <div class="scroll-row" role="region" aria-label="Điểm đến đang hot" tabindex="0">
         <EntityCard v-for="e in trending" :key="e.id" :entity="e" />
       </div>
     </section>
@@ -186,7 +186,7 @@
         </div>
         <NuxtLink class="see-all" to="/lich-trinh">Xem tất cả →</NuxtLink>
       </div>
-      <div class="scroll-row" role="region" aria-label="Lịch trình gợi ý">
+      <div class="scroll-row" role="region" aria-label="Lịch trình gợi ý" tabindex="0">
         <ItineraryCard v-for="it in itineraries" :key="it.id" :itinerary="it" />
       </div>
       <div class="block-cta">
@@ -222,7 +222,7 @@
             </NuxtLink>
             <NuxtLink to="/bang-xep-hang" class="hl-more">Bảng xếp hạng →</NuxtLink>
           </div>
-          <div class="scroll-row" role="region" aria-label="Bài viết cộng đồng mới">
+          <div class="scroll-row" role="region" aria-label="Bài viết cộng đồng mới" tabindex="0">
             <NuxtLink v-for="p in communityPosts" :key="p.id" :to="`/bai-viet/${p.id}`" class="cm-card">
               <div v-if="p.images && p.images.length" class="cm-img">
                 <NuxtImg v-if="isRemoteUrl(p.images[0])" :src="p.images[0]" :alt="p.display_name || 'Bài viết'" loading="lazy" decoding="async" width="280" height="150" sizes="sm:280px" @error="onImgError" />
@@ -256,7 +256,7 @@
         <div class="section-head">
           <h2>Xem gần đây</h2>
         </div>
-        <div class="scroll-row" role="region" aria-label="Xem gần đây">
+        <div class="scroll-row" role="region" aria-label="Xem gần đây" tabindex="0">
           <NuxtLink v-for="rv in recentlyViewed" :key="rv.id" :to="`/dia-diem/${rv.id}`" class="card card-mini">
             <div v-if="rv.image" class="cover cover-img">
               <NuxtImg v-if="isRemoteUrl(rv.image)" :src="rv.image" :alt="rv.name" loading="lazy" decoding="async" width="320" height="180" sizes="sm:50vw md:33vw lg:320px" @error="onImgError" />
@@ -277,7 +277,7 @@
           <h2>Đã lưu gần đây</h2>
           <NuxtLink class="see-all" to="/lich-trinh">Xem tất cả →</NuxtLink>
         </div>
-        <div class="scroll-row" role="region" aria-label="Đã lưu gần đây">
+        <div class="scroll-row" role="region" aria-label="Đã lưu gần đây" tabindex="0">
           <NuxtLink v-for="fav in recentSaved" :key="fav.id" :to="`/dia-diem/${fav.id}`" class="card">
             <div v-if="fav.image" class="cover cover-img">
               <NuxtImg v-if="isRemoteUrl(fav.image)" :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="480" height="192" sizes="sm:100vw md:50vw lg:480px" @error="onImgError" />
@@ -620,6 +620,7 @@ html.js .home .hero-feature { opacity: 0; transform: translateY(16px); animation
   background-size: cover; background-position: center;
   transform: scale(1.06);
   animation: hero-kenburns 34s ease-in-out infinite alternate;
+  will-change: transform;
 }
 @media (max-width: 640px) {
   .home .hero-kenburns {
@@ -853,6 +854,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
     -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--space-4), #000 88%, transparent);
   }
   .scroll-row::-webkit-scrollbar { display: none; }
+  .scroll-row:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-md); }
   .scroll-row:hover, .scroll-row:focus-within { mask-image: linear-gradient(to right, transparent, #000 var(--space-4), #000 100%); -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--space-4), #000 100%); }
   .scroll-row > * { flex: 0 0 280px; scroll-snap-align: start; }
 }
@@ -875,6 +877,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   background: linear-gradient(105deg, transparent 0%, rgba(255,255,255,.16) 50%, transparent 100%);
   transform: translateX(0) skewX(-14deg);
   animation: event-sheen 6.5s ease-in-out 1.2s infinite;
+  will-change: transform;
 }
 @keyframes event-sheen {
   0%   { transform: translateX(0) skewX(-14deg); }
@@ -925,7 +928,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .spotlight {
   display: grid; grid-template-columns: 1.05fr 1fr; gap: var(--space-6); align-items: stretch;
   background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl);
-  overflow: hidden; box-shadow: var(--shadow-sm);
+  overflow: hidden; box-shadow: var(--shadow-sm); contain: layout style paint;
 }
 @media (max-width: 760px) { .spotlight { grid-template-columns: 1fr; } }
 .spot-visual {
@@ -938,6 +941,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   content: ""; position: absolute; inset: -18%; z-index: 0;
   background: radial-gradient(46% 46% at 34% 30%, rgba(255,255,255,.24) 0%, transparent 68%);
   animation: spot-glow 13s ease-in-out infinite alternate; pointer-events: none;
+  will-change: transform;
 }
 .spot-region, .spot-icon { position: relative; z-index: 1; }
 @keyframes spot-glow {

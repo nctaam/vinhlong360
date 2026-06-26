@@ -83,7 +83,7 @@
           <p>Những mục chính vụ, thời điểm ngon nhất — không nên bỏ lỡ.</p>
         </div>
       </div>
-      <div class="scroll-row" role="region" aria-label="Cao điểm tháng này">
+      <div class="scroll-row" role="region" aria-label="Cao điểm tháng này" tabindex="0">
         <div
           v-for="(e, i) in peakItems" :key="e.id"
           class="season-item is-peak"
@@ -105,7 +105,7 @@
           <span class="see-all-count">{{ cat.items.length }} mục</span>
         </div>
         <p class="section-desc">{{ cat.desc }}</p>
-        <div class="scroll-row" role="region" :aria-label="cat.label + ' đang mùa'">
+        <div class="scroll-row" role="region" :aria-label="cat.label + ' đang mùa'" tabindex="0">
           <div
             v-for="(e, i) in cat.items.slice(0, 8)" :key="e.id"
             class="season-item"
@@ -142,7 +142,7 @@
     </aside>
 
     <!-- Editorial -->
-    <section class="page-article reveal">
+    <section v-once class="page-article reveal">
       <h2>Khí hậu miền Tây và du lịch theo mùa</h2>
       <p>Vùng đồng bằng sông Cửu Long có khí hậu nhiệt đới gió mùa với hai mùa rõ rệt. <strong>Mùa khô</strong> (tháng 12–4) trời nắng ấm, ít mưa, nhiệt độ 25–32°C — đây là thời gian lý tưởng nhất để du lịch, đạp xe và tham quan làng nghề. <strong>Mùa mưa</strong> (tháng 5–11) có những cơn mưa rào buổi chiều nhưng sáng thường còn nắng đẹp, và đây lại là mùa trái cây rộ nhất.</p>
 
@@ -346,6 +346,7 @@ useHead(() => ({
       name: `Tháng ${month.value}: đi đâu, ăn gì ở Vĩnh Long`,
       description: `Những mục đang mùa, ngon nhất vào tháng ${month.value} — trái cây, nông sản, ẩm thực, trải nghiệm miệt vườn.`,
       url: canonicalUrl('/theo-mua'),
+      numberOfItems: wedge.value.length,
     }),
   }, {
     type: 'application/ld+json',

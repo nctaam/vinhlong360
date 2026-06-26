@@ -115,6 +115,7 @@ const ratingDisplay = computed(() => {
 
 <style scoped>
 .card-name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+:deep(.card) { contain: content; }
 .card-amenities { display: flex; align-items: center; gap: 2px; margin-top: .25rem; }
 .ca-icon { font-size: .7rem; opacity: .7; cursor: default; }
 .ca-more { font-size: .65rem; color: var(--muted); font-weight: 600; margin-left: 1px; }

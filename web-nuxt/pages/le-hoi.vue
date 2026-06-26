@@ -28,7 +28,7 @@
       <div class="section-head">
         <h2>Sắp diễn ra</h2>
       </div>
-      <div class="scroll-row" role="region" aria-label="Lễ hội sắp diễn ra">
+      <div class="scroll-row" role="region" aria-label="Lễ hội sắp diễn ra" tabindex="0">
         <NuxtLink
           v-for="e in upcoming" :key="e.id"
           :to="`/dia-diem/${e.id}`"
@@ -74,7 +74,7 @@
     </section>
 
     <!-- Editorial -->
-    <section class="page-article reveal">
+    <section v-once class="page-article reveal">
       <h2>Văn hoá lễ hội miền Tây</h2>
       <p>Vùng đất Vĩnh Long, Bến Tre và Trà Vinh là nơi giao thoa của ba nền văn hoá: Kinh, Khmer và Hoa. Mỗi cộng đồng mang đến một hệ thống lễ hội riêng biệt, tạo nên bức tranh văn hoá đa dạng hiếm có trong cả nước. Từ đình miếu Kinh ven sông đến chùa Khmer tháp nhọn, từ hội quán Hoa rực rỡ đèn lồng đến giỗ kỵ danh nhân — lễ hội ở đây không chỉ là dịp vui mà là sợi dây kết nối cộng đồng qua nhiều thế hệ.</p>
 
@@ -428,6 +428,7 @@ const festivalListSchema = computed(() => {
     '@type': 'ItemList',
     name: 'Lễ hội truyền thống',
     numberOfItems: allEvents.value.length,
+    itemListOrder: 'https://schema.org/ItemListOrderAscending',
     itemListElement: items,
   })
 })
@@ -443,6 +444,7 @@ useHead({
         name: 'Lễ hội truyền thống',
         description: 'Lễ hội đình miếu, lễ Khmer, Nghinh Ông, giỗ danh nhân — truyền thống văn hóa Vĩnh Long, Bến Tre, Trà Vinh.',
         url: 'https://vinhlong360.vn/le-hoi',
+        numberOfItems: allEvents.value.length,
       }),
     },
     {

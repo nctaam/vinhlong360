@@ -30,7 +30,7 @@
       <div class="section-head">
         <h2>Sắp diễn ra</h2>
       </div>
-      <div class="scroll-row" role="region" aria-label="Sự kiện sắp diễn ra">
+      <div class="scroll-row" role="region" aria-label="Sự kiện sắp diễn ra" tabindex="0">
         <NuxtLink
           v-for="e in upcoming" :key="e.id"
           :to="`/dia-diem/${e.id}`"
@@ -71,7 +71,7 @@
     </section>
 
     <!-- Editorial -->
-    <section class="page-article reveal">
+    <section v-once class="page-article reveal">
       <h2>Sự kiện tại miền Tây</h2>
       <p>Ngoài các lễ hội truyền thống, vùng Vĩnh Long, Bến Tre và Trà Vinh ngày càng có nhiều sự kiện văn hoá, thể thao và du lịch hiện đại. Hội chợ nông sản, festival ẩm thực, giải chạy marathon, triển lãm nghệ thuật và các chương trình xúc tiến du lịch được tổ chức thường xuyên, đặc biệt vào dịp cuối tuần và các ngày lễ lớn.</p>
       <p>Các sự kiện này là cơ hội tốt để trải nghiệm văn hoá địa phương theo cách hiện đại — thưởng thức ẩm thực đường phố, xem trình diễn nghề truyền thống, mua sản phẩm OCOP trực tiếp từ nhà sản xuất, hoặc tham gia các hoạt động cộng đồng cùng người dân bản địa.</p>
@@ -404,6 +404,7 @@ const eventListSchema = computed(() => {
     '@type': 'ItemList',
     name: 'Sự kiện',
     numberOfItems: allEvents.value.length,
+    itemListOrder: 'https://schema.org/ItemListOrderAscending',
     itemListElement: items,
   })
 })

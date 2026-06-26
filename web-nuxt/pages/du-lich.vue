@@ -27,7 +27,7 @@
       <div class="section-head">
         <h2>Nổi bật</h2>
       </div>
-      <div class="scroll-row" role="region" aria-label="Trải nghiệm nổi bật">
+      <div class="scroll-row" role="region" aria-label="Trải nghiệm nổi bật" tabindex="0">
         <EntityCard v-for="e in featured" :key="e.id" :entity="e" />
       </div>
     </section>
@@ -39,13 +39,13 @@
         <button type="button" class="see-all" @click="typeFilter = cat.type; scrollToGrid()">{{ cat.items.length }} kết quả →</button>
       </div>
       <p class="section-desc">{{ cat.desc }}</p>
-      <div class="scroll-row" role="region" :aria-label="cat.label">
+      <div class="scroll-row" role="region" :aria-label="cat.label" tabindex="0">
         <EntityCard v-for="e in cat.items.slice(0, 8)" :key="e.id" :entity="e" />
       </div>
     </section>
 
     <!-- Editorial -->
-    <section class="page-article reveal">
+    <section v-once class="page-article reveal">
       <h2>Vì sao chọn Vĩnh Long, Bến Tre, Trà Vinh?</h2>
       <p>Ba tỉnh nằm ở trung tâm đồng bằng sông Cửu Long, nơi hệ thống sông Tiền và sông Hậu chia thành hàng chục nhánh nhỏ tạo nên mạng lưới kênh rạch chằng chịt. Đây là vùng đất của những cù lao xanh mát quanh năm — An Bình, Bình Hoà Phước, Minh, Ông Hổ — nơi cuộc sống vẫn giữ nhịp chậm rãi của miệt vườn Nam Bộ.</p>
       <p>Khác với các điểm du lịch đông đúc, khu vực này mang đến trải nghiệm gần gũi: chèo xuồng qua rạch dừa nước, đạp xe trên đường làng, tát mương bắt cá cùng nông dân, hoặc đơn giản là ngồi võng nghe chim hót trong vườn trái cây. Du khách không chỉ ngắm cảnh mà thực sự sống cùng nhịp sinh hoạt bản địa.</p>
@@ -81,8 +81,8 @@
         <p class="control-label">Theo tháng</p>
         <div class="chip-row" role="group" aria-label="Lọc theo tháng">
           <button type="button" :class="['chip', 'season', { active: seasonFilter === 'all' }]" :aria-pressed="seasonFilter === 'all'" @click="seasonFilter = 'all'">Tất cả</button>
-          <button type="button" v-for="m in 12" :key="m" :class="['chip', 'season', { active: seasonFilter === String(m) }]" :aria-pressed="seasonFilter === String(m)" :title="monthNames[m - 1]" :aria-label="monthNames[m - 1]" @click="seasonFilter = String(m)">
-            {{ monthAbbr[m - 1] }}
+          <button type="button" v-for="m in 12" :key="m" :class="['chip', 'season', { active: seasonFilter === String(m) }]" :aria-pressed="seasonFilter === String(m)" :title="MONTH_NAMES[m - 1]" :aria-label="MONTH_NAMES[m - 1]" @click="seasonFilter = String(m)">
+            {{ MONTH_ABBR[m - 1] }}
           </button>
           <button type="button" :class="['chip', 'season', { active: seasonFilter === 'flood' }]" :aria-pressed="seasonFilter === 'flood'" @click="seasonFilter = 'flood'">🌊 Mùa nước nổi</button>
         </div>
@@ -130,6 +130,14 @@
   </div>
 </template>
 
+<script lang="ts">
+const MONTH_NAMES = [
+  'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+  'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12',
+]
+const MONTH_ABBR = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12']
+</script>
+
 <script setup lang="ts">
 import type { Entity } from '~/types'
 import { TYPE_META, TOURISM_TYPES } from '~/composables/useConstants'
@@ -143,12 +151,6 @@ const typeChips = TYPES.map(t => ({
   value: t,
   label: `${TYPE_META[t].emoji} ${TYPE_META[t].label}`,
 }))
-
-const monthNames = [
-  'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
-  'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12',
-]
-const monthAbbr = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12']
 
 const q = ref('')
 const typeFilter = ref('all')
@@ -248,6 +250,7 @@ useHead({
         name: 'Du lịch Vĩnh Long',
         description: 'Trải nghiệm bản địa, điểm tham quan, lưu trú, làng nghề và ẩm thực khắp Vĩnh Long.',
         url: 'https://vinhlong360.vn/du-lich',
+        numberOfItems: allEntities.value.length,
       }),
     },
     {

@@ -48,6 +48,7 @@ const region = computed(() => {
   display: grid; grid-template-columns: 1.05fr 1fr; gap: var(--space-6);
   align-items: stretch; background: var(--card); border: 1px solid var(--border);
   border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--shadow-sm);
+  contain: layout style paint;
 }
 @media (max-width: 760px) { .cspot { grid-template-columns: 1fr; } }
 .cspot-visual {
@@ -61,6 +62,7 @@ const region = computed(() => {
   content: ""; position: absolute; inset: -18%; z-index: 0; pointer-events: none;
   background: radial-gradient(46% 46% at 34% 30%, rgba(255,255,255,.22) 0%, transparent 68%);
   animation: cspot-glow 13s ease-in-out infinite alternate;
+  will-change: transform;
 }
 @keyframes cspot-glow { 0% { transform: translate3d(0,0,0) scale(1); } 100% { transform: translate3d(7%,5%,0) scale(1.12); } }
 .cspot-region, .cspot-icon { position: relative; z-index: 1; }
