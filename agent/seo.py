@@ -460,6 +460,7 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
                     "price": price_value,
                     "priceCurrency": "VND",
                     "availability": "https://schema.org/InStock",
+                    "url": _entity_url(entity_id),
                 }
         if attrs.get("ocop"):
             ld["brand"] = {"@type": "Brand", "name": f"OCOP {attrs['ocop']}"}
@@ -575,6 +576,18 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
     date_created = _safe_date(entity.get("created_at"))
     if date_created:
         ld["dateCreated"] = date_created
+
+    rating_val = attrs.get("rating")
+    review_count = attrs.get("review_count")
+    if isinstance(rating_val, (int, float)) and 0 < rating_val <= 5:
+        agg: dict[str, Any] = {
+            "@type": "AggregateRating",
+            "ratingValue": round(float(rating_val), 1),
+            "bestRating": 5,
+        }
+        if isinstance(review_count, int) and review_count > 0:
+            agg["reviewCount"] = review_count
+        ld["aggregateRating"] = agg
 
     ld["mainEntityOfPage"] = {
         "@type": "WebPage",

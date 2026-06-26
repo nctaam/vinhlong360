@@ -1949,3 +1949,70 @@ def test_entity_jsonld_has_available_language():
     entity = {"id": "lang-test", "name": "Test", "type": "attraction"}
     ld = seo.build_entity_jsonld(entity, {})
     assert ld["availableLanguage"] == "vi"
+
+
+# ── offers.url enrichment ────────────────────────────────────────────
+
+
+def test_product_offers_includes_url():
+    entity = {
+        "id": "prod-url", "name": "SP", "type": "product",
+        "attributes": {"price": "150.000"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["offers"]["url"] == seo._entity_url("prod-url")
+
+
+# ── aggregateRating ──────────────────────────────────────────────────
+
+
+def test_entity_jsonld_aggregate_rating():
+    entity = {
+        "id": "rated", "name": "Rated", "type": "attraction",
+        "attributes": {"rating": 4.5, "review_count": 120},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "aggregateRating" in ld
+    agg = ld["aggregateRating"]
+    assert agg["@type"] == "AggregateRating"
+    assert agg["ratingValue"] == 4.5
+    assert agg["bestRating"] == 5
+    assert agg["reviewCount"] == 120
+
+
+def test_entity_jsonld_aggregate_rating_without_review_count():
+    entity = {
+        "id": "rated-no-cnt", "name": "Rated", "type": "restaurant",
+        "attributes": {"rating": 3.8},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    agg = ld["aggregateRating"]
+    assert agg["ratingValue"] == 3.8
+    assert "reviewCount" not in agg
+
+
+def test_entity_jsonld_no_aggregate_rating_when_zero():
+    entity = {
+        "id": "zero-rate", "name": "Zero", "type": "attraction",
+        "attributes": {"rating": 0},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "aggregateRating" not in ld
+
+
+def test_entity_jsonld_no_aggregate_rating_when_over_5():
+    entity = {
+        "id": "over-rate", "name": "Over", "type": "attraction",
+        "attributes": {"rating": 6},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "aggregateRating" not in ld
+
+
+def test_entity_jsonld_no_aggregate_rating_when_string():
+    entity = {
+        "id": "str-rate", "name": "String", "type": "attraction",
+        "attributes": {"rating": "good"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "aggregateRating" not in ld
