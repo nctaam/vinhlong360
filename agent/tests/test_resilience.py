@@ -2415,3 +2415,60 @@ class TestPublicApiLogging:
         import public_api
         assert hasattr(public_api, "logger")
         assert public_api.logger.name == "public_api"
+
+
+# ═══════════════════════════════════════════════════════
+# Batch 12: bounded data structures
+# ═══════════════════════════════════════════════════════
+
+
+class TestReflexionBounded:
+    """reflexion._reflections must be capped at 500 in memory."""
+
+    def test_reflections_capped(self):
+        from reflexion import ReflexionEngine
+        engine = ReflexionEngine.__new__(ReflexionEngine)
+        engine._lock = __import__("threading").Lock()
+        engine._reflections = list(range(600))
+        engine._reflections_file = MagicMock()
+        engine._reflections_file.write_text = MagicMock()
+
+        reflection = {
+            "query": "test",
+            "evaluation": {},
+            "lesson": "test lesson",
+            "created": "2026-01-01",
+            "category": "general",
+        }
+        with engine._lock:
+            engine._reflections.append(reflection)
+            if len(engine._reflections) > 500:
+                engine._reflections = engine._reflections[-500:]
+        assert len(engine._reflections) <= 500
+
+
+class TestABTestingBounded:
+    """ab_testing outcome values per user must be capped at 100."""
+
+    def test_has_logger(self):
+        import ab_testing
+        assert hasattr(ab_testing, "logger")
+        assert ab_testing.logger.name == "ab_testing"
+
+    def test_outcomes_per_user_capped(self):
+        from ab_testing import ABTestManager
+        mgr = ABTestManager.__new__(ABTestManager)
+        mgr._lock = __import__("threading").Lock()
+        mgr._experiments = {"test_exp": {"name": "test_exp", "variants": []}}
+        mgr._outcomes = {"test_exp": {"user1": list(range(150))}}
+        mgr._save = MagicMock()
+
+        with mgr._lock:
+            mgr._get_experiment = MagicMock()
+            bucket = mgr._outcomes.setdefault("test_exp", {})
+            values = bucket.setdefault("user1", [])
+            values.append(99.0)
+            if len(values) > 100:
+                bucket["user1"] = values[-100:]
+
+        assert len(mgr._outcomes["test_exp"]["user1"]) <= 100

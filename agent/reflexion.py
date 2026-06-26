@@ -184,6 +184,8 @@ class ReflexionEngine:
 
         with self._lock:
             self._reflections.append(reflection)
+            if len(self._reflections) > 500:
+                self._reflections = self._reflections[-500:]
             self._save()
 
         return reflection

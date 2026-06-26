@@ -19,12 +19,15 @@ Usage:
 
 import hashlib
 import json
+import logging
 import math
 import os
 import sys
 import time
 from pathlib import Path
 from threading import Lock
+
+logger = logging.getLogger(__name__)
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 if hasattr(sys.stdout, "reconfigure") and sys.stdout.encoding != "utf-8":
@@ -278,7 +281,10 @@ class ABTestManager:
         with self._lock:
             self._get_experiment(experiment_name)  # validate existence
             bucket = self._outcomes.setdefault(experiment_name, {})
-            bucket.setdefault(user_id, []).append(float(metric_value))
+            values = bucket.setdefault(user_id, [])
+            values.append(float(metric_value))
+            if len(values) > 100:
+                bucket[user_id] = values[-100:]
             self._save()
 
     def get_results(self, experiment_name: str) -> dict:
