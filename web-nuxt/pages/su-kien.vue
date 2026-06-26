@@ -265,7 +265,7 @@ const filtered = computed(() => {
   }
   if (q.value.trim()) {
     const kw = q.value.toLowerCase()
-    list = list.filter((e: Entity) => e.name.toLowerCase().includes(kw) || (e.summary || '').toLowerCase().includes(kw))
+    list = list.filter((e: Entity) => (e.name || '').toLowerCase().includes(kw) || (e.summary || '').toLowerCase().includes(kw))
   }
   return list
 })

@@ -518,7 +518,7 @@ useHead(() => ({
 }
 .dark .season-badge.peak {
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-  color: var(--ink);
+  color: #1a1a1a;
   box-shadow: 0 1px 3px rgba(var(--accent-rgb), .6), 0 0 12px rgba(var(--accent-rgb), .25);
 }
 .dark .empty-type-card { background: rgba(var(--secondary-rgb), .07); border-color: rgba(var(--secondary-rgb), .22); }

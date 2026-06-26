@@ -224,7 +224,7 @@
           </div>
           <div class="scroll-row" role="region" aria-label="Bài viết cộng đồng mới" tabindex="0">
             <NuxtLink v-for="p in communityPosts" :key="p.id" :to="`/bai-viet/${p.id}`" class="cm-card">
-              <div v-if="p.images && p.images.length" class="cm-img">
+              <div v-if="p.images && p.images.length && p.images[0]" class="cm-img">
                 <NuxtImg v-if="isRemoteUrl(p.images[0])" :src="p.images[0]" :alt="p.display_name || 'Bài viết'" loading="lazy" decoding="async" width="280" height="150" sizes="sm:280px" @error="onImgError" />
                 <img v-else :src="p.images[0]" :alt="p.display_name || 'Bài viết'" loading="lazy" decoding="async" width="280" height="150" @error="onImgError" />
               </div>
@@ -461,8 +461,9 @@ function formatEventMonth(ev: any) {
   return isNaN(m) || m === 0 ? '' : `Th${m}`
 }
 
-function formatRating(rating: number): string {
-  return rating > 0 ? rating.toFixed(1) : 'Mới'
+function formatRating(rating: number | string): string {
+  const n = Number(rating)
+  return n > 0 ? n.toFixed(1) : 'Mới'
 }
 
 function onImgError(e: Event) {

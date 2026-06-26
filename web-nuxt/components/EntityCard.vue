@@ -124,8 +124,8 @@ const ratingDisplay = computed(() => {
 .ca-more { font-size: .65rem; color: var(--muted); font-weight: 600; margin-left: 1px; }
 .card-rating { display: flex; align-items: center; gap: .25rem; font-size: .8rem; margin-top: .25rem; }
 .cr-stars { color: var(--secondary, #d4a017); letter-spacing: -1px; }
-.cr-score { font-weight: 600; color: var(--text-primary); }
-.cr-count { color: var(--text-secondary); font-size: .75rem; }
+.cr-score { font-weight: 600; color: var(--ink); }
+.cr-count { color: var(--muted); font-size: .75rem; }
 .badge.ocop-5 {
   background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
   color: var(--text-on-dark, #fff);
