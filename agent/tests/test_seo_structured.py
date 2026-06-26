@@ -620,8 +620,7 @@ def test_is_public_verified_true():
 
 def test_robots_contains_sitemaps():
     resp = seo.robots()
-    assert "sitemap.xml" in resp
-    assert "sitemap-media.xml" in resp
+    assert "sitemap-index.xml" in resp
 
 
 def test_robots_disallows_api_and_seo():
@@ -1101,3 +1100,94 @@ def test_place_no_contains_when_no_children():
     by_id = _by_id([place])
     ld = seo.build_entity_jsonld(place, by_id)
     assert "containsPlace" not in ld
+
+
+# ── relatedLink from relationships ──────────────────────────────────────
+
+
+def test_entity_jsonld_related_link_from_relationships():
+    entities = [
+        {"id": "a", "name": "A", "type": "attraction"},
+        {"id": "b", "name": "B", "type": "dish"},
+        {"id": "c", "name": "C", "type": "product"},
+    ]
+    by_id = _by_id(entities)
+    relationships = [
+        {"from": "a", "to": "b", "type": "near"},
+        {"from": "c", "to": "a", "type": "related_to"},
+    ]
+    ld = seo.build_entity_jsonld(by_id["a"], by_id, relationships=relationships)
+    assert "relatedLink" in ld
+    assert seo._entity_url("b") in ld["relatedLink"]
+    assert seo._entity_url("c") in ld["relatedLink"]
+
+
+def test_entity_jsonld_no_related_link_without_relationships():
+    entity = {"id": "solo", "name": "Solo", "type": "attraction"}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "relatedLink" not in ld
+
+
+def test_entity_jsonld_related_link_caps_at_10():
+    entities = [{"id": f"e-{i}", "name": f"E{i}", "type": "attraction"} for i in range(15)]
+    entities.append({"id": "hub", "name": "Hub", "type": "attraction"})
+    by_id = _by_id(entities)
+    relationships = [{"from": "hub", "to": f"e-{i}", "type": "near"} for i in range(15)]
+    ld = seo.build_entity_jsonld(by_id["hub"], by_id, relationships=relationships)
+    assert len(ld["relatedLink"]) == 10
+
+
+def test_entity_jsonld_related_link_skips_missing_entities():
+    entities = [{"id": "a", "name": "A", "type": "attraction"}]
+    by_id = _by_id(entities)
+    relationships = [{"from": "a", "to": "nonexistent", "type": "near"}]
+    ld = seo.build_entity_jsonld(by_id["a"], by_id, relationships=relationships)
+    assert "relatedLink" not in ld
+
+
+def test_entity_jsonld_related_link_no_duplicates():
+    entities = [
+        {"id": "a", "name": "A", "type": "attraction"},
+        {"id": "b", "name": "B", "type": "dish"},
+    ]
+    by_id = _by_id(entities)
+    relationships = [
+        {"from": "a", "to": "b", "type": "near"},
+        {"from": "a", "to": "b", "type": "related_to"},
+    ]
+    ld = seo.build_entity_jsonld(by_id["a"], by_id, relationships=relationships)
+    assert len(ld["relatedLink"]) == 1
+
+
+def test_entity_jsonld_endpoint_passes_relationships(monkeypatch):
+    data = {
+        "entities": [
+            {"id": "x", "name": "X", "type": "attraction"},
+            {"id": "y", "name": "Y", "type": "dish"},
+        ],
+        "relationships": [{"from": "x", "to": "y", "type": "near"}],
+        "itineraries": [],
+    }
+    monkeypatch.setattr(seo, "_load", lambda: data)
+    monkeypatch.setattr(seo, "_by_id_cache", None)
+    result = seo.entity_jsonld("x")
+    assert "relatedLink" in result
+    assert seo._entity_url("y") in result["relatedLink"]
+
+
+# ── Sitemap index ───────────────────────────────────────────────────────
+
+
+def test_sitemap_index_contains_both_sitemaps():
+    resp = seo.sitemap_index()
+    xml = resp.body.decode()
+    assert "sitemap-index" not in xml or "sitemapindex" in xml
+    assert f"{seo.SITE}/sitemap.xml" in xml
+    assert f"{seo.SITE}/sitemap-media.xml" in xml
+    assert "<sitemapindex" in xml
+
+
+def test_robots_references_sitemap_index():
+    resp = seo.robots()
+    assert "sitemap-index.xml" in resp
+    assert "sitemap.xml\n" not in resp

@@ -377,7 +377,7 @@ def _build_breadcrumb(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]) 
     }
 
 
-def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]) -> dict[str, Any]:
+def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]], *, relationships: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     schema_type = TYPE_SCHEMA.get(str(entity.get("type")), "Thing")
     entity_id = str(entity.get("id"))
     area = _entity_area(entity, by_id)
@@ -519,6 +519,27 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
                 break
         if contained:
             ld["containsPlace"] = contained
+
+    if relationships:
+        related_urls: list[str] = []
+        for rel in relationships:
+            if not isinstance(rel, dict):
+                continue
+            src = str(rel.get("from") or rel.get("from_id") or "")
+            dst = str(rel.get("to") or rel.get("to_id") or "")
+            peer: str | None = None
+            if src == entity_id and dst in by_id:
+                peer = dst
+            elif dst == entity_id and src in by_id:
+                peer = src
+            if peer:
+                url = _entity_url(peer)
+                if url not in related_urls:
+                    related_urls.append(url)
+            if len(related_urls) >= 10:
+                break
+        if related_urls:
+            ld["relatedLink"] = related_urls
 
     ld["inLanguage"] = "vi-VN"
     ld["isPartOf"] = {"@id": f"{SITE}/#website"}
@@ -719,7 +740,7 @@ def entity_jsonld(entity_id: str):
     entity = by_id.get(entity_id)
     if not entity:
         raise HTTPException(status_code=404, detail="not found")
-    result = [build_entity_jsonld(entity, by_id)]
+    result = [build_entity_jsonld(entity, by_id, relationships=data.get("relationships", []))]
     faq = build_faq_jsonld(entity)
     if faq:
         result.append(faq)
@@ -921,6 +942,22 @@ def sitemap_media():
     )
 
 
+@router.get("/sitemap-index.xml", response_class=Response)
+def sitemap_index():
+    """Sitemap index pointing to the main and media sitemaps."""
+    now = datetime.now(UTC).strftime("%Y-%m-%d")
+    xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml += '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    for loc in [f"{SITE}/sitemap.xml", f"{SITE}/sitemap-media.xml"]:
+        xml += f"  <sitemap>\n    <loc>{xml_escape(loc)}</loc>\n    <lastmod>{now}</lastmod>\n  </sitemap>\n"
+    xml += "</sitemapindex>"
+    return Response(
+        content=xml,
+        media_type="application/xml",
+        headers={"Cache-Control": "public, max-age=3600"},
+    )
+
+
 @router.get("/robots.txt", response_class=PlainTextResponse)
 def robots():
     return f"""User-agent: *
@@ -943,6 +980,5 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
-Sitemap: {SITE}/sitemap.xml
-Sitemap: {SITE}/sitemap-media.xml
+Sitemap: {SITE}/sitemap-index.xml
 """

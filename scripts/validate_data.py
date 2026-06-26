@@ -117,6 +117,116 @@ def haversine_km(a: list[float] | None, b: list[float] | None) -> float | None:
     return 6371.0 * 2 * math.asin(math.sqrt(val))
 
 
+SEO_REQUIRED: dict[str, list[str]] = {
+    "restaurant": ["specialty", "price_range", "phone", "hours"],
+    "dish": ["specialty", "price_range"],
+    "cafe": ["specialty", "price_range", "phone", "hours"],
+    "accommodation": ["star_rating", "price_range", "phone"],
+    "product": ["price", "ocop"],
+    "event": ["date_start", "startDate"],
+    "attraction": ["admission"],
+    "experience": ["admission"],
+    "nature": ["admission"],
+    "person": ["role"],
+}
+
+
+def entity_quality_score(entity: dict[str, Any]) -> int:
+    """Compute a 0-100 quality score for a single entity."""
+    score = 100
+    is_place = entity.get("type") == "place"
+
+    summary_val = entity.get("summary")
+    if not summary_val:
+        score -= 20
+    elif isinstance(summary_val, str):
+        s = summary_val.strip()
+        if BOILERPLATE_SUMMARY.search(s):
+            score -= 20
+        elif len(s) < 50:
+            score -= 5
+        elif len(s) > 500:
+            score -= 3
+
+    if not entity.get("coordinates") and not entity.get("coords"):
+        score -= 15
+
+    source = entity.get("source")
+    if not source or (isinstance(source, list) and len(source) == 0):
+        score -= 10
+
+    if not is_place and not entity.get("placeId"):
+        score -= 10
+
+    if not is_place and not entity.get("area"):
+        score -= 5
+
+    imgs = entity.get("images")
+    if not isinstance(imgs, list) or not any(isinstance(i, str) and i.startswith("http") for i in imgs):
+        score -= 10
+
+    confidence = entity.get("confidence")
+    if isinstance(confidence, (int, float)) and confidence < 0.5:
+        score -= 5
+
+    etype = str(entity.get("type")) if entity.get("type") else None
+    req = SEO_REQUIRED.get(etype) if etype else None
+    if req:
+        attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
+        if not any(attrs.get(k) for k in req):
+            score -= 10
+
+    updated_at = entity.get("updatedAt")
+    created_at_val = entity.get("created_at")
+    if isinstance(updated_at, str) and isinstance(created_at_val, str) and updated_at < created_at_val:
+        score -= 2
+
+    return max(0, score)
+
+
+def graph_connectivity(entities: list[Any], relationships: list[Any]) -> dict[str, Any]:
+    """Find disconnected subgraphs in the entity-relationship graph."""
+    id_set: set[str] = set()
+    for e in entities:
+        if isinstance(e, dict) and e.get("id"):
+            id_set.add(str(e["id"]))
+
+    adj: dict[str, set[str]] = {eid: set() for eid in id_set}
+    for rel in relationships:
+        if not isinstance(rel, dict):
+            continue
+        src = str(rel_source(rel) or "")
+        dst = str(rel_target(rel) or "")
+        if src in id_set and dst in id_set and src != dst:
+            adj[src].add(dst)
+            adj[dst].add(src)
+
+    visited: set[str] = set()
+    components: list[int] = []
+
+    for start in id_set:
+        if start in visited:
+            continue
+        size = 0
+        stack = [start]
+        while stack:
+            node = stack.pop()
+            if node in visited:
+                continue
+            visited.add(node)
+            size += 1
+            stack.extend(adj[node] - visited)
+        components.append(size)
+
+    components.sort(reverse=True)
+    return {
+        "total_components": len(components),
+        "largest_component": components[0] if components else 0,
+        "isolated_entities": sum(1 for c in components if c == 1),
+        "component_sizes": components[:10],
+    }
+
+
 def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[str, Any]]:
     issues: list[Issue] = []
     entities = data.get("entities", [])
@@ -657,24 +767,12 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     }
 
     # DI-014: per-type SEO attribute coverage
-    seo_required: dict[str, list[str]] = {
-        "restaurant": ["specialty", "price_range", "phone", "hours"],
-        "dish": ["specialty", "price_range"],
-        "cafe": ["specialty", "price_range", "phone", "hours"],
-        "accommodation": ["star_rating", "price_range", "phone"],
-        "product": ["price", "ocop"],
-        "event": ["date_start", "startDate"],
-        "attraction": ["admission"],
-        "experience": ["admission"],
-        "nature": ["admission"],
-        "person": ["role"],
-    }
     type_coverage: dict[str, dict[str, int]] = {}
     for e in entities:
         if not isinstance(e, dict):
             continue
         etype = e.get("type")
-        req = seo_required.get(str(etype)) if etype else None
+        req = SEO_REQUIRED.get(str(etype)) if etype else None
         if not req:
             continue
         attrs = e.get("attributes") if isinstance(e.get("attributes"), dict) else {}
@@ -684,6 +782,27 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         if any(attrs.get(k) for k in req):
             type_coverage[etype]["has_any_seo_attr"] += 1
     stats["seo_attr_coverage"] = type_coverage
+
+    # DI-017: entity quality score distribution
+    non_place = [e for e in entities if isinstance(e, dict) and e.get("type") != "place"]
+    if non_place:
+        scores = [entity_quality_score(e) for e in non_place]
+        stats["quality_score_avg"] = round(sum(scores) / len(scores), 1)
+        stats["quality_score_distribution"] = {
+            "critical_0_29": sum(1 for s in scores if s < 30),
+            "needs_work_30_59": sum(1 for s in scores if 30 <= s < 60),
+            "ok_60_79": sum(1 for s in scores if 60 <= s < 80),
+            "good_80_100": sum(1 for s in scores if s >= 80),
+        }
+    else:
+        stats["quality_score_avg"] = 0.0
+        stats["quality_score_distribution"] = {
+            "critical_0_29": 0, "needs_work_30_59": 0,
+            "ok_60_79": 0, "good_80_100": 0,
+        }
+
+    # DI-018: graph connectivity
+    stats["graph_connectivity"] = graph_connectivity(entities, relationships)
 
     return issues, stats
 
@@ -749,6 +868,22 @@ def print_report(issues: list[Issue], stats: dict[str, Any]) -> None:
             has = info["has_any_seo_attr"]
             pct = round(100 * has / max(total, 1))
             print(f"  {etype}: {has}/{total} ({pct}%)")
+
+    qs_avg = stats.get("quality_score_avg", 0)
+    qs_dist = stats.get("quality_score_distribution", {})
+    if qs_avg or qs_dist:
+        print(f"\nEntity quality score: avg={qs_avg}")
+        print(f"  critical (0-29): {qs_dist.get('critical_0_29', 0)}")
+        print(f"  needs_work (30-59): {qs_dist.get('needs_work_30_59', 0)}")
+        print(f"  ok (60-79): {qs_dist.get('ok_60_79', 0)}")
+        print(f"  good (80-100): {qs_dist.get('good_80_100', 0)}")
+
+    gc = stats.get("graph_connectivity", {})
+    if gc:
+        print(f"\nGraph connectivity:")
+        print(f"  components: {gc.get('total_components', 0)}")
+        print(f"  largest: {gc.get('largest_component', 0)}")
+        print(f"  isolated: {gc.get('isolated_entities', 0)}")
 
     grouped: dict[str, list[Issue]] = defaultdict(list)
     for issue in issues:

@@ -946,6 +946,183 @@ def test_validate_flags_itinerary_excessive_stops(tmp_path: Path) -> None:
     assert "itinerary_excessive_stops" in {issue.code for issue in issues}
 
 
+# ── Entity quality score (DI-017) ───────────────────────────────────────
+
+
+def test_quality_score_perfect_entity() -> None:
+    entity = {
+        "id": "a", "type": "restaurant", "name": "Nhà hàng Test",
+        "summary": "Mô tả đủ dài cho SEO, có nội dung hữu ích cho người đọc.",
+        "coordinates": [10.25, 106.0], "area": "vinh-long", "placeId": "xa-1",
+        "source": [{"url": "https://example.com"}],
+        "images": ["https://example.com/img.jpg"],
+        "confidence": 0.9,
+        "attributes": {"specialty": "Hải sản"},
+    }
+    score = validate_data.entity_quality_score(entity)
+    assert score == 100
+
+
+def test_quality_score_empty_entity() -> None:
+    entity = {"id": "b", "type": "restaurant", "name": "Bad"}
+    score = validate_data.entity_quality_score(entity)
+    assert score <= 30
+
+
+def test_quality_score_boilerplate_summary() -> None:
+    entity = {
+        "id": "c", "type": "attraction", "name": "C",
+        "summary": "Không có đủ thông tin",
+        "coordinates": [10.25, 106.0], "area": "vinh-long",
+        "source": [{"url": "https://example.com"}],
+        "images": ["https://example.com/img.jpg"],
+    }
+    score = validate_data.entity_quality_score(entity)
+    assert score < 100
+    full = {**entity, "summary": "Mô tả tốt đẹp cho SEO và nội dung hữu ích."}
+    assert validate_data.entity_quality_score(full) > score
+
+
+def test_quality_score_place_not_penalized_for_place_id() -> None:
+    """Place entities should NOT be penalized for missing placeId or area."""
+    entity = {
+        "id": "p", "type": "place", "name": "Xã Test",
+        "summary": "Mô tả đủ dài cho SEO và nội dung hữu ích cho người đọc.",
+        "coordinates": [10.25, 106.0],
+        "source": [{"url": "https://example.com"}],
+        "images": ["https://example.com/img.jpg"],
+    }
+    score = validate_data.entity_quality_score(entity)
+    assert score == 100
+
+
+def test_quality_score_low_confidence_penalty() -> None:
+    base = {
+        "id": "d", "type": "attraction", "name": "D",
+        "summary": "Mô tả đủ dài cho SEO và nội dung hữu ích cho người đọc.",
+        "coordinates": [10.25, 106.0], "area": "vinh-long", "placeId": "xa-1",
+        "source": [{"url": "https://example.com"}],
+        "images": ["https://example.com/img.jpg"],
+    }
+    high = {**base, "confidence": 0.9}
+    low = {**base, "confidence": 0.3}
+    assert validate_data.entity_quality_score(high) > validate_data.entity_quality_score(low)
+
+
+def test_quality_score_timestamp_inversion_penalty() -> None:
+    base = {
+        "id": "e", "type": "attraction", "name": "E",
+        "summary": "Mô tả đủ dài cho SEO và nội dung hữu ích cho người đọc.",
+        "coordinates": [10.25, 106.0], "area": "vinh-long", "placeId": "xa-1",
+        "source": [{"url": "https://example.com"}],
+        "images": ["https://example.com/img.jpg"],
+    }
+    ok = {**base, "updatedAt": "2026-06-25", "created_at": "2026-06-20"}
+    bad = {**base, "updatedAt": "2026-06-20", "created_at": "2026-06-25"}
+    assert validate_data.entity_quality_score(ok) > validate_data.entity_quality_score(bad)
+
+
+def test_validate_reports_quality_score_distribution(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "good", "type": "attraction", "name": "Good",
+             "summary": "Mô tả đủ dài cho SEO nội dung hữu ích cho người đọc tìm kiếm.",
+             "coordinates": [10.25, 106.0], "area": "vinh-long", "placeId": "xa-1",
+             "source": [{"url": "https://example.com"}],
+             "images": ["https://example.com/img.jpg"]},
+            {"id": "bad", "type": "restaurant", "name": "Bad"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert "quality_score_avg" in stats
+    assert isinstance(stats["quality_score_avg"], float)
+    dist = stats["quality_score_distribution"]
+    assert dist["good_80_100"] >= 1
+    assert dist["critical_0_29"] + dist["needs_work_30_59"] >= 1
+
+
+# ── Graph connectivity (DI-018) ────────────────────────────────────────
+
+
+def test_graph_connectivity_single_component() -> None:
+    entities = [
+        {"id": "a", "type": "attraction"},
+        {"id": "b", "type": "dish"},
+        {"id": "c", "type": "product"},
+    ]
+    relationships = [
+        {"from": "a", "to": "b", "type": "near"},
+        {"from": "b", "to": "c", "type": "related_to"},
+    ]
+    gc = validate_data.graph_connectivity(entities, relationships)
+    assert gc["total_components"] == 1
+    assert gc["largest_component"] == 3
+    assert gc["isolated_entities"] == 0
+
+
+def test_graph_connectivity_isolated_nodes() -> None:
+    entities = [
+        {"id": "a", "type": "attraction"},
+        {"id": "b", "type": "dish"},
+        {"id": "c", "type": "product"},
+    ]
+    relationships = [
+        {"from": "a", "to": "b", "type": "near"},
+    ]
+    gc = validate_data.graph_connectivity(entities, relationships)
+    assert gc["total_components"] == 2
+    assert gc["largest_component"] == 2
+    assert gc["isolated_entities"] == 1
+
+
+def test_graph_connectivity_all_isolated() -> None:
+    entities = [
+        {"id": "a", "type": "attraction"},
+        {"id": "b", "type": "dish"},
+    ]
+    gc = validate_data.graph_connectivity(entities, [])
+    assert gc["total_components"] == 2
+    assert gc["isolated_entities"] == 2
+
+
+def test_graph_connectivity_empty() -> None:
+    gc = validate_data.graph_connectivity([], [])
+    assert gc["total_components"] == 0
+    assert gc["largest_component"] == 0
+    assert gc["isolated_entities"] == 0
+
+
+def test_graph_connectivity_ignores_broken_refs() -> None:
+    entities = [{"id": "a", "type": "attraction"}]
+    relationships = [{"from": "a", "to": "nonexistent", "type": "near"}]
+    gc = validate_data.graph_connectivity(entities, relationships)
+    assert gc["total_components"] == 1
+    assert gc["isolated_entities"] == 1
+
+
+def test_validate_includes_graph_connectivity(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long",
+             "coordinates": [10.25, 106.0]},
+            {"id": "b", "type": "dish", "name": "B", "summary": "B", "area": "vinh-long",
+             "coordinates": [10.26, 106.01]},
+        ],
+        "relationships": [{"from": "a", "to": "b", "type": "near"}],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    gc = stats["graph_connectivity"]
+    assert gc["total_components"] >= 1
+    assert gc["largest_component"] >= 2
+
+
 def test_validate_itinerary_normal_stops_not_flagged(tmp_path: Path) -> None:
     data = {
         "entities": [
