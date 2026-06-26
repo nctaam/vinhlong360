@@ -205,11 +205,13 @@ function onRepostMenuKey(e: KeyboardEvent) {
   items[next]?.focus()
 }
 
+let likePopTimer: ReturnType<typeof setTimeout> | undefined
 function onLike() {
   emit('like', props.post.id)
   if (!props.post.user_liked) {
+    if (likePopTimer) clearTimeout(likePopTimer)
     likePop.value = true
-    setTimeout(() => { likePop.value = false }, 400)
+    likePopTimer = setTimeout(() => { likePop.value = false }, 400)
   }
 }
 

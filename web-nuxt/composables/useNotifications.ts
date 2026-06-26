@@ -63,6 +63,7 @@ export function useNotifications() {
     }
     es.onerror = () => {
       _closeSSE()
+      if (!isLoggedIn.value) return
       _schedulePoll()
     }
     eventSource = es

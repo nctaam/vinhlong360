@@ -327,10 +327,10 @@ async function toggleLike(postId: string) {
   post.likes = (post.likes || 0) + (post.user_liked ? 1 : -1)
   try {
     await $fetch(`/api/posts/${postId}/like`, { method: 'POST', headers: authHeaders() })
-  } catch {
-    // Rollback
+  } catch (e: any) {
     post.user_liked = !post.user_liked
     post.likes = (post.likes || 0) + (post.user_liked ? 1 : -1)
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast('Không thể thích bài viết', 'error')
   }
 }
@@ -353,8 +353,9 @@ async function toggleBookmark(postId: string) {
   post.user_bookmarked = !post.user_bookmarked
   try {
     await $fetch(`/api/posts/${postId}/bookmark`, { method: 'POST', headers: authHeaders() })
-  } catch {
+  } catch (e: any) {
     post.user_bookmarked = !post.user_bookmarked
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast('Không thể lưu bài viết', 'error')
   }
 }

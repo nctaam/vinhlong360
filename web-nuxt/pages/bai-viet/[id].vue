@@ -166,7 +166,7 @@ import type { Post, Entity} from '~/types'
 useReveal()
 const route = useRoute()
 const postId = route.params.id as string
-const { isLoggedIn, authHeaders, user } = useAuth()
+const { isLoggedIn, authHeaders, user, handleSessionExpired } = useAuth()
 const { openAuth } = useAuthModal()
 const { confirmDialog } = useConfirm()
 const { repost, quote } = useRepost()
@@ -358,9 +358,10 @@ async function toggleLike(id: string) {
   post.value.likes = (post.value.likes || 0) + (post.value.user_liked ? 1 : -1)
   try {
     await $fetch(`/api/posts/${id}/like`, { method: 'POST', headers: authHeaders() })
-  } catch {
+  } catch (e: any) {
     post.value.user_liked = !post.value.user_liked
     post.value.likes = (post.value.likes || 0) + (post.value.user_liked ? 1 : -1)
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast('Không thể thích bài viết', 'error')
   }
 }
@@ -371,8 +372,9 @@ async function toggleBookmark(id: string) {
   post.value.user_bookmarked = !post.value.user_bookmarked
   try {
     await $fetch(`/api/posts/${id}/bookmark`, { method: 'POST', headers: authHeaders() })
-  } catch {
+  } catch (e: any) {
     post.value.user_bookmarked = !post.value.user_bookmarked
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast('Không thể lưu bài viết', 'error')
   }
 }
@@ -393,8 +395,15 @@ function onClickOutsideMention(e: MouseEvent) {
   }
 }
 
+function onBeforeUnload(e: BeforeUnloadEvent) {
+  if (editing.value && editContent.value !== (post.value?.content || '')) {
+    e.preventDefault()
+  }
+}
+
 onMounted(() => {
   document.addEventListener('click', onClickOutsideMention)
+  if (import.meta.client) window.addEventListener('beforeunload', onBeforeUnload)
   fetchComments()
   fetchRelated()
   // mở editor khi điều hướng từ trang khác: /bai-viet/{id}?edit=1 (chủ bài)
@@ -402,6 +411,11 @@ onMounted(() => {
       && String((post.value as any).user_id) === String(user.value?.id)) {
     startEdit()
   }
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', onClickOutsideMention)
+  if (import.meta.client) window.removeEventListener('beforeunload', onBeforeUnload)
 })
 
 useHead({
