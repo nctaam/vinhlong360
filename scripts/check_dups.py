@@ -3,7 +3,8 @@ import json, sys
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-data = json.load(open("web/data.json", encoding="utf-8-sig"))
+with open("web/data.json", encoding="utf-8-sig") as f:
+    data = json.load(f)
 by_id = {e["id"]: e for e in data["entities"]}
 rels = data["relationships"]
 
