@@ -20,14 +20,14 @@ export function useRegionPref() {
 
       const vc = parseInt(localStorage.getItem(VISIT_KEY) || '0', 10)
       visitCount.value = vc + 1
-      localStorage.setItem(VISIT_KEY, String(visitCount.value))
+      try { localStorage.setItem(VISIT_KEY, String(visitCount.value)) } catch { /* quota */ }
     })
   }
 
   function setRegion(slug: RegionSlug) {
     region.value = slug
     if (import.meta.client) {
-      localStorage.setItem(STORAGE_KEY, slug)
+      try { localStorage.setItem(STORAGE_KEY, slug) } catch { /* quota */ }
     }
   }
 

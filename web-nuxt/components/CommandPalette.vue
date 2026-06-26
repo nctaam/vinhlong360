@@ -126,4 +126,10 @@ defineExpose({ open })
   .cmd-results { max-height: 50vh; }
   .cmd-footer { display: none; }
 }
+@media (forced-colors: active) {
+  .cmd-palette { border: 2px solid CanvasText; background: Canvas; }
+  .cmd-input { border-bottom: 1px solid CanvasText; }
+  .cmd-item.active { border-left: 3px solid Highlight; }
+  .cmd-footer kbd { border: 1px solid GrayText; background: Canvas; }
+}
 </style>

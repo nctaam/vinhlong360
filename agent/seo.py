@@ -9,12 +9,15 @@ older coordinate/source shapes do not break structured data endpoints.
 from __future__ import annotations
 
 import json
+import logging
 import re
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote, urlparse
 from xml.sax.saxutils import escape as xml_escape
+
+logger = logging.getLogger(__name__)
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse, Response
@@ -167,19 +170,13 @@ GUIDE_PAGES = [
     ("/kham-pha/mua-sam", "weekly", "0.8"),
 ]
 
-SITEMAP_DOCS = [
-    "/sitemap-pages.xml",
-    "/sitemap-entities.xml",
-    "/sitemap-itineraries.xml",
-    "/sitemap-guides.xml",
-    "/sitemap-media.xml",
-]
+_EMPTY_DATA: dict[str, Any] = {"entities": [], "relationships": [], "itineraries": []}
 
 _data: dict[str, Any] | None = None
 _data_mtime_ns: int | None = None
 _by_id_cache: dict[str, dict[str, Any]] | None = None
 _by_id_cache_key: int | None = None
-_sitemap_cache: dict[tuple[str, int, int, str], str] | None = None
+_sitemap_cache: tuple[int, int, str, str] | None = None
 
 
 def _load() -> dict[str, Any]:
@@ -189,9 +186,15 @@ def _load() -> dict[str, Any]:
         _data.setdefault("relationships", [])
         _data.setdefault("itineraries", [])
         return _data
-    mtime_ns = DATA_PATH.stat().st_mtime_ns
+    try:
+        mtime_ns = DATA_PATH.stat().st_mtime_ns
+    except FileNotFoundError:
+        return _EMPTY_DATA
     if _data is None or _data_mtime_ns != mtime_ns:
-        _data = json.loads(DATA_PATH.read_text(encoding="utf-8-sig"))
+        try:
+            _data = json.loads(DATA_PATH.read_text(encoding="utf-8-sig"))
+        except (json.JSONDecodeError, OSError):
+            return _EMPTY_DATA
         _data.setdefault("entities", [])
         _data.setdefault("relationships", [])
         _data.setdefault("itineraries", [])
@@ -223,8 +226,9 @@ def _is_external_url(url: Any) -> bool:
     """Valid http(s) URL that is NOT our own site (self-citation is not a source)."""
     if not _is_valid_url(url):
         return False
-    u = str(url).lower()
-    return ("//vinhlong360.vn" not in u) and ("//www.vinhlong360.vn" not in u)
+    parsed = urlparse(str(url).strip())
+    host = (parsed.hostname or "").lower()
+    return host not in ("vinhlong360.vn", "www.vinhlong360.vn")
 
 
 def _source_info(entity: dict[str, Any]) -> tuple[str | None, str | None]:
@@ -235,7 +239,10 @@ def _source_info(entity: dict[str, Any]) -> tuple[str | None, str | None]:
         return (source, source if _is_external_url(source) else None)
     if isinstance(source, dict):
         url = source.get("url")
-        return (source.get("title") or source.get("name") or None, url if _is_external_url(url) else None)
+        maps_url = source.get("maps")
+        title = source.get("title") or source.get("name") or None
+        ext_url = url if _is_external_url(url) else (maps_url if _is_external_url(maps_url) else None)
+        return (title, ext_url)
     return (None, None)
 
 
@@ -282,9 +289,15 @@ def _itinerary_url(itinerary_id: str) -> str:
     return f"{SITE}/lich-trinh/{quote(itinerary_id, safe='-_~')}"
 
 
-def _safe_date(value: Any, fallback: str) -> str:
-    if isinstance(value, str) and re.match(r"^\d{4}-\d{2}-\d{2}$", value.strip()):
-        return value.strip()
+def _safe_date(value: Any, fallback: str | None = None) -> str | None:
+    if not isinstance(value, str):
+        return fallback
+    text = value.strip()
+    if re.match(r"^\d{4}-\d{2}-\d{2}$", text):
+        return text
+    m = re.match(r"^(\d{4}-\d{2}-\d{2})[T ]", text)
+    if m:
+        return m.group(1)
     return fallback
 
 
@@ -297,6 +310,17 @@ def _same_as_values(entity: dict[str, Any]) -> list[str]:
     _title, source_url = _source_info(entity)
     if source_url and source_url not in values:
         values.append(source_url)
+    source = entity.get("source")
+    if isinstance(source, list):
+        source = source[0] if source else None
+    if isinstance(source, dict):
+        maps_url = source.get("maps")
+        if _is_valid_url(maps_url) and str(maps_url) not in values:
+            values.append(str(maps_url))
+    for key in ("facebook", "zalo_url"):
+        social = attrs.get(key) if attrs else None
+        if _is_valid_url(social) and str(social) not in values:
+            values.append(str(social))
     return values
 
 
@@ -377,7 +401,7 @@ def _build_breadcrumb(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]) 
     }
 
 
-def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]) -> dict[str, Any]:
+def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]], *, relationships: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     schema_type = TYPE_SCHEMA.get(str(entity.get("type")), "Thing")
     entity_id = str(entity.get("id"))
     area = _entity_area(entity, by_id)
@@ -388,6 +412,7 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
     ld: dict[str, Any] = {
         "@context": "https://schema.org",
         "@type": schema_type,
+        "@id": _entity_url(entity_id),
         "name": entity.get("name") or entity_id,
         "url": _entity_url(entity_id),
     }
@@ -405,6 +430,7 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
     if coordinates:
         lat, lng = coordinates
         ld["geo"] = {"@type": "GeoCoordinates", "latitude": lat, "longitude": lng}
+        ld["hasMap"] = f"https://www.google.com/maps?q={lat},{lng}"
 
     if area or place or attrs.get("address"):
         address: dict[str, Any] = {"@type": "PostalAddress", "addressCountry": "VN"}
@@ -427,6 +453,16 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
     if attrs.get("hours"):
         ld["openingHours"] = attrs["hours"]
 
+    if schema_type == "TouristAttraction":
+        if attrs.get("admission") is not None:
+            free = str(attrs["admission"]).strip().lower() in ("0", "free", "miễn phí", "")
+            ld["isAccessibleForFree"] = free
+        if attrs.get("tourist_type"):
+            ld["touristType"] = attrs["tourist_type"]
+
+    if attrs.get("ocop"):
+        ld["identifier"] = {"@type": "PropertyValue", "propertyID": "OCOP", "value": str(attrs["ocop"])}
+
     if schema_type == "Product":
         if attrs.get("price"):
             price_digits = re.sub(r"[^0-9]", "", str(attrs["price"]))
@@ -437,9 +473,42 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
                     "price": price_value,
                     "priceCurrency": "VND",
                     "availability": "https://schema.org/InStock",
+                    "url": _entity_url(entity_id),
                 }
         if attrs.get("ocop"):
             ld["brand"] = {"@type": "Brand", "name": f"OCOP {attrs['ocop']}"}
+        if attrs.get("material"):
+            ld["material"] = attrs["material"]
+        ld["countryOfOrigin"] = {"@type": "Country", "name": "Việt Nam"}
+
+    if schema_type in ("FoodEstablishment", "Restaurant", "CafeOrCoffeeShop"):
+        cuisine = attrs.get("specialty") or attrs.get("food_type")
+        if cuisine:
+            ld["servesCuisine"] = cuisine
+        if attrs.get("price_range"):
+            ld["priceRange"] = attrs["price_range"]
+
+    if schema_type == "LodgingBusiness":
+        star = attrs.get("star_rating") or attrs.get("stars")
+        if star is not None:
+            ld["starRating"] = {"@type": "Rating", "ratingValue": str(star)}
+        if attrs.get("price_range"):
+            ld["priceRange"] = attrs["price_range"]
+        if attrs.get("check_in"):
+            ld["checkinTime"] = attrs["check_in"]
+        if attrs.get("check_out"):
+            ld["checkoutTime"] = attrs["check_out"]
+        if attrs.get("rooms"):
+            try:
+                ld["numberOfRooms"] = int(attrs["rooms"])
+            except (TypeError, ValueError):
+                pass
+        amenities = attrs.get("amenities")
+        if isinstance(amenities, list) and amenities:
+            ld["amenityFeature"] = [
+                {"@type": "LocationFeatureSpecification", "name": a}
+                for a in amenities if a
+            ]
 
     if schema_type == "Event":
         # P1-6: data thực dùng date_start/date_end (public_api) — trước chỉ đọc startDate camelCase
@@ -450,15 +519,364 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
         end_value = attrs.get("endDate") or attrs.get("date_end") or entity.get("endDate")
         if end_value:
             ld["endDate"] = end_value
-        if place:
-            ld["location"] = {"@type": "Place", "name": place.get("name"), "address": ld.get("address")}
+        ld["eventStatus"] = "https://schema.org/EventScheduled"
+        ld["eventAttendanceMode"] = "https://schema.org/OfflineEventAttendanceMode"
+        if attrs.get("organizer"):
+            ld["organizer"] = {"@type": "Organization", "name": attrs["organizer"]}
+        if place or coordinates:
+            loc: dict[str, Any] = {"@type": "Place"}
+            if place:
+                loc["name"] = place.get("name")
+            if ld.get("address"):
+                loc["address"] = ld["address"]
+            if coordinates:
+                loc["geo"] = ld["geo"]
+            ld["location"] = loc
+        capacity = attrs.get("capacity")
+        if isinstance(capacity, int) and capacity > 0:
+            ld["maximumAttendeeCapacity"] = capacity
 
     if schema_type == "Person" and attrs.get("role"):
         ld["jobTitle"] = attrs["role"]
 
+    if schema_type == "LocalBusiness" and str(entity.get("type")) == "craft_village":
+        ld["additionalType"] = "https://schema.org/TouristAttraction"
+
+    phone = attrs.get("phone")
+    if isinstance(phone, str) and phone.strip():
+        ld["telephone"] = phone.strip()
+    email = attrs.get("email")
+    if isinstance(email, str) and email.strip():
+        ld["email"] = email.strip()
+    opening = attrs.get("opening_hours")
+    if isinstance(opening, str) and opening.strip():
+        ld["openingHours"] = opening.strip()
+
+    if schema_type == "Place":
+        ld["additionalType"] = "AdministrativeArea"
+        parent_id = entity.get("parentId")
+        if parent_id:
+            parent = by_id.get(str(parent_id))
+            if parent:
+                ld["containedInPlace"] = {
+                    "@type": "Place",
+                    "name": parent.get("name") or str(parent_id),
+                    "url": _entity_url(str(parent_id)),
+                }
+        contained: list[dict[str, Any]] = []
+        for e in by_id.values():
+            if not isinstance(e, dict) or e.get("type") == "place":
+                continue
+            if str(e.get("placeId")) == entity_id and _is_public(e):
+                contained.append({
+                    "@type": TYPE_SCHEMA.get(str(e.get("type")), "Thing"),
+                    "name": e.get("name") or str(e.get("id")),
+                    "url": _entity_url(str(e["id"])),
+                })
+            if len(contained) >= 30:
+                break
+        if contained:
+            ld["containsPlace"] = contained
+
+    if relationships:
+        related_urls: list[str] = []
+        for rel in relationships:
+            if not isinstance(rel, dict):
+                continue
+            src = str(rel.get("from") or rel.get("from_id") or "")
+            dst = str(rel.get("to") or rel.get("to_id") or "")
+            peer: str | None = None
+            if src == entity_id and dst in by_id:
+                peer = dst
+            elif dst == entity_id and src in by_id:
+                peer = src
+            if peer:
+                url = _entity_url(peer)
+                if url not in related_urls:
+                    related_urls.append(url)
+            if len(related_urls) >= 10:
+                break
+        if related_urls:
+            ld["relatedLink"] = related_urls
+
+    date_modified = _safe_date(entity.get("updatedAt"))
+    if date_modified:
+        ld["dateModified"] = date_modified
+    date_created = _safe_date(entity.get("created_at"))
+    if date_created:
+        ld["dateCreated"] = date_created
+
+    season = entity.get("season")
+    if isinstance(season, dict):
+        months = season.get("months")
+        peak = season.get("peak")
+        MONTH_NAMES = {1: "Tháng 1", 2: "Tháng 2", 3: "Tháng 3", 4: "Tháng 4",
+                       5: "Tháng 5", 6: "Tháng 6", 7: "Tháng 7", 8: "Tháng 8",
+                       9: "Tháng 9", 10: "Tháng 10", 11: "Tháng 11", 12: "Tháng 12"}
+        props: list[dict[str, Any]] = []
+        if isinstance(months, list) and months:
+            props.append({
+                "@type": "PropertyValue",
+                "propertyID": "seasonMonths",
+                "name": "Mùa vụ",
+                "value": ", ".join(MONTH_NAMES.get(m, str(m)) for m in sorted(months) if isinstance(m, int)),
+            })
+        if isinstance(peak, list) and peak:
+            props.append({
+                "@type": "PropertyValue",
+                "propertyID": "peakSeason",
+                "name": "Mùa cao điểm",
+                "value": ", ".join(MONTH_NAMES.get(m, str(m)) for m in sorted(peak) if isinstance(m, int)),
+            })
+        if props:
+            existing = ld.get("additionalProperty")
+            if isinstance(existing, list):
+                existing.extend(props)
+            else:
+                ld["additionalProperty"] = props
+
+    rating_val = attrs.get("rating")
+    review_count = attrs.get("review_count")
+    if isinstance(rating_val, (int, float)) and 0 < rating_val <= 5:
+        agg: dict[str, Any] = {
+            "@type": "AggregateRating",
+            "ratingValue": round(float(rating_val), 1),
+            "bestRating": 5,
+        }
+        if isinstance(review_count, int) and review_count > 0:
+            agg["reviewCount"] = review_count
+        ld["aggregateRating"] = agg
+
+    kw_parts: list[str] = []
+    entity_name = entity.get("name")
+    if entity_name:
+        kw_parts.append(str(entity_name))
+    type_label = TYPE_BREADCRUMB_LABEL.get(str(entity.get("type")))
+    if type_label and type_label not in kw_parts:
+        kw_parts.append(type_label)
+    area_name = AREA_NAMES.get(area) if area else None
+    if area_name and area_name not in kw_parts:
+        kw_parts.append(area_name)
+    if kw_parts:
+        ld["keywords"] = ", ".join(kw_parts)
+
+    ld["mainEntityOfPage"] = {
+        "@type": "WebPage",
+        "@id": _entity_url(entity_id),
+        "url": _entity_url(entity_id),
+    }
+    ld["inLanguage"] = "vi-VN"
+    ld["availableLanguage"] = "vi"
+    ld["isPartOf"] = {"@id": f"{SITE}/#website"}
     ld["breadcrumb"] = _build_breadcrumb(entity, by_id)
 
     return {key: value for key, value in ld.items() if value not in (None, "", [], {})}
+
+
+@router.get("/seo/jsonld/site")
+def site_jsonld():
+    return [
+        {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "@id": f"{SITE}/#website",
+            "name": "VinhLong360",
+            "url": SITE,
+            "publisher": {"@id": f"{SITE}/#organization"},
+            "potentialAction": {
+                "@type": "SearchAction",
+                "target": {"@type": "EntryPoint", "urlTemplate": f"{SITE}/tim-kiem?q={{search_term_string}}"},
+                "query-input": "required name=search_term_string",
+            },
+        },
+        {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "@id": f"{SITE}/#organization",
+            "name": "VinhLong360",
+            "url": SITE,
+            "logo": f"{SITE}/logo.png",
+            "sameAs": [
+                "https://www.facebook.com/vinhlong360",
+            ],
+        },
+    ]
+
+
+FAQ_ATTR_QUESTIONS = {
+    "travel_tip": "Mẹo du lịch khi đến {name}?",
+    "tip": "Lưu ý khi đến {name}?",
+    "booking_note": "Cần đặt trước khi đến {name} không?",
+    "best_time": "Thời điểm tốt nhất để đến {name}?",
+}
+
+
+def build_faq_jsonld(entity: dict[str, Any]) -> dict[str, Any] | None:
+    attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
+    name = entity.get("name") or str(entity.get("id"))
+    qa_pairs: list[dict[str, Any]] = []
+    for attr_key, question_tpl in FAQ_ATTR_QUESTIONS.items():
+        answer = attrs.get(attr_key)
+        if not answer:
+            continue
+        if isinstance(answer, list):
+            answer = "; ".join(str(a) for a in answer if a)
+        if not str(answer).strip():
+            continue
+        qa_pairs.append({
+            "@type": "Question",
+            "name": question_tpl.format(name=name),
+            "acceptedAnswer": {"@type": "Answer", "text": str(answer).strip()},
+        })
+    if not qa_pairs:
+        return None
+    return {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": qa_pairs,
+    }
+
+
+def _parse_duration(value: Any) -> str | None:
+    if not isinstance(value, str):
+        return None
+    text = value.strip().lower()
+    m = re.match(r"(\d+)\s*ngày\s*(\d+)\s*đêm", text)
+    if m:
+        return f"P{m.group(1)}D"
+    m = re.match(r"(\d+)\s*giờ\s*(\d+)\s*phút", text)
+    if m:
+        return f"PT{m.group(1)}H{m.group(2)}M"
+    m = re.match(r"(\d+)\s*ngày", text)
+    if m:
+        return f"P{m.group(1)}D"
+    m = re.match(r"(\d+)\s*giờ", text)
+    if m:
+        return f"PT{m.group(1)}H"
+    m = re.match(r"(\d+)\s*đêm", text)
+    if m:
+        days = int(m.group(1)) + 1
+        return f"P{days}D"
+    m = re.match(r"(\d+)\s*phút", text)
+    if m:
+        return f"PT{m.group(1)}M"
+    return None
+
+
+def build_itinerary_jsonld(itinerary: dict[str, Any], by_id: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    iid = str(itinerary.get("id"))
+    ld: dict[str, Any] = {
+        "@context": "https://schema.org",
+        "@type": "TouristTrip",
+        "@id": _itinerary_url(iid),
+        "name": itinerary.get("title") or itinerary.get("name") or iid,
+        "url": _itinerary_url(iid),
+        "inLanguage": "vi-VN",
+    }
+    if itinerary.get("summary"):
+        ld["description"] = itinerary["summary"]
+    days = itinerary.get("days")
+    duration = _parse_duration(itinerary.get("duration"))
+    if not duration and isinstance(days, int) and days > 0:
+        duration = f"P{days}D"
+    if duration:
+        ld["duration"] = duration
+    area = itinerary.get("area")
+    if area:
+        ld["touristType"] = "Sightseeing"
+        ld["contentLocation"] = {
+            "@type": "Place",
+            "name": AREA_NAMES.get(area, area),
+            "address": {"@type": "PostalAddress", "addressCountry": "VN", "addressRegion": AREA_NAMES.get(area, area)},
+        }
+    stops = itinerary.get("stops") or []
+    sub_trips: list[dict[str, Any]] = []
+    for idx, stop in enumerate(stops):
+        if not isinstance(stop, dict):
+            continue
+        ref = stop.get("entityId") or stop.get("id")
+        stop_entity = by_id.get(str(ref)) if ref else None
+        stop_name = (stop_entity.get("name") if stop_entity else None) or stop.get("name") or str(ref or f"Stop {idx + 1}")
+        st_type = TYPE_SCHEMA.get(str(stop_entity.get("type")), "TouristAttraction") if stop_entity else "TouristAttraction"
+        st: dict[str, Any] = {"@type": st_type, "name": stop_name}
+        if stop_entity and stop_entity.get("id"):
+            st["url"] = _entity_url(str(stop_entity["id"]))
+            st["@id"] = _entity_url(str(stop_entity["id"]))
+        if stop.get("time"):
+            st["description"] = stop["time"]
+        sub_trips.append(st)
+    if sub_trips:
+        ld["itinerary"] = {
+            "@type": "ItemList",
+            "numberOfItems": len(sub_trips),
+            "itemListElement": [
+                {"@type": "ListItem", "position": i + 1, "item": st}
+                for i, st in enumerate(sub_trips)
+            ],
+        }
+    date_modified = _safe_date(itinerary.get("updatedAt"))
+    if date_modified:
+        ld["dateModified"] = date_modified
+    date_created = _safe_date(itinerary.get("created_at"))
+    if date_created:
+        ld["dateCreated"] = date_created
+    ld["isPartOf"] = {"@id": f"{SITE}/#website"}
+    return {k: v for k, v in ld.items() if v not in (None, "", [], {})}
+
+
+def build_area_jsonld(area_slug: str, data: dict[str, Any] | None = None) -> dict[str, Any] | None:
+    name = AREA_NAMES.get(area_slug)
+    if not name:
+        return None
+    area_url = f"{SITE}/khu-vuc/{quote(area_slug, safe='-_~')}"
+    ld: dict[str, Any] = {
+        "@context": "https://schema.org",
+        "@type": "TouristDestination",
+        "@id": area_url,
+        "name": name,
+        "url": area_url,
+        "description": f"Khám phá {name} — điểm đến, ẩm thực, sản phẩm OCOP, lưu trú và trải nghiệm miền Tây.",
+        "containedInPlace": {"@type": "Country", "name": "Việt Nam"},
+        "inLanguage": "vi-VN",
+    }
+    if data:
+        by_id_map = _by_id(data)
+        contained: list[dict[str, Any]] = []
+        for e in data.get("entities", []):
+            if not isinstance(e, dict) or not e.get("id") or e.get("type") == "place":
+                continue
+            if not _is_public(e):
+                continue
+            if _entity_area(e, by_id_map) == area_slug:
+                contained.append({
+                    "@type": TYPE_SCHEMA.get(str(e.get("type")), "Thing"),
+                    "name": e.get("name") or str(e["id"]),
+                    "url": _entity_url(str(e["id"])),
+                })
+            if len(contained) >= 50:
+                break
+        if contained:
+            ld["containsPlace"] = contained
+    return ld
+
+
+@router.get("/seo/jsonld/area/{area_slug}")
+def area_jsonld(area_slug: str):
+    data = _load()
+    result = build_area_jsonld(area_slug, data)
+    if not result:
+        raise HTTPException(status_code=404, detail="not found")
+    return result
+
+
+@router.get("/seo/jsonld/itinerary/{itinerary_id}")
+def itinerary_jsonld(itinerary_id: str):
+    data = _load()
+    by_id = _by_id(data)
+    for it in data.get("itineraries", []):
+        if isinstance(it, dict) and str(it.get("id")) == itinerary_id:
+            return build_itinerary_jsonld(it, by_id)
+    raise HTTPException(status_code=404, detail="not found")
 
 
 @router.get("/seo/jsonld/{entity_id}")
@@ -468,7 +886,14 @@ def entity_jsonld(entity_id: str):
     entity = by_id.get(entity_id)
     if not entity:
         raise HTTPException(status_code=404, detail="not found")
-    return build_entity_jsonld(entity, by_id)
+    entity_ld = build_entity_jsonld(entity, by_id, relationships=data.get("relationships", []))
+    faq = build_faq_jsonld(entity)
+    if faq:
+        return {"@context": "https://schema.org", "@graph": [
+            {k: v for k, v in entity_ld.items() if k != "@context"},
+            {k: v for k, v in faq.items() if k != "@context"},
+        ]}
+    return entity_ld
 
 
 def _is_public(entity: dict[str, Any]) -> bool:
@@ -501,7 +926,13 @@ def build_collection_jsonld(collection_type: str, data: dict[str, Any]) -> dict[
                 continue
         items.append(e)
 
-    items.sort(key=lambda e: (-float(e.get("confidence") or 0.5), str(e.get("name") or "")))
+    def _sort_key(e: dict[str, Any]) -> tuple[float, str]:
+        try:
+            conf = float(e.get("confidence") or 0.5)
+        except (TypeError, ValueError):
+            conf = 0.5
+        return (-conf, str(e.get("name") or ""))
+    items.sort(key=_sort_key)
     items = items[:100]
 
     elements: list[dict[str, Any]] = []
@@ -517,14 +948,17 @@ def build_collection_jsonld(collection_type: str, data: dict[str, Any]) -> dict[
             element["description"] = summary.strip()[:200]
         elements.append(element)
 
+    collection_url = f"{SITE}/{collection_type}"
     return {
         "@context": "https://schema.org",
         "@type": "ItemList",
+        "@id": collection_url,
         "name": collection["name"],
         "description": collection["description"],
-        "url": f"{SITE}/{collection_type}",
+        "url": collection_url,
         "numberOfItems": len(elements),
         "itemListElement": elements,
+        "isPartOf": {"@id": f"{SITE}/#website"},
     }
 
 
@@ -538,11 +972,14 @@ def collection_jsonld(collection_type: str):
 
 
 def _url_xml(loc: str, *, changefreq: str, priority: str, lastmod: str | None = None) -> str:
-    parts = ["  <url>", f"    <loc>{xml_escape(loc)}</loc>"]
+    escaped_loc = xml_escape(loc)
+    parts = ["  <url>", f"    <loc>{escaped_loc}</loc>"]
     if lastmod:
         parts.append(f"    <lastmod>{xml_escape(lastmod)}</lastmod>")
     parts.append(f"    <changefreq>{xml_escape(changefreq)}</changefreq>")
     parts.append(f"    <priority>{xml_escape(priority)}</priority>")
+    parts.append(f'    <xhtml:link rel="alternate" hreflang="vi" href="{escaped_loc}"/>')
+    parts.append(f'    <xhtml:link rel="alternate" hreflang="x-default" href="{escaped_loc}"/>')
     parts.append("  </url>")
     return "\n".join(parts)
 
@@ -563,18 +1000,21 @@ def sitemap():
     urls: list[str] = []
 
     for path, changefreq, priority in CORE_PAGES:
-        urls.append(_url_xml(f"{SITE}{path}", changefreq=changefreq, priority=priority, lastmod=now))
+        urls.append(_url_xml(f"{SITE}{path}", changefreq=changefreq, priority=priority))
+    for path, changefreq, priority in GUIDE_PAGES:
+        urls.append(_url_xml(f"{SITE}{path}", changefreq=changefreq, priority=priority))
     for area in AREA_NAMES:
-        urls.append(_url_xml(f"{SITE}/khu-vuc/{area}", changefreq="weekly", priority="0.8", lastmod=now))
+        urls.append(_url_xml(f"{SITE}/khu-vuc/{quote(area, safe='-_~')}", changefreq="weekly", priority="0.8"))
 
     for entity in data.get("entities", []):
         if not isinstance(entity, dict) or entity.get("type") != "place" or not entity.get("id"):
             continue
+        place_lastmod = _safe_date(entity.get("updatedAt"), None)
         urls.append(_url_xml(
             f"{SITE}/xa-phuong/{quote(str(entity['id']))}",
             changefreq="monthly",
             priority="0.6",
-            lastmod=now,
+            lastmod=place_lastmod,
         ))
 
     seen: set[str] = set()
@@ -605,7 +1045,7 @@ def sitemap():
         ))
 
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
-    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
     xml += "\n".join(urls)
     xml += "\n</urlset>"
     _sitemap_cache = (mtime_ns, data_key, now, xml)
@@ -630,11 +1070,21 @@ def sitemap_media():
         imgs = entity.get("images")
         if not isinstance(imgs, list) or not imgs:
             continue
+        ename = xml_escape(entity.get("name") or str(entity["id"]))
+        summary = entity.get("summary")
+        caption_tag = ""
+        if isinstance(summary, str) and summary.strip():
+            cap = summary.strip()[:200]
+            caption_tag = f"<image:caption>{xml_escape(cap)}</image:caption>"
         loc = _entity_url(str(entity["id"]))
         tags = ""
         for img in imgs[:20]:
             if isinstance(img, str) and img.startswith("http"):
-                tags += f"\n    <image:image><image:loc>{xml_escape(img)}</image:loc></image:image>"
+                tags += (f"\n    <image:image>"
+                         f"<image:loc>{xml_escape(img)}</image:loc>"
+                         f"<image:title>{ename}</image:title>"
+                         f"{caption_tag}"
+                         f"</image:image>")
         if tags:
             urls.append(f"  <url>\n    <loc>{xml_escape(loc)}</loc>{tags}\n  </url>")
 
@@ -650,13 +1100,35 @@ def sitemap_media():
     )
 
 
+@router.get("/sitemap-index.xml", response_class=Response)
+def sitemap_index():
+    """Sitemap index pointing to the main and media sitemaps."""
+    now = datetime.now(UTC).strftime("%Y-%m-%d")
+    xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml += '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    for loc in [f"{SITE}/sitemap.xml", f"{SITE}/sitemap-media.xml"]:
+        xml += f"  <sitemap>\n    <loc>{xml_escape(loc)}</loc>\n    <lastmod>{now}</lastmod>\n  </sitemap>\n"
+    xml += "</sitemapindex>"
+    return Response(
+        content=xml,
+        media_type="application/xml",
+        headers={"Cache-Control": "public, max-age=3600"},
+    )
+
+
 @router.get("/robots.txt", response_class=PlainTextResponse)
 def robots():
     return f"""User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /admin-api
+Disallow: /api/
+Disallow: /seo/
 Disallow: /tim-kiem
+Crawl-delay: 2
+
+User-agent: Googlebot
+Allow: /
 
 User-agent: GPTBot
 Allow: /
@@ -670,6 +1142,6 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
-Sitemap: {SITE}/sitemap.xml
-Sitemap: {SITE}/sitemap-media.xml
+Host: {SITE}
+Sitemap: {SITE}/sitemap-index.xml
 """

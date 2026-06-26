@@ -23,9 +23,19 @@ MAX_DIRECT_RELATIONSHIPS = 120
 # Quan hệ phân-cấp (chứa-đựng) — không tính vào ngưỡng fanout-120 (vốn để chặn
 # nhiễu "liên quan/gần đây" trên UI). located_in: entity→xã, xã→tỉnh.
 HIERARCHICAL_REL_TYPES = {"located_in", "part_of"}
+KNOWN_REL_TYPES = {
+    "near", "related_to", "located_in", "part_of", "produced_in",
+    "belongs_to", "serves", "famous_for", "associated_with",
+    "ingredient_of", "sold_at", "managed_by", "owned_by",
+}
 # Placeholder summaries from failed LLM enrichment — must never ship to users.
 # Phase 0 quarantined these (blanked to ""); this guard stops them returning.
+from urllib.parse import urlparse  # noqa: E402
+
 import re  # noqa: E402
+
+VN_PHONE = re.compile(r"^(\+84|0)\d{9,10}$")
+
 BOILERPLATE_SUMMARY = re.compile(
     r"không\s*(có\s*)?đủ thông tin|404|không tìm thấy thông tin|no information|not found",
     re.IGNORECASE,
@@ -117,6 +127,118 @@ def haversine_km(a: list[float] | None, b: list[float] | None) -> float | None:
     return 6371.0 * 2 * math.asin(math.sqrt(val))
 
 
+SEO_REQUIRED: dict[str, list[str]] = {
+    "restaurant": ["specialty", "price_range", "phone", "hours"],
+    "dish": ["specialty", "price_range"],
+    "cafe": ["specialty", "price_range", "phone", "hours"],
+    "accommodation": ["star_rating", "price_range", "phone"],
+    "product": ["price", "ocop"],
+    "event": ["date_start", "startDate"],
+    "attraction": ["admission"],
+    "experience": ["admission"],
+    "nature": ["admission"],
+    "person": ["role"],
+    "craft_village": ["specialty", "phone"],
+    "drink": ["specialty", "price_range"],
+}
+
+
+def entity_quality_score(entity: dict[str, Any]) -> int:
+    """Compute a 0-100 quality score for a single entity."""
+    score = 100
+    is_place = entity.get("type") == "place"
+
+    summary_val = entity.get("summary")
+    if not summary_val:
+        score -= 20
+    elif isinstance(summary_val, str):
+        s = summary_val.strip()
+        if BOILERPLATE_SUMMARY.search(s):
+            score -= 20
+        elif len(s) < 50:
+            score -= 5
+        elif len(s) > 500:
+            score -= 3
+
+    if not entity.get("coordinates") and not entity.get("coords"):
+        score -= 15
+
+    source = entity.get("source")
+    if not source or (isinstance(source, list) and len(source) == 0):
+        score -= 10
+
+    if not is_place and not entity.get("placeId"):
+        score -= 10
+
+    if not is_place and not entity.get("area"):
+        score -= 5
+
+    imgs = entity.get("images")
+    if not isinstance(imgs, list) or not any(isinstance(i, str) and i.startswith("http") for i in imgs):
+        score -= 10
+
+    confidence = entity.get("confidence")
+    if isinstance(confidence, (int, float)) and confidence < 0.5:
+        score -= 5
+
+    etype = str(entity.get("type")) if entity.get("type") else None
+    req = SEO_REQUIRED.get(etype) if etype else None
+    if req:
+        attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
+        if not any(attrs.get(k) for k in req):
+            score -= 10
+
+    updated_at = entity.get("updatedAt")
+    created_at_val = entity.get("created_at")
+    if isinstance(updated_at, str) and isinstance(created_at_val, str) and updated_at < created_at_val:
+        score -= 2
+
+    return max(0, score)
+
+
+def graph_connectivity(entities: list[Any], relationships: list[Any]) -> dict[str, Any]:
+    """Find disconnected subgraphs in the entity-relationship graph."""
+    id_set: set[str] = set()
+    for e in entities:
+        if isinstance(e, dict) and e.get("id"):
+            id_set.add(str(e["id"]))
+
+    adj: dict[str, set[str]] = {eid: set() for eid in id_set}
+    for rel in relationships:
+        if not isinstance(rel, dict):
+            continue
+        src = str(rel_source(rel) or "")
+        dst = str(rel_target(rel) or "")
+        if src in id_set and dst in id_set and src != dst:
+            adj[src].add(dst)
+            adj[dst].add(src)
+
+    visited: set[str] = set()
+    components: list[int] = []
+
+    for start in id_set:
+        if start in visited:
+            continue
+        size = 0
+        stack = [start]
+        while stack:
+            node = stack.pop()
+            if node in visited:
+                continue
+            visited.add(node)
+            size += 1
+            stack.extend(adj[node] - visited)
+        components.append(size)
+
+    components.sort(reverse=True)
+    return {
+        "total_components": len(components),
+        "largest_component": components[0] if components else 0,
+        "isolated_entities": sum(1 for c in components if c == 1),
+        "component_sizes": components[:10],
+    }
+
+
 def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[str, Any]]:
     issues: list[Issue] = []
     entities = data.get("entities", [])
@@ -157,16 +279,32 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     season_integrity_errors = 0
     low_confidence_count = 0
     empty_attrs_non_place = 0
+    timestamp_inversions = 0
+    summary_short = 0
+    summary_long = 0
+    has_images_non_place = 0
+    name_too_short = 0
+    name_too_long = 0
+    invalid_source_urls = 0
+    invalid_phone_format = 0
+    invalid_website_urls = 0
+    invalid_entity_ids = 0
+    coords_without_address = 0
+    summary_truncated = 0
+    source_url_reuse: Counter[str] = Counter()
 
     for index, entity in enumerate(entities):
         if not isinstance(entity, dict):
             issues.append(Issue("error", "entity_not_object", f"entities[{index}] must be an object"))
             continue
         entity_id = entity.get("id")
-        if not entity_id:
+        if entity_id is None or entity_id == "":
             missing_id += 1
         else:
             ids.append(str(entity_id))
+            eid_str = str(entity_id)
+            if " " in eid_str or len(eid_str) > 200 or any(ord(c) < 32 for c in eid_str):
+                invalid_entity_ids += 1
         if not entity.get("name"):
             missing_name += 1
         if not entity.get("type"):
@@ -216,6 +354,70 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
             attrs = entity.get("attributes")
             if not attrs or (isinstance(attrs, dict) and len(attrs) == 0):
                 empty_attrs_non_place += 1
+
+        # DI-008: timestamp inversion
+        updated_at = entity.get("updatedAt")
+        created_at_val = entity.get("created_at")
+        if isinstance(updated_at, str) and isinstance(created_at_val, str) and updated_at < created_at_val:
+            timestamp_inversions += 1
+
+        # DI-009: image coverage (non-place only)
+        if not is_place:
+            imgs = entity.get("images")
+            if isinstance(imgs, list) and any(isinstance(i, str) and i.startswith("http") for i in imgs):
+                has_images_non_place += 1
+
+        # DI-010: summary quality tiers
+        if isinstance(summary_val, str) and summary_val.strip():
+            stripped = summary_val.strip()
+            slen = len(stripped)
+            if slen < 50:
+                summary_short += 1
+            elif slen > 500:
+                summary_long += 1
+            # DI-029: truncated summaries (end with "..." or "…")
+            if stripped.endswith("...") or stripped.endswith("…"):
+                summary_truncated += 1
+
+        # DI-015: name length anomalies
+        ename = entity.get("name")
+        if isinstance(ename, str):
+            elen = len(ename.strip())
+            if 0 < elen < 2:
+                name_too_short += 1
+            elif elen > 100:
+                name_too_long += 1
+
+        # DI-019: source URL validation + DI-030: source URL reuse tracking
+        if isinstance(source, list):
+            for src_item in source:
+                url_val = src_item.get("url") if isinstance(src_item, dict) else (src_item if isinstance(src_item, str) else None)
+                if isinstance(url_val, str) and url_val.strip():
+                    clean_url = url_val.strip()
+                    parsed = urlparse(clean_url)
+                    if parsed.scheme not in ("http", "https", "") or (parsed.scheme and not parsed.netloc):
+                        invalid_source_urls += 1
+                    else:
+                        source_url_reuse[clean_url] += 1
+
+        # DI-020: phone format validation
+        attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
+        phone = attrs.get("phone") if isinstance(attrs, dict) else None
+        if isinstance(phone, str) and phone.strip():
+            cleaned = re.sub(r"[\s\-\.]", "", phone.strip())
+            if not VN_PHONE.match(cleaned):
+                invalid_phone_format += 1
+
+        # DI-022: website URL validation
+        website = attrs.get("website") if isinstance(attrs, dict) else None
+        if isinstance(website, str) and website.strip():
+            parsed_w = urlparse(website.strip())
+            if parsed_w.scheme not in ("http", "https") or not parsed_w.netloc:
+                invalid_website_urls += 1
+
+        # DI-028: coordinates without address (hurts local SEO)
+        if not is_place and entity.get("coordinates") and not attrs.get("address"):
+            coords_without_address += 1
 
         if is_place:
             level = entity.get("level", "")
@@ -331,6 +533,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     area_place_conflicts = 0
     produced_in_area_conflicts = 0
     produced_in_target_type_errors = 0  # produced_in should target place or craft_village
+    produced_in_source_type_errors = 0  # produced_in source should be product/dish/drink
     far_near_relationships = 0
     near_missing_location = 0
     self_loop_relationships = 0  # DI-005: rel có source==target
@@ -402,17 +605,21 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
                 far_near_relationships += 1
         elif kind == "produced_in":
             dst_entity = entity_by_id.get(dst)
-            # produced_in should target place or craft_village (a product is produced
-            # in a location or workshop). Targeting another product is wrong.
+            src_entity = entity_by_id.get(src)
             if isinstance(dst_entity, dict) and dst_entity.get("type") not in (
                 "place", "craft_village", None
             ):
                 produced_in_target_type_errors += 1
-            src_area = effective_area(entity_by_id.get(src))
+            if isinstance(src_entity, dict) and src_entity.get("type") not in (
+                "product", "dish", "drink", "craft_village", None
+            ):
+                produced_in_source_type_errors += 1
+            src_area = effective_area(src_entity)
             dst_area = effective_area(dst_entity)
             if src_area and dst_area and src_area != dst_area:
                 produced_in_area_conflicts += 1
 
+    unknown_rel_types = {t for t in relationship_type_counts if t not in KNOWN_REL_TYPES}
     duplicate_rel_count = sum(1 for count in duplicate_relationships.values() if count > 1)
     high_fanout_count = sum(1 for count in relationship_fanout.values() if count > MAX_DIRECT_RELATIONSHIPS)
     if missing_relationship_fields:
@@ -429,8 +636,13 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         issues.append(Issue("error", "produced_in_area_conflicts", f"{produced_in_area_conflicts} produced_in relationships cross conflicting entity areas"))
     if produced_in_target_type_errors:
         issues.append(Issue("error", "produced_in_target_type", f"{produced_in_target_type_errors} produced_in relationships target an entity that is not place or craft_village"))
+    if produced_in_source_type_errors:
+        issues.append(Issue("error", "produced_in_source_type", f"{produced_in_source_type_errors} produced_in relationships have source that is not product/dish/drink/craft_village"))
     if self_loop_relationships:
         issues.append(Issue("error", "self_loop_relationships", f"{self_loop_relationships} relationships have source==target"))
+    if unknown_rel_types:
+        examples = ", ".join(sorted(unknown_rel_types)[:5])
+        issues.append(Issue("warning", "unknown_rel_types", f"{len(unknown_rel_types)} unknown relationship types: {examples}"))
     # DI-005: itinerary stop trỏ entity không tồn tại (free-text stop không có id → bỏ qua)
     dangling_stops = 0
     for it in itineraries:
@@ -444,10 +656,101 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
                 dangling_stops += 1
     if dangling_stops:
         issues.append(Issue("error", "dangling_itinerary_stops", f"{dangling_stops} itinerary stops reference missing entities"))
+    # DI-016: itinerary stops sanity
+    itinerary_empty_stops = 0
+    itinerary_excessive_stops = 0
+    for it in itineraries:
+        if not isinstance(it, dict):
+            continue
+        stops = it.get("stops")
+        if not isinstance(stops, list) or len(stops) == 0:
+            itinerary_empty_stops += 1
+        elif len(stops) > 20:
+            itinerary_excessive_stops += 1
+    # DI-006: near asymmetry — if A→B near exists, B→A should also exist
+    near_edges: set[tuple[str, str]] = set()
+    for rel in relationships:
+        if not isinstance(rel, dict):
+            continue
+        if rel_type(rel) == "near":
+            s, d = str(rel_source(rel) or ""), str(rel_target(rel) or "")
+            if s and d:
+                near_edges.add((s, d))
+    near_asymmetric = sum(1 for s, d in near_edges if (d, s) not in near_edges)
+
+    # DI-007: coordinate clustering — entities sharing exact same coordinates
+    coord_buckets: dict[tuple[float, float], list[str]] = defaultdict(list)
+    for entity in entities:
+        if not isinstance(entity, dict) or not entity.get("id"):
+            continue
+        c = normalized_coordinates(entity.get("coordinates"))
+        if c:
+            coord_buckets[(c[0], c[1])].append(str(entity["id"]))
+    coord_clusters = sum(1 for ids in coord_buckets.values() if len(ids) > 1)
+    coord_clustered_entities = sum(len(ids) for ids in coord_buckets.values() if len(ids) > 1)
+
+    # DI-012: itinerary-stop area mismatch
+    itinerary_area_mismatches = 0
+    for it in itineraries:
+        if not isinstance(it, dict):
+            continue
+        it_area = it.get("area")
+        if not it_area:
+            continue
+        for stop in (it.get("stops") or []):
+            if not isinstance(stop, dict):
+                continue
+            ref = stop.get("entityId") or stop.get("id")
+            if not ref:
+                continue
+            stop_entity = entity_by_id.get(str(ref))
+            if not stop_entity:
+                continue
+            stop_area = effective_area(stop_entity)
+            if stop_area and stop_area != it_area:
+                itinerary_area_mismatches += 1
+
+    # DI-013: relationship type singleton combos
+    rel_type_triple_counts: Counter[tuple[str, str, str]] = Counter()
+    for rel in relationships:
+        if not isinstance(rel, dict):
+            continue
+        s, d, k = rel_source(rel), rel_target(rel), rel_type(rel)
+        if not s or not d or not k:
+            continue
+        src_entity = entity_by_id.get(str(s))
+        dst_entity = entity_by_id.get(str(d))
+        src_type = src_entity.get("type", "?") if isinstance(src_entity, dict) else "?"
+        dst_type = dst_entity.get("type", "?") if isinstance(dst_entity, dict) else "?"
+        rel_type_triple_counts[(str(src_type), str(k), str(dst_type))] += 1
+    rel_type_singletons = sum(1 for count in rel_type_triple_counts.values() if count == 1)
+
     if high_fanout_count:
         issues.append(Issue("error", "relationship_fanout", f"{high_fanout_count} entities have more than {MAX_DIRECT_RELATIONSHIPS} direct relationships"))
     if duplicate_rel_count:
         issues.append(Issue("warning", "duplicate_relationships", f"{duplicate_rel_count} duplicate relationship keys found"))
+    if near_asymmetric:
+        issues.append(Issue("warning", "near_asymmetric", f"{near_asymmetric} near relationships are one-way (A→B exists but B→A does not)"))
+    if coord_clusters:
+        issues.append(Issue("warning", "coordinate_clusters", f"{coord_clusters} coordinate clusters ({coord_clustered_entities} entities share exact same coordinates)"))
+    if timestamp_inversions:
+        issues.append(Issue("warning", "timestamp_inversions", f"{timestamp_inversions} entities have updatedAt before created_at"))
+    if itinerary_area_mismatches:
+        issues.append(Issue("warning", "itinerary_area_mismatch", f"{itinerary_area_mismatches} itinerary stops reference entities outside the itinerary's declared area"))
+    if rel_type_singletons:
+        issues.append(Issue("warning", "rel_type_singletons", f"{rel_type_singletons} relationship (src_type, rel, dst_type) combos appear only once"))
+    if summary_short:
+        issues.append(Issue("warning", "summary_short", f"{summary_short} entities have summary < 50 chars"))
+    if summary_long:
+        issues.append(Issue("warning", "summary_long", f"{summary_long} entities have summary > 500 chars"))
+    if name_too_short:
+        issues.append(Issue("warning", "name_too_short", f"{name_too_short} entities have name < 2 chars"))
+    if name_too_long:
+        issues.append(Issue("warning", "name_too_long", f"{name_too_long} entities have name > 100 chars"))
+    if itinerary_empty_stops:
+        issues.append(Issue("warning", "itinerary_empty_stops", f"{itinerary_empty_stops} itineraries have no stops"))
+    if itinerary_excessive_stops:
+        issues.append(Issue("warning", "itinerary_excessive_stops", f"{itinerary_excessive_stops} itineraries have > 20 stops"))
     if missing_summary_non_place:
         issues.append(Issue("warning", "missing_summary_non_place", f"{missing_summary_non_place} non-place entities are missing summary"))
     if boilerplate_summary:
@@ -460,12 +763,31 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         issues.append(Issue("warning", "missing_place_id", f"{missing_place_id} non-place entities are missing placeId"))
     if missing_location:
         issues.append(Issue("warning", "missing_location", f"{missing_location} entities have no coordinates or coords ({missing_location_non_place} non-place, {missing_location_place} place)"))
+    if invalid_entity_ids:
+        issues.append(Issue("warning", "invalid_entity_ids", f"{invalid_entity_ids} entity IDs contain spaces, control chars, or are excessively long"))
+    if invalid_source_urls:
+        issues.append(Issue("warning", "invalid_source_urls", f"{invalid_source_urls} source URLs have invalid format"))
+    if invalid_phone_format:
+        issues.append(Issue("warning", "invalid_phone_format", f"{invalid_phone_format} entities have phone not matching VN format (+84/0 + 9-10 digits)"))
+    if invalid_website_urls:
+        issues.append(Issue("warning", "invalid_website_urls", f"{invalid_website_urls} entities have invalid website URLs in attributes"))
 
     name_counts = Counter((e.get("name") or "").strip() for e in entities if isinstance(e, dict) and e.get("name"))
     duplicate_names = {name: count for name, count in name_counts.items() if count > 1}
     if duplicate_names:
         examples = ", ".join(list(duplicate_names)[:5])
         issues.append(Issue("warning", "duplicate_names", f"{len(duplicate_names)} duplicate display names: {examples}"))
+
+    name_type_counts = Counter(
+        ((e.get("name") or "").strip(), e.get("type"))
+        for e in entities
+        if isinstance(e, dict) and e.get("name") and e.get("type")
+    )
+    duplicate_name_type = {k: c for k, c in name_type_counts.items() if c > 1}
+    if duplicate_name_type:
+        examples = ", ".join(f"{n}({t})" for (n, t), _ in list(duplicate_name_type.items())[:5])
+        issues.append(Issue("warning", "duplicate_name_type", f"{len(duplicate_name_type)} entities share same name+type: {examples}"))
+    stats_dup_name_type = len(duplicate_name_type)
 
     data_js = data_path.with_name("data.js")
     data_js_status = "missing"
@@ -514,8 +836,128 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         "low_confidence": low_confidence_count,
         "empty_attributes_non_place": empty_attrs_non_place,
         "place_coords_coverage_pct": place_coords_pct,
+        "near_asymmetric": near_asymmetric,
+        "coordinate_clusters": coord_clusters,
+        "coordinate_clustered_entities": coord_clustered_entities,
+        "timestamp_inversions": timestamp_inversions,
+        "image_coverage_pct": round(100 * has_images_non_place / max(sum(1 for e in entities if isinstance(e, dict) and e.get("type") != "place"), 1), 1),
+        "summary_short": summary_short,
+        "summary_long": summary_long,
+        "itinerary_area_mismatches": itinerary_area_mismatches,
+        "rel_type_singletons": rel_type_singletons,
+        "name_too_short": name_too_short,
+        "name_too_long": name_too_long,
+        "itinerary_empty_stops": itinerary_empty_stops,
+        "itinerary_excessive_stops": itinerary_excessive_stops,
+        "invalid_source_urls": invalid_source_urls,
+        "invalid_phone_format": invalid_phone_format,
+        "invalid_website_urls": invalid_website_urls,
+        "invalid_entity_ids": invalid_entity_ids,
+        "produced_in_source_type_errors": produced_in_source_type_errors,
+        "duplicate_name_type": stats_dup_name_type,
+        "unknown_rel_types": len(unknown_rel_types),
+        "coords_without_address": coords_without_address,
+        "summary_truncated": summary_truncated,
+        "duplicate_source_urls": sum(1 for c in source_url_reuse.values() if c > 1),
         "data_js_status": data_js_status,
     }
+
+    # DI-014: per-type SEO attribute coverage
+    type_coverage: dict[str, dict[str, Any]] = {}
+    for e in entities:
+        if not isinstance(e, dict):
+            continue
+        etype = e.get("type")
+        req = SEO_REQUIRED.get(str(etype)) if etype else None
+        if not req:
+            continue
+        attrs = e.get("attributes") if isinstance(e.get("attributes"), dict) else {}
+        if etype not in type_coverage:
+            type_coverage[etype] = {"total": 0, "has_any_seo_attr": 0, "per_attr": {k: 0 for k in req}}
+        type_coverage[etype]["total"] += 1
+        if any(attrs.get(k) for k in req):
+            type_coverage[etype]["has_any_seo_attr"] += 1
+        for k in req:
+            if attrs.get(k):
+                type_coverage[etype]["per_attr"][k] += 1
+    stats["seo_attr_coverage"] = type_coverage
+
+    # DI-027: per-area entity counts
+    area_counts: dict[str, int] = Counter()
+    for e in entities:
+        if not isinstance(e, dict) or e.get("type") == "place":
+            continue
+        ea = e.get("area")
+        area_counts[ea if ea else "(none)"] += 1
+    stats["entities_by_area"] = dict(area_counts.most_common())
+
+    # DI-017: entity quality score distribution
+    non_place = [e for e in entities if isinstance(e, dict) and e.get("type") != "place"]
+    confidence_values = []
+    for e in entities:
+        if isinstance(e, dict) and e.get("type") != "place":
+            c = e.get("confidence")
+            if isinstance(c, (int, float)):
+                confidence_values.append(float(c))
+    if confidence_values:
+        sorted_conf = sorted(confidence_values)
+        mid = len(sorted_conf) // 2
+        median = sorted_conf[mid] if len(sorted_conf) % 2 else round((sorted_conf[mid - 1] + sorted_conf[mid]) / 2, 3)
+        stats["confidence_distribution"] = {
+            "min": round(min(sorted_conf), 3),
+            "max": round(max(sorted_conf), 3),
+            "median": median,
+            "count": len(sorted_conf),
+        }
+
+    if non_place:
+        scores = [entity_quality_score(e) for e in non_place]
+        stats["quality_score_avg"] = round(sum(scores) / len(scores), 1)
+        stats["quality_score_distribution"] = {
+            "critical_0_29": sum(1 for s in scores if s < 30),
+            "needs_work_30_59": sum(1 for s in scores if 30 <= s < 60),
+            "ok_60_79": sum(1 for s in scores if 60 <= s < 80),
+            "good_80_100": sum(1 for s in scores if s >= 80),
+        }
+    else:
+        stats["quality_score_avg"] = 0.0
+        stats["quality_score_distribution"] = {
+            "critical_0_29": 0, "needs_work_30_59": 0,
+            "ok_60_79": 0, "good_80_100": 0,
+        }
+
+    # DI-018: graph connectivity
+    stats["graph_connectivity"] = graph_connectivity(entities, relationships)
+
+    # DI-021: orphan non-place entities (no relationship, no itinerary stop reference)
+    referenced_ids: set[str] = set()
+    for rel in relationships:
+        if not isinstance(rel, dict):
+            continue
+        s = rel_source(rel)
+        d = rel_target(rel)
+        if s:
+            referenced_ids.add(str(s))
+        if d:
+            referenced_ids.add(str(d))
+    for it in itineraries:
+        if not isinstance(it, dict):
+            continue
+        for stop in (it.get("stops") or []):
+            if isinstance(stop, dict):
+                ref = stop.get("entityId") or stop.get("id")
+                if ref:
+                    referenced_ids.add(str(ref))
+    orphan_count = sum(
+        1 for e in entities
+        if isinstance(e, dict) and e.get("type") != "place" and e.get("id")
+        and str(e["id"]) not in referenced_ids
+    )
+    stats["orphan_entities"] = orphan_count
+    if orphan_count:
+        issues.append(Issue("warning", "orphan_entities",
+            f"{orphan_count} non-place entities have no relationships or itinerary references"))
+
     return issues, stats
 
 
@@ -556,8 +998,62 @@ def print_report(issues: list[Issue], stats: dict[str, Any]) -> None:
         "low_confidence",
         "empty_attributes_non_place",
         "place_coords_coverage_pct",
+        "near_asymmetric",
+        "coordinate_clusters",
+        "coordinate_clustered_entities",
+        "timestamp_inversions",
+        "image_coverage_pct",
+        "summary_short",
+        "summary_long",
+        "itinerary_area_mismatches",
+        "rel_type_singletons",
+        "name_too_short",
+        "name_too_long",
+        "itinerary_empty_stops",
+        "itinerary_excessive_stops",
+        "invalid_source_urls",
+        "invalid_phone_format",
+        "invalid_website_urls",
+        "unknown_rel_types",
+        "orphan_entities",
+        "invalid_entity_ids",
+        "produced_in_source_type_errors",
+        "coords_without_address",
+        "summary_truncated",
+        "duplicate_source_urls",
     ]:
         print(f"  {key}: {stats.get(key)}")
+
+    seo_cov = stats.get("seo_attr_coverage", {})
+    if seo_cov:
+        print("\nSEO attribute coverage:")
+        for etype, info in sorted(seo_cov.items()):
+            total = info["total"]
+            has = info["has_any_seo_attr"]
+            pct = round(100 * has / max(total, 1))
+            per_attr = info.get("per_attr", {})
+            attr_detail = " ".join(f"{k}={v}" for k, v in per_attr.items()) if per_attr else ""
+            print(f"  {etype}: {has}/{total} ({pct}%) [{attr_detail}]")
+
+    qs_avg = stats.get("quality_score_avg", 0)
+    qs_dist = stats.get("quality_score_distribution", {})
+    if qs_avg or qs_dist:
+        print(f"\nEntity quality score: avg={qs_avg}")
+        print(f"  critical (0-29): {qs_dist.get('critical_0_29', 0)}")
+        print(f"  needs_work (30-59): {qs_dist.get('needs_work_30_59', 0)}")
+        print(f"  ok (60-79): {qs_dist.get('ok_60_79', 0)}")
+        print(f"  good (80-100): {qs_dist.get('good_80_100', 0)}")
+
+    cd = stats.get("confidence_distribution")
+    if cd:
+        print(f"\nConfidence distribution: min={cd['min']}, max={cd['max']}, median={cd['median']}, n={cd['count']}")
+
+    gc = stats.get("graph_connectivity", {})
+    if gc:
+        print(f"\nGraph connectivity:")
+        print(f"  components: {gc.get('total_components', 0)}")
+        print(f"  largest: {gc.get('largest_component', 0)}")
+        print(f"  isolated: {gc.get('isolated_entities', 0)}")
 
     grouped: dict[str, list[Issue]] = defaultdict(list)
     for issue in issues:

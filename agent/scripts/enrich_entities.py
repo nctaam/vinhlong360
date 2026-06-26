@@ -177,7 +177,8 @@ QUAN TRỌNG: Chỉ trả về JSON hợp lệ, không giải thích thêm."""
 
 
 def main():
-    data = json.load(open(PROJECT_DIR / "web" / "data.json", "r", encoding="utf-8"))
+    with open(PROJECT_DIR / "web" / "data.json", "r", encoding="utf-8") as f:
+        data = json.load(f)
     entities = data.get("entities", [])
 
     candidates = [e for e in entities if e.get("confidence", 0) >= 0.7]

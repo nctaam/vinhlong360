@@ -136,7 +136,7 @@ class TokenCounter:
 # ══════════════════════════════════════════════════
 
 _MAX_RECORDS = 10_000
-_AUTO_SAVE_INTERVAL = 50
+_AUTO_SAVE_INTERVAL = 20
 
 
 class CostAttribution:

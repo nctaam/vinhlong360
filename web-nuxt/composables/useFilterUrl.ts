@@ -23,4 +23,6 @@ export function useFilterUrl(filters: Record<string, Ref<string>>, defaults: Rec
   for (const ref of Object.values(filters)) {
     watch(ref, syncToUrl)
   }
+
+  return { syncToUrl }
 }

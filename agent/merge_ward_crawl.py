@@ -16,6 +16,9 @@ DATA_JSON = ROOT / "web" / "data.json"
 CRAWLED = Path(__file__).resolve().parent / "crawled"
 OUT_RAW = CRAWLED / "ward_crawl_130_raw.json"
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from text_utils import slugify
+
 PLACE_KEYWORDS = {
     # BT
     "TP Bến Tre": "xa-an-binh", "An Hội": "xa-an-binh", "Châu Thành": "xa-an-binh",
@@ -33,15 +36,6 @@ PLACE_KEYWORDS = {
     "Trà Ôn": "xa-tra-on", "TX Bình Minh": "xa-an-binh",
 }
 PROVINCE_PLACE = {"Bến Tre": "xa-an-binh", "Trà Vinh": "xa-tra-on", "Vĩnh Long": "p-long-chau"}
-
-def slugify(text):
-    text = unicodedata.normalize("NFD", text)
-    text = "".join(c for c in text if unicodedata.category(c) != "Mn")
-    text = text.lower().strip()
-    text = re.sub(r"[đĐ]", "d", text)
-    text = re.sub(r"[^a-z0-9\s-]", "", text)
-    text = re.sub(r"[\s-]+", "-", text).strip("-")
-    return text[:80]
 
 def guess_place_id(addr, province_old, district=""):
     combined = f"{addr} {district}"

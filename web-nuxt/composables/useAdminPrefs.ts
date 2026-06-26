@@ -13,7 +13,7 @@ const DEFAULTS: AdminPrefs = {
 }
 
 function load(): AdminPrefs {
-  if (typeof localStorage === 'undefined') return { ...DEFAULTS }
+  if (!import.meta.client) return { ...DEFAULTS }
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     return raw ? { ...DEFAULTS, ...JSON.parse(raw) } : { ...DEFAULTS }
@@ -21,14 +21,15 @@ function load(): AdminPrefs {
 }
 
 function save(prefs: AdminPrefs) {
-  if (typeof localStorage === 'undefined') return
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs))
+  if (!import.meta.client) return
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs)) } catch { /* quota exceeded */ }
 }
 
-const _prefs = ref<AdminPrefs>(DEFAULTS)
 let _initialized = false
 
 export function useAdminPrefs() {
+  const _prefs = useState<AdminPrefs>('adminPrefs', () => ({ ...DEFAULTS }))
+
   if (!_initialized && import.meta.client) {
     _prefs.value = load()
     _initialized = true
