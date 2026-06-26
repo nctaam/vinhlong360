@@ -923,3 +923,250 @@ class TestGuardrailJsonParsing:
         )
         assert result["reply"] == "Final answer."
         assert result["suggestions"] == []
+
+
+# ═══════════════════════════════════════════════════════
+# Audit round 2: error logging, executor fallback, edge cases
+# ═══════════════════════════════════════════════════════
+
+class TestOrchestratorErrorLogging:
+    """Orchestrator must log (not swallow) exceptions in catch blocks."""
+
+    def _make_tool_call(self, tc_id, fn_name, args_str):
+        tc = MagicMock()
+        tc.id = tc_id
+        tc.function.name = fn_name
+        tc.function.arguments = args_str
+        return tc
+
+    def _make_msg(self, content=None, tool_calls=None):
+        msg = MagicMock()
+        msg.content = content
+        msg.tool_calls = tool_calls
+        return msg
+
+    def _make_response(self, msg):
+        resp = MagicMock()
+        resp.choices = [MagicMock()]
+        resp.choices[0].message = msg
+        return resp
+
+    def test_malformed_args_logs_warning(self):
+        """json.loads failure on tool args must emit a log warning."""
+        from orchestrator import Orchestrator
+
+        orch = Orchestrator(tools_list=[
+            {"type": "function", "function": {"name": "search"}},
+        ])
+
+        tc = self._make_tool_call("tc1", "search", "{{INVALID}}")
+        msg_r1 = self._make_msg(tool_calls=[tc])
+        resp_r1 = self._make_response(msg_r1)
+        msg_r2 = self._make_msg(content="OK.", tool_calls=None)
+        resp_r2 = self._make_response(msg_r2)
+
+        calls = [0]
+        def fake_llm(m, t, temp):
+            calls[0] += 1
+            return resp_r1 if calls[0] == 1 else resp_r2
+
+        with patch("orchestrator.logger") as mock_logger:
+            orch.run(
+                message="test", history=[], session_id="s",
+                base_system_prompt="B.",
+                call_tool_fn=lambda n, a: json.dumps([]),
+                llm_call_fn=fake_llm,
+            )
+            assert mock_logger.warning.called
+            warn_args = [str(c) for c in mock_logger.warning.call_args_list]
+            assert any("Malformed tool arguments" in s for s in warn_args)
+
+    def test_parallel_executor_failure_logs_and_falls_back(self):
+        """When tool_executor.execute_smart raises, must log + serial fallback."""
+        from orchestrator import Orchestrator
+
+        orch = Orchestrator(tools_list=[
+            {"type": "function", "function": {"name": "search"}},
+        ])
+
+        tcs = [
+            self._make_tool_call("tc1", "search", '{"q":"a"}'),
+            self._make_tool_call("tc2", "search", '{"q":"b"}'),
+        ]
+        msg_r1 = self._make_msg(tool_calls=tcs)
+        resp_r1 = self._make_response(msg_r1)
+        msg_r2 = self._make_msg(content="Results.", tool_calls=None)
+        resp_r2 = self._make_response(msg_r2)
+
+        calls = [0]
+        def fake_llm(m, t, temp):
+            calls[0] += 1
+            return resp_r1 if calls[0] == 1 else resp_r2
+
+        bad_executor = MagicMock()
+        bad_executor.execute_smart.side_effect = RuntimeError("thread pool dead")
+
+        tool_calls_received = []
+        def fake_tool(name, args):
+            tool_calls_received.append(name)
+            return json.dumps([{"id": "x", "name": "X"}])
+
+        with patch("orchestrator.logger") as mock_logger:
+            result = orch.run(
+                message="test", history=[], session_id="s",
+                base_system_prompt="B.",
+                call_tool_fn=fake_tool,
+                llm_call_fn=fake_llm,
+                tool_executor=bad_executor,
+            )
+            assert result["reply"] == "Results."
+            assert len(tool_calls_received) == 2
+            warn_args = [str(c) for c in mock_logger.warning.call_args_list]
+            assert any("Parallel executor failed" in s for s in warn_args)
+
+    def test_final_synthesis_failure_logs_and_returns_canned(self):
+        """When forced synthesis LLM call fails, must log + return canned message."""
+        from orchestrator import Orchestrator
+
+        orch = Orchestrator(tools_list=[
+            {"type": "function", "function": {"name": "search"}},
+        ])
+
+        tc = self._make_tool_call("tc1", "search", '{"q":"test"}')
+        msg_tool = self._make_msg(tool_calls=[tc])
+        resp_tool = self._make_response(msg_tool)
+
+        calls = [0]
+        def fake_llm(messages, tools, temperature):
+            calls[0] += 1
+            if not tools:
+                raise ConnectionError("LLM down during synthesis")
+            return resp_tool
+
+        result = orch.run(
+            message="test", history=[], session_id="s",
+            base_system_prompt="B.",
+            call_tool_fn=lambda n, a: json.dumps([]),
+            llm_call_fn=fake_llm,
+        )
+        assert "Xin lỗi" in result["reply"]
+
+
+class TestImageRecognitionLogging:
+    """image_recognition.py must use logger, not print()."""
+
+    def test_no_print_calls_in_production_code(self):
+        """image_recognition.py must not use print() in production code paths."""
+        import re as _re
+        source = (AGENT_DIR / "image_recognition.py").read_text(encoding="utf-8")
+        main_idx = source.find('if __name__ == "__main__"')
+        if main_idx > 0:
+            source = source[:main_idx]
+        matches = _re.findall(r"^\s+print\s*\(", source, _re.MULTILINE)
+        assert not matches, (
+            f"image_recognition.py has {len(matches)} print() calls in production code — "
+            "must use logger instead"
+        )
+
+    def test_has_logger_setup(self):
+        """image_recognition.py must define a module-level logger."""
+        import image_recognition
+        assert hasattr(image_recognition, "logger"), \
+            "image_recognition must have a module-level logger"
+
+
+class TestKnowledgeEdgeCasesExtended:
+    """Extended edge-case tests for knowledge search functions."""
+
+    def _seed(self):
+        import knowledge
+        knowledge._entities = {
+            "e1": {
+                "id": "e1", "name": "Bánh tráng Trảng Bàng", "type": "dish",
+                "summary": "Bánh tráng cuốn thịt heo",
+            },
+            "e2": {
+                "id": "e2", "name": "Gốm Mang Thít", "type": "craft_village",
+                "summary": "Làng nghề gốm đỏ nổi tiếng",
+            },
+            "p1": {
+                "id": "p1", "name": "Xã An Bình", "type": "place",
+                "level": "xa", "area": "vinh-long", "parentId": "root",
+            },
+        }
+        knowledge._relationships = []
+        knowledge._itineraries = {}
+
+    def test_query_relevance_empty_entity(self):
+        """query_relevance must handle entities with missing fields."""
+        from knowledge import query_relevance
+        assert query_relevance("cam sành", {}) is False
+        assert query_relevance("cam sành", {"name": ""}) is False
+
+    def test_query_relevance_empty_query(self):
+        """query_relevance with empty query returns False (no match signal)."""
+        from knowledge import query_relevance
+        entity = {"name": "Cam sành Tam Bình", "summary": "Đặc sản cam"}
+        assert query_relevance("", entity) is False
+
+    def test_search_entities_unicode_control_chars(self):
+        """Unicode control characters in query must not crash search."""
+        self._seed()
+        from knowledge import search_entities
+        results = search_entities(q="\x00\x01\x02test")
+        assert isinstance(results, list)
+
+    def test_search_entities_only_stopwords(self):
+        """Query containing only stopwords should still not crash."""
+        self._seed()
+        from knowledge import search_entities
+        results = search_entities(q="la co va")
+        assert isinstance(results, list)
+
+    def test_nearby_entities_nonexistent_id(self):
+        """nearby_entities with unknown entity_id returns empty list."""
+        self._seed()
+        from knowledge import nearby_entities
+        assert nearby_entities("nonexistent-id-999") == []
+
+    def test_entity_detail_nonexistent_id(self):
+        """entity_detail with unknown entity_id returns None."""
+        self._seed()
+        from knowledge import entity_detail
+        assert entity_detail("nonexistent-id-999") is None
+
+    def test_directory_search_empty_query(self):
+        """directory_search with empty query should not crash."""
+        self._seed()
+        from knowledge import directory_search
+        results = directory_search("")
+        assert isinstance(results, list)
+
+
+class TestBM25EdgeCases:
+    """BM25 scoring edge cases."""
+
+    def test_single_token_doc(self):
+        """BM25 must handle documents with a single meaningful token."""
+        from contextual_retrieval import BM25
+        b = BM25()
+        b.build_index({"d1": "chua"})
+        results = b.score("chua", top_k=5)
+        assert len(results) >= 1
+
+    def test_query_with_no_matching_tokens(self):
+        """BM25 query with no matching tokens returns empty."""
+        from contextual_retrieval import BM25
+        b = BM25()
+        b.build_index({"d1": "hello world travel"})
+        results = b.score("xyzzyx", top_k=5)
+        assert results == []
+
+    def test_special_chars_in_query(self):
+        """BM25 must not crash on special characters in query."""
+        from contextual_retrieval import BM25
+        b = BM25()
+        b.build_index({"d1": "du lich vinh long"})
+        for q in ["du lịch (VL)", "test.*regex", "a+b=c", "$price"]:
+            results = b.score(q, top_k=5)
+            assert isinstance(results, list)

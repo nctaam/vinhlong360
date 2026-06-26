@@ -626,7 +626,8 @@ class Orchestrator:
                     continue
                 try:
                     fn_args = json.loads(tc.function.arguments)
-                except Exception:
+                except Exception as exc:
+                    logger.warning("Malformed tool arguments for %s: %s", tc.function.name, exc)
                     fn_args = {}
                 fn_name = tc.function.name
                 tools_used.append(f"{fn_name}({json.dumps(fn_args, ensure_ascii=False)})")
@@ -640,7 +641,8 @@ class Orchestrator:
             if tool_executor is not None and len(pending) > 1:
                 try:
                     exec_results = tool_executor.execute_smart(pending)
-                except Exception:
+                except Exception as exc:
+                    logger.warning("Parallel executor failed, falling back to serial: %s", exc)
                     exec_results = [
                         {"id": c["id"], "name": c["name"], "result": call_tool_fn(c["name"], c["args"])}
                         for c in pending
@@ -691,7 +693,8 @@ class Orchestrator:
                     })
                     final_resp = llm_call_fn(messages, [], temperature)
                     last_content = (final_resp.choices[0].message.content or "").strip()
-                except Exception:
+                except Exception as exc:
+                    logger.warning("Final synthesis LLM call failed: %s", exc)
                     last_content = ""
             if not last_content:
                 last_content = "Xin lỗi, tôi không thể trả lời đầy đủ câu hỏi này."
