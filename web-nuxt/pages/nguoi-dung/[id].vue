@@ -84,6 +84,8 @@
         <div class="pc-hints">
           <span v-if="!profile.display_name" class="pc-hint">Thêm tên hiển thị</span>
           <span v-if="!profile.avatar" class="pc-hint">Thêm ảnh đại diện</span>
+          <span v-if="!profile.cover_url" class="pc-hint">Thêm ảnh bìa</span>
+          <span v-if="!profile.username" class="pc-hint">Chọn tên người dùng</span>
           <span v-if="!profile.bio" class="pc-hint">Viết giới thiệu</span>
           <span v-if="(profile.post_count || 0) === 0" class="pc-hint">Đăng bài đầu tiên</span>
           <span v-if="(profile.review_count || 0) === 0" class="pc-hint">Viết đánh giá</span>
@@ -224,7 +226,9 @@ useHead({
   meta: [{ name: 'robots', content: 'noindex,follow' }],
 })
 
-const tab = ref('posts')
+const validProfileTabs = new Set(['posts', 'reviews', 'saved'])
+const initialTab = route.query.tab as string
+const tab = ref(validProfileTabs.has(initialTab) ? initialTab : 'posts')
 const posts = ref<Entity[]>([])
 const { favorites, count: savedCount } = useFavorites()
 const loading = ref(true)
@@ -275,13 +279,8 @@ const joinDate = computed(() => {
 const profileCompletion = computed(() => {
   if (!profile.value) return 0
   const p = profile.value
-  let score = 0
-  if (p.display_name) score += 20
-  if (p.avatar) score += 20
-  if (p.bio) score += 20
-  if ((p.post_count || 0) > 0) score += 20
-  if ((p.review_count || 0) > 0) score += 20
-  return score
+  const checks = [p.display_name, p.avatar, p.bio, p.username, p.cover_url, (p.post_count || 0) > 0, (p.review_count || 0) > 0]
+  return Math.round((checks.filter(Boolean).length / checks.length) * 100)
 })
 
 const filteredPosts = computed(() => {
@@ -397,11 +396,17 @@ watch(followModalTab, (t) => loadFollowList(t))
 async function checkFollowing() {
   if (!isLoggedIn.value) return
   try {
-    const res = await $fetch<Record<string, unknown>[]>('/api/following?target_type=user', { headers: authHeaders() })
-    const following = res.following || res || []
-    isFollowing.value = following.some((f: Entity) => f.target_id === userId.value)
+    const res = await $fetch<{ following: boolean }>(`/api/follow/check/user/${userId.value}`, { headers: authHeaders() })
+    isFollowing.value = res.following
   } catch { /* non-critical */ }
 }
+
+watch(tab, (t) => {
+  const query = { ...route.query }
+  if (t === 'posts') delete query.tab
+  else query.tab = t
+  navigateTo({ path: route.path, query }, { replace: true })
+})
 
 async function toggleFollow() {
   if (!isLoggedIn.value) { showToast('Đăng nhập để theo dõi', 'info'); return }

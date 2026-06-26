@@ -305,6 +305,21 @@ async def toggle_follow(target_type: str, target_id: str, user=Depends(require_u
     return {"following": following}
 
 
+@router.get("/follow/check/{target_type}/{target_id}")
+async def check_follow(target_type: str, target_id: str, user=Depends(require_user)):
+    _require_pg()
+    if target_type not in ("user", "entity"):
+        raise HTTPException(400, "Loại follow: user hoặc entity")
+    ph = db._ph
+    uid = str(user["id"])
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"""
+            SELECT 1 FROM follows
+            WHERE follower_id = {ph}::uuid AND target_type = {ph} AND target_id = {ph}
+        """, (uid, target_type, target_id))
+    return {"following": row is not None}
+
+
 @router.get("/following")
 async def get_following(
     target_type: Optional[str] = None,
