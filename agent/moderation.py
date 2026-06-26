@@ -36,9 +36,12 @@ async def moderate_content(content: str, image_urls: list[str] = None) -> dict:
     text_result = await _moderate_text(content)
     image_result = await _moderate_images(image_urls or [])
     link_result = _check_links(content)
+    spam_result = _check_spam_patterns(content)
 
-    max_score = max(text_result["score"], image_result["score"], link_result["score"])
-    reasons = text_result["reasons"] + image_result["reasons"] + link_result["reasons"]
+    max_score = max(text_result["score"], image_result["score"],
+                    link_result["score"], spam_result["score"])
+    reasons = text_result["reasons"] + image_result["reasons"] + \
+              link_result["reasons"] + spam_result["reasons"]
 
     if max_score < AUTO_APPROVE_THRESHOLD:
         status = "approved"
@@ -61,6 +64,58 @@ _SHORTENER_PATTERN = re.compile(
     re.IGNORECASE,
 )
 _URL_PATTERN = re.compile(r'https?://\S+', re.IGNORECASE)
+
+# P0-2: local spam patterns (works WITHOUT external API key).
+# Catches common Vietnamese spam phrases, casino/gambling, crypto scams,
+# phone-number harvesting, and repetitive character spam.
+# Patterns handle BOTH diacritical (sòng bài) and ASCII (song bai) Vietnamese
+# since spammers often strip diacritics to evade detection.
+_SPAM_PATTERNS = [
+    # Casino / gambling (diacritical + ASCII variants)
+    re.compile(
+        r'\b(casino|s[oò]ng\s*b[aà]i|c[aá]\s*c[uư][oớ]c|'
+        r'x[oổ]\s*s[oố]\s*online|slot\s*game|n[oổ]\s*h[uũ]|'
+        r'b[aắ]n\s*c[aá]\s*online)\b',
+        re.IGNORECASE,
+    ),
+    # Crypto / investment scams
+    re.compile(
+        r'\b(ki[eế]m\s*ti[eề]n\s*online|l[aà]m\s*gi[aà]u\s*nhanh|'
+        r'thu\s*nh[aậ]p\s*th[uụ]\s*[dđ][oộ]ng|[dđ][aầ]u\s*t[uư]\s*x\d+|'
+        r'l[oợ]i\s*nhu[aậ]n\s*\d{2,3}%)',
+        re.IGNORECASE,
+    ),
+    # Adult / sex spam
+    re.compile(
+        r'\b(g[aá]i\s*g[oọ]i|m[aạ]i\s*d[aâ]m|sex\s*online|18\+|phim\s*sex)\b',
+        re.IGNORECASE,
+    ),
+    # Contact spam (repeated phone/Zalo/Telegram solicitation)
+    re.compile(
+        r'(li[eê]n\s*h[eệ]|inbox|zalo|telegram|whatsapp).{0,20}\d{9,}',
+        re.IGNORECASE,
+    ),
+    # Repetitive character spam (e.g., "aaaaaaa" or "!!!!!!")
+    re.compile(r'(.)\1{9,}'),
+]
+
+
+def _check_spam_patterns(content: str) -> dict:
+    """P0-2: local spam pattern detection (no API needed).
+
+    Catches common spam/scam phrases so even without an external moderation
+    API key, harmful content is held for manual review.
+    """
+    if not content or not content.strip():
+        return {"score": 0.0, "reasons": []}
+    reasons = []
+    score = 0.0
+    for pattern in _SPAM_PATTERNS:
+        match = pattern.search(content)
+        if match:
+            score = max(score, 0.5)
+            reasons.append(f"spam:pattern_match({match.group()[:30]})")
+    return {"score": score, "reasons": reasons}
 
 
 def _check_links(content: str) -> dict:

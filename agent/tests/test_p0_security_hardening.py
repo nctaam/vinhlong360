@@ -311,6 +311,79 @@ class TestCheckLinksFunction:
         assert "excessive" not in str(result["reasons"])
 
 
+class TestCheckSpamPatterns:
+    """Test the _check_spam_patterns function in moderation.py which flags
+    content containing common spam/scam phrases locally (no API needed)."""
+
+    def test_clean_content_score_zero(self):
+        """Normal Vietnamese content should have score 0."""
+        from moderation import _check_spam_patterns
+        result = _check_spam_patterns("Trải nghiệm du lịch Vĩnh Long rất tuyệt vời!")
+        assert result["score"] == 0.0
+        assert result["reasons"] == []
+
+    def test_empty_content_score_zero(self):
+        from moderation import _check_spam_patterns
+        assert _check_spam_patterns("")["score"] == 0.0
+        assert _check_spam_patterns(None)["score"] == 0.0
+
+    def test_casino_spam_flagged(self):
+        """Casino/gambling content should be flagged."""
+        from moderation import _check_spam_patterns
+        texts = [
+            "Choi casino online tai day",
+            "Song bai truc tuyen uy tin",
+            "Ca cuoc bong da 100%",
+            "Slot game hot nhat",
+            "No hu moi ngay",
+        ]
+        for text in texts:
+            result = _check_spam_patterns(text)
+            assert result["score"] >= 0.5, f"Casino spam '{text}' should be flagged"
+            assert len(result["reasons"]) > 0
+
+    def test_crypto_scam_flagged(self):
+        """Crypto/investment scam patterns should be flagged."""
+        from moderation import _check_spam_patterns
+        texts = [
+            "Kiem tien online moi ngay 500k",
+            "Lam giau nhanh khong can von",
+            "Dau tu x10 trong 1 thang",
+        ]
+        for text in texts:
+            result = _check_spam_patterns(text)
+            assert result["score"] >= 0.5, f"Scam '{text}' should be flagged"
+
+    def test_adult_spam_flagged(self):
+        """Adult/sex spam should be flagged."""
+        from moderation import _check_spam_patterns
+        result = _check_spam_patterns("gai goi ha noi")
+        assert result["score"] >= 0.5
+
+    def test_contact_spam_flagged(self):
+        """Contact solicitation with phone numbers should be flagged."""
+        from moderation import _check_spam_patterns
+        texts = [
+            "Lien he zalo 0901234567",
+            "Inbox telegram 84901234567",
+        ]
+        for text in texts:
+            result = _check_spam_patterns(text)
+            assert result["score"] >= 0.5, f"Contact spam '{text}' should be flagged"
+
+    def test_repetitive_chars_flagged(self):
+        """Repeated characters (10+) should be flagged as spam."""
+        from moderation import _check_spam_patterns
+        result = _check_spam_patterns("AAAAAAAAAA mua ngay")
+        assert result["score"] >= 0.5
+
+    def test_short_repeats_not_flagged(self):
+        """Short repeats (< 10 chars) should NOT be flagged."""
+        from moderation import _check_spam_patterns
+        result = _check_spam_patterns("Waaaaah dep qua!")
+        assert result["score"] == 0.0
+
+
 class TestModerationPipelineForComments:
     """Test that the moderate_content function correctly handles
     comment-like content with URLs and spam patterns."""
@@ -347,6 +420,23 @@ class TestModerationPipelineForComments:
         from moderation import moderate_content
         result = asyncio.run(moderate_content("", []))
         assert result["status"] == "approved"
+
+    def test_spam_pattern_comment_held(self):
+        """Comment with spam keywords should be held for review
+        even without an external moderation API key."""
+        import asyncio
+        from moderation import moderate_content
+        result = asyncio.run(moderate_content("Casino online uy tin nhat", []))
+        assert result["status"] != "approved", \
+            "Comment with casino spam should not be auto-approved"
+
+    def test_contact_spam_comment_held(self):
+        """Comment with phone solicitation should be held."""
+        import asyncio
+        from moderation import moderate_content
+        result = asyncio.run(moderate_content("Lien he zalo 0901234567890", []))
+        assert result["status"] != "approved", \
+            "Comment with contact spam should not be auto-approved"
 
 
 class TestCommentModerationIntegration:
@@ -389,6 +479,14 @@ class TestCommentModerationIntegration:
             if isinstance(v, str):
                 assert "0901234567" not in v, \
                     "_format_comment must not leak phone number"
+
+    def test_moderate_content_calls_spam_patterns(self):
+        """moderate_content must include _check_spam_patterns in its pipeline."""
+        import inspect
+        import moderation
+        src = inspect.getsource(moderation.moderate_content)
+        assert "_check_spam_patterns" in src, \
+            "moderate_content must call _check_spam_patterns for local spam detection"
 
     def test_format_post_does_not_leak_phone(self):
         """_format_post must NOT include phone (P0-8)."""
