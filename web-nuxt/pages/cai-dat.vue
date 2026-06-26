@@ -305,9 +305,19 @@ type TabKey = typeof TABS[number]['key']
 
 const activeTab = ref<TabKey>((route.hash?.slice(1) as TabKey) || 'ho-so')
 
+const tabLoaded = reactive(new Set<TabKey>())
 function setTab(key: TabKey) {
   activeTab.value = key
   if (import.meta.client) window.history.replaceState(null, '', `#${key}`)
+  lazyLoadTab(key)
+}
+function lazyLoadTab(key: TabKey) {
+  if (tabLoaded.has(key)) return
+  tabLoaded.add(key)
+  if (key === 'bao-mat') { loadSessions(); loadLoginHistory() }
+  else if (key === 'rieng-tu') loadPrivacy()
+  else if (key === 'chan') loadBlocked()
+  else if (key === 'thong-bao') loadNotifPrefs()
 }
 
 const displayName = ref(user.value?.display_name || '')
@@ -320,9 +330,14 @@ const nameError = ref('')
 const uploadingAvatar = ref(false)
 const avatarPreview = ref('')
 
+const ALLOWED_IMG = ['image/jpeg', 'image/png', 'image/webp']
+const MAX_IMG_SIZE = 12 * 1024 * 1024
+
 async function onAvatarChange(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0]
   if (!file) return
+  if (!ALLOWED_IMG.includes(file.type)) { showToast('Chỉ hỗ trợ JPEG, PNG hoặc WebP', 'error'); return }
+  if (file.size > MAX_IMG_SIZE) { showToast('Ảnh quá lớn (tối đa 12MB)', 'error'); return }
   if (avatarPreview.value?.startsWith('blob:')) URL.revokeObjectURL(avatarPreview.value)
   avatarPreview.value = URL.createObjectURL(file)
   uploadingAvatar.value = true
@@ -356,11 +371,7 @@ onMounted(async () => {
     if (u?.bio) { bio.value = u.bio; savedBio.value = u.bio }
     if (!displayName.value && u?.display_name) { displayName.value = u.display_name; savedName.value = u.display_name }
   } catch { /* prefill is best-effort */ }
-  loadSessions()
-  loadLoginHistory()
-  loadPrivacy()
-  loadBlocked()
-  loadNotifPrefs()
+  lazyLoadTab(activeTab.value)
 })
 
 const currentPw = ref('')
@@ -429,6 +440,8 @@ const coverPreview = ref('')
 async function onCoverChange(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0]
   if (!file) return
+  if (!ALLOWED_IMG.includes(file.type)) { showToast('Chỉ hỗ trợ JPEG, PNG hoặc WebP', 'error'); return }
+  if (file.size > MAX_IMG_SIZE) { showToast('Ảnh quá lớn (tối đa 12MB)', 'error'); return }
   if (coverPreview.value?.startsWith('blob:')) URL.revokeObjectURL(coverPreview.value)
   coverPreview.value = URL.createObjectURL(file)
   uploadingCover.value = true

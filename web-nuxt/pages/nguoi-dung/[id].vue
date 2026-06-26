@@ -4,7 +4,7 @@
 
     <div v-if="profile" class="user-profile reveal">
       <div class="profile-cover">
-        <img v-if="profile.cover_url" :src="profile.cover_url" :alt="`Ảnh bìa ${profile.display_name}`" class="cover-img" loading="eager" decoding="async" />
+        <img v-if="profile.cover_url" :src="profile.cover_url" :alt="`Ảnh bìa ${profile.display_name}`" class="cover-img" loading="eager" decoding="async" width="960" height="200" />
         <UserCoverPlaceholder v-else />
         <div class="cover-scrim" aria-hidden="true"></div>
         <div class="profile-avatar-wrap">
@@ -213,14 +213,14 @@ import type { Entity } from '~/types'
 import { TYPE_META } from '~/composables/useConstants'
 useReveal()
 const route = useRoute()
-const userId = route.params.id as string
+const userId = computed(() => route.params.id as string)
 const { isLoggedIn, authHeaders, handleSessionExpired } = useAuth()
 const { show: showToast } = useToast()
 const { reportPost } = useReport()
 const { repost, quote } = useRepost()
 
 useHead({
-  link: [{ rel: 'canonical', href: canonicalUrl(`/nguoi-dung/${userId}`) }],
+  link: computed(() => [{ rel: 'canonical', href: canonicalUrl(`/nguoi-dung/${userId.value}`) }]),
   meta: [{ name: 'robots', content: 'noindex,follow' }],
 })
 
@@ -233,16 +233,14 @@ const followLoading = ref(false)
 const followerCount = ref(0)
 const isSelf = computed(() => {
   const { user } = useAuth()
-  return user.value?.id === userId
+  return user.value?.id === userId.value
 })
 
 const profileFetchFailed = ref(false)
-const { data: profile } = await useAsyncData(`user-${userId}`, async () => {
+const { data: profile } = await useAsyncData(() => `user-${userId.value}`, async () => {
   try {
     profileFetchFailed.value = false
-    // BE trả {user:{display_name, avatar_url, bio, created_at, stats:{posts,reviews}}}
-    // → unwrap + map về flat keys mà template đọc (P0-11).
-    const res = await apiFetch<Record<string, any>>(`/api/users/${userId}`, { headers: authHeaders() })
+    const res = await apiFetch<Record<string, any>>(`/api/users/${userId.value}`, { headers: authHeaders() })
     const u = (res?.user ?? res) as Record<string, any> | null
     if (!u) return null
     const mapped = {
@@ -310,7 +308,7 @@ async function fetchPosts() {
   loading.value = true
   postsFetchFailed.value = false
   try {
-    const res = await $fetch<Record<string, unknown>>(`/api/users/${userId}/posts?limit=50`, { headers: authHeaders() })
+    const res = await $fetch<Record<string, unknown>>(`/api/users/${userId.value}/posts?limit=50`, { headers: authHeaders() })
     const list = res?.posts
     posts.value = Array.isArray(list) ? list : []
   } catch {
@@ -377,7 +375,7 @@ async function loadFollowList(which: 'followers' | 'following') {
   if (followLists.value[which]) return  // đã tải (cache)
   followLoadingList.value = true
   try {
-    const res = await $fetch<any>(`/api/users/${userId}/${which}`, { headers: authHeaders() })
+    const res = await $fetch<any>(`/api/users/${userId.value}/${which}`, { headers: authHeaders() })
     followLists.value[which] = res.users || []
   } catch (e: any) {
     followLists.value[which] = []
@@ -401,7 +399,7 @@ async function checkFollowing() {
   try {
     const res = await $fetch<Record<string, unknown>[]>('/api/following?target_type=user', { headers: authHeaders() })
     const following = res.following || res || []
-    isFollowing.value = following.some((f: Entity) => f.target_id === userId)
+    isFollowing.value = following.some((f: Entity) => f.target_id === userId.value)
   } catch { /* non-critical */ }
 }
 
@@ -412,7 +410,7 @@ async function toggleFollow() {
   isFollowing.value = !was
   followerCount.value += was ? -1 : 1
   try {
-    await $fetch(`/api/follow/user/${userId}`, { method: 'POST', headers: authHeaders() })
+    await $fetch(`/api/follow/user/${userId.value}`, { method: 'POST', headers: authHeaders() })
   } catch (e: any) {
     isFollowing.value = was
     followerCount.value += was ? 1 : -1
@@ -437,19 +435,20 @@ watch(showMoreMenu, (v) => {
     else document.removeEventListener('click', onClickOutsideMore)
   }
 })
+onUnmounted(() => document.removeEventListener('click', onClickOutsideMore))
 
 async function checkBlocked() {
   if (!isLoggedIn.value || isSelf.value) return
   try {
     const res = await $fetch<{ users: any[] }>('/api/blocked-users', { headers: authHeaders() })
-    isBlocked.value = (res.users || []).some(u => u.id === userId)
+    isBlocked.value = (res.users || []).some(u => u.id === userId.value)
   } catch { /* non-critical */ }
 }
 
 async function toggleBlock() {
   if (isBlocked.value) {
     try {
-      await $fetch(`/api/block/${userId}`, { method: 'POST', headers: authHeaders() })
+      await $fetch(`/api/block/${userId.value}`, { method: 'POST', headers: authHeaders() })
       isBlocked.value = false
       showToast('Đã bỏ chặn', 'success')
     } catch (e: any) {
@@ -468,7 +467,7 @@ async function toggleBlock() {
   )
   if (!ok) return
   try {
-    await $fetch(`/api/block/${userId}`, { method: 'POST', headers: authHeaders() })
+    await $fetch(`/api/block/${userId.value}`, { method: 'POST', headers: authHeaders() })
     isBlocked.value = true
     if (isFollowing.value) { isFollowing.value = false; followerCount.value-- }
     showToast('Đã chặn người dùng', 'success')
@@ -488,17 +487,26 @@ onMounted(() => {
   checkBlocked()
 })
 
-if (profile.value) {
-  const profileDesc = `Trang cá nhân của ${profile.value.display_name || 'thành viên'} trên cộng đồng vinhlong360.`
-  useSeoMeta({
-    title: `${profile.value.display_name || 'Người dùng'} — vinhlong360`,
-    description: profileDesc,
-    ogTitle: `${profile.value.display_name || 'Người dùng'} — vinhlong360`,
-    ogDescription: profileDesc,
-    ogImage: '/icons/icon-512.png',
-    robots: 'noindex,follow',
-  })
-}
+watch(userId, () => {
+  tab.value = 'posts'
+  posts.value = []
+  loading.value = true
+  isFollowing.value = false
+  isBlocked.value = false
+  followLists.value = { followers: null, following: null }
+  fetchPosts()
+  checkFollowing()
+  checkBlocked()
+})
+
+useSeoMeta({
+  title: () => `${profile.value?.display_name || 'Người dùng'} — vinhlong360`,
+  description: () => `Trang cá nhân của ${profile.value?.display_name || 'thành viên'} trên cộng đồng vinhlong360.`,
+  ogTitle: () => `${profile.value?.display_name || 'Người dùng'} — vinhlong360`,
+  ogDescription: () => `Trang cá nhân của ${profile.value?.display_name || 'thành viên'} trên cộng đồng vinhlong360.`,
+  ogImage: '/icons/icon-512.png',
+  robots: 'noindex,follow',
+})
 </script>
 
 <style scoped>

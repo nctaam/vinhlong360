@@ -610,7 +610,7 @@ async function onFileSelect(e: Event) {
   if (!input.files) return
   const newFiles = Array.from(input.files).slice(0, 5 - imageFiles.value.length)
   for (const file of newFiles) {
-    if (!file.type.startsWith('image/')) { showToast(`${file.name} không phải ảnh`, 'warning'); continue }
+    if (!file.type.startsWith('image/') || file.type === 'image/svg+xml') { showToast(`${file.name} không phải ảnh hợp lệ`, 'warning'); continue }
     if (file.size > 10 * 1024 * 1024) { showToast('Ảnh quá lớn (tối đa 10MB)', 'warning'); continue }
     try {
       const dataUrl = await downscaleImage(file)

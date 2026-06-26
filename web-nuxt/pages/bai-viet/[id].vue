@@ -131,7 +131,7 @@
           <h3 class="related-title">Bài viết liên quan</h3>
           <div class="related-grid">
             <NuxtLink v-for="rp in relatedPosts" :key="rp.id" :to="`/bai-viet/${rp.id}`" class="related-card">
-              <img v-if="rp.images?.[0]" :src="rp.images[0]" :alt="rp.display_name || 'Bài viết liên quan'" class="related-thumb" loading="lazy" decoding="async" />
+              <img v-if="rp.images?.[0]" :src="rp.images[0]" :alt="rp.display_name || 'Bài viết liên quan'" class="related-thumb" loading="lazy" decoding="async" width="400" height="100" />
               <div class="related-body">
                 <span class="related-author">{{ rp.display_name }}</span>
                 <p class="related-text">{{ (rp.content || '').slice(0, 80) }}{{ (rp.content || '').length > 80 ? '…' : '' }}</p>
@@ -165,7 +165,7 @@
 import type { Post, Entity} from '~/types'
 useReveal()
 const route = useRoute()
-const postId = route.params.id as string
+const postId = computed(() => route.params.id as string)
 const { isLoggedIn, authHeaders, user, handleSessionExpired } = useAuth()
 const { openAuth } = useAuthModal()
 const { confirmDialog } = useConfirm()
@@ -218,7 +218,7 @@ async function setBestAnswer(commentId: string) {
   const prev = bestAnswerId.value
   bestAnswerId.value = commentId
   try {
-    await $fetch(`/api/posts/${postId}/best-answer`, { method: 'POST', headers: authHeaders(), body: { comment_id: commentId } })
+    await $fetch(`/api/posts/${postId.value}/best-answer`, { method: 'POST', headers: authHeaders(), body: { comment_id: commentId } })
     showToast('Đã chọn câu trả lời hay', 'success')
   } catch (e: any) {
     bestAnswerId.value = prev
@@ -230,7 +230,7 @@ async function deletePost() {
   const ok = await confirmDialog('Bạn có chắc muốn xoá bài viết này? Hành động không thể hoàn tác.', { confirmText: 'Xoá', danger: true })
   if (!ok) return
   try {
-    await $fetch(`/api/posts/${postId}`, { method: 'DELETE', headers: authHeaders() })
+    await $fetch(`/api/posts/${postId.value}`, { method: 'DELETE', headers: authHeaders() })
     showToast('Đã xoá bài viết', 'success')
     navigateTo('/cong-dong')
   } catch (e: any) {
@@ -263,7 +263,7 @@ async function saveEdit() {
   if (editContent.value.trim().length < 10 || editSaving.value) return
   editSaving.value = true
   try {
-    const res = await $fetch<any>(`/api/posts/${postId}`, {
+    const res = await $fetch<any>(`/api/posts/${postId.value}`, {
       method: 'PATCH', headers: authHeaders(), body: { content: editContent.value.trim() },
     })
     if (post.value && res.post) {
@@ -294,10 +294,10 @@ const userInitial = computed(() => {
 })
 
 const postFetchFailed = ref(false)
-const { data: post, pending } = await useAsyncData(`post-${postId}`, async () => {
+const { data: post, pending } = await useAsyncData(() => `post-${postId.value}`, async () => {
   try {
     postFetchFailed.value = false
-    const res = await apiFetch<Post>(`/api/posts/${postId}`, { headers: authHeaders() })
+    const res = await apiFetch<Post>(`/api/posts/${postId.value}`, { headers: authHeaders() })
     return res?.post || res
   } catch {
     postFetchFailed.value = true
@@ -313,7 +313,7 @@ async function fetchComments() {
   loading.value = true
   commentError.value = false
   try {
-    const res = await $fetch<Post>(`/api/posts/${postId}/comments`)
+    const res = await $fetch<Post>(`/api/posts/${postId.value}/comments`)
     comments.value = res.comments || res || []
   } catch {
     commentError.value = true
@@ -341,7 +341,7 @@ async function submitComment() {
       }
     }
     if (mentions.length) body.mentions = mentions
-    await $fetch(`/api/posts/${postId}/comments`, {
+    await $fetch(`/api/posts/${postId.value}/comments`, {
       method: 'POST',
       headers: authHeaders(),
       body,
@@ -397,7 +397,7 @@ const { timeAgo } = useTimeAgo()
 const relatedPosts = ref<any[]>([])
 async function fetchRelated() {
   try {
-    const res = await $fetch<any>(`/api/posts/${postId}/related?limit=4`)
+    const res = await $fetch<any>(`/api/posts/${postId.value}/related?limit=4`)
     relatedPosts.value = res.posts || []
   } catch { /* non-critical */ }
 }
@@ -431,61 +431,68 @@ onUnmounted(() => {
   if (import.meta.client) window.removeEventListener('beforeunload', onBeforeUnload)
 })
 
+watch(postId, () => {
+  comments.value = []
+  relatedPosts.value = []
+  loading.value = true
+  editing.value = false
+  replyingTo.value = null
+  commentText.value = ''
+  bestAnswerId.value = null
+  fetchComments()
+  fetchRelated()
+})
+
 useHead({
-  link: [{ rel: 'canonical', href: canonicalUrl(`/bai-viet/${postId}`) }],
+  link: computed(() => [{ rel: 'canonical', href: canonicalUrl(`/bai-viet/${postId.value}`) }]),
   meta: [{ name: 'robots', content: 'noindex,follow' }],
 })
 
-if (post.value) {
-  const p = post.value
-  const postDesc = (p.content || '').substring(0, 160)
-  const postTitle = p.display_name || 'Bài viết'
-  useSeoMeta({
-    title: `${postTitle} — vinhlong360`,
-    description: postDesc,
-    ogTitle: `${postTitle} — vinhlong360`,
-    ogDescription: postDesc,
-    ogImage: p.images?.[0] || '/icons/icon-512.png',
-    // SEO-04: robots đã set ở useHead (vô-điều-kiện) → bỏ ở đây tránh thẻ trùng
-  })
+useSeoMeta({
+  title: () => `${post.value?.display_name || 'Bài viết'} — vinhlong360`,
+  description: () => (post.value?.content || '').substring(0, 160),
+  ogTitle: () => `${post.value?.display_name || 'Bài viết'} — vinhlong360`,
+  ogDescription: () => (post.value?.content || '').substring(0, 160),
+  ogImage: () => post.value?.images?.[0] || '/icons/icon-512.png',
+})
 
-  const articleLd: Record<string, any> = {
-    '@context': 'https://schema.org',
-    '@type': p.post_type === 'review' ? 'Review' : 'Article',
-    headline: postTitle,
-    description: postDesc,
-    url: `https://vinhlong360.vn/bai-viet/${postId}`,
-    datePublished: p.created_at,
-    dateModified: p.updated_at || p.created_at,
-    author: {
-      '@type': 'Person',
-      name: p.display_name || 'Người dùng',
-      ...(p.user_id ? { url: `https://vinhlong360.vn/nguoi-dung/${p.user_id}` } : {}),
-    },
-    publisher: { '@type': 'Organization', name: 'vinhlong360', url: 'https://vinhlong360.vn' },
-  }
-  if (p.images?.length) articleLd.image = p.images
-  if (p.post_type === 'review' && p.rating) {
-    articleLd.reviewRating = { '@type': 'Rating', ratingValue: p.rating, bestRating: 5 }
-  }
-
-  const breadcrumb = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-      { '@type': 'ListItem', position: 2, name: 'Cộng đồng', item: 'https://vinhlong360.vn/cong-dong' },
-      { '@type': 'ListItem', position: 3, name: postTitle },
-    ],
-  }
-
-  useHead({
-    script: [
+useHead({
+  script: computed(() => {
+    if (!post.value) return []
+    const p = post.value
+    const postTitle = p.display_name || 'Bài viết'
+    const postDesc = (p.content || '').substring(0, 160)
+    const articleLd: Record<string, any> = {
+      '@context': 'https://schema.org',
+      '@type': p.post_type === 'review' ? 'Review' : 'Article',
+      headline: postTitle, description: postDesc,
+      url: `https://vinhlong360.vn/bai-viet/${postId.value}`,
+      datePublished: p.created_at,
+      dateModified: p.updated_at || p.created_at,
+      author: {
+        '@type': 'Person', name: p.display_name || 'Người dùng',
+        ...(p.user_id ? { url: `https://vinhlong360.vn/nguoi-dung/${p.user_id}` } : {}),
+      },
+      publisher: { '@type': 'Organization', name: 'vinhlong360', url: 'https://vinhlong360.vn' },
+    }
+    if (p.images?.length) articleLd.image = p.images
+    if (p.post_type === 'review' && p.rating) {
+      articleLd.reviewRating = { '@type': 'Rating', ratingValue: p.rating, bestRating: 5 }
+    }
+    const breadcrumb = {
+      '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
+        { '@type': 'ListItem', position: 2, name: 'Cộng đồng', item: 'https://vinhlong360.vn/cong-dong' },
+        { '@type': 'ListItem', position: 3, name: postTitle },
+      ],
+    }
+    return [
       { type: 'application/ld+json', innerHTML: JSON.stringify(articleLd) },
       { type: 'application/ld+json', innerHTML: JSON.stringify(breadcrumb) },
-    ],
-  })
-}
+    ]
+  }),
+})
 </script>
 
 <style scoped>

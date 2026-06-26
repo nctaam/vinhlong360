@@ -311,17 +311,24 @@ function onLbKey(e: KeyboardEvent) {
   if (e.key === 'ArrowLeft') lbPrev()
   else if (e.key === 'ArrowRight') lbNext()
 }
-onMounted(() => window.addEventListener('keydown', onLbKey))
+watch(lbOpen, (v) => {
+  if (v) window.addEventListener('keydown', onLbKey)
+  else window.removeEventListener('keydown', onLbKey)
+})
+
+if (import.meta.client) {
+  const onClick = (e: Event) => { showMenu.value = false; repostMenu.value = false }
+  watch(() => showMenu.value || repostMenu.value, (open) => {
+    if (open) document.addEventListener('click', onClick, true)
+    else document.removeEventListener('click', onClick, true)
+  })
+  onUnmounted(() => document.removeEventListener('click', onClick, true))
+}
+
 onUnmounted(() => {
   window.removeEventListener('keydown', onLbKey)
   if (likePopTimer) clearTimeout(likePopTimer)
 })
-
-if (import.meta.client) {
-  const onClick = (e: Event) => { if (showMenu.value) showMenu.value = false; if (repostMenu.value) repostMenu.value = false }
-  onMounted(() => document.addEventListener('click', onClick, true))
-  onUnmounted(() => document.removeEventListener('click', onClick, true))
-}
 
 const { timeAgo } = useTimeAgo()
 </script>

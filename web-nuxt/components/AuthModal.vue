@@ -60,7 +60,7 @@
             {{ sending ? 'Đang đăng nhập…' : 'Đăng nhập' }}
           </button>
           <button type="button" class="otp-resend" @click="forgotPassword">Quên mật khẩu?</button>
-          <button type="button" class="otp-resend" @click="step = 'phone'">Đổi số điện thoại</button>
+          <button type="button" class="otp-resend" @click="error = ''; step = 'phone'">Đổi số điện thoại</button>
         </div>
 
         <!-- Step: OTP input -->
@@ -196,10 +196,12 @@ onUnmounted(() => {
 })
 
 async function handlePhone() {
-  if (!phone.value || phone.value.length < 9) {
-    error.value = 'Vui lòng nhập số điện thoại hợp lệ'
+  const normalized = phone.value.replace(/\D/g, '')
+  if (!normalized || normalized.length < 9 || normalized.length > 11 || !/^0\d{8,10}$/.test(normalized)) {
+    error.value = 'Vui lòng nhập số điện thoại hợp lệ (VD: 0901234567)'
     return
   }
+  phone.value = normalized
   sending.value = true
   error.value = ''
   try {
@@ -266,6 +268,7 @@ async function verifyCode() {
   const code = otpDigits.value.join('')
   if (code.length !== 6) {
     error.value = 'Vui lòng nhập đủ 6 chữ số'
+    verifyLock = false
     return
   }
   sending.value = true
@@ -313,6 +316,7 @@ async function handleSetPassword() {
 }
 
 function onOtpInput(idx: number) {
+  otpDigits.value[idx] = otpDigits.value[idx].replace(/\D/g, '')
   const val = otpDigits.value[idx]
   if (val && idx < 5) {
     otpRefs.value[idx + 1]?.focus()
