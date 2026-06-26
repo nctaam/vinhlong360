@@ -1,5 +1,5 @@
 <template>
-  <div v-if="entity">
+  <main v-if="entity" class="entity-detail-page">
     <!-- Breadcrumb -->
     <nav class="breadcrumb" aria-label="Breadcrumb">
       <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
@@ -81,7 +81,7 @@
 
     <!-- Body -->
     <div class="detail-body">
-      <div class="detail-main">
+      <article class="detail-main" aria-label="Thông tin chi tiết">
         <!-- Highlights quét nhanh (Baymard: 78% site thiếu; chống info bị chôn dưới fold) -->
         <div v-if="hasHighlights" class="highlights">
           <a v-if="entity.attributes?.phone" class="hl hl-action" :href="telHref(entity.attributes.phone)" :aria-label="`Gọi ${entity.name}`">📞 Gọi</a>
@@ -229,10 +229,10 @@
             <template #fallback><div class="detail-skeleton"><div class="sk-grid"><div class="sk-card"></div><div class="sk-card"></div><div class="sk-card"></div><div class="sk-card"></div></div></div></template>
           </ClientOnly>
         </NuxtErrorBoundary>
-      </div>
+      </article>
 
       <!-- Sidebar -->
-      <aside class="detail-aside">
+      <aside class="detail-aside" aria-label="Thông tin bổ sung">
         <!-- OCOP highlight -->
         <div v-if="entity.attributes?.ocop" class="ocop-highlight">
           <div class="ocop-stars">
@@ -390,15 +390,31 @@
       <NuxtLink v-if="hasCoords" class="scta-map" :to="mapUrl" aria-label="Xem trên bản đồ">🗺️ Bản đồ</NuxtLink>
       <NuxtLink v-if="!hasStickyContact" to="/tao-lich-trinh" no-prefetch class="scta-plan" aria-label="Thêm vào lịch trình">📋 {{ ss('labels.detail.next_add_itinerary', 'Thêm vào lịch trình') }}</NuxtLink>
     </div>
-  </div>
-  <div v-else class="page">
+  </main>
+  <main v-else-if="fetchError" class="page">
+    <EmptyState
+      :icon="fetchError.statusCode === 404 ? '🔍' : '⚠️'"
+      :title="fetchError.statusCode === 404 ? 'Không tìm thấy địa điểm này' : 'Không thể tải dữ liệu'"
+      :message="fetchError.statusCode === 404
+        ? 'Có thể nội dung đã được di chuyển hoặc đường dẫn chưa đúng. Bạn thử khám phá các điểm đến khác nhé.'
+        : 'Đã có lỗi khi tải dữ liệu. Vui lòng thử lại sau.'"
+      :tone="fetchError.statusCode === 404 ? undefined : 'error'"
+    >
+      <template #actions>
+        <button v-if="fetchError.statusCode !== 404" type="button" class="btn btn-primary" @click="refreshEntity">Thử lại</button>
+        <NuxtLink to="/du-lich" class="btn btn-primary">Khám phá điểm đến</NuxtLink>
+        <NuxtLink to="/" class="btn btn-ghost">Về trang chủ</NuxtLink>
+      </template>
+    </EmptyState>
+  </main>
+  <main v-else class="page">
     <EmptyState icon="🔍" title="Không tìm thấy địa điểm này" message="Có thể nội dung đã được di chuyển hoặc đường dẫn chưa đúng. Bạn thử khám phá các điểm đến khác nhé.">
       <template #actions>
         <NuxtLink to="/du-lich" class="btn btn-primary">Khám phá điểm đến</NuxtLink>
         <NuxtLink to="/" class="btn btn-ghost">Về trang chủ</NuxtLink>
       </template>
     </EmptyState>
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">
@@ -497,13 +513,15 @@ function goBack() {
   }
 }
 
-const { data: entity, error: fetchError } = await useAsyncData(
+const { data: entity, error: fetchError, refresh: refreshEntity } = await useAsyncData(
   computed(() => `entity-${id.value}`),
   () => apiFetch<Entity>(`/api/entities/${id.value}`),
   { watch: [id] }
 )
 
-if (fetchError.value) {
+// SSR: throw 404 so the server responds with proper status code.
+// Client-side: show error state in-page (fetchError ref drives the template).
+if (import.meta.server && fetchError.value) {
   throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy nội dung' })
 }
 
@@ -796,36 +814,48 @@ async function loadMoreRelationships() {
   }
 }
 
-if (entity.value && !entity.value.error) {
+// ── Reactive SEO meta: updates when entity changes (client-side navigation) ──
+const SITE = 'https://vinhlong360.vn'
+const absUrl = (u: string) => (u.startsWith('http') ? u : `${SITE}${u}`)
+
+const TYPE_TO_SCHEMA: Record<string, string> = {
+  product: 'Product',
+  accommodation: 'LodgingBusiness',
+  dish: 'FoodEstablishment',
+  craft_village: 'LocalBusiness',
+  organization: 'LocalBusiness',
+  attraction: 'TouristAttraction',
+  experience: 'TouristAttraction',
+  event: 'Event',
+  place: 'Place',
+}
+
+const seoDesc = computed(() => {
   const e = entity.value
-  const SITE = 'https://vinhlong360.vn'
-  const hasRealPhoto = Array.isArray(e.images) && e.images.length > 0
-  const absUrl = (u: string) => (u.startsWith('http') ? u : `${SITE}${u}`)
-  // og:image must be ABSOLUTE; with no real photo use the site default — NOT the
-  // shared category tile (which would falsely assert a stock image as this entity's).
-  const ogImg = hasRealPhoto ? absUrl(e.images[0]) : `${SITE}/img/og-default.jpg`
+  if (!e) return ''
+  return e.description ? e.description.split(/\n\s*\n/)[0]?.trim() || e.summary || '' : e.summary || ''
+})
 
-  const seoDesc = e.description ? e.description.split(/\n\s*\n/)[0]?.trim() || e.summary : e.summary || ''
-  useSeoMeta({
-    title: `${e.name} — ${typeMeta.value.label} — vinhlong360`,
-    description: seoDesc,
-    ogTitle: `${e.name} — vinhlong360`,
-    ogDescription: seoDesc,
-    ogImage: ogImg,
-  })
+useSeoMeta({
+  title: () => entity.value ? `${entity.value.name} — ${typeMeta.value.label} — vinhlong360` : 'Địa điểm — vinhlong360',
+  description: () => seoDesc.value,
+  ogTitle: () => entity.value ? `${entity.value.name} — vinhlong360` : 'Địa điểm — vinhlong360',
+  ogDescription: () => seoDesc.value,
+  ogImage: () => {
+    const e = entity.value
+    if (!e) return `${SITE}/img/og-default.jpg`
+    const hasRealPhoto = Array.isArray(e.images) && e.images.length > 0
+    return hasRealPhoto ? absUrl(e.images[0]) : `${SITE}/img/og-default.jpg`
+  },
+})
 
-  const TYPE_TO_SCHEMA: Record<string, string> = {
-    product: 'Product',
-    accommodation: 'LodgingBusiness',
-    dish: 'FoodEstablishment',
-    craft_village: 'LocalBusiness',
-    organization: 'LocalBusiness',
-    attraction: 'TouristAttraction',
-    experience: 'TouristAttraction',
-    event: 'Event',
-    place: 'Place',
-  }
+// JSON-LD + canonical: rebuilt reactively via computed
+const jsonLdScripts = computed(() => {
+  const e = entity.value
+  if (!e) return []
+
   const ldType = TYPE_TO_SCHEMA[e.type] || 'TouristAttraction'
+  const hasRealPhoto = Array.isArray(e.images) && e.images.length > 0
 
   const ld: Record<string, any> = {
     '@context': 'https://schema.org',
@@ -833,7 +863,7 @@ if (entity.value && !entity.value.error) {
     name: e.name,
     description: e.description || e.summary,
     inLanguage: 'vi-VN',
-    url: `https://vinhlong360.vn/dia-diem/${e.id}`,
+    url: `${SITE}/dia-diem/${e.id}`,
     address: {
       '@type': 'PostalAddress',
       addressLocality: e.place_name || '',
@@ -841,8 +871,7 @@ if (entity.value && !entity.value.error) {
       addressCountry: 'VN',
     },
   }
-  // Only assert a per-entity image in JSON-LD when a real photo exists.
-  if (hasRealPhoto) ld.image = e.images.map(absUrl)
+  if (hasRealPhoto) ld.image = e.images!.map(absUrl)
   if (e.attributes?.phone) ld.telephone = e.attributes.phone
   const sameAs = [e.attributes?.website, e.quality?.source_url].filter(Boolean)
   if (sameAs.length) ld.sameAs = sameAs.length === 1 ? sameAs[0] : sameAs
@@ -856,12 +885,20 @@ if (entity.value && !entity.value.error) {
   if (e.attributes?.address) ld.address.streetAddress = e.attributes.address
   const geoCoords = normalizeCoords(e.coordinates)
   if (geoCoords) {
-    const [lat, lng] = geoCoords
-    ld.geo = { '@type': 'GeoCoordinates', latitude: lat, longitude: lng }
+    ld.geo = { '@type': 'GeoCoordinates', latitude: geoCoords[0], longitude: geoCoords[1] }
   }
-  if (e.attributes?.hours) {
-    ld.openingHours = e.attributes.hours
+  if (e.attributes?.hours) ld.openingHours = e.attributes.hours
+
+  // LocalBusiness/LodgingBusiness/FoodEstablishment enrichment
+  if (['LocalBusiness', 'LodgingBusiness', 'FoodEstablishment'].includes(ldType)) {
+    if (e.attributes?.price_range) ld.priceRange = e.attributes.price_range
   }
+
+  // TouristAttraction enrichment
+  if (ldType === 'TouristAttraction' && e.attributes?.suggested_duration) {
+    ld.tourBookingPage = `${SITE}/dia-diem/${e.id}`
+  }
+
   if (ldType === 'Event') {
     if (e.attributes?.date_start) ld.startDate = e.attributes.date_start
     if (e.attributes?.date_end) ld.endDate = e.attributes.date_end
@@ -900,24 +937,35 @@ if (entity.value && !entity.value.error) {
     }
   }
 
+  // Geographic containment (all entity types)
+  if (e.place_name) {
+    ld.containedInPlace = {
+      '@type': 'AdministrativeArea',
+      name: e.place_name,
+      ...(areaName.value ? { containedInPlace: { '@type': 'AdministrativeArea', name: areaName.value } } : {}),
+    }
+  }
+
   const breadcrumb = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-      { '@type': 'ListItem', position: 2, name: typeMeta.value.label, item: `https://vinhlong360.vn${typeBreadcrumbUrl.value}` },
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE}/` },
+      { '@type': 'ListItem', position: 2, name: typeMeta.value.label, item: `${SITE}${typeBreadcrumbUrl.value}` },
       { '@type': 'ListItem', position: 3, name: e.name },
     ],
   }
 
-  useHead({
-    link: [{ rel: 'canonical', href: entityDetailUrl(e.id) }],
-    script: [
-      { type: 'application/ld+json', innerHTML: JSON.stringify(ld) },
-      { type: 'application/ld+json', innerHTML: JSON.stringify(breadcrumb) },
-    ],
-  })
-}
+  return [
+    { type: 'application/ld+json', innerHTML: JSON.stringify(ld) },
+    { type: 'application/ld+json', innerHTML: JSON.stringify(breadcrumb) },
+  ]
+})
+
+useHead({
+  link: [{ rel: 'canonical', href: () => entity.value ? entityDetailUrl(entity.value.id) : canonicalUrl('/dia-diem') }],
+  script: jsonLdScripts,
+})
 </script>
 
 <!-- detail.css nạp theo route (bỏ khỏi global entry.css; phần dùng-chung ở detail-shared.css) -->
