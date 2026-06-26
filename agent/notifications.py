@@ -109,6 +109,54 @@ async def mark_notification_read(notif_id: str, user=Depends(require_user)):
     return {"success": True}
 
 
+# ── Notification Preferences ──
+
+class NotifPrefsUpdate(BaseModel):
+    pref_like: Optional[bool] = None
+    pref_comment: Optional[bool] = None
+    pref_mention: Optional[bool] = None
+    pref_follow: Optional[bool] = None
+    pref_system: Optional[bool] = None
+
+
+@router.get("/notification-preferences")
+async def get_notification_preferences(user=Depends(require_user)):
+    ph = db._ph
+    uid = str(user["id"])
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"""
+            SELECT pref_like, pref_comment, pref_mention, pref_follow, pref_system
+            FROM notification_preferences WHERE user_id = {ph}::uuid
+        """, (uid,))
+    if row:
+        d = db._row_to_dict(row)
+        return {k: bool(d[k]) for k in ("pref_like", "pref_comment", "pref_mention", "pref_follow", "pref_system")}
+    return {"pref_like": True, "pref_comment": True, "pref_mention": True, "pref_follow": True, "pref_system": True}
+
+
+@router.put("/notification-preferences")
+async def update_notification_preferences(body: NotifPrefsUpdate, user=Depends(require_user)):
+    ph = db._ph
+    uid = str(user["id"])
+    updates = {k: v for k, v in body.model_dump().items() if v is not None}
+    if not updates:
+        raise HTTPException(400, "Không có gì để cập nhật")
+    set_parts = [f"{k} = {ph}" for k in updates]
+    set_parts.append(f"updated_at = NOW()")
+    vals = list(updates.values())
+    vals.append(uid)
+    with db._conn() as conn:
+        db._execute(conn, f"""
+            INSERT INTO notification_preferences (user_id) VALUES ({ph}::uuid)
+            ON CONFLICT (user_id) DO NOTHING
+        """, (uid,))
+        db._execute(conn, f"""
+            UPDATE notification_preferences SET {', '.join(set_parts)}
+            WHERE user_id = {ph}::uuid
+        """, vals)
+    return {"success": True}
+
+
 _sse_subscribers: dict[str, list[asyncio.Queue]] = {}
 _SSE_MAX_PER_USER = 5
 
@@ -166,6 +214,27 @@ async def notification_stream(request: Request, token: str = Query(None)):
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
+_NOTIF_TYPE_TO_PREF = {
+    "like": "pref_like",
+    "comment": "pref_comment",
+    "mention": "pref_mention",
+    "follow": "pref_follow",
+}
+
+
+def _user_wants_notif(conn, user_id: str, notif_type: str) -> bool:
+    pref_col = _NOTIF_TYPE_TO_PREF.get(notif_type)
+    if not pref_col:
+        return True
+    ph = db._ph
+    row = db._fetchone(conn, f"""
+        SELECT {pref_col} FROM notification_preferences WHERE user_id = {ph}::uuid
+    """, (user_id,))
+    if not row:
+        return True
+    return bool(db._row_to_dict(row)[pref_col])
+
+
 def create_notification(user_id: str, notif_type: str, title: str,
                         body: str = None, ref_type: str = None, ref_id: str = None,
                         actor_id: str = None):
@@ -178,6 +247,8 @@ def create_notification(user_id: str, notif_type: str, title: str,
             """, (user_id, actor_id))
             if blocked:
                 return
+        if not _user_wants_notif(conn, user_id, notif_type):
+            return
         db._execute(conn, f"""
             INSERT INTO notifications (user_id, type, title, body, ref_type, ref_id)
             VALUES ({ph}::uuid, {ph}, {ph}, {ph}, {ph}, {ph})
