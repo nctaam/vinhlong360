@@ -92,7 +92,7 @@ tokens_used = {"input": 0, "output": 0, "calls": 0}
 
 
 def _client():
-    return OpenAI(api_key=API_KEY, base_url=BASE_URL)
+    return OpenAI(api_key=API_KEY, base_url=BASE_URL, timeout=60)
 
 
 def _llm(prompt, model=None, temperature=0.7, max_tokens=1500):

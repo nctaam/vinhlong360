@@ -46,6 +46,7 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 client = OpenAI(
     api_key=os.environ["LLM_API_KEY"],
     base_url=os.environ["LLM_BASE_URL"],
+    timeout=30,
 )
 MODEL = os.environ.get("LLM_MODEL", "cx/gpt-5.4")
 MODEL_MINI = os.environ.get("LLM_MODEL_MINI", "cx/gpt-5.4-mini")

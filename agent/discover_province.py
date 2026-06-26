@@ -114,7 +114,7 @@ def _slug(name):
 
 
 def _client():
-    return OpenAI(api_key=LLM_KEY, base_url=LLM_URL)
+    return OpenAI(api_key=LLM_KEY, base_url=LLM_URL, timeout=30)
 
 
 def _district_regions():

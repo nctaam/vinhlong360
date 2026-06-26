@@ -387,6 +387,18 @@ class TestTimeoutEnforcement:
         source = inspect.getsource(LLMJudge._get_client)
         assert "timeout" in source
 
+    @pytest.mark.parametrize("module_file,func_or_pattern", [
+        ("auto_learn.py", r"OpenAI\([^)]*timeout"),
+        ("crawler.py", r"OpenAI\([^)]*timeout"),
+        ("burn_gpt55.py", r"OpenAI\([^)]*timeout"),
+        ("discover_province.py", r"OpenAI\([^)]*timeout"),
+    ])
+    def test_openai_clients_have_timeout(self, module_file, func_or_pattern):
+        import re as _re
+        source = (AGENT_DIR / module_file).read_text(encoding="utf-8")
+        assert _re.search(func_or_pattern, source, _re.DOTALL), \
+            f"{module_file} OpenAI() client missing timeout="
+
 
 # ═══════════════════════════════════════════════════════
 # Error swallowing: no bare except/pass in owned files
