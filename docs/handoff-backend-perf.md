@@ -1,5 +1,5 @@
 # Session 7: Chịu lỗi pipeline AI
-<!-- Phạm vi: Pipeline LLM — orchestrator, knowledge search, contextual retrieval, guardrails, circuit breaker, LLM judge, image recognition + test resilience -->
+<!-- Phạm vi: Toàn bộ pipeline chat AI — orchestrator, knowledge, guardrails, memory, proactive, recommender, prompt cache/compiler, semantic cache, reflexion, agentic RAG, dynamic agents, smart rank, autocorrect + test resilience -->
 
 > Paste toàn bộ nội dung này làm message đầu tiên.
 
@@ -9,7 +9,8 @@ Worktree `C:/Code/vinhlong360/vl360-backend-res`, nhánh `dev/backend-resilience
 
 ## Phạm vi file SỞ HỮU
 
-- `agent/orchestrator.py` — Chat orchestration
+**Chat orchestration (core):**
+- `agent/orchestrator.py` — Chat orchestration chính
 - `agent/knowledge.py` — Knowledge search
 - `agent/contextual_retrieval.py` — BM25/rerank
 - `agent/tools.py` — Chat tools
@@ -17,6 +18,25 @@ Worktree `C:/Code/vinhlong360/vl360-backend-res`, nhánh `dev/backend-resilience
 - `agent/llm_judge.py` — LLM judge
 - `agent/image_recognition.py` — Vision
 - `agent/circuit_breaker.py` — Circuit breaker
+
+**Chat pipeline mở rộng (AI modules):**
+- `agent/memory.py` — Conversation memory
+- `agent/memory_graph.py` — Memory graph
+- `agent/experience_memory.py` — Experience memory
+- `agent/proactive.py` — Proactive suggestions
+- `agent/realtime.py` — Realtime features
+- `agent/parallel_tools.py` — Parallel tool execution
+- `agent/reflexion.py` — Reflexion loop
+- `agent/dynamic_agents.py` — Dynamic agents
+- `agent/agentic_rag.py` — Agentic RAG pipeline
+- `agent/recommender.py` — Recommendation engine
+- `agent/smart_rank.py` — Smart ranking
+- `agent/autocorrect.py` — Autocorrect
+- `agent/prompt_cache.py` — Prompt caching
+- `agent/prompt_compiler.py` — Prompt compilation
+- `agent/semantic_cache.py` — Semantic caching
+
+**Tests:**
 - `agent/tests/test_resilience.py` — Resilience tests (đã có)
 
 **KHÔNG SỬA:** `server.py`, `database.py`, `admin.py`, `social.py`, `auth.py`, FE files.
