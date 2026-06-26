@@ -15,10 +15,13 @@ Backend: Redis (if REDIS_URL is set and redis is installed) or in-memory Ordered
 
 import hashlib
 import json
+import logging
 import os
 import time
 from collections import OrderedDict
 from threading import Lock
+
+logger = logging.getLogger(__name__)
 
 try:
     import redis as _redis_lib
@@ -43,7 +46,7 @@ def _init_redis():
             _redis_client.ping()
             _use_redis = True
         except Exception as e:
-            print(f"  [cache] Redis unavailable ({e}), falling back to in-memory")
+            logger.warning("Redis unavailable (%s), falling back to in-memory", e)
             _redis_client = None
             _use_redis = False
 
@@ -156,7 +159,8 @@ def _redis_get(key: str) -> dict | None:
             return entry["response"]
         _stats["misses"] += 1
         return None
-    except Exception:
+    except Exception as exc:
+        logger.warning("Redis GET failed: %s", exc)
         _stats["misses"] += 1
         return None
 
@@ -170,8 +174,8 @@ def _redis_put(key: str, response: dict, message: str, ttl: int):
             "query": message[:200],
         }
         _redis_client.set(_redis_key(key), json.dumps(entry, ensure_ascii=False), ex=ttl)
-    except Exception as e:
-        print(f"  [cache] Redis SET failed: {e}")
+    except Exception as exc:
+        logger.warning("Redis SET failed: %s", exc)
 
 
 def _redis_invalidate_all():
@@ -184,8 +188,8 @@ def _redis_invalidate_all():
                 _redis_client.delete(*keys)
             if cursor == 0:
                 break
-    except Exception as e:
-        print(f"  [cache] Redis invalidate failed: {e}")
+    except Exception as exc:
+        logger.warning("Redis invalidate failed: %s", exc)
 
 
 def _redis_stats_summary() -> dict:
@@ -201,8 +205,8 @@ def _redis_stats_summary() -> dict:
             if cursor == 0:
                 break
         key_count = len(keys)
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("Redis stats scan failed: %s", exc)
     return {
         "size": key_count,
         "max_size": "unlimited (Redis)",
@@ -235,3 +239,18 @@ def redis_stats() -> dict:
         }
     except Exception as e:
         return {"connected": False, "error": str(e)}
+
+
+def cache_health_check() -> dict:
+    """Quick readiness probe for the cache subsystem."""
+    with _lock:
+        size = len(_cache)
+    return {
+        "status": "ok",
+        "backend": "redis" if _use_redis else "memory",
+        "redis_connected": _use_redis,
+        "memory_cache_size": size,
+        "memory_cache_max": MAX_SIZE,
+        "hits": _stats["hits"],
+        "misses": _stats["misses"],
+    }

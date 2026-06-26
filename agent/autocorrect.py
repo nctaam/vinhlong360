@@ -12,9 +12,12 @@ Tính năng:
   - Hỗ trợ input có dấu lẫn không dấu
 """
 
+import logging
 import re
 import unicodedata
 from threading import Lock
+
+logger = logging.getLogger(__name__)
 
 # ══════════════════════════════════════════════════
 #  VIETNAMESE NORMALIZATION

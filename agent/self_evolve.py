@@ -45,8 +45,8 @@ def _audit(record: dict):
     try:
         with open(AUDIT_LOG, "a", encoding="utf-8") as f:
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
-    except Exception:
-        pass
+    except Exception as exc:
+        _logger.debug("Failed to write audit log: %s", exc)
 
 
 def guarded_evolve(name: str, apply_fn, snapshot_id: str | None = None,
@@ -85,8 +85,8 @@ def guarded_evolve(name: str, apply_fn, snapshot_id: str | None = None,
     # Ensure live KB reflects any file changes
     try:
         knowledge.reload()
-    except Exception:
-        pass
+    except Exception as exc:
+        _logger.warning("knowledge.reload after apply failed: %s", exc)
 
     # 4. Fitness after
     try:
@@ -113,8 +113,8 @@ def guarded_evolve(name: str, apply_fn, snapshot_id: str | None = None,
         rollback_result = kb_versioning.rollback(snap["id"])
         try:
             knowledge.reload()
-        except Exception:
-            pass
+        except Exception as exc:
+            _logger.warning("knowledge.reload after rollback failed: %s", exc)
 
     summary = {
         "name": name,
@@ -142,10 +142,11 @@ def recent_decisions(limit: int = 20) -> list:
         for line in lines[-limit:]:
             try:
                 out.append(json.loads(line))
-            except Exception:
+            except (json.JSONDecodeError, ValueError):
                 pass
         return out
-    except Exception:
+    except Exception as exc:
+        _logger.warning("Failed to read audit log: %s", exc)
         return []
 
 

@@ -20,6 +20,7 @@ Mỗi user có 1 profile persistent qua sessions.
 import base64
 import json
 import hashlib
+import logging
 import os
 import re
 import time
@@ -27,6 +28,8 @@ from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 from threading import Lock, RLock
+
+logger = logging.getLogger(__name__)
 
 try:
     from cryptography.fernet import Fernet as _Fernet
@@ -321,7 +324,7 @@ class ColdMemory:
                 for uid, pdata in data.items():
                     self._profiles[uid] = UserProfile.from_dict(pdata)
         except Exception as e:
-            print(f"  [memory] Failed to load profiles: {e}")
+            logger.warning("Failed to load profiles: %s", e)
 
     def _save_all(self):
         """Save all profiles to disk (encrypted)."""
@@ -331,7 +334,7 @@ class ColdMemory:
             encrypted = _encrypt(plaintext)
             self._profiles_file.write_text(encrypted, encoding="utf-8")
         except Exception as e:
-            print(f"  [memory] Failed to save profiles: {e}")
+            logger.warning("Failed to save profiles: %s", e)
 
     def get_profile(self, user_id: str) -> UserProfile:
         with self._lock:
@@ -439,7 +442,8 @@ class SkillDocumentStore:
         try:
             if self._skills_file.exists():
                 self._skills = json.loads(self._skills_file.read_text(encoding="utf-8"))
-        except Exception:
+        except Exception as exc:
+            logger.warning("Failed to load skill documents: %s", exc)
             self._skills = []
 
     def _save(self):
@@ -448,8 +452,8 @@ class SkillDocumentStore:
                 json.dumps(self._skills, ensure_ascii=False, indent=2),
                 encoding="utf-8"
             )
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("Failed to save skill documents: %s", exc)
 
     def add_skill(self, query_pattern: str, tool_sequence: list[str],
                   success_strategy: str, category: str = "general"):
@@ -531,6 +535,20 @@ class SkillDocumentStore:
 
 
 # ══════════════════════════════════════════════════
+# ══════════════════════════════════════════════════
+#  HEALTH CHECK
+# ══════════════════════════════════════════════════
+
+def memory_health_check() -> dict:
+    """Quick readiness probe for the memory subsystem."""
+    dir_writable = os.access(str(MEMORY_DIR), os.W_OK) if MEMORY_DIR.exists() else False
+    return {
+        "status": "ok" if dir_writable else "degraded",
+        "dir_writable": dir_writable,
+        "encryption_available": _HAS_FERNET,
+    }
+
+
 #  MEMORY EXTRACTOR — Automatic fact extraction
 # ══════════════════════════════════════════════════
 

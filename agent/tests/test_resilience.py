@@ -1522,3 +1522,203 @@ class TestEnhancedHybridSearchMetadata:
         from contextual_retrieval import enhanced_hybrid_search
         results = enhanced_hybrid_search("xyz", [], {}, [])
         assert results == []
+
+
+# ═══════════════════════════════════════════════════════
+# Deep pipeline: logger presence across all modules
+# ═══════════════════════════════════════════════════════
+
+class TestModuleLoggers:
+    """All AI pipeline modules must have a module-level logger."""
+
+    @pytest.mark.parametrize("module_name", [
+        "memory", "cache", "memory_graph", "smart_rank", "proactive",
+        "recommender", "autocorrect", "parallel_tools", "experience_memory",
+        "prompt_cache", "reflexion", "agentic_rag",
+    ])
+    def test_module_has_logger(self, module_name):
+        mod = __import__(module_name)
+        assert hasattr(mod, "logger"), f"{module_name} must have a module-level logger"
+
+    @pytest.mark.parametrize("module_file", [
+        "memory.py", "cache.py", "memory_graph.py",
+    ])
+    def test_no_print_in_production_code(self, module_file):
+        """Core pipeline modules must not use print() in production paths."""
+        import re as _re
+        source = (AGENT_DIR / module_file).read_text(encoding="utf-8")
+        main_idx = source.find('if __name__')
+        if main_idx > 0:
+            source = source[:main_idx]
+        matches = _re.findall(r"^\s+print\s*\(", source, _re.MULTILINE)
+        assert not matches, (
+            f"{module_file} has {len(matches)} print() calls — must use logger"
+        )
+
+
+# ═══════════════════════════════════════════════════════
+# Deep pipeline: health checks
+# ═══════════════════════════════════════════════════════
+
+class TestMemoryHealthCheck:
+    """memory.memory_health_check() reports subsystem readiness."""
+
+    def test_returns_expected_keys(self):
+        from memory import memory_health_check
+        result = memory_health_check()
+        assert "status" in result
+        assert "dir_writable" in result
+        assert "encryption_available" in result
+
+
+class TestCacheHealthCheck:
+    """cache.cache_health_check() reports cache readiness."""
+
+    def test_returns_expected_keys(self):
+        from cache import cache_health_check
+        result = cache_health_check()
+        assert "backend" in result
+        assert "memory_cache_size" in result
+        assert "memory_cache_max" in result
+        assert result["memory_cache_max"] == 500
+
+    def test_in_memory_backend_by_default(self):
+        from cache import cache_health_check
+        result = cache_health_check()
+        assert result["backend"] == "memory"
+
+
+class TestMemoryGraphHealthCheck:
+    """MemoryGraph.health_check() reports graph readiness."""
+
+    def test_empty_graph(self):
+        from memory_graph import MemoryGraph
+        import tempfile
+        with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
+            f.write(b"{}")
+            tmp_path = f.name
+        try:
+            mg = MemoryGraph(graph_path=tmp_path)
+            result = mg.health_check()
+            assert result["status"] == "empty"
+            assert result["node_count"] == 0
+            assert result["edge_count"] == 0
+        finally:
+            Path(tmp_path).unlink(missing_ok=True)
+
+    def test_populated_graph(self):
+        from memory_graph import MemoryGraph
+        import tempfile
+        with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
+            f.write(b"{}")
+            tmp_path = f.name
+        try:
+            mg = MemoryGraph(graph_path=tmp_path)
+            mg.add_node("n1", "entity", {"name": "Test"})
+            result = mg.health_check()
+            assert result["status"] == "ok"
+            assert result["node_count"] == 1
+        finally:
+            Path(tmp_path).unlink(missing_ok=True)
+
+
+# ═══════════════════════════════════════════════════════
+# Deep pipeline: edge timestamp cap
+# ═══════════════════════════════════════════════════════
+
+class TestMemoryGraphTimestampCap:
+    """MemoryEdge.timestamps must be bounded."""
+
+    def test_timestamps_capped_after_reinforce(self):
+        from memory_graph import MemoryEdge
+        edge = MemoryEdge(source="a", target="b", relation="test")
+        for _ in range(200):
+            edge.reinforce()
+        assert len(edge.timestamps) <= edge._MAX_TIMESTAMPS
+
+
+# ═══════════════════════════════════════════════════════
+# Deep pipeline: silent exception logging
+# ═══════════════════════════════════════════════════════
+
+class TestSmartRankLogging:
+    """smart_rank must log errors instead of swallowing."""
+
+    def test_corrupt_analytics_logs_warning(self):
+        from smart_rank import _load_popularity, ANALYTICS_FILE
+        original = None
+        if ANALYTICS_FILE.exists():
+            original = ANALYTICS_FILE.read_text(encoding="utf-8")
+        try:
+            ANALYTICS_FILE.parent.mkdir(parents=True, exist_ok=True)
+            ANALYTICS_FILE.write_text("{{{CORRUPT", encoding="utf-8")
+            with patch("smart_rank.logger") as mock_logger:
+                _load_popularity()
+                assert mock_logger.warning.called
+        finally:
+            if original is not None:
+                ANALYTICS_FILE.write_text(original, encoding="utf-8")
+            elif ANALYTICS_FILE.exists():
+                ANALYTICS_FILE.unlink()
+
+
+class TestExperienceMemoryLogging:
+    """experience_memory must log load errors."""
+
+    def test_corrupt_bank_logs_warning(self):
+        from experience_memory import _load, BANK_FILE
+        original = None
+        if BANK_FILE.exists():
+            original = BANK_FILE.read_text(encoding="utf-8")
+        try:
+            BANK_FILE.parent.mkdir(parents=True, exist_ok=True)
+            BANK_FILE.write_text("{{{CORRUPT", encoding="utf-8")
+            with patch("experience_memory.logger") as mock_logger:
+                result = _load()
+                assert result == []
+                assert mock_logger.warning.called
+        finally:
+            if original is not None:
+                BANK_FILE.write_text(original, encoding="utf-8")
+            elif BANK_FILE.exists():
+                BANK_FILE.unlink()
+
+
+class TestReflexionLogging:
+    """ReflexionEngine must log I/O errors."""
+
+    def test_has_module_logger(self):
+        import reflexion
+        assert hasattr(reflexion, "logger")
+
+    def test_quality_tracker_corrupt_file_logs(self):
+        from reflexion import QualityTracker
+        import tempfile
+        with tempfile.NamedTemporaryFile(suffix=".json", delete=False, mode="w") as f:
+            f.write("{{{CORRUPT")
+            tmp_path = f.name
+        try:
+            with patch("reflexion.logger") as mock_logger:
+                qt = QualityTracker(file_path=tmp_path)
+                assert qt._scores == []
+                assert mock_logger.warning.called
+        finally:
+            Path(tmp_path).unlink(missing_ok=True)
+
+
+class TestParallelToolsLogging:
+    """parallel_tools must log tool failures."""
+
+    def test_tool_failure_logged(self):
+        from parallel_tools import ParallelToolExecutor
+
+        def failing_tool(name, args):
+            raise RuntimeError("tool crashed")
+
+        executor = ParallelToolExecutor(failing_tool, max_workers=2)
+        with patch("parallel_tools.logger") as mock_logger:
+            results = executor.execute_parallel([
+                {"id": "t1", "name": "search", "args": {"q": "test"}},
+            ])
+            assert results[0]["error"] is not None
+            assert mock_logger.warning.called

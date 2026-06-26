@@ -16,12 +16,15 @@ Tham khảo: Reflexion đạt 91% pass@1 trên HumanEval (vs 80% GPT-4).
 """
 
 import json
+import logging
 import os
 import re
 import time
 from datetime import datetime
 from pathlib import Path
 from threading import Lock
+
+logger = logging.getLogger(__name__)
 
 from dotenv import load_dotenv
 
@@ -54,7 +57,8 @@ class ReflexionEngine:
                 self._reflections = json.loads(
                     self._reflections_file.read_text(encoding="utf-8")
                 )
-        except Exception:
+        except Exception as exc:
+            logger.warning("Failed to load reflections: %s", exc)
             self._reflections = []
 
     def _save(self):
@@ -63,8 +67,8 @@ class ReflexionEngine:
                 json.dumps(self._reflections[-500:], ensure_ascii=False, indent=2),
                 encoding="utf-8"
             )
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("Failed to save reflections: %s", exc)
 
     # ── Evaluation ──
 
@@ -316,7 +320,8 @@ class QualityTracker:
         try:
             if self._file.exists():
                 self._scores = json.loads(self._file.read_text(encoding="utf-8")) or []
-        except Exception:
+        except Exception as exc:
+            logger.warning("Failed to load quality scores: %s", exc)
             self._scores = []
 
     def _save(self):
@@ -325,8 +330,8 @@ class QualityTracker:
             tmp = self._file.with_suffix(".tmp")
             tmp.write_text(json.dumps(self._scores, ensure_ascii=False), encoding="utf-8")
             tmp.replace(self._file)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("Failed to save quality scores: %s", exc)
 
     def record(self, query: str, score: float, tools_used: list[str]):
         with self._lock:

@@ -17,10 +17,13 @@ Thread-safe, stdlib only.
 
 import hashlib
 import json
+import logging
 import re
 import time
 from threading import Lock
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 
 # ══════════════════════════════════════════════════
