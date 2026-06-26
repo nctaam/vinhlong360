@@ -30,13 +30,13 @@
     <section class="guide-section reveal">
       <h2>Cách tính điểm danh tiếng</h2>
       <p class="guide-intro">Điểm được tính tự động từ các đóng góp đã duyệt. Để tránh lạm phát, mỗi loại hoạt động có <strong>giới hạn tối đa</strong> — điểm giảm dần khi số lượng tăng lên.</p>
-      <div class="points-table-wrap">
+      <div class="points-table-wrap" role="region" aria-label="Bảng tính điểm danh tiếng" tabindex="0">
         <table class="points-table">
           <thead>
             <tr>
-              <th>Hoạt động</th>
-              <th>Cách tính</th>
-              <th>Tối đa</th>
+              <th scope="col">Hoạt động</th>
+              <th scope="col">Cách tính</th>
+              <th scope="col">Tối đa</th>
             </tr>
           </thead>
           <tbody>
@@ -103,9 +103,7 @@
   </main>
 </template>
 
-<script setup lang="ts">
-useReveal()
-
+<script lang="ts">
 const levels = [
   { level: 1, icon: '🌱', label: 'Người mới', req: '0 – 19 điểm' },
   { level: 2, icon: '🤝', label: 'Người đóng góp', req: '20 – 79 điểm' },
@@ -122,8 +120,7 @@ const categories = [
   { icon: '❤️', name: 'Lượt thích nhận được', formula: '50 đầu ×1', max: 50 },
 ]
 
-// 8 reviews=40, 0 extra posts, 3 photos=9, 12 followers=12, 4 places=8, 15 likes=15
-const examplePoints = 40 + 0 + 9 + 12 + 8 + 15  // = 84
+const examplePoints = 40 + 0 + 9 + 12 + 8 + 15
 const exampleLevel = examplePoints >= 200 ? 'Đại sứ' : examplePoints >= 80 ? 'Đóng góp tích cực' : examplePoints >= 20 ? 'Người đóng góp' : 'Người mới'
 
 const badges = [
@@ -142,6 +139,10 @@ const tips = [
   { title: 'Đính kèm ảnh', desc: 'Ảnh vừa tăng điểm ảnh (3 điểm/bài), vừa giúp bài viết nhận nhiều lượt thích hơn.' },
   { title: 'Khám phá nhiều nơi', desc: 'Đánh giá ở nhiều địa điểm khác nhau thay vì lặp lại một chỗ — mỗi địa điểm mới mang thêm 2 điểm.' },
 ]
+</script>
+
+<script setup lang="ts">
+useReveal()
 
 useSeoMeta({
   title: 'Hướng dẫn thành viên — Hệ thống cấp bậc & điểm danh tiếng — vinhlong360',
@@ -149,7 +150,21 @@ useSeoMeta({
   ogTitle: 'Hướng dẫn thành viên — vinhlong360',
   ogDescription: 'Cách tính điểm danh tiếng, cấp bậc và huy hiệu trên vinhlong360.',
 })
-useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan-thanh-vien') }] })
+useHead({
+  link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan-thanh-vien') }],
+  script: [{
+    type: 'application/ld+json',
+    innerHTML: JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
+        { '@type': 'ListItem', position: 2, name: 'Cộng đồng', item: 'https://vinhlong360.vn/cong-dong' },
+        { '@type': 'ListItem', position: 3, name: 'Hướng dẫn thành viên' },
+      ],
+    }),
+  }],
+})
 </script>
 
 <style scoped>
@@ -252,6 +267,10 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan-thanh-vien')
 .dark .guide-hero { background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%); }
 .dark .guide-note { background: var(--bg-alt); }
 .dark .guide-cta { background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%); }
+.dark .level-1 { border-left-color: #a5d6a7; }
+.dark .level-2 { border-left-color: #64b5f6; }
+.dark .level-3 { border-left-color: #ffb74d; }
+.dark .level-4 { border-left-color: #ffd54f; }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {

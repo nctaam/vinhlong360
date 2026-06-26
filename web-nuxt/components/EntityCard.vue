@@ -13,7 +13,7 @@
     </div>
     <div class="card-b">
       <span class="card-type">{{ typeMeta.label }}</span>
-      <h3>{{ entity.name }}</h3>
+      <h3 class="card-name">{{ entity.name }}</h3>
       <p class="summary">{{ cardSummary }}</p>
       <p v-if="placeName" class="place">{{ placeName }}</p>
       <div v-if="cardMeta" class="card-meta">
@@ -25,11 +25,13 @@
         <span class="cr-score">{{ ratingDisplay.score }}</span>
         <span class="cr-count">({{ ratingDisplay.count }})</span>
       </div>
-      <div v-if="amenityIcons.length" class="card-amenities" :aria-label="amenityIcons.map(a => a.label).join(', ')">
+      <div v-if="amenityIcons.length" class="card-amenities" :aria-label="amenityIcons.map(a => a.label).join(', ') + (amenityExtra > 0 ? ` và ${amenityExtra} tiện ích khác` : '')">
         <span v-for="a in amenityIcons" :key="a.key" class="ca-icon" :title="a.label">{{ a.icon }}</span>
+        <span v-if="amenityExtra > 0" class="ca-more" :title="`${amenityExtra} tiện ích khác`">+{{ amenityExtra }}</span>
       </div>
       <div class="badges">
-        <span v-if="isPeak" class="badge peak">🔥 Đang rộ</span>
+        <span v-if="isNew" class="badge new-badge">Mới</span>
+        <span v-if="isPeak" class="badge peak"><span class="peak-dot" aria-hidden="true"></span> Đang mùa {{ peakLabel }}</span>
         <span v-if="isYearRoundSeason" class="badge year">Quanh năm</span>
         <span v-else class="badge season">{{ seasonLabel }}</span>
         <span v-if="entity.attributes?.ocop" :class="['badge', 'ocop', { 'ocop-5': ocopStars === 5, 'ocop-4': ocopStars === 4, 'ocop-3': ocopStars === 3 }]">⭐ {{ entity.attributes.ocop }}</span>
@@ -37,6 +39,19 @@
     </div>
   </NuxtLink>
 </template>
+
+<script lang="ts">
+const AMENITY_ICONS: Record<string, { icon: string; label: string }> = {
+  wifi: { icon: '📶', label: 'Wi-Fi' },
+  free_entry: { icon: '🆓', label: 'Miễn phí' },
+  kid_friendly: { icon: '👶', label: 'Trẻ em OK' },
+  wheelchair: { icon: '♿', label: 'Xe lăn' },
+  pet_friendly: { icon: '🐕', label: 'Thú cưng OK' },
+  air_conditioned: { icon: '❄️', label: 'Máy lạnh' },
+  restroom: { icon: '🚻', label: 'WC' },
+  photography: { icon: '📸', label: 'Chụp ảnh OK' },
+}
+</script>
 
 <script setup lang="ts">
 import { TYPE_META } from '~/composables/useConstants'
@@ -80,22 +95,29 @@ const cardMeta = computed(() => {
   const hours = a.hours || null
   return (price || hours) ? { price, hours } : null
 })
-const AMENITY_ICONS: Record<string, { icon: string; label: string }> = {
-  wifi: { icon: '📶', label: 'Wi-Fi' },
-  free_entry: { icon: '🆓', label: 'Miễn phí' },
-  kid_friendly: { icon: '👶', label: 'Trẻ em OK' },
-  wheelchair: { icon: '♿', label: 'Xe lăn' },
-  pet_friendly: { icon: '🐕', label: 'Thú cưng OK' },
-  air_conditioned: { icon: '❄️', label: 'Máy lạnh' },
-  restroom: { icon: '🚻', label: 'WC' },
-  photography: { icon: '📸', label: 'Chụp ảnh OK' },
-}
-const amenityIcons = computed(() => {
+const allAmenities = computed(() => {
   const badges = props.entity.attributes?.amenity_badges
   if (!Array.isArray(badges) || !badges.length) return []
-  return badges.slice(0, 3).map((k: string) => ({ key: k, ...AMENITY_ICONS[k] })).filter((a: any) => a.icon)
+  return badges.map((k: string) => {
+    const meta = AMENITY_ICONS[k]
+    return meta ? { key: k, ...meta } : null
+  }).filter(Boolean) as { key: string; icon: string; label: string }[]
 })
+const amenityIcons = computed(() => allAmenities.value.slice(0, 3))
+const amenityExtra = computed(() => Math.max(0, allAmenities.value.length - 3))
 const ocopStars = computed(() => parseInt(props.entity.attributes?.ocop) || 0)
+const isNew = computed(() => {
+  const u = props.entity.updatedAt
+  if (!u) return false
+  const diff = Date.now() - new Date(u).getTime()
+  return diff > 0 && diff < 14 * 86400000
+})
+const peakLabel = computed(() => {
+  const sf = props.seasonFilter
+  if (!sf || sf === 'all') return ''
+  if (sf === 'flood') return 'nước nổi'
+  return `T${sf}`
+})
 const ratingDisplay = computed(() => {
   const a = props.entity.attributes
   const r = parseFloat(a?.rating)
@@ -108,12 +130,15 @@ const ratingDisplay = computed(() => {
 </script>
 
 <style scoped>
-.card-amenities { display: flex; gap: 2px; margin-top: .25rem; }
+.card-name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+:deep(.card) { contain: content; }
+.card-amenities { display: flex; align-items: center; gap: 2px; margin-top: .25rem; }
 .ca-icon { font-size: .7rem; opacity: .7; cursor: default; }
+.ca-more { font-size: .65rem; color: var(--muted); font-weight: 600; margin-left: 1px; }
 .card-rating { display: flex; align-items: center; gap: .25rem; font-size: .8rem; margin-top: .25rem; }
 .cr-stars { color: var(--secondary, #d4a017); letter-spacing: -1px; }
-.cr-score { font-weight: 600; color: var(--text-primary); }
-.cr-count { color: var(--text-secondary); font-size: .75rem; }
+.cr-score { font-weight: 600; color: var(--ink); }
+.cr-count { color: var(--muted); font-size: .75rem; }
 .badge.ocop-5 {
   background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
   color: var(--text-on-dark, #fff);
@@ -126,4 +151,21 @@ const ratingDisplay = computed(() => {
 }
 .dark .badge.ocop-5 { box-shadow: 0 0 0 2px rgba(var(--secondary-rgb), .35); }
 .dark .badge.ocop-4 { color: var(--secondary-fg); }
+.badge.new-badge {
+  background: rgba(52, 199, 89, .14);
+  color: #1a8a3c;
+  font-weight: 600;
+}
+.dark .badge.new-badge {
+  background: rgba(52, 199, 89, .22);
+  color: #34c759;
+}
+.peak-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  vertical-align: middle;
+}
 </style>

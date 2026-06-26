@@ -19,14 +19,18 @@
 const { count } = useFavorites()
 const countPop = ref(false)
 const prevCount = ref(count.value)
+let popTimer: ReturnType<typeof setTimeout> | null = null
 
 watch(count, (n) => {
   if (n > prevCount.value) {
+    if (popTimer) clearTimeout(popTimer)
     countPop.value = true
-    setTimeout(() => { countPop.value = false }, 400)
+    popTimer = setTimeout(() => { countPop.value = false }, 400)
   }
   prevCount.value = n
 })
+
+onUnmounted(() => { if (popTimer) clearTimeout(popTimer) })
 </script>
 
 <style scoped>
@@ -55,6 +59,12 @@ watch(count, (n) => {
 .jb-slide-leave-to { transform: translateY(100%); opacity: 0; }
 
 .dark .journey-bar { background: var(--card); box-shadow: 0 -4px 20px rgba(0,0,0,.25); }
+
+@media (max-width: 480px) {
+  .journey-bar { flex-wrap: wrap; padding: var(--space-2) var(--space-3); gap: var(--space-2); }
+  .jb-actions { width: 100%; }
+  .jb-actions .jb-link { flex: 1; justify-content: center; min-height: 44px; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .jb-count-pop { animation: none; }

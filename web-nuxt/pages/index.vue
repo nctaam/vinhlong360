@@ -107,7 +107,7 @@
 
       <div v-if="seasonal.length" class="happening-section">
         <p class="happening-label">🔥 Đang vào mùa tháng {{ currentMonth }}</p>
-        <div class="scroll-row" role="region" aria-label="Đặc sản theo mùa">
+        <div class="scroll-row" role="region" aria-label="Đặc sản theo mùa" tabindex="0">
           <EntityCard v-for="e in seasonal" :key="e.id" :entity="e" :season-filter="String(currentMonth)" />
         </div>
       </div>
@@ -132,11 +132,11 @@
             :aria-label="spotlight.name"
           >
             <span v-if="spotRegion" class="spot-region">📍 {{ spotRegion }}</span>
-            <span class="spot-icon" v-html="spotIcon" />
+            <span class="spot-icon" v-html="spotIcon" aria-hidden="true" />
           </NuxtLink>
           <div class="spot-body">
             <span class="spot-kicker">{{ spotMeta?.emoji }} {{ spotMeta?.label }} · Nổi bật</span>
-            <h2>{{ spotlight.name }}</h2>
+            <h3 class="spot-name">{{ spotlight.name }}</h3>
             <p v-if="spotlight.summary" class="spot-sum">{{ spotlight.summary }}</p>
             <NuxtLink :to="`/dia-diem/${spotlight.id}`" class="btn btn-primary spot-cta">Khám phá ngay →</NuxtLink>
           </div>
@@ -172,7 +172,7 @@
           <p class="sh-sub">Điểm đến nhiều người tìm kiếm nhất tuần qua</p>
         </div>
       </div>
-      <div class="scroll-row" role="region" aria-label="Điểm đến đang hot">
+      <div class="scroll-row" role="region" aria-label="Điểm đến đang hot" tabindex="0">
         <EntityCard v-for="e in trending" :key="e.id" :entity="e" />
       </div>
     </section>
@@ -186,7 +186,7 @@
         </div>
         <NuxtLink class="see-all" to="/lich-trinh">Xem tất cả →</NuxtLink>
       </div>
-      <div class="scroll-row" role="region" aria-label="Lịch trình gợi ý">
+      <div class="scroll-row" role="region" aria-label="Lịch trình gợi ý" tabindex="0">
         <ItineraryCard v-for="it in itineraries" :key="it.id" :itinerary="it" />
       </div>
       <div class="block-cta">
@@ -222,9 +222,9 @@
             </NuxtLink>
             <NuxtLink to="/bang-xep-hang" class="hl-more">Bảng xếp hạng →</NuxtLink>
           </div>
-          <div class="scroll-row" role="region" aria-label="Bài viết cộng đồng mới">
+          <div class="scroll-row" role="region" aria-label="Bài viết cộng đồng mới" tabindex="0">
             <NuxtLink v-for="p in communityPosts" :key="p.id" :to="`/bai-viet/${p.id}`" class="cm-card">
-              <div v-if="p.images && p.images.length" class="cm-img">
+              <div v-if="p.images && p.images.length && p.images[0]" class="cm-img">
                 <NuxtImg v-if="isRemoteUrl(p.images[0])" :src="p.images[0]" :alt="p.display_name || 'Bài viết'" loading="lazy" decoding="async" width="280" height="150" sizes="sm:280px" @error="onImgError" />
                 <img v-else :src="p.images[0]" :alt="p.display_name || 'Bài viết'" loading="lazy" decoding="async" width="280" height="150" @error="onImgError" />
               </div>
@@ -256,7 +256,7 @@
         <div class="section-head">
           <h2>Xem gần đây</h2>
         </div>
-        <div class="scroll-row" role="region" aria-label="Xem gần đây">
+        <div class="scroll-row" role="region" aria-label="Xem gần đây" tabindex="0">
           <NuxtLink v-for="rv in recentlyViewed" :key="rv.id" :to="`/dia-diem/${rv.id}`" class="card card-mini">
             <div v-if="rv.image" class="cover cover-img">
               <NuxtImg v-if="isRemoteUrl(rv.image)" :src="rv.image" :alt="rv.name" loading="lazy" decoding="async" width="320" height="180" sizes="sm:50vw md:33vw lg:320px" @error="onImgError" />
@@ -277,7 +277,7 @@
           <h2>Đã lưu gần đây</h2>
           <NuxtLink class="see-all" to="/lich-trinh">Xem tất cả →</NuxtLink>
         </div>
-        <div class="scroll-row" role="region" aria-label="Đã lưu gần đây">
+        <div class="scroll-row" role="region" aria-label="Đã lưu gần đây" tabindex="0">
           <NuxtLink v-for="fav in recentSaved" :key="fav.id" :to="`/dia-diem/${fav.id}`" class="card">
             <div v-if="fav.image" class="cover cover-img">
               <NuxtImg v-if="isRemoteUrl(fav.image)" :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="480" height="192" sizes="sm:100vw md:50vw lg:480px" @error="onImgError" />
@@ -404,12 +404,12 @@ const SPOTLIGHT_TYPE_WEIGHT: Record<string, number> = { experience: 3, place: 2,
 const spotlight = computed<any>(() => {
   const pool = [...experiences.value.slice(0, 8), ...productsAll.value.slice(0, 8)]
   if (!pool.length) return null
-  return pool.slice().sort((a: any, b: any) => {
-    const wa = SPOTLIGHT_TYPE_WEIGHT[a?.type] ?? 1
-    const wb = SPOTLIGHT_TYPE_WEIGHT[b?.type] ?? 1
-    if (wb !== wa) return wb - wa
-    return (b?.summary || '').length - (a?.summary || '').length
-  })[0] || null
+  return pool.reduce((best: any, cur: any) => {
+    const wc = SPOTLIGHT_TYPE_WEIGHT[cur?.type] ?? 1
+    const wb = SPOTLIGHT_TYPE_WEIGHT[best?.type] ?? 1
+    if (wc !== wb) return wc > wb ? cur : best
+    return (cur?.summary || '').length > (best?.summary || '').length ? cur : best
+  })
 })
 const spotId = computed(() => spotlight.value?.id)
 const spotMeta = computed(() => spotlight.value ? (TYPE_META[spotlight.value.type] || { emoji: '📍', label: spotlight.value.type, cat: 'place' }) : null)
@@ -419,7 +419,7 @@ const spotRegion = computed(() => {
   const a = spotlight.value?.area || spotlight.value?.attributes?.area || spotlight.value?.attributes?.province
   if (!a) return ''
   const meta = (AREA_META as Record<string, { name: string }>)[String(a)]
-  return meta ? meta.name : String(a)
+  return meta ? meta.name : ''
 })
 
 const heroFeature = computed<any>(() => experiences.value.find((e: any) => e.id !== spotId.value) || spotlight.value || null)
@@ -430,7 +430,7 @@ const hfRegion = computed(() => {
   const a = heroFeature.value?.area || heroFeature.value?.attributes?.area || heroFeature.value?.attributes?.province
   if (!a) return ''
   const meta = (AREA_META as Record<string, { name: string }>)[String(a)]
-  return meta ? meta.name : String(a)
+  return meta ? meta.name : ''
 })
 
 const stats = computed(() => homeData.value?.stats || null)
@@ -457,12 +457,13 @@ function formatEventDay(ev: any) {
 function formatEventMonth(ev: any) {
   const ds = ev.attributes?.date_start
   if (!ds) return ''
-  const m = parseInt(ds.split('-')[1], 10)
-  return `Th${m}`
+  const m = parseInt(ds.split('-')[1] || '0', 10)
+  return isNaN(m) || m === 0 ? '' : `Th${m}`
 }
 
-function formatRating(rating: number): string {
-  return rating > 0 ? rating.toFixed(1) : 'Mới'
+function formatRating(rating: number | string): string {
+  const n = Number(rating)
+  return n > 0 ? n.toFixed(1) : 'Mới'
 }
 
 function onImgError(e: Event) {
@@ -473,7 +474,7 @@ function onImgError(e: Event) {
 function areaName(slug: string | undefined): string {
   if (!slug) return ''
   const meta = (AREA_META as Record<string, { name: string }>)[slug]
-  return meta ? meta.name : slug
+  return meta ? meta.name : ''
 }
 
 function openChat() {
@@ -620,6 +621,7 @@ html.js .home .hero-feature { opacity: 0; transform: translateY(16px); animation
   background-size: cover; background-position: center;
   transform: scale(1.06);
   animation: hero-kenburns 34s ease-in-out infinite alternate;
+  will-change: transform;
 }
 @media (max-width: 640px) {
   .home .hero-kenburns {
@@ -853,6 +855,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
     -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--space-4), #000 88%, transparent);
   }
   .scroll-row::-webkit-scrollbar { display: none; }
+  .scroll-row:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-md); }
   .scroll-row:hover, .scroll-row:focus-within { mask-image: linear-gradient(to right, transparent, #000 var(--space-4), #000 100%); -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--space-4), #000 100%); }
   .scroll-row > * { flex: 0 0 280px; scroll-snap-align: start; }
 }
@@ -875,6 +878,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   background: linear-gradient(105deg, transparent 0%, rgba(255,255,255,.16) 50%, transparent 100%);
   transform: translateX(0) skewX(-14deg);
   animation: event-sheen 6.5s ease-in-out 1.2s infinite;
+  will-change: transform;
 }
 @keyframes event-sheen {
   0%   { transform: translateX(0) skewX(-14deg); }
@@ -925,7 +929,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .spotlight {
   display: grid; grid-template-columns: 1.05fr 1fr; gap: var(--space-6); align-items: stretch;
   background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl);
-  overflow: hidden; box-shadow: var(--shadow-sm);
+  overflow: hidden; box-shadow: var(--shadow-sm); contain: layout style paint;
 }
 @media (max-width: 760px) { .spotlight { grid-template-columns: 1fr; } }
 .spot-visual {
@@ -938,6 +942,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   content: ""; position: absolute; inset: -18%; z-index: 0;
   background: radial-gradient(46% 46% at 34% 30%, rgba(255,255,255,.24) 0%, transparent 68%);
   animation: spot-glow 13s ease-in-out infinite alternate; pointer-events: none;
+  will-change: transform;
 }
 .spot-region, .spot-icon { position: relative; z-index: 1; }
 @keyframes spot-glow {
@@ -955,7 +960,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 @media (max-width: 760px) { .spot-icon { width: 96px; height: 96px; } }
 .spot-region {
   position: absolute; top: var(--space-4); left: var(--space-4);
-  padding: var(--space-1) var(--space-3); background: rgba(0,0,0,.36);
+  padding: var(--space-1) var(--space-3); background: rgba(0,0,0,.5);
   color: #fff; border-radius: var(--radius-full);
   font-size: var(--text-xs); font-weight: var(--weight-semibold);
   backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
@@ -966,7 +971,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 }
 @media (max-width: 760px) { .spot-body { padding: var(--space-5); } }
 .spot-kicker { font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .05em; color: var(--primary-fg-strong); }
-.spot-body h2 { margin: 0; font-size: clamp(1.5rem, 3.2vw, 2.1rem); line-height: var(--leading-snug); letter-spacing: -.01em; }
+.spot-body .spot-name { margin: 0; font-size: clamp(1.5rem, 3.2vw, 2.1rem); line-height: var(--leading-snug); letter-spacing: -.01em; }
 .spot-sum { margin: 0; color: var(--text-muted); line-height: var(--leading-relaxed); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 .spot-cta { align-self: flex-start; margin-top: var(--space-2); }
 
@@ -1015,7 +1020,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   padding: var(--space-2) var(--space-3);
   background: var(--bg-alt); border: .5px solid var(--line); border-radius: var(--radius-full);
   font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--primary-fg);
-  text-decoration: none; min-height: 36px;
+  text-decoration: none; min-height: 44px;
   transition: background .2s var(--ease-out), border-color .2s var(--ease-out);
 }
 .tt-chip:hover { background: var(--bg-warm); border-color: var(--primary-fg); }
@@ -1024,10 +1029,11 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 
 .home-leaders { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin: 0 0 var(--space-4); }
 .hl-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); }
-.hl-chip { display: inline-flex; align-items: center; gap: var(--space-1); padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1); min-height: 36px; background: var(--bg-alt); border: .5px solid var(--line); border-radius: var(--radius-full); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out); }
+.hl-chip { display: inline-flex; align-items: center; gap: var(--space-1); padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1); min-height: 44px; background: var(--bg-alt); border: .5px solid var(--line); border-radius: var(--radius-full); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out); }
 .hl-chip:hover { border-color: var(--primary-fg); }
 .hl-rank { width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--muted); }
 .hl-rank-1 { color: #d4a017; } .hl-rank-2 { color: #8a8d91; } .hl-rank-3 { color: #b07b4f; }
+.dark .hl-rank-1 { color: #ffd54f; } .dark .hl-rank-2 { color: #b0b3b8; } .dark .hl-rank-3 { color: #d4a574; }
 .hl-avatar { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--text-on-dark, #fff); font-size: 11px; font-weight: var(--weight-semibold); }
 .hl-name { font-size: var(--text-sm); font-weight: var(--weight-medium); }
 .hl-more { font-size: var(--text-sm); color: var(--primary-fg); text-decoration: none; font-weight: var(--weight-semibold); }

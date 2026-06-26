@@ -176,6 +176,7 @@ onMounted(() => {
    their positioning, so those stay static — they still read as authored). */
 .hero-illustration .motif.motif-anim {
   animation: hero-motif-sway 8s var(--ease-out, ease-in-out) infinite;
+  will-change: transform;
 }
 @keyframes hero-motif-sway {
   0%, 100% { transform: translate(0, 0); }
@@ -186,6 +187,7 @@ onMounted(() => {
   transform-box: fill-box;
   transform-origin: center;
   animation: hero-glow-breathe 9s ease-in-out infinite;
+  will-change: transform, opacity;
 }
 @keyframes hero-glow-breathe {
   0%, 100% { opacity: .9; transform: scale(1); }
@@ -194,6 +196,7 @@ onMounted(() => {
 /* River sheen — a slow light sweep travelling across the water */
 .hero-illustration .hero-sheen {
   animation: hero-sheen-sweep 11s ease-in-out infinite;
+  will-change: transform, opacity;
 }
 @keyframes hero-sheen-sweep {
   0%, 100% { opacity: .3; transform: translateX(-40px); }

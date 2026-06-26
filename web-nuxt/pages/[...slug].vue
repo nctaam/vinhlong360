@@ -78,7 +78,7 @@ function onSearch() {
   border: .5px solid var(--line);
   border-radius: var(--radius-full, 100px);
   background: var(--card);
-  font-size: var(--text-sm);
+  font-size: 1rem;
   min-height: 44px;
   transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo);
 }

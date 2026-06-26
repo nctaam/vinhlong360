@@ -48,7 +48,7 @@
 
     <!-- Checklist -->
     <div v-if="checklist.length" class="kbyg-checklist">
-      <h3 class="kbyg-checklist-title">🧳 Nên chuẩn bị</h3>
+      <h3 class="kbyg-checklist-title"><span aria-hidden="true">🧳</span> Nên chuẩn bị</h3>
       <ul class="kbyg-check-list">
         <li v-for="(item, i) in checklist" :key="i" class="kbyg-check-item">
           <span class="kbyg-check-box" aria-hidden="true">☐</span>
@@ -98,7 +98,10 @@ const attrs = computed(() => props.attributes || {})
 const amenities = computed(() => {
   const badges = attrs.value.amenity_badges
   if (Array.isArray(badges)) {
-    return badges.map((key: string) => AMENITY_MAP[key]).filter(Boolean)
+    return badges.map((key: string) => {
+      const meta = AMENITY_MAP[key]
+      return meta ? { key, ...meta } : null
+    }).filter(Boolean) as { key: string; icon: string; label: string }[]
   }
   const result: { key: string; icon: string; label: string }[] = []
   for (const [key, meta] of Object.entries(AMENITY_MAP)) {
