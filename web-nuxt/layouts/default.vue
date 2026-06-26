@@ -167,7 +167,7 @@ const DEFAULT_FOOTER_COLUMNS = [
     { to: '/tao-lich-trinh', label: 'Tạo lịch trình' },
     { to: '/danh-ba', label: 'Danh bạ hành chính' },
     { to: '/cong-dong', label: 'Cộng đồng' },
-    { to: '/huong-dan-thanh-vien', label: 'Hướng dẫn thành viên' },
+    { to: '/huong-dan', label: 'Hướng dẫn sử dụng' },
   ] },
   { title: 'Khu vực', links: [
     { to: '/khu-vuc/vinh-long', label: '🍊 Vĩnh Long' },
