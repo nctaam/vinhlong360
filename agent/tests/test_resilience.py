@@ -390,7 +390,6 @@ class TestTimeoutEnforcement:
     @pytest.mark.parametrize("module_file,func_or_pattern", [
         ("auto_learn.py", r"OpenAI\([^)]*timeout"),
         ("crawler.py", r"OpenAI\([^)]*timeout"),
-        ("burn_gpt55.py", r"OpenAI\([^)]*timeout"),
         ("discover_province.py", r"OpenAI\([^)]*timeout"),
     ])
     def test_openai_clients_have_timeout(self, module_file, func_or_pattern):
@@ -2049,7 +2048,7 @@ class TestSupportModuleLoggers:
     """Supporting modules must have module-level loggers."""
 
     @pytest.mark.parametrize("module_name", [
-        "geocode", "export_data", "freshness", "notifications", "storage",
+        "geocode", "freshness", "notifications", "storage",
     ])
     def test_has_logger(self, module_name):
         mod = __import__(module_name)
@@ -2341,14 +2340,6 @@ class TestMCPServerLogging:
 # Batch 10: burn_gpt55, moderation, seo, public_api
 # ═══════════════════════════════════════════════════════
 
-
-class TestBurnGpt55RelFailureLogged:
-    """burn_gpt55 db.add_relationship failure must be logged, not swallowed."""
-
-    def test_has_log(self):
-        import burn_gpt55
-        assert hasattr(burn_gpt55, "log")
-        assert burn_gpt55.log.name == "burn"
 
 
 class TestModerationLogging:

@@ -231,14 +231,6 @@ const partialDegraded = ref(false)
 const degradedDetail = ref('')
 const backupRunning = ref(false)
 
-/** Extract error detail from a caught error (safe for e:unknown from $fetch). */
-function getErrorDetail(e: unknown, fallback: string): string {
-  if (e && typeof e === 'object' && 'data' in e) {
-    const data = (e as { data?: { detail?: string } }).data
-    if (data && typeof data.detail === 'string') return data.detail
-  }
-  return fallback
-}
 
 function formatNum(n: unknown): string {
   const num = Number(n) || 0

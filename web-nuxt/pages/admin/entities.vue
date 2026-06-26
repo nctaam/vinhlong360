@@ -292,14 +292,6 @@ const { show: showToast } = useToast()
 const { confirmDialog } = useConfirm()
 const { timeAgo } = useTimeAgo()
 
-/** Extract error detail from a caught error (safe for e:unknown from $fetch). */
-function getErrorDetail(e: unknown, fallback: string): string {
-  if (e && typeof e === 'object' && 'data' in e) {
-    const data = (e as { data?: { detail?: string } }).data
-    if (data && typeof data.detail === 'string') return data.detail
-  }
-  return fallback
-}
 
 const types = Object.keys(TYPE_META)
 const search = ref('')
