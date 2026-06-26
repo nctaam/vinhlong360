@@ -381,11 +381,12 @@ async function loadFollowList(which: 'followers' | 'following') {
   followLoadingList.value = false
 }
 const followDialogEl = ref<HTMLElement | null>(null)
+function closeFollowModal() { followModalOpen.value = false }
+useModalA11y(followModalOpen, followDialogEl, { onClose: closeFollowModal })
 function openFollowModal(tab: 'followers' | 'following') {
   followModalTab.value = tab
   followModalOpen.value = true
   loadFollowList(tab)
-  nextTick(() => followDialogEl.value?.focus())
 }
 watch(followModalTab, (t) => loadFollowList(t))
 

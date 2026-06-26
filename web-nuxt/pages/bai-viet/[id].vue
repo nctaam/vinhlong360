@@ -220,7 +220,11 @@ async function setBestAnswer(commentId: string) {
   try {
     await $fetch(`/api/posts/${postId}/best-answer`, { method: 'POST', headers: authHeaders(), body: { comment_id: commentId } })
     showToast('Đã chọn câu trả lời hay', 'success')
-  } catch { bestAnswerId.value = prev; showToast('Không thể chọn, thử lại', 'error') }
+  } catch (e: any) {
+    bestAnswerId.value = prev
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    showToast('Không thể chọn, thử lại', 'error')
+  }
 }
 async function deletePost() {
   const ok = await confirmDialog('Bạn có chắc muốn xoá bài viết này? Hành động không thể hoàn tác.', { confirmText: 'Xoá', danger: true })
@@ -229,7 +233,10 @@ async function deletePost() {
     await $fetch(`/api/posts/${postId}`, { method: 'DELETE', headers: authHeaders() })
     showToast('Đã xoá bài viết', 'success')
     navigateTo('/cong-dong')
-  } catch { showToast('Không thể xoá bài viết', 'error') }
+  } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    showToast('Không thể xoá bài viết', 'error')
+  }
 }
 
 const composeRef = ref<HTMLElement>()
@@ -267,6 +274,7 @@ async function saveEdit() {
     editing.value = false
     showToast(res.moderation_status === 'pending' ? 'Đã lưu — đang chờ duyệt lại' : 'Đã cập nhật bài viết', 'success')
   } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast(e?.data?.detail || 'Không thể lưu bài viết', 'error')
   }
   editSaving.value = false
@@ -344,8 +352,9 @@ async function submitComment() {
     showToast(t ? 'Đã gửi trả lời' : 'Đã gửi bình luận', 'success')
     if (post.value) post.value.comments_count = (post.value.comments_count || 0) + 1
     await fetchComments()
-  } catch (e: unknown) {
-    const detail = (e as any)?.data?.detail
+  } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    const detail = e?.data?.detail
     showToast(detail || 'Gửi bình luận thất bại — vui lòng thử lại', 'error')
   }
   submitting.value = false

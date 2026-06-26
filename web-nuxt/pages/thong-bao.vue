@@ -52,7 +52,7 @@
 
 <script setup lang="ts">
 useReveal()
-const { isLoggedIn, authHeaders } = useAuth()
+const { isLoggedIn, authHeaders, handleSessionExpired } = useAuth()
 const { openAuth } = useAuthModal()
 const { timeAgo } = useTimeAgo()
 
@@ -94,7 +94,10 @@ async function load() {
     const res = await $fetch<any>(`/api/notifications?limit=${PAGE_SIZE}`, { headers: authHeaders() })
     items.value = res.notifications || []
     hasMore.value = (res.notifications || []).length >= PAGE_SIZE
-  } catch { fetchError.value = true } finally { loading.value = false }
+  } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    fetchError.value = true
+  } finally { loading.value = false }
 }
 
 async function loadMore() {

@@ -382,7 +382,7 @@ const { f: pc } = usePageContent('cong_dong')
 
 const MAX_CHARS = 500
 
-const { isLoggedIn, authHeaders, user } = useAuth()
+const { isLoggedIn, authHeaders, user, handleSessionExpired } = useAuth()
 const { openAuth } = useAuthModal()
 const { confirmDialog } = useConfirm()
 const { repost } = useRepost()
@@ -417,6 +417,7 @@ const posts = ref<Entity[]>([])
 const hasMore = ref(false)
 const loading = ref(false)
 const feedError = ref(false)
+let feedAbort: AbortController | null = null
 // ── Tìm bài viết cộng đồng ──
 const searchInput = ref('')
 const searchQuery = ref('')          // truy vấn đang áp dụng (rỗng = không ở chế-độ tìm)
@@ -629,6 +630,7 @@ function removeImage(idx: number) {
 function setTab(tab: 'latest' | 'trending' | 'following' | 'bookmarks') {
   if (searchMode.value) clearSearch()
   if (activeTab.value === tab) return
+  feedAbort?.abort()
   activeTab.value = tab
   filterType.value = ''
   if (tab === 'bookmarks') {
@@ -640,9 +642,10 @@ function setTab(tab: 'latest' | 'trending' | 'following' | 'bookmarks') {
 
 async function fetchFeed(reset = false) {
   if (reset) { page.value = 1; posts.value = []; feedError.value = false }
+  feedAbort?.abort()
+  feedAbort = new AbortController()
   loading.value = true
   try {
-    // Tab "Đang theo dõi" dùng endpoint riêng (bài từ người+địa-điểm mình follow)
     const url = activeTab.value === 'following'
       ? `/api/feed/following?page=${page.value}&limit=20`
       : (() => {
@@ -653,6 +656,7 @@ async function fetchFeed(reset = false) {
         })()
     const res = await $fetch<{ posts: Post[] }>(url, {
       headers: authHeaders(),
+      signal: feedAbort.signal,
     })
     const newPosts = res.posts || res || []
     if (reset) {
@@ -662,7 +666,8 @@ async function fetchFeed(reset = false) {
       posts.value.push(...newPosts.filter(p => !existing.has(p.id)))
     }
     hasMore.value = newPosts.length === 20
-  } catch {
+  } catch (e: any) {
+    if (e?.name === 'AbortError') return
     if (reset && !posts.value.length) feedError.value = true
     showToast(reset ? 'Không thể tải bảng tin' : 'Không thể tải thêm', 'error')
   }
@@ -778,8 +783,9 @@ async function submitPost() {
     showToast(wasQuote ? 'Đã đăng trích dẫn 🔁' : 'Đã đăng bài viết', 'success')
     activeTab.value = 'latest'
     await fetchFeed(true)
-  } catch (e: unknown) {
-    const detail = (e as any)?.data?.detail
+  } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    const detail = e?.data?.detail
     showToast(detail || 'Gửi bài thất bại — vui lòng thử lại', 'error')
   }
   posting.value = false
@@ -816,8 +822,9 @@ async function submitEntityReport() {
     const nextQuery = { ...route.query }
     delete nextQuery.report
     router.replace({ query: nextQuery })
-  } catch (e: unknown) {
-    const detail = (e as any)?.data?.detail
+  } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    const detail = e?.data?.detail
     showToast(detail || 'Không thể gửi báo cáo', 'error')
   }
   reportSubmitting.value = false
@@ -847,8 +854,9 @@ async function toggleLike(postId: string) {
   flip()
   try {
     await $fetch(`/api/posts/${postId}/like`, { method: 'POST', headers: authHeaders() })
-  } catch {
+  } catch (e: any) {
     flip()
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast('Không thể thích bài viết', 'error')
   } finally { pendingActions.delete(`like:${postId}`) }
 }
@@ -869,8 +877,9 @@ async function toggleBookmark(postId: string) {
       showToast('Đã lưu bài viết', 'success')
       if (!sessionBookmarked.value) sessionBookmarked.value = true
     }
-  } catch {
+  } catch (e: any) {
     copies.forEach(p => { p.user_bookmarked = !p.user_bookmarked })
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast('Không thể lưu bài viết', 'error')
   } finally { pendingActions.delete(`bm:${postId}`) }
 }
@@ -884,7 +893,10 @@ async function deletePost(postId: string) {
     bookmarks.value = bookmarks.value.filter(p => p.id !== postId)
     searchResults.value = searchResults.value.filter(p => p.id !== postId)
     showToast('Đã xoá bài viết', 'success')
-  } catch { showToast('Không thể xoá bài viết', 'error') }
+  } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    showToast('Không thể xoá bài viết', 'error')
+  }
 }
 
 function goToPost(postId: string) {
@@ -939,6 +951,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (draftTimer) { clearTimeout(draftTimer); draftTimer = null }
+  feedAbort?.abort()
   loadObserver?.disconnect()
   document.removeEventListener('click', onClickOutsideMention)
 })
