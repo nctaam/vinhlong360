@@ -1,6 +1,6 @@
 <template>
   <div class="error-page">
-    <div class="error-content" role="alert" aria-live="assertive">
+    <div class="error-content" role="alert">
       <div class="error-illust" aria-hidden="true">
         <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
           <!-- warm clay halo + nested calm circle -->
@@ -106,8 +106,10 @@ function handleError() {
 }
 
 function retry() {
+  const raw = props.error?.url || window.location.pathname
+  const url = raw.startsWith('/') && !raw.startsWith('//') ? raw : '/'
   clearError()
-  window.location.reload()
+  navigateTo(url, { replace: true })
 }
 
 useSeoMeta({ title: `${props.error?.statusCode || 'Lỗi'} — vinhlong360` })
@@ -231,5 +233,13 @@ useSeoMeta({ title: `${props.error?.statusCode || 'Lỗi'} — vinhlong360` })
   .error-actions .btn,
   .error-link-pill,
   .error-search-input { transition: none; }
+}
+@media (forced-colors: active) {
+  .error-code { -webkit-text-fill-color: Highlight; background: none; }
+  .error-illust circle, .error-illust line, .error-illust path { stroke: CanvasText; }
+  .illust-halo { fill: Canvas; }
+  .error-search-input { border: 1px solid ButtonBorder; }
+  .error-link-pill { border: 1px solid ButtonText; }
+  .error-actions .btn { border: 1px solid ButtonText; }
 }
 </style>

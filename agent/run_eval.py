@@ -1,4 +1,7 @@
 """
+DEPRECATED: This module is dead code (not imported anywhere).
+Use eval_framework.py directly instead. See docs/DEAD-CODE-AUDIT.md.
+
 vinhlong360 — Run Evaluation Benchmark against Live Server.
 
 Goi /chat endpoint voi 54 test cases tu eval_framework,

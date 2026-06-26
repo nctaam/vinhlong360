@@ -118,10 +118,10 @@ def sync_data_json_to_js():
         )
         js_path.write_text(js_content, encoding="utf-8")
 
-        _sched_logger.info(f"Synced data.json → data.js ({len(places)} places, {len(entities)} entities, {len(relationships)} rels, {len(itineraries)} itineraries)")
+        _sched_logger.info("Synced data.json → data.js (%d places, %d entities, %d rels, %d itineraries)", len(places), len(entities), len(relationships), len(itineraries))
         return True
     except Exception as e:
-        _sched_logger.error(f"Data sync error: {e}")
+        _sched_logger.error("Data sync error: %s", e)
         return False
 
 
@@ -129,9 +129,12 @@ def sync_data_json_to_js():
 #  SCHEDULED TASKS
 # ══════════════════════════════════════════════════
 
+_TASK_TIMEOUT = int(os.environ.get("SCHEDULER_TASK_TIMEOUT", "600"))
+
+
 class ScheduledTask:
     def __init__(self, name: str, func, interval_seconds: int, enabled: bool = True,
-                 run_immediately: bool = True):
+                 run_immediately: bool = True, timeout: int | None = None):
         self.name = name
         self.func = func
         self.interval = interval_seconds
@@ -139,6 +142,7 @@ class ScheduledTask:
         self.last_run = 0
         self.run_count = 0
         self.last_error = None
+        self.timeout = timeout or _TASK_TIMEOUT
         self.next_run_after = 0 if run_immediately else time.time() + interval_seconds
 
     def should_run(self) -> bool:
@@ -150,17 +154,37 @@ class ScheduledTask:
 
     def run(self):
         try:
-            _sched_logger.info(f"Running task: {self.name}")
+            _sched_logger.info("Running task: %s (timeout=%ds)", self.name, self.timeout)
             start = time.time()
-            self.func()
+            result_holder = [None]
+            error_holder = [None]
+
+            def _target():
+                try:
+                    result_holder[0] = self.func()
+                except Exception as exc:
+                    error_holder[0] = exc
+
+            worker = threading.Thread(target=_target, daemon=True)
+            worker.start()
+            worker.join(timeout=self.timeout)
+
+            if worker.is_alive():
+                self.last_error = f"Task timed out after {self.timeout}s"
+                _sched_logger.error("Task timed out: %s (%ds)", self.name, self.timeout)
+                return
+
+            if error_holder[0] is not None:
+                raise error_holder[0]
+
             elapsed = round(time.time() - start, 1)
             self.last_run = time.time()
             self.run_count += 1
             self.last_error = None
-            _sched_logger.info(f"Task done: {self.name} ({elapsed}s)")
+            _sched_logger.info("Task done: %s (%.1fs)", self.name, elapsed)
         except Exception as e:
             self.last_error = str(e)
-            _sched_logger.error(f"Task failed: {self.name} — {e}\n{traceback.format_exc()}")
+            _sched_logger.error("Task failed: %s — %s\n%s", self.name, e, traceback.format_exc())
 
 
 def task_auto_learn():
@@ -181,7 +205,7 @@ def task_auto_learn():
             _sched_logger.info("No knowledge gaps for auto-learn")
             return
 
-        _sched_logger.info(f"Auto-learn triggered ({len(gaps)} unanswered queries)")
+        _sched_logger.info("Auto-learn triggered (%d unanswered queries)", len(gaps))
 
         def _apply():
             result = subprocess.run(
@@ -196,12 +220,12 @@ def task_auto_learn():
 
         from self_evolve import guarded_evolve
         summary = guarded_evolve("auto-learn", _apply)
-        _sched_logger.info(f"Auto-learn: decision={summary['decision']} reason={summary['reason']}")
+        _sched_logger.info("Auto-learn: decision=%s reason=%s", summary['decision'], summary['reason'])
 
     except subprocess.TimeoutExpired:
         _sched_logger.error("Auto-learn timeout (300s)")
     except Exception as e:
-        _sched_logger.error(f"Auto-learn error: {e}\n{traceback.format_exc()}")
+        _sched_logger.error("Auto-learn error: %s\n%s", e, traceback.format_exc())
 
 
 def task_relationship_discovery():
@@ -218,11 +242,11 @@ def task_relationship_discovery():
 
         from self_evolve import guarded_evolve
         summary = guarded_evolve("relationships", _apply)
-        _sched_logger.info(f"Relationship discovery: decision={summary['decision']} reason={summary['reason']}")
+        _sched_logger.info("Relationship discovery: decision=%s reason=%s", summary['decision'], summary['reason'])
     except subprocess.TimeoutExpired:
         _sched_logger.error("Relationship discovery timeout (300s)")
     except Exception as e:
-        _sched_logger.error(f"Relationship discovery error: {e}\n{traceback.format_exc()}")
+        _sched_logger.error("Relationship discovery error: %s\n%s", e, traceback.format_exc())
 
 
 def task_sync_data():
@@ -247,10 +271,10 @@ def task_cleanup_analytics():
                 del daily[day]
             data["daily_stats"] = daily
             analytics_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-            _sched_logger.info(f"Trimmed daily stats to last 30 days")
+            _sched_logger.info("Trimmed daily stats to last 30 days")
 
     except Exception as e:
-        _sched_logger.error(f"Analytics cleanup error: {e}")
+        _sched_logger.error("Analytics cleanup error: %s", e)
 
 
 def task_admin_digest():
@@ -269,15 +293,15 @@ def task_admin_digest():
         s = knowledge.stats()
         parts.append(f"• Nội dung: {s.get('total_content', 0)} · Địa điểm: {s.get('places', 0)} · Lịch trình: {s.get('itineraries', 0)}")
     except Exception as e:
-        _sched_logger.error(f"digest stats error: {e}")
+        _sched_logger.error("digest stats error: %s", e)
     # Báo-sai (reports.jsonl) — free, đọc file
     try:
         rf = AGENT_DIR / "data" / "reports.jsonl"
         n = sum(1 for ln in rf.read_text(encoding="utf-8").splitlines() if ln.strip()) if rf.exists() else 0
         if n:
             parts.append(f"• ⚠️ Báo sai: {n} (xem /baosai)")
-    except Exception:
-        pass
+    except Exception as e:
+        _sched_logger.warning("digest reports read error: %s", e)
     # Kiểm duyệt chờ (Postgres-only; bỏ qua nếu lỗi)
     try:
         from database import db
@@ -286,8 +310,8 @@ def task_admin_digest():
             row = db._fetchone(conn, f"SELECT COUNT(*) AS c FROM posts WHERE status = {ph}", ("pending",))
             if row and row["c"]:
                 parts.append(f"• 🧐 Chờ duyệt: {row['c']}")
-    except Exception:
-        pass
+    except Exception as e:
+        _sched_logger.debug("digest moderation check skipped: %s", e)
 
     # Cảnh báo ngân sách: nếu agent tự động bật, báo mức dùng LLM/cap (free, không gọi LLM).
     try:
@@ -296,8 +320,8 @@ def task_admin_digest():
             st = ab.status()
             warn = " ⚠️ GẦN CAP!" if st["remaining_today"] <= max(1, st["cap_per_day"] // 5) else ""
             parts.append(f"• 💰 Agent LLM: {st['used_today']}/{st['cap_per_day']} hôm nay{warn}")
-    except Exception:
-        pass
+    except Exception as e:
+        _sched_logger.warning("digest budget status error: %s", e)
 
     if not parts:
         return
@@ -307,9 +331,9 @@ def task_admin_digest():
         for cid in admin_ids:
             httpx.post(f"https://api.telegram.org/bot{token}/sendMessage",
                        json={"chat_id": cid, "text": text, "parse_mode": "Markdown"}, timeout=15)
-        _sched_logger.info(f"Admin digest sent to {len(admin_ids)} chat(s)")
+        _sched_logger.info("Admin digest sent to %d chat(s)", len(admin_ids))
     except Exception as e:
-        _sched_logger.error(f"digest send error: {e}")
+        _sched_logger.error("digest send error: %s", e)
 
 
 def _send_telegram_admins(text: str) -> bool:
@@ -327,7 +351,7 @@ def _send_telegram_admins(text: str) -> bool:
                        json={"chat_id": cid, "text": text, "parse_mode": "Markdown"}, timeout=15)
             sent = True
     except Exception as e:
-        _sched_logger.error(f"telegram send error: {e}")
+        _sched_logger.error("telegram send error: %s", e)
     return sent
 
 
@@ -347,22 +371,22 @@ def task_autonomous_agent():
         import knowledge
         s = knowledge.stats()
         ctx.append(f"- Nội dung: {s.get('total_content', 0)}, lịch trình: {s.get('itineraries', 0)}")
-    except Exception:
-        pass
+    except Exception as e:
+        _sched_logger.debug("autonomous-agent context: knowledge stats unavailable: %s", e)
     try:
         from database import db
         ph = db._ph
         with db._conn() as conn:
             lc = db._fetchone(conn, f"SELECT COUNT(*) AS c FROM entities WHERE type != {ph} AND confidence < 0.7", ("place",))
             ctx.append(f"- Cần xem lại (confidence < 0.7): {lc['c'] if lc else 0}")
-    except Exception:
-        pass
+    except Exception as e:
+        _sched_logger.debug("autonomous-agent context: low-confidence count unavailable: %s", e)
     try:
         rf = AGENT_DIR / "data" / "reports.jsonl"
         n = sum(1 for ln in rf.read_text(encoding="utf-8").splitlines() if ln.strip()) if rf.exists() else 0
         ctx.append(f"- Báo cáo sai thông tin: {n}")
-    except Exception:
-        pass
+    except Exception as e:
+        _sched_logger.debug("autonomous-agent context: reports read error: %s", e)
     raw = "\n".join(ctx) or "(không có dữ liệu)"
 
     try:
@@ -375,7 +399,7 @@ def task_autonomous_agent():
             ])
         suggestion = resp.choices[0].message.content
     except Exception as e:
-        _sched_logger.error(f"autonomous-agent LLM error: {e}")
+        _sched_logger.error("autonomous-agent LLM error: %s", e)
         return  # LLM lỗi → không gửi (cap đã trừ; lần sau thử lại)
 
     st = ab.status()
@@ -399,9 +423,9 @@ def task_cache_warmup():
         from semantic_cache import cache_warmer, multi_tier_cache
         month = datetime.now().month
         seasonal = cache_warmer.get_seasonal_queries(month)
-        _sched_logger.info(f"Cache warmup: {len(seasonal)} seasonal queries for month {month}")
+        _sched_logger.info("Cache warmup: %d seasonal queries for month %d", len(seasonal), month)
     except Exception as e:
-        _sched_logger.error(f"Cache warmup error: {e}")
+        _sched_logger.error("Cache warmup error: %s", e)
 
 
 def task_agent_evolution():
@@ -410,9 +434,9 @@ def task_agent_evolution():
         from dynamic_agents import agent_evolution, agent_factory
         results = agent_evolution.evaluate_agents()
         active = len(agent_factory.get_active_agents())
-        _sched_logger.info(f"Agent evolution: {active} active agents, {len(results)} evaluated")
+        _sched_logger.info("Agent evolution: %d active agents, %d evaluated", active, len(results))
     except Exception as e:
-        _sched_logger.error(f"Agent evolution error: {e}")
+        _sched_logger.error("Agent evolution error: %s", e)
 
 
 def task_optimizer_check():
@@ -440,11 +464,11 @@ def task_optimizer_check():
                 if baseline and current and current < baseline - 0.5:
                     prompt_optimizer.rollback()
                     _sched_logger.info(
-                        f"Optimizer rolled back variant {active['id']} "
-                        f"(avg_score {current:.2f} < baseline {baseline:.2f})"
+                        "Optimizer rolled back variant %s (avg_score %.2f < baseline %.2f)",
+                        active['id'], current, baseline
                     )
-        except Exception:
-            pass
+        except Exception as e:
+            _sched_logger.warning("Optimizer rollback check failed: %s", e)
 
         variant = prompt_optimizer.propose_variant(stats)
         if not variant:
@@ -454,21 +478,21 @@ def task_optimizer_check():
         if variant.get("rules_applied"):
             activated = prompt_optimizer.activate_variant(variant["id"])
             _sched_logger.info(
-                f"Optimizer activated variant {variant['id']} "
-                f"(rules={variant['rules_applied']}, activated={activated})"
+                "Optimizer activated variant %s (rules=%s, activated=%s)",
+                variant['id'], variant['rules_applied'], activated
             )
         else:
-            _sched_logger.info(f"Optimizer proposed {variant['id']} (no rules → not activated)")
+            _sched_logger.info("Optimizer proposed %s (no rules → not activated)", variant['id'])
 
         # Recompile few-shot demonstrations from the latest high-quality pool.
         try:
             import prompt_compiler
             res = prompt_compiler.compile()
-            _sched_logger.info(f"Few-shot demos compiled: {res}")
-        except Exception:
-            pass
+            _sched_logger.info("Few-shot demos compiled: %s", res)
+        except Exception as e:
+            _sched_logger.debug("Prompt compiler unavailable: %s", e)
     except Exception as e:
-        _sched_logger.error(f"Optimizer error: {e}")
+        _sched_logger.error("Optimizer error: %s", e)
 
 
 def task_guardrails_cleanup():
@@ -478,7 +502,7 @@ def task_guardrails_cleanup():
         gb.cleanup()
         _sched_logger.info("Guardrails budget cleanup done")
     except Exception as e:
-        _sched_logger.error(f"Guardrails cleanup error: {e}")
+        _sched_logger.error("Guardrails cleanup error: %s", e)
 
 
 def task_learning_loop():
@@ -488,10 +512,10 @@ def task_learning_loop():
         from learn_loop import run_full_cycle
         summary = guarded_evolve("learning-loop", lambda: run_full_cycle(dry_run=False))
         _sched_logger.info(
-            f"Learning loop: decision={summary['decision']} reason={summary['reason']}"
+            "Learning loop: decision=%s reason=%s", summary['decision'], summary['reason']
         )
     except Exception as e:
-        _sched_logger.error(f"Learning loop error: {e}\n{traceback.format_exc()}")
+        _sched_logger.error("Learning loop error: %s\n%s", e, traceback.format_exc())
 
 
 def task_continuous_discovery():
@@ -511,7 +535,7 @@ def task_continuous_discovery():
             "continuous-discovery",
             lambda: dp.run_next_rotation(workers=4, apply=True),
         )
-        _sched_logger.info(f"Continuous discovery: decision={summary['decision']} reason={summary['reason']}")
+        _sched_logger.info("Continuous discovery: decision=%s reason=%s", summary['decision'], summary['reason'])
 
         # Adaptive pacing dựa trên năng suất vòng vừa rồi
         res = summary.get("change_result")
@@ -523,10 +547,11 @@ def task_continuous_discovery():
             elif added == 0:
                 task.interval = min(DISCOVERY_MAX_INTERVAL, int(task.interval * 1.5))
             _sched_logger.info(
-                f"Discovery adaptive: +{added} entities → next round in {round(task.interval/60)} min"
+                "Discovery adaptive: +%d entities → next round in %d min",
+                added, round(task.interval / 60)
             )
     except Exception as e:
-        _sched_logger.error(f"Continuous discovery error: {e}\n{traceback.format_exc()}")
+        _sched_logger.error("Continuous discovery error: %s\n%s", e, traceback.format_exc())
 
 
 def task_kb_promotion():
@@ -540,9 +565,9 @@ def task_kb_promotion():
         from self_evolve import guarded_evolve
         import kb_curation
         summary = guarded_evolve("kb-promotion", lambda: kb_curation.auto_promote_pass(min_hits=3))
-        _sched_logger.info(f"KB promotion: decision={summary['decision']} reason={summary['reason']}")
+        _sched_logger.info("KB promotion: decision=%s reason=%s", summary['decision'], summary['reason'])
     except Exception as e:
-        _sched_logger.error(f"KB promotion error: {e}\n{traceback.format_exc()}")
+        _sched_logger.error("KB promotion error: %s\n%s", e, traceback.format_exc())
 
 
 TASKS = [
@@ -607,7 +632,8 @@ def _autonomous_agent_status() -> dict:
     try:
         import autonomous_budget as ab
         return ab.status()
-    except Exception:
+    except Exception as e:
+        _sched_logger.debug("autonomous_budget import failed: %s", e)
         return {"enabled": False}
 
 

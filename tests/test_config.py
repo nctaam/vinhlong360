@@ -45,13 +45,28 @@ class TestSettings:
             LLM_API_KEY="real-key",
             LLM_BASE_URL="https://api.example.com",
             ADMIN_API_KEY="admin-key",
+            JWT_SECRET="jwt-secret",
+            DATABASE_URL="postgresql://user:pass@localhost/db",
         )
         assert s.is_production is True
 
     def test_production_missing_key_fails(self):
         from config import Settings
         with pytest.raises(ValueError, match="LLM_API_KEY"):
-            Settings(ENVIRONMENT="production", LLM_API_KEY="", LLM_BASE_URL="u", ADMIN_API_KEY="a")
+            Settings(ENVIRONMENT="production", LLM_API_KEY="", LLM_BASE_URL="u",
+                     ADMIN_API_KEY="a", JWT_SECRET="j", DATABASE_URL="postgresql://x")
+
+    def test_production_missing_jwt_secret_fails(self):
+        from config import Settings
+        with pytest.raises(ValueError, match="JWT_SECRET"):
+            Settings(ENVIRONMENT="production", LLM_API_KEY="k", LLM_BASE_URL="u",
+                     ADMIN_API_KEY="a", JWT_SECRET="", DATABASE_URL="postgresql://x")
+
+    def test_production_missing_database_url_fails(self):
+        from config import Settings
+        with pytest.raises(ValueError, match="DATABASE_URL"):
+            Settings(ENVIRONMENT="production", LLM_API_KEY="k", LLM_BASE_URL="u",
+                     ADMIN_API_KEY="a", JWT_SECRET="j", DATABASE_URL="")
 
     def test_bool_env_parsing(self):
         from config import Settings

@@ -151,7 +151,8 @@ def migrate_db():
 
 def migrate_json():
     """Update data.json to match DB changes."""
-    data = json.load(open(JSON_PATH, encoding="utf-8"))
+    with open(JSON_PATH, encoding="utf-8") as f:
+        data = json.load(f)
 
     entities = data["entities"]
     rels = data["relationships"]

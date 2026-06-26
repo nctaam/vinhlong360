@@ -36,11 +36,14 @@ Claude Code configuration (.claude/settings.json)
 from __future__ import annotations
 
 import json
+import logging
 import os
 import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 # ── sys.path setup ──
 # Ensure the agent/ directory is importable so that knowledge, itinerary_gen,
@@ -134,7 +137,8 @@ def _web_search(query: str, max_results: int = 5) -> list[dict]:
             {"title": r.get("title", ""), "url": r.get("href", ""), "snippet": r.get("body", "")}
             for r in results
         ]
-    except Exception:
+    except Exception as exc:
+        logger.warning("Web search failed: %s", exc)
         return []
 
 
@@ -163,7 +167,8 @@ def _generate_followups(context: str) -> list[str]:
         content = _re.sub(r"^```json\s*", "", content)
         content = _re.sub(r"\s*```$", "", content)
         return json.loads(content)[:3]
-    except Exception:
+    except Exception as exc:
+        logger.warning("Follow-up generation failed: %s", exc)
         return []
 
 

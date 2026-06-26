@@ -217,7 +217,8 @@ def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     target_type = args[0] if args else None
 
-    data = json.load(open(DATA_FILE, encoding="utf-8"))
+    with open(DATA_FILE, encoding="utf-8") as f:
+        data = json.load(f)
     entities = data["entities"]
 
     need_images = []

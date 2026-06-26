@@ -15,7 +15,9 @@ with contextlib.redirect_stdout(io.StringIO()): spec.loader.exec_module(mig)
 sys.argv=_argv
 norm,OLD2NEW,NUMBERED,ward_idx,ward_by_name=mig.norm,mig.OLD2NEW,mig.NUMBERED,mig.ward_idx,mig.ward_by_name
 
-d=json.load(open(DATA,encoding="utf-8")); ents=d["entities"]; byid={e["id"]:e for e in ents}
+with open(DATA,encoding="utf-8") as f:
+    d=json.load(f)
+ents=d["entities"]; byid={e["id"]:e for e in ents}
 # parser cải tiến: bắt 'phường/xã/thị trấn/P.' + tên; tách số riêng
 # Viết tắt p./tt./tx. phải có ranh-giới-từ phía trước (chặn 'Tp.' bị hiểu là 'p.')
 COMMUNE=re.compile(r"(?:xã|phường|thị trấn|(?<![a-zà-ỹ])x\.|(?<![a-zà-ỹ])p\.|(?<![a-zà-ỹ])tt\.|(?<![a-zà-ỹ])tx\.)\s*([A-Za-zÀ-ỹ0-9][A-Za-zÀ-ỹ0-9\s]*?)(?:\s*[,–\-]|\s+và\b|$|\s+huyện|\s+tx\b|\s+thị xã|\s+thành phố|\s+tỉnh|\s+tp\b)", re.I)

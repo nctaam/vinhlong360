@@ -23,8 +23,11 @@ Usage:
     if is_regression(before, after): rollback()
 """
 
+import logging
 import sys
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 AGENT_DIR = Path(__file__).resolve().parent
 if str(AGENT_DIR) not in sys.path:
@@ -88,7 +91,8 @@ def compute_fitness(verbose: bool = False) -> dict:
         report = retrieval_eval.run_eval(k=5, verbose=False)
         recall = report["recall_at_k"]
         abstention = report["abstention_rate"]
-    except Exception:
+    except Exception as exc:
+        logger.warning("Retrieval eval failed, defaulting to 0: %s", exc)
         recall = 0.0
         abstention = 0.0
 

@@ -161,7 +161,8 @@ CHỈ trả JSON. Chỉ liệt kê MỐI LIÊN HỆ THỰC SỰ CÓ Ý NGHĨA (k
 
 
 def main():
-    data = json.load(open(PROJECT_DIR / "web" / "data.json", "r", encoding="utf-8"))
+    with open(PROJECT_DIR / "web" / "data.json", "r", encoding="utf-8") as f:
+        data = json.load(f)
     entities = data.get("entities", [])
     hi = [e for e in entities if e.get("confidence", 0) >= 0.7]
 

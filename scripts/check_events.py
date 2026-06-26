@@ -34,7 +34,7 @@ for r in rows:
             if int(m) != d.month:
                 excluded_month_mismatch.append(f"  {r[0]}: {r[1]} (month={m}, ds_month={d.month}, ds={ds})")
                 continue
-        except:
+        except (ValueError, TypeError):
             pass
 
     if ds:
@@ -42,7 +42,7 @@ for r in rows:
             d = datetime.strptime(ds, "%Y-%m-%d").date()
             if today <= d <= cutoff:
                 upcoming_reliable.append(f"  {r[0]}: {r[1]} (ds={ds}, lunar={lunar})")
-        except:
+        except (ValueError, TypeError):
             pass
 
 print(f"=== EXCLUDED: cat=mua ({len(excluded_mua)}) ===")

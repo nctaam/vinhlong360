@@ -99,7 +99,8 @@ function mergeInto(
   // Apply admin overrides on top (partial — only the fields provided).
   if (overrides && typeof overrides === 'object') {
     for (const [k, ov] of Object.entries(overrides as Record<string, any>)) {
-      if (!ov || typeof ov !== 'object') continue
+      if (ov == null || typeof ov !== 'object') continue
+      if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue
       if (target[k]) Object.assign(target[k], ov)
       else target[k] = { ...ov }
     }

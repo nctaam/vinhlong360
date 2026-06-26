@@ -17,6 +17,9 @@ function onScroll() {
 
 function scrollUp() {
   window.scrollTo({ top: 0, behavior: 'smooth' })
+  setTimeout(() => {
+    document.getElementById('main-content')?.focus({ preventScroll: true })
+  }, 500)
 }
 
 onMounted(() => window.addEventListener('scroll', onScroll, { passive: true }))
@@ -60,5 +63,8 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
   .scroll-top:active { transform: none; }
   .fade-enter-active, .fade-leave-active { transition: opacity .15s; }
   .fade-enter-from, .fade-leave-to { transform: none; }
+}
+@media (forced-colors: active) {
+  .scroll-top { border: 1px solid ButtonText; background: Canvas; }
 }
 </style>

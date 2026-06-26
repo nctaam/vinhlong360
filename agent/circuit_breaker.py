@@ -101,6 +101,11 @@ class CircuitBreaker:
                     self._transition_to(CircuitState.HALF_OPEN)
             return self._state
 
+    @property
+    def is_healthy(self) -> bool:
+        """True when the circuit is CLOSED (not degraded)."""
+        return self.state == CircuitState.CLOSED
+
     def call(self, func: Callable, *args, **kwargs) -> Any:
         """
         Thực thi func qua circuit breaker.

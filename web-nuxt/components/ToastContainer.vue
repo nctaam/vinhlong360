@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <div v-if="toasts.length" class="toast-container" aria-label="Thông báo" role="region">
+    <div class="toast-container" aria-label="Thông báo" role="region" aria-live="polite">
       <TransitionGroup name="toast">
         <div v-for="t in toasts" :key="t.id" :class="['toast', t.type]" :role="t.type === 'error' || t.type === 'warning' ? 'alert' : 'status'" :aria-live="t.type === 'error' || t.type === 'warning' ? 'assertive' : 'polite'">
           <span class="toast-icon" aria-hidden="true">{{ iconFor(t.type) }}</span>
@@ -15,6 +15,14 @@
 
 <script setup lang="ts">
 const { toasts, dismiss } = useToast()
+
+function onEscDismiss(e: KeyboardEvent) {
+  if (e.key === 'Escape' && toasts.value.length) {
+    dismiss(toasts.value[toasts.value.length - 1].id)
+  }
+}
+onMounted(() => document.addEventListener('keydown', onEscDismiss))
+onUnmounted(() => document.removeEventListener('keydown', onEscDismiss))
 
 function iconFor(type?: string) {
   if (type === 'success') return '✓'
@@ -42,7 +50,6 @@ function iconFor(type?: string) {
   backdrop-filter: var(--glass, blur(16px));
   -webkit-backdrop-filter: var(--glass, blur(16px));
   pointer-events: auto;
-  will-change: transform, opacity;
 }
 
 .toast-icon {
@@ -79,14 +86,14 @@ function iconFor(type?: string) {
 .toast { position: relative; overflow: hidden; }
 
 /* ── Transitions ── */
-.toast-enter-active { transition: transform .35s var(--ease-spring-gentle, cubic-bezier(.2,1.2,.4,1)), opacity .25s var(--ease-out, ease-out); }
-.toast-leave-active { transition: transform .2s var(--ease-out, ease-out), opacity .15s var(--ease-out, ease-out); }
+.toast-enter-active { transition: transform .35s var(--ease-spring-gentle, cubic-bezier(.2,1.2,.4,1)), opacity .25s var(--ease-out, ease-out); will-change: transform, opacity; }
+.toast-leave-active { transition: transform .2s var(--ease-out, ease-out), opacity .15s var(--ease-out, ease-out); will-change: transform, opacity; }
 .toast-enter-from { transform: translateX(100%) scale(.95); opacity: 0; }
 .toast-leave-to { transform: translateX(40px) scale(.95); opacity: 0; }
 .toast-move { transition: transform .3s var(--ease-spring-gentle, cubic-bezier(.2,1.2,.4,1)); }
 
 /* ── Dark ── */
-.dark .toast { background: var(--card); border-color: rgba(255,255,255,.1); box-shadow: 0 8px 32px rgba(0,0,0,.5); }
+.dark .toast { background: var(--card); border-color: rgba(var(--text-on-dark-rgb, 255,255,255),.1); box-shadow: 0 8px 32px rgba(0,0,0,.5); }
 
 @media (max-width: 480px) {
   .toast-container { right: var(--space-2); left: var(--space-2); max-width: none; width: auto; }
@@ -96,5 +103,10 @@ function iconFor(type?: string) {
   .toast-enter-active,
   .toast-leave-active,
   .toast-move { transition: none; }
+}
+@media (forced-colors: active) {
+  .toast { border: 1px solid CanvasText; background: Canvas; }
+  .toast-dismiss { border: 1px solid ButtonText; }
+  .toast-progress { background: Highlight; }
 }
 </style>

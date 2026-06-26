@@ -3,6 +3,7 @@ export function useReveal(options: { threshold?: number; rootMargin?: string } =
 
   const threshold = options.threshold ?? 0.1
   const rootMargin = options.rootMargin ?? '0px 0px -30px 0px'
+  let observer: IntersectionObserver | null = null
 
   let observer: IntersectionObserver | null = null
 
@@ -25,9 +26,7 @@ export function useReveal(options: { threshold?: number; rootMargin?: string } =
   })
 
   onUnmounted(() => {
-    if (observer) {
-      observer.disconnect()
-      observer = null
-    }
+    observer?.disconnect()
+    observer = null
   })
 }
