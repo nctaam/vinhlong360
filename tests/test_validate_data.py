@@ -1825,6 +1825,36 @@ def test_seo_required_covers_craft_village_and_drink() -> None:
     assert "price_range" in validate_data.SEO_REQUIRED["drink"]
 
 
+def test_validate_flags_truncated_summary(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "trunc", "type": "attraction", "name": "Trunc",
+             "summary": "Beautiful place with many things to see and do in this area..."},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    data_path = tmp_path / "data.json"
+    data_path.write_text(json.dumps(data), encoding="utf-8")
+    _, stats = validate_data.validate(data, data_path)
+    assert stats["summary_truncated"] == 1
+
+
+def test_validate_no_truncated_summary_when_complete(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "full", "type": "attraction", "name": "Full",
+             "summary": "Beautiful place with many things to see and do in this area, a complete sentence"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    data_path = tmp_path / "data.json"
+    data_path.write_text(json.dumps(data), encoding="utf-8")
+    _, stats = validate_data.validate(data, data_path)
+    assert stats["summary_truncated"] == 0
+
+
 def test_validate_places_excluded_from_coords_without_address(tmp_path: Path) -> None:
     data = {
         "entities": [

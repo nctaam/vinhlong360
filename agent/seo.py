@@ -1019,6 +1019,11 @@ def sitemap_media():
         if not isinstance(imgs, list) or not imgs:
             continue
         ename = xml_escape(entity.get("name") or str(entity["id"]))
+        summary = entity.get("summary")
+        caption_tag = ""
+        if isinstance(summary, str) and summary.strip():
+            cap = summary.strip()[:200]
+            caption_tag = f"<image:caption>{xml_escape(cap)}</image:caption>"
         loc = _entity_url(str(entity["id"]))
         tags = ""
         for img in imgs[:20]:
@@ -1026,6 +1031,7 @@ def sitemap_media():
                 tags += (f"\n    <image:image>"
                          f"<image:loc>{xml_escape(img)}</image:loc>"
                          f"<image:title>{ename}</image:title>"
+                         f"{caption_tag}"
                          f"</image:image>")
         if tags:
             urls.append(f"  <url>\n    <loc>{xml_escape(loc)}</loc>{tags}\n  </url>")

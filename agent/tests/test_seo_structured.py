@@ -2180,6 +2180,41 @@ def test_source_info_string_self_link():
     assert url is None
 
 
+# ── Sitemap-media caption ────────────────────────────────────────────
+
+
+def test_sitemap_media_has_caption(monkeypatch):
+    data = {
+        "entities": [
+            {"id": "cap-e", "name": "Captioned", "type": "attraction",
+             "summary": "Beautiful place in VL", "confidence": 0.9,
+             "images": ["https://example.com/img.jpg"]},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    monkeypatch.setattr(seo, "_load", lambda: data)
+    resp = seo.sitemap_media()
+    xml = resp.body.decode()
+    assert "<image:caption>Beautiful place in VL</image:caption>" in xml
+
+
+def test_sitemap_media_no_caption_without_summary(monkeypatch):
+    data = {
+        "entities": [
+            {"id": "no-cap", "name": "NoCap", "type": "attraction",
+             "confidence": 0.9,
+             "images": ["https://example.com/img.jpg"]},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    monkeypatch.setattr(seo, "_load", lambda: data)
+    resp = seo.sitemap_media()
+    xml = resp.body.decode()
+    assert "<image:caption>" not in xml
+
+
 def test_sitemap_url_has_hreflang(monkeypatch):
     data = {
         "entities": [{"id": "a", "name": "A", "type": "attraction", "confidence": 0.9}],

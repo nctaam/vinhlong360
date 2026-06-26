@@ -290,6 +290,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     invalid_website_urls = 0
     invalid_entity_ids = 0
     coords_without_address = 0
+    summary_truncated = 0
 
     for index, entity in enumerate(entities):
         if not isinstance(entity, dict):
@@ -367,11 +368,15 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
 
         # DI-010: summary quality tiers
         if isinstance(summary_val, str) and summary_val.strip():
-            slen = len(summary_val.strip())
+            stripped = summary_val.strip()
+            slen = len(stripped)
             if slen < 50:
                 summary_short += 1
             elif slen > 500:
                 summary_long += 1
+            # DI-029: truncated summaries (end with "..." or "…")
+            if stripped.endswith("...") or stripped.endswith("…"):
+                summary_truncated += 1
 
         # DI-015: name length anomalies
         ename = entity.get("name")
@@ -848,6 +853,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         "duplicate_name_type": stats_dup_name_type,
         "unknown_rel_types": len(unknown_rel_types),
         "coords_without_address": coords_without_address,
+        "summary_truncated": summary_truncated,
         "data_js_status": data_js_status,
     }
 
@@ -1008,6 +1014,7 @@ def print_report(issues: list[Issue], stats: dict[str, Any]) -> None:
         "invalid_entity_ids",
         "produced_in_source_type_errors",
         "coords_without_address",
+        "summary_truncated",
     ]:
         print(f"  {key}: {stats.get(key)}")
 
