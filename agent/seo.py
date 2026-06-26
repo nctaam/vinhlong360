@@ -1064,6 +1064,10 @@ Disallow: /admin-api
 Disallow: /api/
 Disallow: /seo/
 Disallow: /tim-kiem
+Crawl-delay: 2
+
+User-agent: Googlebot
+Allow: /
 
 User-agent: GPTBot
 Allow: /
@@ -1077,5 +1081,6 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
+Host: {SITE}
 Sitemap: {SITE}/sitemap-index.xml
 """

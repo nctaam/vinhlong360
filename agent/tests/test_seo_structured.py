@@ -2112,6 +2112,32 @@ def test_sitemap_has_xhtml_namespace(monkeypatch):
     assert 'xmlns:xhtml="http://www.w3.org/1999/xhtml"' in xml
 
 
+def test_robots_has_crawl_delay():
+    resp = seo.robots()
+    assert "Crawl-delay: 2" in resp
+    assert "Googlebot" in resp
+    assert f"Host: {seo.SITE}" in resp
+
+
+def test_breadcrumb_unknown_type_skips_type_tier():
+    entity = {"id": "unk-1", "name": "Unknown", "type": "unknown_type_xyz"}
+    ld = seo.build_entity_jsonld(entity, {})
+    bc = ld["breadcrumb"]
+    names = [item["name"] for item in bc["itemListElement"]]
+    assert names[0] == "Trang chủ"
+    assert names[-1] == "Unknown"
+    assert len(names) == 2
+
+
+def test_breadcrumb_no_area_skips_area_tier():
+    entity = {"id": "no-area", "name": "No Area", "type": "attraction"}
+    ld = seo.build_entity_jsonld(entity, {})
+    bc = ld["breadcrumb"]
+    names = [item["name"] for item in bc["itemListElement"]]
+    assert "Trang chủ" in names
+    assert "No Area" in names
+
+
 def test_sitemap_url_has_hreflang(monkeypatch):
     data = {
         "entities": [{"id": "a", "name": "A", "type": "attraction", "confidence": 0.9}],
