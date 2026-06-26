@@ -839,3 +839,174 @@ def test_load_returns_empty_when_file_missing(monkeypatch, tmp_path):
     data = seo._load()
     assert data["entities"] == []
     assert data["relationships"] == []
+
+
+# ── @id on JSON-LD ───────────────────────────────────────────────────────
+
+
+def test_entity_jsonld_has_id():
+    entity = {"id": "test-id", "name": "Test", "type": "attraction"}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["@id"] == seo._entity_url("test-id")
+
+
+def test_itinerary_jsonld_has_id():
+    it = {"id": "it-test", "title": "Test Trip", "stops": []}
+    ld = seo.build_itinerary_jsonld(it, {})
+    assert ld["@id"] == seo._itinerary_url("it-test")
+
+
+def test_area_jsonld_has_id():
+    ld = seo.build_area_jsonld("vinh-long")
+    assert ld is not None
+    assert "@id" in ld
+    assert "khu-vuc/vinh-long" in ld["@id"]
+
+
+# ── containsPlace on area JSON-LD ────────────────────────────────────────
+
+
+def test_area_jsonld_contains_place_with_data():
+    data = {
+        "entities": [
+            {"id": "e1", "name": "Entity 1", "type": "attraction", "area": "vinh-long"},
+            {"id": "e2", "name": "Entity 2", "type": "dish", "area": "vinh-long"},
+            {"id": "e3", "name": "Entity 3", "type": "product", "area": "ben-tre"},
+            {"id": "p1", "name": "Place 1", "type": "place", "area": "vinh-long"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    ld = seo.build_area_jsonld("vinh-long", data)
+    assert ld is not None
+    assert "containsPlace" in ld
+    names = [c["name"] for c in ld["containsPlace"]]
+    assert "Entity 1" in names
+    assert "Entity 2" in names
+    assert "Entity 3" not in names
+    assert "Place 1" not in names
+
+
+def test_area_jsonld_no_contains_without_data():
+    ld = seo.build_area_jsonld("vinh-long")
+    assert ld is not None
+    assert "containsPlace" not in ld
+
+
+def test_area_jsonld_excludes_provisional_from_contains():
+    data = {
+        "entities": [
+            {"id": "e1", "name": "OK", "type": "attraction", "area": "vinh-long"},
+            {"id": "e2", "name": "Prov", "type": "attraction", "area": "vinh-long", "status": "provisional"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    ld = seo.build_area_jsonld("vinh-long", data)
+    names = [c["name"] for c in ld["containsPlace"]]
+    assert "OK" in names
+    assert "Prov" not in names
+
+
+# ── TYPE_SCHEMA validation ──────────────────────────────────────────────
+
+
+def test_type_schema_all_values_are_known_schema_org_types():
+    known_types = {
+        "Thing", "Place", "Organization", "Person", "Event", "Product",
+        "Restaurant", "CafeOrCoffeeShop", "FoodEstablishment",
+        "LodgingBusiness", "TouristAttraction", "TouristTrip",
+        "CivicStructure", "LocalBusiness", "LandmarksOrHistoricalBuildings",
+    }
+    for entity_type, schema_type in seo.TYPE_SCHEMA.items():
+        assert schema_type in known_types, (
+            f"TYPE_SCHEMA['{entity_type}'] = '{schema_type}' is not a known schema.org type"
+        )
+
+
+def test_type_schema_covers_all_data_types():
+    expected = {
+        "accommodation", "attraction", "cafe", "craft_village", "dish", "drink",
+        "economy", "event", "experience", "facility", "history", "itinerary",
+        "nature", "organization", "person", "place", "product", "restaurant",
+    }
+    assert set(seo.TYPE_SCHEMA.keys()) == expected
+
+
+# ── Edge cases ───────────────────────────────────────────────────────────
+
+
+def test_entity_jsonld_null_type_falls_back():
+    entity = {"id": "null-type", "name": "Test", "type": None}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["@type"] == "Thing"
+
+
+def test_entity_jsonld_empty_type_falls_back():
+    entity = {"id": "empty-type", "name": "Test", "type": ""}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["@type"] == "Thing"
+
+
+def test_entity_jsonld_list_attributes_ignored():
+    entity = {"id": "list-attrs", "name": "Test", "type": "attraction", "attributes": ["not", "a", "dict"]}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "telephone" not in ld
+    assert "openingHours" not in ld
+
+
+def test_entity_jsonld_mixed_images_filtered():
+    entity = {
+        "id": "mixed-img",
+        "name": "Test",
+        "type": "attraction",
+        "images": ["https://example.com/ok.jpg", None, 42, "/relative.jpg", "data:image/png;base64,xxx"],
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert len(ld["image"]) == 1
+    assert ld["image"][0]["url"] == "https://example.com/ok.jpg"
+
+
+def test_itinerary_jsonld_string_stops_skipped():
+    it = {"id": "str-stops", "title": "Test", "stops": ["stop1", "stop2", {"id": "real", "name": "Real"}]}
+    ld = seo.build_itinerary_jsonld(it, {})
+    assert ld["itinerary"]["numberOfItems"] == 1
+    assert ld["itinerary"]["itemListElement"][0]["item"]["name"] == "Real"
+
+
+def test_collection_caps_at_100():
+    entities = [
+        {"id": f"e-{i}", "name": f"Entity {i}", "type": "attraction", "confidence": 0.9}
+        for i in range(150)
+    ]
+    data = {"entities": entities, "relationships": [], "itineraries": []}
+    ld = seo.build_collection_jsonld("du-lich", data)
+    assert ld is not None
+    assert len(ld["itemListElement"]) == 100
+    assert ld["numberOfItems"] == 100
+
+
+def test_parse_coordinates_deeply_nested_json():
+    assert seo.parse_coordinates('{"lat":10.25,"lng":106.0}') == (10.25, 106.0)
+
+
+def test_entity_jsonld_xml_safe_name():
+    entity = {"id": "xss-test", "name": '<script>alert("xss")</script>', "type": "attraction"}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "<script>" in ld["name"]
+
+
+def test_entity_jsonld_no_id_uses_fallback_name():
+    entity = {"id": "no-name", "type": "attraction"}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["name"] == "no-name"
+
+
+def test_faq_jsonld_ignores_empty_string_tip():
+    entity = {"id": "empty-tip", "name": "X", "attributes": {"travel_tip": "   "}}
+    assert seo.build_faq_jsonld(entity) is None
+
+
+def test_safe_date_rejects_partial_date():
+    assert seo._safe_date("2026-06") is None
+    assert seo._safe_date("06-15-2026") is None

@@ -157,6 +157,10 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     season_integrity_errors = 0
     low_confidence_count = 0
     empty_attrs_non_place = 0
+    timestamp_inversions = 0
+    summary_short = 0
+    summary_long = 0
+    has_images_non_place = 0
 
     for index, entity in enumerate(entities):
         if not isinstance(entity, dict):
@@ -216,6 +220,26 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
             attrs = entity.get("attributes")
             if not attrs or (isinstance(attrs, dict) and len(attrs) == 0):
                 empty_attrs_non_place += 1
+
+        # DI-008: timestamp inversion
+        updated_at = entity.get("updatedAt")
+        created_at_val = entity.get("created_at")
+        if isinstance(updated_at, str) and isinstance(created_at_val, str) and updated_at < created_at_val:
+            timestamp_inversions += 1
+
+        # DI-009: image coverage (non-place only)
+        if not is_place:
+            imgs = entity.get("images")
+            if isinstance(imgs, list) and any(isinstance(i, str) and i.startswith("http") for i in imgs):
+                has_images_non_place += 1
+
+        # DI-010: summary quality tiers
+        if isinstance(summary_val, str) and summary_val.strip():
+            slen = len(summary_val.strip())
+            if slen < 50:
+                summary_short += 1
+            elif slen > 500:
+                summary_long += 1
 
         if is_place:
             level = entity.get("level", "")
@@ -466,6 +490,42 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     coord_clusters = sum(1 for ids in coord_buckets.values() if len(ids) > 1)
     coord_clustered_entities = sum(len(ids) for ids in coord_buckets.values() if len(ids) > 1)
 
+    # DI-012: itinerary-stop area mismatch
+    itinerary_area_mismatches = 0
+    for it in itineraries:
+        if not isinstance(it, dict):
+            continue
+        it_area = it.get("area")
+        if not it_area:
+            continue
+        for stop in (it.get("stops") or []):
+            if not isinstance(stop, dict):
+                continue
+            ref = stop.get("entityId") or stop.get("id")
+            if not ref:
+                continue
+            stop_entity = entity_by_id.get(str(ref))
+            if not stop_entity:
+                continue
+            stop_area = effective_area(stop_entity)
+            if stop_area and stop_area != it_area:
+                itinerary_area_mismatches += 1
+
+    # DI-013: relationship type singleton combos
+    rel_type_triple_counts: Counter[tuple[str, str, str]] = Counter()
+    for rel in relationships:
+        if not isinstance(rel, dict):
+            continue
+        s, d, k = rel_source(rel), rel_target(rel), rel_type(rel)
+        if not s or not d or not k:
+            continue
+        src_entity = entity_by_id.get(str(s))
+        dst_entity = entity_by_id.get(str(d))
+        src_type = src_entity.get("type", "?") if isinstance(src_entity, dict) else "?"
+        dst_type = dst_entity.get("type", "?") if isinstance(dst_entity, dict) else "?"
+        rel_type_triple_counts[(str(src_type), str(k), str(dst_type))] += 1
+    rel_type_singletons = sum(1 for count in rel_type_triple_counts.values() if count == 1)
+
     if high_fanout_count:
         issues.append(Issue("error", "relationship_fanout", f"{high_fanout_count} entities have more than {MAX_DIRECT_RELATIONSHIPS} direct relationships"))
     if duplicate_rel_count:
@@ -474,6 +534,16 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         issues.append(Issue("warning", "near_asymmetric", f"{near_asymmetric} near relationships are one-way (A→B exists but B→A does not)"))
     if coord_clusters:
         issues.append(Issue("warning", "coordinate_clusters", f"{coord_clusters} coordinate clusters ({coord_clustered_entities} entities share exact same coordinates)"))
+    if timestamp_inversions:
+        issues.append(Issue("warning", "timestamp_inversions", f"{timestamp_inversions} entities have updatedAt before created_at"))
+    if itinerary_area_mismatches:
+        issues.append(Issue("warning", "itinerary_area_mismatch", f"{itinerary_area_mismatches} itinerary stops reference entities outside the itinerary's declared area"))
+    if rel_type_singletons:
+        issues.append(Issue("warning", "rel_type_singletons", f"{rel_type_singletons} relationship (src_type, rel, dst_type) combos appear only once"))
+    if summary_short:
+        issues.append(Issue("warning", "summary_short", f"{summary_short} entities have summary < 50 chars"))
+    if summary_long:
+        issues.append(Issue("warning", "summary_long", f"{summary_long} entities have summary > 500 chars"))
     if missing_summary_non_place:
         issues.append(Issue("warning", "missing_summary_non_place", f"{missing_summary_non_place} non-place entities are missing summary"))
     if boilerplate_summary:
@@ -543,6 +613,12 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         "near_asymmetric": near_asymmetric,
         "coordinate_clusters": coord_clusters,
         "coordinate_clustered_entities": coord_clustered_entities,
+        "timestamp_inversions": timestamp_inversions,
+        "image_coverage_pct": round(100 * has_images_non_place / max(sum(1 for e in entities if isinstance(e, dict) and e.get("type") != "place"), 1), 1),
+        "summary_short": summary_short,
+        "summary_long": summary_long,
+        "itinerary_area_mismatches": itinerary_area_mismatches,
+        "rel_type_singletons": rel_type_singletons,
         "data_js_status": data_js_status,
     }
     return issues, stats
@@ -588,6 +664,12 @@ def print_report(issues: list[Issue], stats: dict[str, Any]) -> None:
         "near_asymmetric",
         "coordinate_clusters",
         "coordinate_clustered_entities",
+        "timestamp_inversions",
+        "image_coverage_pct",
+        "summary_short",
+        "summary_long",
+        "itinerary_area_mismatches",
+        "rel_type_singletons",
     ]:
         print(f"  {key}: {stats.get(key)}")
 

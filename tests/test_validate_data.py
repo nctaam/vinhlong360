@@ -574,3 +574,232 @@ def test_validate_flags_level_id_mismatch(tmp_path: Path) -> None:
     codes = {issue.code for issue in issues}
 
     assert "level_id_mismatch" in codes
+
+
+# ── Timestamp inversions (DI-008) ────────────────────────────────────────
+
+
+def test_validate_flags_timestamp_inversions(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long",
+             "coordinates": [10.25, 106.0], "updatedAt": "2026-06-20", "created_at": "2026-06-22"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["timestamp_inversions"] == 1
+    assert "timestamp_inversions" in {issue.code for issue in issues}
+
+
+def test_validate_no_timestamp_inversion_when_correct(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long",
+             "coordinates": [10.25, 106.0], "updatedAt": "2026-06-25", "created_at": "2026-06-20"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["timestamp_inversions"] == 0
+
+
+# ── Image coverage (DI-009) ──────────────────────────────────────────────
+
+
+def test_validate_image_coverage_stat(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long",
+             "coordinates": [10.25, 106.0], "images": ["https://example.com/a.jpg"]},
+            {"id": "b", "type": "dish", "name": "B", "summary": "B", "area": "vinh-long",
+             "coordinates": [10.26, 106.01]},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["image_coverage_pct"] == 50.0
+
+
+def test_validate_image_coverage_zero(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long",
+             "coordinates": [10.25, 106.0]},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["image_coverage_pct"] == 0.0
+
+
+# ── Summary quality (DI-010) ─────────────────────────────────────────────
+
+
+def test_validate_flags_summary_short(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "Quá ngắn", "area": "vinh-long"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["summary_short"] == 1
+    assert "summary_short" in {issue.code for issue in issues}
+
+
+def test_validate_flags_summary_long(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "x" * 501, "area": "vinh-long"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["summary_long"] == 1
+    assert "summary_long" in {issue.code for issue in issues}
+
+
+def test_validate_summary_optimal_not_flagged(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A",
+             "summary": "Mô tả đủ dài cho SEO, có nội dung hữu ích cho người đọc và tìm kiếm.", "area": "vinh-long"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["summary_short"] == 0
+    assert stats["summary_long"] == 0
+
+
+# ── Itinerary-stop area mismatch (DI-012) ────────────────────────────────
+
+
+def test_validate_flags_itinerary_area_mismatch(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "stop-bt", "type": "attraction", "name": "Stop BT", "summary": "S",
+             "area": "ben-tre", "coordinates": [10.25, 106.0]},
+        ],
+        "relationships": [],
+        "itineraries": [
+            {"id": "it-vl", "area": "vinh-long", "stops": [{"entityId": "stop-bt"}]},
+        ],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["itinerary_area_mismatches"] == 1
+    assert "itinerary_area_mismatch" in {issue.code for issue in issues}
+
+
+def test_validate_no_itinerary_area_mismatch_when_matching(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "stop-vl", "type": "attraction", "name": "Stop VL", "summary": "S",
+             "area": "vinh-long", "coordinates": [10.25, 106.0]},
+        ],
+        "relationships": [],
+        "itineraries": [
+            {"id": "it-vl", "area": "vinh-long", "stops": [{"entityId": "stop-vl"}]},
+        ],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["itinerary_area_mismatches"] == 0
+
+
+# ── Relationship type singletons (DI-013) ────────────────────────────────
+
+
+def test_validate_flags_rel_type_singletons(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "product", "name": "A", "summary": "A", "area": "vinh-long", "coordinates": [10.25, 106.0]},
+            {"id": "b", "type": "organization", "name": "B", "summary": "B", "area": "vinh-long", "coordinates": [10.26, 106.01]},
+        ],
+        "relationships": [
+            {"from": "a", "to": "b", "type": "supplies_to"},
+        ],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["rel_type_singletons"] >= 1
+    assert "rel_type_singletons" in {issue.code for issue in issues}
+
+
+def test_validate_no_rel_singletons_with_common_types(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long", "coordinates": [10.25, 106.0]},
+            {"id": "b", "type": "attraction", "name": "B", "summary": "B", "area": "vinh-long", "coordinates": [10.26, 106.01]},
+            {"id": "c", "type": "attraction", "name": "C", "summary": "C", "area": "vinh-long", "coordinates": [10.27, 106.02]},
+            {"id": "d", "type": "attraction", "name": "D", "summary": "D", "area": "vinh-long", "coordinates": [10.28, 106.03]},
+        ],
+        "relationships": [
+            {"from": "a", "to": "b", "type": "near"},
+            {"from": "c", "to": "d", "type": "near"},
+        ],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["rel_type_singletons"] == 0
+
+
+# ── _load_json error handling ────────────────────────────────────────────
+
+
+def test_load_json_raises_on_non_object(tmp_path: Path) -> None:
+    import pytest
+    f = tmp_path / "bad.json"
+    f.write_text("[1, 2, 3]", encoding="utf-8")
+    with pytest.raises(ValueError, match="must contain a JSON object"):
+        validate_data._load_json(f)
+
+
+# ── Duplicate relationships warning ──────────────────────────────────────
+
+
+def test_validate_flags_duplicate_relationships(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long", "coordinates": [10.25, 106.0]},
+            {"id": "b", "type": "attraction", "name": "B", "summary": "B", "area": "vinh-long", "coordinates": [10.26, 106.01]},
+        ],
+        "relationships": [
+            {"from": "a", "to": "b", "type": "related_to"},
+            {"from": "a", "to": "b", "type": "related_to"},
+        ],
+        "itineraries": [],
+    }
+
+    issues, _stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert "duplicate_relationships" in {issue.code for issue in issues}

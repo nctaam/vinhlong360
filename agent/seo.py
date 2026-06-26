@@ -388,6 +388,7 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
     ld: dict[str, Any] = {
         "@context": "https://schema.org",
         "@type": schema_type,
+        "@id": _entity_url(entity_id),
         "name": entity.get("name") or entity_id,
         "url": _entity_url(entity_id),
     }
@@ -579,6 +580,7 @@ def build_itinerary_jsonld(itinerary: dict[str, Any], by_id: dict[str, dict[str,
     ld: dict[str, Any] = {
         "@context": "https://schema.org",
         "@type": "TouristTrip",
+        "@id": _itinerary_url(iid),
         "name": itinerary.get("title") or itinerary.get("name") or iid,
         "url": _itinerary_url(iid),
         "inLanguage": "vi-VN",
@@ -622,24 +624,46 @@ def build_itinerary_jsonld(itinerary: dict[str, Any], by_id: dict[str, dict[str,
     return {k: v for k, v in ld.items() if v not in (None, "", [], {})}
 
 
-def build_area_jsonld(area_slug: str) -> dict[str, Any] | None:
+def build_area_jsonld(area_slug: str, data: dict[str, Any] | None = None) -> dict[str, Any] | None:
     name = AREA_NAMES.get(area_slug)
     if not name:
         return None
-    return {
+    area_url = f"{SITE}/khu-vuc/{quote(area_slug, safe='-_~')}"
+    ld: dict[str, Any] = {
         "@context": "https://schema.org",
         "@type": "TouristDestination",
+        "@id": area_url,
         "name": name,
-        "url": f"{SITE}/khu-vuc/{quote(area_slug, safe='-_~')}",
+        "url": area_url,
         "description": f"Khám phá {name} — điểm đến, ẩm thực, sản phẩm OCOP, lưu trú và trải nghiệm miền Tây.",
         "containedInPlace": {"@type": "Country", "name": "Việt Nam"},
         "inLanguage": "vi-VN",
     }
+    if data:
+        by_id_map = _by_id(data)
+        contained: list[dict[str, Any]] = []
+        for e in data.get("entities", []):
+            if not isinstance(e, dict) or not e.get("id") or e.get("type") == "place":
+                continue
+            if not _is_public(e):
+                continue
+            if _entity_area(e, by_id_map) == area_slug:
+                contained.append({
+                    "@type": TYPE_SCHEMA.get(str(e.get("type")), "Thing"),
+                    "name": e.get("name") or str(e["id"]),
+                    "url": _entity_url(str(e["id"])),
+                })
+            if len(contained) >= 50:
+                break
+        if contained:
+            ld["containsPlace"] = contained
+    return ld
 
 
 @router.get("/seo/jsonld/area/{area_slug}")
 def area_jsonld(area_slug: str):
-    result = build_area_jsonld(area_slug)
+    data = _load()
+    result = build_area_jsonld(area_slug, data)
     if not result:
         raise HTTPException(status_code=404, detail="not found")
     return result
