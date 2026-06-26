@@ -20,6 +20,7 @@ Mỗi user có 1 profile persistent qua sessions.
 import base64
 import json
 import hashlib
+import logging
 import os
 import re
 import time
@@ -27,6 +28,8 @@ from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 from threading import Lock, RLock
+
+logger = logging.getLogger(__name__)
 
 try:
     from cryptography.fernet import Fernet as _Fernet
@@ -321,7 +324,7 @@ class ColdMemory:
                 for uid, pdata in data.items():
                     self._profiles[uid] = UserProfile.from_dict(pdata)
         except Exception as e:
-            print(f"  [memory] Failed to load profiles: {e}")
+            logger.error("Failed to load profiles: %s", e)
 
     def _save_all(self):
         """Save all profiles to disk (encrypted)."""
@@ -331,7 +334,7 @@ class ColdMemory:
             encrypted = _encrypt(plaintext)
             self._profiles_file.write_text(encrypted, encoding="utf-8")
         except Exception as e:
-            print(f"  [memory] Failed to save profiles: {e}")
+            logger.error("Failed to save profiles: %s", e)
 
     def get_profile(self, user_id: str) -> UserProfile:
         with self._lock:

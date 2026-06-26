@@ -13,11 +13,14 @@ Thread-safe, chỉ dùng stdlib + openai.
 
 import base64
 import json
+import logging
 import os
 import re
 import threading
 import unicodedata
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 from openai import OpenAI
 
@@ -371,7 +374,7 @@ def recognize_image(
         model = _get_model()
         messages = build_vision_message(image_b64)
 
-        print(f"[image_recognition] Calling vision API model={model}")
+        logger.debug("Calling vision API model=%s", model)
         response = client.chat.completions.create(
             model=model,
             messages=messages,
@@ -381,7 +384,7 @@ def recognize_image(
         )
 
         raw = response.choices[0].message.content.strip()
-        print(f"[image_recognition] Vision API response length={len(raw)}")
+        logger.debug("Vision API response length=%d", len(raw))
 
         # Parse JSON from response (handle markdown code fences)
         json_text = raw
@@ -392,7 +395,7 @@ def recognize_image(
         vision_result = json.loads(json_text)
 
     except json.JSONDecodeError as exc:
-        print(f"[image_recognition] JSON parse error: {exc}, raw={raw[:200]}")
+        logger.warning("JSON parse error: %s, raw=%s", exc, raw[:200])
         # If we got text but not valid JSON, use the raw text as description
         vision_result = {
             "description": raw[:500] if raw else "Không thể phân tích kết quả",
@@ -401,7 +404,7 @@ def recognize_image(
             "tags": [],
         }
     except Exception as exc:
-        print(f"[image_recognition] Vision API error: {exc}")
+        logger.error("Vision API error: %s", exc)
         return _fallback_recognize(filename, entities)
 
     # Normalize result fields
@@ -497,7 +500,7 @@ def process_upload(
         knowledge._ensure()
         entities = knowledge._entities or {}
     except Exception as exc:
-        print(f"[image_recognition] Could not load entities: {exc}")
+        logger.warning("Could not load entities: %s", exc)
         entities = {}
 
     # Convert to base64 and recognize

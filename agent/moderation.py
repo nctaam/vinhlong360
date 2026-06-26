@@ -10,11 +10,14 @@ Chỉ gửi nội dung bài (không kèm định danh user) sang API nước ngo
 """
 
 import json
+import logging
 import os
 import re
 from datetime import datetime, timezone
 
 import httpx
+
+logger = logging.getLogger(__name__)
 
 from database import db
 
@@ -171,7 +174,7 @@ async def _moderate_text(content: str) -> dict:
             "categories": categories,
         }
     except Exception as e:
-        print(f"[MODERATION] Text moderation error: {e}")
+        logger.error("Text moderation error: %s", e)
         return {"score": 0.0, "reasons": [f"error: {e}"], "categories": {}}
 
 
@@ -222,7 +225,7 @@ async def _moderate_images(image_urls: list[str]) -> dict:
                     if score >= QUEUE_THRESHOLD:
                         all_reasons.append(f"image:{category}={likelihood}")
     except Exception as e:
-        print(f"[MODERATION] Image moderation error: {e}")
+        logger.error("Image moderation error: %s", e)
 
     return {
         "score": max_score,

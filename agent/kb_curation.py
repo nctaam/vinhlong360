@@ -19,8 +19,11 @@ All writes go to web/data.json and trigger knowledge.reload().
 """
 
 import json
+import logging
 import sys
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 AGENT_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = AGENT_DIR.parent
@@ -53,7 +56,7 @@ def _db_upsert(entity: dict):
         from database import db
         db.upsert_entity(entity)
     except Exception as e:  # noqa: BLE001 - không để lỗi DB làm hỏng thao tác (data.json vẫn ghi)
-        print(f"[kb_curation] CANH BAO: upsert DB that bai cho {entity.get('id')}: {e}")
+        logger.warning("DB upsert failed for %s: %s", entity.get("id"), e)
 
 
 def _db_delete(entity_id: str):
@@ -61,7 +64,7 @@ def _db_delete(entity_id: str):
         from database import db
         db.delete_entity(entity_id)  # cascade xoá cả relationships + FTS
     except Exception as e:  # noqa: BLE001
-        print(f"[kb_curation] CANH BAO: delete DB that bai cho {entity_id}: {e}")
+        logger.warning("DB delete failed for %s: %s", entity_id, e)
 
 
 def _is_provisional(e: dict) -> bool:
