@@ -1974,3 +1974,55 @@ class TestAnalyticsLogging:
             analytics._save({"test": True})
         finally:
             analytics.ANALYTICS_FILE = original
+
+
+# ═══════════════════════════════════════════════════════
+# Batch 5: auto_learn, data_quality, discover_province
+# ═══════════════════════════════════════════════════════
+
+
+class TestAutoLearnLogging:
+    """auto_learn.py must have logger and log failures."""
+
+    def test_has_logger(self):
+        with patch.dict(os.environ, {"LLM_API_KEY": "test", "LLM_BASE_URL": "http://test"}):
+            import auto_learn
+            assert hasattr(auto_learn, "logger")
+
+    def test_no_bare_except_pass(self):
+        import re as _re
+        source = (AGENT_DIR / "auto_learn.py").read_text(encoding="utf-8")
+        main_idx = source.find('if __name__')
+        if main_idx > 0:
+            source = source[:main_idx]
+        matches = _re.findall(r"except Exception:\s*\n\s*pass\b", source)
+        assert not matches, (
+            f"auto_learn.py has {len(matches)} 'except Exception: pass' — must log"
+        )
+
+
+class TestDataQualityLogging:
+    """data_quality.py must have module-level logger."""
+
+    def test_has_logger(self):
+        import data_quality
+        assert hasattr(data_quality, "logger")
+
+
+class TestDiscoverProvinceLogging:
+    """discover_province.py must have logger and log failures."""
+
+    def test_has_logger(self):
+        import discover_province
+        assert hasattr(discover_province, "logger")
+
+    def test_no_bare_except_pass(self):
+        import re as _re
+        source = (AGENT_DIR / "discover_province.py").read_text(encoding="utf-8")
+        main_idx = source.find('if __name__')
+        if main_idx > 0:
+            source = source[:main_idx]
+        matches = _re.findall(r"except Exception:\s*\n\s*pass\b", source)
+        assert not matches, (
+            f"discover_province.py has {len(matches)} 'except Exception: pass' — must log"
+        )

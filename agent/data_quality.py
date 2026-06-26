@@ -5,12 +5,15 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import logging
 import shutil
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
+
+logger = logging.getLogger(__name__)
 
 from database import db
 

@@ -20,6 +20,7 @@ Chạy:
 """
 
 import json
+import logging
 import os
 import re
 import sys
@@ -27,6 +28,8 @@ import time
 import hashlib
 from datetime import datetime
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 if sys.stdout.encoding != "utf-8":
@@ -243,7 +246,8 @@ def fetch_url(url: str) -> str | None:
         text = re.sub(r"<[^>]+>", " ", text)
         text = re.sub(r"\s+", " ", text).strip()
         return text[:6000]
-    except Exception:
+    except Exception as exc:
+        logger.warning("Failed to fetch %s: %s", url, exc)
         return None
 
 
@@ -280,7 +284,7 @@ Chỉ trả JSON, không text khác."""
         content = re.sub(r"\s*```$", "", content)
         return json.loads(content)
     except Exception as e:
-        print(f"  ⚠ Gap analysis error: {e}")
+        logger.warning("Gap analysis error: %s", e)
         return []
 
 
@@ -329,7 +333,7 @@ Chỉ trả JSON array, không text khác."""
             return []
         return items
     except Exception as e:
-        print(f"  ⚠ Extract error: {e}")
+        logger.warning("Entity extraction error: %s", e)
         return []
 
 
@@ -361,8 +365,8 @@ def to_entity(raw: dict, source_url: str) -> dict:
         coords = _geo.geocode(name, region=raw.get("location") or "Vĩnh Long")
         if coords:
             entity["coords"] = coords
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("Geocode failed for %s: %s", name, exc)
 
     return entity
 
@@ -655,8 +659,8 @@ def apply_learned(entities: list[dict]):
         try:
             import knowledge
             knowledge.reload()
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("Failed to reload knowledge after auto-learn: %s", exc)
     else:
         print("\n  Không có entity mới để thêm (tất cả đã trùng)")
     return added

@@ -29,6 +29,7 @@ Hoặc bật tự động qua scheduler: task "continuous-discovery" (xem schedu
 
 import argparse
 import json
+import logging
 import os
 import re
 import sys
@@ -37,6 +38,8 @@ import unicodedata
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 AGENT_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = AGENT_DIR.parent
@@ -118,7 +121,8 @@ def _district_regions():
     """Build finer per-district regions from KB places' legacyArea (deeper sweep)."""
     try:
         data = json.loads(DATA.read_text(encoding="utf-8"))
-    except Exception:
+    except Exception as exc:
+        logger.warning("Failed to load district data: %s", exc)
         return REGIONS
     seen, out = set(), []
     for e in data["entities"]:
@@ -157,7 +161,8 @@ def discover_stream(region, category, etype, model):
         return []
     try:
         items = json.loads(m.group(0))
-    except Exception:
+    except (json.JSONDecodeError, ValueError) as exc:
+        logger.warning("LLM returned invalid JSON for %s/%s: %s", region.get("area", "?"), etype, exc)
         return []
 
     out = []
@@ -282,8 +287,8 @@ def run_discovery(topics, regions, workers, model, apply, label="manual"):
         scheduler.sync_data_json_to_js()
         import knowledge
         knowledge.reload()
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.warning("Post-discover sync/reload failed: %s", exc)
     return summary
 
 
@@ -298,12 +303,14 @@ def _next_topic():
     try:
         if CURSOR_FILE.exists():
             idx = json.loads(CURSOR_FILE.read_text(encoding="utf-8")).get("idx", 0)
-    except Exception:
+    except Exception as exc:
+        logger.debug("Failed to read topic cursor: %s", exc)
         idx = 0
     topic = _TOPIC_ORDER[idx % len(_TOPIC_ORDER)]
     try:
         CURSOR_FILE.write_text(json.dumps({"idx": (idx + 1) % len(_TOPIC_ORDER)}), encoding="utf-8")
-    except Exception:
+    except Exception as exc:
+        logger.debug("Failed to write topic cursor: %s", exc)
         pass
     return topic
 
