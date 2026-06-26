@@ -1,4 +1,7 @@
 """
+DEPRECATED: This module is dead code (not imported by any production module).
+Its test data (data/train/trainset.json) is also missing. See docs/DEAD-CODE-AUDIT.md.
+
 vinhlong360 — Agent Training Harness.
 
 IMPORTANT: This does NOT fine-tune the LLM's weights (the model is an external
