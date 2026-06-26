@@ -338,7 +338,7 @@ async def get_post(post_id: str, user=Depends(get_current_user)):
     ph = db._ph
     with db._conn() as conn:
         row = db._fetchone(conn, f"""
-            SELECT p.*, u.display_name, u.avatar_url, u.phone,
+            SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
                    e.name as entity_name, e.type as entity_type
             FROM posts p
             JOIN users u ON u.id = p.user_id
@@ -418,7 +418,7 @@ async def update_post(post_id: str, body: UpdatePost, user=Depends(require_user)
                           moderation_status={ph} WHERE id::text={ph}""",
                         (new_content, json.dumps(hashtags, ensure_ascii=False), status, post_id))
         post = db._fetchone(conn, f"""
-            SELECT p.*, u.display_name, u.avatar_url, u.phone,
+            SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
                    e.name as entity_name, e.type as entity_type
             FROM posts p JOIN users u ON u.id = p.user_id
             LEFT JOIN entities e ON e.id = p.entity_id WHERE p.id::text = {ph}
@@ -489,7 +489,7 @@ async def get_feed(
 
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
-            SELECT p.*, u.display_name, u.avatar_url, u.phone,
+            SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
                    e.name as entity_name, e.type as entity_type, e.season as entity_season
             FROM posts p
             JOIN users u ON u.id = p.user_id
@@ -542,7 +542,7 @@ async def get_following_feed(
     """
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
-            SELECT p.*, u.display_name, u.avatar_url, u.phone,
+            SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
                    e.name as entity_name, e.type as entity_type
             FROM posts p
             JOIN users u ON u.id = p.user_id
@@ -585,7 +585,7 @@ async def search_posts(
 
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
-            SELECT p.*, u.display_name, u.avatar_url, u.phone,
+            SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
                    e.name as entity_name, e.type as entity_type
             FROM posts p
             JOIN users u ON u.id = p.user_id
@@ -634,7 +634,7 @@ async def search_users(
 
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
-            SELECT u.id, u.display_name, u.avatar_url,
+            SELECT u.id, u.display_name, u.avatar_url, u.username,
                    (SELECT COUNT(*) FROM posts p
                       WHERE p.user_id = u.id AND p.moderation_status = 'approved') AS post_count
             FROM users u
@@ -651,7 +651,8 @@ async def search_users(
         if d.get("display_name"):
             users.append({
                 "id": str(d["id"]), "display_name": d["display_name"],
-                "avatar_url": d.get("avatar_url"), "post_count": int(d.get("post_count") or 0),
+                "avatar_url": d.get("avatar_url"), "username": d.get("username"),
+                "post_count": int(d.get("post_count") or 0),
             })
     return {"users": users, "q": q, "has_more": len(users) == limit}
 
@@ -709,7 +710,7 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
         params.append(str(user["id"]))
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
-            SELECT u.id, u.display_name, u.avatar_url,
+            SELECT u.id, u.display_name, u.avatar_url, u.username,
                    COUNT(p.id) FILTER (WHERE p.post_type='review') AS reviews,
                    COUNT(p.id) AS posts,
                    COUNT(p.id) FILTER (WHERE jsonb_typeof(p.images)='array'
@@ -726,7 +727,7 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
                    ON fc.target_id = u.id::text
             WHERE u.is_active = TRUE AND u.display_name IS NOT NULL
             {block_clause}
-            GROUP BY u.id, u.display_name, u.avatar_url, fc.c
+            GROUP BY u.id, u.display_name, u.avatar_url, u.username, fc.c
             HAVING COUNT(p.id) > 0
         """, tuple(params))
 
@@ -745,6 +746,7 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
         level, label = _level_for(points)
         leaders.append({
             "id": str(d["id"]), "display_name": d["display_name"], "avatar_url": d.get("avatar_url"),
+            "username": d.get("username"),
             "points": points, "level": level, "level_label": label,
             "posts": posts, "reviews": reviews,
         })
@@ -756,15 +758,19 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
 async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0)):
     """Danh sách NGƯỜI mà user này đang theo dõi (hồ-sơ công-khai)."""
     ph = db._ph
+    uid = _resolve_user_id(user_id)
+    if not uid:
+        raise HTTPException(404, "Người dùng không tồn tại")
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
-            SELECT u.id, u.display_name, u.avatar_url
+            SELECT u.id, u.display_name, u.avatar_url, u.username
             FROM follows f JOIN users u ON u.id::text = f.target_id
             WHERE f.follower_id = {ph}::uuid AND f.target_type = 'user' AND u.is_active = TRUE
             ORDER BY f.created_at DESC LIMIT {ph} OFFSET {ph}
-        """, (user_id, limit, offset))
+        """, (uid, limit, offset))
     users = [{"id": str(db._row_to_dict(r)["id"]),
               "display_name": db._row_to_dict(r)["display_name"],
+              "username": db._row_to_dict(r).get("username"),
               "avatar_url": db._row_to_dict(r).get("avatar_url")} for r in rows]
     return {"users": users, "has_more": len(users) == limit}
 
@@ -773,15 +779,19 @@ async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100
 async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0)):
     """Danh sách NGƯỜI đang theo dõi user này (hồ-sơ công-khai)."""
     ph = db._ph
+    uid = _resolve_user_id(user_id)
+    if not uid:
+        raise HTTPException(404, "Người dùng không tồn tại")
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
-            SELECT u.id, u.display_name, u.avatar_url
+            SELECT u.id, u.display_name, u.avatar_url, u.username
             FROM follows f JOIN users u ON u.id = f.follower_id
             WHERE f.target_type = 'user' AND f.target_id = {ph} AND u.is_active = TRUE
             ORDER BY f.created_at DESC LIMIT {ph} OFFSET {ph}
-        """, (user_id, limit, offset))
+        """, (uid, limit, offset))
     users = [{"id": str(db._row_to_dict(r)["id"]),
               "display_name": db._row_to_dict(r)["display_name"],
+              "username": db._row_to_dict(r).get("username"),
               "avatar_url": db._row_to_dict(r).get("avatar_url")} for r in rows]
     return {"users": users, "has_more": len(users) == limit}
 
@@ -793,7 +803,7 @@ async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge
     me = str(user["id"])
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
-            SELECT u.id, u.display_name, u.avatar_url,
+            SELECT u.id, u.display_name, u.avatar_url, u.username,
                    COUNT(p.id) FILTER (WHERE p.post_type='review') AS reviews,
                    COUNT(p.id) AS posts,
                    COUNT(p.id) FILTER (WHERE jsonb_typeof(p.images)='array'
@@ -812,7 +822,7 @@ async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge
               AND u.id::text NOT IN (SELECT target_id FROM follows
                                        WHERE follower_id = {ph}::uuid AND target_type='user')
               AND u.id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = {ph}::uuid)
-            GROUP BY u.id, u.display_name, u.avatar_url, fc.c
+            GROUP BY u.id, u.display_name, u.avatar_url, u.username, fc.c
         """, (me, me, me))
     cands = []
     for r in rows:
@@ -824,7 +834,8 @@ async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge
         if points <= 0:
             continue
         cands.append({"id": str(d["id"]), "display_name": d["display_name"],
-                      "avatar_url": d.get("avatar_url"), "points": points, "posts": posts})
+                      "avatar_url": d.get("avatar_url"), "username": d.get("username"),
+                      "points": points, "posts": posts})
     cands.sort(key=lambda x: x["points"], reverse=True)
     return {"users": cands[:limit]}
 
@@ -846,7 +857,7 @@ async def get_entity_feed(
 
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
-            SELECT p.*, u.display_name, u.avatar_url, u.phone
+            SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username
             FROM posts p
             JOIN users u ON u.id = p.user_id
             WHERE p.entity_id = {ph} AND p.moderation_status = 'approved'
@@ -1123,7 +1134,7 @@ async def get_my_bookmarks(
     offset = (page - 1) * limit
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
-            SELECT p.*, u.display_name, u.avatar_url, u.phone,
+            SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
                    e.name as entity_name, e.type as entity_type
             FROM bookmarks b
             JOIN posts p ON p.id = b.post_id
@@ -1251,48 +1262,56 @@ def _reputation(conn, user_id: str, posts: int, reviews: int) -> dict:
 @router.get("/users/{user_id}")
 async def get_user_profile(user_id: str, user=Depends(get_current_user)):
     ph = db._ph
+    _is_uuid = len(user_id) == 36 and user_id.count("-") == 4
     with db._conn() as conn:
-        profile = db._fetchone(conn, f"""
-            SELECT id, display_name, avatar_url, cover_url, bio, created_at
-            FROM users WHERE id::text = {ph} AND is_active = TRUE
-        """, (user_id,))
+        if _is_uuid:
+            profile = db._fetchone(conn, f"""
+                SELECT id, display_name, avatar_url, cover_url, bio, username, created_at
+                FROM users WHERE id::text = {ph} AND is_active = TRUE
+            """, (user_id,))
+        else:
+            profile = db._fetchone(conn, f"""
+                SELECT id, display_name, avatar_url, cover_url, bio, username, created_at
+                FROM users WHERE lower(username) = {ph} AND is_active = TRUE
+            """, (user_id.lower(),))
 
     if not profile:
         raise HTTPException(404, "Người dùng không tồn tại")
 
     profile = db._row_to_dict(profile)
+    resolved_id = str(profile["id"])
 
     with db._conn() as conn:
         post_count = db._fetchone(conn, f"""
             SELECT COUNT(*) as c FROM posts
             WHERE user_id::text = {ph} AND moderation_status = 'approved'
-        """, (user_id,))
+        """, (resolved_id,))
         review_count = db._fetchone(conn, f"""
             SELECT COUNT(*) as c FROM posts
             WHERE user_id::text = {ph} AND post_type = 'review' AND moderation_status = 'approved'
-        """, (user_id,))
+        """, (resolved_id,))
 
     posts_n = post_count["c"] if post_count else 0
     reviews_n = review_count["c"] if review_count else 0
     with db._conn() as conn:
-        reputation = _reputation(conn, user_id, posts_n, reviews_n)
+        reputation = _reputation(conn, resolved_id, posts_n, reviews_n)
         following_row = db._fetchone(conn, f"""
             SELECT COUNT(*) as c FROM follows
             WHERE follower_id::text = {ph} AND target_type = 'user'
-        """, (user_id,))
+        """, (resolved_id,))
     follower_count = reputation["followers"]
 
     privacy = None
     try:
         with db._conn() as conn:
-            prow = db._fetchone(conn, f"SELECT * FROM user_privacy WHERE user_id = {ph}::uuid", (user_id,))
+            prow = db._fetchone(conn, f"SELECT * FROM user_privacy WHERE user_id = {ph}::uuid", (resolved_id,))
             if prow:
                 privacy = db._row_to_dict(prow)
     except Exception:
-        logger.warning("Failed to load privacy settings for user %s", user_id)
+        logger.warning("Failed to load privacy settings for user %s", resolved_id)
 
     viewer_id = str(user["id"]) if user else None
-    is_self = viewer_id == user_id
+    is_self = viewer_id == resolved_id
     vis = privacy["profile_visibility"] if privacy else "public"
 
     is_follower = False
@@ -1301,13 +1320,14 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
             frow = db._fetchone(conn, f"""
                 SELECT 1 FROM follows
                 WHERE follower_id = {ph}::uuid AND target_type = 'user' AND target_id = {ph}
-            """, (viewer_id, user_id))
+            """, (viewer_id, resolved_id))
             is_follower = frow is not None
 
     if vis == "private" and not is_self and not is_follower:
         return {
             "user": {
                 "id": str(profile["id"]),
+                "username": profile.get("username"),
                 "display_name": profile["display_name"],
                 "avatar_url": profile.get("avatar_url"),
                 "cover_url": profile.get("cover_url"),
@@ -1325,6 +1345,7 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
     return {
         "user": {
             "id": str(profile["id"]),
+            "username": profile.get("username"),
             "display_name": profile["display_name"],
             "avatar_url": profile.get("avatar_url"),
             "cover_url": profile.get("cover_url"),
@@ -1349,10 +1370,13 @@ async def get_user_posts(
     page: int = Query(1, ge=1), limit: int = Query(20, ge=1, le=50),
 ):
     ph = db._ph
+    uid = _resolve_user_id(user_id)
+    if not uid:
+        raise HTTPException(404, "Người dùng không tồn tại")
     offset = (page - 1) * limit
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
-            SELECT p.*, u.display_name, u.avatar_url, u.phone,
+            SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username, u.username,
                    e.name as entity_name, e.type as entity_type
             FROM posts p
             JOIN users u ON u.id = p.user_id
@@ -1360,7 +1384,7 @@ async def get_user_posts(
             WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved'
             ORDER BY p.created_at DESC
             LIMIT {ph} OFFSET {ph}
-        """, (user_id, limit, offset))
+        """, (uid, limit, offset))
 
     return {"posts": [_format_post(db._row_to_dict(r)) for r in rows]}
 
@@ -1409,6 +1433,20 @@ def get_trending_posts(limit: int = 10, entity_type: str = None) -> list[dict]:
 
 
 # ── Format helpers ──
+
+
+def _resolve_user_id(user_id: str) -> str | None:
+    """Resolve a user_id param (UUID or username) to actual UUID string."""
+    _is_uuid = len(user_id) == 36 and user_id.count("-") == 4
+    if _is_uuid:
+        return user_id
+    ph = db._ph
+    with db._conn() as conn:
+        row = db._fetchone(conn,
+            f"SELECT id FROM users WHERE lower(username) = {ph} AND is_active = TRUE",
+            (user_id.lower(),))
+    return str(row["id"]) if row else None
+
 
 def _format_post(row: dict) -> dict:
     images = row.get("images", [])
@@ -1459,14 +1497,15 @@ def _format_post(row: dict) -> dict:
         "user_bookmarked": row.get("is_bookmarked", False),
         "created_at": str(row.get("created_at", "")),
         "display_name": row.get("display_name", ""),
+        "username": row.get("username"),
         "avatar": row.get("avatar_url"),
-        # P0-8: KHÔNG trả phone (PII) trong payload công khai
         "entity_id": row.get("entity_id"),
         "entity_name": row.get("entity_name"),
         "entity_type": row.get("entity_type"),
         "author": {
             "id": str(row.get("user_id", "")),
             "display_name": row.get("display_name", ""),
+            "username": row.get("username"),
             "avatar_url": row.get("avatar_url"),
         },
         "entity": {

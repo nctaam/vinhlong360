@@ -1,7 +1,7 @@
 <template>
   <article class="thread-post" :class="{ 'has-replies': hasReplies }">
     <div class="thread-left">
-      <NuxtLink v-if="post.user_id" :to="`/nguoi-dung/${post.user_id}`" class="thread-avatar-link">
+      <NuxtLink v-if="post.user_id" :to="`/nguoi-dung/${post.username || post.user_id}`" class="thread-avatar-link">
         <span v-if="post.avatar" class="avatar thread-avatar">
           <img :src="post.avatar" :alt="post.display_name" loading="lazy" decoding="async" width="40" height="40" @error="(e) => ((e.target as HTMLImageElement).style.display = 'none')" />
         </span>
@@ -13,7 +13,7 @@
 
     <div class="thread-right">
       <div class="thread-head">
-        <NuxtLink v-if="post.user_id" :to="`/nguoi-dung/${post.user_id}`" class="thread-author">
+        <NuxtLink v-if="post.user_id" :to="`/nguoi-dung/${post.username || post.user_id}`" class="thread-author">
           {{ post.display_name || post.phone || 'Người dùng' }}
         </NuxtLink>
         <span v-else class="thread-author">{{ post.display_name || 'Người dùng' }}</span>

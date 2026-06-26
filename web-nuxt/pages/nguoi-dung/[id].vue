@@ -193,7 +193,7 @@
             <template v-else>
               <ul v-if="followModalList.length" class="fm-list">
                 <li v-for="u in followModalList" :key="u.id">
-                  <NuxtLink :to="`/nguoi-dung/${u.id}`" class="fm-user" @click="followModalOpen = false">
+                  <NuxtLink :to="`/nguoi-dung/${u.username || u.id}`" class="fm-user" @click="followModalOpen = false">
                     <span class="avatar fm-avatar">{{ (u.display_name || '?').charAt(0).toUpperCase() }}</span>
                     <span class="fm-name">{{ u.display_name }}</span>
                   </NuxtLink>
@@ -220,7 +220,7 @@ const { reportPost } = useReport()
 const { repost, quote } = useRepost()
 
 useHead({
-  link: computed(() => [{ rel: 'canonical', href: canonicalUrl(`/nguoi-dung/${userId.value}`) }]),
+  link: computed(() => [{ rel: 'canonical', href: canonicalUrl(`/nguoi-dung/${profile.value?.username || userId.value}`) }]),
   meta: [{ name: 'robots', content: 'noindex,follow' }],
 })
 

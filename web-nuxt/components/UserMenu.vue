@@ -6,7 +6,7 @@
     </button>
     <Transition name="menu-pop">
     <div v-if="open" ref="menuRef" class="dropdown-menu show" role="menu" @keydown="onMenuKeydown">
-      <NuxtLink v-if="user" :to="`/nguoi-dung/${user.id}`" class="dropdown-item" role="menuitem" @click="open = false">
+      <NuxtLink v-if="user" :to="`/nguoi-dung/${user.username || user.id}`" class="dropdown-item" role="menuitem" @click="open = false">
         👤 Trang cá nhân
       </NuxtLink>
       <div class="dropdown-divider"></div>

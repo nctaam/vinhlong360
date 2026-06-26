@@ -3,6 +3,7 @@ export interface User {
   phone: string
   display_name: string | null
   avatar_url: string | null
+  username: string | null
   bio: string
   role: string
   created_at: string

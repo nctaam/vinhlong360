@@ -72,7 +72,7 @@
         <!-- Comment items as thread replies -->
         <div v-for="(c, idx) in comments" :key="c.id" class="thread-reply">
           <div class="thread-left">
-            <NuxtLink v-if="c.author?.id" :to="`/nguoi-dung/${c.author?.id}`" class="thread-avatar-link">
+            <NuxtLink v-if="c.author?.id" :to="`/nguoi-dung/${c.author?.username || c.author?.id}`" class="thread-avatar-link">
               <span class="avatar thread-avatar avatar-sm">{{ (c.author?.display_name || '?').charAt(0).toUpperCase() }}</span>
             </NuxtLink>
             <span v-else class="avatar thread-avatar avatar-sm">{{ (c.author?.display_name || '?').charAt(0).toUpperCase() }}</span>
@@ -80,7 +80,7 @@
           </div>
           <div class="thread-right">
             <div class="thread-head">
-              <NuxtLink v-if="c.author?.id" :to="`/nguoi-dung/${c.author?.id}`" class="thread-author">
+              <NuxtLink v-if="c.author?.id" :to="`/nguoi-dung/${c.author?.username || c.author?.id}`" class="thread-author">
                 {{ c.author?.display_name || 'Người dùng' }}
               </NuxtLink>
               <span v-else class="thread-author">{{ c.author?.display_name || 'Người dùng' }}</span>
@@ -95,13 +95,13 @@
 
             <!-- Replies lồng (threaded, 1 cấp) -->
             <div v-for="r in (c.replies || [])" :key="r.id" class="thread-subreply">
-              <NuxtLink v-if="r.author?.id" :to="`/nguoi-dung/${r.author?.id}`" class="thread-avatar-link">
+              <NuxtLink v-if="r.author?.id" :to="`/nguoi-dung/${r.author?.username || r.author?.id}`" class="thread-avatar-link">
                 <span class="avatar thread-avatar avatar-xs">{{ (r.author?.display_name || '?').charAt(0).toUpperCase() }}</span>
               </NuxtLink>
               <span v-else class="avatar thread-avatar avatar-xs">{{ (r.author?.display_name || '?').charAt(0).toUpperCase() }}</span>
               <div class="subreply-body">
                 <div class="thread-head">
-                  <NuxtLink v-if="r.author?.id" :to="`/nguoi-dung/${r.author?.id}`" class="thread-author">{{ r.author?.display_name || 'Người dùng' }}</NuxtLink>
+                  <NuxtLink v-if="r.author?.id" :to="`/nguoi-dung/${r.author?.username || r.author?.id}`" class="thread-author">{{ r.author?.display_name || 'Người dùng' }}</NuxtLink>
                   <span v-else class="thread-author">{{ r.author?.display_name || 'Người dùng' }}</span>
                   <time class="thread-time" :datetime="r.created_at">{{ timeAgo(r.created_at) }}</time>
                 </div>

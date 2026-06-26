@@ -79,6 +79,25 @@
         </label>
 
         <label class="sf-field">
+          <span class="sf-label">Username <span class="sf-hint">— dùng làm đường dẫn hồ sơ</span></span>
+          <div class="sf-username-row">
+            <span class="sf-username-prefix">vinhlong360.vn/nguoi-dung/</span>
+            <input
+              v-model="username"
+              type="text"
+              class="sf-input sf-username-input"
+              maxlength="30"
+              placeholder="ten-cua-ban"
+              autocomplete="username"
+              @input="onUsernameInput"
+            />
+          </div>
+          <span v-if="usernameStatus === 'taken'" class="sf-error" role="alert">Username đã được sử dụng</span>
+          <span v-else-if="usernameStatus === 'invalid'" class="sf-error" role="alert">{{ usernameError }}</span>
+          <span v-else-if="usernameStatus === 'ok'" class="sf-success">Username khả dụng ✓</span>
+        </label>
+
+        <label class="sf-field">
           <span class="sf-label">Giới thiệu <span class="sf-hint">({{ bio.length }}/300)</span></span>
           <textarea
             v-model="bio"
@@ -94,7 +113,7 @@
             <span v-if="saving" class="spinner spinner-sm" aria-hidden="true"></span>
             {{ saving ? 'Đang lưu…' : 'Lưu thay đổi' }}
           </button>
-          <NuxtLink v-if="user" :to="`/nguoi-dung/${user.id}`" class="btn btn-ghost">Xem hồ sơ</NuxtLink>
+          <NuxtLink v-if="user" :to="`/nguoi-dung/${savedUsername || user.id}`" class="btn btn-ghost">Xem hồ sơ</NuxtLink>
         </div>
       </form>
     </div>
@@ -242,7 +261,7 @@
       <div v-else-if="blockedUsers.length" class="sessions-list">
         <div v-for="b in blockedUsers" :key="b.id" class="session-item">
           <div class="session-info">
-            <NuxtLink :to="`/nguoi-dung/${b.id}`" class="session-ua">{{ b.display_name || 'Người dùng' }}</NuxtLink>
+            <NuxtLink :to="`/nguoi-dung/${b.username || b.id}`" class="session-ua">{{ b.display_name || 'Người dùng' }}</NuxtLink>
           </div>
           <button type="button" class="btn btn-ghost btn-sm" @click="unblockUser(b.id, b.display_name)">Bỏ chặn</button>
         </div>
@@ -324,9 +343,32 @@ const displayName = ref(user.value?.display_name || '')
 const bio = ref('')
 const savedName = ref(displayName.value)
 const savedBio = ref('')
-const isDirty = computed(() => displayName.value !== savedName.value || bio.value !== savedBio.value)
+const isDirty = computed(() => displayName.value !== savedName.value || bio.value !== savedBio.value || username.value !== savedUsername.value)
 const saving = ref(false)
 const nameError = ref('')
+const username = ref(user.value?.username || '')
+const savedUsername = ref(username.value)
+const usernameStatus = ref<'' | 'ok' | 'taken' | 'invalid' | 'checking'>('')
+const usernameError = ref('')
+let usernameCheckTimer: ReturnType<typeof setTimeout> | null = null
+
+function onUsernameInput() {
+  const val = username.value.trim().toLowerCase()
+  if (!val) { usernameStatus.value = ''; return }
+  if (val.length < 3) { usernameStatus.value = 'invalid'; usernameError.value = 'Tối thiểu 3 ký tự'; return }
+  if (!/^[a-z][a-z0-9._-]*$/.test(val)) { usernameStatus.value = 'invalid'; usernameError.value = 'Chỉ chữ cái, số, dấu chấm, gạch ngang'; return }
+  usernameStatus.value = 'checking'
+  if (usernameCheckTimer) clearTimeout(usernameCheckTimer)
+  usernameCheckTimer = setTimeout(async () => {
+    try {
+      const res = await $fetch<{ available: boolean; reason?: string }>(`/auth/check-username/${encodeURIComponent(val)}`, { headers: authHeaders() })
+      if (username.value.trim().toLowerCase() !== val) return
+      if (res.available) { usernameStatus.value = 'ok' }
+      else { usernameStatus.value = 'taken'; usernameError.value = res.reason || 'Đã được sử dụng' }
+    } catch { usernameStatus.value = '' }
+  }, 500)
+}
+
 const uploadingAvatar = ref(false)
 const avatarPreview = ref('')
 
@@ -370,6 +412,7 @@ onMounted(async () => {
     const u = res?.user ?? res
     if (u?.bio) { bio.value = u.bio; savedBio.value = u.bio }
     if (!displayName.value && u?.display_name) { displayName.value = u.display_name; savedName.value = u.display_name }
+    if (u?.username) { username.value = u.username; savedUsername.value = u.username }
   } catch { /* prefill is best-effort */ }
   lazyLoadTab(activeTab.value)
 })
@@ -598,19 +641,29 @@ async function save() {
     nameError.value = 'Tên hiển thị phải từ 2 ký tự trở lên'
     return
   }
+  if (usernameStatus.value === 'taken' || usernameStatus.value === 'invalid') {
+    showToast('Vui lòng kiểm tra lại username', 'error')
+    return
+  }
   saving.value = true
   try {
+    const body: Record<string, any> = { display_name: name, bio: bio.value.trim() }
+    const uname = username.value.trim().toLowerCase()
+    if (uname !== savedUsername.value) body.username = uname || null
     await $fetch('/auth/profile', {
       method: 'PUT',
       headers: authHeaders(),
-      body: { display_name: name, bio: bio.value.trim() },
+      body,
     })
     await fetchMe()
     savedName.value = displayName.value
     savedBio.value = bio.value
+    savedUsername.value = username.value.trim().toLowerCase()
+    usernameStatus.value = ''
     showToast('Đã lưu hồ sơ', 'success')
   } catch (e: any) {
     if (e?.response?.status === 401) { handleSessionExpired(); return }
+    if (e?.response?.status === 409) { usernameStatus.value = 'taken'; showToast('Username đã được sử dụng', 'error'); return }
     showToast(e?.data?.detail || 'Không thể lưu hồ sơ', 'error')
   } finally {
     saving.value = false
@@ -637,6 +690,7 @@ onUnmounted(() => {
   }
   if (avatarPreview.value?.startsWith('blob:')) URL.revokeObjectURL(avatarPreview.value)
   if (coverPreview.value?.startsWith('blob:')) URL.revokeObjectURL(coverPreview.value)
+  if (usernameCheckTimer) clearTimeout(usernameCheckTimer)
 })
 </script>
 
@@ -677,6 +731,10 @@ onUnmounted(() => {
 .sf-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .sf-textarea { resize: vertical; min-height: 90px; }
 .sf-error { color: var(--danger, #c0392b); font-size: .85rem; }
+.sf-success { color: var(--accent, #219653); font-size: .85rem; }
+.sf-username-row { display: flex; align-items: center; gap: 0; border: 1px solid var(--border-input); border-radius: var(--radius-md); overflow: hidden; }
+.sf-username-prefix { padding: .65rem .6rem; background: var(--bg-warm, #f5f5f5); color: var(--ink-700); font-size: .85rem; white-space: nowrap; border-right: 1px solid var(--border-input); flex-shrink: 0; }
+.sf-username-input { border: none !important; border-radius: 0 !important; flex: 1; min-width: 0; }
 .sf-actions { display: flex; gap: .75rem; align-items: center; }
 .sf-avatar-section { display: flex; align-items: center; gap: 1rem; }
 .sf-avatar-preview {
@@ -754,6 +812,8 @@ onUnmounted(() => {
 .dark .session-item.current { border-color: var(--accent); background: color-mix(in oklab, var(--accent) 8%, var(--bg-alt)); }
 .dark .settings-danger { border-color: rgba(192,57,43,.3); }
 .dark .sf-avatar-preview { border-color: var(--line); }
+.dark .sf-username-row { border-color: var(--line); }
+.dark .sf-username-prefix { background: var(--bg-alt); border-color: var(--line); }
 .dark .notif-pref-item { border-color: var(--line); }
 .dark .notif-pref-item:hover { background: var(--bg-alt); }
 
@@ -766,5 +826,6 @@ onUnmounted(() => {
   .settings-tabs { gap: 0; }
   .settings-tab { padding: .5rem .65rem; font-size: .8rem; }
   .sf-input { font-size: 16px; }
+  .sf-username-prefix { font-size: .75rem; padding: .65rem .4rem; }
 }
 </style>

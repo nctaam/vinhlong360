@@ -234,7 +234,7 @@
               <p class="onboard-title">Gợi ý theo dõi</p>
               <div class="onboard-list">
                 <div v-for="s in suggestedUsers.slice(0, 5)" :key="s.id" class="onboard-user">
-                  <NuxtLink :to="`/nguoi-dung/${s.id}`" class="onboard-info">
+                  <NuxtLink :to="`/nguoi-dung/${s.username || s.id}`" class="onboard-info">
                     <span class="avatar avatar-sm">{{ (s.display_name || '?').charAt(0).toUpperCase() }}</span>
                     <span class="onboard-name">{{ s.display_name }}</span>
                   </NuxtLink>
@@ -290,7 +290,7 @@
           <h3>Thành viên tích cực</h3>
           <ol class="leaderboard-list">
             <li v-for="(m, i) in topMembers" :key="m.id">
-              <NuxtLink :to="`/nguoi-dung/${m.id}`" class="lb-row">
+              <NuxtLink :to="`/nguoi-dung/${m.username || m.id}`" class="lb-row">
                 <span class="lb-rank" :class="`lb-rank-${i + 1}`">{{ i + 1 }}</span>
                 <span class="avatar lb-avatar">{{ (m.display_name || '?').charAt(0).toUpperCase() }}</span>
                 <span class="lb-name">{{ m.display_name }}</span>
@@ -305,7 +305,7 @@
           <h3>Có thể bạn quan tâm</h3>
           <ul class="suggest-list">
             <li v-for="s in suggestedUsers" :key="s.id" class="suggest-row">
-              <NuxtLink :to="`/nguoi-dung/${s.id}`" class="suggest-user">
+              <NuxtLink :to="`/nguoi-dung/${s.username || s.id}`" class="suggest-user">
                 <span class="avatar suggest-avatar">{{ (s.display_name || '?').charAt(0).toUpperCase() }}</span>
                 <span class="suggest-name">{{ s.display_name }}</span>
               </NuxtLink>
