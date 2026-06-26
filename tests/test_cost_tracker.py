@@ -316,12 +316,12 @@ class TestCostAttributionPersistence(unittest.TestCase):
 class TestCostAttributionAutoSave(unittest.TestCase):
 
     def test_auto_save_after_interval(self):
+        from cost_tracker import _AUTO_SAVE_INTERVAL
         attr = _fresh_attribution()
         with patch.object(attr, "_save") as mock_save:
-            for _ in range(49):
+            for _ in range(_AUTO_SAVE_INTERVAL - 1):
                 _record_helper(attr)
             mock_save.assert_not_called()
-            # 50th record should trigger auto-save
             _record_helper(attr)
             mock_save.assert_called_once()
 

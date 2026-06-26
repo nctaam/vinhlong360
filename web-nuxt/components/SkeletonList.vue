@@ -72,10 +72,14 @@ withDefaults(defineProps<{ count?: number }>(), { count: 5 })
 :root .dark .skl-pill,
 :root .dark .skl-img,
 :root .dark .skl-line {
-  background: linear-gradient(90deg, var(--bg-alt) 25%, rgba(255,255,255,.06) 50%, var(--bg-alt) 75%);
+  background: linear-gradient(90deg, var(--bg-alt) 25%, rgba(255,255,255,.1) 50%, var(--bg-alt) 75%);
   background-size: 200% 100%;
 }
 @media (prefers-reduced-motion: reduce) {
   .skl-row, .skl-badge, .skl-pill, .skl-img, .skl-line { animation: none; }
+}
+@media (forced-colors: active) {
+  .skl-row { border: 1px solid CanvasText; }
+  .skl-badge, .skl-pill, .skl-img, .skl-line { background: Canvas; border: 1px solid GrayText; }
 }
 </style>

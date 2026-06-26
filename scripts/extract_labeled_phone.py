@@ -8,7 +8,8 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parent.parent
 DATA=ROOT/"web/data.json"
 APPLY="--apply" in sys.argv
-d=json.load(open(DATA,encoding="utf-8"))
+with open(DATA,encoding="utf-8") as f:
+    d=json.load(f)
 # phone có nhãn liên-hệ ngay trước (trong ~12 ký tự)
 LABELED=re.compile(r"(?:điện thoại|đt|sđt|hotline|tel|liên hệ|phone)\s*[:.]?\s*((?:0|\+?84)(?:\d[\s.\-]?){8,10}\d)", re.I)
 def norm_phone(s): return re.sub(r"[\s.\-]","",s)

@@ -53,15 +53,19 @@ withDefaults(defineProps<{ count?: number }>(), { count: 6 })
   100% { background-position: -200% 0; }
 }
 :root .dark .sk-cover {
-  background: linear-gradient(90deg, rgba(255,255,255,.06) 25%, rgba(255,255,255,.12) 50%, rgba(255,255,255,.06) 75%);
+  background: linear-gradient(90deg, rgba(255,255,255,.08) 25%, rgba(255,255,255,.15) 50%, rgba(255,255,255,.08) 75%);
   background-size: 200% 100%;
 }
 :root .dark .sk-line {
-  background: linear-gradient(90deg, var(--bg-alt) 25%, rgba(255,255,255,.06) 50%, var(--bg-alt) 75%);
+  background: linear-gradient(90deg, var(--bg-alt) 25%, rgba(255,255,255,.1) 50%, var(--bg-alt) 75%);
   background-size: 200% 100%;
 }
 @media (prefers-reduced-motion: reduce) {
   .skeleton-card { animation: none; }
   .sk-cover, .sk-line { animation: none; }
+}
+@media (forced-colors: active) {
+  .skeleton-card { border: 1px solid CanvasText; }
+  .sk-cover, .sk-line { background: Canvas; border: 1px solid GrayText; }
 }
 </style>

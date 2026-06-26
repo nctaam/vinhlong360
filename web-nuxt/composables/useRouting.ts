@@ -39,6 +39,7 @@ export async function fetchRoute(
   coords: [number, number][], // [lat, lng] pairs
   mode: TransportMode = 'driving'
 ): Promise<RouteResult | null> {
+  if (import.meta.server) return null
   if (coords.length < 2) return null
 
   const coordStr = coords.map(([lat, lng]) => `${lng},${lat}`).join(';')

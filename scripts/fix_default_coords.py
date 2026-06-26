@@ -17,7 +17,7 @@ entities = data["entities"]
 def norm_coords(val):
     if isinstance(val, str):
         try: val = json.loads(val)
-        except: return None
+        except (ValueError, json.JSONDecodeError): return None
     if isinstance(val, dict):
         lat = val.get("lat", val.get("latitude"))
         lng = val.get("lng", val.get("lon", val.get("longitude")))

@@ -453,11 +453,13 @@ def enrich_all():
             entity["updatedAt"] = "2026-06-09"
             enriched_count += 1
 
-    # Write back
-    DATA_FILE.write_text(
+    # Write back (atomic: tmp + replace)
+    tmp = DATA_FILE.with_suffix(".tmp")
+    tmp.write_text(
         json.dumps(data, ensure_ascii=False, indent=2),
         encoding="utf-8"
     )
+    tmp.replace(DATA_FILE)
 
     # Stats
     has_coords = sum(1 for e in entities if e.get("coords"))

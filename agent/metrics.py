@@ -21,8 +21,11 @@ Export:
 Thread-safe: all state mutations guarded by threading.Lock.
 """
 
+import logging
 import math
 import time
+
+logger = logging.getLogger(__name__)
 from threading import Lock
 from typing import Dict, List, Optional, Sequence, Tuple
 
@@ -32,6 +35,7 @@ from typing import Dict, List, Optional, Sequence, Tuple
 # ══════════════════════════════════════════════════
 
 _registry: List["_MetricBase"] = []
+_registry_by_name: Dict[str, "_MetricBase"] = {}
 _registry_lock = Lock()
 
 
@@ -39,6 +43,7 @@ def _register(metric: "_MetricBase") -> None:
     """Add a metric to the global registry."""
     with _registry_lock:
         _registry.append(metric)
+        _registry_by_name[metric.name] = metric
 
 
 def _labels_key(labels: Dict[str, str]) -> Tuple[Tuple[str, str], ...]:
@@ -441,11 +446,10 @@ def set_gauge(name: str, value: float, labels: Optional[Dict[str, str]] = None) 
         KeyError: If no gauge with that name exists in the registry.
     """
     with _registry_lock:
-        for m in _registry:
-            if m.name == name and isinstance(m, Gauge):
-                m.set(labels, value)
-                return
-    raise KeyError(f"No Gauge metric named '{name}' in the registry")
+        m = _registry_by_name.get(name)
+    if m is None or not isinstance(m, Gauge):
+        raise KeyError(f"No Gauge metric named '{name}' in the registry")
+    m.set(labels, value)
 
 
 # ══════════════════════════════════════════════════

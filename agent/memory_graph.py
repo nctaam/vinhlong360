@@ -22,6 +22,7 @@ Dependencies: stdlib only (json, threading, time, pathlib, collections)
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import time
@@ -31,6 +32,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from threading import Lock
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 
 # ── Paths ────────────────────────────────────────
@@ -105,10 +108,14 @@ class MemoryEdge:
         if not self.timestamps:
             self.timestamps = [time.time()]
 
+    _MAX_TIMESTAMPS = 100
+
     def reinforce(self, amount: float = 1.0):
         """Strengthen the edge and record the timestamp."""
         self.weight += amount
         self.timestamps.append(time.time())
+        if len(self.timestamps) > self._MAX_TIMESTAMPS:
+            self.timestamps = self.timestamps[-self._MAX_TIMESTAMPS:]
 
     def to_dict(self) -> dict:
         return {
@@ -181,7 +188,7 @@ class MemoryGraph:
                 self._adjacency[edge.target].add(key)
 
         except Exception as e:
-            print(f"  [memory_graph] Failed to load graph: {e}")
+            logger.warning("Failed to load graph: %s", e)
 
     def save(self):
         """Persist graph to disk with atomic write (write .tmp then rename)."""
@@ -207,7 +214,7 @@ class MemoryGraph:
 
             self._mutations_since_save = 0
         except Exception as e:
-            print(f"  [memory_graph] Failed to save graph: {e}")
+            logger.warning("Failed to save graph: %s", e)
 
     def _maybe_auto_save(self):
         """Auto-save if we've hit the mutation threshold. Caller must hold lock."""
@@ -598,6 +605,16 @@ class MemoryGraph:
             else:
                 self._save_unlocked()
 
+    def health_check(self) -> dict:
+        """Quick readiness probe for the memory graph."""
+        with self._lock:
+            return {
+                "status": "ok" if self._nodes else "empty",
+                "node_count": len(self._nodes),
+                "edge_count": len(self._edges),
+                "file_exists": self._path.exists(),
+            }
+
     # ── LLM-Based Fact Extraction (optional) ─────
 
     def extract_facts(self, message: str, reply: str) -> list[tuple[str, str, str]]:
@@ -613,8 +630,8 @@ class MemoryGraph:
             from autonomous_budget import enabled as _ab_enabled, try_consume as _ab_consume
             if _ab_enabled() and _ab_consume(1):
                 return self._extract_facts_llm(message, reply)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("LLM fact extraction failed, using keywords: %s", exc)
         return self._extract_facts_keywords(message, reply)
 
     def _extract_facts_llm(self, message: str, reply: str) -> list[tuple[str, str, str]]:
@@ -663,8 +680,12 @@ class MemoryGraph:
             if text.startswith("json"):
                 text = text[4:]
 
-        triples_raw = json.loads(text)
-        return [(t[0], t[1], t[2]) for t in triples_raw if len(t) >= 3]
+        try:
+            triples_raw = json.loads(text)
+            return [(t[0], t[1], t[2]) for t in triples_raw if len(t) >= 3]
+        except (json.JSONDecodeError, TypeError, IndexError) as exc:
+            logger.warning("LLM triple extraction parse failed: %s, raw=%s", exc, text[:200])
+            return []
 
     def _extract_facts_keywords(self, message: str,
                                 reply: str) -> list[tuple[str, str, str]]:
@@ -809,7 +830,7 @@ class MemoryGraph:
                 self.add_node(obj, type="entity", properties={"name": obj})
                 self.add_edge(subj, obj, normalized_rel)
         except Exception:
-            pass  # Fact extraction is best-effort
+            logger.debug("Fact extraction failed (best-effort)", exc_info=True)
 
         # Final save
         self.save()

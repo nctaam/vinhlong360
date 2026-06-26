@@ -1,4 +1,7 @@
 """
+DEPRECATED: This module is dead code (CLI-only, not imported by any module).
+One-time batch enrichment script. See docs/DEAD-CODE-AUDIT.md.
+
 vinhlong360 — GPT 5.5 Token Burner: Enrichment Mega-Batch
 
 Chạy SONG SONG tối đa để đốt token GPT 5.5 nhanh nhất:
@@ -92,7 +95,7 @@ tokens_used = {"input": 0, "output": 0, "calls": 0}
 
 
 def _client():
-    return OpenAI(api_key=API_KEY, base_url=BASE_URL)
+    return OpenAI(api_key=API_KEY, base_url=BASE_URL, timeout=60)
 
 
 def _llm(prompt, model=None, temperature=0.7, max_tokens=1500):
@@ -561,8 +564,9 @@ def task_relations(entities, dry_run=False, workers=12):
                 if not dry_run:
                     try:
                         db.add_relationship(rel["from_id"], rel["to_id"], rel["type"])
-                    except Exception:
-                        pass
+                    except Exception as exc:
+                        log.debug("Failed to add relationship %s→%s: %s",
+                                  rel.get("from_id"), rel.get("to_id"), exc)
                 total_rels += 1
             if total_rels % 50 == 0 and total_rels > 0:
                 log.info(f"  Relations: {total_rels} found ... tokens: {tokens_used['output']:,}")

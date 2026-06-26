@@ -100,6 +100,10 @@ class Settings(BaseSettings):
                 missing.append("LLM_BASE_URL")
             if not self.ADMIN_API_KEY:
                 missing.append("ADMIN_API_KEY")
+            if not self.JWT_SECRET:
+                missing.append("JWT_SECRET")
+            if not self.DATABASE_URL:
+                missing.append("DATABASE_URL")
             if missing:
                 raise ValueError(f"Production requires: {', '.join(missing)}")
         return self

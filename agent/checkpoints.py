@@ -24,6 +24,7 @@ Persistence: agent/data/checkpoints/  (một JSON file mỗi checkpoint)
 """
 
 import json
+import logging
 import os
 import time
 import uuid
@@ -31,6 +32,8 @@ from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from threading import Lock
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 # ── Directories ──
 
@@ -518,7 +521,8 @@ def needs_confirmation(action_type: str, params: dict) -> bool:
         return False
     try:
         return rule["check"](params)
-    except Exception:
+    except Exception as exc:
+        logger.warning("Confirmation rule %s check failed: %s", action_type, exc)
         return False
 
 

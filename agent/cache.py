@@ -15,10 +15,13 @@ Backend: Redis (if REDIS_URL is set and redis is installed) or in-memory Ordered
 
 import hashlib
 import json
+import logging
 import os
 import time
 from collections import OrderedDict
 from threading import Lock
+
+logger = logging.getLogger(__name__)
 
 try:
     import redis as _redis_lib
@@ -43,16 +46,32 @@ def _init_redis():
             _redis_client.ping()
             _use_redis = True
         except Exception as e:
-            print(f"  [cache] Redis unavailable ({e}), falling back to in-memory")
+            logger.warning("Redis unavailable (%s), falling back to in-memory", e)
             _redis_client = None
             _use_redis = False
 
-_init_redis()
+_redis_initialized = False
+
+def _ensure_redis():
+    global _redis_initialized
+    if _redis_initialized:
+        return
+    _redis_initialized = True
+    _init_redis()
 
 # --- In-memory fallback ---
 _cache: OrderedDict = OrderedDict()
 _lock = Lock()
 _stats = {"hits": 0, "misses": 0, "evictions": 0}
+
+
+def _track_cache_metric(operation: str) -> None:
+    """Feed cache operation into Prometheus metrics (best-effort)."""
+    try:
+        from agent.metrics import track_cache
+        track_cache(operation)
+    except Exception:
+        pass
 
 
 def _normalize_key(message: str, session_id: str = "") -> str:
@@ -67,6 +86,7 @@ def _normalize_key(message: str, session_id: str = "") -> str:
 
 def get(message: str) -> dict | None:
     """Lấy cached response. Trả về None nếu miss."""
+    _ensure_redis()
     key = _normalize_key(message)
 
     if _use_redis:
@@ -78,18 +98,19 @@ def get(message: str) -> dict | None:
             # Check TTL
             if time.time() - entry["timestamp"] < entry.get("ttl", DEFAULT_TTL):
                 _stats["hits"] += 1
-                # Move to end (most recently used)
                 _cache.move_to_end(key)
+                _track_cache_metric("hit")
                 return entry["response"]
             else:
-                # Expired
                 del _cache[key]
         _stats["misses"] += 1
+        _track_cache_metric("miss")
         return None
 
 
 def put(message: str, response: dict, ttl: int = DEFAULT_TTL):
     """Lưu response vào cache."""
+    _ensure_redis()
     key = _normalize_key(message)
 
     if _use_redis:
@@ -97,10 +118,10 @@ def put(message: str, response: dict, ttl: int = DEFAULT_TTL):
         return
 
     with _lock:
-        # Evict if full
         while len(_cache) >= MAX_SIZE:
             _cache.popitem(last=False)
             _stats["evictions"] += 1
+            _track_cache_metric("eviction")
 
         _cache[key] = {
             "response": response,
@@ -153,11 +174,15 @@ def _redis_get(key: str) -> dict | None:
         if raw is not None:
             entry = json.loads(raw)
             _stats["hits"] += 1
+            _track_cache_metric("hit")
             return entry["response"]
         _stats["misses"] += 1
+        _track_cache_metric("miss")
         return None
-    except Exception:
+    except Exception as exc:
+        logger.warning("Redis GET failed: %s", exc)
         _stats["misses"] += 1
+        _track_cache_metric("miss")
         return None
 
 
@@ -170,8 +195,8 @@ def _redis_put(key: str, response: dict, message: str, ttl: int):
             "query": message[:200],
         }
         _redis_client.set(_redis_key(key), json.dumps(entry, ensure_ascii=False), ex=ttl)
-    except Exception as e:
-        print(f"  [cache] Redis SET failed: {e}")
+    except Exception as exc:
+        logger.warning("Redis SET failed: %s", exc)
 
 
 def _redis_invalidate_all():
@@ -184,8 +209,8 @@ def _redis_invalidate_all():
                 _redis_client.delete(*keys)
             if cursor == 0:
                 break
-    except Exception as e:
-        print(f"  [cache] Redis invalidate failed: {e}")
+    except Exception as exc:
+        logger.warning("Redis invalidate failed: %s", exc)
 
 
 def _redis_stats_summary() -> dict:
@@ -201,8 +226,8 @@ def _redis_stats_summary() -> dict:
             if cursor == 0:
                 break
         key_count = len(keys)
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("Redis stats scan failed: %s", exc)
     return {
         "size": key_count,
         "max_size": "unlimited (Redis)",
@@ -235,3 +260,18 @@ def redis_stats() -> dict:
         }
     except Exception as e:
         return {"connected": False, "error": str(e)}
+
+
+def cache_health_check() -> dict:
+    """Quick readiness probe for the cache subsystem."""
+    with _lock:
+        size = len(_cache)
+    return {
+        "status": "ok",
+        "backend": "redis" if _use_redis else "memory",
+        "redis_connected": _use_redis,
+        "memory_cache_size": size,
+        "memory_cache_max": MAX_SIZE,
+        "hits": _stats["hits"],
+        "misses": _stats["misses"],
+    }

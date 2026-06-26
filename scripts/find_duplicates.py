@@ -34,7 +34,8 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "web", "data.json")
-data = json.load(open(DATA_PATH, encoding="utf-8-sig"))
+with open(DATA_PATH, encoding="utf-8-sig") as f:
+    data = json.load(f)
 
 entities = data["entities"]
 relationships = data["relationships"]

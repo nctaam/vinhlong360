@@ -3,6 +3,8 @@ import math
 import pytest
 
 from vector_search import (
+    normalize_vietnamese,
+    tokenize,
     _normalize_vietnamese,
     _tokenize,
     cosine_similarity,
@@ -90,6 +92,17 @@ def test_tokenize_all_stop_words():
     tokens = _tokenize("là và của có")
     # All are stop words, result should be empty
     assert len(tokens) == 0
+
+
+# ── public aliases ──────────────────────────────────
+
+
+def test_public_normalize_is_same():
+    assert normalize_vietnamese is _normalize_vietnamese
+
+
+def test_public_tokenize_is_same():
+    assert tokenize is _tokenize
 
 
 # ── cosine_similarity ────────────────────────────────

@@ -120,7 +120,7 @@ async function submit() {
 
 .rm-reasons { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3); }
 .rm-chip {
-  font-size: .82rem; padding: 7px 14px; border-radius: 20px; min-height: 36px;
+  font-size: .82rem; padding: 7px 14px; border-radius: 20px; min-height: var(--touch-min);
   border: .5px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer;
   transition: background .2s, border-color .2s, color .2s, transform .15s cubic-bezier(.2,1,.4,1);
 }
@@ -145,12 +145,19 @@ async function submit() {
 .rm-fade-enter-from .rm-sheet, .rm-fade-leave-to .rm-sheet { transform: translateY(16px); }
 
 .dark .rm-sheet { background: var(--card, #2c2c2e); }
-.dark .rm-chip { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.1); }
-.dark .rm-textarea { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.1); }
+.dark .rm-chip { background: var(--glass-subtle); border-color: var(--glass-border); }
+.dark .rm-textarea { background: var(--glass-subtle); border-color: var(--glass-border); }
 
 @media (prefers-reduced-motion: reduce) {
   .rm-fade-enter-active, .rm-fade-leave-active,
   .rm-fade-enter-active .rm-sheet, .rm-fade-leave-active .rm-sheet { transition: none; }
   .rm-chip:active { transform: none; }
+}
+@media (forced-colors: active) {
+  .rm-sheet { border: 2px solid CanvasText; background: Canvas; }
+  .rm-close { border: 1px solid ButtonText; }
+  .rm-chip { border: 1px solid ButtonText; }
+  .rm-chip.active { background: Highlight; color: HighlightText; }
+  .rm-textarea { border: 1px solid ButtonBorder; }
 }
 </style>

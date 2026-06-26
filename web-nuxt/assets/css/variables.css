@@ -50,6 +50,24 @@
   --primary-fg-strong: var(--primary-dark);
   --secondary-fg: var(--secondary);
   --tertiary-fg: var(--tertiary);
+  /* On-color pairs (M3: text/icon on filled containers) */
+  --on-primary: #FFFFFF;
+  --on-secondary: #FFFFFF;
+  --on-accent: #2B2622;
+  --on-tertiary: #FFFFFF;
+  --on-error: #FFFFFF;
+  --on-warning: #FFFFFF;
+  /* Container colors (M3: tinted surfaces for chips/cards) */
+  --primary-container: color-mix(in oklch, var(--primary) 12%, var(--card));
+  --on-primary-container: var(--clay-700);
+  --secondary-container: color-mix(in oklch, var(--secondary) 12%, var(--card));
+  --on-secondary-container: var(--leaf-700);
+  --tertiary-container: color-mix(in oklch, var(--tertiary) 12%, var(--card));
+  --on-tertiary-container: var(--river-600);
+  --accent-container: color-mix(in oklch, var(--accent) 15%, var(--card));
+  --on-accent-container: #6B4A0F;
+  --error-container: color-mix(in oklch, var(--error) 10%, var(--card));
+  --on-error-container: #8B1A10;
 
   --bg: var(--sand-50);
   --bg-warm: var(--sand-100);
@@ -68,18 +86,49 @@
   --text: var(--ink);
   --text-muted: var(--muted);
   /* Status / feedback */
+  --success: #2E7D32;
+  --on-success: #FFFFFF;
+  --success-bg: rgba(46, 125, 50, .08);
+  --success-border: rgba(46, 125, 50, .25);
+  --info: #1565C0;
+  --on-info: #FFFFFF;
+  --info-bg: rgba(21, 101, 192, .08);
+  --info-border: rgba(21, 101, 192, .25);
   --warning: #e67e22;
+  --on-warning: #FFFFFF;
   --warning-bg: rgba(230, 126, 34, .08);
+  --warning-border: rgba(230, 126, 34, .25);
   --error: #D94F3D;
   --error-bg: rgba(217, 79, 61, .08);
+  --error-border: rgba(217, 79, 61, .25);
   --save-red: #dc2626;
   --save-red-bg: rgba(220, 38, 38, .08);
   --save-red-border: rgba(220, 38, 38, .25);
+  /* State layer opacities (M3) */
+  --state-hover-opacity: 0.08;
+  --state-focus-opacity: 0.10;
+  --state-pressed-opacity: 0.10;
+  --state-dragged-opacity: 0.16;
+  --opacity-disabled-content: 0.38;
+  --opacity-disabled-container: 0.12;
+  /* Glass tokens (light mode — dark mode overrides below) */
+  --glass-subtle: rgba(var(--ink-rgb), .02);
+  --glass-light: rgba(var(--ink-rgb), .04);
+  --glass-border: rgba(var(--ink-rgb), .08);
+  --glass-medium: rgba(var(--ink-rgb), .10);
   /* External brands */
   --brand-zalo: #0068FF;
   --brand-zalo-hover: #0052CC;
   /* Map fallback bg */
   --map-bg: var(--sand-300);
+
+  /* ── State layer backgrounds (M3 — computed from ink + opacity tokens) ── */
+  --state-color: var(--ink);
+  --state-hover:    color-mix(in oklch, var(--state-color) 8%, transparent);
+  --state-focus:    color-mix(in oklch, var(--state-color) 10%, transparent);
+  --state-pressed:  color-mix(in oklch, var(--state-color) 10%, transparent);
+  --state-dragged:  color-mix(in oklch, var(--state-color) 16%, transparent);
+  --state-selected: color-mix(in oklch, var(--state-color) 8%, transparent);
 
   /* ── RGB channels (for rgba() usage without inline fallbacks) ── */
   --primary-rgb: 156, 61, 34;
@@ -98,6 +147,7 @@
 
   /* ── Text on dark backgrounds (hero, overlays) ── */
   --text-on-dark: #fff;
+  --text-on-dark-rgb: 255, 255, 255;
 
   /* ── Text shadows (on cover images) ── */
   --shadow-text: 0 1px 4px rgba(0,0,0,.4);
@@ -114,14 +164,35 @@
   /* ── Typography scale (Apple HIG-inspired, base 16px) ── */
   --font-sans: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-display: var(--font-sans);
-  --text-xs:   .75rem;    /* 12 */
-  --text-sm:   .875rem;   /* 14 */
-  --text-base: 1rem;      /* 16 */
-  --text-lg:   1.125rem;  /* 18 */
-  --text-xl:   1.375rem;  /* 22 */
-  --text-2xl:  1.75rem;   /* 28 */
-  --text-3xl:  2.25rem;   /* 36 */
-  --text-4xl:  2.75rem;   /* 44 — Apple-style display heading */
+  --text-2xs:  0.6875rem; /* 11 — badges, metadata labels (fixed, no scaling) */
+  --text-xs:   clamp(0.75rem, 0.7256rem + 0.122vw, 0.8125rem);    /* 12→13 */
+  --text-sm:   clamp(0.875rem, 0.8262rem + 0.2439vw, 1rem);       /* 14→16 */
+  --text-base: clamp(1rem, 0.9512rem + 0.2439vw, 1.125rem);       /* 16→18 */
+  --text-lg:   clamp(1.125rem, 1.0274rem + 0.4878vw, 1.375rem);   /* 18→22 */
+  --text-xl:   clamp(1.375rem, 1.2286rem + 0.7317vw, 1.75rem);    /* 22→28 */
+  --text-2xl:  clamp(1.75rem, 1.5549rem + 0.9756vw, 2.25rem);     /* 28→36 */
+  --text-3xl:  clamp(2.25rem, 1.957rem + 1.4634vw, 3rem);         /* 36→48 */
+  --text-4xl:  clamp(2.75rem, 2.3598rem + 1.9512vw, 3.5rem);      /* 44→56 */
+  /* Per-size line-height (4px grid) */
+  --lh-2xs: 1rem;        /* 16px */
+  --lh-xs: 1rem;         /* 16px */
+  --lh-sm: 1.25rem;      /* 20px */
+  --lh-base: 1.5rem;     /* 24px */
+  --lh-lg: 1.75rem;      /* 28px */
+  --lh-xl: 2rem;         /* 32px */
+  --lh-2xl: 2.5rem;      /* 40px */
+  --lh-3xl: 3.25rem;     /* 52px */
+  --lh-4xl: 4rem;        /* 64px */
+  /* Per-size letter-spacing (M3: negative for large, positive for small) */
+  --ls-2xs: 0.03em;
+  --ls-xs: 0.02em;
+  --ls-sm: 0.01em;
+  --ls-base: 0;
+  --ls-lg: -0.01em;
+  --ls-xl: -0.015em;
+  --ls-2xl: -0.02em;
+  --ls-3xl: -0.025em;
+  --ls-4xl: -0.03em;
   --leading-tight:   1.15;
   --leading-snug:    1.3;
   --leading-normal:  1.5;
@@ -135,7 +206,10 @@
   --tracking-tighter: -0.032em;
 
   /* ── Spacing scale (lưới 8pt, base 4px) ── */
+  --space-0:  0px;
+  --space-05: 2px;
   --space-1:  4px;
+  --space-1h: 6px;
   --space-2:  8px;
   --space-3:  12px;
   --space-4:  16px;
@@ -145,23 +219,150 @@
   --space-10: 40px;
   --space-12: 48px;
   --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  /* Semantic spacing aliases */
+  --space-page-gutter: var(--space-5);
+  --space-section:     var(--space-16);
+  --space-card-pad:    var(--space-4);
+  --space-card-gap:    var(--space-5);
+  --space-stack:       var(--space-4);
+  --space-stack-sm:    var(--space-2);
+  --space-inline:      var(--space-2);
+  --space-inline-sm:   var(--space-1);
+  --space-component:   var(--space-3);
+
+  /* ── Semantic font-size role aliases ── */
+  --font-size-label:     var(--text-2xs);
+  --font-size-caption:   var(--text-xs);
+  --font-size-body-sm:   var(--text-sm);
+  --font-size-body:      var(--text-base);
+  --font-size-title-sm:  var(--text-lg);
+  --font-size-title:     var(--text-xl);
+  --font-size-headline:  var(--text-2xl);
+  --font-size-display:   var(--text-3xl);
+  /* Weight pairings per role */
+  --weight-label: 500;
+  --weight-caption: 400;
+  --weight-body: 400;
+  --weight-title-sm: 500;
+  --weight-title: 600;
+  --weight-headline: 600;
+  --weight-display: 400;
+
+  /* ── Surface container names (M3 mapping) ── */
+  --surface-dim: var(--sand-200);
+  --surface-bright: var(--white);
+  --surface-container-lowest: var(--white);
+  --surface-container-low: var(--sand-50);
+  --surface-container: var(--sand-100);
+  --surface-container-high: var(--sand-200);
+  --surface-container-highest: var(--sand-300);
+
+  /* ── Outline tokens ── */
+  --outline: var(--border);
+  --outline-variant: var(--line);
+  --outline-input: var(--border-input);
+
+  /* ── Inverse + scrim ── */
+  --scrim: rgba(0,0,0,0.72);
+  --inverse-surface: var(--ink-900);
+  --on-inverse-surface: var(--sand-50);
+  --inverse-primary: var(--clay-400);
+
+  /* ── Text emphasis hierarchy (Apple HIG) ── */
+  --text-high: var(--ink);
+  --text-medium: var(--muted);
+  --text-low: var(--ink-tertiary);
+  --text-lowest: rgba(0,0,0,.25);
+
+  /* ── Image aspect ratios ── */
+  --ratio-hero: 16 / 9;
+  --ratio-card: 5 / 3;
+  --ratio-card-tall: 4 / 3;
+  --ratio-square: 1 / 1;
+  --ratio-wide: 21 / 9;
+
+  /* ── Card variant tokens (M3: elevated/filled/outlined) ── */
+  --card-elevated-bg: var(--card); --card-elevated-shadow: var(--shadow-sm); --card-elevated-shadow-hover: var(--shadow-md); --card-elevated-border: .5px solid transparent;
+  --card-filled-bg: var(--bg-alt); --card-filled-shadow: none; --card-filled-shadow-hover: var(--shadow-sm); --card-filled-border: none;
+  --card-outlined-bg: var(--card); --card-outlined-shadow: none; --card-outlined-shadow-hover: var(--shadow-xs); --card-outlined-border: 1px solid var(--line);
+
+  /* ── Divider tokens ── */
+  --divider-subtle: 1px solid rgba(var(--ink-rgb), 0.06);
+  --divider-default: 1px solid var(--line);
+  --divider-strong: 1px solid rgba(var(--ink-rgb), 0.15);
+
+  /* ── Elevation roles (semantic shadow aliases) ── */
+  --elevation-flat: none;
+  --elevation-card: var(--shadow-sm);
+  --elevation-card-hover: var(--shadow-md);
+  --elevation-sticky: var(--shadow-sm);
+  --elevation-dropdown: var(--shadow-lg);
+  --elevation-dialog: var(--shadow-xl);
+  --elevation-tooltip: var(--shadow-md);
+  --elevation-overlay: var(--shadow-xl);
+  /* Dark mode elevation highlight (top-edge light simulation) */
+  --elevation-highlight: none;
+  --elevation-border: .5px solid rgba(var(--ink-rgb), .06);
+
+  /* ── Touch target tokens (WCAG 2.5.8) ── */
+  --touch-min: 44px;
+  --touch-min-wcag: 24px;
+  --touch-gap: 8px;
+
+  /* ── Icon size scale ── */
+  --icon-xs: 0.75rem;   /* 12px */
+  --icon-sm: 1rem;      /* 16px */
+  --icon-md: 1.25rem;   /* 20px */
+  --icon-base: 1.5rem;  /* 24px */
+  --icon-lg: 2rem;      /* 32px */
+  --icon-xl: 2.5rem;    /* 40px */
+  --icon-2xl: 3rem;     /* 48px */
+
+  /* ── Skeleton shimmer tokens ── */
+  --sk-base: var(--bg-warm);
+  --sk-highlight: var(--line);
+  --sk-gradient: linear-gradient(90deg, var(--sk-base) 25%, var(--sk-highlight) 50%, var(--sk-base) 75%);
+  --sk-duration: 1.5s;
+  --sk-radius-line: var(--radius-sm);
 
   /* ── Radius / motion / elevation / z-index (Apple HIG) ── */
-  --radius: 20px;
+  --radius-none: 0px;
+  --radius-xs: 4px;
   --radius-sm: 10px;
   --radius-md: 14px;
   --radius-lg: 20px;
+  --radius: var(--radius-lg);
   --radius-xl: 28px;
-  --radius-full: 999px;
+  --radius-full: 9999px;
   --maxw: 1140px;
+  --duration-instant: .08s;
   --duration-fast: .15s;
   --duration-normal: .25s;
+  --duration-moderate: .3s;
   --duration-slow: .4s;
+  --duration-slower: .5s;
+  --duration-entrance: .8s;
   --ease-out: cubic-bezier(.2, .8, .2, 1);
+  --ease-in-out: cubic-bezier(.4, 0, .2, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0, 1);
   --ease-spring: cubic-bezier(.34, 1.3, .64, 1);
   --ease-spring-gentle: cubic-bezier(.22, 1.1, .36, 1);
   --ease-bounce: cubic-bezier(.34, 1.56, .64, 1);
   --ease-out-expo: cubic-bezier(.16, 1, .3, 1);
+  /* M3-aligned duration scale (16 tokens, 50ms increments) */
+  --dur-short1: 50ms;   --dur-short2: 100ms;  --dur-short3: 150ms;  --dur-short4: 200ms;
+  --dur-medium1: 250ms; --dur-medium2: 300ms; --dur-medium3: 350ms; --dur-medium4: 400ms;
+  --dur-long1: 450ms;   --dur-long2: 500ms;   --dur-long3: 550ms;   --dur-long4: 600ms;
+  --dur-xlong1: 700ms;  --dur-xlong2: 800ms;  --dur-xlong3: 900ms;  --dur-xlong4: 1000ms;
+  /* M3 easing functions */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-standard-decel: cubic-bezier(0, 0, 0.2, 1);
+  --ease-standard-accel: cubic-bezier(0.4, 0, 1, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized-decel: cubic-bezier(0.05, 0.7, 0.1, 1.0);
+  --ease-emphasized-accel: cubic-bezier(0.3, 0, 0.8, 0.15);
   --shadow-xs: 0 1px 2px rgba(0,0,0,.03);
   --shadow-sm: 0 1px 3px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.03);
   --shadow-md: 0 2px 8px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06);
@@ -171,6 +372,20 @@
   --glass-heavy: saturate(200%) blur(40px);
   --glass-bg: rgba(255, 255, 255, .72);
   --glass-bg-heavy: rgba(255, 255, 255, .88);
+  /* ── Breakpoint reference tokens (M3 window-size classes; @media cannot read var()) ── */
+  --bp-compact:  599px;
+  --bp-medium:   600px;
+  --bp-expanded: 840px;
+  --bp-large:    1200px;
+  --bp-xlarge:   1600px;
+
+  /* ── Surface elevation (flat in light; ramped in dark — see .dark below) ── */
+  --surface-1: var(--card);
+  --surface-2: var(--card);
+  --surface-3: var(--card);
+  --surface-4: var(--card);
+  --surface-5: var(--card);
+
   /* ── Z-index scale (coherent layering — bottom→top) ── */
   --z-base: 0;
   --z-rel: 1;
@@ -255,6 +470,7 @@
   --primary-focus: color-mix(in oklab, var(--primary-fg) 92%, transparent);
   --glass-subtle: rgba(255, 255, 255, .03);
   --glass-light: rgba(255, 255, 255, .06);
+  --glass-border: rgba(255, 255, 255, .1);
   --glass-medium: rgba(255, 255, 255, .12);
   --warning: #f0a050;
   --warning-bg: rgba(240, 160, 80, .12);
@@ -269,6 +485,70 @@
   --surface: var(--card);
   --text: var(--ink);
   --text-muted: var(--muted);
+  /* Surface elevation: see primary-tinted block above */
+  /* On-color pairs (dark) */
+  --on-primary: #FFFFFF;
+  --on-secondary: #FFFFFF;
+  --on-accent: #2B2622;
+  --on-tertiary: #FFFFFF;
+  --on-error: #601410;
+  --on-warning: #4A2800;
+  /* Container colors (dark — higher mix %) */
+  --primary-container: color-mix(in oklch, var(--primary) 22%, var(--card));
+  --on-primary-container: #E8B8A0;
+  --secondary-container: color-mix(in oklch, var(--secondary) 22%, var(--card));
+  --on-secondary-container: #8DD4B0;
+  --tertiary-container: color-mix(in oklch, var(--tertiary) 22%, var(--card));
+  --on-tertiary-container: #9ECCD8;
+  --accent-container: color-mix(in oklch, var(--accent) 22%, var(--card));
+  --on-accent-container: #E8C88A;
+  --error-container: color-mix(in oklch, var(--error) 18%, var(--card));
+  --on-error-container: #FFB4AB;
+  /* Status (dark) */
+  --success: #66BB6A;
+  --on-success: #1B3A1C;
+  --success-bg: rgba(102, 187, 106, .12);
+  --success-border: rgba(102, 187, 106, .3);
+  --info: #64B5F6;
+  --on-info: #0D2B4A;
+  --info-bg: rgba(100, 181, 246, .12);
+  --info-border: rgba(100, 181, 246, .3);
+  --on-warning: #4A2800;
+  --warning-border: rgba(240, 160, 80, .3);
+  --error-border: rgba(255, 105, 97, .3);
+  /* Skeleton (dark) */
+  --sk-base: var(--bg-warm);
+  --sk-highlight: var(--line);
+  /* Surface elevation: primary-tinted (M3 tonal elevation) */
+  --surface-1: color-mix(in oklch, #1c1c1e 96%, var(--primary) 4%);
+  --surface-2: color-mix(in oklch, #2c2c2e 94%, var(--primary) 6%);
+  --surface-3: color-mix(in oklch, #3a3a3c 92%, var(--primary) 8%);
+  --surface-4: color-mix(in oklch, #48484a 90%, var(--primary) 10%);
+  --surface-5: color-mix(in oklch, #545456 88%, var(--primary) 12%);
+  /* Dark mode semantic overrides */
+  --text-high: var(--ink);
+  --text-medium: var(--muted);
+  --text-low: var(--ink-tertiary);
+  --text-lowest: rgba(255,255,255,.18);
+  --outline: #48484a;
+  --outline-variant: rgba(255,255,255,.08);
+  --outline-input: #7e7e82;
+  --elevation-highlight: inset 0 .5px 0 rgba(255,255,255,.06);
+  --elevation-border: .5px solid rgba(255,255,255,.08);
+  --inverse-surface: var(--sand-50);
+  --on-inverse-surface: var(--ink-900);
+  --inverse-primary: var(--clay-600);
+  --scrim: rgba(0,0,0,0.82);
+  --surface-dim: #0d0d0f;
+  --surface-bright: #3a3a3c;
+  --surface-container-lowest: #0d0d0f;
+  --surface-container-low: #1c1c1e;
+  --surface-container: #2c2c2e;
+  --surface-container-high: #3a3a3c;
+  --surface-container-highest: #48484a;
+  --divider-subtle: 1px solid rgba(255,255,255,.06);
+  --divider-default: 1px solid var(--line);
+  --divider-strong: 1px solid rgba(255,255,255,.15);
   /* brand-foreground lighten (đạt ≥4.5:1 trên card tối) — nút nền brand vẫn dùng --primary đậm + chữ trắng */
   --primary-fg: #D98A6F;
   --primary-fg-strong: #E09980;

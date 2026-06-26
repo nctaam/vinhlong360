@@ -13,7 +13,10 @@ Endpoints:
 
 import asyncio
 import json
+import logging
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from starlette.responses import StreamingResponse

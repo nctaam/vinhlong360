@@ -15,11 +15,14 @@ Output: danh sách proactive suggestions inject vào responses.
 """
 
 import json
+import logging
 import time
 from datetime import datetime
 from pathlib import Path
 
 import knowledge
+
+logger = logging.getLogger(__name__)
 
 # ══════════════════════════════════════════════════
 #  SEASONAL CALENDAR — Lịch mùa vụ Vĩnh Long
@@ -177,7 +180,8 @@ def get_trending_entities(limit: int = 5) -> list[dict]:
                     "hit_count": count,
                 })
         return trending
-    except Exception:
+    except Exception as exc:
+        logger.warning("Failed to load trending entities: %s", exc)
         return []
 
 
