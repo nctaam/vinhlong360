@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <!-- 1. Hero — dynamic tagline + search + quick-pick pills + stats inline -->
-    <section class="hero">
+    <section class="hero" aria-label="Giới thiệu">
       <div class="hero-kenburns" aria-hidden="true"></div>
       <HeroIllustration />
       <div class="hero-scrim" aria-hidden="true"></div>
@@ -64,7 +64,7 @@
     </section>
 
     <!-- 2. "Đang diễn ra" — upcoming events + seasonal -->
-    <section v-if="upcomingEvents.length || seasonal.length" class="block reveal">
+    <section v-if="upcomingEvents.length || seasonal.length" class="block reveal" aria-label="Sự kiện và lễ hội">
       <div class="section-head">
         <div class="sh-text">
           <h2>Đang diễn ra</h2>
@@ -114,7 +114,7 @@
     </section>
 
     <!-- 3. Tinh hoa miền Tây — spotlight magazine + quán ngon rating -->
-    <section v-if="spotlight || topDishes.length" class="block reveal">
+    <section v-if="spotlight || topDishes.length" class="block reveal" aria-label="Tinh hoa miền Tây">
       <div class="section-head">
         <div class="sh-text">
           <h2>Tinh hoa miền Tây</h2>
@@ -165,7 +165,7 @@
     </section>
 
     <!-- 3b. Đang được quan tâm — trending entities -->
-    <section v-if="trending.length" class="block reveal">
+    <section v-if="trending.length" class="block reveal" aria-label="Đang được quan tâm">
       <div class="section-head">
         <div class="sh-text">
           <h2>🔥 Đang được quan tâm</h2>
@@ -178,7 +178,7 @@
     </section>
 
     <!-- 4. Lịch trình gợi ý -->
-    <section v-if="itineraries.length" class="block reveal band">
+    <section v-if="itineraries.length" class="block reveal band" aria-label="Lịch trình gợi ý">
       <div class="section-head">
         <div class="sh-text">
           <h2>Lịch trình gợi ý</h2>
@@ -195,7 +195,7 @@
     </section>
 
     <!-- 5. Từ cộng đồng — compact + trending tags -->
-      <section v-if="communityPosts.length || communityStats" class="block reveal">
+      <section v-if="communityPosts.length || communityStats" class="block reveal" aria-label="Cộng đồng">
         <div class="section-head">
           <div class="sh-text">
             <h2>Từ cộng đồng</h2>
@@ -204,7 +204,7 @@
           <NuxtLink class="see-all" to="/cong-dong">Xem tất cả →</NuxtLink>
         </div>
         <template v-if="communityPosts.length">
-          <p v-if="communityStats" class="community-stats-line">
+          <p v-if="communityStats && (communityStats.posts || communityStats.reviews || communityStats.members)" class="community-stats-line">
             <strong>{{ communityStats.posts }}</strong> bài viết
             · <strong>{{ communityStats.reviews }}</strong> đánh giá
             · <strong>{{ communityStats.members }}</strong> thành viên
@@ -225,8 +225,8 @@
           <div class="scroll-row" role="region" aria-label="Bài viết cộng đồng mới">
             <NuxtLink v-for="p in communityPosts" :key="p.id" :to="`/bai-viet/${p.id}`" class="cm-card">
               <div v-if="p.images && p.images.length" class="cm-img">
-                <NuxtImg v-if="isRemoteUrl(p.images[0])" :src="p.images[0]" :alt="p.display_name || 'Bài viết'" loading="lazy" decoding="async" width="280" height="150" sizes="sm:280px" />
-                <img v-else :src="p.images[0]" :alt="p.display_name || 'Bài viết'" loading="lazy" decoding="async" width="280" height="150" />
+                <NuxtImg v-if="isRemoteUrl(p.images[0])" :src="p.images[0]" :alt="p.display_name || 'Bài viết'" loading="lazy" decoding="async" width="280" height="150" sizes="sm:280px" @error="onImgError" />
+                <img v-else :src="p.images[0]" :alt="p.display_name || 'Bài viết'" loading="lazy" decoding="async" width="280" height="150" @error="onImgError" />
               </div>
               <div class="cm-body">
                 <div class="cm-author">
@@ -259,8 +259,8 @@
         <div class="scroll-row" role="region" aria-label="Xem gần đây">
           <NuxtLink v-for="rv in recentlyViewed" :key="rv.id" :to="`/dia-diem/${rv.id}`" class="card card-mini">
             <div v-if="rv.image" class="cover cover-img">
-              <NuxtImg v-if="isRemoteUrl(rv.image)" :src="rv.image" :alt="rv.name" loading="lazy" decoding="async" width="320" height="180" sizes="sm:50vw md:33vw lg:320px" />
-              <img v-else :src="rv.image" :alt="rv.name" loading="lazy" decoding="async" width="320" height="180" />
+              <NuxtImg v-if="isRemoteUrl(rv.image)" :src="rv.image" :alt="rv.name" loading="lazy" decoding="async" width="320" height="180" sizes="sm:50vw md:33vw lg:320px" @error="onImgError" />
+              <img v-else :src="rv.image" :alt="rv.name" loading="lazy" decoding="async" width="320" height="180" @error="onImgError" />
             </div>
             <div v-else class="cover cover-img cover-generated" :class="`cat-${getFavTypeMeta(rv.type).cat}`" :style="{ backgroundImage: genPlaceholder(rv.id, getFavTypeMeta(rv.type).cat) }">
               <span class="cover-svg-icon" v-html="genIcon(getFavTypeMeta(rv.type).cat)" />
@@ -297,7 +297,7 @@
     </ClientOnly>
 
     <!-- 7. Chatbot CTA -->
-    <section class="block block-compact reveal">
+    <section class="block block-compact reveal" aria-label="Trợ lý AI">
       <div class="chatbot-cta">
         <div class="chatbot-cta-inner">
           <p class="chatbot-cta-text">{{ ss('homepage.chatbot_cta_title', 'Chưa biết đi đâu?') }}</p>
@@ -503,7 +503,7 @@ const eventListSchema = computed(() => {
       url: `https://vinhlong360.vn/dia-diem/${ev.id}`,
       eventStatus: 'https://schema.org/EventScheduled',
       eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-      location: { '@type': 'Place', name: ev.place_name || 'Vĩnh Long', address: { '@type': 'PostalAddress', addressRegion: areaName(ev.place_area) || 'Vĩnh Long', addressCountry: 'VN' } },
+      location: { '@type': 'Place', name: ev.place_name || 'Vĩnh Long', address: { '@type': 'PostalAddress', addressRegion: areaName(ev.area || ev.place_area) || 'Vĩnh Long', addressCountry: 'VN' } },
     },
   }))
   if (!events.length) return ''
@@ -548,7 +548,7 @@ useHead({
         logo: 'https://vinhlong360.vn/icons/icon-512.png',
         description: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long.',
         inLanguage: 'vi-VN',
-        areaServed: { '@type': 'AdministrativeArea', name: 'Vĩnh Long' },
+        areaServed: { '@type': 'AdministrativeArea', name: 'Vĩnh Long, Bến Tre, Trà Vinh' },
       }),
     },
     ...(eventListSchema.value ? [{ type: 'application/ld+json', innerHTML: eventListSchema.value }] : []),
@@ -894,7 +894,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .eh-countdown { align-self: flex-start; display: inline-flex; align-items: center; gap: 5px; margin-top: var(--space-1); padding: var(--space-1) var(--space-3); background: rgba(255,255,255,.22); border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: var(--weight-bold); }
 .eh-today { background: rgba(255,255,255,.32); }
 .happening-rest { display: flex; flex-direction: column; gap: var(--space-2); justify-content: center; }
-.event-mini { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle); }
+.event-mini { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); min-height: 48px; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle); }
 .event-mini:hover { border-color: var(--primary-fg); transform: translateX(2px); }
 .ec-date-sm { min-width: 46px; padding: var(--space-2); }
 .ec-date { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 52px; padding: var(--space-2); background: var(--primary); border-radius: var(--radius-sm); color: var(--text-on-dark, #fff); }
@@ -975,7 +975,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dishes-list { display: flex; flex-direction: column; gap: var(--space-2); }
 .dish-item {
   display: flex; align-items: center; gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-3) var(--space-4); min-height: 48px;
   background: var(--card); border: .5px solid var(--line); border-radius: var(--radius);
   text-decoration: none; color: var(--ink);
   transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle), box-shadow .25s var(--ease-out);
@@ -1012,10 +1012,10 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .tt-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); }
 .tt-chip {
   display: inline-flex; align-items: center;
-  padding: var(--space-1) var(--space-3);
+  padding: var(--space-2) var(--space-3);
   background: var(--bg-alt); border: .5px solid var(--line); border-radius: var(--radius-full);
   font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--primary-fg);
-  text-decoration: none;
+  text-decoration: none; min-height: 36px;
   transition: background .2s var(--ease-out), border-color .2s var(--ease-out);
 }
 .tt-chip:hover { background: var(--bg-warm); border-color: var(--primary-fg); }
@@ -1024,7 +1024,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 
 .home-leaders { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin: 0 0 var(--space-4); }
 .hl-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); }
-.hl-chip { display: inline-flex; align-items: center; gap: var(--space-1); padding: .2rem .6rem .2rem .2rem; background: var(--bg-alt); border: .5px solid var(--line); border-radius: var(--radius-full); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out); }
+.hl-chip { display: inline-flex; align-items: center; gap: var(--space-1); padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1); min-height: 36px; background: var(--bg-alt); border: .5px solid var(--line); border-radius: var(--radius-full); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out); }
 .hl-chip:hover { border-color: var(--primary-fg); }
 .hl-rank { width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--muted); }
 .hl-rank-1 { color: #d4a017; } .hl-rank-2 { color: #8a8d91; } .hl-rank-3 { color: #b07b4f; }

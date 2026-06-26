@@ -3,7 +3,7 @@
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Du lịch' }]" />
 
     <!-- Hero -->
-    <section class="catalog-hero cat-experience">
+    <section class="catalog-hero cat-experience" aria-label="Giới thiệu du lịch">
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true">🌿</span>
         <div>
@@ -66,7 +66,7 @@
     </div>
 
     <!-- Full filterable grid -->
-    <section ref="gridSection" class="block">
+    <section ref="gridSection" class="block" aria-label="Duyệt tất cả du lịch">
       <div class="controls">
         <div class="search-row">
           <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm trong du lịch…" aria-label="Tìm kiếm" />
@@ -106,7 +106,7 @@
     </section>
 
     <!-- Cross-links -->
-    <section class="block catalog-cross">
+    <section class="block catalog-cross" aria-label="Khám phá thêm">
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/san-pham" class="cross-card">
