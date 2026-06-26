@@ -822,10 +822,13 @@ def test_entity_jsonld_endpoint_includes_faq(monkeypatch):
     monkeypatch.setattr(seo, "_load", lambda: data)
     monkeypatch.setattr(seo, "_by_id_cache", None)
     result = seo.entity_jsonld("with-tip")
-    assert isinstance(result, list)
-    types = [r.get("@type") for r in result]
+    assert "@graph" in result
+    types = [r.get("@type") for r in result["@graph"]]
     assert "TouristAttraction" in types
     assert "FAQPage" in types
+    assert result["@context"] == "https://schema.org"
+    for item in result["@graph"]:
+        assert "@context" not in item
 
 
 # ── _load graceful degradation ────────────────────────────────────────────
@@ -1723,6 +1726,23 @@ def test_is_external_url_rejects_self_case_insensitive():
 
 
 # ── Collection sorting stability ─────────────────────────────────────
+
+
+def test_entity_jsonld_endpoint_without_faq_returns_single(monkeypatch):
+    data = {
+        "entities": [
+            {"id": "no-faq", "name": "No FAQ", "type": "attraction",
+             "attributes": {}},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    monkeypatch.setattr(seo, "_load", lambda: data)
+    monkeypatch.setattr(seo, "_by_id_cache", None)
+    result = seo.entity_jsonld("no-faq")
+    assert "@graph" not in result
+    assert result["@type"] == "TouristAttraction"
+    assert result["@context"] == "https://schema.org"
 
 
 def test_collection_sorts_stably_with_same_confidence():

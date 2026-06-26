@@ -765,11 +765,14 @@ def entity_jsonld(entity_id: str):
     entity = by_id.get(entity_id)
     if not entity:
         raise HTTPException(status_code=404, detail="not found")
-    result = [build_entity_jsonld(entity, by_id, relationships=data.get("relationships", []))]
+    entity_ld = build_entity_jsonld(entity, by_id, relationships=data.get("relationships", []))
     faq = build_faq_jsonld(entity)
     if faq:
-        result.append(faq)
-    return result if len(result) > 1 else result[0]
+        return {"@context": "https://schema.org", "@graph": [
+            {k: v for k, v in entity_ld.items() if k != "@context"},
+            {k: v for k, v in faq.items() if k != "@context"},
+        ]}
+    return entity_ld
 
 
 def _is_public(entity: dict[str, Any]) -> bool:

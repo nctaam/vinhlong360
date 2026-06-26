@@ -844,7 +844,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     }
 
     # DI-014: per-type SEO attribute coverage
-    type_coverage: dict[str, dict[str, int]] = {}
+    type_coverage: dict[str, dict[str, Any]] = {}
     for e in entities:
         if not isinstance(e, dict):
             continue
@@ -854,11 +854,23 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
             continue
         attrs = e.get("attributes") if isinstance(e.get("attributes"), dict) else {}
         if etype not in type_coverage:
-            type_coverage[etype] = {"total": 0, "has_any_seo_attr": 0}
+            type_coverage[etype] = {"total": 0, "has_any_seo_attr": 0, "per_attr": {k: 0 for k in req}}
         type_coverage[etype]["total"] += 1
         if any(attrs.get(k) for k in req):
             type_coverage[etype]["has_any_seo_attr"] += 1
+        for k in req:
+            if attrs.get(k):
+                type_coverage[etype]["per_attr"][k] += 1
     stats["seo_attr_coverage"] = type_coverage
+
+    # DI-027: per-area entity counts
+    area_counts: dict[str, int] = Counter()
+    for e in entities:
+        if not isinstance(e, dict) or e.get("type") == "place":
+            continue
+        ea = e.get("area")
+        area_counts[ea if ea else "(none)"] += 1
+    stats["entities_by_area"] = dict(area_counts.most_common())
 
     # DI-017: entity quality score distribution
     non_place = [e for e in entities if isinstance(e, dict) and e.get("type") != "place"]
@@ -997,7 +1009,9 @@ def print_report(issues: list[Issue], stats: dict[str, Any]) -> None:
             total = info["total"]
             has = info["has_any_seo_attr"]
             pct = round(100 * has / max(total, 1))
-            print(f"  {etype}: {has}/{total} ({pct}%)")
+            per_attr = info.get("per_attr", {})
+            attr_detail = " ".join(f"{k}={v}" for k, v in per_attr.items()) if per_attr else ""
+            print(f"  {etype}: {has}/{total} ({pct}%) [{attr_detail}]")
 
     qs_avg = stats.get("quality_score_avg", 0)
     qs_dist = stats.get("quality_score_distribution", {})

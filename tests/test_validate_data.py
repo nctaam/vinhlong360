@@ -848,6 +848,45 @@ def test_validate_seo_attr_coverage(tmp_path: Path) -> None:
     assert cov["restaurant"]["has_any_seo_attr"] == 1
 
 
+def test_validate_seo_attr_coverage_per_attr(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "r1", "type": "restaurant", "name": "R1", "summary": "R", "area": "vinh-long",
+             "attributes": {"specialty": "Hải sản", "phone": "0909123456"}},
+            {"id": "r2", "type": "restaurant", "name": "R2", "summary": "R", "area": "vinh-long",
+             "attributes": {"phone": "0909123457"}},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    cov = stats["seo_attr_coverage"]["restaurant"]
+    assert cov["per_attr"]["specialty"] == 1
+    assert cov["per_attr"]["phone"] == 2
+
+
+def test_validate_entities_by_area(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "area": "vinh-long"},
+            {"id": "b", "type": "dish", "name": "B", "area": "vinh-long"},
+            {"id": "c", "type": "product", "name": "C", "area": "ben-tre"},
+            {"id": "d", "type": "event", "name": "D"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    by_area = stats["entities_by_area"]
+    assert by_area["vinh-long"] == 2
+    assert by_area["ben-tre"] == 1
+    assert by_area["(none)"] == 1
+
+
 def test_validate_seo_attr_coverage_skips_uncovered_types(tmp_path: Path) -> None:
     """Types not in the seo_required mapping should not appear in coverage."""
     data = {
