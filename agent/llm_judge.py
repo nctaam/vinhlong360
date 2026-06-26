@@ -406,6 +406,7 @@ class LLMJudge:
                     messages=[{"role": "user", "content": prompt}],
                     temperature=0.1,
                     max_tokens=300,
+                    timeout=20,  # P0-6: explicit per-call timeout (matches client-level)
                 )
                 raw = response.choices[0].message.content or ""
                 parsed = self._parse_scores(raw)
