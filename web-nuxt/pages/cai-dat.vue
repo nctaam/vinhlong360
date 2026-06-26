@@ -27,7 +27,7 @@
     </nav>
 
     <!-- Tab: Hồ sơ -->
-    <div v-if="activeTab === 'ho-so'" :id="`panel-ho-so`" class="settings-card card" role="tabpanel" aria-labelledby="tab-ho-so">
+    <div v-show="activeTab === 'ho-so'" :id="`panel-ho-so`" class="settings-card card" role="tabpanel" aria-labelledby="tab-ho-so">
       <h2>Hồ sơ cá nhân</h2>
       <form class="settings-form" @submit.prevent="save">
         <div class="sf-avatar-section">
@@ -131,6 +131,11 @@
           <label class="sf-field">
             <span class="sf-label">{{ user?.has_password ? 'Mật khẩu mới' : 'Đặt mật khẩu' }}</span>
             <input v-model="newPw" type="password" class="sf-input" minlength="6" autocomplete="new-password" required />
+          </label>
+          <label class="sf-field">
+            <span class="sf-label">Xác nhận mật khẩu</span>
+            <input v-model="confirmPw" type="password" class="sf-input" minlength="6" autocomplete="new-password" required />
+            <span v-if="confirmPw && confirmPw !== newPw" class="sf-error" role="alert">Mật khẩu xác nhận không khớp</span>
           </label>
           <div class="sf-actions">
             <button type="submit" class="btn btn-primary" :disabled="savingPw">
@@ -322,7 +327,9 @@ const TABS = [
 ] as const
 type TabKey = typeof TABS[number]['key']
 
-const activeTab = ref<TabKey>((route.hash?.slice(1) as TabKey) || 'ho-so')
+const validKeys = new Set(TABS.map(t => t.key))
+const hashKey = route.hash?.slice(1)
+const activeTab = ref<TabKey>(validKeys.has(hashKey as TabKey) ? (hashKey as TabKey) : 'ho-so')
 
 const tabLoaded = reactive(new Set<TabKey>())
 function setTab(key: TabKey) {
@@ -419,6 +426,7 @@ onMounted(async () => {
 
 const currentPw = ref('')
 const newPw = ref('')
+const confirmPw = ref('')
 const savingPw = ref(false)
 
 async function savePassword() {
@@ -430,6 +438,10 @@ async function savePassword() {
     showToast('Mật khẩu mới phải từ 6 ký tự trở lên', 'error')
     return
   }
+  if (newPw.value !== confirmPw.value) {
+    showToast('Mật khẩu xác nhận không khớp', 'error')
+    return
+  }
   savingPw.value = true
   try {
     const body: Record<string, string> = { password: newPw.value }
@@ -438,6 +450,7 @@ async function savePassword() {
     showToast('Đã cập nhật mật khẩu', 'success')
     currentPw.value = ''
     newPw.value = ''
+    confirmPw.value = ''
     await fetchMe()
   } catch (e: any) {
     if (e?.response?.status === 401) { handleSessionExpired(); return }

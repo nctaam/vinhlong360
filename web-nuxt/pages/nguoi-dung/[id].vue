@@ -216,7 +216,7 @@ const route = useRoute()
 const userId = computed(() => route.params.id as string)
 const { isLoggedIn, authHeaders, handleSessionExpired } = useAuth()
 const { show: showToast } = useToast()
-const { reportPost } = useReport()
+const { reportPost, openReport } = useReport()
 const { repost, quote } = useRepost()
 
 useHead({
@@ -411,6 +411,7 @@ async function toggleFollow() {
   followerCount.value += was ? -1 : 1
   try {
     await $fetch(`/api/follow/user/${userId.value}`, { method: 'POST', headers: authHeaders() })
+    followLists.value = { followers: null, following: null }
   } catch (e: any) {
     isFollowing.value = was
     followerCount.value += was ? 1 : -1
@@ -478,7 +479,8 @@ async function toggleBlock() {
 }
 
 function reportUser() {
-  showToast('Cảm ơn bạn đã báo cáo. Chúng tôi sẽ xem xét.', 'info')
+  showMoreMenu.value = false
+  openReport('user', userId.value)
 }
 
 onMounted(() => {
@@ -504,7 +506,7 @@ useSeoMeta({
   description: () => `Trang cá nhân của ${profile.value?.display_name || 'thành viên'} trên cộng đồng vinhlong360.`,
   ogTitle: () => `${profile.value?.display_name || 'Người dùng'} — vinhlong360`,
   ogDescription: () => `Trang cá nhân của ${profile.value?.display_name || 'thành viên'} trên cộng đồng vinhlong360.`,
-  ogImage: '/icons/icon-512.png',
+  ogImage: () => profile.value?.cover_url || profile.value?.avatar || '/icons/icon-512.png',
   robots: 'noindex,follow',
 })
 </script>
@@ -522,6 +524,7 @@ useSeoMeta({
 .cover-img { width: 100%; height: 200px; object-fit: cover; display: block; }
 .profile-private-notice { text-align: center; padding: var(--space-8) var(--space-4); color: var(--ink-700); font-size: .95rem; }
 .cover-scrim { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.18)); }
+.dark .cover-scrim { background: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,.45)); }
 .profile-avatar-wrap { position: absolute; bottom: calc(-1 * var(--space-6)); left: var(--space-5); z-index: 1; }
 .profile-avatar-wrap .avatar { border: 6px solid var(--card); box-shadow: 0 0 0 2px var(--line), 0 8px 28px rgba(0,0,0,.12); transition: transform .35s var(--ease-spring-gentle); }
 .profile-avatar-wrap .avatar:hover { transform: scale(1.05); }
