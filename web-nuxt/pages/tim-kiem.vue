@@ -13,7 +13,7 @@
       </div>
     </section>
 
-    <div class="search-row search-row-spaced" :class="{ error: hasError }">
+    <div class="search-row search-row-spaced" :class="{ error: hasError }" role="search" aria-label="Tìm kiếm địa điểm">
       <div class="search-input-wrap" role="combobox" :aria-expanded="showSuggestions" aria-haspopup="listbox" aria-owns="search-suggestions">
         <input v-model="searchInput" type="search" enterkeyhint="search" placeholder="Tìm đặc sản, trải nghiệm…" aria-label="Tìm kiếm" :aria-invalid="hasError || undefined" autocomplete="off" aria-autocomplete="list" :aria-activedescendant="activeSuggestionId" @input="onTypeahead" @keyup.enter="onEnter" @keydown.down.prevent="sugNext" @keydown.up.prevent="sugPrev" @keydown.escape="sugClose" @blur="sugBlur" />
         <Transition name="sug-fade">
@@ -23,7 +23,7 @@
               <span class="sug-name">{{ s.name }}</span>
               <span v-if="s.place_name" class="sug-place">{{ s.place_name }}</span>
             </li>
-            <li class="sug-item sug-all" role="option" :aria-selected="sugIdx === suggestions.length" :class="{ active: sugIdx === suggestions.length }" @mousedown.prevent="doSearch">
+            <li id="sug-search-all" class="sug-item sug-all" role="option" :aria-selected="sugIdx === suggestions.length" :class="{ active: sugIdx === suggestions.length }" @mousedown.prevent="doSearch">
               🔍 Tìm tất cả "{{ searchInput.trim() }}"
             </li>
           </ul>
@@ -265,6 +265,7 @@ let sugTimer: ReturnType<typeof setTimeout> | null = null
 const activeSuggestionId = computed(() => {
   if (sugIdx.value < 0 || !showSuggestions.value) return undefined
   if (sugIdx.value < suggestions.value.length) return `sug-${suggestions.value[sugIdx.value].id}`
+  if (sugIdx.value === suggestions.value.length) return 'sug-search-all'
   return undefined
 })
 
