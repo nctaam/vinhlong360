@@ -991,7 +991,7 @@ class TestOrchestratorErrorLogging:
             )
             assert mock_logger.warning.called
             warn_args = [str(c) for c in mock_logger.warning.call_args_list]
-            assert any("Malformed tool arguments" in s for s in warn_args)
+            assert any("Failed to parse tool call arguments" in s for s in warn_args)
 
     def test_parallel_executor_failure_logs_and_falls_back(self):
         """When tool_executor.execute_smart raises, must log + serial fallback."""
@@ -1034,7 +1034,7 @@ class TestOrchestratorErrorLogging:
             assert result["reply"] == "Results."
             assert len(tool_calls_received) == 2
             warn_args = [str(c) for c in mock_logger.warning.call_args_list]
-            assert any("Parallel executor failed" in s for s in warn_args)
+            assert any("Parallel tool executor failed" in s for s in warn_args)
 
     def test_final_synthesis_failure_logs_and_returns_canned(self):
         """When forced synthesis LLM call fails, must log + return canned message."""
