@@ -1390,3 +1390,85 @@ def test_validate_places_excluded_from_orphan_count(tmp_path: Path) -> None:
     _issues, stats = validate_data.validate(data, tmp_path / "data.json")
 
     assert stats["orphan_entities"] == 0
+
+
+# ── Website URL validation (DI-022) ────────────────────────────────────
+
+
+def test_validate_flags_invalid_website_url(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "restaurant", "name": "A", "summary": "A", "area": "vinh-long",
+             "attributes": {"website": "not-a-url"}},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["invalid_website_urls"] == 1
+    assert "invalid_website_urls" in {issue.code for issue in issues}
+
+
+def test_validate_valid_website_not_flagged(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "restaurant", "name": "A", "summary": "A", "area": "vinh-long",
+             "attributes": {"website": "https://example.com"}},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["invalid_website_urls"] == 0
+
+
+# ── Unknown relationship types (DI-023) ────────────────────────────────
+
+
+def test_validate_flags_unknown_rel_types(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long",
+             "coordinates": [10.25, 106.0]},
+            {"id": "b", "type": "dish", "name": "B", "summary": "B", "area": "vinh-long",
+             "coordinates": [10.26, 106.01]},
+        ],
+        "relationships": [
+            {"from": "a", "to": "b", "type": "invented_type"},
+        ],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["unknown_rel_types"] >= 1
+    assert "unknown_rel_types" in {issue.code for issue in issues}
+
+
+def test_validate_known_rel_types_not_flagged(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long",
+             "coordinates": [10.25, 106.0]},
+            {"id": "b", "type": "dish", "name": "B", "summary": "B", "area": "vinh-long",
+             "coordinates": [10.26, 106.01]},
+        ],
+        "relationships": [
+            {"from": "a", "to": "b", "type": "near"},
+        ],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["unknown_rel_types"] == 0
+
+
+def test_known_rel_types_constant() -> None:
+    """KNOWN_REL_TYPES should include all hierarchical types."""
+    for t in validate_data.HIERARCHICAL_REL_TYPES:
+        assert t in validate_data.KNOWN_REL_TYPES

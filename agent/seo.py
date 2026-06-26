@@ -541,6 +541,18 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
         if related_urls:
             ld["relatedLink"] = related_urls
 
+    date_modified = _safe_date(entity.get("updatedAt"))
+    if date_modified:
+        ld["dateModified"] = date_modified
+    date_created = _safe_date(entity.get("created_at"))
+    if date_created:
+        ld["dateCreated"] = date_created
+
+    ld["mainEntityOfPage"] = {
+        "@type": "WebPage",
+        "@id": _entity_url(entity_id),
+        "url": _entity_url(entity_id),
+    }
     ld["inLanguage"] = "vi-VN"
     ld["isPartOf"] = {"@id": f"{SITE}/#website"}
     ld["breadcrumb"] = _build_breadcrumb(entity, by_id)

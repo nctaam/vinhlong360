@@ -23,6 +23,11 @@ MAX_DIRECT_RELATIONSHIPS = 120
 # Quan hệ phân-cấp (chứa-đựng) — không tính vào ngưỡng fanout-120 (vốn để chặn
 # nhiễu "liên quan/gần đây" trên UI). located_in: entity→xã, xã→tỉnh.
 HIERARCHICAL_REL_TYPES = {"located_in", "part_of"}
+KNOWN_REL_TYPES = {
+    "near", "related_to", "located_in", "part_of", "produced_in",
+    "belongs_to", "serves", "famous_for", "associated_with",
+    "ingredient_of", "sold_at", "managed_by", "owned_by",
+}
 # Placeholder summaries from failed LLM enrichment — must never ship to users.
 # Phase 0 quarantined these (blanked to ""); this guard stops them returning.
 from urllib.parse import urlparse  # noqa: E402
@@ -280,6 +285,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     name_too_long = 0
     invalid_source_urls = 0
     invalid_phone_format = 0
+    invalid_website_urls = 0
 
     for index, entity in enumerate(entities):
         if not isinstance(entity, dict):
@@ -385,6 +391,13 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
             cleaned = re.sub(r"[\s\-\.]", "", phone.strip())
             if not VN_PHONE.match(cleaned):
                 invalid_phone_format += 1
+
+        # DI-022: website URL validation
+        website = attrs.get("website") if isinstance(attrs, dict) else None
+        if isinstance(website, str) and website.strip():
+            parsed_w = urlparse(website.strip())
+            if parsed_w.scheme not in ("http", "https") or not parsed_w.netloc:
+                invalid_website_urls += 1
 
         if is_place:
             level = entity.get("level", "")
@@ -582,6 +595,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
             if src_area and dst_area and src_area != dst_area:
                 produced_in_area_conflicts += 1
 
+    unknown_rel_types = {t for t in relationship_type_counts if t not in KNOWN_REL_TYPES}
     duplicate_rel_count = sum(1 for count in duplicate_relationships.values() if count > 1)
     high_fanout_count = sum(1 for count in relationship_fanout.values() if count > MAX_DIRECT_RELATIONSHIPS)
     if missing_relationship_fields:
@@ -600,6 +614,9 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         issues.append(Issue("error", "produced_in_target_type", f"{produced_in_target_type_errors} produced_in relationships target an entity that is not place or craft_village"))
     if self_loop_relationships:
         issues.append(Issue("error", "self_loop_relationships", f"{self_loop_relationships} relationships have source==target"))
+    if unknown_rel_types:
+        examples = ", ".join(sorted(unknown_rel_types)[:5])
+        issues.append(Issue("warning", "unknown_rel_types", f"{len(unknown_rel_types)} unknown relationship types: {examples}"))
     # DI-005: itinerary stop trỏ entity không tồn tại (free-text stop không có id → bỏ qua)
     dangling_stops = 0
     for it in itineraries:
@@ -724,6 +741,8 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         issues.append(Issue("warning", "invalid_source_urls", f"{invalid_source_urls} source URLs have invalid format"))
     if invalid_phone_format:
         issues.append(Issue("warning", "invalid_phone_format", f"{invalid_phone_format} entities have phone not matching VN format (+84/0 + 9-10 digits)"))
+    if invalid_website_urls:
+        issues.append(Issue("warning", "invalid_website_urls", f"{invalid_website_urls} entities have invalid website URLs in attributes"))
 
     name_counts = Counter((e.get("name") or "").strip() for e in entities if isinstance(e, dict) and e.get("name"))
     duplicate_names = {name: count for name, count in name_counts.items() if count > 1}
@@ -793,6 +812,8 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         "itinerary_excessive_stops": itinerary_excessive_stops,
         "invalid_source_urls": invalid_source_urls,
         "invalid_phone_format": invalid_phone_format,
+        "invalid_website_urls": invalid_website_urls,
+        "unknown_rel_types": len(unknown_rel_types),
         "data_js_status": data_js_status,
     }
 

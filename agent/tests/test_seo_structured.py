@@ -1457,3 +1457,57 @@ def test_by_id_caches_correctly(monkeypatch):
     result2 = seo._by_id(data)
     assert result1 is result2
     assert "a" in result1
+
+
+# ── dateModified / dateCreated ──────────────────────────────────────────
+
+
+def test_entity_jsonld_date_modified():
+    entity = {
+        "id": "dated", "name": "Dated", "type": "attraction",
+        "updatedAt": "2026-06-20",
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["dateModified"] == "2026-06-20"
+
+
+def test_entity_jsonld_date_created():
+    entity = {
+        "id": "created", "name": "Created", "type": "attraction",
+        "created_at": "2026-01-15",
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["dateCreated"] == "2026-01-15"
+
+
+def test_entity_jsonld_no_dates_when_invalid():
+    entity = {
+        "id": "no-date", "name": "No date", "type": "attraction",
+        "updatedAt": "not-a-date", "created_at": None,
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "dateModified" not in ld
+    assert "dateCreated" not in ld
+
+
+def test_entity_jsonld_both_dates():
+    entity = {
+        "id": "both", "name": "Both", "type": "attraction",
+        "updatedAt": "2026-06-25", "created_at": "2026-06-01",
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["dateModified"] == "2026-06-25"
+    assert ld["dateCreated"] == "2026-06-01"
+
+
+# ── mainEntityOfPage ───────────────────────────────────────────────────
+
+
+def test_entity_jsonld_main_entity_of_page():
+    entity = {"id": "meop-test", "name": "Test", "type": "attraction"}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "mainEntityOfPage" in ld
+    meop = ld["mainEntityOfPage"]
+    assert meop["@type"] == "WebPage"
+    assert meop["@id"] == seo._entity_url("meop-test")
+    assert meop["url"] == seo._entity_url("meop-test")
