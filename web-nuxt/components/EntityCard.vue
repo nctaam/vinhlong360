@@ -39,6 +39,19 @@
   </NuxtLink>
 </template>
 
+<script lang="ts">
+const AMENITY_ICONS: Record<string, { icon: string; label: string }> = {
+  wifi: { icon: '📶', label: 'Wi-Fi' },
+  free_entry: { icon: '🆓', label: 'Miễn phí' },
+  kid_friendly: { icon: '👶', label: 'Trẻ em OK' },
+  wheelchair: { icon: '♿', label: 'Xe lăn' },
+  pet_friendly: { icon: '🐕', label: 'Thú cưng OK' },
+  air_conditioned: { icon: '❄️', label: 'Máy lạnh' },
+  restroom: { icon: '🚻', label: 'WC' },
+  photography: { icon: '📸', label: 'Chụp ảnh OK' },
+}
+</script>
+
 <script setup lang="ts">
 import { TYPE_META } from '~/composables/useConstants'
 import { isYearRound, seasonText, relevanceScore } from '~/composables/useSeason'
@@ -81,16 +94,6 @@ const cardMeta = computed(() => {
   const hours = a.hours || null
   return (price || hours) ? { price, hours } : null
 })
-const AMENITY_ICONS: Record<string, { icon: string; label: string }> = {
-  wifi: { icon: '📶', label: 'Wi-Fi' },
-  free_entry: { icon: '🆓', label: 'Miễn phí' },
-  kid_friendly: { icon: '👶', label: 'Trẻ em OK' },
-  wheelchair: { icon: '♿', label: 'Xe lăn' },
-  pet_friendly: { icon: '🐕', label: 'Thú cưng OK' },
-  air_conditioned: { icon: '❄️', label: 'Máy lạnh' },
-  restroom: { icon: '🚻', label: 'WC' },
-  photography: { icon: '📸', label: 'Chụp ảnh OK' },
-}
 const allAmenities = computed(() => {
   const badges = props.entity.attributes?.amenity_badges
   if (!Array.isArray(badges) || !badges.length) return []

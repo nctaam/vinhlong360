@@ -177,16 +177,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import type { Entity } from '~/types'
-import { AREA_META } from '~/composables/useConstants'
-import { inSeason, relevanceScore } from '~/composables/useSeason'
-
-useReveal()
-const { f: pc } = usePageContent('ocop')
-
-// Per-region accent + tagline for the premium region quick-picks (geo-provenance).
-// Colors reuse the existing area→token convention (see catalog.css .cat-area-*).
+<script lang="ts">
 const REGION_RGB: Record<string, string> = {
   'vinh-long': 'var(--primary-rgb)',
   'ben-tre': 'var(--secondary-rgb)',
@@ -197,6 +188,15 @@ const REGION_TAGLINE: Record<string, string> = {
   'ben-tre': 'Xứ dừa ngọt lành',
   'tra-vinh': 'Đặc sản dừa sáp',
 }
+</script>
+
+<script setup lang="ts">
+import type { Entity } from '~/types'
+import { AREA_META } from '~/composables/useConstants'
+import { inSeason, relevanceScore } from '~/composables/useSeason'
+
+useReveal()
+const { f: pc } = usePageContent('ocop')
 
 const q = ref('')
 const starFilter = ref(0)

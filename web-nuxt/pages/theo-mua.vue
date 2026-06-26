@@ -212,6 +212,21 @@
   </div>
 </template>
 
+<script lang="ts">
+const WEDGE_TYPES = ['experience', 'product', 'dish']
+const TYPE_DESC: Record<string, string> = {
+  experience: 'Chèo xuồng, đạp xe, tát mương — trải nghiệm đúng mùa đẹp nhất.',
+  product: 'Trái cây, nông sản chính vụ — tươi ngon, giá hợp lý nhất thời điểm này.',
+  dish: 'Món ăn theo mùa — nguyên liệu tươi, đúng vị nhất trong năm.',
+}
+const TYPE_EYEBROW: Record<string, string> = {
+  experience: 'Trải nghiệm',
+  product: 'Nông sản',
+  dish: 'Ẩm thực',
+}
+const SEASON_EMOJIS = ['💧', '🌿', '🌿', '🌻', '🌻', '🌞', '🌞', '🌞', '🌾', '🌾', '💧', '💧']
+</script>
+
 <script setup lang="ts">
 import type { Entity } from '~/types'
 import { TYPE_META } from '~/composables/useConstants'
@@ -221,24 +236,6 @@ const { f: pc } = usePageContent('theo_mua')
 const { relevanceScore, seasonText } = useSeason()
 
 const month = ref(new Date().getMonth() + 1)
-
-const WEDGE_TYPES = ['experience', 'product', 'dish']
-
-const TYPE_DESC: Record<string, string> = {
-  experience: 'Chèo xuồng, đạp xe, tát mương — trải nghiệm đúng mùa đẹp nhất.',
-  product: 'Trái cây, nông sản chính vụ — tươi ngon, giá hợp lý nhất thời điểm này.',
-  dish: 'Món ăn theo mùa — nguyên liệu tươi, đúng vị nhất trong năm.',
-}
-
-const TYPE_EYEBROW: Record<string, string> = {
-  experience: 'Trải nghiệm',
-  product: 'Nông sản',
-  dish: 'Ẩm thực',
-}
-
-/* Signature: seasonal emoji keyed to the Mekong year rhythm.
-   Generic seasonal mood — no fabricated official crop/harvest calendar (Track-H). */
-const SEASON_EMOJIS = ['💧', '🌿', '🌿', '🌻', '🌻', '🌞', '🌞', '🌞', '🌾', '🌾', '💧', '💧']
 const seasonEmoji = computed(() => SEASON_EMOJIS[month.value - 1] || '📅')
 
 /* Mekong quarters → mood label + note (evocative, not factual claims). */
