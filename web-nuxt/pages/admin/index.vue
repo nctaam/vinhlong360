@@ -10,9 +10,19 @@
       </button>
     </div>
 
-    <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
-    <template v-else>
-    <div class="dash-loaded">
+    <!-- Full error state when stats fetch fails entirely -->
+    <div v-if="loadError && !loading" class="dash-error-state" role="alert">
+      <span class="dash-error-icon" aria-hidden="true">&#9888;</span>
+      <div class="dash-error-body">
+        <strong>Không thể tải dữ liệu dashboard</strong>
+        <p>Kiểm tra kết nối mạng hoặc trạng thái backend.</p>
+        <button type="button" class="btn btn-outline btn-sm" @click="fetchDashboard">Thử lại</button>
+      </div>
+    </div>
+
+    <div v-if="loading" class="admin-loading" role="status" aria-label="Đang tải dashboard"><div class="spinner"></div></div>
+    <template v-else-if="!loadError">
+    <div class="dash-loaded" aria-live="polite">
 
     <!-- Partial-degradation banner -->
     <div v-if="partialDegraded" class="dash-degraded" role="status">
@@ -216,8 +226,18 @@ const alerts = ref<Array<{ type: string; count: number; label: string; icon: str
 const health = ref<Record<string, any> | null>(null)
 const recentActivity = ref<Array<{ method: string; path: string; ts: string }>>([])
 const loading = ref(true)
+const loadError = ref(false)
 const partialDegraded = ref(false)
 const backupRunning = ref(false)
+
+/** Extract error detail from a caught error (safe for e:unknown from $fetch). */
+function getErrorDetail(e: unknown, fallback: string): string {
+  if (e && typeof e === 'object' && 'data' in e) {
+    const data = (e as { data?: { detail?: string } }).data
+    if (data && typeof data.detail === 'string') return data.detail
+  }
+  return fallback
+}
 
 function formatNum(n: unknown): string {
   const num = Number(n) || 0
@@ -281,6 +301,7 @@ const DEGRADED = Symbol('degraded')
 
 async function fetchDashboard() {
   loading.value = true
+  loadError.value = false
   partialDegraded.value = false
   try {
     const [s, a, h, auditRes] = await Promise.all([
@@ -295,6 +316,7 @@ async function fetchDashboard() {
     if (auditRes !== DEGRADED) recentActivity.value = (auditRes as { entries: any[] }).entries || []
     partialDegraded.value = a === DEGRADED || h === DEGRADED
   } catch {
+    loadError.value = true
     showToast('Không thể tải dữ liệu dashboard', 'error')
   }
   loading.value = false
@@ -306,7 +328,7 @@ async function triggerBackup() {
     const r = await $fetch<{ success: boolean; backup_name: string; size_mb: number }>('/admin-api/backup-trigger', { method: 'POST', headers: authHeaders() })
     showToast(`Backup thành công: ${r.backup_name} (${r.size_mb}MB)`, 'success')
     await fetchDashboard()
-  } catch (e: any) { showToast(e?.data?.detail || 'Backup thất bại', 'error') }
+  } catch (e: unknown) { showToast(getErrorDetail(e, 'Backup thất bại'), 'error') }
   backupRunning.value = false
 }
 
@@ -315,6 +337,19 @@ onMounted(fetchDashboard)
 
 <style scoped>
 .dash-subtitle { font-size: .88rem; color: var(--muted); margin-top: var(--space-1); }
+
+/* ── Full error state ── */
+.dash-error-state {
+  display: flex; align-items: flex-start; gap: var(--space-4);
+  padding: var(--space-6); border-radius: 14px; margin-bottom: var(--space-6);
+  background: rgba(217,79,61,.06); border: .5px solid rgba(217,79,61,.2);
+  color: var(--ink);
+}
+.dash-error-icon { font-size: 2rem; flex-shrink: 0; opacity: .6; }
+.dash-error-body { display: flex; flex-direction: column; gap: var(--space-2); }
+.dash-error-body strong { font-size: 1rem; }
+.dash-error-body p { font-size: .88rem; color: var(--muted); margin: 0; }
+.dark .dash-error-state { background: rgba(217,79,61,.08); border-color: rgba(217,79,61,.15); }
 
 /* Signal freshly-loaded (vs stale) data: fade content in after fetch resolves */
 .dash-loaded { animation: dash-fade-in .4s ease-out both; }
