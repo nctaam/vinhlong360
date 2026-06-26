@@ -12,7 +12,7 @@ export interface User {
 export function useAuth() {
   const user = useState<User | null>('auth-user', () => null)
   const loading = useState('auth-loading', () => false)
-  const token = useCookie('vl360_token', { maxAge: 60 * 60 * 24 * 30 })
+  const token = useCookie('vl360_token', { maxAge: 60 * 60 * 24 * 30, secure: true, sameSite: 'lax' })
   const isLoggedIn = computed(() => !!user.value)
 
   async function fetchMe() {

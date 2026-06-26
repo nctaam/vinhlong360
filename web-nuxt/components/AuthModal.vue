@@ -8,7 +8,7 @@
       <div class="modal-body">
         <!-- Step 1: Phone -->
         <div v-if="step === 'phone'" class="otp-step">
-          <h3>Nhập số điện thoại</h3>
+          <h3 tabindex="-1">Nhập số điện thoại</h3>
           <p>Nhập SĐT để đăng nhập hoặc tạo tài khoản mới.</p>
           <div class="form-group">
             <input
@@ -40,7 +40,7 @@
 
         <!-- Step: Password login (returning user) -->
         <div v-else-if="step === 'password'" class="otp-step">
-          <h3>Nhập mật khẩu</h3>
+          <h3 tabindex="-1">Nhập mật khẩu</h3>
           <p>Đăng nhập cho {{ phone }}</p>
           <div class="form-group">
             <input
@@ -65,7 +65,7 @@
 
         <!-- Step: OTP input -->
         <div v-else-if="step === 'otp'" class="otp-step">
-          <h3>Nhập mã OTP</h3>
+          <h3 tabindex="-1">Nhập mã OTP</h3>
           <p>Đã gửi mã tới {{ phone }}</p>
           <div class="otp-input">
             <input
@@ -96,7 +96,7 @@
 
         <!-- Step: Set password (after first OTP verification) -->
         <div v-else-if="step === 'set-password'" class="otp-step">
-          <h3>Đặt mật khẩu</h3>
+          <h3 tabindex="-1">Đặt mật khẩu</h3>
           <p>Tạo mật khẩu để lần sau đăng nhập nhanh hơn (không cần OTP).</p>
           <div class="form-group">
             <input
@@ -131,7 +131,7 @@
 
         <!-- Step: Done -->
         <div v-else class="otp-step otp-done">
-          <h3>Đăng nhập thành công!</h3>
+          <h3 tabindex="-1">Đăng nhập thành công!</h3>
           <p>Chào mừng bạn đến với vinhlong360.</p>
           <button type="button" class="btn btn-primary btn-full" @click="close">Đóng</button>
         </div>
@@ -259,8 +259,10 @@ async function sendOtp() {
   }
 }
 
+let verifyLock = false
 async function verifyCode() {
-  if (sending.value) return
+  if (sending.value || verifyLock) return
+  verifyLock = true
   const code = otpDigits.value.join('')
   if (code.length !== 6) {
     error.value = 'Vui lòng nhập đủ 6 chữ số'
@@ -285,6 +287,7 @@ async function verifyCode() {
     nextTick(() => otpRefs.value[0]?.focus())
   } finally {
     sending.value = false
+    verifyLock = false
   }
 }
 

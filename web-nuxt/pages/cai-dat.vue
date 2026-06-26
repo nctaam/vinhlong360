@@ -312,6 +312,9 @@ function setTab(key: TabKey) {
 
 const displayName = ref(user.value?.display_name || '')
 const bio = ref('')
+const savedName = ref(displayName.value)
+const savedBio = ref('')
+const isDirty = computed(() => displayName.value !== savedName.value || bio.value !== savedBio.value)
 const saving = ref(false)
 const nameError = ref('')
 const uploadingAvatar = ref(false)
@@ -350,8 +353,8 @@ onMounted(async () => {
   try {
     const res = await $fetch<Record<string, any>>(`/api/users/${user.value.id}`, { headers: authHeaders() })
     const u = res?.user ?? res
-    if (u?.bio) bio.value = u.bio
-    if (!displayName.value && u?.display_name) displayName.value = u.display_name
+    if (u?.bio) { bio.value = u.bio; savedBio.value = u.bio }
+    if (!displayName.value && u?.display_name) { displayName.value = u.display_name; savedName.value = u.display_name }
   } catch { /* prefill is best-effort */ }
   loadSessions()
   loadLoginHistory()
@@ -590,6 +593,8 @@ async function save() {
       body: { display_name: name, bio: bio.value.trim() },
     })
     await fetchMe()
+    savedName.value = displayName.value
+    savedBio.value = bio.value
     showToast('Đã lưu hồ sơ', 'success')
   } catch (e: any) {
     if (e?.response?.status === 401) { handleSessionExpired(); return }
@@ -599,7 +604,14 @@ async function save() {
   }
 }
 
+function onBeforeUnload(e: BeforeUnloadEvent) {
+  if (isDirty.value) e.preventDefault()
+}
+onMounted(() => {
+  if (import.meta.client) window.addEventListener('beforeunload', onBeforeUnload)
+})
 onUnmounted(() => {
+  if (import.meta.client) window.removeEventListener('beforeunload', onBeforeUnload)
   if (avatarPreview.value?.startsWith('blob:')) URL.revokeObjectURL(avatarPreview.value)
   if (coverPreview.value?.startsWith('blob:')) URL.revokeObjectURL(coverPreview.value)
 })

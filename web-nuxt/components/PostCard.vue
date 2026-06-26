@@ -312,7 +312,10 @@ function onLbKey(e: KeyboardEvent) {
   else if (e.key === 'ArrowRight') lbNext()
 }
 onMounted(() => window.addEventListener('keydown', onLbKey))
-onUnmounted(() => window.removeEventListener('keydown', onLbKey))
+onUnmounted(() => {
+  window.removeEventListener('keydown', onLbKey)
+  if (likePopTimer) clearTimeout(likePopTimer)
+})
 
 if (import.meta.client) {
   const onClick = (e: Event) => { if (showMenu.value) showMenu.value = false; if (repostMenu.value) repostMenu.value = false }

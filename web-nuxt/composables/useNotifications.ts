@@ -1,6 +1,7 @@
 let pollTimer: ReturnType<typeof setTimeout> | null = null
 let eventSource: EventSource | null = null
 let pollInterval = 30_000
+let sseDebounce: ReturnType<typeof setTimeout> | null = null
 
 export function useNotifications() {
   const notifications = useState<any[]>('notifications', () => [])
@@ -14,7 +15,7 @@ export function useNotifications() {
     try {
       const res = await $fetch<{ notifications: Notification[]; unread_count?: number }>('/api/notifications?limit=20', { headers: authHeaders() })
       notifications.value = res.notifications || []
-      unreadCount.value = res.unread_count || 0
+      unreadCount.value = res.unread_count ?? 0
       fetchError.value = false
       pollInterval = 30_000
     } catch {
@@ -59,7 +60,8 @@ export function useNotifications() {
     if (!token) return
     const es = new EventSource(`/api/notifications/stream?token=${encodeURIComponent(token)}`)
     es.onmessage = () => {
-      fetchNotifications()
+      if (sseDebounce) clearTimeout(sseDebounce)
+      sseDebounce = setTimeout(() => fetchNotifications(), 2000)
     }
     es.onerror = () => {
       _closeSSE()
