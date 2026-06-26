@@ -911,11 +911,14 @@ def collection_jsonld(collection_type: str):
 
 
 def _url_xml(loc: str, *, changefreq: str, priority: str, lastmod: str | None = None) -> str:
-    parts = ["  <url>", f"    <loc>{xml_escape(loc)}</loc>"]
+    escaped_loc = xml_escape(loc)
+    parts = ["  <url>", f"    <loc>{escaped_loc}</loc>"]
     if lastmod:
         parts.append(f"    <lastmod>{xml_escape(lastmod)}</lastmod>")
     parts.append(f"    <changefreq>{xml_escape(changefreq)}</changefreq>")
     parts.append(f"    <priority>{xml_escape(priority)}</priority>")
+    parts.append(f'    <xhtml:link rel="alternate" hreflang="vi" href="{escaped_loc}"/>')
+    parts.append(f'    <xhtml:link rel="alternate" hreflang="x-default" href="{escaped_loc}"/>')
     parts.append("  </url>")
     return "\n".join(parts)
 
@@ -981,7 +984,7 @@ def sitemap():
         ))
 
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
-    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
     xml += "\n".join(urls)
     xml += "\n</urlset>"
     _sitemap_cache = (mtime_ns, data_key, now, xml)

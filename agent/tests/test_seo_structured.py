@@ -1614,7 +1614,7 @@ def test_sitemap_deduplicates_entity_urls(monkeypatch):
     monkeypatch.setattr(seo, "_data_mtime_ns", 0)
     resp = seo.sitemap()
     xml = resp.body.decode()
-    assert xml.count("/dia-diem/dup") == 1
+    assert xml.count("<loc>https://vinhlong360.vn/dia-diem/dup</loc>") == 1
 
 
 # ── Itinerary isPartOf graph linking ─────────────────────────────────
@@ -2095,3 +2095,31 @@ def test_event_no_capacity_when_string():
     }
     ld = seo.build_entity_jsonld(event, {})
     assert "maximumAttendeeCapacity" not in ld
+
+
+# ── Sitemap hreflang ────────────────────────────────────────────────
+
+
+def test_sitemap_has_xhtml_namespace(monkeypatch):
+    data = {"entities": [], "relationships": [], "itineraries": []}
+    monkeypatch.setattr(seo, "_load", lambda: data)
+    monkeypatch.setattr(seo, "_sitemap_cache", None)
+    monkeypatch.setattr(seo, "_data_mtime_ns", 0)
+    resp = seo.sitemap()
+    xml = resp.body.decode()
+    assert 'xmlns:xhtml="http://www.w3.org/1999/xhtml"' in xml
+
+
+def test_sitemap_url_has_hreflang(monkeypatch):
+    data = {
+        "entities": [{"id": "a", "name": "A", "type": "attraction", "confidence": 0.9}],
+        "relationships": [],
+        "itineraries": [],
+    }
+    monkeypatch.setattr(seo, "_load", lambda: data)
+    monkeypatch.setattr(seo, "_sitemap_cache", None)
+    monkeypatch.setattr(seo, "_data_mtime_ns", 0)
+    resp = seo.sitemap()
+    xml = resp.body.decode()
+    assert 'hreflang="vi"' in xml
+    assert 'hreflang="x-default"' in xml
