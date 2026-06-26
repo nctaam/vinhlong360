@@ -2016,3 +2016,51 @@ def test_entity_jsonld_no_aggregate_rating_when_string():
     }
     ld = seo.build_entity_jsonld(entity, {})
     assert "aggregateRating" not in ld
+
+
+# ── telephone / email / openingHours ─────────────────────────────────
+
+
+def test_entity_jsonld_telephone():
+    entity = {
+        "id": "phone-test", "name": "Quán", "type": "restaurant",
+        "attributes": {"phone": "0270 1234 567"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["telephone"] == "0270 1234 567"
+
+
+def test_entity_jsonld_no_telephone_when_empty():
+    entity = {
+        "id": "no-phone", "name": "Quán", "type": "restaurant",
+        "attributes": {"phone": ""},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "telephone" not in ld
+
+
+def test_entity_jsonld_email():
+    entity = {
+        "id": "email-test", "name": "KS", "type": "accommodation",
+        "attributes": {"email": "info@hotel.vn"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["email"] == "info@hotel.vn"
+
+
+def test_entity_jsonld_opening_hours():
+    entity = {
+        "id": "hours-test", "name": "Quán Café", "type": "cafe",
+        "attributes": {"opening_hours": "Mo-Fr 07:00-22:00"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["openingHours"] == "Mo-Fr 07:00-22:00"
+
+
+def test_entity_jsonld_no_opening_hours_when_missing():
+    entity = {
+        "id": "no-hours", "name": "Quán", "type": "cafe",
+        "attributes": {},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "openingHours" not in ld

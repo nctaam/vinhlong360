@@ -523,6 +523,16 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
     if schema_type == "LocalBusiness" and str(entity.get("type")) == "craft_village":
         ld["additionalType"] = "https://schema.org/TouristAttraction"
 
+    phone = attrs.get("phone")
+    if isinstance(phone, str) and phone.strip():
+        ld["telephone"] = phone.strip()
+    email = attrs.get("email")
+    if isinstance(email, str) and email.strip():
+        ld["email"] = email.strip()
+    opening = attrs.get("opening_hours")
+    if isinstance(opening, str) and opening.strip():
+        ld["openingHours"] = opening.strip()
+
     if schema_type == "Place":
         ld["additionalType"] = "AdministrativeArea"
         parent_id = entity.get("parentId")
