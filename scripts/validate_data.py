@@ -167,7 +167,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
             issues.append(Issue("error", "entity_not_object", f"entities[{index}] must be an object"))
             continue
         entity_id = entity.get("id")
-        if not entity_id:
+        if entity_id is None or entity_id == "":
             missing_id += 1
         else:
             ids.append(str(entity_id))
@@ -621,6 +621,36 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         "rel_type_singletons": rel_type_singletons,
         "data_js_status": data_js_status,
     }
+
+    # DI-014: per-type SEO attribute coverage
+    seo_required: dict[str, list[str]] = {
+        "restaurant": ["specialty", "price_range", "phone", "hours"],
+        "dish": ["specialty", "price_range"],
+        "cafe": ["specialty", "price_range", "phone", "hours"],
+        "accommodation": ["star_rating", "price_range", "phone"],
+        "product": ["price", "ocop"],
+        "event": ["date_start", "startDate"],
+        "attraction": ["admission"],
+        "experience": ["admission"],
+        "nature": ["admission"],
+        "person": ["role"],
+    }
+    type_coverage: dict[str, dict[str, int]] = {}
+    for e in entities:
+        if not isinstance(e, dict):
+            continue
+        etype = e.get("type")
+        req = seo_required.get(str(etype)) if etype else None
+        if not req:
+            continue
+        attrs = e.get("attributes") if isinstance(e.get("attributes"), dict) else {}
+        if etype not in type_coverage:
+            type_coverage[etype] = {"total": 0, "has_any_seo_attr": 0}
+        type_coverage[etype]["total"] += 1
+        if any(attrs.get(k) for k in req):
+            type_coverage[etype]["has_any_seo_attr"] += 1
+    stats["seo_attr_coverage"] = type_coverage
+
     return issues, stats
 
 
@@ -672,6 +702,15 @@ def print_report(issues: list[Issue], stats: dict[str, Any]) -> None:
         "rel_type_singletons",
     ]:
         print(f"  {key}: {stats.get(key)}")
+
+    seo_cov = stats.get("seo_attr_coverage", {})
+    if seo_cov:
+        print("\nSEO attribute coverage:")
+        for etype, info in sorted(seo_cov.items()):
+            total = info["total"]
+            has = info["has_any_seo_attr"]
+            pct = round(100 * has / max(total, 1))
+            print(f"  {etype}: {has}/{total} ({pct}%)")
 
     grouped: dict[str, list[Issue]] = defaultdict(list)
     for issue in issues:

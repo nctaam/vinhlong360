@@ -1010,3 +1010,42 @@ def test_faq_jsonld_ignores_empty_string_tip():
 def test_safe_date_rejects_partial_date():
     assert seo._safe_date("2026-06") is None
     assert seo._safe_date("06-15-2026") is None
+
+
+# ── @id on site/collection JSON-LD ───────────────────────────────────────
+
+
+def test_site_jsonld_has_ids():
+    result = seo.site_jsonld()
+    website = result[0]
+    org = result[1]
+    assert website["@id"] == f"{seo.SITE}/#website"
+    assert org["@id"] == f"{seo.SITE}/#organization"
+    assert website["publisher"]["@id"] == f"{seo.SITE}/#organization"
+
+
+def test_collection_jsonld_has_id(sample_data):
+    ld = seo.build_collection_jsonld("du-lich", sample_data)
+    assert ld is not None
+    assert ld["@id"] == f"{seo.SITE}/du-lich"
+    assert ld["isPartOf"]["@id"] == f"{seo.SITE}/#website"
+
+
+def test_entity_jsonld_has_is_part_of():
+    entity = {"id": "test", "name": "Test", "type": "attraction"}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["isPartOf"]["@id"] == f"{seo.SITE}/#website"
+
+
+# ── _parse_duration extended ─────────────────────────────────────────────
+
+
+def test_parse_duration_nights():
+    assert seo._parse_duration("2 đêm") == "P3D"
+    assert seo._parse_duration("1 đêm") == "P2D"
+
+
+def test_parse_duration_none_for_non_string():
+    assert seo._parse_duration(None) is None
+    assert seo._parse_duration(42) is None
+    assert seo._parse_duration("random text") is None

@@ -803,3 +803,60 @@ def test_validate_flags_duplicate_relationships(tmp_path: Path) -> None:
     issues, _stats = validate_data.validate(data, tmp_path / "data.json")
 
     assert "duplicate_relationships" in {issue.code for issue in issues}
+
+
+# ── Entity id=0 edge case (falsy but valid) ──────────────────────────────
+
+
+def test_validate_entity_id_zero_not_counted_as_missing(tmp_path: Path) -> None:
+    """id=0 is falsy but valid — should not be counted as missing."""
+    data = {
+        "entities": [
+            {"id": 0, "type": "attraction", "name": "Zero", "summary": "Z", "area": "vinh-long"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+    codes = {issue.code for issue in issues}
+
+    assert "missing_entity_id" not in codes
+
+
+# ── SEO attribute coverage (DI-014) ──────────────────────────────────────
+
+
+def test_validate_seo_attr_coverage(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "r1", "type": "restaurant", "name": "R1", "summary": "R", "area": "vinh-long",
+             "attributes": {"specialty": "Hải sản", "phone": "123"}},
+            {"id": "r2", "type": "restaurant", "name": "R2", "summary": "R", "area": "vinh-long",
+             "attributes": {}},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    cov = stats["seo_attr_coverage"]
+    assert "restaurant" in cov
+    assert cov["restaurant"]["total"] == 2
+    assert cov["restaurant"]["has_any_seo_attr"] == 1
+
+
+def test_validate_seo_attr_coverage_skips_uncovered_types(tmp_path: Path) -> None:
+    """Types not in the seo_required mapping should not appear in coverage."""
+    data = {
+        "entities": [
+            {"id": "o1", "type": "organization", "name": "Org", "summary": "O", "area": "vinh-long"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert "organization" not in stats["seo_attr_coverage"]

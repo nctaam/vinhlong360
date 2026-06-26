@@ -495,6 +495,7 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
         ld["jobTitle"] = attrs["role"]
 
     ld["inLanguage"] = "vi-VN"
+    ld["isPartOf"] = {"@id": f"{SITE}/#website"}
     ld["breadcrumb"] = _build_breadcrumb(entity, by_id)
 
     return {key: value for key, value in ld.items() if value not in (None, "", [], {})}
@@ -506,8 +507,10 @@ def site_jsonld():
         {
             "@context": "https://schema.org",
             "@type": "WebSite",
+            "@id": f"{SITE}/#website",
             "name": "VinhLong360",
             "url": SITE,
+            "publisher": {"@id": f"{SITE}/#organization"},
             "potentialAction": {
                 "@type": "SearchAction",
                 "target": {"@type": "EntryPoint", "urlTemplate": f"{SITE}/tim-kiem?q={{search_term_string}}"},
@@ -517,6 +520,7 @@ def site_jsonld():
         {
             "@context": "https://schema.org",
             "@type": "Organization",
+            "@id": f"{SITE}/#organization",
             "name": "VinhLong360",
             "url": SITE,
             "logo": f"{SITE}/logo.png",
@@ -565,13 +569,16 @@ def _parse_duration(value: Any) -> str | None:
     if not isinstance(value, str):
         return None
     text = value.strip().lower()
-    import re as _re
-    m = _re.match(r"(\d+)\s*ngày", text)
+    m = re.match(r"(\d+)\s*ngày", text)
     if m:
         return f"P{m.group(1)}D"
-    m = _re.match(r"(\d+)\s*giờ", text)
+    m = re.match(r"(\d+)\s*giờ", text)
     if m:
         return f"PT{m.group(1)}H"
+    m = re.match(r"(\d+)\s*đêm", text)
+    if m:
+        days = int(m.group(1)) + 1
+        return f"P{days}D"
     return None
 
 
@@ -745,14 +752,17 @@ def build_collection_jsonld(collection_type: str, data: dict[str, Any]) -> dict[
             element["description"] = summary.strip()[:200]
         elements.append(element)
 
+    collection_url = f"{SITE}/{collection_type}"
     return {
         "@context": "https://schema.org",
         "@type": "ItemList",
+        "@id": collection_url,
         "name": collection["name"],
         "description": collection["description"],
-        "url": f"{SITE}/{collection_type}",
+        "url": collection_url,
         "numberOfItems": len(elements),
         "itemListElement": elements,
+        "isPartOf": {"@id": f"{SITE}/#website"},
     }
 
 
