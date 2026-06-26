@@ -301,6 +301,13 @@ class Database:
                 except sqlite3.OperationalError:
                     logger.debug("FTS5 not available, full-text search disabled")
 
+                if not self._use_pg:
+                    for col in ("status TEXT", "verified INTEGER DEFAULT 1"):
+                        try:
+                            conn.execute(f"ALTER TABLE entities ADD COLUMN {col}")
+                        except sqlite3.OperationalError:
+                            pass
+
             self._initialized = True
 
     # ── Entity CRUD ──

@@ -602,7 +602,7 @@ async def homepage_curated(response: Response):
         e["days_until"] = e.pop("_days_until", None)
 
     # Trending: entities with highest chat/search hit counts
-    from agent.proactive import get_trending_entities
+    from proactive import get_trending_entities
     trending_raw = get_trending_entities(limit=6)
     trending = []
     for t in trending_raw:
