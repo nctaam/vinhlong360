@@ -1,5 +1,5 @@
 <template>
-  <div class="page">
+  <main class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: areaMeta?.name || 'Khu vực' }]" />
 
     <!-- Hero -->
@@ -92,10 +92,13 @@
       <span class="catalog-divider-text">Tất cả {{ entities.length }} mục</span>
     </div>
 
-    <!-- Full grid -->
+    <!-- Full grid (progressive loading) -->
     <section v-if="entities.length" class="block reveal">
       <div class="grid">
-        <EntityCard v-for="e in entities" :key="e.id" :entity="e" />
+        <EntityCard v-for="e in visibleEntities" :key="e.id" :entity="e" />
+      </div>
+      <div v-if="visibleEntities.length < entities.length" class="load-more-wrap">
+        <button type="button" class="btn btn-outline" @click="showMore">Xem thêm ({{ entities.length - visibleEntities.length }} còn lại)</button>
       </div>
     </section>
     <EmptyState v-else-if="data && !fetchError" icon="📍" title="Chưa có dữ liệu" message="Chưa có dữ liệu cho khu vực này. Dữ liệu đang được cập nhật.">
@@ -127,7 +130,7 @@
         </NuxtLink>
       </div>
     </section>
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">
@@ -147,11 +150,16 @@ const AREA_RGB: Record<string, string> = {
   'ben-tre': 'var(--secondary-rgb)',
   'tra-vinh': 'var(--river-rgb)',
 }
-const areaTint = computed(() => ({ '--AREA-rgb': AREA_RGB[areaKey] || 'var(--primary-rgb)' }))
+const areaTint = { '--AREA-rgb': AREA_RGB[areaKey] || 'var(--primary-rgb)' }
 
-const { data, error: fetchError } = await useAsyncData(`area-${areaKey}`, () =>
-  apiFetch<any>(`/api/entities?area=${areaKey}&limit=200`)
-)
+const [{ data, error: fetchError }, { data: placesData }] = await Promise.all([
+  useAsyncData(`area-${areaKey}`, () =>
+    apiFetch<any>(`/api/entities?area=${areaKey}&limit=200`)
+  ),
+  useAsyncData(`area-wards-${areaKey}`, () =>
+    apiFetch<Place[]>('/api/places').catch(() => [])
+  ),
+])
 
 const AREA_EDITORIAL: Record<string, { title: string; paragraphs: string[] }> = {
   'vinh-long': {
@@ -179,9 +187,6 @@ const AREA_EDITORIAL: Record<string, { title: string; paragraphs: string[] }> = 
 const areaEditorial = computed(() => AREA_EDITORIAL[areaKey])
 
 const ADMIN_LEVELS = ['phuong', 'xa', 'tinh']
-const { data: placesData } = await useAsyncData(`area-wards-${areaKey}`, () =>
-  apiFetch<Place[]>('/api/places').catch(() => [])
-)
 const wards = computed(() =>
   (placesData.value || [])
     .filter((p: Entity) => p.area === areaKey && ADMIN_LEVELS.includes(p.level))
@@ -195,27 +200,38 @@ const entities = computed(() => {
   return (raw.entities || []).filter((e: Entity) => types.includes(e.type))
 })
 
-const typeStats = computed(() => {
-  const counts: Record<string, number> = {}
-  for (const e of entities.value) counts[e.type] = (counts[e.type] || 0) + 1
-  return (CARD_TYPES as readonly string[])
-    .filter(t => counts[t])
-    .map(t => ({ type: t, label: TYPE_META[t]?.label || t, count: counts[t] }))
+const entityGroups = computed(() => {
+  const groups: Record<string, Entity[]> = {}
+  const withImages: Entity[] = []
+  for (const e of entities.value) {
+    if (!groups[e.type]) groups[e.type] = []
+    groups[e.type].push(e)
+    if (e.images?.length) withImages.push(e)
+  }
+  return { groups, withImages }
 })
 
-const featured = computed(() =>
-  entities.value.filter((e: Entity) => e.images?.length).slice(0, 6)
+const typeStats = computed(() =>
+  (CARD_TYPES as readonly string[])
+    .filter(t => entityGroups.value.groups[t]?.length)
+    .map(t => ({ type: t, label: TYPE_META[t]?.label || t, count: entityGroups.value.groups[t].length }))
 )
+
+const showCount = ref(24)
+const visibleEntities = computed(() => entities.value.slice(0, showCount.value))
+function showMore() { showCount.value += 24 }
+
+const featured = computed(() => entityGroups.value.withImages.slice(0, 6))
 
 const typeSections = computed(() =>
   (CARD_TYPES as readonly string[])
+    .filter(t => entityGroups.value.groups[t]?.length)
     .map(t => ({
       type: t,
       emoji: TYPE_META[t]?.emoji || '📍',
       label: TYPE_META[t]?.label || t,
-      items: entities.value.filter((e: Entity) => e.type === t),
+      items: entityGroups.value.groups[t],
     }))
-    .filter(c => c.items.length > 0)
 )
 
 // Per-type "see all" expansion (truncated scroll-rows expand in place).
@@ -226,32 +242,36 @@ function toggleExpand(type: string) {
 
 if (areaMeta) {
   useSeoMeta({
+    ogType: 'article',
     title: `Khu vực ${areaMeta.name} — vinhlong360`,
     description: areaMeta.blurb,
     ogTitle: `${areaMeta.emoji} ${areaMeta.name} — vinhlong360`,
     ogDescription: areaMeta.blurb,
-    ogImage: '/icons/icon-512.png',
+    ogImage: () => {
+      const f = featured.value
+      return f.length && f[0].images?.length ? f[0].images[0] : '/icons/icon-512.png'
+    },
   })
 
-  useHead({
+  useHead(() => ({
     link: [{ rel: 'canonical', href: canonicalUrl(`/khu-vuc/${areaKey}`) }],
     script: [{
       type: 'application/ld+json',
-      innerHTML: JSON.stringify({
+      innerHTML: safeJsonLd({
         '@context': 'https://schema.org',
         '@type': 'BreadcrumbList',
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-          { '@type': 'ListItem', position: 2, name: areaMeta.name },
+          { '@type': 'ListItem', position: 2, name: areaMeta.name, item: `https://vinhlong360.vn/khu-vuc/${areaKey}` },
         ],
       }),
     }],
-  })
+  }))
 
   useHead(() => ({
     script: [{
       type: 'application/ld+json',
-      innerHTML: JSON.stringify(itemListJsonLd(
+      innerHTML: safeJsonLd(itemListJsonLd(
         `Khu vực ${areaMeta.name}`,
         areaMeta.blurb,
         `/khu-vuc/${areaKey}`,
@@ -263,6 +283,7 @@ if (areaMeta) {
 </script>
 
 <style scoped>
+.load-more-wrap { display: flex; justify-content: center; margin-top: var(--space-6); }
 .see-all-count { font-size: var(--text-sm); color: var(--muted); }
 
 /* ── SIGNATURE: Regional identity hero bloom ──────────────────────────────

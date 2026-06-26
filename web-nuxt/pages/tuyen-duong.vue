@@ -1,5 +1,5 @@
 <template>
-  <section class="page">
+  <main class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tuyến đường gợi ý' }]" />
 
     <!-- Hero -->
@@ -48,11 +48,11 @@
 
     <section class="reveal">
     <div v-if="filtered.length" class="route-grid">
-      <div v-for="r in filtered" :key="r.id" class="route-card">
+      <article v-for="r in filtered" :key="r.id" class="route-card" :aria-label="r.name + ' — ' + r.duration">
         <div :class="['route-header', `area-${r.area}`]">
           <span class="route-emoji">{{ r.emoji }}</span>
           <div>
-            <h2>{{ r.name }}</h2>
+            <h3>{{ r.name }}</h3>
             <span class="route-meta">{{ r.duration }} · {{ r.distance }}</span>
           </div>
         </div>
@@ -73,7 +73,7 @@
             <NuxtLink to="/ban-do" no-prefetch class="btn btn-ghost btn-sm">🗺️ Xem bản đồ</NuxtLink>
           </div>
         </div>
-      </div>
+      </article>
     </div>
 
     <!-- Designed empty state (e.g. filter to an area with 0 routes) -->
@@ -113,7 +113,7 @@
         </NuxtLink>
       </div>
     </section>
-  </section>
+  </main>
 </template>
 
 <script setup lang="ts">
@@ -140,25 +140,36 @@ const filtered = computed(() => {
 useFilterUrl({ vung: areaFilter }, { vung: 'all' })
 
 useSeoMeta({
-  title: () => pc('seo_title'),
-  description: () => pc('seo_description'),
-  ogTitle: () => pc('og_title'),
-  ogDescription: () => pc('og_description'),
+  ogType: 'website',
+  title: () => pc('seo_title') || 'Tuyến đường gợi ý miền Tây — vinhlong360',
+  description: () => pc('seo_description') || 'Các tuyến đường tự khám phá qua miệt vườn, làng nghề và văn hóa Vĩnh Long, Bến Tre, Trà Vinh.',
+  ogTitle: () => pc('og_title') || 'Tuyến đường gợi ý — vinhlong360',
+  ogDescription: () => pc('og_description') || 'Tự khám phá miền Tây bằng xe máy hoặc ô tô.',
 })
 
-useHead({
+useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/tuyen-duong') }],
   script: [{
     type: 'application/ld+json',
-    innerHTML: JSON.stringify({
+    innerHTML: safeJsonLd({
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
       name: 'Tuyến đường gợi ý miền Tây',
       description: 'Các tuyến đường tự khám phá qua miệt vườn, làng nghề và văn hóa Vĩnh Long, Bến Tre, Trà Vinh.',
       url: 'https://vinhlong360.vn/tuyen-duong',
+      mainEntity: {
+        '@type': 'ItemList',
+        numberOfItems: ROUTES.value.length,
+        itemListElement: ROUTES.value.map((r: any, i: number) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: r.name,
+          description: `${r.duration} · ${r.distance}`,
+        })),
+      },
     }),
   }],
-})
+}))
 </script>
 
 <style scoped>
@@ -170,7 +181,7 @@ useHead({
 .route-card:hover::before { opacity: .9; }
 .route-card:active { transform: translateY(0) scale(.99); transition-duration: .08s; }
 .route-header { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-5) var(--space-6); color: var(--text-on-dark, #fff); box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 2px rgba(0,0,0,.1); transition: background .3s var(--ease-out); }
-.route-header h2 { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); text-shadow: var(--shadow-text); }
+.route-header h3 { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); text-shadow: var(--shadow-text); overflow-wrap: break-word; word-break: break-word; }
 .route-meta { font-size: var(--text-sm); opacity: .9; }
 .route-emoji { font-size: var(--text-3xl); text-shadow: var(--shadow-text); }
 .route-header.area-vinh-long { background: var(--cat-experience); }

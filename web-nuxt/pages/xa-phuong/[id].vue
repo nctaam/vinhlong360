@@ -1,15 +1,20 @@
 <template>
-  <div v-if="fetchFailed" class="page">
+  <main v-if="fetchFailed" class="page">
     <EmptyState icon="⚠️" title="Không thể tải trang" message="Lỗi kết nối. Vui lòng thử lại.">
       <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData(`ward-${id}`)">Thử lại</button>
     </EmptyState>
-  </div>
+  </main>
 
-  <div v-else-if="!data?.place" class="page">
-    <EmptyState message="Không tìm thấy xã/phường này." />
-  </div>
+  <main v-else-if="!data?.place" class="page">
+    <EmptyState icon="🔍" title="Không tìm thấy xã/phường" message="Có thể đơn vị hành chính đã được sắp xếp lại hoặc đường dẫn chưa đúng.">
+      <template #actions>
+        <NuxtLink to="/danh-ba" class="btn btn-primary">Danh bạ hành chính</NuxtLink>
+        <NuxtLink to="/" class="btn btn-ghost">Về trang chủ</NuxtLink>
+      </template>
+    </EmptyState>
+  </main>
 
-  <div v-else class="wp">
+  <main v-else class="wp">
     <!-- Breadcrumb -->
     <nav class="breadcrumb" aria-label="Breadcrumb">
       <ol>
@@ -53,7 +58,7 @@
     <ClientOnly>
       <section v-if="data.place.coordinates" class="wp-map-sec">
         <EmptyState v-if="mapLoadError" tone="error" icon="🗺️" message="Không tải được bản đồ. Kiểm tra kết nối và thử lại." />
-        <div v-show="!mapLoadError" ref="mapEl" class="wp-map-container" :class="{ 'wp-map-loading': !mapReady }"></div>
+        <div v-show="!mapLoadError" ref="mapEl" class="wp-map-container" :class="{ 'wp-map-loading': !mapReady }" role="application" aria-roledescription="bản đồ tương tác" :aria-label="`Bản đồ ${data.place.name}. Dùng chuột hoặc cảm ứng để di chuyển.`"></div>
       </section>
     </ClientOnly>
 
@@ -132,7 +137,7 @@
         </NuxtLink>
       </aside>
     </div>
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">
@@ -145,7 +150,7 @@ const route = useRoute()
 const id = computed(() => route.params.id as string)
 
 const fetchFailed = ref(false)
-const { data } = await useAsyncData(`ward-${id.value}`, async () => {
+const { data } = await useAsyncData(() => `ward-${id.value}`, async () => {
   try {
     fetchFailed.value = false
     return await apiFetch<Record<string, unknown>>(`/api/places/${id.value}/overview`)
@@ -187,59 +192,109 @@ function formatPop(n: number) {
 function attr(f: Entity, k: string) { return (f.attributes || {})[k] }
 function kindMeta(f: Entity) { return OFFICE_KIND[attr(f, 'office_kind')] || OFFICE_KIND.khac }
 
+const allWardEntities = computed<Entity[]>(() => {
+  const d = data.value
+  if (!d) return []
+  return [...(d.tourism || []), ...(d.lodging || []), ...(d.products || [])]
+})
+
 const placeName = computed(() => data.value?.place?.name || 'Xã/Phường')
 useSeoMeta({
+  ogType: 'article',
   title: () => `${placeName.value} — du lịch, lưu trú, đặc sản & danh bạ | vinhlong360`,
   description: () => data.value?.place?.summary || `Tổng hợp địa điểm du lịch, cơ sở lưu trú, sản phẩm đặc sản và danh bạ hành chính của ${placeName.value}.`,
   ogTitle: () => `${placeName.value} — vinhlong360`,
   ogDescription: () => data.value?.place?.summary || `Du lịch, đặc sản & danh bạ ${placeName.value}.`,
+  ogImage: () => {
+    const first = allWardEntities.value.find(e => e.images?.length)
+    return first?.images?.[0] || '/icons/icon-512.png'
+  },
 })
-useHead(() => ({
-  link: [{ rel: 'canonical', href: canonicalUrl(`/xa-phuong/${id.value}`) }],
-  script: data.value?.place ? [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org', '@type': 'AdministrativeArea',
-      name: data.value.place.name,
-      ...(data.value.place.summary ? { description: data.value.place.summary } : {}),
-      address: { '@type': 'PostalAddress', addressRegion: areaMeta.value.name, addressCountry: 'VN' },
-    }),
-  }] : [],
-}))
+useHead(() => {
+  const place = data.value?.place
+  if (!place) return { link: [{ rel: 'canonical', href: canonicalUrl(`/xa-phuong/${id.value}`) }] }
+
+  const adminLd: Record<string, any> = {
+    '@context': 'https://schema.org', '@type': 'AdministrativeArea',
+    name: place.name,
+    ...(place.summary ? { description: place.summary } : {}),
+    address: { '@type': 'PostalAddress', addressRegion: areaMeta.value.name, addressCountry: 'VN' },
+  }
+  const geoCoords = normalizeCoords(place.coordinates)
+  if (geoCoords) {
+    adminLd.geo = { '@type': 'GeoCoordinates', latitude: geoCoords[0], longitude: geoCoords[1] }
+  }
+
+  const breadcrumbLd = {
+    '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
+      ...(place.area ? [{ '@type': 'ListItem', position: 2, name: areaMeta.value.name, item: `https://vinhlong360.vn/khu-vuc/${place.area}` }] : []),
+      { '@type': 'ListItem', position: place.area ? 3 : 2, name: place.name, item: `https://vinhlong360.vn/xa-phuong/${id.value}` },
+    ],
+  }
+
+  const scripts = [
+    { type: 'application/ld+json', innerHTML: safeJsonLd(adminLd) },
+    { type: 'application/ld+json', innerHTML: safeJsonLd(breadcrumbLd) },
+  ]
+
+  const allEnts = allWardEntities.value
+  if (allEnts.length) {
+    scripts.push({
+      type: 'application/ld+json',
+      innerHTML: safeJsonLd({
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name: `Địa điểm tại ${place.name}`,
+        numberOfItems: allEnts.length,
+        itemListElement: allEnts.slice(0, 30).map((e: any, i: number) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: e.name,
+          url: `https://vinhlong360.vn/dia-diem/${e.id}`,
+        })),
+      }),
+    })
+  }
+
+  return {
+    link: [{ rel: 'canonical', href: canonicalUrl(`/xa-phuong/${id.value}`) }],
+    script: scripts,
+  }
+})
 
 // Map
 const mapEl = ref<HTMLElement | null>(null)
 const { createMap } = useNDAMap()
 
-function allEntities() {
-  const d = data.value
-  if (!d) return []
-  return [...(d.tourism || []), ...(d.lodging || []), ...(d.products || [])]
-}
 
 const mapLoadError = ref(false)
 const mapReady = ref(false)
+let mapInstance: any = null
+let mapLoadTimer: ReturnType<typeof setTimeout> | undefined
 watch(mapEl, async (el) => {
   const center = normalizeCoords(data.value?.place?.coordinates)
   if (!el || !center) return
-  const coords = center  // [lat, lng] đã chuẩn hoá (chống NaN khi coords là chuỗi/đảo)
+  const coords = center
   let map: any, maplibregl: any
   try {
     const r = await createMap(el, { center: [coords[1], coords[0]], zoom: 14 })
     map = r.map
     maplibregl = r.maplibregl
+    mapInstance = map
   } catch {
     mapLoadError.value = true
     return
   }
-  const loadTimer = setTimeout(() => { if (!map.isStyleLoaded()) mapLoadError.value = true }, 15000)
-  map.on('load', () => { clearTimeout(loadTimer); mapLoadError.value = false; mapReady.value = true })
+  mapLoadTimer = setTimeout(() => { if (!map.isStyleLoaded()) mapLoadError.value = true }, 15000)
+  map.on('load', () => { clearTimeout(mapLoadTimer); mapLoadError.value = false; mapReady.value = true })
 
   map.addControl(new maplibregl.FullscreenControl(), 'top-right')
 
   // Ward center marker — popup mở mặc định
   const centerPopup = new maplibregl.Popup({ offset: 25, closeOnClick: false })
-    .setHTML(`<strong>${data.value.place.name}</strong>`)
+    .setHTML(`<strong>${escapeHtml(data.value?.place?.name || '')}</strong>`)
   new maplibregl.Marker({ color: '#9C3D22', scale: 1.1 })
     .setLngLat([coords[1], coords[0]])
     .setPopup(centerPopup)
@@ -249,7 +304,7 @@ watch(mapEl, async (el) => {
   // Entity markers
   const bounds = new maplibregl.LngLatBounds()
   bounds.extend([coords[1], coords[0]])
-  const entities = allEntities()
+  const entities = allWardEntities.value
 
   for (const ent of entities) {
     const c = normalizeCoords(ent.coordinates)
@@ -272,6 +327,11 @@ watch(mapEl, async (el) => {
     map.fitBounds(bounds, { padding: 60, maxZoom: 16 })
   }
 }, { once: true })
+
+onUnmounted(() => {
+  if (mapLoadTimer) clearTimeout(mapLoadTimer)
+  if (mapInstance) { mapInstance.remove(); mapInstance = null }
+})
 </script>
 
 <!-- detail.css nạp theo route (bỏ khỏi global entry.css; phần dùng-chung ở detail-shared.css) -->

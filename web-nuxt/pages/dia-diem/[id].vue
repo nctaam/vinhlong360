@@ -15,8 +15,8 @@
 
     <!-- Cover + Hero Image -->
     <div :class="['detail-cover', `cat-${typeMeta.cat}`, { 'has-cover-img': coverImage }]">
-      <NuxtImg v-if="coverImage && isRemoteUrl(coverImage)" :src="coverImage" :alt="entity.name" class="dc-bg" loading="eager" fetchpriority="high" sizes="sm:100vw md:100vw lg:960px xl:1200px" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="openCoverLightbox" />
-      <img v-else-if="coverImage" :src="coverImage" :alt="entity.name" class="dc-bg" loading="eager" fetchpriority="high" sizes="100vw" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="openCoverLightbox" />
+      <NuxtImg v-if="coverImage && isRemoteUrl(coverImage)" :src="coverImage" :alt="entity.name" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" sizes="sm:100vw md:100vw lg:960px xl:1200px" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="hasEntityImages && openCoverLightbox(0)" />
+      <img v-else-if="coverImage" :src="coverImage" :alt="entity.name" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="hasEntityImages && openCoverLightbox(0)" />
       <div v-if="coverImage" class="dc-overlay"></div>
       <div v-if="coverImage" class="dc-vignette" aria-hidden="true"></div>
       <div class="dc-inner">
@@ -72,7 +72,7 @@
         @touchstart.passive="lbTouchStart" @touchmove.passive="lbTouchMove" @touchend="lbTouchEnd">
         <button type="button" class="lb-close" aria-label="Đóng" @click="lightboxOpen = false">&times;</button>
         <button type="button" v-if="entity.images?.length > 1" class="lb-prev" aria-label="Ảnh trước" @click="lbPrev">&#8249;</button>
-        <img :src="entity.images[lbIndex]" :alt="`${entity.name} - ${lbIndex + 1}`" class="lb-img" :style="lbDragStyle" :key="lbIndex" loading="lazy" decoding="async" />
+        <img :src="entity.images[lbIndex]" :alt="`${entity.name} - ${lbIndex + 1}`" class="lb-img" :style="lbDragStyle" :key="lbIndex" loading="eager" decoding="async" @error="($event.target as HTMLImageElement).style.opacity = '0.3'" />
         <button type="button" v-if="entity.images?.length > 1" class="lb-next" aria-label="Ảnh tiếp" @click="lbNext">&#8250;</button>
         <div class="lb-counter" aria-live="polite">{{ lbIndex + 1 }} / {{ entity.images.length }}</div>
       </div>
@@ -87,9 +87,9 @@
           <a v-if="entity.attributes?.phone" class="hl hl-action" :href="telHref(entity.attributes.phone)" :aria-label="`Gọi ${entity.name}`">📞 Gọi</a>
           <a v-if="zaloLink" class="hl hl-action" :href="zaloLink" target="_blank" rel="nofollow noopener" :aria-label="`Nhắn Zalo ${entity.name}`">💬 Zalo</a>
           <NuxtLink v-if="hasCoords" class="hl hl-action" :to="mapUrl" :aria-label="`Xem ${entity.name} trên bản đồ`">🗺️ Bản đồ</NuxtLink>
-          <span v-if="entity.attributes?.hours" class="hl">🕒 {{ entity.attributes.hours }}</span>
-          <span v-if="priceText" class="hl">💰 {{ priceText }}</span>
-          <span v-if="addressText" class="hl">📍 {{ addressText }}</span>
+          <span v-if="entity.attributes?.hours" class="hl"><span aria-hidden="true">🕒</span> {{ entity.attributes.hours }}</span>
+          <span v-if="priceText" class="hl"><span aria-hidden="true">💰</span> {{ priceText }}</span>
+          <span v-if="addressText" class="hl"><span aria-hidden="true">📍</span> {{ addressText }}</span>
         </div>
         <p class="lead">{{ entity.summary }}</p>
 
@@ -100,10 +100,10 @@
 
         <!-- Mô tả chi tiết -->
         <div v-if="descriptionParagraphs.length" class="entity-description">
-          <div ref="descContentRef" class="desc-content" :class="{ expanded: descExpanded || descriptionParagraphs.length <= 3 }">
+          <div id="desc-content" class="desc-content" :class="{ expanded: descExpanded || descriptionParagraphs.length <= 3 }">
             <p v-for="(para, i) in descriptionParagraphs" :key="i">{{ para }}</p>
           </div>
-          <button type="button" v-if="descriptionParagraphs.length > 3" class="desc-toggle" @click="descExpanded = !descExpanded">
+          <button type="button" v-if="descriptionParagraphs.length > 3" class="desc-toggle" :aria-expanded="descExpanded" aria-controls="desc-content" @click="descExpanded = !descExpanded">
             <span class="desc-toggle-icon" :class="{ rotated: descExpanded }">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
             </span>
@@ -154,11 +154,12 @@
         <!-- Month strip -->
         <div v-if="entity.season?.months" class="season-block reveal">
           <h2 class="section-subtitle">{{ ss('labels.detail.season_heading', 'Mùa vụ') }}</h2>
-          <div class="month-strip">
+          <div class="month-strip" role="group" aria-label="Lịch mùa vụ theo tháng">
             <span
               v-for="m in 12"
               :key="m"
               :class="['ms-cell', { on: entity.season?.months?.includes(m), peak: entity.season?.peak?.includes(m) }]"
+              :aria-label="`Tháng ${m}${entity.season?.peak?.includes(m) ? ' — rộ nhất' : entity.season?.months?.includes(m) ? ' — có mùa' : ''}`"
             >T{{ m }}</span>
           </div>
           <div class="ms-legend">
@@ -488,20 +489,19 @@ const { track: trackRecent } = useRecentlyViewed()
 onMounted(async () => {
   if (entity.value) trackRecent(entity.value)
   if (!isLoggedIn.value) return
-  try {
-    const v = await $fetch<{ status: string | null }>(`/api/me/visits/check/${encodeURIComponent(id.value)}`, { headers: authHeaders() })
-    visitStatus.value = v?.status ?? null
-  } catch { /* ignore */ }
-  try {
-    const f = await $fetch<{ following: { target_id: string }[] }>('/api/following', { headers: authHeaders() })
-    isFollowingPlace.value = (f?.following || []).some(x => String(x.target_id) === id.value)
-  } catch { /* ignore */ }
+  const tasks: Promise<void>[] = [
+    $fetch<{ status: string | null }>(`/api/me/visits/check/${encodeURIComponent(id.value)}`, { headers: authHeaders() })
+      .then(v => { visitStatus.value = v?.status ?? null }).catch(() => {}),
+    $fetch<{ following: { target_id: string }[] }>('/api/following', { headers: authHeaders() })
+      .then(f => { isFollowingPlace.value = (f?.following || []).some(x => String(x.target_id) === id.value) }).catch(() => {}),
+  ]
   if (entity.value?.type === 'event') {
-    try {
-      const r = await $fetch<{ count: number; going: boolean }>(`/api/events/${encodeURIComponent(id.value)}/rsvp`, { headers: authHeaders() })
-      rsvpGoing.value = r.going; rsvpCount.value = r.count
-    } catch { /* ignore */ }
+    tasks.push(
+      $fetch<{ count: number; going: boolean }>(`/api/events/${encodeURIComponent(id.value)}/rsvp`, { headers: authHeaders() })
+        .then(r => { rsvpGoing.value = r.going; rsvpCount.value = r.count }).catch(() => {}),
+    )
   }
+  await Promise.all(tasks)
 })
 const RELATIONSHIP_BATCH_SIZE = 24
 
@@ -516,7 +516,7 @@ function goBack() {
 const { data: entity, error: fetchError, refresh: refreshEntity } = await useAsyncData(
   computed(() => `entity-${id.value}`),
   () => apiFetch<Entity>(`/api/entities/${id.value}`),
-  { watch: [id] }
+  { watch: [id], deep: false }
 )
 
 // SSR: throw 404 so the server responds with proper status code.
@@ -572,6 +572,27 @@ function lbNext() {
   const len = entity.value?.images?.length || 1
   lbIndex.value = (lbIndex.value + 1) % len
 }
+// Preload adjacent lightbox images for smoother navigation
+const prefetchedSrcs = new Set<string>()
+const prefetchLinks: HTMLLinkElement[] = []
+watch(lbIndex, (idx) => {
+  if (!lightboxOpen.value || !import.meta.client) return
+  const imgs = entity.value?.images
+  if (!imgs || imgs.length <= 1) return
+  const len = imgs.length
+  for (const offset of [1, -1]) {
+    const src = imgs[(idx + offset + len) % len]
+    if (src && !prefetchedSrcs.has(src)) {
+      prefetchedSrcs.add(src)
+      const link = document.createElement('link')
+      link.rel = 'prefetch'
+      link.as = 'image'
+      link.href = src
+      document.head.appendChild(link)
+      prefetchLinks.push(link)
+    }
+  }
+})
 function lbFocusTrap(e: KeyboardEvent) {
   const el = lightboxEl.value
   if (!el) return
@@ -582,36 +603,45 @@ function lbFocusTrap(e: KeyboardEvent) {
   if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
   else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
 }
-// Lightbox swipe gestures (mobile)
+// Lightbox swipe gestures (mobile) — rAF-throttled to avoid per-pixel reactive updates
 const lbTouchX = ref(0)
 const lbTouchDX = ref(0)
 const lbSwiping = ref(false)
+let _pendingDragDx = 0
+let _dragRafId = 0
 const lbDragStyle = computed(() => {
   if (!lbSwiping.value || !lbTouchDX.value) return {}
   const dx = lbTouchDX.value
-  const absThreshold = Math.abs(dx)
-  const isSwipeable = absThreshold > 20
-  const opacity = Math.max(0.5, 1 - absThreshold / 380)
+  const abs = Math.abs(dx)
+  const opacity = Math.max(0.5, 1 - abs / 380)
   const scale = opacity > 0.75 ? 1 : Math.max(0.94, opacity)
   return {
     transform: `translateX(${dx}px) scale(${scale})`,
     opacity,
     transition: 'none',
-    filter: isSwipeable ? 'brightness(1)' : 'brightness(0.98)',
   }
 })
 function lbTouchStart(e: TouchEvent) {
   if (!e.touches.length) return
   lbTouchX.value = e.touches[0].clientX
   lbTouchDX.value = 0
+  _pendingDragDx = 0
   lbSwiping.value = true
 }
 function lbTouchMove(e: TouchEvent) {
   if (!lbSwiping.value || !e.touches.length) return
-  lbTouchDX.value = e.touches[0].clientX - lbTouchX.value
+  _pendingDragDx = e.touches[0].clientX - lbTouchX.value
+  if (!_dragRafId) {
+    _dragRafId = requestAnimationFrame(() => {
+      lbTouchDX.value = _pendingDragDx
+      _dragRafId = 0
+    })
+  }
 }
 function lbTouchEnd() {
+  if (_dragRafId) { cancelAnimationFrame(_dragRafId); _dragRafId = 0 }
   if (!lbSwiping.value) return
+  lbTouchDX.value = _pendingDragDx
   const threshold = 60
   if (lbTouchDX.value < -threshold) lbNext()
   else if (lbTouchDX.value > threshold) lbPrev()
@@ -626,6 +656,13 @@ watch(lightboxOpen, (v) => {
     lbSwiping.value = false
     lbTouchDX.value = 0
     nextTick(() => lbTriggerEl?.focus())
+  }
+})
+onUnmounted(() => {
+  if (import.meta.client) {
+    document.body.style.overflow = ''
+    prefetchLinks.forEach(link => link.remove())
+    if (_dragRafId) { cancelAnimationFrame(_dragRafId); _dragRafId = 0 }
   }
 })
 
@@ -644,13 +681,12 @@ const descriptionParagraphs = computed(() => {
   return desc.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 0)
 })
 const descExpanded = ref(false)
-const descContentRef = ref<HTMLElement | null>(null)
 
 // GĐ13.2: link Zalo từ attributes.zalo (số hoặc URL). KHÔNG đặt hàng — chỉ liên hệ.
 const zaloLink = computed(() => {
   const z = entity.value?.attributes?.zalo
   if (!z) return ''
-  return String(z).startsWith('http') ? z : `https://zalo.me/${String(z).replace(/\D/g, '')}`
+  return String(z).startsWith('http') ? safeUrl(z) : `https://zalo.me/${String(z).replace(/\D/g, '')}`
 })
 // GĐ13.1 (MVP): chủ cơ sở "nhận listing" -> trang liên hệ kèm ngữ cảnh (luồng owner-edit đầy đủ = sau).
 const claimUrl = computed(() => `/lien-he?ref=claim&entity=${encodeURIComponent(entity.value?.name || id.value)}`)
@@ -661,7 +697,7 @@ const claimUrl = computed(() => `/lien-he?ref=claim&entity=${encodeURIComponent(
 const buyContactUrl = computed(() => {
   if (entity.value?.type !== 'product') return ''
   const w = entity.value?.attributes?.website
-  return w && String(w).startsWith('http') ? w : ''
+  return w && String(w).startsWith('http') ? safeUrl(w) : ''
 })
 
 // Highlights (quét nhanh đầu trang)
@@ -719,15 +755,6 @@ const foodSpecialties = computed(() => {
   return items
 })
 
-const quality = computed(() => entity.value?.quality || {})
-const qualityMissingLabels = computed(() => {
-  const labels: Record<string, string> = {
-    source: 'Thiếu nguồn',
-    location: 'Thiếu tọa độ',
-    placeId: 'Thiếu địa bàn',
-  }
-  return (quality.value.missing || []).map((key: string) => labels[key] || key)
-})
 const reportUrl = computed(() => `/cong-dong?report=${encodeURIComponent(id.value)}`)
 
 // GĐ10.4: normalizeCoords gom vào composables/useCoords.ts (Nuxt auto-import).
@@ -747,11 +774,11 @@ watch(entity, (next) => {
   relationshipTotal.value = Number(next?.relationship_total ?? relationshipRows.value.length) || relationshipRows.value.length
 }, { immediate: true })
 
-function rawRelationshipKey(r: Record<string, string>) {
+function rawRelationshipKey(r: Record<string, any>) {
   return `${r.source_id || ''}|${r.target_id || ''}|${r.rel_type || ''}`
 }
 
-function normalizeRelationship(r: Record<string, string>) {
+function normalizeRelationship(r: Record<string, any>) {
   const sourceId = r.source_id
   const targetId = r.target_id
   const relType = r.rel_type
@@ -789,15 +816,17 @@ const hasMoreRelationships = computed(() => remainingRelationshipCount.value > 0
 const relError = ref('')
 async function loadMoreRelationships() {
   if (loadingRelationships.value || !hasMoreRelationships.value) return
+  const currentId = id.value
   loadingRelationships.value = true
   relError.value = ''
   try {
-    const response = await $fetch<Entity>(`/api/entities/${id.value}/relationships`, {
+    const response = await $fetch<{ total?: number; relationships?: Record<string, any>[] }>(`/api/entities/${currentId}/relationships`, {
       query: {
         limit: RELATIONSHIP_BATCH_SIZE,
         offset: relationshipRows.value.length,
       },
     })
+    if (currentId !== id.value) return
     relationshipTotal.value = Number(response?.total ?? relationshipTotal.value) || relationshipTotal.value
     const seen = new Set(relationshipRows.value.map(rawRelationshipKey))
     for (const rel of response?.relationships || []) {
@@ -833,10 +862,13 @@ const TYPE_TO_SCHEMA: Record<string, string> = {
 const seoDesc = computed(() => {
   const e = entity.value
   if (!e) return ''
-  return e.description ? e.description.split(/\n\s*\n/)[0]?.trim() || e.summary || '' : e.summary || ''
+  const raw = e.description ? e.description.split(/\n\s*\n/)[0]?.trim() || e.summary || '' : e.summary || ''
+  if (raw.length <= 160) return raw
+  return raw.slice(0, 157).replace(/\s+\S*$/, '') + '…'
 })
 
 useSeoMeta({
+  ogType: 'article',
   title: () => entity.value ? `${entity.value.name} — ${typeMeta.value.label} — vinhlong360` : 'Địa điểm — vinhlong360',
   description: () => seoDesc.value,
   ogTitle: () => entity.value ? `${entity.value.name} — vinhlong360` : 'Địa điểm — vinhlong360',
@@ -857,13 +889,15 @@ const jsonLdScripts = computed(() => {
   const ldType = TYPE_TO_SCHEMA[e.type] || 'TouristAttraction'
   const hasRealPhoto = Array.isArray(e.images) && e.images.length > 0
 
+  const entityUrl = `${SITE}/dia-diem/${e.id}`
   const ld: Record<string, any> = {
     '@context': 'https://schema.org',
     '@type': ldType,
+    '@id': entityUrl,
     name: e.name,
     description: e.description || e.summary,
     inLanguage: 'vi-VN',
-    url: `${SITE}/dia-diem/${e.id}`,
+    url: entityUrl,
     address: {
       '@type': 'PostalAddress',
       addressLocality: e.place_name || '',
@@ -889,14 +923,19 @@ const jsonLdScripts = computed(() => {
   }
   if (e.attributes?.hours) ld.openingHours = e.attributes.hours
 
+  // isAccessibleForFree
+  const fee = e.attributes?.fee || e.attributes?.price_range || ''
+  const isFree = /miễn phí|free|không mất phí|0\s*đ/i.test(fee)
+    || (e.attributes?.amenities && Array.isArray(e.attributes.amenities) && e.attributes.amenities.includes('free_entry'))
+  if (isFree) ld.isAccessibleForFree = true
+
   // LocalBusiness/LodgingBusiness/FoodEstablishment enrichment
   if (['LocalBusiness', 'LodgingBusiness', 'FoodEstablishment'].includes(ldType)) {
     if (e.attributes?.price_range) ld.priceRange = e.attributes.price_range
   }
-
-  // TouristAttraction enrichment
-  if (ldType === 'TouristAttraction' && e.attributes?.suggested_duration) {
-    ld.tourBookingPage = `${SITE}/dia-diem/${e.id}`
+  if (ldType === 'LodgingBusiness') {
+    if (e.attributes?.checkin) ld.checkinTime = e.attributes.checkin
+    if (e.attributes?.checkout) ld.checkoutTime = e.attributes.checkout
   }
 
   if (ldType === 'Event') {
@@ -914,6 +953,9 @@ const jsonLdScripts = computed(() => {
     }
     ld.eventStatus = 'https://schema.org/EventScheduled'
     ld.eventAttendanceMode = 'https://schema.org/OfflineEventAttendanceMode'
+    if (isFree) {
+      ld.offers = { '@type': 'Offer', price: '0', priceCurrency: 'VND', availability: 'https://schema.org/InStock' }
+    }
   }
   if (e.attributes?.rating) {
     ld.aggregateRating = {
@@ -930,6 +972,7 @@ const jsonLdScripts = computed(() => {
         price: String(e.attributes.price).replace(/[^\d]/g, '') || '0',
         priceCurrency: 'VND',
         availability: 'https://schema.org/InStock',
+        url: entityUrl,
       }
     }
     if (e.attributes?.ocop) {
@@ -946,20 +989,54 @@ const jsonLdScripts = computed(() => {
     }
   }
 
+  const bcItems: any[] = [
+    { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE}/` },
+    { '@type': 'ListItem', position: 2, name: typeMeta.value.label, item: `${SITE}${typeBreadcrumbUrl.value}` },
+  ]
+  if (e.place_area) {
+    bcItems.push({ '@type': 'ListItem', position: 3, name: areaName.value, item: `${SITE}/khu-vuc/${e.place_area}` })
+  }
+  bcItems.push({ '@type': 'ListItem', position: bcItems.length + 1, name: e.name, item: entityUrl })
   const breadcrumb = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE}/` },
-      { '@type': 'ListItem', position: 2, name: typeMeta.value.label, item: `${SITE}${typeBreadcrumbUrl.value}` },
-      { '@type': 'ListItem', position: 3, name: e.name },
-    ],
+    itemListElement: bcItems,
   }
 
-  return [
-    { type: 'application/ld+json', innerHTML: JSON.stringify(ld) },
-    { type: 'application/ld+json', innerHTML: JSON.stringify(breadcrumb) },
+  // FAQPage from entity attributes
+  const faqItems: { q: string; a: string }[] = []
+  if (e.attributes?.hours)
+    faqItems.push({ q: `${e.name} mở cửa lúc mấy giờ?`, a: `Giờ mở cửa: ${e.attributes.hours}` })
+  if (e.attributes?.fee)
+    faqItems.push({ q: `Phí vào ${e.name} bao nhiêu?`, a: e.attributes.fee })
+  if (e.attributes?.transport)
+    faqItems.push({ q: `Đi đến ${e.name} bằng cách nào?`, a: e.attributes.transport })
+  if (e.attributes?.parking)
+    faqItems.push({ q: `${e.name} có chỗ đậu xe không?`, a: e.attributes.parking })
+  if (e.attributes?.best_time)
+    faqItems.push({ q: `Thời điểm nào đẹp nhất để đến ${e.name}?`, a: e.attributes.best_time })
+
+  const scripts: any[] = [
+    { type: 'application/ld+json', innerHTML: safeJsonLd(ld) },
+    { type: 'application/ld+json', innerHTML: safeJsonLd(breadcrumb) },
   ]
+
+  if (faqItems.length >= 2) {
+    scripts.push({
+      type: 'application/ld+json',
+      innerHTML: safeJsonLd({
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faqItems.map(f => ({
+          '@type': 'Question',
+          name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.a },
+        })),
+      }),
+    })
+  }
+
+  return scripts
 })
 
 useHead({

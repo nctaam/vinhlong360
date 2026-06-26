@@ -1,5 +1,5 @@
 <template>
-  <div class="page">
+  <main class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lưu trú' }]" :json-ld="true" />
 
     <!-- Hero -->
@@ -34,12 +34,13 @@
       <div class="section-head">
         <h2>Chọn theo khu vực</h2>
       </div>
-      <div class="quick-picks">
+      <div class="quick-picks" role="group" aria-label="Chọn nhanh theo khu vực">
         <button type="button"
           v-for="(meta, key) in AREA_META"
           :key="key"
           :class="['quick-pick', { active: areaFilter === key }]"
-          @click="areaFilter = areaFilter === key ? 'all' : (key as string); scrollToGrid()"
+          :aria-pressed="areaFilter === key"
+          @click="toggleAreaAndScroll(key as string)"
         >
           <span class="quick-pick-icon">{{ meta.emoji }}</span>
           <span class="quick-pick-label">{{ meta.name }}</span>
@@ -107,7 +108,7 @@
       </div>
       <EmptyState v-else icon="🏡" title="Chưa thấy nơi ở phù hợp" message="Thử đổi khu vực hoặc từ khóa khác xem sao nhé." hint="Bạn có thể khám phá thêm các nơi ở ở Vĩnh Long, Bến Tre và Trà Vinh.">
         <template #actions>
-          <button type="button" class="btn btn-outline" @click="areaFilter = 'all'; q = ''">Xóa bộ lọc</button>
+          <button type="button" class="btn btn-outline" @click="areaFilter = 'all'; q = ''; scrollToGrid()">Xóa bộ lọc</button>
           <NuxtLink to="/du-lich" class="btn btn-outline">Khám phá du lịch</NuxtLink>
         </template>
       </EmptyState>
@@ -135,7 +136,7 @@
         </NuxtLink>
       </div>
     </section>
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">
@@ -150,6 +151,11 @@ const areaFilter = ref('all')
 const gridSection = ref<HTMLElement | null>(null)
 useFilterUrl({ vung: areaFilter }, { vung: 'all' })
 
+function toggleAreaAndScroll(key: string) {
+  areaFilter.value = areaFilter.value === key ? 'all' : key
+  scrollToGrid()
+}
+
 const { data, error: fetchError } = await useAsyncData('catalog-accommodation', () =>
   apiFetch<{ entities: Entity[] }>('/api/entities?type=accommodation&limit=200')
 )
@@ -160,19 +166,23 @@ const allEntities = computed(() => {
   return raw.entities || []
 })
 
-const areaCounts = computed(() => {
+const areaCountMap = computed(() => {
   const counts: Record<string, number> = {}
   for (const e of allEntities.value) {
     const area = e.place_area || e.area || ''
     if (area) counts[area] = (counts[area] || 0) + 1
   }
-  return Object.entries(AREA_META)
-    .filter(([key]) => counts[key])
-    .map(([key, meta]) => ({ key, name: meta.name, count: counts[key] }))
+  return counts
 })
 
+const areaCounts = computed(() =>
+  Object.entries(AREA_META)
+    .filter(([key]) => areaCountMap.value[key])
+    .map(([key, meta]) => ({ key, name: meta.name, count: areaCountMap.value[key] }))
+)
+
 function countByArea(key: string) {
-  return allEntities.value.filter((e: Entity) => (e.place_area || e.area) === key).length
+  return areaCountMap.value[key] || 0
 }
 
 // Data-driven accommodation type breakdown for hero confidence (no fabricated values):
@@ -237,34 +247,22 @@ const filtered = computed(() => {
 })
 
 useSeoMeta({
-  title: () => pc('seo_title'),
-  description: () => pc('seo_description'),
-  ogTitle: () => pc('og_title'),
-  ogDescription: () => pc('og_description'),
-})
-
-useHead({
-  link: [{ rel: 'canonical', href: canonicalUrl('/luu-tru') }],
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'CollectionPage',
-      name: 'Lưu trú Vĩnh Long',
-      description: 'Homestay, nhà vườn, khách sạn và nơi nghỉ ở Vĩnh Long, Bến Tre, Trà Vinh.',
-      url: 'https://vinhlong360.vn/luu-tru',
-    }),
-  }],
+  ogType: 'website',
+  title: () => pc('seo_title') || 'Lưu trú Vĩnh Long, Bến Tre, Trà Vinh — vinhlong360',
+  description: () => pc('seo_description') || 'Homestay, nhà vườn, khách sạn và nơi nghỉ ở miền Tây.',
+  ogTitle: () => pc('og_title') || 'Lưu trú — vinhlong360',
+  ogDescription: () => pc('og_description') || 'Tìm chỗ ở phù hợp cho chuyến đi miền Tây.',
 })
 
 useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl('/luu-tru') }],
   script: [{
     type: 'application/ld+json',
-    innerHTML: JSON.stringify(itemListJsonLd(
+    innerHTML: safeJsonLd(itemListJsonLd(
       'Lưu trú Vĩnh Long, Bến Tre, Trà Vinh',
       'Homestay, nhà vườn, khách sạn và nơi nghỉ ở miền Tây.',
       '/luu-tru',
-      filtered.value,
+      allEntities.value,
     )),
   }],
 }))
