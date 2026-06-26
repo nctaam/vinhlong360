@@ -543,7 +543,10 @@ a.thread-author:hover { color: var(--primary-fg); }
 .thread-rating .star { font-size: var(--text-sm); color: var(--muted); transition: transform .3s var(--ease-spring-gentle); display: inline-block; }
 .thread-rating .star.active { color: var(--accent); }
 .thread-body { text-decoration: none; color: inherit; display: block; }
-.thread-content { margin: 0; font-size: var(--text-base); line-height: var(--leading-relaxed); color: var(--ink); white-space: pre-line; display: -webkit-box; -webkit-line-clamp: 8; -webkit-box-orient: vertical; overflow: hidden; }
+.thread-content { margin: 0; font-size: var(--text-base); line-height: var(--leading-relaxed); color: var(--ink); white-space: pre-line; }
+.thread-content.collapsed { display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
+.thread-expand { background: none; border: none; color: var(--primary-fg); font-size: .85rem; font-weight: 500; cursor: pointer; padding: 2px 0; margin-top: 2px; }
+.thread-expand:hover { text-decoration: underline; }
 .mention-link { color: var(--primary-fg); font-weight: var(--weight-medium); text-decoration: none; }
 .mention-link:hover { text-decoration: underline; }
 .hashtag-link { color: var(--accent-text, var(--primary-fg)); text-decoration: none; }

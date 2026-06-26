@@ -371,17 +371,7 @@
       </div>
     </Transition>
 
-    <!-- Scroll to top FAB -->
-    <Transition name="fab-fade">
-      <button type="button"
-        v-if="showScrollTop"
-        class="scroll-top-fab"
-        aria-label="Lên đầu trang"
-        @click="scrollToTop"
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="18 15 12 9 6 15"/></svg>
-      </button>
-    </Transition>
+    <!-- Scroll to top — uses global ScrollToTop from layout -->
   </section>
 </template>
 
@@ -538,16 +528,8 @@ const canSubmit = computed(() => {
   return newContent.value.trim().length > 0
 })
 
-// ── Scroll-to-top ──
-const showScrollTop = ref(false)
-function onScroll() {
-  showScrollTop.value = window.scrollY > 600
-}
 const loadSentinel = ref<HTMLElement | null>(null)
 let loadObserver: IntersectionObserver | null = null
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-}
 
 // ── Composer focus (from empty-state CTA) ──
 const composeEl = ref<HTMLElement | null>(null)
@@ -916,7 +898,6 @@ onMounted(() => {
     const { quote, ...rest } = route.query
     router.replace({ query: rest })
   }
-  window.addEventListener('scroll', onScroll, { passive: true })
   // Cuộn vô hạn: tự nạp trang kế khi sentinel gần vào tầm nhìn
   if (typeof IntersectionObserver !== 'undefined' && loadSentinel.value) {
     loadObserver = new IntersectionObserver((entries) => {
@@ -927,7 +908,6 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', onScroll)
   loadObserver?.disconnect()
 })
 
@@ -1192,22 +1172,6 @@ useHead({
 .feed-loading { text-align: center; padding: var(--space-5); }
 .feed-loading .spinner { margin: 0 auto; }
 
-/* ── Scroll to top FAB ── */
-.scroll-top-fab {
-  position: fixed; bottom: var(--space-6); right: var(--space-6); z-index: 50;
-  width: 48px; height: 48px; border-radius: var(--radius-full);
-  background: var(--card); border: .5px solid var(--line);
-  box-shadow: var(--shadow-lg); cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--ink); transition: transform .25s var(--ease-spring-gentle), box-shadow .2s;
-}
-.scroll-top-fab:hover { transform: translateY(-2px); box-shadow: var(--shadow-xl, 0 12px 40px rgba(0,0,0,.15)); }
-.scroll-top-fab:active { transform: scale(.9); transition-duration: .08s; }
-.scroll-top-fab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.fab-fade-enter-active { transition: opacity .25s var(--ease-out), transform .3s var(--ease-spring-gentle); }
-.fab-fade-leave-active { transition: opacity .15s var(--ease-out), transform .15s var(--ease-out); }
-.fab-fade-enter-from { opacity: 0; transform: translateY(16px) scale(.8); }
-.fab-fade-leave-to { opacity: 0; transform: translateY(8px) scale(.9); }
 
 /* ── Bookmark momentum cue (bottom-center, clears the right-side FAB) ── */
 .bookmark-momentum {
@@ -1248,7 +1212,6 @@ useHead({
 .dark .sidebar-card:hover { box-shadow: var(--shadow-sm); border-color: rgba(255,255,255,.14); }
 .dark .chip-filter { background: var(--bg-alt); border-color: var(--line); }
 .dark .chip-filter.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.dark .scroll-top-fab { background: var(--card); border-color: rgba(255,255,255,.1); box-shadow: 0 8px 32px rgba(0,0,0,.5); }
 .dark .bookmark-momentum { background: var(--card); border-color: rgba(255,255,255,.1); box-shadow: 0 8px 32px rgba(0,0,0,.5); }
 .dark .bm-dismiss:hover { background: rgba(255,255,255,.08); }
 .dark .sidebar-stat:hover { background: rgba(255,255,255,.03); }
@@ -1266,7 +1229,6 @@ useHead({
   .threads-page { max-width: 100%; }
   .threads-feed { padding-inline: var(--space-1); }
   .threads-compose { padding-inline: var(--space-3); }
-  .scroll-top-fab { bottom: var(--space-4); right: var(--space-4); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1290,8 +1252,6 @@ useHead({
   .chip-filter:active { transform: none; }
   .threads-load-more:hover { transform: none; }
   .threads-load-more:active { transform: none; }
-  .scroll-top-fab:hover { transform: none; }
-  .scroll-top-fab:active { transform: none; }
   .momentum-fade-enter-active,
   .momentum-fade-leave-active { transition: none; }
   .bm-dismiss:active { transform: none; }

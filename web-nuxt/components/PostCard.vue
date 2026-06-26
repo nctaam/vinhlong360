@@ -43,9 +43,12 @@
         <span v-for="s in 5" :key="s" :class="['star', { active: s <= post.rating }]" aria-hidden="true">★</span>
       </div>
 
-      <NuxtLink v-if="post.content" :to="`/bai-viet/${post.id}`" class="thread-body">
-        <p class="thread-content" v-html="contentHtml"></p>
-      </NuxtLink>
+      <div v-if="post.content" class="thread-body">
+        <p class="thread-content" :class="{ collapsed: isLong && !expanded }" v-html="contentHtml"></p>
+        <button v-if="isLong" type="button" class="thread-expand" @click="expanded = !expanded">
+          {{ expanded ? 'Thu gọn' : 'Xem thêm' }}
+        </button>
+      </div>
 
       <NuxtLink v-if="post.repost" :to="`/bai-viet/${post.repost.id}`" class="thread-repost-embed">
         <span class="tre-head">🔁 <strong>{{ post.repost.author || 'Người dùng' }}</strong></span>
@@ -142,6 +145,8 @@ const isOwner = computed(() =>
 const showMenu = ref(false)
 const repostMenu = ref(false)
 const likePop = ref(false)
+const expanded = ref(false)
+const isLong = computed(() => (props.post.content || '').length > 280)
 
 // @-mention: escape nội dung rồi linkify các mention (an toàn — content đã escape,
 // href dựng từ id qua encodeURIComponent + type cố định).
