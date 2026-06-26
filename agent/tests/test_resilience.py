@@ -1722,3 +1722,120 @@ class TestParallelToolsLogging:
             ])
             assert results[0]["error"] is not None
             assert mock_logger.warning.called
+
+
+# ═══════════════════════════════════════════════════════
+# Deep pipeline: bounded caches
+# ═══════════════════════════════════════════════════════
+
+class TestSemanticCacheDeduplicatorBound:
+    """RequestDeduplicator._pending must be bounded."""
+
+    def test_pending_has_max(self):
+        from semantic_cache import RequestDeduplicator
+        dedup = RequestDeduplicator()
+        assert hasattr(dedup, "_MAX_PENDING")
+        assert dedup._MAX_PENDING <= 1000
+
+    def test_cleanup_enforces_cap(self):
+        from semantic_cache import RequestDeduplicator
+        dedup = RequestDeduplicator()
+        # Fill beyond cap with non-expired entries
+        import time as _time
+        now = _time.time()
+        for i in range(dedup._MAX_PENDING + 50):
+            dedup._pending[f"key_{i}"] = {
+                "query": f"q{i}", "timestamp": now, "event": None, "result": None,
+            }
+        dedup._cleanup()
+        assert len(dedup._pending) <= dedup._MAX_PENDING
+
+
+class TestPromptCacheEviction:
+    """PromptCacheBuilder._proactive_cache must have size cap."""
+
+    def test_proactive_cache_bounded(self):
+        from prompt_cache import PromptCache, _CacheEntry
+        cache = PromptCache()
+        # Inject 250 entries (above 200 cap)
+        for i in range(250):
+            cache._proactive_cache[f"hash_{i}"] = _CacheEntry(
+                content=f"content_{i}", tokens=10,
+                hash_key=f"hash_{i}", ttl=3600,
+            )
+        # Trigger a new build which evicts
+        cache._get_proactive("new_content")
+        assert len(cache._proactive_cache) <= 201
+
+
+# ═══════════════════════════════════════════════════════
+# Deep pipeline: memory_graph json.loads protection
+# ═══════════════════════════════════════════════════════
+
+class TestMemoryGraphFactExtraction:
+    """LLM triple extraction must handle malformed JSON."""
+
+    def test_malformed_json_returns_empty(self):
+        from memory_graph import MemoryGraph
+        mg = MemoryGraph.__new__(MemoryGraph)
+        mg._lock = __import__("threading").Lock()
+        mg._nodes = {}
+        mg._edges = {}
+        mg._adjacency = __import__("collections").defaultdict(set)
+        mg._path = Path("/dev/null")
+        mg._auto_save_every = 999
+        mg._mutations_since_save = 0
+
+        mock_client = MagicMock()
+        mock_resp = MagicMock()
+        mock_resp.choices = [MagicMock()]
+        mock_resp.choices[0].message.content = "NOT JSON AT ALL"
+        mock_client.chat.completions.create.return_value = mock_resp
+
+        with patch("openai.OpenAI", return_value=mock_client):
+            with patch.dict(os.environ, {
+                "LLM_API_KEY": "test", "LLM_BASE_URL": "http://test",
+            }):
+                result = mg._extract_facts_llm("test", "reply")
+                assert result == []
+
+
+# ═══════════════════════════════════════════════════════
+# Deep pipeline: unified health check
+# ═══════════════════════════════════════════════════════
+
+class TestPipelineHealth:
+    """pipeline_health.pipeline_health() aggregates all subsystems."""
+
+    def test_returns_status_and_subsystems(self):
+        from pipeline_health import pipeline_health
+        result = pipeline_health()
+        assert "status" in result
+        assert "subsystems" in result
+        assert "elapsed_ms" in result
+        assert isinstance(result["elapsed_ms"], float)
+
+    def test_does_not_crash_on_import_errors(self):
+        """Pipeline health must degrade gracefully if a subsystem is missing."""
+        from pipeline_health import pipeline_health
+        result = pipeline_health()
+        assert result["status"] in ("ok", "degraded")
+
+
+class TestKnowledgeLogger:
+    """knowledge.py must have module-level logger and no print()."""
+
+    def test_has_logger(self):
+        import knowledge
+        assert hasattr(knowledge, "logger")
+
+    def test_no_print_in_production(self):
+        import re as _re
+        source = (AGENT_DIR / "knowledge.py").read_text(encoding="utf-8")
+        main_idx = source.find('if __name__')
+        if main_idx > 0:
+            source = source[:main_idx]
+        matches = _re.findall(r"^\s+print\s*\(", source, _re.MULTILINE)
+        assert not matches, (
+            f"knowledge.py has {len(matches)} print() calls — must use logger"
+        )

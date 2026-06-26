@@ -397,8 +397,10 @@ class RequestDeduplicator:
         # dedup_key -> {query, timestamp, event: Event, result: dict|None}
         self._pending: dict[str, dict] = {}
 
+    _MAX_PENDING = 500
+
     def _cleanup(self):
-        """Remove stale entries older than _EXPIRY seconds."""
+        """Remove stale entries older than _EXPIRY seconds + enforce size cap."""
         now = time.time()
         stale = [
             k for k, v in self._pending.items()
@@ -406,6 +408,9 @@ class RequestDeduplicator:
         ]
         for k in stale:
             self._pending.pop(k, None)
+        while len(self._pending) > self._MAX_PENDING:
+            oldest = min(self._pending, key=lambda k: self._pending[k]["timestamp"])
+            self._pending.pop(oldest, None)
 
     def acquire(self, query: str, timeout: float = 5.0) -> tuple[bool, str]:
         """

@@ -6,10 +6,13 @@ cho Knowledge Agent (tương đương store.js phía Python).
 """
 
 import json
+import logging
 import re
 import threading
 import unicodedata
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "web"
 
@@ -75,8 +78,8 @@ def _load():
             _data_source = "db"
             return entities, relationships, itineraries
     except Exception as exc:  # noqa: BLE001 - degrade gracefully
-        print(f"[knowledge] CANH BAO: nap tu DB that bai ({type(exc).__name__}: {exc}); "
-              f"fallback web/data.json")
+        logger.warning("Nap tu DB that bai (%s: %s); fallback web/data.json",
+                       type(exc).__name__, exc)
     _data_source = "json"
     return _load_from_json()
 

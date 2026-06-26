@@ -680,8 +680,12 @@ class MemoryGraph:
             if text.startswith("json"):
                 text = text[4:]
 
-        triples_raw = json.loads(text)
-        return [(t[0], t[1], t[2]) for t in triples_raw if len(t) >= 3]
+        try:
+            triples_raw = json.loads(text)
+            return [(t[0], t[1], t[2]) for t in triples_raw if len(t) >= 3]
+        except (json.JSONDecodeError, TypeError, IndexError) as exc:
+            logger.warning("LLM triple extraction parse failed: %s, raw=%s", exc, text[:200])
+            return []
 
     def _extract_facts_keywords(self, message: str,
                                 reply: str) -> list[tuple[str, str, str]]:

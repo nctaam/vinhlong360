@@ -296,12 +296,15 @@ class PromptCache:
         tokens = estimate_tokens(proactive_content)
         entry = _CacheEntry(proactive_content, tokens, hash_key, self.PROACTIVE_TTL)
 
-        # Evict expired entries
+        # Evict expired entries + enforce size cap
         expired_keys = [
             k for k, v in self._proactive_cache.items() if v.is_expired()
         ]
         for k in expired_keys:
             del self._proactive_cache[k]
+        while len(self._proactive_cache) >= 200:
+            oldest_key = min(self._proactive_cache, key=lambda k: self._proactive_cache[k].created_at)
+            del self._proactive_cache[oldest_key]
 
         self._proactive_cache[hash_key] = entry
         return entry, False
