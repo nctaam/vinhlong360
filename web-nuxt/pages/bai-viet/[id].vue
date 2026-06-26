@@ -360,9 +360,12 @@ async function submitComment() {
   submitting.value = false
 }
 
+const pendingActions = reactive(new Set<string>())
+
 async function toggleLike(id: string) {
   if (!isLoggedIn.value) { showToast('Đăng nhập để thích bài viết', 'info'); return }
-  if (!post.value) return
+  if (!post.value || pendingActions.has('like')) return
+  pendingActions.add('like')
   post.value.user_liked = !post.value.user_liked
   post.value.likes = (post.value.likes || 0) + (post.value.user_liked ? 1 : -1)
   try {
@@ -372,12 +375,13 @@ async function toggleLike(id: string) {
     post.value.likes = (post.value.likes || 0) + (post.value.user_liked ? 1 : -1)
     if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast('Không thể thích bài viết', 'error')
-  }
+  } finally { pendingActions.delete('like') }
 }
 
 async function toggleBookmark(id: string) {
   if (!isLoggedIn.value) { showToast('Đăng nhập để lưu bài viết', 'info'); return }
-  if (!post.value) return
+  if (!post.value || pendingActions.has('bookmark')) return
+  pendingActions.add('bookmark')
   post.value.user_bookmarked = !post.value.user_bookmarked
   try {
     await $fetch(`/api/posts/${id}/bookmark`, { method: 'POST', headers: authHeaders() })
@@ -385,7 +389,7 @@ async function toggleBookmark(id: string) {
     post.value.user_bookmarked = !post.value.user_bookmarked
     if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast('Không thể lưu bài viết', 'error')
-  }
+  } finally { pendingActions.delete('bookmark') }
 }
 
 const { timeAgo } = useTimeAgo()

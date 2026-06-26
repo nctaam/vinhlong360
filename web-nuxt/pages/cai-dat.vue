@@ -607,11 +607,21 @@ async function save() {
 function onBeforeUnload(e: BeforeUnloadEvent) {
   if (isDirty.value) e.preventDefault()
 }
+function onPopState() {
+  const hash = window.location.hash.slice(1) as TabKey
+  if (hash && TABS.some(t => t.key === hash)) activeTab.value = hash
+}
 onMounted(() => {
-  if (import.meta.client) window.addEventListener('beforeunload', onBeforeUnload)
+  if (import.meta.client) {
+    window.addEventListener('beforeunload', onBeforeUnload)
+    window.addEventListener('popstate', onPopState)
+  }
 })
 onUnmounted(() => {
-  if (import.meta.client) window.removeEventListener('beforeunload', onBeforeUnload)
+  if (import.meta.client) {
+    window.removeEventListener('beforeunload', onBeforeUnload)
+    window.removeEventListener('popstate', onPopState)
+  }
   if (avatarPreview.value?.startsWith('blob:')) URL.revokeObjectURL(avatarPreview.value)
   if (coverPreview.value?.startsWith('blob:')) URL.revokeObjectURL(coverPreview.value)
 })

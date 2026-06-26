@@ -49,14 +49,16 @@
           </span>
         </div>
         <div class="profile-stats">
-          <div class="stat-item">
-            <strong>{{ profile.post_count || 0 }}</strong>
-            <span>bài viết</span>
-          </div>
-          <div class="stat-item">
-            <strong>{{ profile.review_count || 0 }}</strong>
-            <span>đánh giá</span>
-          </div>
+          <template v-if="!profile.is_private || isSelf">
+            <div class="stat-item">
+              <strong>{{ profile.post_count || 0 }}</strong>
+              <span>bài viết</span>
+            </div>
+            <div class="stat-item">
+              <strong>{{ profile.review_count || 0 }}</strong>
+              <span>đánh giá</span>
+            </div>
+          </template>
           <button type="button" class="stat-item stat-clickable" @click="openFollowModal('followers')">
             <strong>{{ followerCount }}</strong>
             <span>người theo dõi</span>
@@ -318,11 +320,14 @@ async function fetchPosts() {
   loading.value = false
 }
 
+const pendingActions = reactive(new Set<string>())
+
 async function toggleLike(postId: string) {
   if (!isLoggedIn.value) { showToast('Đăng nhập để thích bài viết', 'info'); return }
+  if (pendingActions.has(`like:${postId}`)) return
+  pendingActions.add(`like:${postId}`)
   const post = posts.value.find(p => p.id === postId)
-  if (!post) return
-  // Optimistic update
+  if (!post) { pendingActions.delete(`like:${postId}`); return }
   post.user_liked = !post.user_liked
   post.likes = (post.likes || 0) + (post.user_liked ? 1 : -1)
   try {
@@ -332,7 +337,7 @@ async function toggleLike(postId: string) {
     post.likes = (post.likes || 0) + (post.user_liked ? 1 : -1)
     if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast('Không thể thích bài viết', 'error')
-  }
+  } finally { pendingActions.delete(`like:${postId}`) }
 }
 
 async function deletePost(postId: string) {
@@ -347,9 +352,10 @@ async function deletePost(postId: string) {
 
 async function toggleBookmark(postId: string) {
   if (!isLoggedIn.value) { showToast('Đăng nhập để lưu bài viết', 'info'); return }
+  if (pendingActions.has(`bm:${postId}`)) return
+  pendingActions.add(`bm:${postId}`)
   const post = posts.value.find(p => p.id === postId)
-  if (!post) return
-  // Optimistic update
+  if (!post) { pendingActions.delete(`bm:${postId}`); return }
   post.user_bookmarked = !post.user_bookmarked
   try {
     await $fetch(`/api/posts/${postId}/bookmark`, { method: 'POST', headers: authHeaders() })
@@ -357,7 +363,7 @@ async function toggleBookmark(postId: string) {
     post.user_bookmarked = !post.user_bookmarked
     if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast('Không thể lưu bài viết', 'error')
-  }
+  } finally { pendingActions.delete(`bm:${postId}`) }
 }
 
 
