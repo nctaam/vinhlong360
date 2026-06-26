@@ -616,14 +616,25 @@ def enhanced_hybrid_search(
             merged.append(entity_map[eid])
 
     # ── Optional LLM reranking ──
+    reranked = False
     if rerank and len(merged) > 1:
         try:
             merged = reranker.rerank(query, merged, top_k=top_k)
+            reranked = True
         except Exception as exc:
             logger.warning("Reranking failed, using score-based order: %s", exc)
             merged = merged[:top_k]
     else:
         merged = merged[:top_k]
+
+    # Attach degradation metadata so callers know which signals contributed.
+    for item in merged:
+        item["_search_meta"] = {
+            "has_bm25": has_bm25,
+            "has_semantic": has_semantic,
+            "has_contextual": has_ctx,
+            "reranked": reranked,
+        }
 
     return merged
 
@@ -635,6 +646,17 @@ def enhanced_hybrid_search(
 contextual = ContextualRetrieval()
 bm25 = BM25()
 reranker = LLMReranker()  # lazy, only calls LLM when rerank=True
+
+
+def search_health() -> dict:
+    """Quick readiness probe for the search pipeline."""
+    return {
+        "bm25_ready": bm25._built,
+        "bm25_doc_count": len(bm25._doc_lengths) if bm25._built else 0,
+        "contextual_loaded": contextual._loaded,
+        "contextual_doc_count": len(contextual._cache) if contextual._loaded else 0,
+        "embedding_store_ready": embedding_store is not None,
+    }
 
 
 # =====================================================================

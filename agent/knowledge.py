@@ -432,6 +432,19 @@ def stats() -> dict:
     }
 
 
+def health_check() -> dict:
+    """Quick readiness probe for the knowledge layer."""
+    _ensure()
+    entity_count = len(_entities) if _entities else 0
+    return {
+        "status": "ok" if entity_count > 0 else "degraded",
+        "data_source": _data_source or "unknown",
+        "entity_count": entity_count,
+        "relationship_count": len(_relationships) if _relationships else 0,
+        "itinerary_count": len(_itineraries) if _itineraries else 0,
+    }
+
+
 def compare_areas(area_1: str, area_2: str) -> dict:
     """So sánh 2 khu vực theo nhiều tiêu chí."""
     _ensure()

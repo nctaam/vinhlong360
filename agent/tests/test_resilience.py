@@ -1170,3 +1170,355 @@ class TestBM25EdgeCases:
         for q in ["du lịch (VL)", "test.*regex", "a+b=c", "$price"]:
             results = b.score(q, top_k=5)
             assert isinstance(results, list)
+
+
+# ═══════════════════════════════════════════════════════
+# Multi-layer resilience upgrades
+# ═══════════════════════════════════════════════════════
+
+class TestAgentLoopWallClockTimeout:
+    """_agent_loop must break when wall-clock time exceeds total_timeout."""
+
+    def _make_tool_call(self, tc_id, fn_name, args_str):
+        tc = MagicMock()
+        tc.id = tc_id
+        tc.function.name = fn_name
+        tc.function.arguments = args_str
+        return tc
+
+    def _make_msg(self, content=None, tool_calls=None):
+        msg = MagicMock()
+        msg.content = content
+        msg.tool_calls = tool_calls
+        return msg
+
+    def _make_response(self, msg):
+        resp = MagicMock()
+        resp.choices = [MagicMock()]
+        resp.choices[0].message = msg
+        return resp
+
+    def test_timeout_breaks_loop(self):
+        """Loop breaks after total_timeout even if LLM keeps calling tools."""
+        from orchestrator import Orchestrator
+
+        orch = Orchestrator(tools_list=[
+            {"type": "function", "function": {"name": "search"}},
+        ])
+
+        tc = self._make_tool_call("tc1", "search", '{"q":"a"}')
+        msg_tool = self._make_msg(tool_calls=[tc])
+        resp_tool = self._make_response(msg_tool)
+
+        round_count = [0]
+        original_monotonic = time.monotonic
+
+        def fake_llm(messages, tools, temp):
+            round_count[0] += 1
+            return resp_tool
+
+        # Patch time.monotonic to simulate time passing
+        call_count = [0]
+        start_time = original_monotonic()
+        def fake_monotonic():
+            call_count[0] += 1
+            # Each call advances 50s, so after 3 calls we're at 150s > 120s
+            return start_time + call_count[0] * 50.0
+
+        with patch("time.monotonic", fake_monotonic):
+            result = orch.run(
+                message="test", history=[], session_id="s",
+                base_system_prompt="B.",
+                call_tool_fn=lambda n, a: json.dumps([]),
+                llm_call_fn=fake_llm,
+            )
+
+        assert "Xin lỗi" in result["reply"]
+        assert round_count[0] < 10
+
+    def test_fast_loop_completes_normally(self):
+        """Loop with fast responses should complete before timeout."""
+        from orchestrator import Orchestrator
+
+        orch = Orchestrator(tools_list=[
+            {"type": "function", "function": {"name": "search"}},
+        ])
+
+        msg = self._make_msg(content="Quick answer.", tool_calls=None)
+        resp = self._make_response(msg)
+
+        result = orch.run(
+            message="test", history=[], session_id="s",
+            base_system_prompt="B.",
+            call_tool_fn=lambda n, a: "{}",
+            llm_call_fn=lambda m, t, temp: resp,
+        )
+        assert result["reply"] == "Quick answer."
+
+
+class TestToolNameValidation:
+    """LLM-hallucinated tool names must be rejected with an error stub."""
+
+    def _make_tool_call(self, tc_id, fn_name, args_str):
+        tc = MagicMock()
+        tc.id = tc_id
+        tc.function.name = fn_name
+        tc.function.arguments = args_str
+        return tc
+
+    def _make_msg(self, content=None, tool_calls=None):
+        msg = MagicMock()
+        msg.content = content
+        msg.tool_calls = tool_calls
+        return msg
+
+    def _make_response(self, msg):
+        resp = MagicMock()
+        resp.choices = [MagicMock()]
+        resp.choices[0].message = msg
+        return resp
+
+    def test_unknown_tool_rejected(self):
+        """Tool calls with names not in the allowed set get error stubs."""
+        from orchestrator import Orchestrator
+
+        orch = Orchestrator(tools_list=[
+            {"type": "function", "function": {"name": "search"}},
+        ])
+
+        tc_bad = self._make_tool_call("tc1", "hack_system", '{}')
+        msg_r1 = self._make_msg(tool_calls=[tc_bad])
+        resp_r1 = self._make_response(msg_r1)
+        msg_r2 = self._make_msg(content="OK.", tool_calls=None)
+        resp_r2 = self._make_response(msg_r2)
+
+        calls = [0]
+        def fake_llm(m, t, temp):
+            calls[0] += 1
+            return resp_r1 if calls[0] == 1 else resp_r2
+
+        tool_calls_received = []
+        def fake_tool(name, args):
+            tool_calls_received.append(name)
+            return "{}"
+
+        with patch("orchestrator.logger") as mock_logger:
+            result = orch.run(
+                message="test", history=[], session_id="s",
+                base_system_prompt="B.",
+                call_tool_fn=fake_tool,
+                llm_call_fn=fake_llm,
+            )
+            assert result["reply"] == "OK."
+            assert "hack_system" not in tool_calls_received
+            warn_args = [str(c) for c in mock_logger.warning.call_args_list]
+            assert any("hallucinated unknown tool" in s for s in warn_args)
+
+    def test_valid_tool_passes(self):
+        """Tool calls with names in the allowed set execute normally."""
+        from orchestrator import Orchestrator
+
+        orch = Orchestrator(tools_list=[
+            {"type": "function", "function": {"name": "search"}},
+        ])
+
+        tc = self._make_tool_call("tc1", "search", '{"q":"test"}')
+        msg_r1 = self._make_msg(tool_calls=[tc])
+        resp_r1 = self._make_response(msg_r1)
+        msg_r2 = self._make_msg(content="Found.", tool_calls=None)
+        resp_r2 = self._make_response(msg_r2)
+
+        calls = [0]
+        def fake_llm(m, t, temp):
+            calls[0] += 1
+            return resp_r1 if calls[0] == 1 else resp_r2
+
+        tool_calls_received = []
+        def fake_tool(name, args):
+            tool_calls_received.append(name)
+            return json.dumps([{"id": "x", "name": "X"}])
+
+        result = orch.run(
+            message="test", history=[], session_id="s",
+            base_system_prompt="B.",
+            call_tool_fn=fake_tool,
+            llm_call_fn=fake_llm,
+        )
+        assert "search" in tool_calls_received
+
+
+class TestMessageSizeGuard:
+    """Message list must be truncated when payload exceeds threshold."""
+
+    def test_large_tool_results_truncated(self):
+        """Tool results >500 bytes get truncated when total exceeds limit."""
+        from orchestrator import Orchestrator
+
+        orch = Orchestrator(tools_list=[
+            {"type": "function", "function": {"name": "search"}},
+        ])
+
+        tc = MagicMock()
+        tc.id = "tc1"
+        tc.function.name = "search"
+        tc.function.arguments = '{"q":"test"}'
+
+        msg_r1 = MagicMock()
+        msg_r1.content = None
+        msg_r1.tool_calls = [tc]
+        resp_r1 = MagicMock()
+        resp_r1.choices = [MagicMock()]
+        resp_r1.choices[0].message = msg_r1
+
+        msg_r2 = MagicMock()
+        msg_r2.content = "Done."
+        msg_r2.tool_calls = None
+        resp_r2 = MagicMock()
+        resp_r2.choices = [MagicMock()]
+        resp_r2.choices[0].message = msg_r2
+
+        calls = [0]
+        def fake_llm(m, t, temp):
+            calls[0] += 1
+            return resp_r1 if calls[0] == 1 else resp_r2
+
+        huge_result = "X" * 200_000
+
+        result = orch.run(
+            message="test", history=[], session_id="s",
+            base_system_prompt="B.",
+            call_tool_fn=lambda n, a: huge_result,
+            llm_call_fn=fake_llm,
+        )
+        assert result["reply"] == "Done."
+
+
+class TestDoubleAgentFailure:
+    """When both specialist and GeneralAgent fail, return safe fallback."""
+
+    def test_both_agents_fail_returns_safe_reply(self):
+        """run() must return fallback when all agents raise."""
+        from orchestrator import Orchestrator
+
+        orch = Orchestrator(tools_list=[
+            {"type": "function", "function": {"name": "search"}},
+        ])
+
+        def failing_llm(messages, tools, temp):
+            raise ConnectionError("LLM service down")
+
+        result = orch.run(
+            message="test", history=[], session_id="s",
+            base_system_prompt="B.",
+            call_tool_fn=lambda n, a: "{}",
+            llm_call_fn=failing_llm,
+        )
+        assert result["reply"] == "Xin lỗi, tôi không thể trả lời câu hỏi này lúc này."
+        assert result["fallback"] is True
+        assert result["agent_used"] == "none"
+
+
+class TestCircuitBreakerIsHealthy:
+    """CircuitBreaker.is_healthy property."""
+
+    def test_healthy_when_closed(self):
+        from circuit_breaker import CircuitBreaker
+        cb = CircuitBreaker(name="test")
+        assert cb.is_healthy is True
+
+    def test_unhealthy_when_open(self):
+        from circuit_breaker import CircuitBreaker
+        cb = CircuitBreaker(name="test", failure_threshold=2, recovery_timeout=300)
+        for _ in range(2):
+            try:
+                cb.call(lambda: (_ for _ in ()).throw(RuntimeError("fail")))
+            except RuntimeError:
+                pass
+        assert cb.is_healthy is False
+
+    def test_unhealthy_in_half_open(self):
+        from circuit_breaker import CircuitBreaker
+        cb = CircuitBreaker(name="test", failure_threshold=1, recovery_timeout=0)
+        try:
+            cb.call(lambda: (_ for _ in ()).throw(RuntimeError("fail")))
+        except RuntimeError:
+            pass
+        # recovery_timeout=0 means it immediately transitions to HALF_OPEN
+        assert cb.state.value == "half_open"
+        assert cb.is_healthy is False
+
+
+class TestKnowledgeHealthCheck:
+    """knowledge.health_check() reports layer readiness."""
+
+    def test_health_check_loaded(self):
+        import knowledge
+        knowledge._entities = {"e1": {"id": "e1", "name": "Test", "type": "attraction"}}
+        knowledge._relationships = [{"from": "e1", "to": "e2", "type": "located_in"}]
+        knowledge._itineraries = {"i1": {"id": "i1"}}
+        knowledge._data_source = "db"
+
+        result = knowledge.health_check()
+        assert result["status"] == "ok"
+        assert result["data_source"] == "db"
+        assert result["entity_count"] == 1
+        assert result["relationship_count"] == 1
+        assert result["itinerary_count"] == 1
+
+    def test_health_check_empty_is_degraded(self):
+        import knowledge
+        knowledge._entities = {}
+        knowledge._relationships = []
+        knowledge._itineraries = {}
+        knowledge._data_source = "json"
+
+        result = knowledge.health_check()
+        assert result["status"] == "degraded"
+
+
+class TestSearchHealth:
+    """contextual_retrieval.search_health() reports pipeline readiness."""
+
+    def test_search_health_returns_expected_keys(self):
+        from contextual_retrieval import search_health
+        result = search_health()
+        assert "bm25_ready" in result
+        assert "contextual_loaded" in result
+        assert "embedding_store_ready" in result
+
+    def test_search_health_bm25_after_build(self):
+        from contextual_retrieval import BM25
+        b = BM25()
+        b.build_index({"d1": "test document"})
+        assert b._built is True
+
+
+class TestEnhancedHybridSearchMetadata:
+    """enhanced_hybrid_search must return _search_meta on results."""
+
+    def test_results_include_search_meta(self):
+        from contextual_retrieval import enhanced_hybrid_search, bm25
+
+        entities = {
+            "e1": {"id": "e1", "name": "Chùa Vĩnh Tràng", "type": "attraction",
+                    "summary": "Ngôi chùa nổi tiếng"},
+        }
+        keyword_results = [entities["e1"]]
+
+        bm25.build_index({"e1": "Chùa Vĩnh Tràng ngôi chùa nổi tiếng"})
+
+        results = enhanced_hybrid_search(
+            "chùa", keyword_results, entities, [],
+        )
+        assert len(results) >= 1
+        meta = results[0].get("_search_meta")
+        assert meta is not None
+        assert "has_bm25" in meta
+        assert "has_semantic" in meta
+        assert "has_contextual" in meta
+        assert "reranked" in meta
+
+    def test_empty_results_no_crash(self):
+        from contextual_retrieval import enhanced_hybrid_search
+        results = enhanced_hybrid_search("xyz", [], {}, [])
+        assert results == []
