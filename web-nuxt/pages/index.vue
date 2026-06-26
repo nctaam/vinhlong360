@@ -132,7 +132,7 @@
             :aria-label="spotlight.name"
           >
             <span v-if="spotRegion" class="spot-region">📍 {{ spotRegion }}</span>
-            <span class="spot-icon" v-html="spotIcon" />
+            <span class="spot-icon" v-html="spotIcon" aria-hidden="true" />
           </NuxtLink>
           <div class="spot-body">
             <span class="spot-kicker">{{ spotMeta?.emoji }} {{ spotMeta?.label }} · Nổi bật</span>
@@ -955,7 +955,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 @media (max-width: 760px) { .spot-icon { width: 96px; height: 96px; } }
 .spot-region {
   position: absolute; top: var(--space-4); left: var(--space-4);
-  padding: var(--space-1) var(--space-3); background: rgba(0,0,0,.36);
+  padding: var(--space-1) var(--space-3); background: rgba(0,0,0,.5);
   color: #fff; border-radius: var(--radius-full);
   font-size: var(--text-xs); font-weight: var(--weight-semibold);
   backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
@@ -1028,6 +1028,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .hl-chip:hover { border-color: var(--primary-fg); }
 .hl-rank { width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--muted); }
 .hl-rank-1 { color: #d4a017; } .hl-rank-2 { color: #8a8d91; } .hl-rank-3 { color: #b07b4f; }
+.dark .hl-rank-1 { color: #ffd54f; } .dark .hl-rank-2 { color: #b0b3b8; } .dark .hl-rank-3 { color: #d4a574; }
 .hl-avatar { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--text-on-dark, #fff); font-size: 11px; font-weight: var(--weight-semibold); }
 .hl-name { font-size: var(--text-sm); font-weight: var(--weight-medium); }
 .hl-more { font-size: var(--text-sm); color: var(--primary-fg); text-decoration: none; font-weight: var(--weight-semibold); }

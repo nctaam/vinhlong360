@@ -3,7 +3,7 @@
     <div class="cspot">
       <NuxtLink :to="`/dia-diem/${pick.id}`" class="cspot-visual" :style="{ backgroundImage: bg }" :aria-label="pick.name">
         <span v-if="region" class="cspot-region">📍 {{ region }}</span>
-        <span class="cspot-icon" v-html="icon" />
+        <span class="cspot-icon" v-html="icon" aria-hidden="true" />
       </NuxtLink>
       <div class="cspot-body">
         <span class="cspot-kicker">{{ meta?.emoji }} {{ meta?.label }} · Nổi bật</span>
@@ -69,7 +69,7 @@ const region = computed(() => {
 .cspot-icon :deep(svg) { width: 100%; height: 100%; display: block; }
 .cspot-region {
   position: absolute; top: var(--space-4); left: var(--space-4);
-  padding: var(--space-1) var(--space-3); background: rgba(0,0,0,.36); color: #fff;
+  padding: var(--space-1) var(--space-3); background: rgba(0,0,0,.5); color: #fff;
   border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: var(--weight-semibold);
   backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
 }
