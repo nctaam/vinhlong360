@@ -274,21 +274,25 @@ function onNavKeydown(e: KeyboardEvent) {
 useScrollFade()
 
 const topbarScrolled = ref(false)
-function onPageScroll() { topbarScrolled.value = window.scrollY > 8 }
+let scrollRaf = 0
+function onPageScroll() {
+  if (!scrollRaf) scrollRaf = requestAnimationFrame(() => { scrollRaf = 0; topbarScrolled.value = window.scrollY > 8 })
+}
 
+const onDoc = (e: MouseEvent) => { if (!(e.target as HTMLElement)?.closest('.main-nav')) openGroup.value = null }
+const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') { openGroup.value = null; closeNav() } }
 onMounted(() => {
-  const onDoc = (e: MouseEvent) => { if (!(e.target as HTMLElement)?.closest('.main-nav')) openGroup.value = null }
-  const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') { openGroup.value = null; closeNav() } }
   document.addEventListener('click', onDoc)
   document.addEventListener('keydown', onEsc)
   window.addEventListener('scroll', onPageScroll, { passive: true })
-  onPageScroll()
-  onUnmounted(() => {
-    document.removeEventListener('click', onDoc)
-    document.removeEventListener('keydown', onEsc)
-    window.removeEventListener('scroll', onPageScroll)
-    document.body.style.overflow = ''
-  })
+  topbarScrolled.value = window.scrollY > 8
+})
+onUnmounted(() => {
+  document.removeEventListener('click', onDoc)
+  document.removeEventListener('keydown', onEsc)
+  window.removeEventListener('scroll', onPageScroll)
+  cancelAnimationFrame(scrollRaf)
+  document.body.style.overflow = ''
 })
 
 </script>

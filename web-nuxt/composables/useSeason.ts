@@ -36,7 +36,9 @@ export function seasonText(season?: Season | null): string {
 function expandSeason(sel: string | null): number[] | null {
   if (!sel || sel === 'all') return null
   if (sel === 'flood') return FLOOD_MONTHS
-  return [parseInt(sel, 10)]
+  const month = parseInt(sel, 10)
+  if (Number.isNaN(month) || month < 1 || month > 12) return null
+  return [month]
 }
 
 export function inSeason(entity: { season?: Season | null }, sel: string | null): boolean {

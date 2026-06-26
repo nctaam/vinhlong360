@@ -12,10 +12,10 @@
         <path d="M150 75 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z" />
       </g>
     </svg>
-    <h3 v-if="title" class="empty-title">{{ title }}</h3>
+    <component :is="headingTag" v-if="title" class="empty-title">{{ title }}</component>
     <p class="empty-text">{{ message }}</p>
     <p v-if="hint" class="empty-hint">{{ hint }}</p>
-    <div v-if="$slots.actions" class="empty-actions">
+    <div v-if="$slots.actions" class="empty-actions" role="group" aria-label="Hành động">
       <slot name="actions" />
     </div>
     <slot />
@@ -23,13 +23,16 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+const props = withDefaults(defineProps<{
   message?: string
   icon?: string
   title?: string
   hint?: string
   tone?: 'empty' | 'error'
-}>()
+  headingLevel?: 2 | 3 | 4
+}>(), { headingLevel: 3 })
+
+const headingTag = computed(() => `h${props.headingLevel}`)
 </script>
 
 <style scoped>
@@ -46,5 +49,8 @@ defineProps<{
   .empty-icon, .empty-illust { transition: none; }
   .empty-state:hover .empty-icon { transform: none; }
   .empty-state:hover .empty-illust { transform: none; }
+}
+@media (forced-colors: active) {
+  .empty-illust circle, .empty-illust line { stroke: CanvasText; }
 }
 </style>
