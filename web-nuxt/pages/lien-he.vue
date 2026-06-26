@@ -90,7 +90,11 @@ const zaloName = computed(() => ss('contact.zalo', 'vinhlong360'))
 
 const route = useRoute()
 const isClaim = computed(() => route.query.ref === 'claim')
-const claimEntity = computed(() => route.query.entity ? decodeURIComponent(String(route.query.entity)).slice(0, 200) : '')
+const claimEntity = computed(() => {
+  if (!route.query.entity) return ''
+  const raw = decodeURIComponent(String(route.query.entity)).slice(0, 200)
+  return /^[a-z][a-z0-9+\-.]*:/i.test(raw) ? '' : raw
+})
 const claimSubject = computed(() => {
   const base = 'Đăng ký quản lý trang'
   return claimEntity.value ? `${base}: ${claimEntity.value}` : base

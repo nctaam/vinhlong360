@@ -13,7 +13,7 @@
     </div>
     <div class="card-b">
       <span class="card-type">{{ typeMeta.label }}</span>
-      <h3>{{ entity.name }}</h3>
+      <h3 class="card-name">{{ entity.name }}</h3>
       <p class="summary">{{ cardSummary }}</p>
       <p v-if="placeName" class="place">{{ placeName }}</p>
       <div v-if="cardMeta" class="card-meta">
@@ -114,6 +114,7 @@ const ratingDisplay = computed(() => {
 </script>
 
 <style scoped>
+.card-name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .card-amenities { display: flex; align-items: center; gap: 2px; margin-top: .25rem; }
 .ca-icon { font-size: .7rem; opacity: .7; cursor: default; }
 .ca-more { font-size: .65rem; color: var(--muted); font-weight: 600; margin-left: 1px; }

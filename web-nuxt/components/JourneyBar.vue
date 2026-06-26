@@ -56,6 +56,12 @@ watch(count, (n) => {
 
 .dark .journey-bar { background: var(--card); box-shadow: 0 -4px 20px rgba(0,0,0,.25); }
 
+@media (max-width: 480px) {
+  .journey-bar { flex-wrap: wrap; padding: var(--space-2) var(--space-3); gap: var(--space-2); }
+  .jb-actions { width: 100%; }
+  .jb-actions .jb-link { flex: 1; justify-content: center; min-height: 44px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .jb-count-pop { animation: none; }
   .jb-slide-enter-active, .jb-slide-leave-active { transition: none; }

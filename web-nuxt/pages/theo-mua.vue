@@ -275,7 +275,7 @@ function isPeak(e: Entity) { return (e.season?.peak || []).includes(month.value)
 const ranked = computed(() =>
   wedge.value
     .filter((e: Entity) => score(e) >= 2)
-    .sort((a: Entity, b: Entity) => score(b) - score(a)),
+    .sort((a: Entity, b: Entity) => (score(b) || 0) - (score(a) || 0)),
 )
 const inSeasonItems = computed(() => wedge.value.filter((e: Entity) => isInSeason(e)))
 const allPeakItems = computed(() => wedge.value.filter((e: Entity) => isPeak(e)))

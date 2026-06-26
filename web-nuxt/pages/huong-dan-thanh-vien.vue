@@ -30,7 +30,7 @@
     <section class="guide-section reveal">
       <h2>Cách tính điểm danh tiếng</h2>
       <p class="guide-intro">Điểm được tính tự động từ các đóng góp đã duyệt. Để tránh lạm phát, mỗi loại hoạt động có <strong>giới hạn tối đa</strong> — điểm giảm dần khi số lượng tăng lên.</p>
-      <div class="points-table-wrap">
+      <div class="points-table-wrap" role="region" aria-label="Bảng tính điểm danh tiếng" tabindex="0">
         <table class="points-table">
           <thead>
             <tr>

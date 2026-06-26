@@ -457,8 +457,8 @@ function formatEventDay(ev: any) {
 function formatEventMonth(ev: any) {
   const ds = ev.attributes?.date_start
   if (!ds) return ''
-  const m = parseInt(ds.split('-')[1], 10)
-  return `Th${m}`
+  const m = parseInt(ds.split('-')[1] || '0', 10)
+  return isNaN(m) || m === 0 ? '' : `Th${m}`
 }
 
 function formatRating(rating: number): string {

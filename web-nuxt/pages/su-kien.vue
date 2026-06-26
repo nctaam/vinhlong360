@@ -299,14 +299,17 @@ function formatDay(e: Entity): string {
 function dateRange(e: Entity): string {
   const attrs = e.attributes || {}
   const ds = attrs.date_start
-  const de = attrs.date_end
   if (!ds) return ''
+  const de = attrs.date_end || ds
   const fmt = (s: string) => {
     const d = new Date(s + 'T00:00:00')
+    if (isNaN(d.getTime())) return ''
     return `${d.getDate()}/${d.getMonth() + 1}`
   }
   if (ds === de) return fmt(ds)
-  return `${fmt(ds)} – ${fmt(de)}`
+  const f1 = fmt(ds)
+  const f2 = fmt(de)
+  return (f1 && f2) ? `${f1} – ${f2}` : f1
 }
 
 function truncate(s: string, n: number): string {
