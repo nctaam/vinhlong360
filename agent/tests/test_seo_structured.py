@@ -391,3 +391,294 @@ def test_sitemap_excludes_provisional(monkeypatch):
     xml = resp.body.decode()
     assert "/dia-diem/ok" in xml
     assert "/dia-diem/prov" not in xml
+
+
+def test_sitemap_includes_guide_pages(monkeypatch, sample_data):
+    monkeypatch.setattr(seo, "_load", lambda: sample_data)
+    monkeypatch.setattr(seo, "_sitemap_cache", None)
+    monkeypatch.setattr(seo, "_data_mtime_ns", 0)
+    resp = seo.sitemap()
+    xml = resp.body.decode()
+    assert "/kham-pha/am-thuc" in xml
+    assert "/kham-pha/lang-nghe" in xml
+
+
+def test_sitemap_no_fake_lastmod_on_core_pages(monkeypatch, sample_data):
+    monkeypatch.setattr(seo, "_load", lambda: sample_data)
+    monkeypatch.setattr(seo, "_sitemap_cache", None)
+    monkeypatch.setattr(seo, "_data_mtime_ns", 0)
+    resp = seo.sitemap()
+    xml = resp.body.decode()
+    # Core pages should NOT have today's date as lastmod
+    import re as _re
+    homepage_block = _re.search(r"<url>.*?<loc>[^<]*/</loc>.*?</url>", xml, _re.DOTALL)
+    assert homepage_block
+    assert "<lastmod>" not in homepage_block.group()
+
+
+# ── Event enrichment ──────────────────────────────────────────────────────
+
+
+def test_event_emits_status_and_attendance_mode():
+    entity = {
+        "id": "event-test",
+        "name": "Lễ hội trái cây",
+        "type": "event",
+        "attributes": {"date_start": "2026-07-01"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["eventStatus"] == "https://schema.org/EventScheduled"
+    assert ld["eventAttendanceMode"] == "https://schema.org/OfflineEventAttendanceMode"
+
+
+def test_event_emits_organizer_when_present():
+    entity = {
+        "id": "event-org",
+        "name": "Hội chợ OCOP",
+        "type": "event",
+        "attributes": {"organizer": "Sở Công Thương Vĩnh Long"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["organizer"] == {"@type": "Organization", "name": "Sở Công Thương Vĩnh Long"}
+
+
+# ── TouristAttraction enrichment ──────────────────────────────────────────
+
+
+def test_attraction_emits_is_accessible_for_free():
+    entity = {
+        "id": "att-free",
+        "name": "Vườn trái cây",
+        "type": "attraction",
+        "attributes": {"admission": "miễn phí"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["@type"] == "TouristAttraction"
+    assert ld["isAccessibleForFree"] is True
+
+
+def test_attraction_paid_admission():
+    entity = {
+        "id": "att-paid",
+        "name": "Khu du lịch",
+        "type": "attraction",
+        "attributes": {"admission": "50.000 VND"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["isAccessibleForFree"] is False
+
+
+def test_attraction_without_admission_omits_field():
+    entity = {"id": "att-no", "name": "Điểm", "type": "attraction", "attributes": {}}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "isAccessibleForFree" not in ld
+
+
+# ── WebSite + Organization schema ─────────────────────────────────────────
+
+
+def test_site_jsonld_returns_website_and_org():
+    result = seo.site_jsonld()
+    assert len(result) == 2
+    website = result[0]
+    assert website["@type"] == "WebSite"
+    assert website["name"] == "VinhLong360"
+    assert website["potentialAction"]["@type"] == "SearchAction"
+    assert "search_term_string" in website["potentialAction"]["target"]["urlTemplate"]
+    org = result[1]
+    assert org["@type"] == "Organization"
+    assert org["name"] == "VinhLong360"
+
+
+# ── parse_coordinates ─────────────────────────────────────────────────────
+
+
+def test_parse_coordinates_list():
+    assert seo.parse_coordinates([10.25, 106.0]) == (10.25, 106.0)
+
+
+def test_parse_coordinates_dict_lat_lng():
+    assert seo.parse_coordinates({"lat": 10.25, "lng": 106.0}) == (10.25, 106.0)
+
+
+def test_parse_coordinates_dict_latitude_longitude():
+    assert seo.parse_coordinates({"latitude": 10.25, "longitude": 106.0}) == (10.25, 106.0)
+
+
+def test_parse_coordinates_json_string():
+    assert seo.parse_coordinates("[10.25, 106.0]") == (10.25, 106.0)
+
+
+def test_parse_coordinates_transposed():
+    assert seo.parse_coordinates([106.0, 10.25]) == (10.25, 106.0)
+
+
+def test_parse_coordinates_none_for_invalid():
+    assert seo.parse_coordinates(None) is None
+    assert seo.parse_coordinates("not json") is None
+    assert seo.parse_coordinates([1, 2, 3]) is None
+    assert seo.parse_coordinates(42) is None
+
+
+# ── _source_info ──────────────────────────────────────────────────────────
+
+
+def test_source_info_string_url():
+    title, url = seo._source_info({"source": "https://example.com/page"})
+    assert title == "https://example.com/page"
+    assert url == "https://example.com/page"
+
+
+def test_source_info_string_non_url():
+    title, url = seo._source_info({"source": "manual"})
+    assert title == "manual"
+    assert url is None
+
+
+def test_source_info_dict():
+    title, url = seo._source_info({"source": {"title": "Wikipedia", "url": "https://vi.wikipedia.org/wiki/X"}})
+    assert title == "Wikipedia"
+    assert url == "https://vi.wikipedia.org/wiki/X"
+
+
+def test_source_info_list():
+    title, url = seo._source_info({"source": [{"title": "First", "url": "https://example.com"}]})
+    assert title == "First"
+    assert url == "https://example.com"
+
+
+def test_source_info_self_link_excluded():
+    title, url = seo._source_info({"source": "https://vinhlong360.vn/dia-diem/x"})
+    assert url is None
+
+
+def test_source_info_empty():
+    assert seo._source_info({}) == (None, None)
+    assert seo._source_info({"source": []}) == (None, None)
+
+
+# ── _same_as_values ───────────────────────────────────────────────────────
+
+
+def test_same_as_includes_website():
+    entity = {"attributes": {"website": "https://example.com"}}
+    values = seo._same_as_values(entity)
+    assert "https://example.com" in values
+
+
+def test_same_as_deduplicates():
+    entity = {"attributes": {"website": "https://example.com"}, "source": "https://example.com"}
+    values = seo._same_as_values(entity)
+    assert values.count("https://example.com") == 1
+
+
+def test_same_as_excludes_self_links():
+    entity = {"attributes": {"website": "https://vinhlong360.vn"}, "source": "manual"}
+    values = seo._same_as_values(entity)
+    assert len(values) == 1
+    assert values[0] == "https://vinhlong360.vn"
+
+
+# ── _safe_date ────────────────────────────────────────────────────────────
+
+
+def test_safe_date_valid():
+    assert seo._safe_date("2026-06-15", "fallback") == "2026-06-15"
+
+
+def test_safe_date_invalid():
+    assert seo._safe_date("not a date", "2026-01-01") == "2026-01-01"
+    assert seo._safe_date(None, "2026-01-01") == "2026-01-01"
+    assert seo._safe_date(12345, None) is None
+
+
+def test_safe_date_strips_whitespace():
+    assert seo._safe_date("  2026-06-15  ", None) == "2026-06-15"
+
+
+# ── _is_public ────────────────────────────────────────────────────────────
+
+
+def test_is_public_normal():
+    assert seo._is_public({"id": "x", "type": "attraction"}) is True
+
+
+def test_is_public_provisional():
+    assert seo._is_public({"status": "provisional"}) is False
+
+
+def test_is_public_unverified():
+    assert seo._is_public({"verified": False}) is False
+
+
+def test_is_public_verified_true():
+    assert seo._is_public({"verified": True}) is True
+
+
+# ── robots.txt ────────────────────────────────────────────────────────────
+
+
+def test_robots_contains_sitemaps():
+    resp = seo.robots()
+    assert "sitemap.xml" in resp
+    assert "sitemap-media.xml" in resp
+
+
+def test_robots_disallows_api_and_seo():
+    resp = seo.robots()
+    assert "Disallow: /api/" in resp
+    assert "Disallow: /seo/" in resp
+
+
+def test_robots_disallows_admin():
+    resp = seo.robots()
+    assert "Disallow: /admin" in resp
+
+
+# ── Media sitemap ─────────────────────────────────────────────────────────
+
+
+def test_media_sitemap_includes_image_title(monkeypatch):
+    data = {
+        "entities": [
+            {"id": "e1", "name": "Test Entity", "type": "attraction", "images": ["https://example.com/img.jpg"]},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    monkeypatch.setattr(seo, "_load", lambda: data)
+    resp = seo.sitemap_media()
+    xml = resp.body.decode()
+    assert "<image:title>Test Entity</image:title>" in xml
+    assert "<image:loc>https://example.com/img.jpg</image:loc>" in xml
+
+
+def test_media_sitemap_excludes_non_public(monkeypatch):
+    data = {
+        "entities": [
+            {"id": "e1", "name": "OK", "type": "attraction", "images": ["https://example.com/a.jpg"]},
+            {"id": "e2", "name": "Hidden", "type": "attraction", "status": "provisional", "images": ["https://example.com/b.jpg"]},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    monkeypatch.setattr(seo, "_load", lambda: data)
+    resp = seo.sitemap_media()
+    xml = resp.body.decode()
+    assert "/dia-diem/e1" in xml
+    assert "/dia-diem/e2" not in xml
+
+
+# ── Person type ───────────────────────────────────────────────────────────
+
+
+def test_person_emits_job_title():
+    entity = {
+        "id": "person-test",
+        "name": "Nguyễn Văn A",
+        "type": "person",
+        "attributes": {"role": "Nghệ nhân"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["@type"] == "Person"
+    assert ld["jobTitle"] == "Nghệ nhân"

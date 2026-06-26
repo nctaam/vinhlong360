@@ -167,14 +167,6 @@ GUIDE_PAGES = [
     ("/kham-pha/mua-sam", "weekly", "0.8"),
 ]
 
-SITEMAP_DOCS = [
-    "/sitemap-pages.xml",
-    "/sitemap-entities.xml",
-    "/sitemap-itineraries.xml",
-    "/sitemap-guides.xml",
-    "/sitemap-media.xml",
-]
-
 _data: dict[str, Any] | None = None
 _data_mtime_ns: int | None = None
 _by_id_cache: dict[str, dict[str, Any]] | None = None
@@ -282,7 +274,7 @@ def _itinerary_url(itinerary_id: str) -> str:
     return f"{SITE}/lich-trinh/{quote(itinerary_id, safe='-_~')}"
 
 
-def _safe_date(value: Any, fallback: str) -> str:
+def _safe_date(value: Any, fallback: str | None = None) -> str | None:
     if isinstance(value, str) and re.match(r"^\d{4}-\d{2}-\d{2}$", value.strip()):
         return value.strip()
     return fallback
@@ -427,6 +419,13 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
     if attrs.get("hours"):
         ld["openingHours"] = attrs["hours"]
 
+    if schema_type == "TouristAttraction":
+        if attrs.get("admission") is not None:
+            free = str(attrs["admission"]).strip().lower() in ("0", "free", "miễn phí", "")
+            ld["isAccessibleForFree"] = free
+        if attrs.get("tourist_type"):
+            ld["touristType"] = attrs["tourist_type"]
+
     if schema_type == "Product":
         if attrs.get("price"):
             price_digits = re.sub(r"[^0-9]", "", str(attrs["price"]))
@@ -476,6 +475,10 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
         end_value = attrs.get("endDate") or attrs.get("date_end") or entity.get("endDate")
         if end_value:
             ld["endDate"] = end_value
+        ld["eventStatus"] = "https://schema.org/EventScheduled"
+        ld["eventAttendanceMode"] = "https://schema.org/OfflineEventAttendanceMode"
+        if attrs.get("organizer"):
+            ld["organizer"] = {"@type": "Organization", "name": attrs["organizer"]}
         if place:
             ld["location"] = {"@type": "Place", "name": place.get("name"), "address": ld.get("address")}
 
@@ -485,6 +488,33 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
     ld["breadcrumb"] = _build_breadcrumb(entity, by_id)
 
     return {key: value for key, value in ld.items() if value not in (None, "", [], {})}
+
+
+@router.get("/seo/jsonld/site")
+def site_jsonld():
+    return [
+        {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "VinhLong360",
+            "url": SITE,
+            "potentialAction": {
+                "@type": "SearchAction",
+                "target": {"@type": "EntryPoint", "urlTemplate": f"{SITE}/tim-kiem?q={{search_term_string}}"},
+                "query-input": "required name=search_term_string",
+            },
+        },
+        {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "VinhLong360",
+            "url": SITE,
+            "logo": f"{SITE}/logo.png",
+            "sameAs": [
+                "https://www.facebook.com/vinhlong360",
+            ],
+        },
+    ]
 
 
 @router.get("/seo/jsonld/{entity_id}")
@@ -589,18 +619,21 @@ def sitemap():
     urls: list[str] = []
 
     for path, changefreq, priority in CORE_PAGES:
-        urls.append(_url_xml(f"{SITE}{path}", changefreq=changefreq, priority=priority, lastmod=now))
+        urls.append(_url_xml(f"{SITE}{path}", changefreq=changefreq, priority=priority))
+    for path, changefreq, priority in GUIDE_PAGES:
+        urls.append(_url_xml(f"{SITE}{path}", changefreq=changefreq, priority=priority))
     for area in AREA_NAMES:
-        urls.append(_url_xml(f"{SITE}/khu-vuc/{area}", changefreq="weekly", priority="0.8", lastmod=now))
+        urls.append(_url_xml(f"{SITE}/khu-vuc/{area}", changefreq="weekly", priority="0.8"))
 
     for entity in data.get("entities", []):
         if not isinstance(entity, dict) or entity.get("type") != "place" or not entity.get("id"):
             continue
+        place_lastmod = _safe_date(entity.get("updatedAt"), None)
         urls.append(_url_xml(
             f"{SITE}/xa-phuong/{quote(str(entity['id']))}",
             changefreq="monthly",
             priority="0.6",
-            lastmod=now,
+            lastmod=place_lastmod,
         ))
 
     seen: set[str] = set()
@@ -656,11 +689,15 @@ def sitemap_media():
         imgs = entity.get("images")
         if not isinstance(imgs, list) or not imgs:
             continue
+        ename = xml_escape(entity.get("name") or str(entity["id"]))
         loc = _entity_url(str(entity["id"]))
         tags = ""
         for img in imgs[:20]:
             if isinstance(img, str) and img.startswith("http"):
-                tags += f"\n    <image:image><image:loc>{xml_escape(img)}</image:loc></image:image>"
+                tags += (f"\n    <image:image>"
+                         f"<image:loc>{xml_escape(img)}</image:loc>"
+                         f"<image:title>{ename}</image:title>"
+                         f"</image:image>")
         if tags:
             urls.append(f"  <url>\n    <loc>{xml_escape(loc)}</loc>{tags}\n  </url>")
 
@@ -682,6 +719,8 @@ def robots():
 Allow: /
 Disallow: /admin
 Disallow: /admin-api
+Disallow: /api/
+Disallow: /seo/
 Disallow: /tim-kiem
 
 User-agent: GPTBot

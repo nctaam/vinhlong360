@@ -300,3 +300,206 @@ def test_validate_ignores_stops_without_entity_ref(tmp_path: Path) -> None:
     issues, _stats = validate_data.validate(data, tmp_path / "data.json")
 
     assert "dangling_itinerary_stops" not in {issue.code for issue in issues}
+
+
+# ── normalized_coordinates() ──────────────────────────────────────────────
+
+
+def test_normalized_coordinates_list() -> None:
+    assert validate_data.normalized_coordinates([10.25, 106.0]) == [10.25, 106.0]
+
+
+def test_normalized_coordinates_dict_lat_lng() -> None:
+    assert validate_data.normalized_coordinates({"lat": 10.25, "lng": 106.0}) == [10.25, 106.0]
+
+
+def test_normalized_coordinates_dict_latitude_longitude() -> None:
+    assert validate_data.normalized_coordinates({"latitude": 10.25, "longitude": 106.0}) == [10.25, 106.0]
+
+
+def test_normalized_coordinates_json_string() -> None:
+    assert validate_data.normalized_coordinates("[10.25, 106.0]") == [10.25, 106.0]
+
+
+def test_normalized_coordinates_double_encoded() -> None:
+    assert validate_data.normalized_coordinates('"[10.25, 106.0]"') == [10.25, 106.0]
+
+
+def test_normalized_coordinates_transposed() -> None:
+    result = validate_data.normalized_coordinates([106.0, 10.25])
+    assert result == [10.25, 106.0]
+
+
+def test_normalized_coordinates_invalid() -> None:
+    assert validate_data.normalized_coordinates(None) is None
+    assert validate_data.normalized_coordinates("not json") is None
+    assert validate_data.normalized_coordinates([1, 2, 3]) is None
+    assert validate_data.normalized_coordinates(42) is None
+    assert validate_data.normalized_coordinates(["a", "b"]) is None
+
+
+# ── haversine_km() ────────────────────────────────────────────────────────
+
+
+def test_haversine_km_same_point() -> None:
+    result = validate_data.haversine_km([10.25, 106.0], [10.25, 106.0])
+    assert result is not None
+    assert abs(result) < 0.001
+
+
+def test_haversine_km_known_distance() -> None:
+    result = validate_data.haversine_km([10.25, 106.0], [10.35, 106.1])
+    assert result is not None
+    assert 10 < result < 20
+
+
+def test_haversine_km_none_inputs() -> None:
+    assert validate_data.haversine_km(None, [10.25, 106.0]) is None
+    assert validate_data.haversine_km([10.25, 106.0], None) is None
+
+
+# ── _parse_json_string() ─────────────────────────────────────────────────
+
+
+def test_parse_json_string_passthrough() -> None:
+    assert validate_data._parse_json_string([10, 20]) == [10, 20]
+    assert validate_data._parse_json_string(42) == 42
+
+
+def test_parse_json_string_single_encoded() -> None:
+    assert validate_data._parse_json_string("[10, 20]") == [10, 20]
+
+
+def test_parse_json_string_double_encoded() -> None:
+    assert validate_data._parse_json_string('"[10, 20]"') == [10, 20]
+
+
+def test_parse_json_string_empty() -> None:
+    assert validate_data._parse_json_string("") is None
+    assert validate_data._parse_json_string("   ") is None
+
+
+def test_parse_json_string_non_json() -> None:
+    assert validate_data._parse_json_string("hello world") == "hello world"
+
+
+# ── Boilerplate summary detection ─────────────────────────────────────────
+
+
+def test_validate_flags_boilerplate_summary(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "Không có đủ thông tin để mô tả", "area": "vinh-long"},
+            {"id": "b", "type": "attraction", "name": "B", "summary": "404 Not Found", "area": "vinh-long"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["boilerplate_summary"] == 2
+    assert "boilerplate_summary" in {issue.code for issue in issues}
+
+
+# ── Season integrity ─────────────────────────────────────────────────────
+
+
+def test_validate_flags_bad_season_months(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "product", "name": "A", "summary": "A", "area": "vinh-long",
+             "season": {"months": [1, 13], "peak": [1]}},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["season_integrity_errors"] == 1
+    assert "season_integrity" in {issue.code for issue in issues}
+
+
+def test_validate_flags_peak_not_subset_of_months(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "product", "name": "A", "summary": "A", "area": "vinh-long",
+             "season": {"months": [1, 2, 3], "peak": [5]}},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["season_integrity_errors"] == 1
+
+
+def test_validate_valid_season_passes(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "product", "name": "A", "summary": "A", "area": "vinh-long",
+             "season": {"months": [10, 11, 12], "peak": [11]}},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["season_integrity_errors"] == 0
+
+
+# ── source_not_list ──────────────────────────────────────────────────────
+
+
+def test_validate_flags_source_not_list(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long",
+             "source": "just-a-string"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["source_not_list"] == 1
+    assert "source_not_list" in {issue.code for issue in issues}
+
+
+# ── Level name/id mismatch ────────────────────────────────────────────────
+
+
+def test_validate_flags_level_name_mismatch(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "p-test", "type": "place", "name": "Phường Test", "summary": "T", "level": "xa",
+             "area": "vinh-long", "coordinates": [10.25, 106.0]},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, _stats = validate_data.validate(data, tmp_path / "data.json")
+    codes = {issue.code for issue in issues}
+
+    assert "level_name_mismatch" in codes
+
+
+def test_validate_flags_level_id_mismatch(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "xa-test", "type": "place", "name": "Phường Test", "summary": "T", "level": "phuong",
+             "area": "vinh-long", "coordinates": [10.25, 106.0]},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, _stats = validate_data.validate(data, tmp_path / "data.json")
+    codes = {issue.code for issue in issues}
+
+    assert "level_id_mismatch" in codes
