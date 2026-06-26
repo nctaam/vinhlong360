@@ -134,6 +134,9 @@
           </div>
         </div>
 
+        <!-- Know Before You Go -->
+        <KnowBeforeYouGo v-if="entity.attributes" :attributes="entity.attributes" :entity-type="entity.type" />
+
         <!-- Food specialties (dish/product only) -->
         <div v-if="foodSpecialties.length" class="food-specialties reveal">
           <h2 class="section-subtitle">🍽️ Nên thử</h2>

@@ -598,11 +598,23 @@ async def homepage_curated(response: Response):
         e.pop("_score", None)
         e["days_until"] = e.pop("_days_until", None)
 
+    # Trending: entities with highest chat/search hit counts
+    from agent.proactive import get_trending_entities
+    trending_raw = get_trending_entities(limit=6)
+    trending = []
+    for t in trending_raw:
+        ent = next((e for e in public if e["id"] == t["id"]), None)
+        if ent:
+            item = {k: ent[k] for k in ("id", "name", "type", "summary", "images", "place_name", "place_area") if k in ent}
+            item["hit_count"] = t["hit_count"]
+            trending.append(item)
+
     result = {
         "seasonal": seasonal,
         "experiences": experiences,
         "products": products,
         "top_dishes": top_dishes,
+        "trending": trending,
         "itineraries": itineraries,
         "stats": stats,
         "area_counts": area_counts,

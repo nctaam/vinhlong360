@@ -164,6 +164,19 @@
       </div>
     </section>
 
+    <!-- 3b. Đang được quan tâm — trending entities -->
+    <section v-if="trending.length" class="block reveal">
+      <div class="section-head">
+        <div class="sh-text">
+          <h2>🔥 Đang được quan tâm</h2>
+          <p class="sh-sub">Điểm đến nhiều người tìm kiếm nhất tuần qua</p>
+        </div>
+      </div>
+      <div class="scroll-row" role="region" aria-label="Điểm đến đang hot">
+        <EntityCard v-for="e in trending" :key="e.id" :entity="e" />
+      </div>
+    </section>
+
     <!-- 4. Lịch trình gợi ý -->
     <section v-if="itineraries.length" class="block reveal band">
       <div class="section-head">
@@ -341,6 +354,7 @@ const seasonal = computed(() => homeData.value?.seasonal || [])
 const experiences = computed(() => homeData.value?.experiences || [])
 const productsAll = computed(() => homeData.value?.products || [])
 const topDishes = computed(() => homeData.value?.top_dishes || [])
+const trending = computed(() => homeData.value?.trending || [])
 const itineraries = computed(() => homeData.value?.itineraries || [])
 const upcomingEvents = computed(() => homeData.value?.upcoming_events || [])
 const seasonalTagline = computed(() => homeData.value?.seasonal_tagline || 'Khám phá miệt vườn theo cách của người bản địa')

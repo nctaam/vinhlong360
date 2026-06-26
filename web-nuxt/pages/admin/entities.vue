@@ -166,6 +166,48 @@
             <div v-else class="ent-summary-preview" v-html="form.summary"></div>
             <button type="button" class="btn btn-ghost btn-sm" @click="previewSummary = !previewSummary">{{ previewSummary ? 'Sửa' : 'Xem trước' }}</button>
           </div>
+          <!-- KBYG — Know Before You Go -->
+          <details class="ent-kbyg-details">
+            <summary class="admin-label ent-kbyg-summary">🎒 Biết trước khi đi (KBYG)</summary>
+            <div class="ent-kbyg-fields">
+              <div class="ent-field">
+                <label class="form-label">Mẹo du lịch (mỗi dòng = 1 mẹo)</label>
+                <textarea v-model="kbygTips" class="input admin-textarea" rows="3" placeholder="VD: Nên đi buổi sáng sớm&#10;Mang dép thoải mái&#10;Có chỗ đậu xe miễn phí"></textarea>
+              </div>
+              <div class="ent-field">
+                <label class="form-label">Giờ vàng</label>
+                <input v-model="kbygGoldenHours" class="input" placeholder="VD: 6-8h sáng hoặc 16-18h chiều" />
+              </div>
+              <div class="ent-field">
+                <label class="form-label">Ngày đông</label>
+                <input v-model="kbygPeakDays" class="input" placeholder="VD: Cuối tuần, lễ Tết" />
+              </div>
+              <div class="ent-field">
+                <label class="form-label">Mức đông</label>
+                <select v-model="kbygCrowdLevel" class="input">
+                  <option value="">— Chưa rõ —</option>
+                  <option value="Ít người">Ít người</option>
+                  <option value="Vừa phải">Vừa phải</option>
+                  <option value="Đông">Đông</option>
+                  <option value="Rất đông">Rất đông</option>
+                </select>
+              </div>
+              <div class="ent-field">
+                <label class="form-label">Tiện ích</label>
+                <div class="kbyg-amenity-grid">
+                  <label v-for="(meta, key) in AMENITY_OPTIONS" :key="key" class="kbyg-amenity-check">
+                    <input type="checkbox" :checked="kbygAmenities.includes(key)" @change="toggleAmenity(key)" />
+                    <span>{{ meta.icon }} {{ meta.label }}</span>
+                  </label>
+                </div>
+              </div>
+              <div class="ent-field">
+                <label class="form-label">Checklist chuẩn bị (mỗi dòng = 1 item, để trống = mặc định theo loại)</label>
+                <textarea v-model="kbygChecklist" class="input admin-textarea" rows="2" placeholder="VD: Kem chống nắng&#10;Tiền mặt&#10;Nón"></textarea>
+              </div>
+            </div>
+          </details>
+
           <!-- Quản lý ảnh (chỉ khi sửa) -->
           <div v-if="editingEntity" class="img-mgr">
             <strong class="admin-label">Ảnh ({{ (form.images || []).length }}/10)</strong>
@@ -296,6 +338,55 @@ const loadError = ref(false)
 const searching = ref(false)
 const fieldErrors = ref<Record<string, string>>({})
 
+// KBYG — Know Before You Go
+const AMENITY_OPTIONS: Record<string, { icon: string; label: string }> = {
+  wifi: { icon: '📶', label: 'Wi-Fi' },
+  wheelchair: { icon: '♿', label: 'Xe lăn' },
+  cash_only: { icon: '💵', label: 'Chỉ tiền mặt' },
+  pet_friendly: { icon: '🐕', label: 'Thú cưng OK' },
+  air_conditioned: { icon: '❄️', label: 'Máy lạnh' },
+  kid_friendly: { icon: '👶', label: 'Trẻ em OK' },
+  free_entry: { icon: '🆓', label: 'Miễn phí' },
+  guided_tour: { icon: '🎙️', label: 'Có hướng dẫn' },
+  restroom: { icon: '🚻', label: 'Nhà vệ sinh' },
+  photography: { icon: '📸', label: 'Chụp ảnh OK' },
+}
+const kbygTips = ref('')
+const kbygGoldenHours = ref('')
+const kbygPeakDays = ref('')
+const kbygCrowdLevel = ref('')
+const kbygAmenities = ref<string[]>([])
+const kbygChecklist = ref('')
+
+function toggleAmenity(key: string) {
+  const idx = kbygAmenities.value.indexOf(key)
+  if (idx >= 0) kbygAmenities.value.splice(idx, 1)
+  else kbygAmenities.value.push(key)
+}
+
+function initKbyg(attrs?: Record<string, unknown>) {
+  const a = attrs || {}
+  kbygTips.value = Array.isArray(a.kbyg_tips) ? (a.kbyg_tips as string[]).join('\n') : ''
+  kbygGoldenHours.value = (a.golden_hours as string) || ''
+  kbygPeakDays.value = (a.peak_days as string) || ''
+  kbygCrowdLevel.value = (a.crowd_level as string) || ''
+  kbygAmenities.value = Array.isArray(a.amenity_badges) ? [...a.amenity_badges as string[]] : []
+  kbygChecklist.value = Array.isArray(a.checklist) ? (a.checklist as string[]).join('\n') : ''
+}
+
+function mergeKbygIntoAttrs(attrs: Record<string, unknown>): Record<string, unknown> {
+  const result = { ...attrs }
+  const tips = kbygTips.value.split('\n').map(s => s.trim()).filter(Boolean)
+  if (tips.length) result.kbyg_tips = tips; else delete result.kbyg_tips
+  if (kbygGoldenHours.value.trim()) result.golden_hours = kbygGoldenHours.value.trim(); else delete result.golden_hours
+  if (kbygPeakDays.value.trim()) result.peak_days = kbygPeakDays.value.trim(); else delete result.peak_days
+  if (kbygCrowdLevel.value) result.crowd_level = kbygCrowdLevel.value; else delete result.crowd_level
+  if (kbygAmenities.value.length) result.amenity_badges = [...kbygAmenities.value]; else delete result.amenity_badges
+  const checklist = kbygChecklist.value.split('\n').map(s => s.trim()).filter(Boolean)
+  if (checklist.length) result.checklist = checklist; else delete result.checklist
+  return result
+}
+
 const inlineEdit = ref<{ id: string; field: string; value: string }>({ id: '', field: '', value: '' })
 
 function startInline(e: Entity, field: string, value: string) {
@@ -381,6 +472,7 @@ function openCreate() {
   form.value = { id: '', name: '', type: 'experience', placeId: '', summary: '', images: [] }
   newImage.value = ''
   fieldErrors.value = {}
+  initKbyg()
   showModal.value = true
   _focusModal()
 }
@@ -392,6 +484,7 @@ function openEdit(e: Entity) {
   newImage.value = ''
   newRel.value = { to_id: '', type: 'related_to' }
   fieldErrors.value = {}
+  initKbyg((e as any).attributes)
   fetchRels(e.id)
   fetchEntityHistory(e.id)
   showModal.value = true
@@ -403,6 +496,7 @@ function cloneEntity(e: Entity) {
   form.value = { id: '', name: `${e.name} (bản sao)`, type: e.type, placeId: e.placeId || '', summary: e.summary || '', images: [] }
   newImage.value = ''
   fieldErrors.value = {}
+  initKbyg((e as any).attributes)
   showModal.value = true
   _focusModal()
 }
@@ -505,24 +599,26 @@ function validateForm(): boolean {
   return Object.keys(errs).length === 0
 }
 async function saveEntity() {
-  // Field-level errors (additive); keep existing toast guards as fallback
   if (!validateForm()) {
     showToast(Object.values(fieldErrors.value)[0] || 'Vui lòng kiểm tra biểu mẫu', 'error')
     return
   }
   saving.value = true
   try {
+    const body = { ...form.value }
+    const existingAttrs = (editingEntity.value as any)?.attributes || (body.attributes as Record<string, unknown>) || {}
+    body.attributes = mergeKbygIntoAttrs(existingAttrs)
     if (editingEntity.value) {
-      await $fetch(`/admin-api/entities/${form.value.id}`, { method: 'PUT', headers: authHeaders(), body: form.value })
+      await $fetch(`/admin-api/entities/${form.value.id}`, { method: 'PUT', headers: authHeaders(), body })
       showToast('Đã cập nhật entity', 'success')
     } else {
-      await $fetch('/admin-api/entities', { method: 'POST', headers: authHeaders(), body: form.value })
+      await $fetch('/admin-api/entities', { method: 'POST', headers: authHeaders(), body })
       showToast('Đã tạo entity mới', 'success')
     }
     showModal.value = false
     await fetchEntities()
   } catch (e: unknown) {
-    showToast(e.data?.detail || 'Lỗi khi lưu entity', 'error')
+    showToast((e as any)?.data?.detail || 'Lỗi khi lưu entity', 'error')
   }
   saving.value = false
 }
@@ -811,4 +907,16 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 }
 .dot-ok { background: #34C759; }
 .dot-miss { background: #FF3B30; opacity: .45; }
+
+/* ── KBYG fields ── */
+.ent-kbyg-details { margin-top: var(--space-3); border: 1px solid var(--line); border-radius: 8px; }
+.ent-kbyg-summary { cursor: pointer; padding: 10px 14px; font-weight: 600; user-select: none; }
+.ent-kbyg-summary:hover { background: rgba(0,0,0,.03); }
+.ent-kbyg-fields { padding: 0 14px 14px; display: flex; flex-direction: column; gap: var(--space-3); }
+.kbyg-amenity-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; }
+.kbyg-amenity-check { display: flex; align-items: center; gap: 5px; font-size: .82rem; cursor: pointer; padding: 4px 6px; border-radius: 6px; }
+.kbyg-amenity-check:hover { background: rgba(0,0,0,.04); }
+.kbyg-amenity-check input[type="checkbox"] { accent-color: var(--primary); }
+.dark .ent-kbyg-summary:hover { background: rgba(255,255,255,.05); }
+.dark .kbyg-amenity-check:hover { background: rgba(255,255,255,.06); }
 </style>
