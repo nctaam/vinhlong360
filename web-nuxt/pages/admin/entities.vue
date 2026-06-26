@@ -133,6 +133,8 @@
       <div class="modal admin-modal-md">
         <h2>{{ editingEntity ? 'Sửa Entity' : 'Tạo Entity' }}</h2>
         <div class="admin-form-col">
+          <fieldset class="ent-fieldset">
+          <legend class="ent-fieldset-legend">Thông tin cơ bản</legend>
           <div class="ent-field">
             <label class="form-label" for="ent-id">ID (slug)</label>
             <input id="ent-id" v-model="form.id" class="input" :class="{ error: fieldErrors.id }" placeholder="ID (slug)" aria-label="ID (slug)" :disabled="!!editingEntity" @input="clearFieldError('id')" />
@@ -166,25 +168,26 @@
             <div v-else class="ent-summary-preview" v-html="form.summary"></div>
             <button type="button" class="btn btn-ghost btn-sm" @click="previewSummary = !previewSummary">{{ previewSummary ? 'Sửa' : 'Xem trước' }}</button>
           </div>
+          </fieldset>
           <!-- KBYG — Know Before You Go -->
           <details class="ent-kbyg-details">
             <summary class="admin-label ent-kbyg-summary">🎒 Biết trước khi đi (KBYG)</summary>
             <div class="ent-kbyg-fields">
               <div class="ent-field">
-                <label class="form-label">Mẹo du lịch (mỗi dòng = 1 mẹo)</label>
-                <textarea v-model="kbygTips" class="input admin-textarea" rows="3" placeholder="VD: Nên đi buổi sáng sớm&#10;Mang dép thoải mái&#10;Có chỗ đậu xe miễn phí"></textarea>
+                <label class="form-label" for="kbyg-tips">Mẹo du lịch (mỗi dòng = 1 mẹo)</label>
+                <textarea id="kbyg-tips" v-model="kbygTips" class="input admin-textarea" rows="3" placeholder="VD: Nên đi buổi sáng sớm&#10;Mang dép thoải mái&#10;Có chỗ đậu xe miễn phí"></textarea>
               </div>
               <div class="ent-field">
-                <label class="form-label">Giờ vàng</label>
-                <input v-model="kbygGoldenHours" class="input" placeholder="VD: 6-8h sáng hoặc 16-18h chiều" />
+                <label class="form-label" for="kbyg-golden-hours">Giờ vàng</label>
+                <input id="kbyg-golden-hours" v-model="kbygGoldenHours" class="input" placeholder="VD: 6-8h sáng hoặc 16-18h chiều" />
               </div>
               <div class="ent-field">
-                <label class="form-label">Ngày đông</label>
-                <input v-model="kbygPeakDays" class="input" placeholder="VD: Cuối tuần, lễ Tết" />
+                <label class="form-label" for="kbyg-peak-days">Ngày đông</label>
+                <input id="kbyg-peak-days" v-model="kbygPeakDays" class="input" placeholder="VD: Cuối tuần, lễ Tết" />
               </div>
               <div class="ent-field">
-                <label class="form-label">Mức đông</label>
-                <select v-model="kbygCrowdLevel" class="input">
+                <label class="form-label" for="kbyg-crowd-level">Mức đông</label>
+                <select id="kbyg-crowd-level" v-model="kbygCrowdLevel" class="input">
                   <option value="">— Chưa rõ —</option>
                   <option value="Ít người">Ít người</option>
                   <option value="Vừa phải">Vừa phải</option>
@@ -193,8 +196,8 @@
                 </select>
               </div>
               <div class="ent-field">
-                <label class="form-label">Tiện ích</label>
-                <div class="kbyg-amenity-grid">
+                <label class="form-label" id="kbyg-amenities-label">Tiện ích</label>
+                <div class="kbyg-amenity-grid" role="group" aria-labelledby="kbyg-amenities-label">
                   <label v-for="(meta, key) in AMENITY_OPTIONS" :key="key" class="kbyg-amenity-check">
                     <input type="checkbox" :checked="kbygAmenities.includes(key)" @change="toggleAmenity(key)" />
                     <span>{{ meta.icon }} {{ meta.label }}</span>
@@ -202,8 +205,8 @@
                 </div>
               </div>
               <div class="ent-field">
-                <label class="form-label">Checklist chuẩn bị (mỗi dòng = 1 item, để trống = mặc định theo loại)</label>
-                <textarea v-model="kbygChecklist" class="input admin-textarea" rows="2" placeholder="VD: Kem chống nắng&#10;Tiền mặt&#10;Nón"></textarea>
+                <label class="form-label" for="kbyg-checklist">Checklist chuẩn bị (mỗi dòng = 1 item, để trống = mặc định theo loại)</label>
+                <textarea id="kbyg-checklist" v-model="kbygChecklist" class="input admin-textarea" rows="2" placeholder="VD: Kem chống nắng&#10;Tiền mặt&#10;Nón"></textarea>
               </div>
             </div>
           </details>
@@ -288,6 +291,15 @@ const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const { confirmDialog } = useConfirm()
 const { timeAgo } = useTimeAgo()
+
+/** Extract error detail from a caught error (safe for e:unknown from $fetch). */
+function getErrorDetail(e: unknown, fallback: string): string {
+  if (e && typeof e === 'object' && 'data' in e) {
+    const data = (e as { data?: { detail?: string } }).data
+    if (data && typeof data.detail === 'string') return data.detail
+  }
+  return fallback
+}
 
 const types = Object.keys(TYPE_META)
 const search = ref('')
@@ -402,8 +414,8 @@ async function saveInline(e: Entity) {
     await $fetch(`/admin-api/entities/${e.id}`, { method: 'PUT', headers: authHeaders(), body })
     ;(e as Record<string, any>)[field] = value.trim()
     showToast('Đã cập nhật', 'success')
-  } catch (err: any) {
-    showToast(err?.data?.detail || 'Lỗi khi cập nhật', 'error')
+  } catch (err: unknown) {
+    showToast(getErrorDetail(err, 'Lỗi khi cập nhật'), 'error')
   }
   inlineEdit.value.id = ''
 }
@@ -540,7 +552,7 @@ async function addRel() {
     newRel.value.to_id = ''
     await fetchRels(form.value.id)
     showToast('Đã thêm quan hệ', 'success')
-  } catch (e: unknown) { showToast(e?.data?.detail || 'Thêm quan hệ lỗi (id đích tồn tại?)', 'error') }
+  } catch (e: unknown) { showToast(getErrorDetail(e, 'Thêm quan hệ lỗi (id đích tồn tại?)'), 'error') }
 }
 async function removeRel(r: Record<string, unknown>) {
   if (!await confirmDialog(`Xóa quan hệ "${r.type}" → ${r.target_name || r.to_id}?`, { danger: true })) return
@@ -618,7 +630,7 @@ async function saveEntity() {
     showModal.value = false
     await fetchEntities()
   } catch (e: unknown) {
-    showToast((e as any)?.data?.detail || 'Lỗi khi lưu entity', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi lưu entity'), 'error')
   }
   saving.value = false
 }
@@ -634,7 +646,7 @@ async function addImage() {
       method: 'POST', headers: authHeaders(), body: { url } })
     form.value.images = r.images || form.value.images
     newImage.value = ''
-  } catch (e: unknown) { showToast(e?.data?.detail || 'Thêm ảnh lỗi', 'error') }
+  } catch (e: unknown) { showToast(getErrorDetail(e, 'Thêm ảnh lỗi'), 'error') }
 }
 async function removeImage(idx: number) {
   if (!editingEntity.value) return
@@ -658,7 +670,7 @@ async function uploadImageFile(e: Event) {
       method: 'POST', headers: authHeaders(), body: fd })
     form.value.images = (r.images as string[]) || form.value.images
     showToast('Đã tải & tối ưu ảnh', 'success')
-  } catch (err: any) { showToast(err?.data?.detail || 'Tải ảnh lỗi', 'error') }
+  } catch (err: unknown) { showToast(getErrorDetail(err, 'Tải ảnh lỗi'), 'error') }
   uploadingImg.value = false
   input.value = ''
 }
@@ -682,7 +694,7 @@ async function bulkDelete() {
     showToast(`Đã xóa ${r.count}`, 'success')
     selected.value = new Set()
     await fetchEntities()
-  } catch (e: unknown) { showToast(e?.data?.detail || 'Xóa hàng loạt lỗi', 'error') }
+  } catch (e: unknown) { showToast(getErrorDetail(e, 'Xóa hàng loạt lỗi'), 'error') }
   bulkBusy.value = false
 }
 async function deleteEntity(id: string) {
@@ -693,7 +705,7 @@ async function deleteEntity(id: string) {
     showToast('Đã xóa entity', 'success')
     await fetchEntities()
   } catch (e: unknown) {
-    showToast(e.data?.detail || 'Lỗi khi xóa entity', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi xóa entity'), 'error')
   }
   acting.value = null
 }
@@ -816,6 +828,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .admin-form-col { gap: var(--space-4); }
 .ent-field { display: flex; flex-direction: column; gap: var(--space-1); }
 .ent-field .form-error { margin-top: 2px; }
+.ent-fieldset { border: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+.ent-fieldset-legend { font-weight: 600; font-size: .88rem; color: var(--ink); padding: 0; margin-bottom: var(--space-1); }
 
 /* ── Row action buttons: consistent sizing + 44px touch + focus ── */
 .admin-actions { display: flex; gap: var(--space-1); align-items: center; }
