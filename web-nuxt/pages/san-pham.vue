@@ -167,7 +167,7 @@ const inSeasonCount = computed(() => allEntities.value.filter((e: Entity) => inS
 const seasonalHighlights = computed(() => {
   return allEntities.value
     .filter((e: Entity) => inSeason(e, String(currentMonth)))
-    .sort((a: Entity, b: Entity) => relevanceScore(b, String(currentMonth)) - relevanceScore(a, String(currentMonth)))
+    .sort((a: Entity, b: Entity) => (relevanceScore(b, String(currentMonth)) || 0) - (relevanceScore(a, String(currentMonth)) || 0))
     .slice(0, 8)
 })
 
