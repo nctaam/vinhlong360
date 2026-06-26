@@ -266,6 +266,10 @@ useHead({
 .dark .guide-hero { background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%); }
 .dark .guide-note { background: var(--bg-alt); }
 .dark .guide-cta { background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%); }
+.dark .level-1 { border-left-color: #a5d6a7; }
+.dark .level-2 { border-left-color: #64b5f6; }
+.dark .level-3 { border-left-color: #ffb74d; }
+.dark .level-4 { border-left-color: #ffd54f; }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {

@@ -200,7 +200,9 @@ const filtered = computed(() => {
     )
   }
 
-  list = [...list].sort((a: Entity, b: Entity) => (relevanceScore(b, seasonFilter.value) || 0) - (relevanceScore(a, seasonFilter.value) || 0))
+  if (seasonFilter.value !== 'all') {
+    list = [...list].sort((a: Entity, b: Entity) => (relevanceScore(b, seasonFilter.value) || 0) - (relevanceScore(a, seasonFilter.value) || 0))
+  }
   return list
 })
 

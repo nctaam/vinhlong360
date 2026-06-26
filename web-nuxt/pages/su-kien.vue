@@ -408,6 +408,20 @@ const eventListSchema = computed(() => {
   })
 })
 
+useHead({
+  script: [{
+    type: 'application/ld+json',
+    innerHTML: JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
+        { '@type': 'ListItem', position: 2, name: 'Sự kiện' },
+      ],
+    }),
+  }],
+})
+
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/su-kien') }],
   script: eventListSchema.value ? [{ type: 'application/ld+json', innerHTML: eventListSchema.value }] : [],

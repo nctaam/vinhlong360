@@ -19,14 +19,18 @@
 const { count } = useFavorites()
 const countPop = ref(false)
 const prevCount = ref(count.value)
+let popTimer: ReturnType<typeof setTimeout> | null = null
 
 watch(count, (n) => {
   if (n > prevCount.value) {
+    if (popTimer) clearTimeout(popTimer)
     countPop.value = true
-    setTimeout(() => { countPop.value = false }, 400)
+    popTimer = setTimeout(() => { countPop.value = false }, 400)
   }
   prevCount.value = n
 })
+
+onUnmounted(() => { if (popTimer) clearTimeout(popTimer) })
 </script>
 
 <style scoped>

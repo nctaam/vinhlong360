@@ -13,6 +13,7 @@
 <script setup lang="ts">
 const weather = ref<Record<string, any> | null>(null)
 let timer: ReturnType<typeof setInterval> | null = null
+let retryTimer: ReturnType<typeof setTimeout> | null = null
 
 const tempC = computed(() => weather.value?.temp_c ?? weather.value?.temp ?? weather.value?.temperature ?? null)
 const desc = computed(() => (weather.value?.description || weather.value?.condition || '') as string)
@@ -31,7 +32,7 @@ async function fetchWeather(retries = 1) {
     const res = await $fetch<Record<string, any>>('/weather?area=vinh-long')
     if (res && !res.error) weather.value = res
   } catch {
-    if (retries > 0) setTimeout(() => fetchWeather(retries - 1), 5000)
+    if (retries > 0) retryTimer = setTimeout(() => fetchWeather(retries - 1), 5000)
   }
 }
 
@@ -39,7 +40,10 @@ onMounted(() => {
   fetchWeather()
   timer = setInterval(fetchWeather, 30 * 60 * 1000)
 })
-onUnmounted(() => { if (timer) clearInterval(timer) })
+onUnmounted(() => {
+  if (timer) clearInterval(timer)
+  if (retryTimer) clearTimeout(retryTimer)
+})
 </script>
 
 <style scoped>
