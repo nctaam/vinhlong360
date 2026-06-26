@@ -73,7 +73,7 @@
           <th>Tác giả</th>
           <th>Nội dung</th>
           <th>Loại</th>
-          <th>Trạng thái</th>
+          <th>Trạng thái<span class="admin-help" data-tip="Chờ duyệt → Đã duyệt (hiện public) hoặc Từ chối (ẩn). Gắn cờ = user báo cáo." tabindex="0" role="img" aria-label="Giải thích trạng thái">?</span></th>
           <th>Ngày</th>
           <th>Thao tác</th>
         </tr>
@@ -113,7 +113,7 @@
               <div class="mod-reject">
                 <span class="mod-reject-label" aria-hidden="true">&#9888; Lý do:</span>
                 <div class="mod-reason-presets">
-                  <button v-for="r in REJECT_PRESETS" :key="r" type="button" class="mod-reason-chip" :class="{ active: rejectReason === r }" @click="rejectReason = rejectReason === r ? '' : r">{{ r }}</button>
+                  <button v-for="r in REJECT_PRESETS" :key="r" type="button" class="mod-reason-chip" :class="{ active: rejectReason === r }" :title="REJECT_HINTS[r]" @click="rejectReason = rejectReason === r ? '' : r">{{ r }}</button>
                 </div>
                 <input
                   v-model="rejectReason" type="text" class="mod-reason-input"
@@ -218,6 +218,13 @@ const BADGES: Record<string, { label: string; cls: string }> = {
 }
 
 const REJECT_PRESETS = ['Spam', 'Vi phạm quy tắc', 'Nội dung không phù hợp', 'Quảng cáo', 'Trùng lặp'] as const
+const REJECT_HINTS: Record<string, string> = {
+  'Spam': 'Link lặp, nội dung vô nghĩa, bot',
+  'Vi phạm quy tắc': 'Ngôn ngữ thù ghét, quấy rối, bạo lực',
+  'Nội dung không phù hợp': 'Không liên quan du lịch/OCOP/cộng đồng',
+  'Quảng cáo': 'Quảng cáo trá hình, tiếp thị lộ liễu',
+  'Trùng lặp': 'Đăng lại bài đã có, copy-paste',
+}
 
 const queue = ref<any[]>([])
 const modStats = ref<Record<string, number>>({})

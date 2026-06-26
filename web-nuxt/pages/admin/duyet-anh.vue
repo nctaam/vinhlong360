@@ -31,6 +31,7 @@
       <div v-if="queue.length" class="img-legend" aria-hidden="true">
         <span class="img-legend-item"><span class="img-legend-dot img-legend-ok"></span> Giấy phép OK (CC0 / CC-BY / công cộng)</span>
         <span class="img-legend-item"><span class="img-legend-dot img-legend-warn"></span> Không rõ — kiểm tra trước khi duyệt</span>
+        <span class="admin-help" data-tip="% = độ khớp tên entity với tên ảnh Wikipedia. Dưới 60% thường sai — luôn xem ảnh gốc trước khi duyệt." tabindex="0" role="img" aria-label="Giải thích độ khớp">?</span>
       </div>
       <!-- Card grid: visual review needs the thumbnail front and centre -->
       <div v-if="queue.length" class="img-grid">
