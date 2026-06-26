@@ -692,6 +692,7 @@ def build_itinerary_jsonld(itinerary: dict[str, Any], by_id: dict[str, dict[str,
                 for i, st in enumerate(sub_trips)
             ],
         }
+    ld["isPartOf"] = {"@id": f"{SITE}/#website"}
     return {k: v for k, v in ld.items() if v not in (None, "", [], {})}
 
 

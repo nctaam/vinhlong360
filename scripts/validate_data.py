@@ -762,6 +762,17 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         examples = ", ".join(list(duplicate_names)[:5])
         issues.append(Issue("warning", "duplicate_names", f"{len(duplicate_names)} duplicate display names: {examples}"))
 
+    name_type_counts = Counter(
+        ((e.get("name") or "").strip(), e.get("type"))
+        for e in entities
+        if isinstance(e, dict) and e.get("name") and e.get("type")
+    )
+    duplicate_name_type = {k: c for k, c in name_type_counts.items() if c > 1}
+    if duplicate_name_type:
+        examples = ", ".join(f"{n}({t})" for (n, t), _ in list(duplicate_name_type.items())[:5])
+        issues.append(Issue("warning", "duplicate_name_type", f"{len(duplicate_name_type)} entities share same name+type: {examples}"))
+    stats_dup_name_type = len(duplicate_name_type)
+
     data_js = data_path.with_name("data.js")
     data_js_status = "missing"
     if data_js.exists():
@@ -827,6 +838,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         "invalid_website_urls": invalid_website_urls,
         "invalid_entity_ids": invalid_entity_ids,
         "produced_in_source_type_errors": produced_in_source_type_errors,
+        "duplicate_name_type": stats_dup_name_type,
         "unknown_rel_types": len(unknown_rel_types),
         "data_js_status": data_js_status,
     }

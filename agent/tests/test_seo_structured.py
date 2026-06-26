@@ -1599,3 +1599,82 @@ def test_sitemap_deduplicates_entity_urls(monkeypatch):
     resp = seo.sitemap()
     xml = resp.body.decode()
     assert xml.count("/dia-diem/dup") == 1
+
+
+# ── Itinerary isPartOf graph linking ─────────────────────────────────
+
+
+def test_itinerary_jsonld_has_is_part_of():
+    it = {"id": "it-graph", "title": "Graph test", "stops": []}
+    ld = seo.build_itinerary_jsonld(it, {})
+    assert ld["isPartOf"]["@id"] == f"{seo.SITE}/#website"
+
+
+# ── _by_id with non-dict entities ────────────────────────────────────
+
+
+def test_by_id_skips_non_dict_entities():
+    data = {
+        "entities": [{"id": "a", "name": "A"}, "not-a-dict", None, 42],
+        "relationships": [],
+        "itineraries": [],
+    }
+    import seo as _seo_mod
+    _seo_mod._by_id_cache = None
+    _seo_mod._by_id_cache_key = None
+    result = _seo_mod._by_id(data)
+    assert "a" in result
+    assert len(result) == 1
+
+
+def test_by_id_skips_entities_without_id():
+    data = {
+        "entities": [{"name": "No ID"}, {"id": "b", "name": "B"}],
+        "relationships": [],
+        "itineraries": [],
+    }
+    import seo as _seo_mod
+    _seo_mod._by_id_cache = None
+    _seo_mod._by_id_cache_key = None
+    result = _seo_mod._by_id(data)
+    assert "b" in result
+    assert len(result) == 1
+
+
+# ── Parameterized parse_coordinates ─────────────────────────────────
+
+import pytest
+
+
+@pytest.mark.parametrize("input_val,expected", [
+    ([10.25, 106.0], (10.25, 106.0)),
+    ({"lat": 10.25, "lng": 106.0}, (10.25, 106.0)),
+    ({"latitude": 10.25, "longitude": 106.0}, (10.25, 106.0)),
+    ("[10.25, 106.0]", (10.25, 106.0)),
+    ([106.0, 10.25], (10.25, 106.0)),
+    ([0, 0], (0, 0)),
+    ([-33.8, 151.2], (-33.8, 151.2)),
+    (None, None),
+    ("not json", None),
+    ([1, 2, 3], None),
+    (42, None),
+    ({"lat": "abc"}, None),
+])
+def test_parse_coordinates_parameterized(input_val, expected):
+    assert seo.parse_coordinates(input_val) == expected
+
+
+# ── Parameterized _safe_date ────────────────────────────────────────
+
+
+@pytest.mark.parametrize("input_val,fallback,expected", [
+    ("2026-06-15", None, "2026-06-15"),
+    ("  2026-06-15  ", None, "2026-06-15"),
+    ("not-a-date", "fb", "fb"),
+    (None, "fb", "fb"),
+    (12345, None, None),
+    ("2026-06", None, None),
+    ("06-15-2026", None, None),
+])
+def test_safe_date_parameterized(input_val, fallback, expected):
+    assert seo._safe_date(input_val, fallback) == expected

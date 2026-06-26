@@ -1653,3 +1653,78 @@ def test_print_report_includes_new_keys(tmp_path: Path, capsys: "pytest.CaptureF
     assert "invalid_website_urls" in out
     assert "orphan_entities" in out
     assert "Confidence distribution" in out
+
+
+# ── Duplicate name+type (DI-026) ─────────────────────────────────────
+
+
+def test_validate_flags_duplicate_name_type(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a1", "type": "attraction", "name": "Vườn trái cây", "summary": "A"},
+            {"id": "a2", "type": "attraction", "name": "Vườn trái cây", "summary": "B"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["duplicate_name_type"] == 1
+    assert "duplicate_name_type" in {issue.code for issue in issues}
+
+
+def test_validate_same_name_different_type_ok(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a1", "type": "attraction", "name": "Cam sành", "summary": "A"},
+            {"id": "a2", "type": "product", "name": "Cam sành", "summary": "B"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["duplicate_name_type"] == 0
+
+
+# ── Parameterized entity_quality_score ───────────────────────────────
+
+
+import pytest
+
+
+@pytest.mark.parametrize("entity,max_score", [
+    ({"id": "a", "type": "attraction", "name": "A"}, 30),
+    ({"id": "b", "type": "place", "name": "B", "summary": "Good summary for SEO",
+      "coordinates": [10.25, 106.0], "source": [{"url": "https://x.com"}],
+      "images": ["https://x.com/i.jpg"]}, 100),
+    ({"id": "c", "type": "restaurant", "name": "C", "summary": "Không có đủ thông tin"}, 60),
+])
+def test_quality_score_parameterized(entity, max_score) -> None:
+    score = validate_data.entity_quality_score(entity)
+    assert score <= max_score
+
+
+@pytest.mark.parametrize("summary,expected_penalty", [
+    ("", True),
+    ("Quá ngắn", True),
+    ("x" * 501, True),
+    ("Mô tả đủ dài cho SEO và nội dung hữu ích cho người đọc.", False),
+])
+def test_quality_score_summary_penalties(summary, expected_penalty) -> None:
+    base = {
+        "id": "q", "type": "attraction", "name": "Q",
+        "coordinates": [10.25, 106.0], "area": "vinh-long", "placeId": "xa-1",
+        "source": [{"url": "https://x.com"}],
+        "images": ["https://x.com/i.jpg"],
+        "attributes": {"admission": "miễn phí"},
+    }
+    if summary:
+        base["summary"] = summary
+    score = validate_data.entity_quality_score(base)
+    if expected_penalty:
+        assert score < 100
+    else:
+        assert score == 100
