@@ -1389,3 +1389,71 @@ def test_sitemap_index_has_lastmod():
     resp = seo.sitemap_index()
     xml = resp.body.decode()
     assert "<lastmod>" in xml
+
+
+# ── Itinerary stop type + @id enrichment ────────────────────────────────
+
+
+def test_itinerary_stop_uses_entity_schema_type():
+    """Stop entity type should map to correct schema.org type."""
+    it = {
+        "id": "type-it",
+        "title": "Type test",
+        "stops": [{"entityId": "r1"}, {"entityId": "a1"}],
+    }
+    by_id = {
+        "r1": {"id": "r1", "name": "Nhà hàng", "type": "restaurant"},
+        "a1": {"id": "a1", "name": "Điểm tham quan", "type": "attraction"},
+    }
+    ld = seo.build_itinerary_jsonld(it, by_id)
+    items = ld["itinerary"]["itemListElement"]
+    assert items[0]["item"]["@type"] == "Restaurant"
+    assert items[1]["item"]["@type"] == "TouristAttraction"
+
+
+def test_itinerary_stop_has_id_link():
+    it = {
+        "id": "id-it",
+        "title": "ID test",
+        "stops": [{"entityId": "e1"}],
+    }
+    by_id = {"e1": {"id": "e1", "name": "Test", "type": "attraction"}}
+    ld = seo.build_itinerary_jsonld(it, by_id)
+    item = ld["itinerary"]["itemListElement"][0]["item"]
+    assert "@id" in item
+    assert item["@id"] == seo._entity_url("e1")
+
+
+def test_itinerary_stop_without_entity_ref_no_id():
+    it = {
+        "id": "no-ref",
+        "title": "Free text",
+        "stops": [{"name": "Random stop"}],
+    }
+    ld = seo.build_itinerary_jsonld(it, {})
+    item = ld["itinerary"]["itemListElement"][0]["item"]
+    assert "@id" not in item
+    assert item["@type"] == "TouristAttraction"
+
+
+# ── _load with injected data ─────────────────────────────────────────────
+
+
+def test_load_with_injected_data(monkeypatch):
+    """_load with _data already set and _data_mtime_ns=None returns injected data."""
+    test_data = {"entities": [{"id": "test"}], "relationships": [], "itineraries": []}
+    monkeypatch.setattr(seo, "_data", test_data)
+    monkeypatch.setattr(seo, "_data_mtime_ns", None)
+    result = seo._load()
+    assert result is test_data
+
+
+def test_by_id_caches_correctly(monkeypatch):
+    """_by_id returns a stable cache for the same data object."""
+    data = {"entities": [{"id": "a", "name": "A"}], "relationships": [], "itineraries": []}
+    monkeypatch.setattr(seo, "_by_id_cache", None)
+    monkeypatch.setattr(seo, "_by_id_cache_key", None)
+    result1 = seo._by_id(data)
+    result2 = seo._by_id(data)
+    assert result1 is result2
+    assert "a" in result1

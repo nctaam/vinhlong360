@@ -834,6 +834,35 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     # DI-018: graph connectivity
     stats["graph_connectivity"] = graph_connectivity(entities, relationships)
 
+    # DI-021: orphan non-place entities (no relationship, no itinerary stop reference)
+    referenced_ids: set[str] = set()
+    for rel in relationships:
+        if not isinstance(rel, dict):
+            continue
+        s = rel_source(rel)
+        d = rel_target(rel)
+        if s:
+            referenced_ids.add(str(s))
+        if d:
+            referenced_ids.add(str(d))
+    for it in itineraries:
+        if not isinstance(it, dict):
+            continue
+        for stop in (it.get("stops") or []):
+            if isinstance(stop, dict):
+                ref = stop.get("entityId") or stop.get("id")
+                if ref:
+                    referenced_ids.add(str(ref))
+    orphan_count = sum(
+        1 for e in entities
+        if isinstance(e, dict) and e.get("type") != "place" and e.get("id")
+        and str(e["id"]) not in referenced_ids
+    )
+    stats["orphan_entities"] = orphan_count
+    if orphan_count:
+        issues.append(Issue("warning", "orphan_entities",
+            f"{orphan_count} non-place entities have no relationships or itinerary references"))
+
     return issues, stats
 
 

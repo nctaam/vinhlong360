@@ -1320,3 +1320,73 @@ def test_seo_required_covers_main_types() -> None:
     assert "event" in validate_data.SEO_REQUIRED
     assert "accommodation" in validate_data.SEO_REQUIRED
     assert "place" not in validate_data.SEO_REQUIRED
+
+
+# ── Orphan entities (DI-021) ───────────────────────────────────────────
+
+
+def test_validate_flags_orphan_entities(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "connected", "type": "attraction", "name": "C", "summary": "C", "area": "vinh-long",
+             "coordinates": [10.25, 106.0]},
+            {"id": "orphan", "type": "dish", "name": "O", "summary": "O", "area": "vinh-long",
+             "coordinates": [10.26, 106.01]},
+        ],
+        "relationships": [{"from": "connected", "to": "connected", "type": "near"}],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["orphan_entities"] >= 1
+    assert "orphan_entities" in {issue.code for issue in issues}
+
+
+def test_validate_no_orphans_when_all_connected(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long",
+             "coordinates": [10.25, 106.0]},
+            {"id": "b", "type": "dish", "name": "B", "summary": "B", "area": "vinh-long",
+             "coordinates": [10.26, 106.01]},
+        ],
+        "relationships": [{"from": "a", "to": "b", "type": "near"}],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["orphan_entities"] == 0
+
+
+def test_validate_itinerary_stop_counts_as_reference(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "stop-ref", "type": "attraction", "name": "S", "summary": "S", "area": "vinh-long",
+             "coordinates": [10.25, 106.0]},
+        ],
+        "relationships": [],
+        "itineraries": [
+            {"id": "it-1", "title": "Trip", "stops": [{"entityId": "stop-ref"}]},
+        ],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["orphan_entities"] == 0
+
+
+def test_validate_places_excluded_from_orphan_count(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "xa-1", "type": "place", "name": "Xã 1", "summary": "P", "area": "vinh-long",
+             "coordinates": [10.25, 106.0]},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["orphan_entities"] == 0

@@ -660,9 +660,11 @@ def build_itinerary_jsonld(itinerary: dict[str, Any], by_id: dict[str, dict[str,
         ref = stop.get("entityId") or stop.get("id")
         stop_entity = by_id.get(str(ref)) if ref else None
         stop_name = (stop_entity.get("name") if stop_entity else None) or stop.get("name") or str(ref or f"Stop {idx + 1}")
-        st: dict[str, Any] = {"@type": "TouristAttraction", "name": stop_name}
+        st_type = TYPE_SCHEMA.get(str(stop_entity.get("type")), "TouristAttraction") if stop_entity else "TouristAttraction"
+        st: dict[str, Any] = {"@type": st_type, "name": stop_name}
         if stop_entity and stop_entity.get("id"):
             st["url"] = _entity_url(str(stop_entity["id"]))
+            st["@id"] = _entity_url(str(stop_entity["id"]))
         if stop.get("time"):
             st["description"] = stop["time"]
         sub_trips.append(st)
