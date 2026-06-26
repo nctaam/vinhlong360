@@ -20,7 +20,7 @@ def A(e):
     a = e.get("attributes")
     if isinstance(a, str):
         try: a = json.loads(a)
-        except: a = {}
+        except (ValueError, json.JSONDecodeError): a = {}
     return a if isinstance(a, dict) else None  # None = không có/không phải dict → bỏ qua
 
 def norm(s):

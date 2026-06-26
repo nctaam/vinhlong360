@@ -24,10 +24,10 @@ logger = logging.getLogger(__name__)
 
 # ── Try importing tokenizer from vector_search ──
 try:
-    from agent.vector_search import _tokenize, _normalize_vietnamese
+    from agent.vector_search import tokenize as _tokenize, normalize_vietnamese as _normalize_vietnamese
 except ImportError:
     try:
-        from vector_search import _tokenize, _normalize_vietnamese
+        from vector_search import tokenize as _tokenize, normalize_vietnamese as _normalize_vietnamese
     except ImportError:
         logger.info("vector_search not available — using simple tokenizer fallback")
 

@@ -41,10 +41,10 @@ CONTEXTUAL_FILE = DATA_DIR / "contextual_texts.json"
 # ── Reuse Vietnamese tokenizer from vector_search ──
 
 try:
-    from vector_search import _tokenize, _normalize_vietnamese, STOP_WORDS
+    from vector_search import tokenize as _tokenize, normalize_vietnamese as _normalize_vietnamese, STOP_WORDS
 except ImportError:
     try:
-        from agent.vector_search import _tokenize, _normalize_vietnamese, STOP_WORDS
+        from agent.vector_search import tokenize as _tokenize, normalize_vietnamese as _normalize_vietnamese, STOP_WORDS
     except ImportError:
         # Inline fallback so module still works standalone
         STOP_WORDS = {
