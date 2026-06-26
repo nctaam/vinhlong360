@@ -1,5 +1,5 @@
 # Session 10: Hạ tầng Backend
-<!-- Phạm vi: Database core (database.py), cache, storage, config, metrics, tracing, feature flags, scheduler, autonomous budget, data pipeline (freshness/checkpoints/export), legacy import/crawl modules -->
+<!-- Phạm vi: Database core, cache, storage, config, scheduler, self-evolve/eval chain, knowledge versioning, feature modules (itinerary_gen, saved, visits, plans, analytics, site_settings, cost_tracker, ab_testing), geocode, legacy import/crawl -->
 
 > Paste toàn bộ nội dung này làm message đầu tiên.
 
@@ -22,12 +22,42 @@ Worktree `C:/Code/vinhlong360/vl360-backend-infra`, nhánh `dev/backend-infra`. 
 - `agent/scheduler.py`, `agent/autonomous_budget.py`
 - `agent/auto_learn.py`, `agent/learn_loop.py`
 
+**Self-evolve/eval chain (knowledge cải tiến tự động):**
+- `agent/self_eval.py` — Fitness evaluation
+- `agent/self_evolve.py` — Safety harness cho KB modification
+- `agent/self_optimizer.py` — Prompt/parameter tuning
+- `agent/eval_framework.py` — Benchmark evaluation
+- `agent/retrieval_eval.py` — Retrieval fitness scoring
+- `agent/kb_context.py` — Knowledge base context
+- `agent/kb_curation.py` — KB curation
+- `agent/kb_versioning.py` — KB versioning
+- `agent/vector_search.py` — Vector search index
+
+**Feature modules (server.py import, không đổi logic):**
+- `agent/itinerary_gen.py` — Tạo lịch trình AI
+- `agent/saved.py` — Saved items
+- `agent/visits.py` — Visit tracking
+- `agent/plans.py` — Plans module
+- `agent/cost_tracker.py` — Cost tracking
+- `agent/analytics.py` — Analytics
+- `agent/site_settings.py` — Site settings backend
+- `agent/seed_site_settings.py` — Site settings defaults
+- `agent/image_suggestions.py` — Image suggestions
+- `agent/gpt55_quality_burst.py` — Quality burst
+- `agent/ab_testing.py` — A/B testing
+
+**Geocode/discovery (scheduler tasks):**
+- `agent/geocode.py` — Geocoding
+- `agent/discover_province.py` — Province discovery
+- `agent/relationship_discovery.py` — Relationship discovery
+
 **Data pipeline:**
 - `agent/data_quality.py`, `agent/export_data.py`
 - `agent/freshness.py`, `agent/checkpoints.py`
 
-**Import/crawl (legacy, read-mostly):**
+**Import/crawl (legacy) + dead code:**
 - `agent/crawler.py`, `agent/import_*.py`, `agent/merge_*.py`
+- Dead modules (đánh deprecation, KHÔNG xoá): `learn_now.py`, `train.py`, `run_eval.py`, `seed_demos.py`, `_check_data.py`, `burn_gpt55.py`, `bot_gateway.py`, `cleanup_noise.py`, `enrich_data.py`, `geocode_pass.py`, `mcp_server.py`
 
 **Tests:**
 - `agent/tests/test_database.py`, `agent/tests/test_knowledge.py` (thêm test mới)
