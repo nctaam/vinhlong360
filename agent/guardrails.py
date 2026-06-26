@@ -515,9 +515,11 @@ class SessionBudgetManager:
     def _save_persisted(self):
         """Luu sessions ra file."""
         try:
-            with open(self._persistence_file, "w", encoding="utf-8") as f:
+            tmp = Path(str(self._persistence_file) + ".tmp")
+            with open(tmp, "w", encoding="utf-8") as f:
                 json.dump({"sessions": self._sessions, "updated": time.time()},
                           f, ensure_ascii=False, indent=2)
+            tmp.replace(self._persistence_file)
         except OSError as e:
             logger.warning("Failed to save budget data: %s", e)
 

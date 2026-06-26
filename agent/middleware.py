@@ -66,11 +66,11 @@ class StructuredLogger:
 
         # Console output
         if level == "error":
-            self._py_logger.error(f"{message} | {json.dumps(extra, ensure_ascii=False)}")
+            self._py_logger.error("%s | %s", message, json.dumps(extra, ensure_ascii=False))
         elif level == "warn":
-            self._py_logger.warning(f"{message} | {json.dumps(extra, ensure_ascii=False)}")
+            self._py_logger.warning("%s | %s", message, json.dumps(extra, ensure_ascii=False))
         else:
-            self._py_logger.info(f"{message}")
+            self._py_logger.info("%s", message)
 
     def info(self, msg: str, **kw):
         self.log("info", msg, **kw)
@@ -299,7 +299,7 @@ class ErrorTracker:
             cutoff = time.time() - self.window
             self._errors = [e for e in self._errors if e["ts"] > cutoff]
 
-        logger.error(f"Endpoint error: {endpoint}", error=error, details=details[:200])
+        logger.error("Endpoint error: " + endpoint, error=error, details=details[:200])
 
     def is_healthy(self) -> bool:
         """Check if error rate is acceptable."""

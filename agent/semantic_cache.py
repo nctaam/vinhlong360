@@ -224,10 +224,12 @@ class MultiTierCache:
 
     def _save_l2(self):
         try:
-            ENTRIES_FILE.write_text(
+            tmp = ENTRIES_FILE.with_suffix(".tmp")
+            tmp.write_text(
                 json.dumps(dict(self._l2), ensure_ascii=False),
                 encoding="utf-8",
             )
+            tmp.replace(ENTRIES_FILE)
         except Exception as exc:
             logger.warning("Failed to save L2 cache: %s", exc)
 

@@ -16,12 +16,15 @@ Tham khảo: Reflexion đạt 91% pass@1 trên HumanEval (vs 80% GPT-4).
 """
 
 import json
+import logging
 import os
 import re
 import time
 from datetime import datetime
 from pathlib import Path
 from threading import Lock
+
+logger = logging.getLogger(__name__)
 
 from dotenv import load_dotenv
 
@@ -59,12 +62,14 @@ class ReflexionEngine:
 
     def _save(self):
         try:
-            self._reflections_file.write_text(
+            tmp = self._reflections_file.with_suffix(".tmp")
+            tmp.write_text(
                 json.dumps(self._reflections[-500:], ensure_ascii=False, indent=2),
                 encoding="utf-8"
             )
+            tmp.replace(self._reflections_file)
         except Exception:
-            pass
+            logger.debug("Failed to save reflections")
 
     # ── Evaluation ──
 

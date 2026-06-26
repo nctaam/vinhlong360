@@ -332,7 +332,9 @@ class ColdMemory:
             data = {uid: p.to_dict() for uid, p in self._profiles.items()}
             plaintext = json.dumps(data, ensure_ascii=False, indent=2)
             encrypted = _encrypt(plaintext)
-            self._profiles_file.write_text(encrypted, encoding="utf-8")
+            tmp = self._profiles_file.with_suffix(".tmp")
+            tmp.write_text(encrypted, encoding="utf-8")
+            tmp.replace(self._profiles_file)
         except Exception as e:
             logger.error("Failed to save profiles: %s", e)
 
@@ -447,12 +449,14 @@ class SkillDocumentStore:
 
     def _save(self):
         try:
-            self._skills_file.write_text(
+            tmp = self._skills_file.with_suffix(".tmp")
+            tmp.write_text(
                 json.dumps(self._skills, ensure_ascii=False, indent=2),
                 encoding="utf-8"
             )
+            tmp.replace(self._skills_file)
         except Exception:
-            pass
+            logger.debug("Failed to save skills file")
 
     def add_skill(self, query_pattern: str, tool_sequence: list[str],
                   success_strategy: str, category: str = "general"):

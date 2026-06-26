@@ -154,10 +154,12 @@ class TFIDFStore:
                 "vectors": self._vectors,
                 "texts": self._texts,
             }
-            EMBEDDINGS_FILE.write_text(
+            tmp = EMBEDDINGS_FILE.with_suffix(".tmp")
+            tmp.write_text(
                 json.dumps(data, ensure_ascii=False),
                 encoding="utf-8"
             )
+            tmp.replace(EMBEDDINGS_FILE)
         except Exception:
             logger.error("Failed to save embeddings to %s", EMBEDDINGS_FILE)
 

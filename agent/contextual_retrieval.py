@@ -117,10 +117,12 @@ class ContextualRetrieval:
                 "count": len(self._cache),
                 "texts": self._cache,
             }
-            CONTEXTUAL_FILE.write_text(
+            tmp = CONTEXTUAL_FILE.with_suffix(".tmp")
+            tmp.write_text(
                 json.dumps(data, ensure_ascii=False, indent=2),
                 encoding="utf-8",
             )
+            tmp.replace(CONTEXTUAL_FILE)
         except Exception as exc:
             logger.warning("contextual cache save failed: %s", exc)
 
