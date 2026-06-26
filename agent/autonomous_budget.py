@@ -10,10 +10,13 @@ Env:
   AUTONOMOUS_AGENT_MAX_CALLS_PER_DAY  — cap số lần gọi LLM/ngày (mặc định 20).
 """
 import json
+import logging
 import os
 import threading
 from datetime import datetime, timezone
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 _DATA = Path(__file__).resolve().parent / "data" / "autonomous_budget.json"
 _lock = threading.Lock()
@@ -37,7 +40,10 @@ def enabled() -> bool:
 def _load() -> dict:
     try:
         return json.loads(_DATA.read_text(encoding="utf-8"))
-    except Exception:
+    except FileNotFoundError:
+        return {}
+    except Exception as e:
+        logger.warning("Budget file corrupt or unreadable (%s), counter reset to 0", e)
         return {}
 
 
@@ -59,8 +65,8 @@ def try_consume(n: int = 1) -> bool:
             tmp = _DATA.with_suffix(".tmp")
             tmp.write_text(json.dumps({"date": _today(), "count": count + n}), encoding="utf-8")
             tmp.replace(_DATA)
-        except Exception:
-            pass  # ghi log thất bại không nên chặn (nhưng cap vẫn tính trong RAM phiên này)
+        except Exception as e:
+            logger.warning("Budget file write failed (%s) — cap enforced in RAM only this session", e)
         return True
 
 

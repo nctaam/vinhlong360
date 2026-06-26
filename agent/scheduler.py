@@ -276,8 +276,8 @@ def task_admin_digest():
         n = sum(1 for ln in rf.read_text(encoding="utf-8").splitlines() if ln.strip()) if rf.exists() else 0
         if n:
             parts.append(f"• ⚠️ Báo sai: {n} (xem /baosai)")
-    except Exception:
-        pass
+    except Exception as e:
+        _sched_logger.warning(f"digest reports read error: {e}")
     # Kiểm duyệt chờ (Postgres-only; bỏ qua nếu lỗi)
     try:
         from database import db
@@ -286,8 +286,8 @@ def task_admin_digest():
             row = db._fetchone(conn, f"SELECT COUNT(*) AS c FROM posts WHERE status = {ph}", ("pending",))
             if row and row["c"]:
                 parts.append(f"• 🧐 Chờ duyệt: {row['c']}")
-    except Exception:
-        pass
+    except Exception as e:
+        _sched_logger.debug(f"digest moderation check skipped: {e}")
 
     # Cảnh báo ngân sách: nếu agent tự động bật, báo mức dùng LLM/cap (free, không gọi LLM).
     try:
@@ -296,8 +296,8 @@ def task_admin_digest():
             st = ab.status()
             warn = " ⚠️ GẦN CAP!" if st["remaining_today"] <= max(1, st["cap_per_day"] // 5) else ""
             parts.append(f"• 💰 Agent LLM: {st['used_today']}/{st['cap_per_day']} hôm nay{warn}")
-    except Exception:
-        pass
+    except Exception as e:
+        _sched_logger.warning(f"digest budget status error: {e}")
 
     if not parts:
         return
@@ -347,22 +347,22 @@ def task_autonomous_agent():
         import knowledge
         s = knowledge.stats()
         ctx.append(f"- Nội dung: {s.get('total_content', 0)}, lịch trình: {s.get('itineraries', 0)}")
-    except Exception:
-        pass
+    except Exception as e:
+        _sched_logger.debug(f"autonomous-agent context: knowledge stats unavailable: {e}")
     try:
         from database import db
         ph = db._ph
         with db._conn() as conn:
             lc = db._fetchone(conn, f"SELECT COUNT(*) AS c FROM entities WHERE type != {ph} AND confidence < 0.7", ("place",))
             ctx.append(f"- Cần xem lại (confidence < 0.7): {lc['c'] if lc else 0}")
-    except Exception:
-        pass
+    except Exception as e:
+        _sched_logger.debug(f"autonomous-agent context: low-confidence count unavailable: {e}")
     try:
         rf = AGENT_DIR / "data" / "reports.jsonl"
         n = sum(1 for ln in rf.read_text(encoding="utf-8").splitlines() if ln.strip()) if rf.exists() else 0
         ctx.append(f"- Báo cáo sai thông tin: {n}")
-    except Exception:
-        pass
+    except Exception as e:
+        _sched_logger.debug(f"autonomous-agent context: reports read error: {e}")
     raw = "\n".join(ctx) or "(không có dữ liệu)"
 
     try:
@@ -443,8 +443,8 @@ def task_optimizer_check():
                         f"Optimizer rolled back variant {active['id']} "
                         f"(avg_score {current:.2f} < baseline {baseline:.2f})"
                     )
-        except Exception:
-            pass
+        except Exception as e:
+            _sched_logger.warning(f"Optimizer rollback check failed: {e}")
 
         variant = prompt_optimizer.propose_variant(stats)
         if not variant:
@@ -465,8 +465,8 @@ def task_optimizer_check():
             import prompt_compiler
             res = prompt_compiler.compile()
             _sched_logger.info(f"Few-shot demos compiled: {res}")
-        except Exception:
-            pass
+        except Exception as e:
+            _sched_logger.debug(f"Prompt compiler unavailable: {e}")
     except Exception as e:
         _sched_logger.error(f"Optimizer error: {e}")
 
@@ -607,7 +607,8 @@ def _autonomous_agent_status() -> dict:
     try:
         import autonomous_budget as ab
         return ab.status()
-    except Exception:
+    except Exception as e:
+        _sched_logger.debug(f"autonomous_budget import failed: {e}")
         return {"enabled": False}
 
 
