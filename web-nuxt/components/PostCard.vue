@@ -1,7 +1,7 @@
 <template>
   <article class="thread-post" :class="{ 'has-replies': hasReplies }">
     <div class="thread-left">
-      <NuxtLink v-if="post.user_id" :to="`/nguoi-dung/${post.user_id}`" class="thread-avatar-link">
+      <NuxtLink v-if="post.user_id" :to="`/nguoi-dung/${post.username || post.user_id}`" class="thread-avatar-link">
         <span v-if="post.avatar" class="avatar thread-avatar">
           <img :src="post.avatar" :alt="post.display_name" loading="lazy" decoding="async" width="40" height="40" @error="(e) => ((e.target as HTMLImageElement).style.display = 'none')" />
         </span>
@@ -13,7 +13,7 @@
 
     <div class="thread-right">
       <div class="thread-head">
-        <NuxtLink v-if="post.user_id" :to="`/nguoi-dung/${post.user_id}`" class="thread-author">
+        <NuxtLink v-if="post.user_id" :to="`/nguoi-dung/${post.username || post.user_id}`" class="thread-author">
           {{ post.display_name || post.phone || 'Người dùng' }}
         </NuxtLink>
         <span v-else class="thread-author">{{ post.display_name || 'Người dùng' }}</span>
@@ -22,7 +22,7 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
         </button>
         <Transition name="menu-pop">
-          <div v-if="showMenu" class="thread-menu" role="menu" aria-label="Tùy chọn bài viết" @keydown.escape="showMenu = false">
+          <div v-if="showMenu" class="thread-menu" role="menu" aria-label="Tùy chọn bài viết" @keydown="onPostMenuKey">
             <button v-if="isOwner" type="button" role="menuitem" @click="$emit('edit', post.id); showMenu = false">Sửa bài</button>
             <button v-if="isOwner" type="button" role="menuitem" class="menu-danger" @click="confirmDelete">Xoá bài</button>
             <button v-if="!isOwner" type="button" role="menuitem" @click="$emit('report', post.id); showMenu = false">Báo cáo</button>
@@ -51,8 +51,11 @@
       </div>
 
       <NuxtLink v-if="post.repost" :to="`/bai-viet/${post.repost.id}`" class="thread-repost-embed">
-        <span class="tre-head">🔁 <strong>{{ post.repost.author || 'Người dùng' }}</strong></span>
-        <span class="tre-content">{{ post.repost.content }}</span>
+        <template v-if="post.repost.content">
+          <span class="tre-head">🔁 <strong>{{ post.repost.author || 'Người dùng' }}</strong></span>
+          <span class="tre-content">{{ post.repost.content }}</span>
+        </template>
+        <span v-else class="tre-deleted">🔁 Bài viết gốc đã bị xoá</span>
       </NuxtLink>
 
       <div v-if="post.images?.length" class="thread-images" :class="imgLayoutClass">
@@ -62,8 +65,8 @@
           class="thread-img-wrap"
           @click="openLightbox(i)"
         >
-          <NuxtImg v-if="isRemoteUrl(img)" :src="img" :alt="`Ảnh ${i + 1}`" loading="lazy" decoding="async" width="400" height="300" sizes="sm:100vw md:50vw lg:400px" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
-          <img v-else :src="img" :alt="`Ảnh ${i + 1}`" loading="lazy" decoding="async" width="400" height="300" @error="(e) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
+          <NuxtImg v-if="isRemoteUrl(img)" :src="img" :alt="`${post.display_name || 'Bài viết'} — ảnh ${i + 1}`" loading="lazy" decoding="async" width="400" height="300" sizes="sm:100vw md:50vw lg:400px" @error="onImgError" />
+          <img v-else :src="img" :alt="`${post.display_name || 'Bài viết'} — ảnh ${i + 1}`" loading="lazy" decoding="async" width="400" height="300" @error="onImgError" />
           <span v-if="i === 3 && extraCount > 0" class="thread-img-more">+{{ extraCount }}</span>
         </button>
       </div>
@@ -82,7 +85,7 @@
           <button type="button" class="thread-act" @click="repostMenu = !repostMenu" :aria-expanded="repostMenu" aria-haspopup="true" aria-label="Đăng lại hoặc trích dẫn">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
           </button>
-          <div v-if="repostMenu" class="thread-repost-menu" role="menu" aria-label="Đăng lại hoặc trích dẫn" @keydown.escape="repostMenu = false">
+          <div v-if="repostMenu" class="thread-repost-menu" role="menu" aria-label="Đăng lại hoặc trích dẫn" @keydown="onRepostMenuKey">
             <button type="button" role="menuitem" @click="$emit('repost', post.id); repostMenu = false">🔁 Đăng lại</button>
             <button type="button" role="menuitem" @click="$emit('quote', post.id); repostMenu = false">✍️ Trích dẫn</button>
           </div>
@@ -178,12 +181,44 @@ const typeLabels: Record<string, string> = {
 }
 const typeLabel = computed(() => typeLabels[props.post?.post_type] || '')
 
+function onPostMenuKey(e: KeyboardEvent) {
+  if (e.key === 'Escape') { showMenu.value = false; return }
+  if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
+  e.preventDefault()
+  const menu = (e.currentTarget as HTMLElement)
+  const items = Array.from(menu.querySelectorAll<HTMLElement>('[role="menuitem"]'))
+  if (!items.length) return
+  const cur = items.indexOf(document.activeElement as HTMLElement)
+  const next = e.key === 'ArrowDown' ? (cur + 1) % items.length : (cur - 1 + items.length) % items.length
+  items[next]?.focus()
+}
+
+function onRepostMenuKey(e: KeyboardEvent) {
+  if (e.key === 'Escape') { repostMenu.value = false; return }
+  if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
+  e.preventDefault()
+  const menu = (e.currentTarget as HTMLElement)
+  const items = Array.from(menu.querySelectorAll<HTMLElement>('[role="menuitem"]'))
+  if (!items.length) return
+  const cur = items.indexOf(document.activeElement as HTMLElement)
+  const next = e.key === 'ArrowDown' ? (cur + 1) % items.length : (cur - 1 + items.length) % items.length
+  items[next]?.focus()
+}
+
+let likePopTimer: ReturnType<typeof setTimeout> | undefined
 function onLike() {
   emit('like', props.post.id)
   if (!props.post.user_liked) {
+    if (likePopTimer) clearTimeout(likePopTimer)
     likePop.value = true
-    setTimeout(() => { likePop.value = false }, 400)
+    likePopTimer = setTimeout(() => { likePop.value = false }, 400)
   }
+}
+
+function onImgError(e: Event) {
+  const el = e.target as HTMLImageElement
+  el.style.opacity = '.15'
+  el.alt = 'Không tải được ảnh'
 }
 
 const { show: showToast } = useToast()
@@ -204,7 +239,9 @@ async function sharePost() {
     try {
       await navigator.clipboard.writeText(url)
       showToast('Đã sao chép liên kết', 'success')
-    } catch {}
+    } catch {
+      showToast('Không thể sao chép liên kết', 'error')
+    }
   }
 }
 
@@ -229,24 +266,14 @@ const lbOpen = ref(false)
 const lbIdx = ref(0)
 const lbEl = ref<HTMLElement>()
 
-let lbTriggerEl: HTMLElement | null = null
 function openLightbox(i: number) {
-  lbTriggerEl = document.activeElement as HTMLElement
   lbIdx.value = i
   lbOpen.value = true
-  nextTick(() => {
-    const close = document.querySelector('.lb-close') as HTMLElement
-    close?.focus()
-  })
 }
 function closeLightbox() {
   lbOpen.value = false
-  nextTick(() => lbTriggerEl?.focus())
 }
-watch(lbOpen, (v) => {
-  if (import.meta.client) document.body.style.overflow = v ? 'hidden' : ''
-})
-onUnmounted(() => { if (import.meta.client) document.body.style.overflow = '' })
+useModalA11y(lbOpen, lbEl, { onClose: closeLightbox })
 function lbPrev() { lbIdx.value = (lbIdx.value - 1 + allImages.value.length) % allImages.value.length }
 function lbNext() { lbIdx.value = (lbIdx.value + 1) % allImages.value.length }
 
@@ -279,29 +306,33 @@ function onLbTouchEnd() {
   lbTouchDX.value = 0
 }
 
-function onKey(e: KeyboardEvent) {
+function onLbKey(e: KeyboardEvent) {
   if (!lbOpen.value) return
-  if (e.key === 'Escape') closeLightbox()
-  else if (e.key === 'ArrowLeft') lbPrev()
+  if (e.key === 'ArrowLeft') lbPrev()
   else if (e.key === 'ArrowRight') lbNext()
-  else if (e.key === 'Tab') {
-    const btns = lbEl.value ? Array.from(lbEl.value.querySelectorAll<HTMLElement>('button')) : []
-    if (!btns.length) return
-    const first = btns[0]!, last = btns[btns.length - 1]!
-    const active = document.activeElement as HTMLElement
-    if (e.shiftKey && active === first) { e.preventDefault(); last.focus() }
-    else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus() }
-    else if (!btns.includes(active)) { e.preventDefault(); first.focus() }
-  }
 }
-onMounted(() => window.addEventListener('keydown', onKey))
-onUnmounted(() => window.removeEventListener('keydown', onKey))
+watch(lbOpen, (v) => {
+  if (v) window.addEventListener('keydown', onLbKey)
+  else window.removeEventListener('keydown', onLbKey)
+})
 
 if (import.meta.client) {
-  const onClick = (e: Event) => { if (showMenu.value) showMenu.value = false; if (repostMenu.value) repostMenu.value = false }
-  onMounted(() => document.addEventListener('click', onClick, true))
+  const onClick = (e: Event) => { showMenu.value = false; repostMenu.value = false }
+  watch(() => showMenu.value || repostMenu.value, (open) => {
+    if (open) document.addEventListener('click', onClick, true)
+    else document.removeEventListener('click', onClick, true)
+  })
   onUnmounted(() => document.removeEventListener('click', onClick, true))
 }
 
+onUnmounted(() => {
+  window.removeEventListener('keydown', onLbKey)
+  if (likePopTimer) clearTimeout(likePopTimer)
+})
+
 const { timeAgo } = useTimeAgo()
 </script>
+
+<style scoped>
+.tre-deleted { font-size: var(--text-sm); color: var(--muted); font-style: italic; }
+</style>

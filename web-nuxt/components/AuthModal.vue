@@ -8,7 +8,7 @@
       <div class="modal-body">
         <!-- Step 1: Phone -->
         <div v-if="step === 'phone'" class="otp-step">
-          <h3>Nhập số điện thoại</h3>
+          <h3 tabindex="-1">Nhập số điện thoại</h3>
           <p>Nhập SĐT để đăng nhập hoặc tạo tài khoản mới.</p>
           <div class="form-group">
             <input
@@ -40,7 +40,7 @@
 
         <!-- Step: Password login (returning user) -->
         <div v-else-if="step === 'password'" class="otp-step">
-          <h3>Nhập mật khẩu</h3>
+          <h3 tabindex="-1">Nhập mật khẩu</h3>
           <p>Đăng nhập cho {{ phone }}</p>
           <div class="form-group">
             <input
@@ -60,12 +60,12 @@
             {{ sending ? 'Đang đăng nhập…' : 'Đăng nhập' }}
           </button>
           <button type="button" class="otp-resend" @click="forgotPassword">Quên mật khẩu?</button>
-          <button type="button" class="otp-resend" @click="step = 'phone'">Đổi số điện thoại</button>
+          <button type="button" class="otp-resend" @click="error = ''; step = 'phone'">Đổi số điện thoại</button>
         </div>
 
         <!-- Step: OTP input -->
         <div v-else-if="step === 'otp'" class="otp-step">
-          <h3>Nhập mã OTP</h3>
+          <h3 tabindex="-1">Nhập mã OTP</h3>
           <p>Đã gửi mã tới {{ phone }}</p>
           <div class="otp-input">
             <input
@@ -79,7 +79,7 @@
               autocomplete="one-time-code"
               :aria-label="`Ô mã OTP số ${i}`"
               @input="onOtpInput(i - 1)"
-              @keydown.backspace="onOtpBackspace(i - 1, $event)"
+              @keydown="onOtpKeydown(i - 1, $event)"
               @paste="onOtpPaste"
             />
           </div>
@@ -96,7 +96,7 @@
 
         <!-- Step: Set password (after first OTP verification) -->
         <div v-else-if="step === 'set-password'" class="otp-step">
-          <h3>Đặt mật khẩu</h3>
+          <h3 tabindex="-1">Đặt mật khẩu</h3>
           <p>Tạo mật khẩu để lần sau đăng nhập nhanh hơn (không cần OTP).</p>
           <div class="form-group">
             <input
@@ -131,7 +131,7 @@
 
         <!-- Step: Done -->
         <div v-else class="otp-step otp-done">
-          <h3>Đăng nhập thành công!</h3>
+          <h3 tabindex="-1">Đăng nhập thành công!</h3>
           <p>Chào mừng bạn đến với vinhlong360.</p>
           <button type="button" class="btn btn-primary btn-full" @click="close">Đóng</button>
         </div>
@@ -148,7 +148,10 @@ const { requestOtp, verifyOtp, checkPhone, login, setPassword } = useAuth()
 const { onLoginSuccess } = useAuthModal()
 
 const step = ref<'phone' | 'password' | 'otp' | 'set-password' | 'done'>('phone')
-watch(step, (v) => { if (v === 'done') onLoginSuccess() })
+watch(step, (v) => {
+  if (v === 'done') onLoginSuccess()
+  nextTick(() => modalEl.value?.querySelector<HTMLElement>('h3')?.focus())
+})
 const phone = ref('')
 const password = ref('')
 const newPassword = ref('')
@@ -193,10 +196,12 @@ onUnmounted(() => {
 })
 
 async function handlePhone() {
-  if (!phone.value || phone.value.length < 9) {
-    error.value = 'Vui lòng nhập số điện thoại hợp lệ'
+  const normalized = phone.value.replace(/\D/g, '')
+  if (!normalized || normalized.length < 9 || normalized.length > 11 || !/^0\d{8,10}$/.test(normalized)) {
+    error.value = 'Vui lòng nhập số điện thoại hợp lệ (VD: 0901234567)'
     return
   }
+  phone.value = normalized
   sending.value = true
   error.value = ''
   try {
@@ -256,10 +261,14 @@ async function sendOtp() {
   }
 }
 
+let verifyLock = false
 async function verifyCode() {
+  if (sending.value || verifyLock) return
+  verifyLock = true
   const code = otpDigits.value.join('')
   if (code.length !== 6) {
     error.value = 'Vui lòng nhập đủ 6 chữ số'
+    verifyLock = false
     return
   }
   sending.value = true
@@ -281,6 +290,7 @@ async function verifyCode() {
     nextTick(() => otpRefs.value[0]?.focus())
   } finally {
     sending.value = false
+    verifyLock = false
   }
 }
 
@@ -306,6 +316,7 @@ async function handleSetPassword() {
 }
 
 function onOtpInput(idx: number) {
+  otpDigits.value[idx] = otpDigits.value[idx].replace(/\D/g, '')
   const val = otpDigits.value[idx]
   if (val && idx < 5) {
     otpRefs.value[idx + 1]?.focus()
@@ -315,10 +326,12 @@ function onOtpInput(idx: number) {
   }
 }
 
-function onOtpBackspace(idx: number, e: KeyboardEvent) {
-  if (!otpDigits.value[idx] && idx > 0) {
+function onOtpKeydown(idx: number, e: KeyboardEvent) {
+  if (e.key === 'Backspace' && !otpDigits.value[idx] && idx > 0) {
     otpRefs.value[idx - 1]?.focus()
   }
+  if (e.key === 'ArrowLeft' && idx > 0) { e.preventDefault(); otpRefs.value[idx - 1]?.focus() }
+  if (e.key === 'ArrowRight' && idx < 5) { e.preventDefault(); otpRefs.value[idx + 1]?.focus() }
 }
 
 function onOtpPaste(e: ClipboardEvent) {
@@ -347,6 +360,10 @@ function onOtpPaste(e: ClipboardEvent) {
   .otp-done h3 { animation: none; }
   .otp-step { animation: none; }
 }
+@media (max-width: 600px) {
+  .otp-step .input { font-size: 16px; }
+}
+.otp-step h3 { outline: none; }
 @media (forced-colors: active) {
   .consent-checkbox { outline: 1px solid ButtonText; }
 }

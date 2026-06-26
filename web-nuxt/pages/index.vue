@@ -215,7 +215,7 @@
           </div>
           <div v-if="topMembers.length" class="home-leaders">
             <span class="hl-label">🏆 Tích cực nhất:</span>
-            <NuxtLink v-for="(m, i) in topMembers" :key="m.id" :to="`/nguoi-dung/${m.id}`" class="hl-chip">
+            <NuxtLink v-for="(m, i) in topMembers" :key="m.id" :to="`/nguoi-dung/${m.username || m.id}`" class="hl-chip">
               <span class="hl-rank" :class="`hl-rank-${i + 1}`">{{ i + 1 }}</span>
               <span class="hl-avatar">{{ (m.display_name || '?').charAt(0).toUpperCase() }}</span>
               <span class="hl-name">{{ m.display_name }}</span>

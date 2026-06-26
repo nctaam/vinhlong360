@@ -92,7 +92,7 @@
     <div v-if="reviews.length" class="review-list">
       <div v-for="r in reviews" :key="r.id" class="review-item">
         <div class="ri-head">
-          <NuxtLink :to="`/nguoi-dung/${r.user_id}`" class="ri-author">
+          <NuxtLink :to="`/nguoi-dung/${r.username || r.user_id}`" class="ri-author">
             <img v-if="r.avatar_url" :src="r.avatar_url" class="ri-avatar" :alt="r.display_name" loading="lazy" decoding="async" width="32" height="32" @error="(e) => ((e.target as HTMLImageElement).style.display = 'none')" />
             <span v-else class="ri-avatar-placeholder">{{ (r.display_name || '?')[0] }}</span>
             <strong>{{ r.display_name || 'Ẩn danh' }}</strong>

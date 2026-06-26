@@ -100,6 +100,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash TEXT,
     display_name  TEXT,
     avatar_url    TEXT,
+    username      TEXT,
     bio           TEXT DEFAULT '',
     role          TEXT DEFAULT 'user' CHECK (role IN ('user', 'moderator', 'admin')),
     is_active     BOOLEAN DEFAULT TRUE,
@@ -110,6 +111,8 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_phone ON users(phone);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_unique
+  ON users (lower(username)) WHERE username IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS otp_sessions (
     id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

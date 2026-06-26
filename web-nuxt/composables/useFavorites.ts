@@ -43,7 +43,7 @@ export function useFavorites() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites.value)) } catch {}
   }
 
-  load()
+  if (import.meta.client) onNuxtReady(load)
 
   // ── Account sync (P1) ──────────────────────────────────────────────
   // localStorage is the offline cache + UI source of truth; the server is the

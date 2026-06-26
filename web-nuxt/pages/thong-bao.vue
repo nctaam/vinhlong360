@@ -24,10 +24,10 @@
       </div>
 
       <SkeletonList v-if="loading && !items.length" :count="6" />
-      <EmptyState v-else-if="fetchError && !items.length" icon="⚠️" tone="error" title="Không thể tải thông báo" message="Lỗi kết nối. Vui lòng thử lại.">
+      <EmptyState v-else-if="fetchError && !items.length" icon="⚠️" tone="error" title="Không thể tải thông báo" message="Không kết nối được máy chủ. Kiểm tra mạng và thử lại.">
         <template #actions><button type="button" class="btn btn-outline btn-sm" @click="load">Thử lại</button></template>
       </EmptyState>
-      <EmptyState v-else-if="!filtered.length" icon="🔔" :title="filter === 'all' ? 'Chưa có thông báo' : 'Không có thông báo loại này'" message="Khi có hoạt động mới, bạn sẽ thấy ở đây." />
+      <EmptyState v-else-if="!filtered.length" icon="🔔" :title="filter === 'all' ? 'Chưa có thông báo' : 'Không có thông báo loại này'" :message="emptyHint" />
       <template v-else>
         <ul class="tb-list">
           <li v-for="n in filtered" :key="n.id">
@@ -52,7 +52,7 @@
 
 <script setup lang="ts">
 useReveal()
-const { isLoggedIn, authHeaders } = useAuth()
+const { isLoggedIn, authHeaders, handleSessionExpired } = useAuth()
 const { openAuth } = useAuthModal()
 const { timeAgo } = useTimeAgo()
 
@@ -76,6 +76,15 @@ const filtered = computed(() => {
   if (filter.value === 'all') return items.value
   return items.value.filter(n => n.type === filter.value)
 })
+const emptyHint = computed(() => {
+  const hints: Record<string, string> = {
+    like: 'Thích bài viết để bắt đầu nhận thông báo lượt thích.',
+    comment: 'Viết bình luận để nhận phản hồi từ cộng đồng.',
+    follow: 'Theo dõi người dùng để nhận thông báo khi họ đăng bài mới.',
+    mention: 'Khi ai đó nhắc đến bạn trong bài viết hoặc bình luận, bạn sẽ thấy ở đây.',
+  }
+  return hints[filter.value] || 'Khi có hoạt động mới, bạn sẽ thấy ở đây.'
+})
 
 async function load() {
   if (!isLoggedIn.value) { loading.value = false; return }
@@ -85,7 +94,10 @@ async function load() {
     const res = await $fetch<any>(`/api/notifications?limit=${PAGE_SIZE}`, { headers: authHeaders() })
     items.value = res.notifications || []
     hasMore.value = (res.notifications || []).length >= PAGE_SIZE
-  } catch { fetchError.value = true } finally { loading.value = false }
+  } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    fetchError.value = true
+  } finally { loading.value = false }
 }
 
 async function loadMore() {
@@ -142,7 +154,7 @@ useHead({
 .tb-icon { font-size: 1.25rem; flex-shrink: 0; line-height: 1.4; }
 .tb-body { display: flex; flex-direction: column; gap: .15rem; flex: 1; min-width: 0; }
 .tb-title { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink); }
-.tb-group { font-size: .72rem; font-weight: 700; color: var(--primary, #219653); background: rgba(33,150,83,.1); padding: 1px 6px; border-radius: 100px; margin-left: 4px; }
+.tb-group { font-size: .72rem; font-weight: 700; color: var(--primary, #219653); background: rgba(var(--primary-rgb, 33,150,83), .1); padding: 1px 6px; border-radius: 100px; margin-left: 4px; }
 .tb-sub { font-size: var(--text-sm); color: var(--ink-700); }
 .tb-time { font-size: var(--text-xs); color: var(--muted); }
 .tb-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); flex-shrink: 0; margin-top: .35rem; }

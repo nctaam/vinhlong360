@@ -308,6 +308,21 @@ async def toggle_follow(target_type: str, target_id: str, user=Depends(require_u
     return {"following": following}
 
 
+@router.get("/follow/check/{target_type}/{target_id}")
+async def check_follow(target_type: str, target_id: str, user=Depends(require_user)):
+    _require_pg()
+    if target_type not in ("user", "entity"):
+        raise HTTPException(400, "Loại follow: user hoặc entity")
+    ph = db._ph
+    uid = str(user["id"])
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"""
+            SELECT 1 FROM follows
+            WHERE follower_id = {ph}::uuid AND target_type = {ph} AND target_id = {ph}
+        """, (uid, target_type, target_id))
+    return {"following": row is not None}
+
+
 @router.get("/following")
 async def get_following(
     target_type: Optional[str] = None,
@@ -425,12 +440,12 @@ async def list_blocked_users(user=Depends(require_user)):
     ph = db._ph
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
-            SELECT u.id, u.display_name, u.avatar_url, b.created_at
+            SELECT u.id, u.display_name, u.avatar_url, u.username, b.created_at
             FROM blocks b JOIN users u ON u.id = b.blocked_id
             WHERE b.blocker_id = {ph}::uuid
             ORDER BY b.created_at DESC
         """, (str(user["id"]),))
-    return {"blocked": [{"id": str(db._row_to_dict(r)["id"]), "display_name": db._row_to_dict(r).get("display_name"), "avatar_url": db._row_to_dict(r).get("avatar_url"), "blocked_at": str(db._row_to_dict(r).get("created_at", ""))} for r in rows]}
+    return {"blocked": [{"id": str(db._row_to_dict(r)["id"]), "display_name": db._row_to_dict(r).get("display_name"), "avatar_url": db._row_to_dict(r).get("avatar_url"), "username": db._row_to_dict(r).get("username"), "blocked_at": str(db._row_to_dict(r).get("created_at", ""))} for r in rows]}
 
 
 # ── Helpers ──

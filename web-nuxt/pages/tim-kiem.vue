@@ -71,7 +71,7 @@
       <section v-if="userResults.length" class="block search-section reveal">
         <div class="section-head"><h2>Người dùng</h2></div>
         <div class="people-list">
-          <NuxtLink v-for="u in userResults" :key="u.id" :to="`/nguoi-dung/${u.id}`" class="person-chip">
+          <NuxtLink v-for="u in userResults" :key="u.id" :to="`/nguoi-dung/${u.username || u.id}`" class="person-chip">
             <span class="avatar person-avatar">{{ (u.display_name || '?').charAt(0).toUpperCase() }}</span>
             <span class="person-name">{{ u.display_name }}</span>
             <span v-if="u.post_count" class="person-meta">{{ u.post_count }} bài</span>

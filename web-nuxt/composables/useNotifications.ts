@@ -1,5 +1,7 @@
-let pollTimer: ReturnType<typeof setInterval> | null = null
+let pollTimer: ReturnType<typeof setTimeout> | null = null
 let eventSource: EventSource | null = null
+let pollInterval = 30_000
+let sseDebounce: ReturnType<typeof setTimeout> | null = null
 
 export function useNotifications() {
   const notifications = useState<any[]>('notifications', () => [])
@@ -13,9 +15,13 @@ export function useNotifications() {
     try {
       const res = await $fetch<{ notifications: Notification[]; unread_count?: number }>('/api/notifications?limit=20', { headers: authHeaders() })
       notifications.value = res.notifications || []
-      unreadCount.value = res.unread_count || 0
+      unreadCount.value = res.unread_count ?? 0
       fetchError.value = false
-    } catch { fetchError.value = true } finally { loading.value = false }
+      pollInterval = 30_000
+    } catch {
+      fetchError.value = true
+      pollInterval = Math.min(pollInterval * 2, 300_000)
+    } finally { loading.value = false }
   }
 
   async function markAllRead() {
@@ -38,6 +44,14 @@ export function useNotifications() {
     } catch { /* keep optimistic state; next poll reconciles */ }
   }
 
+  function _schedulePoll() {
+    if (pollTimer) clearTimeout(pollTimer)
+    pollTimer = setTimeout(async () => {
+      await fetchNotifications()
+      if (!eventSource) _schedulePoll()
+    }, pollInterval)
+  }
+
   function _connectSSE() {
     if (!import.meta.client || !isLoggedIn.value) return
     _closeSSE()
@@ -46,11 +60,13 @@ export function useNotifications() {
     if (!token) return
     const es = new EventSource(`/api/notifications/stream?token=${encodeURIComponent(token)}`)
     es.onmessage = () => {
-      fetchNotifications()
+      if (sseDebounce) clearTimeout(sseDebounce)
+      sseDebounce = setTimeout(() => fetchNotifications(), 2000)
     }
     es.onerror = () => {
       _closeSSE()
-      if (!pollTimer) pollTimer = setInterval(fetchNotifications, 30_000)
+      if (!isLoggedIn.value) return
+      _schedulePoll()
     }
     eventSource = es
   }
@@ -61,16 +77,17 @@ export function useNotifications() {
 
   function startPolling() {
     stopPolling()
+    pollInterval = 30_000
     fetchNotifications()
     _connectSSE()
-    if (!pollTimer) pollTimer = setInterval(fetchNotifications, 30_000)
+    _schedulePoll()
     if (import.meta.client) {
       document.addEventListener('visibilitychange', _onVisibility)
     }
   }
 
   function stopPolling() {
-    if (pollTimer) { clearInterval(pollTimer); pollTimer = null }
+    if (pollTimer) { clearTimeout(pollTimer); pollTimer = null }
     _closeSSE()
     if (import.meta.client) {
       document.removeEventListener('visibilitychange', _onVisibility)
@@ -79,12 +96,13 @@ export function useNotifications() {
 
   function _onVisibility() {
     if (document.hidden) {
-      if (pollTimer) { clearInterval(pollTimer); pollTimer = null }
+      if (pollTimer) { clearTimeout(pollTimer); pollTimer = null }
       _closeSSE()
     } else {
+      pollInterval = 30_000
       fetchNotifications()
       _connectSSE()
-      if (!pollTimer) pollTimer = setInterval(fetchNotifications, 30_000)
+      _schedulePoll()
     }
   }
 

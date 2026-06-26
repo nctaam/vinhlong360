@@ -4,7 +4,7 @@
 
     <div v-if="profile" class="user-profile reveal">
       <div class="profile-cover">
-        <img v-if="profile.cover_url" :src="profile.cover_url" :alt="`Ảnh bìa ${profile.display_name}`" class="cover-img" loading="eager" decoding="async" />
+        <img v-if="profile.cover_url" :src="profile.cover_url" :alt="`Ảnh bìa ${profile.display_name}`" class="cover-img" loading="eager" decoding="async" width="960" height="200" />
         <UserCoverPlaceholder v-else />
         <div class="cover-scrim" aria-hidden="true"></div>
         <div class="profile-avatar-wrap">
@@ -38,6 +38,9 @@
           <NuxtLink v-if="isSelf" to="/cai-dat" class="btn btn-ghost btn-sm">
             <svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Sửa hồ sơ
           </NuxtLink>
+          <button type="button" class="btn btn-ghost btn-sm btn-icon" aria-label="Chia sẻ hồ sơ" @click="shareProfile">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          </button>
         </div>
         <p v-if="profile.bio" class="profile-bio">{{ profile.bio }}</p>
         <div v-if="profile.reputation" class="profile-reputation">
@@ -49,14 +52,16 @@
           </span>
         </div>
         <div class="profile-stats">
-          <div class="stat-item">
-            <strong>{{ profile.post_count || 0 }}</strong>
-            <span>bài viết</span>
-          </div>
-          <div class="stat-item">
-            <strong>{{ profile.review_count || 0 }}</strong>
-            <span>đánh giá</span>
-          </div>
+          <template v-if="!profile.is_private || isSelf">
+            <div class="stat-item">
+              <strong>{{ profile.post_count || 0 }}</strong>
+              <span>bài viết</span>
+            </div>
+            <div class="stat-item">
+              <strong>{{ profile.review_count || 0 }}</strong>
+              <span>đánh giá</span>
+            </div>
+          </template>
           <button type="button" class="stat-item stat-clickable" @click="openFollowModal('followers')">
             <strong>{{ followerCount }}</strong>
             <span>người theo dõi</span>
@@ -82,6 +87,8 @@
         <div class="pc-hints">
           <span v-if="!profile.display_name" class="pc-hint">Thêm tên hiển thị</span>
           <span v-if="!profile.avatar" class="pc-hint">Thêm ảnh đại diện</span>
+          <span v-if="!profile.cover_url" class="pc-hint">Thêm ảnh bìa</span>
+          <span v-if="!profile.username" class="pc-hint">Chọn tên người dùng</span>
           <span v-if="!profile.bio" class="pc-hint">Viết giới thiệu</span>
           <span v-if="(profile.post_count || 0) === 0" class="pc-hint">Đăng bài đầu tiên</span>
           <span v-if="(profile.review_count || 0) === 0" class="pc-hint">Viết đánh giá</span>
@@ -191,7 +198,7 @@
             <template v-else>
               <ul v-if="followModalList.length" class="fm-list">
                 <li v-for="u in followModalList" :key="u.id">
-                  <NuxtLink :to="`/nguoi-dung/${u.id}`" class="fm-user" @click="followModalOpen = false">
+                  <NuxtLink :to="`/nguoi-dung/${u.username || u.id}`" class="fm-user" @click="followModalOpen = false">
                     <span class="avatar fm-avatar">{{ (u.display_name || '?').charAt(0).toUpperCase() }}</span>
                     <span class="fm-name">{{ u.display_name }}</span>
                   </NuxtLink>
@@ -211,18 +218,20 @@ import type { Entity } from '~/types'
 import { TYPE_META } from '~/composables/useConstants'
 useReveal()
 const route = useRoute()
-const userId = route.params.id as string
-const { isLoggedIn, authHeaders } = useAuth()
+const userId = computed(() => route.params.id as string)
+const { isLoggedIn, authHeaders, handleSessionExpired } = useAuth()
 const { show: showToast } = useToast()
-const { reportPost } = useReport()
+const { reportPost, openReport } = useReport()
 const { repost, quote } = useRepost()
 
 useHead({
-  link: [{ rel: 'canonical', href: canonicalUrl(`/nguoi-dung/${userId}`) }],
+  link: computed(() => [{ rel: 'canonical', href: canonicalUrl(`/nguoi-dung/${profile.value?.username || userId.value}`) }]),
   meta: [{ name: 'robots', content: 'noindex,follow' }],
 })
 
-const tab = ref('posts')
+const validProfileTabs = new Set(['posts', 'reviews', 'saved'])
+const initialTab = route.query.tab as string
+const tab = ref(validProfileTabs.has(initialTab) ? initialTab : 'posts')
 const posts = ref<Entity[]>([])
 const { favorites, count: savedCount } = useFavorites()
 const loading = ref(true)
@@ -231,16 +240,14 @@ const followLoading = ref(false)
 const followerCount = ref(0)
 const isSelf = computed(() => {
   const { user } = useAuth()
-  return user.value?.id === userId
+  return user.value?.id === userId.value
 })
 
 const profileFetchFailed = ref(false)
-const { data: profile } = await useAsyncData(`user-${userId}`, async () => {
+const { data: profile } = await useAsyncData(() => `user-${userId.value}`, async () => {
   try {
     profileFetchFailed.value = false
-    // BE trả {user:{display_name, avatar_url, bio, created_at, stats:{posts,reviews}}}
-    // → unwrap + map về flat keys mà template đọc (P0-11).
-    const res = await apiFetch<Record<string, any>>(`/api/users/${userId}`, { headers: authHeaders() })
+    const res = await apiFetch<Record<string, any>>(`/api/users/${userId.value}`, { headers: authHeaders() })
     const u = (res?.user ?? res) as Record<string, any> | null
     if (!u) return null
     const mapped = {
@@ -275,13 +282,8 @@ const joinDate = computed(() => {
 const profileCompletion = computed(() => {
   if (!profile.value) return 0
   const p = profile.value
-  let score = 0
-  if (p.display_name) score += 20
-  if (p.avatar) score += 20
-  if (p.bio) score += 20
-  if ((p.post_count || 0) > 0) score += 20
-  if ((p.review_count || 0) > 0) score += 20
-  return score
+  const checks = [p.display_name, p.avatar, p.bio, p.username, p.cover_url, (p.post_count || 0) > 0, (p.review_count || 0) > 0]
+  return Math.round((checks.filter(Boolean).length / checks.length) * 100)
 })
 
 const filteredPosts = computed(() => {
@@ -308,7 +310,7 @@ async function fetchPosts() {
   loading.value = true
   postsFetchFailed.value = false
   try {
-    const res = await $fetch<Record<string, unknown>>(`/api/users/${userId}/posts?limit=50`, { headers: authHeaders() })
+    const res = await $fetch<Record<string, unknown>>(`/api/users/${userId.value}/posts?limit=50`, { headers: authHeaders() })
     const list = res?.posts
     posts.value = Array.isArray(list) ? list : []
   } catch {
@@ -318,21 +320,24 @@ async function fetchPosts() {
   loading.value = false
 }
 
+const pendingActions = reactive(new Set<string>())
+
 async function toggleLike(postId: string) {
   if (!isLoggedIn.value) { showToast('Đăng nhập để thích bài viết', 'info'); return }
+  if (pendingActions.has(`like:${postId}`)) return
+  pendingActions.add(`like:${postId}`)
   const post = posts.value.find(p => p.id === postId)
-  if (!post) return
-  // Optimistic update
+  if (!post) { pendingActions.delete(`like:${postId}`); return }
   post.user_liked = !post.user_liked
   post.likes = (post.likes || 0) + (post.user_liked ? 1 : -1)
   try {
     await $fetch(`/api/posts/${postId}/like`, { method: 'POST', headers: authHeaders() })
-  } catch {
-    // Rollback
+  } catch (e: any) {
     post.user_liked = !post.user_liked
     post.likes = (post.likes || 0) + (post.user_liked ? 1 : -1)
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast('Không thể thích bài viết', 'error')
-  }
+  } finally { pendingActions.delete(`like:${postId}`) }
 }
 
 async function deletePost(postId: string) {
@@ -347,16 +352,18 @@ async function deletePost(postId: string) {
 
 async function toggleBookmark(postId: string) {
   if (!isLoggedIn.value) { showToast('Đăng nhập để lưu bài viết', 'info'); return }
+  if (pendingActions.has(`bm:${postId}`)) return
+  pendingActions.add(`bm:${postId}`)
   const post = posts.value.find(p => p.id === postId)
-  if (!post) return
-  // Optimistic update
+  if (!post) { pendingActions.delete(`bm:${postId}`); return }
   post.user_bookmarked = !post.user_bookmarked
   try {
     await $fetch(`/api/posts/${postId}/bookmark`, { method: 'POST', headers: authHeaders() })
-  } catch {
+  } catch (e: any) {
     post.user_bookmarked = !post.user_bookmarked
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast('Không thể lưu bài viết', 'error')
-  }
+  } finally { pendingActions.delete(`bm:${postId}`) }
 }
 
 
@@ -370,28 +377,39 @@ async function loadFollowList(which: 'followers' | 'following') {
   if (followLists.value[which]) return  // đã tải (cache)
   followLoadingList.value = true
   try {
-    const res = await $fetch<any>(`/api/users/${userId}/${which}`)
+    const res = await $fetch<any>(`/api/users/${userId.value}/${which}`, { headers: authHeaders() })
     followLists.value[which] = res.users || []
-  } catch { followLists.value[which] = []; showToast('Không thể tải danh sách', 'error') }
+  } catch (e: any) {
+    followLists.value[which] = []
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    showToast('Không thể tải danh sách', 'error')
+  }
   followLoadingList.value = false
 }
 const followDialogEl = ref<HTMLElement | null>(null)
+function closeFollowModal() { followModalOpen.value = false }
+useModalA11y(followModalOpen, followDialogEl, { onClose: closeFollowModal })
 function openFollowModal(tab: 'followers' | 'following') {
   followModalTab.value = tab
   followModalOpen.value = true
   loadFollowList(tab)
-  nextTick(() => followDialogEl.value?.focus())
 }
 watch(followModalTab, (t) => loadFollowList(t))
 
 async function checkFollowing() {
   if (!isLoggedIn.value) return
   try {
-    const res = await $fetch<Record<string, unknown>[]>('/api/following?target_type=user', { headers: authHeaders() })
-    const following = res.following || res || []
-    isFollowing.value = following.some((f: Entity) => f.target_id === userId)
+    const res = await $fetch<{ following: boolean }>(`/api/follow/check/user/${userId.value}`, { headers: authHeaders() })
+    isFollowing.value = res.following
   } catch { /* non-critical */ }
 }
+
+watch(tab, (t) => {
+  const query = { ...route.query }
+  if (t === 'posts') delete query.tab
+  else query.tab = t
+  navigateTo({ path: route.path, query }, { replace: true })
+})
 
 async function toggleFollow() {
   if (!isLoggedIn.value) { showToast('Đăng nhập để theo dõi', 'info'); return }
@@ -400,10 +418,12 @@ async function toggleFollow() {
   isFollowing.value = !was
   followerCount.value += was ? -1 : 1
   try {
-    await $fetch(`/api/follow/user/${userId}`, { method: 'POST', headers: authHeaders() })
-  } catch {
+    await $fetch(`/api/follow/user/${userId.value}`, { method: 'POST', headers: authHeaders() })
+    followLists.value = { followers: null, following: null }
+  } catch (e: any) {
     isFollowing.value = was
     followerCount.value += was ? 1 : -1
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast('Không thể theo dõi', 'error')
   }
   followLoading.value = false
@@ -424,20 +444,26 @@ watch(showMoreMenu, (v) => {
     else document.removeEventListener('click', onClickOutsideMore)
   }
 })
+onUnmounted(() => document.removeEventListener('click', onClickOutsideMore))
 
 async function checkBlocked() {
   if (!isLoggedIn.value || isSelf.value) return
   try {
-    const res = await $fetch<{ users: any[] }>('/api/blocked-users', { headers: authHeaders() })
-    isBlocked.value = (res.users || []).some(u => u.id === userId)
+    const res = await $fetch<{ blocked: any[] }>('/api/blocked-users', { headers: authHeaders() })
+    isBlocked.value = (res.blocked || []).some(u => u.id === userId.value)
   } catch { /* non-critical */ }
 }
 
 async function toggleBlock() {
   if (isBlocked.value) {
-    await $fetch(`/api/block/${userId}`, { method: 'POST', headers: authHeaders() })
-    isBlocked.value = false
-    showToast('Đã bỏ chặn', 'success')
+    try {
+      await $fetch(`/api/block/${userId.value}`, { method: 'POST', headers: authHeaders() })
+      isBlocked.value = false
+      showToast('Đã bỏ chặn', 'success')
+    } catch (e: any) {
+      if (e?.response?.status === 401) { handleSessionExpired(); return }
+      showToast('Không thể bỏ chặn', 'error')
+    }
     return
   }
   const ok = await confirmDialog(
@@ -450,15 +476,32 @@ async function toggleBlock() {
   )
   if (!ok) return
   try {
-    await $fetch(`/api/block/${userId}`, { method: 'POST', headers: authHeaders() })
+    await $fetch(`/api/block/${userId.value}`, { method: 'POST', headers: authHeaders() })
     isBlocked.value = true
     if (isFollowing.value) { isFollowing.value = false; followerCount.value-- }
     showToast('Đã chặn người dùng', 'success')
-  } catch { showToast('Không thể chặn', 'error') }
+  } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    showToast('Không thể chặn', 'error')
+  }
 }
 
 function reportUser() {
-  showToast('Cảm ơn bạn đã báo cáo. Chúng tôi sẽ xem xét.', 'info')
+  showMoreMenu.value = false
+  openReport('user', userId.value)
+}
+
+async function shareProfile() {
+  const url = `${window.location.origin}/nguoi-dung/${profile.value?.username || userId.value}`
+  const name = profile.value?.display_name || 'Người dùng'
+  if (navigator.share) {
+    try { await navigator.share({ title: `${name} — vinhlong360`, url }) } catch {}
+  } else {
+    try {
+      await navigator.clipboard.writeText(url)
+      showToast('Đã sao chép liên kết hồ sơ', 'success')
+    } catch { showToast('Không thể sao chép', 'error') }
+  }
 }
 
 onMounted(() => {
@@ -467,17 +510,26 @@ onMounted(() => {
   checkBlocked()
 })
 
-if (profile.value) {
-  const profileDesc = `Trang cá nhân của ${profile.value.display_name || 'thành viên'} trên cộng đồng vinhlong360.`
-  useSeoMeta({
-    title: `${profile.value.display_name || 'Người dùng'} — vinhlong360`,
-    description: profileDesc,
-    ogTitle: `${profile.value.display_name || 'Người dùng'} — vinhlong360`,
-    ogDescription: profileDesc,
-    ogImage: '/icons/icon-512.png',
-    robots: 'noindex,follow',
-  })
-}
+watch(userId, () => {
+  tab.value = 'posts'
+  posts.value = []
+  loading.value = true
+  isFollowing.value = false
+  isBlocked.value = false
+  followLists.value = { followers: null, following: null }
+  fetchPosts()
+  checkFollowing()
+  checkBlocked()
+})
+
+useSeoMeta({
+  title: () => `${profile.value?.display_name || 'Người dùng'} — vinhlong360`,
+  description: () => `Trang cá nhân của ${profile.value?.display_name || 'thành viên'} trên cộng đồng vinhlong360.`,
+  ogTitle: () => `${profile.value?.display_name || 'Người dùng'} — vinhlong360`,
+  ogDescription: () => `Trang cá nhân của ${profile.value?.display_name || 'thành viên'} trên cộng đồng vinhlong360.`,
+  ogImage: () => profile.value?.cover_url || profile.value?.avatar || '/icons/icon-512.png',
+  robots: 'noindex,follow',
+})
 </script>
 
 <style scoped>
@@ -493,6 +545,7 @@ if (profile.value) {
 .cover-img { width: 100%; height: 200px; object-fit: cover; display: block; }
 .profile-private-notice { text-align: center; padding: var(--space-8) var(--space-4); color: var(--ink-700); font-size: .95rem; }
 .cover-scrim { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.18)); }
+.dark .cover-scrim { background: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,.45)); }
 .profile-avatar-wrap { position: absolute; bottom: calc(-1 * var(--space-6)); left: var(--space-5); z-index: 1; }
 .profile-avatar-wrap .avatar { border: 6px solid var(--card); box-shadow: 0 0 0 2px var(--line), 0 8px 28px rgba(0,0,0,.12); transition: transform .35s var(--ease-spring-gentle); }
 .profile-avatar-wrap .avatar:hover { transform: scale(1.05); }
@@ -584,8 +637,8 @@ if (profile.value) {
 /* Mobile: stack follow/edit button below name */
 @media (max-width: 480px) {
   .profile-name-row { flex-direction: column; align-items: flex-start; }
-  .profile-name-row .btn { width: 100%; justify-content: center; }
-  .profile-stats { gap: var(--space-3); flex-wrap: wrap; }
+  .profile-name-row .btn:not(.btn-icon) { width: 100%; justify-content: center; }
+  .profile-stats { gap: var(--space-3); flex-wrap: wrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 }
 
 @media (prefers-reduced-motion: reduce) {

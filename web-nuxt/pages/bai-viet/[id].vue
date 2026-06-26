@@ -72,7 +72,7 @@
         <!-- Comment items as thread replies -->
         <div v-for="(c, idx) in comments" :key="c.id" class="thread-reply">
           <div class="thread-left">
-            <NuxtLink v-if="c.author?.id" :to="`/nguoi-dung/${c.author?.id}`" class="thread-avatar-link">
+            <NuxtLink v-if="c.author?.id" :to="`/nguoi-dung/${c.author?.username || c.author?.id}`" class="thread-avatar-link">
               <span class="avatar thread-avatar avatar-sm">{{ (c.author?.display_name || '?').charAt(0).toUpperCase() }}</span>
             </NuxtLink>
             <span v-else class="avatar thread-avatar avatar-sm">{{ (c.author?.display_name || '?').charAt(0).toUpperCase() }}</span>
@@ -80,7 +80,7 @@
           </div>
           <div class="thread-right">
             <div class="thread-head">
-              <NuxtLink v-if="c.author?.id" :to="`/nguoi-dung/${c.author?.id}`" class="thread-author">
+              <NuxtLink v-if="c.author?.id" :to="`/nguoi-dung/${c.author?.username || c.author?.id}`" class="thread-author">
                 {{ c.author?.display_name || 'Người dùng' }}
               </NuxtLink>
               <span v-else class="thread-author">{{ c.author?.display_name || 'Người dùng' }}</span>
@@ -95,13 +95,13 @@
 
             <!-- Replies lồng (threaded, 1 cấp) -->
             <div v-for="r in (c.replies || [])" :key="r.id" class="thread-subreply">
-              <NuxtLink v-if="r.author?.id" :to="`/nguoi-dung/${r.author?.id}`" class="thread-avatar-link">
+              <NuxtLink v-if="r.author?.id" :to="`/nguoi-dung/${r.author?.username || r.author?.id}`" class="thread-avatar-link">
                 <span class="avatar thread-avatar avatar-xs">{{ (r.author?.display_name || '?').charAt(0).toUpperCase() }}</span>
               </NuxtLink>
               <span v-else class="avatar thread-avatar avatar-xs">{{ (r.author?.display_name || '?').charAt(0).toUpperCase() }}</span>
               <div class="subreply-body">
                 <div class="thread-head">
-                  <NuxtLink v-if="r.author?.id" :to="`/nguoi-dung/${r.author?.id}`" class="thread-author">{{ r.author?.display_name || 'Người dùng' }}</NuxtLink>
+                  <NuxtLink v-if="r.author?.id" :to="`/nguoi-dung/${r.author?.username || r.author?.id}`" class="thread-author">{{ r.author?.display_name || 'Người dùng' }}</NuxtLink>
                   <span v-else class="thread-author">{{ r.author?.display_name || 'Người dùng' }}</span>
                   <time class="thread-time" :datetime="r.created_at">{{ timeAgo(r.created_at) }}</time>
                 </div>
@@ -131,7 +131,7 @@
           <h3 class="related-title">Bài viết liên quan</h3>
           <div class="related-grid">
             <NuxtLink v-for="rp in relatedPosts" :key="rp.id" :to="`/bai-viet/${rp.id}`" class="related-card">
-              <img v-if="rp.images?.[0]" :src="rp.images[0]" :alt="rp.display_name || 'Bài viết liên quan'" class="related-thumb" loading="lazy" decoding="async" />
+              <img v-if="rp.images?.[0]" :src="rp.images[0]" :alt="rp.display_name || 'Bài viết liên quan'" class="related-thumb" loading="lazy" decoding="async" width="400" height="100" />
               <div class="related-body">
                 <span class="related-author">{{ rp.display_name }}</span>
                 <p class="related-text">{{ (rp.content || '').slice(0, 80) }}{{ (rp.content || '').length > 80 ? '…' : '' }}</p>
@@ -165,8 +165,8 @@
 import type { Post, Entity} from '~/types'
 useReveal()
 const route = useRoute()
-const postId = route.params.id as string
-const { isLoggedIn, authHeaders, user } = useAuth()
+const postId = computed(() => route.params.id as string)
+const { isLoggedIn, authHeaders, user, handleSessionExpired } = useAuth()
 const { openAuth } = useAuthModal()
 const { confirmDialog } = useConfirm()
 const { repost, quote } = useRepost()
@@ -199,12 +199,14 @@ const commentInputEl = ref<HTMLInputElement | null>(null)
 const {
   mentionResults, mentionOpen, mentionActive,
   onInput: onMentionInput, pick: pickMention,
-  onKeydown: onMentionKeydown, reset: resetMention, activeMentions,
+  onKeydown: onMentionKeydown, closeMention: closeMentionComment, reset: resetMention, activeMentions,
 } = useMentionAutocomplete(commentText, commentInputEl)
 
 function onCommentKeydown(e: KeyboardEvent) {
-  const consumed = onMentionKeydown(e)            // điều hướng menu khi đang mở
-  if (e.key === 'Enter' && !consumed) submitComment()
+  const consumed = onMentionKeydown(e)
+  if (consumed) return
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); submitComment(); return }
+  if (e.key === 'Enter') submitComment()
 }
 
 // ── Q&A: câu trả lời hay (chủ bài hỏi chọn) ──
@@ -216,18 +218,25 @@ async function setBestAnswer(commentId: string) {
   const prev = bestAnswerId.value
   bestAnswerId.value = commentId
   try {
-    await $fetch(`/api/posts/${postId}/best-answer`, { method: 'POST', headers: authHeaders(), body: { comment_id: commentId } })
+    await $fetch(`/api/posts/${postId.value}/best-answer`, { method: 'POST', headers: authHeaders(), body: { comment_id: commentId } })
     showToast('Đã chọn câu trả lời hay', 'success')
-  } catch { bestAnswerId.value = prev; showToast('Không thể chọn, thử lại', 'error') }
+  } catch (e: any) {
+    bestAnswerId.value = prev
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    showToast('Không thể chọn, thử lại', 'error')
+  }
 }
 async function deletePost() {
   const ok = await confirmDialog('Bạn có chắc muốn xoá bài viết này? Hành động không thể hoàn tác.', { confirmText: 'Xoá', danger: true })
   if (!ok) return
   try {
-    await $fetch(`/api/posts/${postId}`, { method: 'DELETE', headers: authHeaders() })
+    await $fetch(`/api/posts/${postId.value}`, { method: 'DELETE', headers: authHeaders() })
     showToast('Đã xoá bài viết', 'success')
     navigateTo('/cong-dong')
-  } catch { showToast('Không thể xoá bài viết', 'error') }
+  } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    showToast('Không thể xoá bài viết', 'error')
+  }
 }
 
 const composeRef = ref<HTMLElement>()
@@ -254,7 +263,7 @@ async function saveEdit() {
   if (editContent.value.trim().length < 10 || editSaving.value) return
   editSaving.value = true
   try {
-    const res = await $fetch<any>(`/api/posts/${postId}`, {
+    const res = await $fetch<any>(`/api/posts/${postId.value}`, {
       method: 'PATCH', headers: authHeaders(), body: { content: editContent.value.trim() },
     })
     if (post.value && res.post) {
@@ -265,6 +274,7 @@ async function saveEdit() {
     editing.value = false
     showToast(res.moderation_status === 'pending' ? 'Đã lưu — đang chờ duyệt lại' : 'Đã cập nhật bài viết', 'success')
   } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast(e?.data?.detail || 'Không thể lưu bài viết', 'error')
   }
   editSaving.value = false
@@ -284,10 +294,10 @@ const userInitial = computed(() => {
 })
 
 const postFetchFailed = ref(false)
-const { data: post, pending } = await useAsyncData(`post-${postId}`, async () => {
+const { data: post, pending } = await useAsyncData(() => `post-${postId.value}`, async () => {
   try {
     postFetchFailed.value = false
-    const res = await apiFetch<Post>(`/api/posts/${postId}`, { headers: authHeaders() })
+    const res = await apiFetch<Post>(`/api/posts/${postId.value}`, { headers: authHeaders() })
     return res?.post || res
   } catch {
     postFetchFailed.value = true
@@ -303,7 +313,7 @@ async function fetchComments() {
   loading.value = true
   commentError.value = false
   try {
-    const res = await $fetch<Post>(`/api/posts/${postId}/comments`)
+    const res = await $fetch<Post>(`/api/posts/${postId.value}/comments`)
     comments.value = res.comments || res || []
   } catch {
     commentError.value = true
@@ -331,7 +341,7 @@ async function submitComment() {
       }
     }
     if (mentions.length) body.mentions = mentions
-    await $fetch(`/api/posts/${postId}/comments`, {
+    await $fetch(`/api/posts/${postId.value}/comments`, {
       method: 'POST',
       headers: authHeaders(),
       body,
@@ -342,37 +352,44 @@ async function submitComment() {
     showToast(t ? 'Đã gửi trả lời' : 'Đã gửi bình luận', 'success')
     if (post.value) post.value.comments_count = (post.value.comments_count || 0) + 1
     await fetchComments()
-  } catch (e: unknown) {
-    const detail = (e as any)?.data?.detail
+  } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    const detail = e?.data?.detail
     showToast(detail || 'Gửi bình luận thất bại — vui lòng thử lại', 'error')
   }
   submitting.value = false
 }
 
+const pendingActions = reactive(new Set<string>())
+
 async function toggleLike(id: string) {
   if (!isLoggedIn.value) { showToast('Đăng nhập để thích bài viết', 'info'); return }
-  if (!post.value) return
+  if (!post.value || pendingActions.has('like')) return
+  pendingActions.add('like')
   post.value.user_liked = !post.value.user_liked
   post.value.likes = (post.value.likes || 0) + (post.value.user_liked ? 1 : -1)
   try {
     await $fetch(`/api/posts/${id}/like`, { method: 'POST', headers: authHeaders() })
-  } catch {
+  } catch (e: any) {
     post.value.user_liked = !post.value.user_liked
     post.value.likes = (post.value.likes || 0) + (post.value.user_liked ? 1 : -1)
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast('Không thể thích bài viết', 'error')
-  }
+  } finally { pendingActions.delete('like') }
 }
 
 async function toggleBookmark(id: string) {
   if (!isLoggedIn.value) { showToast('Đăng nhập để lưu bài viết', 'info'); return }
-  if (!post.value) return
+  if (!post.value || pendingActions.has('bookmark')) return
+  pendingActions.add('bookmark')
   post.value.user_bookmarked = !post.value.user_bookmarked
   try {
     await $fetch(`/api/posts/${id}/bookmark`, { method: 'POST', headers: authHeaders() })
-  } catch {
+  } catch (e: any) {
     post.value.user_bookmarked = !post.value.user_bookmarked
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast('Không thể lưu bài viết', 'error')
-  }
+  } finally { pendingActions.delete('bookmark') }
 }
 
 const { timeAgo } = useTimeAgo()
@@ -380,12 +397,26 @@ const { timeAgo } = useTimeAgo()
 const relatedPosts = ref<any[]>([])
 async function fetchRelated() {
   try {
-    const res = await $fetch<any>(`/api/posts/${postId}/related?limit=4`)
+    const res = await $fetch<any>(`/api/posts/${postId.value}/related?limit=4`)
     relatedPosts.value = res.posts || []
   } catch { /* non-critical */ }
 }
 
+function onClickOutsideMention(e: MouseEvent) {
+  if (mentionOpen.value && !(e.target as HTMLElement)?.closest('.comment-mention-wrap')) {
+    closeMentionComment()
+  }
+}
+
+function onBeforeUnload(e: BeforeUnloadEvent) {
+  if (editing.value && editContent.value !== (post.value?.content || '')) {
+    e.preventDefault()
+  }
+}
+
 onMounted(() => {
+  document.addEventListener('click', onClickOutsideMention)
+  if (import.meta.client) window.addEventListener('beforeunload', onBeforeUnload)
   fetchComments()
   fetchRelated()
   // mở editor khi điều hướng từ trang khác: /bai-viet/{id}?edit=1 (chủ bài)
@@ -395,61 +426,73 @@ onMounted(() => {
   }
 })
 
+onUnmounted(() => {
+  document.removeEventListener('click', onClickOutsideMention)
+  if (import.meta.client) window.removeEventListener('beforeunload', onBeforeUnload)
+})
+
+watch(postId, () => {
+  comments.value = []
+  relatedPosts.value = []
+  loading.value = true
+  editing.value = false
+  replyingTo.value = null
+  commentText.value = ''
+  bestAnswerId.value = null
+  fetchComments()
+  fetchRelated()
+})
+
 useHead({
-  link: [{ rel: 'canonical', href: canonicalUrl(`/bai-viet/${postId}`) }],
+  link: computed(() => [{ rel: 'canonical', href: canonicalUrl(`/bai-viet/${postId.value}`) }]),
   meta: [{ name: 'robots', content: 'noindex,follow' }],
 })
 
-if (post.value) {
-  const p = post.value
-  const postDesc = (p.content || '').substring(0, 160)
-  const postTitle = p.display_name || 'Bài viết'
-  useSeoMeta({
-    title: `${postTitle} — vinhlong360`,
-    description: postDesc,
-    ogTitle: `${postTitle} — vinhlong360`,
-    ogDescription: postDesc,
-    ogImage: p.images?.[0] || '/icons/icon-512.png',
-    // SEO-04: robots đã set ở useHead (vô-điều-kiện) → bỏ ở đây tránh thẻ trùng
-  })
+useSeoMeta({
+  title: () => `${post.value?.display_name || 'Bài viết'} — vinhlong360`,
+  description: () => (post.value?.content || '').substring(0, 160),
+  ogTitle: () => `${post.value?.display_name || 'Bài viết'} — vinhlong360`,
+  ogDescription: () => (post.value?.content || '').substring(0, 160),
+  ogImage: () => post.value?.images?.[0] || '/icons/icon-512.png',
+})
 
-  const articleLd: Record<string, any> = {
-    '@context': 'https://schema.org',
-    '@type': p.post_type === 'review' ? 'Review' : 'Article',
-    headline: postTitle,
-    description: postDesc,
-    url: `https://vinhlong360.vn/bai-viet/${postId}`,
-    datePublished: p.created_at,
-    dateModified: p.updated_at || p.created_at,
-    author: {
-      '@type': 'Person',
-      name: p.display_name || 'Người dùng',
-      ...(p.user_id ? { url: `https://vinhlong360.vn/nguoi-dung/${p.user_id}` } : {}),
-    },
-    publisher: { '@type': 'Organization', name: 'vinhlong360', url: 'https://vinhlong360.vn' },
-  }
-  if (p.images?.length) articleLd.image = p.images
-  if (p.post_type === 'review' && p.rating) {
-    articleLd.reviewRating = { '@type': 'Rating', ratingValue: p.rating, bestRating: 5 }
-  }
-
-  const breadcrumb = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-      { '@type': 'ListItem', position: 2, name: 'Cộng đồng', item: 'https://vinhlong360.vn/cong-dong' },
-      { '@type': 'ListItem', position: 3, name: postTitle },
-    ],
-  }
-
-  useHead({
-    script: [
+useHead({
+  script: computed(() => {
+    if (!post.value) return []
+    const p = post.value
+    const postTitle = p.display_name || 'Bài viết'
+    const postDesc = (p.content || '').substring(0, 160)
+    const articleLd: Record<string, any> = {
+      '@context': 'https://schema.org',
+      '@type': p.post_type === 'review' ? 'Review' : 'Article',
+      headline: postTitle, description: postDesc,
+      url: `https://vinhlong360.vn/bai-viet/${postId.value}`,
+      datePublished: p.created_at,
+      dateModified: p.updated_at || p.created_at,
+      author: {
+        '@type': 'Person', name: p.display_name || 'Người dùng',
+        ...(p.user_id ? { url: `https://vinhlong360.vn/nguoi-dung/${p.user_id}` } : {}),
+      },
+      publisher: { '@type': 'Organization', name: 'vinhlong360', url: 'https://vinhlong360.vn' },
+    }
+    if (p.images?.length) articleLd.image = p.images
+    if (p.post_type === 'review' && p.rating) {
+      articleLd.reviewRating = { '@type': 'Rating', ratingValue: p.rating, bestRating: 5 }
+    }
+    const breadcrumb = {
+      '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
+        { '@type': 'ListItem', position: 2, name: 'Cộng đồng', item: 'https://vinhlong360.vn/cong-dong' },
+        { '@type': 'ListItem', position: 3, name: postTitle },
+      ],
+    }
+    return [
       { type: 'application/ld+json', innerHTML: JSON.stringify(articleLd) },
       { type: 'application/ld+json', innerHTML: JSON.stringify(breadcrumb) },
-    ],
-  })
-}
+    ]
+  }),
+})
 </script>
 
 <style scoped>
@@ -465,7 +508,7 @@ if (post.value) {
 
 /* ── Comment actions + threaded replies ── */
 .comment-actions { display: flex; align-items: center; gap: var(--space-3); margin-top: .35rem; flex-wrap: wrap; }
-.comment-reply-btn { font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: .15rem .1rem; border: none; background: none; color: var(--muted); cursor: pointer; }
+.comment-reply-btn { font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: .15rem .1rem; border: none; background: none; color: var(--muted); cursor: pointer; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
 .comment-reply-btn:hover { color: var(--primary-fg); }
 .thread-subreply { display: flex; gap: var(--space-2); margin-top: var(--space-3); padding-left: var(--space-2); border-left: 2px solid var(--line); }
 .subreply-body { flex: 1; min-width: 0; }

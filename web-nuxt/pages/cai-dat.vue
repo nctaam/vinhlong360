@@ -15,8 +15,10 @@
     <nav class="settings-tabs" role="tablist" aria-label="Cài đặt">
       <button
         v-for="t in TABS" :key="t.key" type="button" role="tab"
+        :id="`tab-${t.key}`"
         class="settings-tab" :class="{ active: activeTab === t.key }"
         :aria-selected="activeTab === t.key"
+        :aria-controls="`panel-${t.key}`"
         @click="setTab(t.key)"
       >
         <span class="settings-tab-icon" aria-hidden="true">{{ t.icon }}</span>
@@ -25,7 +27,7 @@
     </nav>
 
     <!-- Tab: Hồ sơ -->
-    <div v-if="activeTab === 'ho-so'" class="settings-card card" role="tabpanel">
+    <div v-show="activeTab === 'ho-so'" :id="`panel-ho-so`" class="settings-card card" role="tabpanel" aria-labelledby="tab-ho-so">
       <h2>Hồ sơ cá nhân</h2>
       <form class="settings-form" @submit.prevent="save">
         <div class="sf-avatar-section">
@@ -77,6 +79,25 @@
         </label>
 
         <label class="sf-field">
+          <span class="sf-label">Username <span class="sf-hint">— dùng làm đường dẫn hồ sơ</span></span>
+          <div class="sf-username-row">
+            <span class="sf-username-prefix">vinhlong360.vn/nguoi-dung/</span>
+            <input
+              v-model="username"
+              type="text"
+              class="sf-input sf-username-input"
+              maxlength="30"
+              placeholder="ten-cua-ban"
+              autocomplete="username"
+              @input="onUsernameInput"
+            />
+          </div>
+          <span v-if="usernameStatus === 'taken'" class="sf-error" role="alert">Username đã được sử dụng</span>
+          <span v-else-if="usernameStatus === 'invalid'" class="sf-error" role="alert">{{ usernameError }}</span>
+          <span v-else-if="usernameStatus === 'ok'" class="sf-success">Username khả dụng ✓</span>
+        </label>
+
+        <label class="sf-field">
           <span class="sf-label">Giới thiệu <span class="sf-hint">({{ bio.length }}/300)</span></span>
           <textarea
             v-model="bio"
@@ -92,13 +113,13 @@
             <span v-if="saving" class="spinner spinner-sm" aria-hidden="true"></span>
             {{ saving ? 'Đang lưu…' : 'Lưu thay đổi' }}
           </button>
-          <NuxtLink v-if="user" :to="`/nguoi-dung/${user.id}`" class="btn btn-ghost">Xem hồ sơ</NuxtLink>
+          <NuxtLink v-if="user" :to="`/nguoi-dung/${savedUsername || user.id}`" class="btn btn-ghost">Xem hồ sơ</NuxtLink>
         </div>
       </form>
     </div>
 
     <!-- Tab: Bảo mật -->
-    <div v-if="activeTab === 'bao-mat'" role="tabpanel">
+    <div v-if="activeTab === 'bao-mat'" id="panel-bao-mat" role="tabpanel" aria-labelledby="tab-bao-mat">
       <div class="settings-card card">
         <h2>Mật khẩu</h2>
         <p v-if="!user?.has_password" class="sf-hint">Bạn chưa đặt mật khẩu. Đặt mật khẩu để đăng nhập nhanh hơn.</p>
@@ -110,6 +131,11 @@
           <label class="sf-field">
             <span class="sf-label">{{ user?.has_password ? 'Mật khẩu mới' : 'Đặt mật khẩu' }}</span>
             <input v-model="newPw" type="password" class="sf-input" minlength="6" autocomplete="new-password" required />
+          </label>
+          <label class="sf-field">
+            <span class="sf-label">Xác nhận mật khẩu</span>
+            <input v-model="confirmPw" type="password" class="sf-input" minlength="6" autocomplete="new-password" required />
+            <span v-if="confirmPw && confirmPw !== newPw" class="sf-error" role="alert">Mật khẩu xác nhận không khớp</span>
           </label>
           <div class="sf-actions">
             <button type="submit" class="btn btn-primary" :disabled="savingPw">
@@ -152,7 +178,7 @@
     </div>
 
     <!-- Tab: Thông báo -->
-    <div v-if="activeTab === 'thong-bao'" class="settings-card card" role="tabpanel">
+    <div v-if="activeTab === 'thong-bao'" id="panel-thong-bao" class="settings-card card" role="tabpanel" aria-labelledby="tab-thong-bao">
       <h2>Tùy chọn thông báo</h2>
       <p class="sf-hint" style="margin-bottom: 1rem;">Chọn loại thông báo bạn muốn nhận.</p>
       <div v-if="notifPrefsLoading" class="sf-hint">Đang tải...</div>
@@ -171,7 +197,7 @@
     </div>
 
     <!-- Tab: Giao diện -->
-    <div v-if="activeTab === 'giao-dien'" class="settings-card card" role="tabpanel">
+    <div v-if="activeTab === 'giao-dien'" id="panel-giao-dien" class="settings-card card" role="tabpanel" aria-labelledby="tab-giao-dien">
       <h2>Giao diện</h2>
       <div class="sf-field">
         <span class="sf-label">Chế độ màu</span>
@@ -191,7 +217,7 @@
     </div>
 
     <!-- Tab: Quyền riêng tư -->
-    <div v-if="activeTab === 'rieng-tu'" class="settings-card card" role="tabpanel">
+    <div v-if="activeTab === 'rieng-tu'" id="panel-rieng-tu" class="settings-card card" role="tabpanel" aria-labelledby="tab-rieng-tu">
       <h2>Quyền riêng tư</h2>
       <div v-if="privacyLoading" class="sf-hint">Đang tải...</div>
       <div v-else class="settings-form">
@@ -234,13 +260,13 @@
     </div>
 
     <!-- Tab: Người chặn -->
-    <div v-if="activeTab === 'chan'" class="settings-card card" role="tabpanel">
+    <div v-if="activeTab === 'chan'" id="panel-chan" class="settings-card card" role="tabpanel" aria-labelledby="tab-chan">
       <h2>Người bị chặn</h2>
       <div v-if="blockedLoading" class="sf-hint">Đang tải...</div>
       <div v-else-if="blockedUsers.length" class="sessions-list">
         <div v-for="b in blockedUsers" :key="b.id" class="session-item">
           <div class="session-info">
-            <NuxtLink :to="`/nguoi-dung/${b.id}`" class="session-ua">{{ b.display_name || 'Người dùng' }}</NuxtLink>
+            <NuxtLink :to="`/nguoi-dung/${b.username || b.id}`" class="session-ua">{{ b.display_name || 'Người dùng' }}</NuxtLink>
           </div>
           <button type="button" class="btn btn-ghost btn-sm" @click="unblockUser(b.id, b.display_name)">Bỏ chặn</button>
         </div>
@@ -249,7 +275,7 @@
     </div>
 
     <!-- Tab: Nguy hiểm -->
-    <div v-if="activeTab === 'nguy-hiem'" class="settings-card card settings-danger" role="tabpanel">
+    <div v-if="activeTab === 'nguy-hiem'" id="panel-nguy-hiem" class="settings-card card settings-danger" role="tabpanel" aria-labelledby="tab-nguy-hiem">
       <h2>Vùng nguy hiểm</h2>
       <div class="danger-actions">
         <div class="danger-item">
@@ -273,7 +299,7 @@
 </template>
 
 <script setup lang="ts">
-const { user, isLoggedIn, authHeaders, fetchMe } = useAuth()
+const { user, isLoggedIn, authHeaders, fetchMe, handleSessionExpired } = useAuth()
 const { openAuth } = useAuthModal()
 const { show: showToast } = useToast()
 const colorModeState = useColorMode()
@@ -301,23 +327,67 @@ const TABS = [
 ] as const
 type TabKey = typeof TABS[number]['key']
 
-const activeTab = ref<TabKey>((route.hash?.slice(1) as TabKey) || 'ho-so')
+const validKeys = new Set(TABS.map(t => t.key))
+const hashKey = route.hash?.slice(1)
+const activeTab = ref<TabKey>(validKeys.has(hashKey as TabKey) ? (hashKey as TabKey) : 'ho-so')
 
+const tabLoaded = reactive(new Set<TabKey>())
 function setTab(key: TabKey) {
   activeTab.value = key
   if (import.meta.client) window.history.replaceState(null, '', `#${key}`)
+  lazyLoadTab(key)
+}
+function lazyLoadTab(key: TabKey) {
+  if (tabLoaded.has(key)) return
+  tabLoaded.add(key)
+  if (key === 'bao-mat') { loadSessions(); loadLoginHistory() }
+  else if (key === 'rieng-tu') loadPrivacy()
+  else if (key === 'chan') loadBlocked()
+  else if (key === 'thong-bao') loadNotifPrefs()
 }
 
 const displayName = ref(user.value?.display_name || '')
 const bio = ref('')
+const savedName = ref(displayName.value)
+const savedBio = ref('')
+const isDirty = computed(() => displayName.value !== savedName.value || bio.value !== savedBio.value || username.value !== savedUsername.value)
 const saving = ref(false)
 const nameError = ref('')
+const username = ref(user.value?.username || '')
+const savedUsername = ref(username.value)
+const usernameStatus = ref<'' | 'ok' | 'taken' | 'invalid' | 'checking'>('')
+const usernameError = ref('')
+let usernameCheckTimer: ReturnType<typeof setTimeout> | null = null
+
+function onUsernameInput() {
+  const val = username.value.trim().toLowerCase()
+  if (!val) { usernameStatus.value = ''; return }
+  if (val.length < 3) { usernameStatus.value = 'invalid'; usernameError.value = 'Tối thiểu 3 ký tự'; return }
+  if (!/^[a-z][a-z0-9._-]*$/.test(val)) { usernameStatus.value = 'invalid'; usernameError.value = 'Chỉ chữ cái, số, dấu chấm, gạch ngang'; return }
+  usernameStatus.value = 'checking'
+  if (usernameCheckTimer) clearTimeout(usernameCheckTimer)
+  usernameCheckTimer = setTimeout(async () => {
+    try {
+      const res = await $fetch<{ available: boolean; reason?: string }>(`/auth/check-username/${encodeURIComponent(val)}`, { headers: authHeaders() })
+      if (username.value.trim().toLowerCase() !== val) return
+      if (res.available) { usernameStatus.value = 'ok' }
+      else { usernameStatus.value = 'taken'; usernameError.value = res.reason || 'Đã được sử dụng' }
+    } catch { usernameStatus.value = '' }
+  }, 500)
+}
+
 const uploadingAvatar = ref(false)
 const avatarPreview = ref('')
+
+const ALLOWED_IMG = ['image/jpeg', 'image/png', 'image/webp']
+const MAX_IMG_SIZE = 12 * 1024 * 1024
 
 async function onAvatarChange(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0]
   if (!file) return
+  if (!ALLOWED_IMG.includes(file.type)) { showToast('Chỉ hỗ trợ JPEG, PNG hoặc WebP', 'error'); return }
+  if (file.size > MAX_IMG_SIZE) { showToast('Ảnh quá lớn (tối đa 12MB)', 'error'); return }
+  if (avatarPreview.value?.startsWith('blob:')) URL.revokeObjectURL(avatarPreview.value)
   avatarPreview.value = URL.createObjectURL(file)
   uploadingAvatar.value = true
   try {
@@ -334,6 +404,7 @@ async function onAvatarChange(e: Event) {
     }
   } catch (err: any) {
     avatarPreview.value = ''
+    if (err?.response?.status === 401) { handleSessionExpired(); return }
     showToast(err?.data?.detail || 'Không thể tải ảnh lên', 'error')
   } finally {
     uploadingAvatar.value = false
@@ -346,21 +417,31 @@ onMounted(async () => {
   try {
     const res = await $fetch<Record<string, any>>(`/api/users/${user.value.id}`, { headers: authHeaders() })
     const u = res?.user ?? res
-    if (u?.bio) bio.value = u.bio
-    if (!displayName.value && u?.display_name) displayName.value = u.display_name
+    if (u?.bio) { bio.value = u.bio; savedBio.value = u.bio }
+    if (!displayName.value && u?.display_name) { displayName.value = u.display_name; savedName.value = u.display_name }
+    if (u?.username) { username.value = u.username; savedUsername.value = u.username }
   } catch { /* prefill is best-effort */ }
-  loadSessions()
-  loadLoginHistory()
-  loadPrivacy()
-  loadBlocked()
-  loadNotifPrefs()
+  lazyLoadTab(activeTab.value)
 })
 
 const currentPw = ref('')
 const newPw = ref('')
+const confirmPw = ref('')
 const savingPw = ref(false)
 
 async function savePassword() {
+  if (user.value?.has_password && !currentPw.value) {
+    showToast('Vui lòng nhập mật khẩu hiện tại', 'error')
+    return
+  }
+  if (!newPw.value || newPw.value.length < 6) {
+    showToast('Mật khẩu mới phải từ 6 ký tự trở lên', 'error')
+    return
+  }
+  if (newPw.value !== confirmPw.value) {
+    showToast('Mật khẩu xác nhận không khớp', 'error')
+    return
+  }
   savingPw.value = true
   try {
     const body: Record<string, string> = { password: newPw.value }
@@ -369,8 +450,10 @@ async function savePassword() {
     showToast('Đã cập nhật mật khẩu', 'success')
     currentPw.value = ''
     newPw.value = ''
+    confirmPw.value = ''
     await fetchMe()
   } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast(e?.data?.detail || 'Không thể đổi mật khẩu', 'error')
   } finally { savingPw.value = false }
 }
@@ -401,7 +484,10 @@ async function revokeSession(id: string) {
     await $fetch(`/auth/sessions/${id}`, { method: 'DELETE', headers: authHeaders() })
     sessions.value = sessions.value.filter(s => s.id !== id)
     showToast('Đã thu hồi phiên', 'success')
-  } catch { showToast('Không thể thu hồi phiên', 'error') }
+  } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    showToast('Không thể thu hồi phiên', 'error')
+  }
 }
 
 const uploadingCover = ref(false)
@@ -410,6 +496,9 @@ const coverPreview = ref('')
 async function onCoverChange(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0]
   if (!file) return
+  if (!ALLOWED_IMG.includes(file.type)) { showToast('Chỉ hỗ trợ JPEG, PNG hoặc WebP', 'error'); return }
+  if (file.size > MAX_IMG_SIZE) { showToast('Ảnh quá lớn (tối đa 12MB)', 'error'); return }
+  if (coverPreview.value?.startsWith('blob:')) URL.revokeObjectURL(coverPreview.value)
   coverPreview.value = URL.createObjectURL(file)
   uploadingCover.value = true
   try {
@@ -426,6 +515,7 @@ async function onCoverChange(e: Event) {
     }
   } catch (err: any) {
     coverPreview.value = ''
+    if (err?.response?.status === 401) { handleSessionExpired(); return }
     showToast(err?.data?.detail || 'Không thể tải ảnh bìa lên', 'error')
   } finally {
     uploadingCover.value = false
@@ -462,8 +552,9 @@ async function setPrivacy(key: string, value: any) {
   try {
     await $fetch('/auth/privacy', { method: 'PUT', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: { [key]: value } })
     showToast('Đã cập nhật quyền riêng tư', 'success')
-  } catch {
+  } catch (e: any) {
     privacy.value = prev
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast('Không thể cập nhật', 'error')
   }
 }
@@ -474,8 +565,8 @@ const blockedLoading = ref(true)
 async function loadBlocked() {
   blockedLoading.value = true
   try {
-    const res = await $fetch<{ users: any[] }>('/api/blocked-users', { headers: authHeaders() })
-    blockedUsers.value = res.users || []
+    const res = await $fetch<{ blocked: any[] }>('/api/blocked-users', { headers: authHeaders() })
+    blockedUsers.value = res.blocked || []
   } catch { /* ignore */ }
   blockedLoading.value = false
 }
@@ -485,7 +576,10 @@ async function unblockUser(id: string, name: string) {
     await $fetch(`/api/notifications/block/${id}`, { method: 'POST', headers: authHeaders() })
     blockedUsers.value = blockedUsers.value.filter(u => u.id !== id)
     showToast(`${name || 'Người dùng'} đã được bỏ chặn`, 'success')
-  } catch { showToast('Không thể bỏ chặn', 'error') }
+  } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    showToast('Không thể bỏ chặn', 'error')
+  }
 }
 
 const NOTIF_TYPES = [
@@ -514,8 +608,9 @@ async function toggleNotifPref(prefKey: string) {
   try {
     await $fetch('/api/notification-preferences', { method: 'PUT', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: { [prefKey]: !prev } })
     showToast('Đã lưu tùy chọn thông báo', 'success')
-  } catch {
+  } catch (e: any) {
     notifPrefs.value[prefKey] = prev
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast('Không thể cập nhật tùy chọn', 'error')
   }
 }
@@ -527,9 +622,13 @@ async function deactivate() {
   if (!ok) return
   try {
     await $fetch('/auth/deactivate', { method: 'POST', headers: authHeaders() })
+    await fetchMe()
     showToast('Tài khoản đã bị vô hiệu hóa', 'success')
     navigateTo('/')
-  } catch (e: any) { showToast(e?.data?.detail || 'Lỗi', 'error') }
+  } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    showToast(e?.data?.detail || 'Lỗi', 'error')
+  }
 }
 
 async function deleteAccount() {
@@ -537,9 +636,13 @@ async function deleteAccount() {
   if (!ok) return
   try {
     await $fetch('/auth/account', { method: 'DELETE', headers: authHeaders() })
+    await fetchMe()
     showToast('Đã xóa tài khoản', 'success')
     navigateTo('/')
-  } catch (e: any) { showToast(e?.data?.detail || 'Lỗi', 'error') }
+  } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    showToast(e?.data?.detail || 'Lỗi', 'error')
+  }
 }
 
 const { timeAgo } = useTimeAgo()
@@ -551,21 +654,57 @@ async function save() {
     nameError.value = 'Tên hiển thị phải từ 2 ký tự trở lên'
     return
   }
+  if (usernameStatus.value === 'taken' || usernameStatus.value === 'invalid') {
+    showToast('Vui lòng kiểm tra lại username', 'error')
+    return
+  }
   saving.value = true
   try {
+    const body: Record<string, any> = { display_name: name, bio: bio.value.trim() }
+    const uname = username.value.trim().toLowerCase()
+    if (uname !== savedUsername.value) body.username = uname || null
     await $fetch('/auth/profile', {
       method: 'PUT',
       headers: authHeaders(),
-      body: { display_name: name, bio: bio.value.trim() },
+      body,
     })
     await fetchMe()
+    savedName.value = displayName.value
+    savedBio.value = bio.value
+    savedUsername.value = username.value.trim().toLowerCase()
+    usernameStatus.value = ''
     showToast('Đã lưu hồ sơ', 'success')
   } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    if (e?.response?.status === 409) { usernameStatus.value = 'taken'; showToast('Username đã được sử dụng', 'error'); return }
     showToast(e?.data?.detail || 'Không thể lưu hồ sơ', 'error')
   } finally {
     saving.value = false
   }
 }
+
+function onBeforeUnload(e: BeforeUnloadEvent) {
+  if (isDirty.value) e.preventDefault()
+}
+function onPopState() {
+  const hash = window.location.hash.slice(1) as TabKey
+  if (hash && TABS.some(t => t.key === hash)) activeTab.value = hash
+}
+onMounted(() => {
+  if (import.meta.client) {
+    window.addEventListener('beforeunload', onBeforeUnload)
+    window.addEventListener('popstate', onPopState)
+  }
+})
+onUnmounted(() => {
+  if (import.meta.client) {
+    window.removeEventListener('beforeunload', onBeforeUnload)
+    window.removeEventListener('popstate', onPopState)
+  }
+  if (avatarPreview.value?.startsWith('blob:')) URL.revokeObjectURL(avatarPreview.value)
+  if (coverPreview.value?.startsWith('blob:')) URL.revokeObjectURL(coverPreview.value)
+  if (usernameCheckTimer) clearTimeout(usernameCheckTimer)
+})
 </script>
 
 <style scoped>
@@ -605,6 +744,10 @@ async function save() {
 .sf-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .sf-textarea { resize: vertical; min-height: 90px; }
 .sf-error { color: var(--danger, #c0392b); font-size: .85rem; }
+.sf-success { color: var(--accent, #219653); font-size: .85rem; }
+.sf-username-row { display: flex; align-items: center; gap: 0; border: 1px solid var(--border-input); border-radius: var(--radius-md); overflow: hidden; }
+.sf-username-prefix { padding: .65rem .6rem; background: var(--bg-warm, #f5f5f5); color: var(--ink-700); font-size: .85rem; white-space: nowrap; border-right: 1px solid var(--border-input); flex-shrink: 0; }
+.sf-username-input { border: none !important; border-radius: 0 !important; flex: 1; min-width: 0; }
 .sf-actions { display: flex; gap: .75rem; align-items: center; }
 .sf-avatar-section { display: flex; align-items: center; gap: 1rem; }
 .sf-avatar-preview {
@@ -642,14 +785,14 @@ async function save() {
 .notif-pref-icon { font-size: 1.25rem; flex-shrink: 0; }
 .notif-pref-info strong { display: block; font-size: .9rem; }
 .notif-pref-info .sf-hint { display: block; margin-top: .1rem; }
-.toggle { appearance: none; width: 40px; height: 22px; background: var(--muted); border-radius: 11px; position: relative; cursor: pointer; transition: background .2s; flex-shrink: 0; }
+.toggle { appearance: none; width: 40px; height: 22px; background: var(--muted); border-radius: 11px; position: relative; cursor: pointer; transition: background .2s; flex-shrink: 0; min-height: 44px; padding: 11px 0; box-sizing: content-box; }
 .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: transform .2s; }
 .toggle:checked { background: var(--accent, var(--primary)); }
 .toggle:checked::after { transform: translateX(18px); }
 .toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* ── Cover photo ── */
-.sf-cover-section { display: flex; align-items: flex-start; gap: 1rem; }
+.sf-cover-section { display: flex; align-items: flex-start; gap: 1rem; overflow: hidden; }
 .sf-cover-preview {
   width: 200px; height: 68px; border-radius: var(--radius-md); overflow: hidden; cursor: pointer;
   position: relative; flex-shrink: 0; border: 2px solid var(--border-input);
@@ -682,6 +825,8 @@ async function save() {
 .dark .session-item.current { border-color: var(--accent); background: color-mix(in oklab, var(--accent) 8%, var(--bg-alt)); }
 .dark .settings-danger { border-color: rgba(192,57,43,.3); }
 .dark .sf-avatar-preview { border-color: var(--line); }
+.dark .sf-username-row { border-color: var(--line); }
+.dark .sf-username-prefix { background: var(--bg-alt); border-color: var(--line); }
 .dark .notif-pref-item { border-color: var(--line); }
 .dark .notif-pref-item:hover { background: var(--bg-alt); }
 
@@ -693,5 +838,7 @@ async function save() {
   .danger-item { flex-direction: column; align-items: flex-start; gap: .5rem; }
   .settings-tabs { gap: 0; }
   .settings-tab { padding: .5rem .65rem; font-size: .8rem; }
+  .sf-input { font-size: 16px; }
+  .sf-username-prefix { font-size: .75rem; padding: .65rem .4rem; }
 }
 </style>

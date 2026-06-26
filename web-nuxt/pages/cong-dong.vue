@@ -164,6 +164,35 @@
           </button>
         </div>
 
+        <!-- Mobile discovery strip (sidebar content for small screens) -->
+        <div v-if="(topMembers.length || trendingTags.length) && !searchMode" class="mobile-discovery">
+          <div v-if="trendingTags.length" class="md-section">
+            <span class="md-label">Thịnh hành</span>
+            <div class="md-scroll">
+              <NuxtLink
+                v-for="t in trendingTags.slice(0, 6)"
+                :key="t.tag"
+                :to="{ path: '/cong-dong', query: { tag: t.tag } }"
+                class="md-tag"
+              >#{{ t.tag }}</NuxtLink>
+            </div>
+          </div>
+          <div v-if="topMembers.length" class="md-section">
+            <span class="md-label">Top</span>
+            <div class="md-scroll">
+              <NuxtLink
+                v-for="m in topMembers.slice(0, 5)"
+                :key="m.id"
+                :to="`/nguoi-dung/${m.username || m.id}`"
+                class="md-member"
+              >
+                <span class="avatar avatar-xs">{{ (m.display_name || '?').charAt(0).toUpperCase() }}</span>
+                <span class="md-name">{{ m.display_name }}</span>
+              </NuxtLink>
+            </div>
+          </div>
+        </div>
+
         <!-- Đang lọc theo hashtag -->
         <div v-if="activeTag" class="tag-banner" role="status">
           <span>Đang xem <strong>#{{ activeTag }}</strong></span>
@@ -234,7 +263,7 @@
               <p class="onboard-title">Gợi ý theo dõi</p>
               <div class="onboard-list">
                 <div v-for="s in suggestedUsers.slice(0, 5)" :key="s.id" class="onboard-user">
-                  <NuxtLink :to="`/nguoi-dung/${s.id}`" class="onboard-info">
+                  <NuxtLink :to="`/nguoi-dung/${s.username || s.id}`" class="onboard-info">
                     <span class="avatar avatar-sm">{{ (s.display_name || '?').charAt(0).toUpperCase() }}</span>
                     <span class="onboard-name">{{ s.display_name }}</span>
                   </NuxtLink>
@@ -290,7 +319,7 @@
           <h3>Thành viên tích cực</h3>
           <ol class="leaderboard-list">
             <li v-for="(m, i) in topMembers" :key="m.id">
-              <NuxtLink :to="`/nguoi-dung/${m.id}`" class="lb-row">
+              <NuxtLink :to="`/nguoi-dung/${m.username || m.id}`" class="lb-row">
                 <span class="lb-rank" :class="`lb-rank-${i + 1}`">{{ i + 1 }}</span>
                 <span class="avatar lb-avatar">{{ (m.display_name || '?').charAt(0).toUpperCase() }}</span>
                 <span class="lb-name">{{ m.display_name }}</span>
@@ -305,7 +334,7 @@
           <h3>Có thể bạn quan tâm</h3>
           <ul class="suggest-list">
             <li v-for="s in suggestedUsers" :key="s.id" class="suggest-row">
-              <NuxtLink :to="`/nguoi-dung/${s.id}`" class="suggest-user">
+              <NuxtLink :to="`/nguoi-dung/${s.username || s.id}`" class="suggest-user">
                 <span class="avatar suggest-avatar">{{ (s.display_name || '?').charAt(0).toUpperCase() }}</span>
                 <span class="suggest-name">{{ s.display_name }}</span>
               </NuxtLink>
@@ -382,7 +411,7 @@ const { f: pc } = usePageContent('cong_dong')
 
 const MAX_CHARS = 500
 
-const { isLoggedIn, authHeaders, user } = useAuth()
+const { isLoggedIn, authHeaders, user, handleSessionExpired } = useAuth()
 const { openAuth } = useAuthModal()
 const { confirmDialog } = useConfirm()
 const { repost } = useRepost()
@@ -417,6 +446,7 @@ const posts = ref<Entity[]>([])
 const hasMore = ref(false)
 const loading = ref(false)
 const feedError = ref(false)
+let feedAbort: AbortController | null = null
 // ── Tìm bài viết cộng đồng ──
 const searchInput = ref('')
 const searchQuery = ref('')          // truy vấn đang áp dụng (rỗng = không ở chế-độ tìm)
@@ -564,8 +594,13 @@ function autoGrow(e: Event) {
 const {
   mentionResults, mentionOpen, mentionActive,
   onInput: onMentionInput, pick: pickMention,
-  onKeydown: onComposerKeydown, reset: resetMention, activeMentions,
+  onKeydown: onMentionKeydownComposer, closeMention, reset: resetMention, activeMentions,
 } = useMentionAutocomplete(newContent, composeInputEl)
+
+function onComposerKeydown(e: KeyboardEvent) {
+  if (onMentionKeydownComposer(e)) return
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); submitPost() }
+}
 
 function onComposerInput(e: Event) {
   autoGrow(e)
@@ -590,7 +625,9 @@ function downscaleImage(file: File, maxDim = 1280, quality = 0.82): Promise<stri
       const ctx = canvas.getContext('2d')
       if (!ctx) return reject(new Error('no-ctx'))
       ctx.drawImage(img, 0, 0, width, height)
-      resolve(canvas.toDataURL('image/jpeg', quality))
+      const result = canvas.toDataURL('image/jpeg', quality)
+      canvas.width = 0; canvas.height = 0
+      resolve(result)
     }
     img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('img-load')) }
     img.src = url
@@ -602,6 +639,7 @@ async function onFileSelect(e: Event) {
   if (!input.files) return
   const newFiles = Array.from(input.files).slice(0, 5 - imageFiles.value.length)
   for (const file of newFiles) {
+    if (!file.type.startsWith('image/') || file.type === 'image/svg+xml') { showToast(`${file.name} không phải ảnh hợp lệ`, 'warning'); continue }
     if (file.size > 10 * 1024 * 1024) { showToast('Ảnh quá lớn (tối đa 10MB)', 'warning'); continue }
     try {
       const dataUrl = await downscaleImage(file)
@@ -622,6 +660,7 @@ function removeImage(idx: number) {
 function setTab(tab: 'latest' | 'trending' | 'following' | 'bookmarks') {
   if (searchMode.value) clearSearch()
   if (activeTab.value === tab) return
+  feedAbort?.abort()
   activeTab.value = tab
   filterType.value = ''
   if (tab === 'bookmarks') {
@@ -633,9 +672,10 @@ function setTab(tab: 'latest' | 'trending' | 'following' | 'bookmarks') {
 
 async function fetchFeed(reset = false) {
   if (reset) { page.value = 1; posts.value = []; feedError.value = false }
+  feedAbort?.abort()
+  feedAbort = new AbortController()
   loading.value = true
   try {
-    // Tab "Đang theo dõi" dùng endpoint riêng (bài từ người+địa-điểm mình follow)
     const url = activeTab.value === 'following'
       ? `/api/feed/following?page=${page.value}&limit=20`
       : (() => {
@@ -646,15 +686,18 @@ async function fetchFeed(reset = false) {
         })()
     const res = await $fetch<{ posts: Post[] }>(url, {
       headers: authHeaders(),
+      signal: feedAbort.signal,
     })
     const newPosts = res.posts || res || []
     if (reset) {
       posts.value = newPosts
     } else {
-      posts.value.push(...newPosts)
+      const existing = new Set(posts.value.map(p => p.id))
+      posts.value.push(...newPosts.filter(p => !existing.has(p.id)))
     }
     hasMore.value = newPosts.length === 20
-  } catch {
+  } catch (e: any) {
+    if (e?.name === 'AbortError') return
     if (reset && !posts.value.length) feedError.value = true
     showToast(reset ? 'Không thể tải bảng tin' : 'Không thể tải thêm', 'error')
   }
@@ -672,7 +715,8 @@ async function fetchBookmarks(reset = false) {
     if (reset) {
       bookmarks.value = newPosts
     } else {
-      bookmarks.value.push(...newPosts)
+      const existing = new Set(bookmarks.value.map(p => p.id))
+      bookmarks.value.push(...newPosts.filter(p => !existing.has(p.id)))
     }
     bookmarksHasMore.value = newPosts.length === 20
   } catch {
@@ -688,6 +732,7 @@ function refreshFeed() {
 }
 
 function loadMore() {
+  if (loading.value || searchLoading.value || bookmarksLoading.value) return
   if (searchMode.value) {
     searchPage.value++
     fetchSearch()
@@ -721,7 +766,7 @@ async function fetchSearch(reset = false) {
 
 function runSearch() {
   const q = searchInput.value.trim()
-  if (q.length < 2) { showToast('Nhập ít nhất 2 ký tự để tìm', 'info'); return }
+  if (q.length < 2) { showToast('Nhập ít nhất 2 ký tự để tìm kiếm', 'info'); return }
   searchQuery.value = q
   fetchSearch(true)
 }
@@ -738,6 +783,7 @@ watch(filterType, () => {
 
 async function submitPost() {
   if (!canSubmit.value) return
+  if (draftTimer) { clearTimeout(draftTimer); draftTimer = null }
   posting.value = true
   try {
     const body: Record<string, any> = {
@@ -767,8 +813,9 @@ async function submitPost() {
     showToast(wasQuote ? 'Đã đăng trích dẫn 🔁' : 'Đã đăng bài viết', 'success')
     activeTab.value = 'latest'
     await fetchFeed(true)
-  } catch (e: unknown) {
-    const detail = (e as any)?.data?.detail
+  } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    const detail = e?.data?.detail
     showToast(detail || 'Gửi bài thất bại — vui lòng thử lại', 'error')
   }
   posting.value = false
@@ -805,8 +852,9 @@ async function submitEntityReport() {
     const nextQuery = { ...route.query }
     delete nextQuery.report
     router.replace({ query: nextQuery })
-  } catch (e: unknown) {
-    const detail = (e as any)?.data?.detail
+  } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    const detail = e?.data?.detail
     showToast(detail || 'Không thể gửi báo cáo', 'error')
   }
   reportSubmitting.value = false
@@ -836,8 +884,9 @@ async function toggleLike(postId: string) {
   flip()
   try {
     await $fetch(`/api/posts/${postId}/like`, { method: 'POST', headers: authHeaders() })
-  } catch {
+  } catch (e: any) {
     flip()
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast('Không thể thích bài viết', 'error')
   } finally { pendingActions.delete(`like:${postId}`) }
 }
@@ -858,8 +907,9 @@ async function toggleBookmark(postId: string) {
       showToast('Đã lưu bài viết', 'success')
       if (!sessionBookmarked.value) sessionBookmarked.value = true
     }
-  } catch {
+  } catch (e: any) {
     copies.forEach(p => { p.user_bookmarked = !p.user_bookmarked })
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast('Không thể lưu bài viết', 'error')
   } finally { pendingActions.delete(`bm:${postId}`) }
 }
@@ -873,7 +923,10 @@ async function deletePost(postId: string) {
     bookmarks.value = bookmarks.value.filter(p => p.id !== postId)
     searchResults.value = searchResults.value.filter(p => p.id !== postId)
     showToast('Đã xoá bài viết', 'success')
-  } catch { showToast('Không thể xoá bài viết', 'error') }
+  } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    showToast('Không thể xoá bài viết', 'error')
+  }
 }
 
 function goToPost(postId: string) {
@@ -885,10 +938,23 @@ watch(reportEntityId, () => fetchReportEntity())
 let draftTimer: ReturnType<typeof setTimeout> | null = null
 watch(newContent, (v) => {
   if (draftTimer) clearTimeout(draftTimer)
-  draftTimer = setTimeout(() => saveDraft(v, newType.value), 3000)
+  draftTimer = setTimeout(() => {
+    try {
+      saveDraft(v, newType.value)
+    } catch {
+      showToast('Không thể lưu bản nháp', 'warning')
+    }
+  }, 3000)
 })
 
+function onClickOutsideMention(e: MouseEvent) {
+  if (mentionOpen.value && !(e.target as HTMLElement)?.closest('.compose-mention-wrap')) {
+    closeMention()
+  }
+}
+
 onMounted(() => {
+  document.addEventListener('click', onClickOutsideMention)
   const draft = loadDraft()
   if (draft && draft.content) { newContent.value = draft.content; newType.value = draft.postType }
   fetchReportEntity()
@@ -914,7 +980,10 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  if (draftTimer) { clearTimeout(draftTimer); draftTimer = null }
+  feedAbort?.abort()
   loadObserver?.disconnect()
+  document.removeEventListener('click', onClickOutsideMention)
 })
 
 useSeoMeta({
@@ -953,7 +1022,7 @@ useHead({
 .lb-row { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-2); border-radius: var(--radius-md); text-decoration: none; color: var(--ink); transition: background .2s var(--ease-out); }
 .lb-row:hover { background: var(--bg-alt); }
 .lb-rank { flex-shrink: 0; width: 18px; text-align: center; font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--muted); }
-.lb-rank-1 { color: #d4a017; } .lb-rank-2 { color: #8a8d91; } .lb-rank-3 { color: #b07b4f; }
+.lb-rank-1 { color: var(--lb-gold, #d4a017); } .lb-rank-2 { color: var(--lb-silver, #8a8d91); } .lb-rank-3 { color: var(--lb-bronze, #b07b4f); }
 .lb-avatar { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--primary-fg, #fff); font-size: 11px; font-weight: var(--weight-semibold); flex-shrink: 0; }
 .lb-name { flex: 1; min-width: 0; font-size: var(--text-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lb-points { flex-shrink: 0; font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--primary-fg); }
@@ -1228,6 +1297,9 @@ useHead({
 .dark .threads-compose:focus-within { background: rgba(232,163,61,.1); }
 .dark .threads-filter { background: var(--surface-translucent, rgba(0,0,0,.72)); }
 .dark .sidebar-rules-list li::before { background: rgba(232,163,61,.2); color: var(--accent); }
+.dark .lb-rank-1 { --lb-gold: #f0c040; } .dark .lb-rank-2 { --lb-silver: #b0b3b8; } .dark .lb-rank-3 { --lb-bronze: #d4975a; }
+
+.mobile-discovery { display: none; }
 
 @media (max-width: 820px) {
   .threads-layout { grid-template-columns: 1fr; }
@@ -1235,6 +1307,19 @@ useHead({
   .threads-page { max-width: 100%; }
   .threads-feed { padding-inline: var(--space-1); }
   .threads-compose { padding-inline: var(--space-3); }
+  .compose-input { min-height: 48px; font-size: var(--text-base); }
+  .mobile-discovery { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-2) var(--space-3); }
+  .md-section { display: flex; align-items: center; gap: var(--space-2); }
+  .md-label { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-500); white-space: nowrap; min-width: 52px; }
+  .md-scroll { display: flex; gap: var(--space-2); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-block: 2px; }
+  .md-scroll::-webkit-scrollbar { display: none; }
+  .md-tag { font-size: .8rem; padding: 4px 10px; border-radius: var(--radius-full); background: var(--surface-2); color: var(--accent); white-space: nowrap; text-decoration: none; font-weight: 500; }
+  .md-tag:hover { background: var(--accent); color: #fff; }
+  .md-member { display: flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: var(--radius-full); background: var(--surface-2); text-decoration: none; white-space: nowrap; }
+  .md-name { font-size: .78rem; color: var(--ink-800); }
+  .dark .md-tag { background: var(--surface-3); }
+  .dark .md-member { background: var(--surface-3); }
+  .dark .md-name { color: var(--ink-200); }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -161,6 +161,7 @@ class CheckPhone(BaseModel):
 class ProfileUpdate(BaseModel):
     display_name: str | None = None
     bio: str | None = None
+    username: str | None = None
 
 
 # ── Helpers ──
@@ -552,11 +553,51 @@ async def update_profile(body: ProfileUpdate, request: Request):
         fields["display_name"] = _html.escape(name)
     if body.bio is not None:
         fields["bio"] = _html.escape(body.bio.strip()[:300])
+    if body.username is not None:
+        uname = body.username.strip().lower()
+        if uname == "":
+            fields["username"] = None
+        else:
+            if len(uname) < 3 or len(uname) > 30:
+                raise HTTPException(400, "Username phải từ 3–30 ký tự")
+            if not re.match(r'^[a-z][a-z0-9._-]*$', uname):
+                raise HTTPException(400, "Username chỉ gồm chữ cái, số, dấu chấm, gạch ngang (bắt đầu bằng chữ)")
+            _reserved = {"admin", "mod", "moderator", "support", "help", "system", "root",
+                         "api", "auth", "login", "signup", "register", "settings", "caidat",
+                         "vinhlong360", "congdong", "baiviet", "thongbao", "nguoidung"}
+            if uname in _reserved:
+                raise HTTPException(400, "Username này không được phép sử dụng")
+            ph = db._ph
+            with db._conn() as conn:
+                existing = db._fetchone(conn,
+                    f"SELECT id FROM users WHERE lower(username) = {ph} AND id != {ph}::uuid",
+                    (uname, str(user["id"])))
+            if existing:
+                raise HTTPException(409, "Username đã được sử dụng")
+            fields["username"] = uname
 
     if fields:
         user = db.update_user(str(user["id"]), **fields)
 
     return {"user": _safe_user(user)}
+
+
+@router.get("/check-username/{username}")
+async def check_username(username: str, request: Request):
+    uname = username.strip().lower()
+    if len(uname) < 3 or len(uname) > 30:
+        return {"available": False, "reason": "Username phải từ 3–30 ký tự"}
+    if not re.match(r'^[a-z][a-z0-9._-]*$', uname):
+        return {"available": False, "reason": "Username chỉ gồm chữ cái, số, dấu chấm, gạch ngang"}
+    ph = db._ph
+    with db._conn() as conn:
+        existing = db._fetchone(conn, f"SELECT id FROM users WHERE lower(username) = {ph}", (uname,))
+    if existing:
+        user = await _get_current_user_or_none(request)
+        if user and str(existing["id"]) == str(user["id"]):
+            return {"available": True}
+        return {"available": False, "reason": "Username đã được sử dụng"}
+    return {"available": True}
 
 
 @router.post("/avatar")
@@ -747,6 +788,7 @@ def _safe_user(user: dict) -> dict:
         "avatar_url": user.get("avatar_url"),
         "cover_url": user.get("cover_url"),
         "bio": user.get("bio", ""),
+        "username": user.get("username"),
         "role": user.get("role", "user"),
         "created_at": str(user.get("created_at", "")),
     }
