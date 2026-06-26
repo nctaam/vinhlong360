@@ -94,14 +94,18 @@ export function useAuth() {
     return token.value ? { Authorization: `Bearer ${token.value}` } : {}
   }
 
+  let sessionExpiredFired = false
   function handleSessionExpired() {
-    if (!token.value) return
+    if (!token.value && !sessionExpiredFired) return
+    if (sessionExpiredFired) return
+    sessionExpiredFired = true
     token.value = null
     user.value = null
     const { show } = useToast()
     show('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'warning', 5000)
     const { openAuth } = useAuthModal()
     openAuth()
+    setTimeout(() => { sessionExpiredFired = false }, 2000)
   }
 
   async function authFetch<T>(url: string, opts: Parameters<typeof $fetch>[1] = {}): Promise<T> {

@@ -266,24 +266,14 @@ const lbOpen = ref(false)
 const lbIdx = ref(0)
 const lbEl = ref<HTMLElement>()
 
-let lbTriggerEl: HTMLElement | null = null
 function openLightbox(i: number) {
-  lbTriggerEl = document.activeElement as HTMLElement
   lbIdx.value = i
   lbOpen.value = true
-  nextTick(() => {
-    const close = document.querySelector('.lb-close') as HTMLElement
-    close?.focus()
-  })
 }
 function closeLightbox() {
   lbOpen.value = false
-  nextTick(() => lbTriggerEl?.focus())
 }
-watch(lbOpen, (v) => {
-  if (import.meta.client) document.body.style.overflow = v ? 'hidden' : ''
-})
-onUnmounted(() => { if (import.meta.client) document.body.style.overflow = '' })
+useModalA11y(lbOpen, lbEl, { onClose: closeLightbox })
 function lbPrev() { lbIdx.value = (lbIdx.value - 1 + allImages.value.length) % allImages.value.length }
 function lbNext() { lbIdx.value = (lbIdx.value + 1) % allImages.value.length }
 
@@ -316,23 +306,13 @@ function onLbTouchEnd() {
   lbTouchDX.value = 0
 }
 
-function onKey(e: KeyboardEvent) {
+function onLbKey(e: KeyboardEvent) {
   if (!lbOpen.value) return
-  if (e.key === 'Escape') closeLightbox()
-  else if (e.key === 'ArrowLeft') lbPrev()
+  if (e.key === 'ArrowLeft') lbPrev()
   else if (e.key === 'ArrowRight') lbNext()
-  else if (e.key === 'Tab') {
-    const btns = lbEl.value ? Array.from(lbEl.value.querySelectorAll<HTMLElement>('button')) : []
-    if (!btns.length) return
-    const first = btns[0]!, last = btns[btns.length - 1]!
-    const active = document.activeElement as HTMLElement
-    if (e.shiftKey && active === first) { e.preventDefault(); last.focus() }
-    else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus() }
-    else if (!btns.includes(active)) { e.preventDefault(); first.focus() }
-  }
 }
-onMounted(() => window.addEventListener('keydown', onKey))
-onUnmounted(() => window.removeEventListener('keydown', onKey))
+onMounted(() => window.addEventListener('keydown', onLbKey))
+onUnmounted(() => window.removeEventListener('keydown', onLbKey))
 
 if (import.meta.client) {
   const onClick = (e: Event) => { if (showMenu.value) showMenu.value = false; if (repostMenu.value) repostMenu.value = false }

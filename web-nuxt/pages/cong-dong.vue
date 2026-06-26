@@ -595,7 +595,9 @@ function downscaleImage(file: File, maxDim = 1280, quality = 0.82): Promise<stri
       const ctx = canvas.getContext('2d')
       if (!ctx) return reject(new Error('no-ctx'))
       ctx.drawImage(img, 0, 0, width, height)
-      resolve(canvas.toDataURL('image/jpeg', quality))
+      const result = canvas.toDataURL('image/jpeg', quality)
+      canvas.width = 0; canvas.height = 0
+      resolve(result)
     }
     img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('img-load')) }
     img.src = url
@@ -656,7 +658,8 @@ async function fetchFeed(reset = false) {
     if (reset) {
       posts.value = newPosts
     } else {
-      posts.value.push(...newPosts)
+      const existing = new Set(posts.value.map(p => p.id))
+      posts.value.push(...newPosts.filter(p => !existing.has(p.id)))
     }
     hasMore.value = newPosts.length === 20
   } catch {
@@ -677,7 +680,8 @@ async function fetchBookmarks(reset = false) {
     if (reset) {
       bookmarks.value = newPosts
     } else {
-      bookmarks.value.push(...newPosts)
+      const existing = new Set(bookmarks.value.map(p => p.id))
+      bookmarks.value.push(...newPosts.filter(p => !existing.has(p.id)))
     }
     bookmarksHasMore.value = newPosts.length === 20
   } catch {
@@ -693,6 +697,7 @@ function refreshFeed() {
 }
 
 function loadMore() {
+  if (loading.value || searchLoading.value || bookmarksLoading.value) return
   if (searchMode.value) {
     searchPage.value++
     fetchSearch()
@@ -743,6 +748,7 @@ watch(filterType, () => {
 
 async function submitPost() {
   if (!canSubmit.value) return
+  if (draftTimer) { clearTimeout(draftTimer); draftTimer = null }
   posting.value = true
   try {
     const body: Record<string, any> = {
@@ -932,6 +938,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  if (draftTimer) { clearTimeout(draftTimer); draftTimer = null }
   loadObserver?.disconnect()
   document.removeEventListener('click', onClickOutsideMention)
 })

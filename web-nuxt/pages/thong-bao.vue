@@ -27,7 +27,7 @@
       <EmptyState v-else-if="fetchError && !items.length" icon="⚠️" tone="error" title="Không thể tải thông báo" message="Không kết nối được máy chủ. Kiểm tra mạng và thử lại.">
         <template #actions><button type="button" class="btn btn-outline btn-sm" @click="load">Thử lại</button></template>
       </EmptyState>
-      <EmptyState v-else-if="!filtered.length" icon="🔔" :title="filter === 'all' ? 'Chưa có thông báo' : 'Không có thông báo loại này'" message="Khi có hoạt động mới, bạn sẽ thấy ở đây." />
+      <EmptyState v-else-if="!filtered.length" icon="🔔" :title="filter === 'all' ? 'Chưa có thông báo' : 'Không có thông báo loại này'" :message="emptyHint" />
       <template v-else>
         <ul class="tb-list">
           <li v-for="n in filtered" :key="n.id">
@@ -75,6 +75,15 @@ const fetchError = ref(false)
 const filtered = computed(() => {
   if (filter.value === 'all') return items.value
   return items.value.filter(n => n.type === filter.value)
+})
+const emptyHint = computed(() => {
+  const hints: Record<string, string> = {
+    like: 'Thích bài viết để bắt đầu nhận thông báo lượt thích.',
+    comment: 'Viết bình luận để nhận phản hồi từ cộng đồng.',
+    follow: 'Theo dõi người dùng để nhận thông báo khi họ đăng bài mới.',
+    mention: 'Khi ai đó nhắc đến bạn trong bài viết hoặc bình luận, bạn sẽ thấy ở đây.',
+  }
+  return hints[filter.value] || 'Khi có hoạt động mới, bạn sẽ thấy ở đây.'
 })
 
 async function load() {

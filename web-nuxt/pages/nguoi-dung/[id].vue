@@ -371,9 +371,13 @@ async function loadFollowList(which: 'followers' | 'following') {
   if (followLists.value[which]) return  // đã tải (cache)
   followLoadingList.value = true
   try {
-    const res = await $fetch<any>(`/api/users/${userId}/${which}`)
+    const res = await $fetch<any>(`/api/users/${userId}/${which}`, { headers: authHeaders() })
     followLists.value[which] = res.users || []
-  } catch { followLists.value[which] = []; showToast('Không thể tải danh sách', 'error') }
+  } catch (e: any) {
+    followLists.value[which] = []
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    showToast('Không thể tải danh sách', 'error')
+  }
   followLoadingList.value = false
 }
 const followDialogEl = ref<HTMLElement | null>(null)

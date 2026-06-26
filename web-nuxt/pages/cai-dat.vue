@@ -275,7 +275,7 @@
 </template>
 
 <script setup lang="ts">
-const { user, isLoggedIn, authHeaders, fetchMe } = useAuth()
+const { user, isLoggedIn, authHeaders, fetchMe, handleSessionExpired } = useAuth()
 const { openAuth } = useAuthModal()
 const { show: showToast } = useToast()
 const colorModeState = useColorMode()
@@ -337,6 +337,7 @@ async function onAvatarChange(e: Event) {
     }
   } catch (err: any) {
     avatarPreview.value = ''
+    if (err?.response?.status === 401) { handleSessionExpired(); return }
     showToast(err?.data?.detail || 'Không thể tải ảnh lên', 'error')
   } finally {
     uploadingAvatar.value = false
@@ -382,6 +383,7 @@ async function savePassword() {
     newPw.value = ''
     await fetchMe()
   } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast(e?.data?.detail || 'Không thể đổi mật khẩu', 'error')
   } finally { savingPw.value = false }
 }
@@ -412,7 +414,10 @@ async function revokeSession(id: string) {
     await $fetch(`/auth/sessions/${id}`, { method: 'DELETE', headers: authHeaders() })
     sessions.value = sessions.value.filter(s => s.id !== id)
     showToast('Đã thu hồi phiên', 'success')
-  } catch { showToast('Không thể thu hồi phiên', 'error') }
+  } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    showToast('Không thể thu hồi phiên', 'error')
+  }
 }
 
 const uploadingCover = ref(false)
@@ -438,6 +443,7 @@ async function onCoverChange(e: Event) {
     }
   } catch (err: any) {
     coverPreview.value = ''
+    if (err?.response?.status === 401) { handleSessionExpired(); return }
     showToast(err?.data?.detail || 'Không thể tải ảnh bìa lên', 'error')
   } finally {
     uploadingCover.value = false
@@ -474,8 +480,9 @@ async function setPrivacy(key: string, value: any) {
   try {
     await $fetch('/auth/privacy', { method: 'PUT', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: { [key]: value } })
     showToast('Đã cập nhật quyền riêng tư', 'success')
-  } catch {
+  } catch (e: any) {
     privacy.value = prev
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast('Không thể cập nhật', 'error')
   }
 }
@@ -497,7 +504,10 @@ async function unblockUser(id: string, name: string) {
     await $fetch(`/api/notifications/block/${id}`, { method: 'POST', headers: authHeaders() })
     blockedUsers.value = blockedUsers.value.filter(u => u.id !== id)
     showToast(`${name || 'Người dùng'} đã được bỏ chặn`, 'success')
-  } catch { showToast('Không thể bỏ chặn', 'error') }
+  } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    showToast('Không thể bỏ chặn', 'error')
+  }
 }
 
 const NOTIF_TYPES = [
@@ -526,8 +536,9 @@ async function toggleNotifPref(prefKey: string) {
   try {
     await $fetch('/api/notification-preferences', { method: 'PUT', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: { [prefKey]: !prev } })
     showToast('Đã lưu tùy chọn thông báo', 'success')
-  } catch {
+  } catch (e: any) {
     notifPrefs.value[prefKey] = prev
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast('Không thể cập nhật tùy chọn', 'error')
   }
 }
@@ -539,9 +550,13 @@ async function deactivate() {
   if (!ok) return
   try {
     await $fetch('/auth/deactivate', { method: 'POST', headers: authHeaders() })
+    await fetchMe()
     showToast('Tài khoản đã bị vô hiệu hóa', 'success')
     navigateTo('/')
-  } catch (e: any) { showToast(e?.data?.detail || 'Lỗi', 'error') }
+  } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    showToast(e?.data?.detail || 'Lỗi', 'error')
+  }
 }
 
 async function deleteAccount() {
@@ -549,9 +564,13 @@ async function deleteAccount() {
   if (!ok) return
   try {
     await $fetch('/auth/account', { method: 'DELETE', headers: authHeaders() })
+    await fetchMe()
     showToast('Đã xóa tài khoản', 'success')
     navigateTo('/')
-  } catch (e: any) { showToast(e?.data?.detail || 'Lỗi', 'error') }
+  } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    showToast(e?.data?.detail || 'Lỗi', 'error')
+  }
 }
 
 const { timeAgo } = useTimeAgo()
@@ -573,11 +592,17 @@ async function save() {
     await fetchMe()
     showToast('Đã lưu hồ sơ', 'success')
   } catch (e: any) {
+    if (e?.response?.status === 401) { handleSessionExpired(); return }
     showToast(e?.data?.detail || 'Không thể lưu hồ sơ', 'error')
   } finally {
     saving.value = false
   }
 }
+
+onUnmounted(() => {
+  if (avatarPreview.value?.startsWith('blob:')) URL.revokeObjectURL(avatarPreview.value)
+  if (coverPreview.value?.startsWith('blob:')) URL.revokeObjectURL(coverPreview.value)
+})
 </script>
 
 <style scoped>

@@ -16,6 +16,8 @@ export function useMentionAutocomplete(
   const selectedMentions = ref<MentionItem[]>([])
   let timer: ReturnType<typeof setTimeout> | null = null
 
+  onScopeDispose(() => { if (timer) { clearTimeout(timer); timer = null } })
+
   function onInput(e: Event) {
     const el = e.target as HTMLInputElement | HTMLTextAreaElement
     const cursor = el.selectionStart || 0
