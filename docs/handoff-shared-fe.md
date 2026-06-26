@@ -1,4 +1,5 @@
-# Session 9: Shared FE — Layouts, Composables, CSS, Shared Components
+# Session 9: Khung giao diện chung
+<!-- Phạm vi: Layout chính (default.vue), CSS design tokens (base.css), shared component (Toast, Confirm, Error, Skeleton, ScrollToTop), ~20 shared composable, app.vue, error.vue -->
 
 > Paste toàn bộ nội dung này làm message đầu tiên.
 
