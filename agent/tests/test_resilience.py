@@ -2038,3 +2038,34 @@ class TestDiscoverProvinceLogging:
         assert not matches, (
             f"discover_province.py has {len(matches)} 'except Exception: pass' — must log"
         )
+
+
+# ═══════════════════════════════════════════════════════
+# Batch 7: loggers in supporting pipeline modules
+# ═══════════════════════════════════════════════════════
+
+
+class TestSupportModuleLoggers:
+    """Supporting modules must have module-level loggers."""
+
+    @pytest.mark.parametrize("module_name", [
+        "geocode", "export_data", "freshness", "notifications", "storage",
+    ])
+    def test_has_logger(self, module_name):
+        mod = __import__(module_name)
+        assert hasattr(mod, "logger"), f"{module_name} missing logger"
+
+
+class TestGeocodeLogging:
+    """geocode.py must log failures, not swallow silently."""
+
+    def test_no_bare_except_pass(self):
+        import re as _re
+        source = (AGENT_DIR / "geocode.py").read_text(encoding="utf-8")
+        main_idx = source.find('if __name__')
+        if main_idx > 0:
+            source = source[:main_idx]
+        matches = _re.findall(r"except Exception:\s*\n\s*pass\b", source)
+        assert not matches, (
+            f"geocode.py has {len(matches)} 'except Exception: pass' — must log"
+        )

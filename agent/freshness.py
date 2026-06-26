@@ -15,10 +15,13 @@ Chạy:
 """
 
 import json
+import logging
 import os
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 if hasattr(sys.stdout, "reconfigure") and sys.stdout.encoding != "utf-8":
