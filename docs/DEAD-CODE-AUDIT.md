@@ -4,7 +4,14 @@
 > Branch: `dev/backend-infra`
 > Method: grep ALL files in `agent/` for import statements, function-level references,
 > and `server.py` route registrations for each target module.
-> Per CLAUDE.md B2 (additive-first): NO files deleted. This document is the audit only.
+>
+> **UPDATE 2026-06-26 (post-merge cleanup):** 27 dead files deleted across 2 rounds.
+> Deleted modules from this audit: learn_now, seed_demos, _check_data, train, run_eval,
+> burn_gpt55, cleanup_noise, merge_data, merge_ward_crawl, export_data,
+> enrich_data, geocode_pass, import_baovinhlong, import_crawled, import_deep_crawl,
+> import_govsite, import_phuong_an_hoi, import_vinhlongtourist, relationship_discovery.
+> Modules kept (verified active): auto_learn, learn_loop, bot_gateway, mcp_server,
+> eval_framework, gpt55_quality_burst, smart_rank.
 
 ---
 

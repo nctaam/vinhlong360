@@ -322,10 +322,6 @@
   box-shadow: var(--shadow-xs);
 }
 
-/* ── Traceability (product, was inline style) ── */
-.traceability { margin-top: var(--space-3); padding: var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-md); font-size: var(--text-sm); transition: border-color .3s var(--ease-out), background .3s var(--ease-out); }
-.traceability:hover { border-color: var(--border); background: var(--bg-warm); }
-.traceability p { margin: var(--space-1) 0; color: var(--muted); }
 
 /* ── P1: Provenance block (Nguồn · Cập nhật · Báo sai) — civic trust signal ── */
 .provenance-block {
@@ -471,8 +467,6 @@
 .dark .ocop-highlight strong { color: var(--primary-fg); }
 .dark .quality-panel { background: rgba(243,251,245,.06); border-color: rgba(185,219,198,.2); }
 .dark .quality-panel.needs-review { background: rgba(255,248,242,.06); border-color: rgba(243,201,177,.2); }
-.dark .traceability { border-color: var(--line); }
-.dark .traceability:hover { background: rgba(255,255,255,.03); border-color: rgba(255,255,255,.1); }
 .dark .provenance-block {
   border-color: var(--line);
   background: linear-gradient(135deg, rgba(75, 169, 125, .08) 0%, rgba(240, 160, 80, .03) 100%);

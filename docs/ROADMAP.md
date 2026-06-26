@@ -382,5 +382,5 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 - **[Low/SEO] `/sitemap-media.xml` + 4 child sitemap** 404 (backend seo.py có route nhưng nginx chưa proxy; robots.txt vẫn trỏ). Cần route nginx (§4).
 - ✅ **[Low] ĐÃ FIX (commit f0acf13):** `toggle_follow` guard entity tồn-tại trước khi follow (chống bản-ghi rác).
 - **[Content] ~42 entity mô tả mỏng (<120 ký tự)** — đã giảm từ 341→203→42 (2026-06-25): 41 place + 1 product. Place descriptions generated from child entities (đúng pattern). Còn lại cần chủ dự án bổ sung nội dung — KHÔNG bịa (§1.4).
-- **[Low/Coupling] `export_data.py` dùng private DB methods** (`db._conn()`, `db._fetchall()`, `db._parse_entity()`) — nếu database.py refactor internal sẽ gãy không cảnh báo. Nên thêm public API hoặc wrapper. (Phát hiện: backend-infra session 2026-06-26)
+- ~~**[Low/Coupling] `export_data.py` dùng private DB methods**~~ ĐÃ XÓA: file bị dọn trong dead-code cleanup 2026-06-26.
 - **[Low/Safety] `freshness.py` ghi `refresh_queue.json` không atomic** — dùng `open("w")` trực tiếp, crash giữa chừng sẽ corrupt file. Nên chuyển sang pattern `.tmp` + `os.replace()`. (Phát hiện: backend-infra session 2026-06-26)

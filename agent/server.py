@@ -82,7 +82,7 @@ from scheduler import start_scheduler, scheduler_status, sync_data_json_to_js
 from memory import memory_manager
 from reflexion import reflexion_engine, quality_tracker
 from proactive import get_proactive_context, generate_welcome_message
-from agentic_rag import build_rag_context, classify_query
+from agentic_rag import build_rag_context
 
 try:
     from vector_search import embedding_store, hybrid_search

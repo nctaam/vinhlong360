@@ -157,16 +157,6 @@ h4 { font-size: var(--text-lg);  line-height: var(--lh-lg);  letter-spacing: var
 .hero-search button:active { transform: scale(.94) translateY(0); transition-duration: .08s; box-shadow: 0 2px 8px rgba(var(--accent-rgb), .3); }
 .hero-search button:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 2px; }
 
-/* ── Weather bar ── */
-.weather-bar { background: var(--card); border-bottom: .5px solid var(--line); padding: var(--space-3) 0; }
-.weather-inner { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--space-5); display: flex; gap: var(--space-4); justify-content: center; flex-wrap: wrap; }
-.weather-card { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-4); background: var(--bg); border-radius: var(--radius-md); font-size: .88rem; transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); cursor: default; }
-.weather-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
-.weather-card:active { transform: scale(.97); transition-duration: .08s; }
-.weather-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.wc-area { font-weight: 700; color: var(--primary-fg); }
-.wc-temp { font-size: 1.1rem; font-weight: 800; color: var(--accent-text); }
-.wc-desc { color: var(--muted); }
 
 /* ── Blocks / sections (Apple-style generous spacing) ── */
 .block { max-width: var(--maxw); margin: 0 auto; padding: var(--space-16) var(--space-5) var(--space-4); }
