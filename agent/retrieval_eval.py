@@ -18,10 +18,13 @@ Run:
   pytest agent/tests/test_retrieval_eval.py # CI gate
 """
 
+import logging
 import sys
 import unicodedata
 import re
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 AGENT_DIR = Path(__file__).resolve().parent
 if str(AGENT_DIR) not in sys.path:
@@ -77,13 +80,13 @@ def _build_indexes():
         from contextual_retrieval import contextual, bm25
         texts = contextual.build_all_contextual(entities, adapted)
         bm25.build_index(texts)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Contextual/BM25 index build skipped: %s", e)
     try:
         from vector_search import embedding_store
         embedding_store.build_index(entities)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Embedding index build skipped: %s", e)
 
 
 def _search(query: str, k: int = 5):
@@ -101,8 +104,8 @@ def _search(query: str, k: int = 5):
         ids = [m.get("id", m.get("entity_id", "")) for m in merged]
         if ids:
             return ids[:k]
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Hybrid search unavailable, falling back to keyword: %s", e)
     return [e["id"] for e in keyword[:k]]
 
 

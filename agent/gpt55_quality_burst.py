@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import math
 import os
 import re
@@ -23,6 +24,8 @@ from pathlib import Path
 from typing import Any, Callable, Iterable
 from urllib.parse import urlparse
 
+logger = logging.getLogger(__name__)
+
 AGENT_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = AGENT_DIR.parent
 DATA_PATH = PROJECT_DIR / "web" / "data.json"
@@ -34,8 +37,8 @@ os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 try:
     from dotenv import load_dotenv
     load_dotenv(PROJECT_DIR / ".env")
-except Exception:
-    pass
+except Exception as e:
+    logger.debug("dotenv not available, skipping .env load: %s", e)
 
 try:
     from openai import OpenAI

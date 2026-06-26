@@ -251,8 +251,8 @@ def learn_from_gaps(max_gaps: int = 5, dry_run: bool = False) -> dict:
                 if dup:
                     _logger.info("  Skipped near-duplicate of '%s': %s", dup, entity['name'])
                     continue
-            except Exception:
-                pass
+            except Exception as e:
+                _logger.debug("Near-duplicate check failed: %s", e)
 
             # Geocode for the map (precise coords from OSM, not the LLM)
             try:
@@ -260,8 +260,8 @@ def learn_from_gaps(max_gaps: int = 5, dry_run: bool = False) -> dict:
                 c = _geo.geocode(entity["name"])
                 if c:
                     entity["coords"] = c
-            except Exception:
-                pass
+            except Exception as e:
+                _logger.debug("Geocoding failed for %s: %s", entity.get("name"), e)
 
             new_entities.append(entity)
             existing_ids.add(entity["id"])
@@ -289,8 +289,8 @@ def learn_from_gaps(max_gaps: int = 5, dry_run: bool = False) -> dict:
         try:
             import knowledge
             knowledge.reload()
-        except Exception:
-            pass
+        except Exception as e:
+            _logger.warning("Knowledge reload after gap learning failed: %s", e)
 
     # Log
     _log_event("gap_learning", {
@@ -513,8 +513,8 @@ def enrich_entities(max_entities: int = 10, dry_run: bool = False) -> dict:
         try:
             import knowledge
             knowledge.reload()
-        except Exception:
-            pass
+        except Exception as e:
+            _logger.warning("Knowledge reload after enrichment failed: %s", e)
 
     _log_event("enrichment", {
         "total_missing": len(missing),
@@ -577,7 +577,8 @@ def learning_status() -> dict:
             if e.get("type") != "place" and e.get("confidence", 1) < 0.5
         ])
         total = len([e for e in kb["entities"] if e.get("type") != "place"])
-    except Exception:
+    except Exception as e:
+        _logger.debug("Failed to load KB for status: %s", e)
         missing = 0
         low_conf = 0
         total = 0
@@ -590,10 +591,10 @@ def learning_status() -> dict:
             for line in lines[-10:]:
                 try:
                     recent_events.append(json.loads(line))
-                except Exception:
-                    pass
-    except Exception:
-        pass
+                except Exception as e:
+                    _logger.debug("Malformed learn log line: %s", e)
+    except Exception as e:
+        _logger.warning("Failed to read learn log: %s", e)
 
     return {
         "knowledge_gaps": len(gaps),
@@ -615,7 +616,8 @@ def backfill_coords(max_entities: int = 15, dry_run: bool = False) -> dict:
     """
     try:
         import geocode as _geo
-    except Exception:
+    except Exception as e:
+        _logger.debug("Geocode module unavailable: %s", e)
         return {"checked": 0, "geocoded": 0, "reason": "geocode unavailable"}
 
     kb = _load_kb()
@@ -651,8 +653,8 @@ def backfill_coords(max_entities: int = 15, dry_run: bool = False) -> dict:
         try:
             import knowledge
             knowledge.reload()
-        except Exception:
-            pass
+        except Exception as e:
+            _logger.warning("Knowledge reload after geocode backfill failed: %s", e)
         _logger.info("Backfilled coords for %d entities", len(geocoded))
 
     return {"checked": min(len(candidates), max_entities), "geocoded": len(geocoded), "ids": geocoded}

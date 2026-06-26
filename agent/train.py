@@ -105,8 +105,8 @@ def send_feedback(query: str, rating: int, session_id: str):
         requests.post(f"{SERVER}/feedback",
                      json={"query": query, "rating": rating, "session_id": session_id},
                      timeout=15)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Failed to send feedback: %s", e)
 
 
 def measure_fitness() -> dict:

@@ -802,15 +802,15 @@ if __name__ == "__main__":
             data = json.loads(fp.read_text(encoding="utf-8"))
             if data.get("session_id") == test_session:
                 fp.unlink()
-        except Exception:
-            pass
+        except Exception as e:
+            logging.debug("Cleanup confirmation file failed: %s", e)
     for fp in list(CHECKPOINT_DIR.glob("cp_*.json")):
         try:
             data = json.loads(fp.read_text(encoding="utf-8"))
             if data.get("session_id") == test_session:
                 fp.unlink()
-        except Exception:
-            pass
+        except Exception as e:
+            logging.debug("Cleanup checkpoint file failed: %s", e)
 
     print("\n" + "=" * 60)
     print("  ALL TESTS PASSED")

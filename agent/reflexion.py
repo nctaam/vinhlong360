@@ -69,8 +69,8 @@ class ReflexionEngine:
                 encoding="utf-8"
             )
             tmp.replace(self._reflections_file)
-        except Exception:
-            logger.warning("Failed to save reflections", exc_info=True)
+        except Exception as e:
+            logger.warning("Failed to save reflections: %s", e)
 
     # ── Evaluation ──
 
