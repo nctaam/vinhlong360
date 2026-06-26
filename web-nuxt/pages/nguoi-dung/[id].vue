@@ -145,9 +145,15 @@
               @delete="deletePost"
             />
           </TransitionGroup>
+          <EmptyState
+            v-if="postsFetchFailed && !filteredPosts.length && !loading"
+            icon="⚠️" tone="error" title="Không thể tải bài viết" message="Lỗi kết nối. Vui lòng thử lại."
+          >
+            <button type="button" class="btn btn-outline btn-sm" @click="fetchPosts">Thử lại</button>
+          </EmptyState>
           <Transition name="fade">
             <EmptyState
-              v-if="!filteredPosts.length && !loading"
+              v-if="!postsFetchFailed && !filteredPosts.length && !loading"
               :icon="tab === 'reviews' ? '⭐' : '✍️'"
               :title="tab === 'reviews' ? 'Chưa có đánh giá' : 'Chưa có bài viết'"
               :message="tab === 'reviews' ? 'Chưa có đánh giá nào.' : 'Chưa có bài viết nào.'"
@@ -297,28 +303,41 @@ const emptyHint = computed(() => {
   return `Theo dõi ${displayName.value} để nhận cập nhật mới.`
 })
 
+const postsFetchFailed = ref(false)
 async function fetchPosts() {
   loading.value = true
+  postsFetchFailed.value = false
   try {
     const res = await $fetch<Record<string, unknown>>(`/api/users/${userId}/posts?limit=50`, { headers: authHeaders() })
-    posts.value = res.posts || res || []
-  } catch { showToast('Không thể tải bài viết', 'error') }
+    const list = res?.posts
+    posts.value = Array.isArray(list) ? list : []
+  } catch {
+    postsFetchFailed.value = true
+    showToast('Không thể tải bài viết', 'error')
+  }
   loading.value = false
 }
 
 async function toggleLike(postId: string) {
-  if (!isLoggedIn.value) return
+  if (!isLoggedIn.value) { showToast('Đăng nhập để thích bài viết', 'info'); return }
+  const post = posts.value.find(p => p.id === postId)
+  if (!post) return
+  // Optimistic update
+  post.user_liked = !post.user_liked
+  post.likes = (post.likes || 0) + (post.user_liked ? 1 : -1)
   try {
     await $fetch(`/api/posts/${postId}/like`, { method: 'POST', headers: authHeaders() })
-    const post = posts.value.find(p => p.id === postId)
-    if (post) {
-      post.user_liked = !post.user_liked
-      post.likes = (post.likes || 0) + (post.user_liked ? 1 : -1)
-    }
-  } catch { showToast('Không thể thích bài viết', 'error') }
+  } catch {
+    // Rollback
+    post.user_liked = !post.user_liked
+    post.likes = (post.likes || 0) + (post.user_liked ? 1 : -1)
+    showToast('Không thể thích bài viết', 'error')
+  }
 }
 
 async function deletePost(postId: string) {
+  const ok = await confirmDialog('Bạn có chắc muốn xoá bài viết này? Hành động không thể hoàn tác.', { confirmText: 'Xoá', danger: true })
+  if (!ok) return
   try {
     await $fetch(`/api/posts/${postId}`, { method: 'DELETE', headers: authHeaders() })
     posts.value = posts.value.filter(p => p.id !== postId)
@@ -327,12 +346,17 @@ async function deletePost(postId: string) {
 }
 
 async function toggleBookmark(postId: string) {
-  if (!isLoggedIn.value) return
+  if (!isLoggedIn.value) { showToast('Đăng nhập để lưu bài viết', 'info'); return }
+  const post = posts.value.find(p => p.id === postId)
+  if (!post) return
+  // Optimistic update
+  post.user_bookmarked = !post.user_bookmarked
   try {
     await $fetch(`/api/posts/${postId}/bookmark`, { method: 'POST', headers: authHeaders() })
-    const post = posts.value.find(p => p.id === postId)
-    if (post) post.user_bookmarked = !post.user_bookmarked
-  } catch { showToast('Không thể lưu bài viết', 'error') }
+  } catch {
+    post.user_bookmarked = !post.user_bookmarked
+    showToast('Không thể lưu bài viết', 'error')
+  }
 }
 
 
@@ -388,7 +412,7 @@ async function toggleFollow() {
 // ── Block / Report ──
 const showMoreMenu = ref(false)
 const isBlocked = ref(false)
-const { confirm } = useConfirm()
+const { confirmDialog } = useConfirm()
 
 function onClickOutsideMore(e: MouseEvent) {
   const wrap = (e.target as HTMLElement)?.closest('.profile-more-wrap')
@@ -416,12 +440,14 @@ async function toggleBlock() {
     showToast('Đã bỏ chặn', 'success')
     return
   }
-  const ok = await confirm({
-    title: `Chặn ${profile.value?.display_name || 'người dùng này'}?`,
-    message: 'Họ sẽ không thấy bài viết, bình luận và hoạt động của bạn. Bạn cũng sẽ không thấy nội dung của họ.',
-    confirmText: 'Chặn',
-    danger: true,
-  })
+  const ok = await confirmDialog(
+    'Họ sẽ không thấy bài viết, bình luận và hoạt động của bạn. Bạn cũng sẽ không thấy nội dung của họ.',
+    {
+      title: `Chặn ${profile.value?.display_name || 'người dùng này'}?`,
+      confirmText: 'Chặn',
+      danger: true,
+    },
+  )
   if (!ok) return
   try {
     await $fetch(`/api/block/${userId}`, { method: 'POST', headers: authHeaders() })
