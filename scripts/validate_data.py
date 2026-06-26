@@ -444,10 +444,36 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
                 dangling_stops += 1
     if dangling_stops:
         issues.append(Issue("error", "dangling_itinerary_stops", f"{dangling_stops} itinerary stops reference missing entities"))
+    # DI-006: near asymmetry — if A→B near exists, B→A should also exist
+    near_edges: set[tuple[str, str]] = set()
+    for rel in relationships:
+        if not isinstance(rel, dict):
+            continue
+        if rel_type(rel) == "near":
+            s, d = str(rel_source(rel) or ""), str(rel_target(rel) or "")
+            if s and d:
+                near_edges.add((s, d))
+    near_asymmetric = sum(1 for s, d in near_edges if (d, s) not in near_edges)
+
+    # DI-007: coordinate clustering — entities sharing exact same coordinates
+    coord_buckets: dict[tuple[float, float], list[str]] = defaultdict(list)
+    for entity in entities:
+        if not isinstance(entity, dict) or not entity.get("id"):
+            continue
+        c = normalized_coordinates(entity.get("coordinates"))
+        if c:
+            coord_buckets[(c[0], c[1])].append(str(entity["id"]))
+    coord_clusters = sum(1 for ids in coord_buckets.values() if len(ids) > 1)
+    coord_clustered_entities = sum(len(ids) for ids in coord_buckets.values() if len(ids) > 1)
+
     if high_fanout_count:
         issues.append(Issue("error", "relationship_fanout", f"{high_fanout_count} entities have more than {MAX_DIRECT_RELATIONSHIPS} direct relationships"))
     if duplicate_rel_count:
         issues.append(Issue("warning", "duplicate_relationships", f"{duplicate_rel_count} duplicate relationship keys found"))
+    if near_asymmetric:
+        issues.append(Issue("warning", "near_asymmetric", f"{near_asymmetric} near relationships are one-way (A→B exists but B→A does not)"))
+    if coord_clusters:
+        issues.append(Issue("warning", "coordinate_clusters", f"{coord_clusters} coordinate clusters ({coord_clustered_entities} entities share exact same coordinates)"))
     if missing_summary_non_place:
         issues.append(Issue("warning", "missing_summary_non_place", f"{missing_summary_non_place} non-place entities are missing summary"))
     if boilerplate_summary:
@@ -514,6 +540,9 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         "low_confidence": low_confidence_count,
         "empty_attributes_non_place": empty_attrs_non_place,
         "place_coords_coverage_pct": place_coords_pct,
+        "near_asymmetric": near_asymmetric,
+        "coordinate_clusters": coord_clusters,
+        "coordinate_clustered_entities": coord_clustered_entities,
         "data_js_status": data_js_status,
     }
     return issues, stats
@@ -556,6 +585,9 @@ def print_report(issues: list[Issue], stats: dict[str, Any]) -> None:
         "low_confidence",
         "empty_attributes_non_place",
         "place_coords_coverage_pct",
+        "near_asymmetric",
+        "coordinate_clusters",
+        "coordinate_clustered_entities",
     ]:
         print(f"  {key}: {stats.get(key)}")
 

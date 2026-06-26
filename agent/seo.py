@@ -167,11 +167,13 @@ GUIDE_PAGES = [
     ("/kham-pha/mua-sam", "weekly", "0.8"),
 ]
 
+_EMPTY_DATA: dict[str, Any] = {"entities": [], "relationships": [], "itineraries": []}
+
 _data: dict[str, Any] | None = None
 _data_mtime_ns: int | None = None
 _by_id_cache: dict[str, dict[str, Any]] | None = None
 _by_id_cache_key: int | None = None
-_sitemap_cache: dict[tuple[str, int, int, str], str] | None = None
+_sitemap_cache: tuple[int, int, str, str] | None = None
 
 
 def _load() -> dict[str, Any]:
@@ -181,9 +183,15 @@ def _load() -> dict[str, Any]:
         _data.setdefault("relationships", [])
         _data.setdefault("itineraries", [])
         return _data
-    mtime_ns = DATA_PATH.stat().st_mtime_ns
+    try:
+        mtime_ns = DATA_PATH.stat().st_mtime_ns
+    except FileNotFoundError:
+        return _EMPTY_DATA
     if _data is None or _data_mtime_ns != mtime_ns:
-        _data = json.loads(DATA_PATH.read_text(encoding="utf-8-sig"))
+        try:
+            _data = json.loads(DATA_PATH.read_text(encoding="utf-8-sig"))
+        except (json.JSONDecodeError, OSError):
+            return _EMPTY_DATA
         _data.setdefault("entities", [])
         _data.setdefault("relationships", [])
         _data.setdefault("itineraries", [])
@@ -485,6 +493,7 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
     if schema_type == "Person" and attrs.get("role"):
         ld["jobTitle"] = attrs["role"]
 
+    ld["inLanguage"] = "vi-VN"
     ld["breadcrumb"] = _build_breadcrumb(entity, by_id)
 
     return {key: value for key, value in ld.items() if value not in (None, "", [], {})}
@@ -517,6 +526,135 @@ def site_jsonld():
     ]
 
 
+FAQ_ATTR_QUESTIONS = {
+    "travel_tip": "Mẹo du lịch khi đến {name}?",
+    "tip": "Lưu ý khi đến {name}?",
+    "booking_note": "Cần đặt trước khi đến {name} không?",
+    "best_time": "Thời điểm tốt nhất để đến {name}?",
+}
+
+
+def build_faq_jsonld(entity: dict[str, Any]) -> dict[str, Any] | None:
+    attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
+    name = entity.get("name") or str(entity.get("id"))
+    qa_pairs: list[dict[str, Any]] = []
+    for attr_key, question_tpl in FAQ_ATTR_QUESTIONS.items():
+        answer = attrs.get(attr_key)
+        if not answer:
+            continue
+        if isinstance(answer, list):
+            answer = "; ".join(str(a) for a in answer if a)
+        if not str(answer).strip():
+            continue
+        qa_pairs.append({
+            "@type": "Question",
+            "name": question_tpl.format(name=name),
+            "acceptedAnswer": {"@type": "Answer", "text": str(answer).strip()},
+        })
+    if not qa_pairs:
+        return None
+    return {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": qa_pairs,
+    }
+
+
+def _parse_duration(value: Any) -> str | None:
+    if not isinstance(value, str):
+        return None
+    text = value.strip().lower()
+    import re as _re
+    m = _re.match(r"(\d+)\s*ngày", text)
+    if m:
+        return f"P{m.group(1)}D"
+    m = _re.match(r"(\d+)\s*giờ", text)
+    if m:
+        return f"PT{m.group(1)}H"
+    return None
+
+
+def build_itinerary_jsonld(itinerary: dict[str, Any], by_id: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    iid = str(itinerary.get("id"))
+    ld: dict[str, Any] = {
+        "@context": "https://schema.org",
+        "@type": "TouristTrip",
+        "name": itinerary.get("title") or itinerary.get("name") or iid,
+        "url": _itinerary_url(iid),
+        "inLanguage": "vi-VN",
+    }
+    if itinerary.get("summary"):
+        ld["description"] = itinerary["summary"]
+    duration = _parse_duration(itinerary.get("duration"))
+    if duration:
+        ld["duration"] = duration
+    area = itinerary.get("area")
+    if area:
+        ld["touristType"] = "Sightseeing"
+        ld["contentLocation"] = {
+            "@type": "Place",
+            "name": AREA_NAMES.get(area, area),
+            "address": {"@type": "PostalAddress", "addressCountry": "VN", "addressRegion": AREA_NAMES.get(area, area)},
+        }
+    stops = itinerary.get("stops") or []
+    sub_trips: list[dict[str, Any]] = []
+    for idx, stop in enumerate(stops):
+        if not isinstance(stop, dict):
+            continue
+        ref = stop.get("entityId") or stop.get("id")
+        stop_entity = by_id.get(str(ref)) if ref else None
+        stop_name = (stop_entity.get("name") if stop_entity else None) or stop.get("name") or str(ref or f"Stop {idx + 1}")
+        st: dict[str, Any] = {"@type": "TouristAttraction", "name": stop_name}
+        if stop_entity and stop_entity.get("id"):
+            st["url"] = _entity_url(str(stop_entity["id"]))
+        if stop.get("time"):
+            st["description"] = stop["time"]
+        sub_trips.append(st)
+    if sub_trips:
+        ld["itinerary"] = {
+            "@type": "ItemList",
+            "numberOfItems": len(sub_trips),
+            "itemListElement": [
+                {"@type": "ListItem", "position": i + 1, "item": st}
+                for i, st in enumerate(sub_trips)
+            ],
+        }
+    return {k: v for k, v in ld.items() if v not in (None, "", [], {})}
+
+
+def build_area_jsonld(area_slug: str) -> dict[str, Any] | None:
+    name = AREA_NAMES.get(area_slug)
+    if not name:
+        return None
+    return {
+        "@context": "https://schema.org",
+        "@type": "TouristDestination",
+        "name": name,
+        "url": f"{SITE}/khu-vuc/{quote(area_slug, safe='-_~')}",
+        "description": f"Khám phá {name} — điểm đến, ẩm thực, sản phẩm OCOP, lưu trú và trải nghiệm miền Tây.",
+        "containedInPlace": {"@type": "Country", "name": "Việt Nam"},
+        "inLanguage": "vi-VN",
+    }
+
+
+@router.get("/seo/jsonld/area/{area_slug}")
+def area_jsonld(area_slug: str):
+    result = build_area_jsonld(area_slug)
+    if not result:
+        raise HTTPException(status_code=404, detail="not found")
+    return result
+
+
+@router.get("/seo/jsonld/itinerary/{itinerary_id}")
+def itinerary_jsonld(itinerary_id: str):
+    data = _load()
+    by_id = _by_id(data)
+    for it in data.get("itineraries", []):
+        if isinstance(it, dict) and str(it.get("id")) == itinerary_id:
+            return build_itinerary_jsonld(it, by_id)
+    raise HTTPException(status_code=404, detail="not found")
+
+
 @router.get("/seo/jsonld/{entity_id}")
 def entity_jsonld(entity_id: str):
     data = _load()
@@ -524,7 +662,11 @@ def entity_jsonld(entity_id: str):
     entity = by_id.get(entity_id)
     if not entity:
         raise HTTPException(status_code=404, detail="not found")
-    return build_entity_jsonld(entity, by_id)
+    result = [build_entity_jsonld(entity, by_id)]
+    faq = build_faq_jsonld(entity)
+    if faq:
+        result.append(faq)
+    return result if len(result) > 1 else result[0]
 
 
 def _is_public(entity: dict[str, Any]) -> bool:
@@ -557,7 +699,13 @@ def build_collection_jsonld(collection_type: str, data: dict[str, Any]) -> dict[
                 continue
         items.append(e)
 
-    items.sort(key=lambda e: (-float(e.get("confidence") or 0.5), str(e.get("name") or "")))
+    def _sort_key(e: dict[str, Any]) -> tuple[float, str]:
+        try:
+            conf = float(e.get("confidence") or 0.5)
+        except (TypeError, ValueError):
+            conf = 0.5
+        return (-conf, str(e.get("name") or ""))
+    items.sort(key=_sort_key)
     items = items[:100]
 
     elements: list[dict[str, Any]] = []
@@ -623,7 +771,7 @@ def sitemap():
     for path, changefreq, priority in GUIDE_PAGES:
         urls.append(_url_xml(f"{SITE}{path}", changefreq=changefreq, priority=priority))
     for area in AREA_NAMES:
-        urls.append(_url_xml(f"{SITE}/khu-vuc/{area}", changefreq="weekly", priority="0.8"))
+        urls.append(_url_xml(f"{SITE}/khu-vuc/{quote(area, safe='-_~')}", changefreq="weekly", priority="0.8"))
 
     for entity in data.get("entities", []):
         if not isinstance(entity, dict) or entity.get("type") != "place" or not entity.get("id"):

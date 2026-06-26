@@ -682,3 +682,160 @@ def test_person_emits_job_title():
     ld = seo.build_entity_jsonld(entity, {})
     assert ld["@type"] == "Person"
     assert ld["jobTitle"] == "Nghệ nhân"
+
+
+# ── Itinerary TouristTrip ─────────────────────────────────────────────────
+
+
+def test_itinerary_jsonld_basic():
+    it = {
+        "id": "1-ngay-vl",
+        "title": "1 ngày Vĩnh Long",
+        "area": "vinh-long",
+        "duration": "1 ngày",
+        "summary": "Trọn 1 ngày miệt vườn.",
+        "stops": [
+            {"id": "cam-sanh", "time": "Sáng"},
+            {"id": "bun-mam", "time": "Trưa", "note": "Ăn trưa"},
+        ],
+    }
+    by_id = {
+        "cam-sanh": {"id": "cam-sanh", "name": "Cam sành", "type": "product"},
+        "bun-mam": {"id": "bun-mam", "name": "Bún mắm", "type": "dish"},
+    }
+    ld = seo.build_itinerary_jsonld(it, by_id)
+    assert ld["@type"] == "TouristTrip"
+    assert ld["name"] == "1 ngày Vĩnh Long"
+    assert ld["duration"] == "P1D"
+    assert ld["inLanguage"] == "vi-VN"
+    assert ld["itinerary"]["@type"] == "ItemList"
+    assert ld["itinerary"]["numberOfItems"] == 2
+    items = ld["itinerary"]["itemListElement"]
+    assert items[0]["item"]["name"] == "Cam sành"
+    assert items[1]["position"] == 2
+
+
+def test_itinerary_jsonld_no_stops():
+    it = {"id": "empty", "title": "Empty", "stops": []}
+    ld = seo.build_itinerary_jsonld(it, {})
+    assert "itinerary" not in ld
+
+
+def test_itinerary_duration_hours():
+    it = {"id": "quick", "title": "Quick", "duration": "3 giờ", "stops": []}
+    ld = seo.build_itinerary_jsonld(it, {})
+    assert ld["duration"] == "PT3H"
+
+
+def test_itinerary_endpoint_404(monkeypatch, sample_data):
+    import pytest
+    from fastapi import HTTPException
+    monkeypatch.setattr(seo, "_load", lambda: sample_data)
+    monkeypatch.setattr(seo, "_by_id_cache", None)
+    with pytest.raises(HTTPException) as exc_info:
+        seo.itinerary_jsonld("nonexistent")
+    assert exc_info.value.status_code == 404
+
+
+# ── FAQ schema ────────────────────────────────────────────────────────────
+
+
+def test_faq_jsonld_from_tips():
+    entity = {
+        "id": "test-faq",
+        "name": "Vườn trái cây",
+        "type": "attraction",
+        "attributes": {
+            "travel_tip": "Đến sáng sớm để có trái tươi nhất.",
+            "best_time": "tháng 5-7",
+        },
+    }
+    faq = seo.build_faq_jsonld(entity)
+    assert faq is not None
+    assert faq["@type"] == "FAQPage"
+    assert len(faq["mainEntity"]) == 2
+    q_names = [q["name"] for q in faq["mainEntity"]]
+    assert any("Mẹo du lịch" in q for q in q_names)
+    assert any("Thời điểm tốt nhất" in q for q in q_names)
+
+
+def test_faq_jsonld_returns_none_without_tips():
+    entity = {"id": "no-tips", "name": "X", "attributes": {"phone": "123"}}
+    assert seo.build_faq_jsonld(entity) is None
+
+
+def test_faq_jsonld_handles_list_answer():
+    entity = {
+        "id": "list-tip",
+        "name": "Y",
+        "attributes": {"travel_tip": ["Tip 1", "Tip 2"]},
+    }
+    faq = seo.build_faq_jsonld(entity)
+    assert faq is not None
+    assert "Tip 1; Tip 2" in faq["mainEntity"][0]["acceptedAnswer"]["text"]
+
+
+# ── Area TouristDestination ───────────────────────────────────────────────
+
+
+def test_area_jsonld_valid():
+    ld = seo.build_area_jsonld("vinh-long")
+    assert ld is not None
+    assert ld["@type"] == "TouristDestination"
+    assert ld["name"] == "Vĩnh Long"
+    assert ld["containedInPlace"]["name"] == "Việt Nam"
+    assert ld["inLanguage"] == "vi-VN"
+
+
+def test_area_jsonld_unknown():
+    assert seo.build_area_jsonld("nonexistent") is None
+
+
+def test_area_endpoint_404(monkeypatch):
+    import pytest
+    from fastapi import HTTPException
+    with pytest.raises(HTTPException) as exc_info:
+        seo.area_jsonld("nonexistent")
+    assert exc_info.value.status_code == 404
+
+
+# ── inLanguage ────────────────────────────────────────────────────────────
+
+
+def test_entity_jsonld_includes_in_language():
+    entity = {"id": "x", "name": "Test", "type": "attraction"}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["inLanguage"] == "vi-VN"
+
+
+# ── entity_jsonld returns FAQ alongside ────────────────────────────────────
+
+
+def test_entity_jsonld_endpoint_includes_faq(monkeypatch):
+    data = {
+        "entities": [
+            {"id": "with-tip", "name": "Place", "type": "attraction",
+             "attributes": {"travel_tip": "Go early"}},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    monkeypatch.setattr(seo, "_load", lambda: data)
+    monkeypatch.setattr(seo, "_by_id_cache", None)
+    result = seo.entity_jsonld("with-tip")
+    assert isinstance(result, list)
+    types = [r.get("@type") for r in result]
+    assert "TouristAttraction" in types
+    assert "FAQPage" in types
+
+
+# ── _load graceful degradation ────────────────────────────────────────────
+
+
+def test_load_returns_empty_when_file_missing(monkeypatch, tmp_path):
+    monkeypatch.setattr(seo, "DATA_PATH", tmp_path / "nonexistent.json")
+    monkeypatch.setattr(seo, "_data", None)
+    monkeypatch.setattr(seo, "_data_mtime_ns", 1)
+    data = seo._load()
+    assert data["entities"] == []
+    assert data["relationships"] == []

@@ -489,6 +489,77 @@ def test_validate_flags_level_name_mismatch(tmp_path: Path) -> None:
     assert "level_name_mismatch" in codes
 
 
+def test_validate_flags_near_asymmetric(tmp_path: Path) -> None:
+    """One-way near relationships should be flagged."""
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long", "coordinates": [10.25, 106.0]},
+            {"id": "b", "type": "attraction", "name": "B", "summary": "B", "area": "vinh-long", "coordinates": [10.26, 106.01]},
+        ],
+        "relationships": [
+            {"from": "a", "to": "b", "type": "near"},
+        ],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["near_asymmetric"] == 1
+    assert "near_asymmetric" in {issue.code for issue in issues}
+
+
+def test_validate_no_near_asymmetric_when_reciprocal(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long", "coordinates": [10.25, 106.0]},
+            {"id": "b", "type": "attraction", "name": "B", "summary": "B", "area": "vinh-long", "coordinates": [10.26, 106.01]},
+        ],
+        "relationships": [
+            {"from": "a", "to": "b", "type": "near"},
+            {"from": "b", "to": "a", "type": "near"},
+        ],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["near_asymmetric"] == 0
+
+
+def test_validate_flags_coordinate_clusters(tmp_path: Path) -> None:
+    """Multiple entities sharing exact same coordinates should be flagged."""
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long", "coordinates": [10.25, 106.0]},
+            {"id": "b", "type": "restaurant", "name": "B", "summary": "B", "area": "vinh-long", "coordinates": [10.25, 106.0]},
+            {"id": "c", "type": "dish", "name": "C", "summary": "C", "area": "vinh-long", "coordinates": [10.30, 106.1]},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["coordinate_clusters"] == 1
+    assert stats["coordinate_clustered_entities"] == 2
+    assert "coordinate_clusters" in {issue.code for issue in issues}
+
+
+def test_validate_no_coord_clusters_when_unique(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long", "coordinates": [10.25, 106.0]},
+            {"id": "b", "type": "attraction", "name": "B", "summary": "B", "area": "vinh-long", "coordinates": [10.26, 106.01]},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["coordinate_clusters"] == 0
+
+
 def test_validate_flags_level_id_mismatch(tmp_path: Path) -> None:
     data = {
         "entities": [
