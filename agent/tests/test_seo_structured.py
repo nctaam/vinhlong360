@@ -1049,3 +1049,55 @@ def test_parse_duration_none_for_non_string():
     assert seo._parse_duration(None) is None
     assert seo._parse_duration(42) is None
     assert seo._parse_duration("random text") is None
+
+
+# ── Place JSON-LD hierarchy ──────────────────────────────────────────────
+
+
+def test_place_has_additional_type():
+    entity = {"id": "xa-test", "name": "Xã Test", "type": "place", "level": "xa"}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["@type"] == "Place"
+    assert ld["additionalType"] == "AdministrativeArea"
+
+
+def test_place_contained_in_place_parent():
+    parent = {"id": "huyen-a", "name": "Huyện A", "type": "place", "level": "huyen"}
+    child = {"id": "xa-b", "name": "Xã B", "type": "place", "level": "xa", "parentId": "huyen-a"}
+    by_id = _by_id([parent, child])
+    ld = seo.build_entity_jsonld(child, by_id)
+    assert "containedInPlace" in ld
+    assert ld["containedInPlace"]["name"] == "Huyện A"
+    assert "huyen-a" in ld["containedInPlace"]["url"]
+
+
+def test_place_contains_child_entities():
+    place = {"id": "xa-c", "name": "Xã C", "type": "place", "level": "xa"}
+    entity1 = {"id": "e1", "name": "Điểm 1", "type": "attraction", "placeId": "xa-c"}
+    entity2 = {"id": "e2", "name": "Điểm 2", "type": "dish", "placeId": "xa-c"}
+    entity3 = {"id": "e3", "name": "Điểm 3", "type": "product", "placeId": "other"}
+    by_id = _by_id([place, entity1, entity2, entity3])
+    ld = seo.build_entity_jsonld(place, by_id)
+    assert "containsPlace" in ld
+    names = [c["name"] for c in ld["containsPlace"]]
+    assert "Điểm 1" in names
+    assert "Điểm 2" in names
+    assert "Điểm 3" not in names
+
+
+def test_place_excludes_provisional_from_contains():
+    place = {"id": "xa-d", "name": "Xã D", "type": "place", "level": "xa"}
+    ok = {"id": "ok", "name": "OK", "type": "attraction", "placeId": "xa-d"}
+    prov = {"id": "prov", "name": "Prov", "type": "attraction", "placeId": "xa-d", "status": "provisional"}
+    by_id = _by_id([place, ok, prov])
+    ld = seo.build_entity_jsonld(place, by_id)
+    names = [c["name"] for c in ld["containsPlace"]]
+    assert "OK" in names
+    assert "Prov" not in names
+
+
+def test_place_no_contains_when_no_children():
+    place = {"id": "xa-e", "name": "Xã E", "type": "place", "level": "xa"}
+    by_id = _by_id([place])
+    ld = seo.build_entity_jsonld(place, by_id)
+    assert "containsPlace" not in ld

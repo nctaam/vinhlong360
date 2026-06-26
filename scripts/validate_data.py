@@ -161,6 +161,8 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     summary_short = 0
     summary_long = 0
     has_images_non_place = 0
+    name_too_short = 0
+    name_too_long = 0
 
     for index, entity in enumerate(entities):
         if not isinstance(entity, dict):
@@ -240,6 +242,15 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
                 summary_short += 1
             elif slen > 500:
                 summary_long += 1
+
+        # DI-015: name length anomalies
+        ename = entity.get("name")
+        if isinstance(ename, str):
+            elen = len(ename.strip())
+            if 0 < elen < 2:
+                name_too_short += 1
+            elif elen > 100:
+                name_too_long += 1
 
         if is_place:
             level = entity.get("level", "")
@@ -468,6 +479,17 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
                 dangling_stops += 1
     if dangling_stops:
         issues.append(Issue("error", "dangling_itinerary_stops", f"{dangling_stops} itinerary stops reference missing entities"))
+    # DI-016: itinerary stops sanity
+    itinerary_empty_stops = 0
+    itinerary_excessive_stops = 0
+    for it in itineraries:
+        if not isinstance(it, dict):
+            continue
+        stops = it.get("stops")
+        if not isinstance(stops, list) or len(stops) == 0:
+            itinerary_empty_stops += 1
+        elif len(stops) > 20:
+            itinerary_excessive_stops += 1
     # DI-006: near asymmetry — if A→B near exists, B→A should also exist
     near_edges: set[tuple[str, str]] = set()
     for rel in relationships:
@@ -544,6 +566,14 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         issues.append(Issue("warning", "summary_short", f"{summary_short} entities have summary < 50 chars"))
     if summary_long:
         issues.append(Issue("warning", "summary_long", f"{summary_long} entities have summary > 500 chars"))
+    if name_too_short:
+        issues.append(Issue("warning", "name_too_short", f"{name_too_short} entities have name < 2 chars"))
+    if name_too_long:
+        issues.append(Issue("warning", "name_too_long", f"{name_too_long} entities have name > 100 chars"))
+    if itinerary_empty_stops:
+        issues.append(Issue("warning", "itinerary_empty_stops", f"{itinerary_empty_stops} itineraries have no stops"))
+    if itinerary_excessive_stops:
+        issues.append(Issue("warning", "itinerary_excessive_stops", f"{itinerary_excessive_stops} itineraries have > 20 stops"))
     if missing_summary_non_place:
         issues.append(Issue("warning", "missing_summary_non_place", f"{missing_summary_non_place} non-place entities are missing summary"))
     if boilerplate_summary:
@@ -619,6 +649,10 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         "summary_long": summary_long,
         "itinerary_area_mismatches": itinerary_area_mismatches,
         "rel_type_singletons": rel_type_singletons,
+        "name_too_short": name_too_short,
+        "name_too_long": name_too_long,
+        "itinerary_empty_stops": itinerary_empty_stops,
+        "itinerary_excessive_stops": itinerary_excessive_stops,
         "data_js_status": data_js_status,
     }
 
@@ -700,6 +734,10 @@ def print_report(issues: list[Issue], stats: dict[str, Any]) -> None:
         "summary_long",
         "itinerary_area_mismatches",
         "rel_type_singletons",
+        "name_too_short",
+        "name_too_long",
+        "itinerary_empty_stops",
+        "itinerary_excessive_stops",
     ]:
         print(f"  {key}: {stats.get(key)}")
 

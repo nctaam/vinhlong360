@@ -494,6 +494,32 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
     if schema_type == "Person" and attrs.get("role"):
         ld["jobTitle"] = attrs["role"]
 
+    if schema_type == "Place":
+        ld["additionalType"] = "AdministrativeArea"
+        parent_id = entity.get("parentId")
+        if parent_id:
+            parent = by_id.get(str(parent_id))
+            if parent:
+                ld["containedInPlace"] = {
+                    "@type": "Place",
+                    "name": parent.get("name") or str(parent_id),
+                    "url": _entity_url(str(parent_id)),
+                }
+        contained: list[dict[str, Any]] = []
+        for e in by_id.values():
+            if not isinstance(e, dict) or e.get("type") == "place":
+                continue
+            if str(e.get("placeId")) == entity_id and _is_public(e):
+                contained.append({
+                    "@type": TYPE_SCHEMA.get(str(e.get("type")), "Thing"),
+                    "name": e.get("name") or str(e.get("id")),
+                    "url": _entity_url(str(e["id"])),
+                })
+            if len(contained) >= 30:
+                break
+        if contained:
+            ld["containsPlace"] = contained
+
     ld["inLanguage"] = "vi-VN"
     ld["isPartOf"] = {"@id": f"{SITE}/#website"}
     ld["breadcrumb"] = _build_breadcrumb(entity, by_id)

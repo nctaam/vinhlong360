@@ -860,3 +860,104 @@ def test_validate_seo_attr_coverage_skips_uncovered_types(tmp_path: Path) -> Non
     _issues, stats = validate_data.validate(data, tmp_path / "data.json")
 
     assert "organization" not in stats["seo_attr_coverage"]
+
+
+# ── Name length anomalies (DI-015) ───────────────────────────────────────
+
+
+def test_validate_flags_name_too_short(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "X", "summary": "A", "area": "vinh-long"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["name_too_short"] == 1
+    assert "name_too_short" in {issue.code for issue in issues}
+
+
+def test_validate_flags_name_too_long(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A" * 101, "summary": "A", "area": "vinh-long"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["name_too_long"] == 1
+    assert "name_too_long" in {issue.code for issue in issues}
+
+
+def test_validate_name_normal_length_not_flagged(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "Vườn trái cây Ba Vì", "summary": "A", "area": "vinh-long"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["name_too_short"] == 0
+    assert stats["name_too_long"] == 0
+
+
+# ── Itinerary stops sanity (DI-016) ──────────────────────────────────────
+
+
+def test_validate_flags_itinerary_empty_stops(tmp_path: Path) -> None:
+    data = {
+        "entities": [],
+        "relationships": [],
+        "itineraries": [
+            {"id": "it-1", "title": "Empty", "stops": []},
+        ],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["itinerary_empty_stops"] == 1
+    assert "itinerary_empty_stops" in {issue.code for issue in issues}
+
+
+def test_validate_flags_itinerary_excessive_stops(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": f"s-{i}", "type": "attraction", "name": f"S{i}", "summary": "S", "area": "vinh-long"}
+            for i in range(25)
+        ],
+        "relationships": [],
+        "itineraries": [
+            {"id": "it-big", "title": "Big", "stops": [{"entityId": f"s-{i}"} for i in range(25)]},
+        ],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["itinerary_excessive_stops"] == 1
+    assert "itinerary_excessive_stops" in {issue.code for issue in issues}
+
+
+def test_validate_itinerary_normal_stops_not_flagged(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "s-1", "type": "attraction", "name": "S1", "summary": "S", "area": "vinh-long"},
+        ],
+        "relationships": [],
+        "itineraries": [
+            {"id": "it-ok", "title": "OK", "stops": [{"entityId": "s-1"}]},
+        ],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["itinerary_empty_stops"] == 0
+    assert stats["itinerary_excessive_stops"] == 0
