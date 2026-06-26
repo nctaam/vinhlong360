@@ -76,6 +76,10 @@
           <div v-if="previewItem.usage_count > 1"><strong>Dùng bởi:</strong> {{ previewItem.usage_count }} entities</div>
           <div class="media-preview-url"><strong>URL:</strong> <code>{{ previewItem.url }}</code></div>
         </div>
+        <div class="media-preview-actions">
+          <NuxtLink :to="`/admin/entities?q=${encodeURIComponent(previewItem.entity_id)}`" class="btn btn-outline btn-sm">Mở entity</NuxtLink>
+          <button type="button" class="btn btn-danger btn-sm" :disabled="removing" @click="removeFromEntity(previewItem)">{{ removing ? 'Đang xóa…' : 'Xóa khỏi entity' }}</button>
+        </div>
       </div>
     </div>
     </Transition>
@@ -101,6 +105,7 @@ const page = ref(1)
 const loading = ref(true)
 const filter = ref('all')
 const previewItem = ref<any>(null)
+const removing = ref(false)
 
 const hasMore = computed(() => items.value.length < total.value)
 
@@ -127,6 +132,23 @@ function loadMore() { page.value++; fetchMedia(true) }
 function onImgError(e: Event) {
   const img = e.target as HTMLImageElement
   img.style.opacity = '0.3'
+}
+
+async function removeFromEntity(item: any) {
+  if (!item?.entity_id || !item?.url) return
+  removing.value = true
+  try {
+    const entity = await $fetch<any>(`/admin-api/entities/${item.entity_id}`, { headers: authHeaders() })
+    const images: any[] = Array.isArray(entity.images) ? entity.images : []
+    const idx = images.findIndex((img: any) => (typeof img === 'string' ? img : img?.url) === item.url)
+    if (idx === -1) { showToast('Không tìm thấy ảnh trong entity', 'error'); removing.value = false; return }
+    await $fetch(`/admin-api/entities/${item.entity_id}/images/${idx}`, { method: 'DELETE', headers: authHeaders() })
+    items.value = items.value.filter(i => !(i.url === item.url && i.entity_id === item.entity_id))
+    total.value = Math.max(0, total.value - 1)
+    previewItem.value = null
+    showToast('Đã xóa ảnh khỏi entity', 'success')
+  } catch { showToast('Lỗi khi xóa ảnh', 'error') }
+  removing.value = false
 }
 
 onMounted(fetchMedia)
@@ -171,6 +193,7 @@ onMounted(fetchMedia)
 .media-preview-meta { font-size: .85rem; line-height: 1.8; }
 .media-preview-url { word-break: break-all; }
 .media-preview-url code { font-size: .75rem; background: var(--bg-alt); padding: 2px 6px; border-radius: 4px; }
+.media-preview-actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); padding-top: var(--space-3); border-top: .5px solid var(--line); }
 
 .stat-card.status-warn { border-left: 4px solid #FF9F0A; }
 @media (max-width: 640px) { .media-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }

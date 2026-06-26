@@ -1394,6 +1394,22 @@ async def get_reports(
     }
 
 
+class BulkReportAction(BaseModel):
+    ids: list[str] = Field(..., min_length=1, max_length=100)
+    action: str = Field(..., pattern="^(resolve|dismiss)$")
+
+
+@router.post("/reports/bulk")
+async def bulk_report_action(body: BulkReportAction):
+    status = "resolved" if body.action == "resolve" else "dismissed"
+    ph = db._ph
+    placeholders = ",".join([ph] * len(body.ids))
+    with db._conn() as conn:
+        db._execute(conn, f"UPDATE reports SET status = {ph} WHERE id::text IN ({placeholders})",
+                    (status, *body.ids))
+    return {"success": True, "updated": len(body.ids)}
+
+
 @router.post("/reports/{report_id}/resolve")
 async def resolve_report(report_id: str):
     ph = db._ph
@@ -1581,6 +1597,15 @@ async def list_users(
         total = db._fetchone(conn, f"""
             SELECT COUNT(*) as c FROM users WHERE {where}
         """, params[:len(params) - 2])
+    role_counts = {}
+    try:
+        with db._conn() as conn2:
+            rc_rows = db._fetchall(conn2, "SELECT COALESCE(role, 'user') as role, COUNT(*) as c FROM users GROUP BY COALESCE(role, 'user')", ())
+        for rc in rc_rows:
+            d = db._row_to_dict(rc)
+            role_counts[d["role"]] = d["c"]
+    except Exception:
+        pass
     return {
         "users": [{
             "id": str(r["id"]),
@@ -1591,6 +1616,7 @@ async def list_users(
             "created_at": str(r.get("created_at", "")),
         } for r in [db._row_to_dict(row) for row in rows]],
         "total": total["c"] if total else 0,
+        "role_counts": role_counts,
     }
 
 

@@ -176,13 +176,19 @@ useHead({
 })
 
 let badgeInterval: ReturnType<typeof setInterval> | undefined
+function _badgeTick() { if (!document.hidden) loadBadges() }
+function _onVisChange() { if (!document.hidden) loadBadges() }
 onMounted(async () => {
   if (!user.value && token.value) await fetchMe()
   if (window.innerWidth < 1024) sidebarCollapsed.value = true
   loadBadges()
-  badgeInterval = setInterval(loadBadges, 60_000)
+  badgeInterval = setInterval(_badgeTick, 60_000)
+  document.addEventListener('visibilitychange', _onVisChange)
 })
-onUnmounted(() => { if (badgeInterval) clearInterval(badgeInterval) })
+onUnmounted(() => {
+  if (badgeInterval) clearInterval(badgeInterval)
+  document.removeEventListener('visibilitychange', _onVisChange)
+})
 </script>
 
 <style>
@@ -281,7 +287,7 @@ onUnmounted(() => { if (badgeInterval) clearInterval(badgeInterval) })
 }
 .collapsed .nav-icon { font-size: 1.2rem; }
 .collapsed .admin-nav a { justify-content: center; padding: var(--space-2); }
-.collapsed .admin-nav a[title]:hover::after {
+.collapsed .admin-nav a[title]:is(:hover, :focus-visible)::after {
   content: attr(title); position: absolute; left: calc(100% + 8px); top: 50%;
   transform: translateY(-50%); background: rgba(0,0,0,.85); color: #fff;
   padding: 4px 10px; border-radius: 6px; font-size: .75rem; font-weight: 600;

@@ -155,7 +155,10 @@
           </div>
           <div class="ent-field">
             <label class="form-label" for="ent-place">Place ID (xã/phường)</label>
-            <input id="ent-place" v-model="form.placeId" class="input" placeholder="Place ID (xã/phường)" aria-label="Place ID" />
+            <input id="ent-place" v-model="form.placeId" class="input" placeholder="Place ID (xã/phường)" aria-label="Place ID" list="ent-places-list" />
+            <datalist id="ent-places-list">
+              <option v-for="p in placesList" :key="p.id" :value="p.id">{{ p.name }} ({{ p.area || '' }})</option>
+            </datalist>
           </div>
           <div class="ent-field">
             <label class="form-label" for="ent-summary">Tóm tắt <span class="ent-char-count">{{ (form.summary || '').length }}/500</span></label>
@@ -253,6 +256,7 @@ const entities = ref<Entity[]>([])
 const totalEntities = ref(0)
 const showModal = ref(false)
 const editingEntity = ref<Record<string, unknown> | null>(null)
+const placesList = ref<{ id: string; name: string; area?: string }[]>([])
 const form = ref<Record<string, unknown>>({})
 const selected = ref<Set<string>>(new Set())
 const loading = ref(true)
@@ -359,7 +363,12 @@ async function fetchEntities(reset = false) {
   searching.value = false
 }
 
-function _focusModal() {
+async function _focusModal() {
+  if (!placesList.value.length) {
+    try {
+      placesList.value = await $fetch<{ id: string; name: string; area?: string }[]>('/admin-api/entities/places', { headers: authHeaders() })
+    } catch { /* ignore */ }
+  }
   nextTick(() => {
     const el = document.getElementById(editingEntity.value ? 'ent-name' : 'ent-id')
     el?.focus()
@@ -603,6 +612,7 @@ onMounted(() => {
   if (route.query.orphans === '1') orphansOnly.value = true
   if (typeof route.query.q === 'string' && route.query.q) search.value = route.query.q
   fetchEntities()
+  if (route.query.create === '1') openCreate()
   window.addEventListener('keydown', onKeydown)
 })
 onUnmounted(() => window.removeEventListener('keydown', onKeydown))

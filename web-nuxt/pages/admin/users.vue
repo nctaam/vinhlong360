@@ -274,7 +274,11 @@ const displayedUsers = computed(() => {
   return list
 })
 
+const serverRoleCounts = ref<Record<string, number>>({})
 const roleCounts = computed(() => {
+  if (serverRoleCounts.value && Object.keys(serverRoleCounts.value).length) {
+    return { user: serverRoleCounts.value.user || 0, moderator: serverRoleCounts.value.moderator || 0, admin: serverRoleCounts.value.admin || 0 }
+  }
   const c: Record<'user' | 'moderator' | 'admin', number> = { user: 0, moderator: 0, admin: 0 }
   users.value.forEach((u: any) => {
     const r = (u.role || 'user') as 'user' | 'moderator' | 'admin'
@@ -328,6 +332,7 @@ async function fetchUsers(reset = false) {
     if (search.value) params.set('q', search.value)
     const res = await $fetch<Record<string, unknown>>(`/admin-api/users?${params}`, { headers: authHeaders() })
     users.value = res.users || res || []
+    if ((res as any).role_counts) serverRoleCounts.value = (res as any).role_counts
   } catch {
     showToast('Không thể tải danh sách user', 'error')
   }

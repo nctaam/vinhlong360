@@ -262,18 +262,12 @@ async function bulkAction(kind: 'resolve' | 'dismiss') {
   const verb = kind === 'resolve' ? 'xử lý' : 'bỏ qua'
   if (!confirm(`Xác nhận ${verb} ${ids.length} báo cáo đã chọn?`)) return
   bulkActing.value = true
-  let ok = 0, fail = 0
-  // Loop the existing per-item endpoints (no bulk endpoint available)
-  for (const id of ids) {
-    try {
-      await $fetch(`/admin-api/reports/${id}/${kind}`, { method: 'POST', headers: authHeaders() })
-      ok++
-    } catch { fail++ }
-  }
+  try {
+    await $fetch('/admin-api/reports/bulk', { method: 'POST', headers: authHeaders(), body: { ids, action: kind } })
+    showToast(`Đã ${verb} ${ids.length} báo cáo`, 'success')
+  } catch { showToast('Không thể cập nhật báo cáo', 'error') }
   bulkActing.value = false
   clearSelection()
-  if (ok) showToast(`Đã ${verb} ${ok} báo cáo${fail ? `, ${fail} lỗi` : ''}`, fail ? 'error' : 'success')
-  else showToast('Không thể cập nhật báo cáo', 'error')
   await fetchReports()
 }
 

@@ -19,6 +19,9 @@
         <option value="PATCH">PATCH</option>
         <option value="DELETE">DELETE</option>
       </select>
+      <input v-model="dateFrom" type="date" class="input audit-date" aria-label="Từ ngày" @change="applyFilter" />
+      <input v-model="dateTo" type="date" class="input audit-date" aria-label="Đến ngày" @change="applyFilter" />
+      <button type="button" class="btn btn-outline btn-sm" :disabled="!filtered.length" @click="exportCSV">CSV</button>
     </div>
 
     <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
@@ -71,6 +74,8 @@ const total = ref(0)
 const loading = ref(true)
 const search = ref('')
 const methodFilter = ref('')
+const dateFrom = ref('')
+const dateTo = ref('')
 const page = ref(1)
 const PAGE_SIZE = 50
 
@@ -91,6 +96,14 @@ const filtered = computed(() => {
     const q = search.value.toLowerCase()
     list = list.filter(e => (e.path || '').toLowerCase().includes(q) || (e.actor || '').toLowerCase().includes(q))
   }
+  if (dateFrom.value) {
+    const from = dateFrom.value
+    list = list.filter(e => (e.ts || '').slice(0, 10) >= from)
+  }
+  if (dateTo.value) {
+    const to = dateTo.value
+    list = list.filter(e => (e.ts || '').slice(0, 10) <= to)
+  }
   return list
 })
 
@@ -101,6 +114,20 @@ const paginated = computed(() => {
 })
 
 function applyFilter() { page.value = 1 }
+
+function exportCSV() {
+  const rows = filtered.value
+  if (!rows.length) return
+  const csvCell = (v: string) => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v
+  const header = 'Thời gian,Method,Path,Actor,IP'
+  const lines = rows.map(e => [e.ts, e.method, e.path, e.actor, e.ip].map(v => csvCell(String(v || ''))).join(','))
+  const blob = new Blob([header + '\n' + lines.join('\n')], { type: 'text/csv;charset=utf-8' })
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = `audit-log-${new Date().toISOString().slice(0, 10)}.csv`
+  a.click()
+  URL.revokeObjectURL(a.href)
+}
 
 function formatTs(ts: string): string {
   if (!ts) return '—'
@@ -116,6 +143,7 @@ onMounted(fetchLog)
 .audit-filters { display: flex; gap: var(--space-3); margin-bottom: var(--space-4); flex-wrap: wrap; }
 .audit-filters .input { max-width: 300px; }
 .audit-select { max-width: 160px; }
+.audit-date { max-width: 160px; }
 .audit-summary { font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-2); }
 .audit-method { font-weight: 700; font-size: .7rem; padding: 1px 6px; border-radius: var(--radius-sm); text-transform: uppercase; }
 .audit-method.post { background: rgba(52,199,89,.15); color: #219653; }

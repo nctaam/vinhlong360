@@ -98,7 +98,7 @@
             <td><span class="mod-badge" :class="badgeOf(p.moderation_status).cls">{{ badgeOf(p.moderation_status).label }}</span></td>
             <td class="admin-td-muted"><time :datetime="p.created_at">{{ formatDate(p.created_at) }}</time></td>
             <td class="admin-actions">
-              <button type="button" class="btn btn-ghost btn-sm" @click="previewPost = p">Xem</button>
+              <button type="button" class="btn btn-ghost btn-sm" @click="openPreview(p)">Xem</button>
               <template v-if="p.moderation_status !== 'approved'">
                 <button type="button" class="btn-success" :disabled="acting === p.id" @click="approve(p.id)">
                   <span v-if="acting === p.id" class="mod-btn-spin" aria-hidden="true"></span>{{ acting === p.id ? 'Đang duyệt' : 'Duyệt' }}
@@ -226,6 +226,7 @@ const page = ref(1)
 const loading = ref(true)
 const acting = ref<string | null>(null)
 const previewPost = ref<any>(null)
+function openPreview(p: any) { previewPost.value = { ...p, moderation_notes: [...(p.moderation_notes || [])] } }
 const status = ref<ModStatus>('review')
 const expanded = ref<Set<string>>(new Set())
 const rejectingId = ref<string | null>(null)
@@ -369,11 +370,11 @@ const focusedPost = computed(() => queue.value[focusIdx.value] || null)
 
 function onKeydown(e: KeyboardEvent) {
   if ((e.target as HTMLElement)?.tagName === 'INPUT' || (e.target as HTMLElement)?.tagName === 'TEXTAREA') return
-  if (e.key === 'j') { focusIdx.value = Math.min(focusIdx.value + 1, queue.value.length - 1); e.preventDefault() }
-  else if (e.key === 'k') { focusIdx.value = Math.max(focusIdx.value - 1, 0); e.preventDefault() }
+  if (e.key === 'j') { focusIdx.value = Math.min(focusIdx.value + 1, queue.value.length - 1); e.preventDefault(); nextTick(() => document.querySelector('.mod-focused')?.scrollIntoView({ block: 'nearest' })) }
+  else if (e.key === 'k') { focusIdx.value = Math.max(focusIdx.value - 1, 0); e.preventDefault(); nextTick(() => document.querySelector('.mod-focused')?.scrollIntoView({ block: 'nearest' })) }
   else if (e.key === 'a' && focusedPost.value && focusedPost.value.moderation_status !== 'approved') { approve(focusedPost.value.id); e.preventDefault() }
   else if (e.key === 'r' && focusedPost.value && focusedPost.value.moderation_status !== 'rejected') { startReject(focusedPost.value.id); e.preventDefault() }
-  else if ((e.key === 'p' || e.key === 'Enter') && focusedPost.value && !previewPost.value) { previewPost.value = focusedPost.value; e.preventDefault() }
+  else if ((e.key === 'p' || e.key === 'Enter') && focusedPost.value && !previewPost.value) { openPreview(focusedPost.value); e.preventDefault() }
   else if (e.key === 'Escape' && previewPost.value) { previewPost.value = null; e.preventDefault() }
 }
 

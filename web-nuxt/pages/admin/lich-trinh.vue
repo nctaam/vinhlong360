@@ -10,6 +10,7 @@
 
     <div class="admin-toolbar">
       <button type="button" class="btn btn-primary" @click="openCreate">+ Tạo lịch trình</button>
+      <input v-model="searchText" class="input" style="max-width: 260px" placeholder="Tìm lịch trình…" aria-label="Tìm lịch trình" />
     </div>
 
     <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
@@ -27,7 +28,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="it in itineraries" :key="it.id">
+            <tr v-for="it in filteredItineraries" :key="it.id">
               <td class="admin-td-id">{{ it.id }}</td>
               <td><strong>{{ it.name }}</strong></td>
               <td><span v-if="it.area" class="lt-area-badge">{{ it.area }}</span><span v-else class="admin-td-muted">—</span></td>
@@ -43,7 +44,7 @@
                 <button type="button" class="btn-danger lt-row-btn" :aria-label="`Xóa lịch trình ${it.name}`" :disabled="acting === it.id" @click="deleteItinerary(it.id)">Xóa</button>
               </td>
             </tr>
-            <tr v-if="!itineraries.length">
+            <tr v-if="!filteredItineraries.length">
               <td colspan="6" class="admin-empty-row">
                 <div class="admin-empty-state">
                   <span class="admin-empty-state-icon" aria-hidden="true">&#128506;</span>
@@ -125,6 +126,12 @@ definePageMeta({ layout: 'admin', middleware: 'admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const itineraries = ref<Itinerary[]>([])
+const searchText = ref('')
+const filteredItineraries = computed(() => {
+  const q = searchText.value.toLowerCase().trim()
+  if (!q) return itineraries.value
+  return itineraries.value.filter(it => (it.name || '').toLowerCase().includes(q) || (it.area || '').toLowerCase().includes(q) || it.id.toLowerCase().includes(q))
+})
 const showModal = ref(false)
 const editing = ref<Record<string, unknown> | null>(null)
 const form = ref<Record<string, unknown>>({})
