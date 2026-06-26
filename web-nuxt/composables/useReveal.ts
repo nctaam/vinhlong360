@@ -5,6 +5,8 @@ export function useReveal(options: { threshold?: number; rootMargin?: string } =
   const rootMargin = options.rootMargin ?? '0px 0px -30px 0px'
   let observer: IntersectionObserver | null = null
 
+  let observer: IntersectionObserver | null = null
+
   onMounted(() => {
     nextTick(() => {
       const els = document.querySelectorAll('.reveal:not(.revealed)')

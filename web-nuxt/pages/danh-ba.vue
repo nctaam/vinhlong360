@@ -1,5 +1,5 @@
 <template>
-  <div class="page dir-page">
+  <main class="page dir-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Danh bạ' }]" />
 
     <!-- Hero -->
@@ -33,7 +33,7 @@
       <div class="section-head">
         <h2>Chọn khu vực</h2>
       </div>
-      <div class="quick-picks">
+      <div class="quick-picks" role="group" aria-label="Chọn khu vực">
         <button type="button"
           v-for="g in wardGroups" :key="g.area"
           :class="['quick-pick', { active: selectedArea === g.area }]"
@@ -103,10 +103,10 @@
             <span v-else>{{ f.source?.title }}</span>
             <time v-if="f.updatedAt" :datetime="f.updatedAt"> · cập nhật {{ relativeUpdated(f.updatedAt) }}</time>
           </footer>
-          <button type="button" class="fac-report" :disabled="reported[f.id]" :aria-expanded="reportingId === f.id" @click="openReport(f)">
+          <button type="button" class="fac-report" :disabled="reported[f.id]" :aria-expanded="reportingId === f.id" :aria-controls="`report-${f.id}`" @click="openReport(f)">
             {{ reported[f.id] ? '✓ Đã gửi báo sai' : '⚠️ Báo thông tin sai' }}
           </button>
-          <div v-if="reportingId === f.id" class="fac-report-form">
+          <div v-if="reportingId === f.id" :id="`report-${f.id}`" class="fac-report-form" role="region" :aria-label="`Báo sai thông tin ${f.name}`">
             <textarea v-model="reportDetail" class="textarea" rows="2" placeholder="Thông tin nào sai? (địa chỉ / SĐT / giờ làm việc…)" aria-label="Mô tả thông tin sai"></textarea>
             <div class="fac-report-actions">
               <button type="button" class="btn btn-primary btn-sm" :disabled="reportSending || reportDetail.trim().length < 3" @click="submitReport(f)">{{ reportSending ? 'Đang gửi…' : 'Gửi' }}</button>
@@ -143,7 +143,7 @@
         </NuxtLink>
       </div>
     </section>
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">
@@ -167,12 +167,19 @@ const areaFromQuery = computed(() => {
 const selectedArea = ref(areaFromQuery.value)
 
 const wardGroups = computed(() => {
-  const wards = (places.value || []).filter((p: Entity) => ADMIN_LEVELS.includes(p.level))
-  return Object.keys(AREA_META).map(area => ({
-    area,
-    label: AREA_META[area].name,
-    wards: wards.filter((w: Entity) => w.area === area).sort((a: Entity, b: Entity) => a.name.localeCompare(b.name, 'vi')),
-  })).filter(g => g.wards.length)
+  const grouped: Record<string, Entity[]> = {}
+  for (const p of (places.value || [])) {
+    if (!ADMIN_LEVELS.includes(p.level) || !AREA_META[p.area]) continue
+    if (!grouped[p.area]) grouped[p.area] = []
+    grouped[p.area].push(p)
+  }
+  return Object.keys(AREA_META)
+    .filter(area => grouped[area]?.length)
+    .map(area => ({
+      area,
+      label: AREA_META[area].name,
+      wards: grouped[area].sort((a: Entity, b: Entity) => a.name.localeCompare(b.name, 'vi')),
+    }))
 })
 
 const filteredGroups = computed(() => {
@@ -235,17 +242,24 @@ async function submitReport(f: Entity) {
   reportSending.value = false
 }
 
+let facilitiesAbort: AbortController | null = null
+
 async function loadFacilities() {
+  if (facilitiesAbort) facilitiesAbort.abort()
   const id = wardId.value
   facilities.value = []
   facilitiesError.value = false
-  if (!id) return
+  if (!id) { loading.value = false; return }
   loading.value = true
+  const ctrl = new AbortController()
+  facilitiesAbort = ctrl
   try {
-    const res = await $fetch<{ facilities: Entity[] }>(`/api/facilities?place=${encodeURIComponent(id)}`)
+    const res = await $fetch<{ facilities: Entity[] }>(`/api/facilities?place=${encodeURIComponent(id)}`, { signal: ctrl.signal })
+    if (ctrl.signal.aborted) return
     facilities.value = res.facilities || []
-  } catch {
-    facilitiesError.value = true  // P1-5: phân biệt LỖI TẢI với "không có dữ liệu"
+  } catch (err: any) {
+    if (ctrl.signal.aborted) return
+    facilitiesError.value = true
     showToast('Không thể tải danh bạ cơ quan', 'error')
   }
   loading.value = false
@@ -263,15 +277,16 @@ const jsonLd = computed(() => facilities.value
   })))
 
 useSeoMeta({
-  title: () => pc('seo_title'),
-  description: () => pc('seo_description'),
-  ogTitle: () => pc('og_title'),
-  ogDescription: () => pc('og_description'),
+  ogType: 'website',
+  title: () => pc('seo_title') || 'Danh bạ hành chính — vinhlong360',
+  description: () => pc('seo_description') || 'Danh bạ xã/phường, cơ quan hành chính Vĩnh Long, Bến Tre, Trà Vinh.',
+  ogTitle: () => pc('og_title') || 'Danh bạ — vinhlong360',
+  ogDescription: () => pc('og_description') || 'Tra cứu thông tin hành chính địa phương.',
 })
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/danh-ba') }],
   script: jsonLd.value.length
-    ? [{ type: 'application/ld+json', innerHTML: JSON.stringify(jsonLd.value) }]
+    ? [{ type: 'application/ld+json', innerHTML: safeJsonLd(jsonLd.value) }]
     : [],
 }))
 </script>

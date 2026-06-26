@@ -1,5 +1,9 @@
 export const SITE_URL = 'https://vinhlong360.vn'
 
+export function safeJsonLd(obj: unknown): string {
+  return JSON.stringify(obj).replace(/<\//g, '<\\/')
+}
+
 export function canonicalUrl(path = '/') {
   const clean = path.split('#')[0].split('?')[0] || '/'
   const normalized = clean.startsWith('/') ? clean : `/${clean}`
