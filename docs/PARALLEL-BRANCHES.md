@@ -97,11 +97,54 @@
 
 ---
 
+## Branch 4: `dev/data-quality` — Dữ liệu & Validation
+
+**Phạm vi file SỞ HỮU:**
+- `scripts/*.py` (trừ `backup_data.py` — chạy nhưng không sửa)
+- `agent/tests/test_database.py`, `agent/tests/test_knowledge.py` (thêm test)
+- `web/data.json` (chỉ qua script, KHÔNG sửa tay)
+
+**Công việc:**
+- [ ] P1-16: Thêm check vào `validate_data.py` (self-loop, dangling itinerary-stop, produced_in target-type, place level=None)
+- [ ] Audit 38 entity mis-type (từ ke-hoach-hoan-thien) → viết script fix
+- [ ] Audit 9 entity duplicate → viết script dedup
+- [ ] Cải thiện entity descriptions (summary quá ngắn/thiếu)
+- [ ] Viết test mới cho database.py / knowledge.py edge cases
+
+**QUAN TRỌNG:**
+- **§B1** Chạy `python scripts/backup_data.py` TRƯỚC MỌI thao tác data
+- **§B7** KHÔNG chạy lệnh phá dữ liệu — viết script dry-run trước, xác nhận rồi mới apply
+- KHÔNG bịa dữ liệu — chỉ sửa lỗi cấu trúc/type/duplicate có bằng chứng
+
+---
+
+## Branch 5: `dev/backend-perf` — Backend Performance & Resilience
+
+**Phạm vi file SỞ HỮU:**
+- `agent/knowledge.py`, `agent/contextual_retrieval.py`
+- `agent/orchestrator.py`, `agent/tools/*.py`
+- `agent/guardrails.py`, `agent/middleware.py`
+- `agent/llm_judge.py`, `agent/image_recognition.py`
+- `agent/tests/*.py` (thêm test mới, không sửa test hiện tại)
+
+**Công việc:**
+- [ ] P1-2: Thêm timeout cho LLM calls (judge, vision, scheduler, rerank)
+- [ ] P2-11: Sửa `except: pass` nuốt lỗi → log warning
+- [ ] EH-01/02: generate_followups + json.loads guard (timeout/fallback)
+- [ ] Mở rộng test coverage cho orchestrator error paths
+- [ ] Search quality improvements (knowledge.py)
+
+**KHÔNG SỬA:** `server.py` (router chính), `database.py`, `admin.py`, `social.py`, `auth.py`, FE files.
+
+---
+
 ## Merge order (recommended)
 
-1. `dev/public-pages` → main (ít conflict nhất, trang public ko chạm user/admin)
-2. `dev/usercp` → main
-3. `dev/admincp` → main
+1. `dev/data-quality` → main (scripts only, không chạm FE/BE code)
+2. `dev/backend-perf` → main (backend only)
+3. `dev/public-pages` → main (FE public pages)
+4. `dev/usercp` → main (FE user + BE social/auth)
+5. `dev/admincp` → main (FE admin + BE admin)
 
 Nếu conflict: resolve bằng cách giữ CẢ HAI thay đổi (additive-first §B2).
 
@@ -118,6 +161,12 @@ git checkout dev/usercp
 
 # Session 3 (Public pages)
 git checkout dev/public-pages
+
+# Session 4 (Data quality)
+git checkout dev/data-quality
+
+# Session 5 (Backend perf)
+git checkout dev/backend-perf
 ```
 
 Paste handoff prompt tương ứng (bên dưới) vào session mới.
