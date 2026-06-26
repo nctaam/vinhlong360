@@ -441,6 +441,32 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
         if attrs.get("ocop"):
             ld["brand"] = {"@type": "Brand", "name": f"OCOP {attrs['ocop']}"}
 
+    if schema_type in ("FoodEstablishment", "Restaurant", "CafeOrCoffeeShop"):
+        cuisine = attrs.get("specialty") or attrs.get("food_type")
+        if cuisine:
+            ld["servesCuisine"] = cuisine
+        if attrs.get("price_range"):
+            ld["priceRange"] = attrs["price_range"]
+
+    if schema_type == "LodgingBusiness":
+        star = attrs.get("star_rating") or attrs.get("stars")
+        if star is not None:
+            ld["starRating"] = {"@type": "Rating", "ratingValue": str(star)}
+        if attrs.get("price_range"):
+            ld["priceRange"] = attrs["price_range"]
+        if attrs.get("check_in"):
+            ld["checkinTime"] = attrs["check_in"]
+        if attrs.get("check_out"):
+            ld["checkoutTime"] = attrs["check_out"]
+        if attrs.get("rooms"):
+            ld["numberOfRooms"] = attrs["rooms"]
+        amenities = attrs.get("amenities")
+        if isinstance(amenities, list) and amenities:
+            ld["amenityFeature"] = [
+                {"@type": "LocationFeatureSpecification", "name": a}
+                for a in amenities if a
+            ]
+
     if schema_type == "Event":
         # P1-6: data thực dùng date_start/date_end (public_api) — trước chỉ đọc startDate camelCase
         date_value = (attrs.get("startDate") or attrs.get("date_start")

@@ -211,3 +211,92 @@ def test_validate_flags_place_level_none(tmp_path: Path) -> None:
 
     assert stats["place_level_none"] == 1
     assert "place_level_none" in {issue.code for issue in issues}
+
+
+def test_validate_flags_self_loop_relationships(tmp_path: Path) -> None:
+    """Relationships where source==target are flagged as self-loops."""
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long", "coordinates": [10.25, 106.0]},
+        ],
+        "relationships": [
+            {"from": "a", "to": "a", "type": "related_to"},
+        ],
+        "itineraries": [],
+    }
+
+    issues, _stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert "self_loop_relationships" in {issue.code for issue in issues}
+
+
+def test_validate_no_self_loop_when_distinct(tmp_path: Path) -> None:
+    """Normal relationships (source!=target) should not trigger self-loop error."""
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long", "coordinates": [10.25, 106.0]},
+            {"id": "b", "type": "attraction", "name": "B", "summary": "B", "area": "vinh-long", "coordinates": [10.26, 106.01]},
+        ],
+        "relationships": [
+            {"from": "a", "to": "b", "type": "related_to"},
+        ],
+        "itineraries": [],
+    }
+
+    issues, _stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert "self_loop_relationships" not in {issue.code for issue in issues}
+
+
+def test_validate_flags_dangling_itinerary_stops(tmp_path: Path) -> None:
+    """Itinerary stops referencing non-existent entities should be flagged."""
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long", "coordinates": [10.25, 106.0]},
+        ],
+        "relationships": [],
+        "itineraries": [
+            {"id": "it-1", "name": "Test", "stops": [
+                {"entityId": "a"},
+                {"entityId": "nonexistent-entity"},
+            ]},
+        ],
+    }
+
+    issues, _stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert "dangling_itinerary_stops" in {issue.code for issue in issues}
+
+
+def test_validate_no_dangling_when_stops_valid(tmp_path: Path) -> None:
+    """Itinerary stops referencing existing entities should not be flagged."""
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long", "coordinates": [10.25, 106.0]},
+        ],
+        "relationships": [],
+        "itineraries": [
+            {"id": "it-1", "name": "Test", "stops": [{"entityId": "a"}]},
+        ],
+    }
+
+    issues, _stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert "dangling_itinerary_stops" not in {issue.code for issue in issues}
+
+
+def test_validate_ignores_stops_without_entity_ref(tmp_path: Path) -> None:
+    """Free-text stops (no entityId/id) should not trigger dangling error."""
+    data = {
+        "entities": [],
+        "relationships": [],
+        "itineraries": [
+            {"id": "it-1", "name": "Test", "stops": [
+                {"name": "Free text stop"},
+            ]},
+        ],
+    }
+
+    issues, _stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert "dangling_itinerary_stops" not in {issue.code for issue in issues}

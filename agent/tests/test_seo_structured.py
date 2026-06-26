@@ -248,3 +248,146 @@ def test_event_without_date_omits_startDate():
     ld = seo.build_entity_jsonld(entity, {})
     assert ld["@type"] == "Event"
     assert "startDate" not in ld
+
+
+# ── FoodEstablishment / Restaurant enrichment ──────────────────────────────
+
+
+def test_dish_emits_serves_cuisine():
+    entity = {
+        "id": "bun-mam-test",
+        "name": "Bún mắm",
+        "type": "dish",
+        "attributes": {"specialty": "Bún mắm Trà Vinh", "price_range": "30.000-50.000"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["@type"] == "FoodEstablishment"
+    assert ld["servesCuisine"] == "Bún mắm Trà Vinh"
+    assert ld["priceRange"] == "30.000-50.000"
+
+
+def test_restaurant_emits_serves_cuisine():
+    entity = {
+        "id": "nha-hang-test",
+        "name": "Nhà hàng Phương Nam",
+        "type": "restaurant",
+        "attributes": {"specialty": "Hải sản", "price_range": "100.000-300.000"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["@type"] == "Restaurant"
+    assert ld["servesCuisine"] == "Hải sản"
+    assert ld["priceRange"] == "100.000-300.000"
+
+
+def test_food_type_fallback_for_cuisine():
+    entity = {
+        "id": "dish-ft",
+        "name": "Món test",
+        "type": "dish",
+        "attributes": {"food_type": "Chay"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["servesCuisine"] == "Chay"
+
+
+def test_food_without_attrs_omits_cuisine():
+    entity = {"id": "dish-empty", "name": "Món", "type": "dish", "attributes": {}}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "servesCuisine" not in ld
+    assert "priceRange" not in ld
+
+
+# ── LodgingBusiness enrichment ─────────────────────────────────────────────
+
+
+def test_accommodation_emits_star_rating():
+    entity = {
+        "id": "ks-test",
+        "name": "Khách sạn test",
+        "type": "accommodation",
+        "attributes": {"star_rating": 3, "price_range": "500.000-1.000.000"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["@type"] == "LodgingBusiness"
+    assert ld["starRating"] == {"@type": "Rating", "ratingValue": "3"}
+    assert ld["priceRange"] == "500.000-1.000.000"
+
+
+def test_accommodation_stars_fallback():
+    entity = {
+        "id": "ks-stars",
+        "name": "KS Stars",
+        "type": "accommodation",
+        "attributes": {"stars": 4},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["starRating"]["ratingValue"] == "4"
+
+
+def test_accommodation_checkin_checkout():
+    entity = {
+        "id": "ks-time",
+        "name": "KS Time",
+        "type": "accommodation",
+        "attributes": {"check_in": "14:00", "check_out": "12:00", "rooms": 20},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["checkinTime"] == "14:00"
+    assert ld["checkoutTime"] == "12:00"
+    assert ld["numberOfRooms"] == 20
+
+
+def test_accommodation_amenities_list():
+    entity = {
+        "id": "ks-amen",
+        "name": "KS Amenities",
+        "type": "accommodation",
+        "attributes": {"amenities": ["WiFi", "Hồ bơi", "Bãi đỗ xe"]},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert len(ld["amenityFeature"]) == 3
+    assert ld["amenityFeature"][0] == {"@type": "LocationFeatureSpecification", "name": "WiFi"}
+
+
+def test_accommodation_without_attrs_omits_enrichment():
+    entity = {"id": "ks-empty", "name": "KS", "type": "accommodation", "attributes": {}}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["@type"] == "LodgingBusiness"
+    assert "starRating" not in ld
+    assert "priceRange" not in ld
+    assert "amenityFeature" not in ld
+
+
+# ── Sitemap completeness ──────────────────────────────────────────────────
+
+
+def test_sitemap_includes_all_public_entities(monkeypatch, sample_data):
+    monkeypatch.setattr(seo, "_load", lambda: sample_data)
+    monkeypatch.setattr(seo, "_sitemap_cache", None)
+    monkeypatch.setattr(seo, "_data_mtime_ns", 0)
+    resp = seo.sitemap()
+    xml = resp.body.decode()
+    for entity in sample_data["entities"]:
+        eid = entity["id"]
+        if entity["type"] == "place":
+            assert f"/xa-phuong/{eid}" in xml, f"place {eid} missing from sitemap"
+        else:
+            assert f"/dia-diem/{eid}" in xml, f"entity {eid} missing from sitemap"
+
+
+def test_sitemap_excludes_provisional(monkeypatch):
+    data = {
+        "entities": [
+            {"id": "ok", "name": "OK", "type": "attraction"},
+            {"id": "prov", "name": "Provisional", "type": "attraction", "status": "provisional"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    monkeypatch.setattr(seo, "_load", lambda: data)
+    monkeypatch.setattr(seo, "_sitemap_cache", None)
+    monkeypatch.setattr(seo, "_data_mtime_ns", 0)
+    resp = seo.sitemap()
+    xml = resp.body.decode()
+    assert "/dia-diem/ok" in xml
+    assert "/dia-diem/prov" not in xml
