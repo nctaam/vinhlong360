@@ -15,7 +15,11 @@
         <span v-if="provisional.length" class="dth-count-badge dth-count-warn" role="status" :aria-label="`${provisional.length} entity chờ duyệt`">{{ provisional.length }}</span>
       </div>
 
-      <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
+      <div v-if="loading" class="admin-loading" role="status" aria-label="Đang tải danh sách tự học"><div class="spinner"></div></div>
+      <div v-else-if="loadError" class="admin-empty">
+        <p>Không tải được danh sách entity tự học.</p>
+        <button type="button" class="btn btn-secondary" @click="loadProvisional">Thử lại</button>
+      </div>
       <template v-else>
         <div v-if="!provisional.length" class="dth-empty">
           <span class="dth-empty-icon">&#9989;</span>
@@ -24,7 +28,7 @@
         </div>
         <div v-else class="admin-table-wrap">
           <table class="admin-table">
-            <thead><tr><th>Entity</th><th>Loại</th><th>Tin cậy</th><th>Nguồn</th><th>Thao tác</th></tr></thead>
+            <thead><tr><th scope="col">Entity</th><th scope="col">Loại</th><th scope="col">Tin cậy</th><th scope="col">Nguồn</th><th scope="col">Thao tác</th></tr></thead>
             <tbody>
               <tr v-for="e in provisional" :key="e.id">
                 <td>
@@ -71,7 +75,7 @@
       <div v-if="sources.length" class="dth-sources">
         <div class="admin-table-wrap">
           <table class="admin-table">
-            <thead><tr><th>Nguồn</th><th>Số entity</th><th>URL mẫu</th></tr></thead>
+            <thead><tr><th scope="col">Nguồn</th><th scope="col">Số entity</th><th scope="col">URL mẫu</th></tr></thead>
             <tbody>
               <tr v-for="s in sources" :key="s.title">
                 <td><strong>{{ s.title }}</strong></td>
@@ -97,18 +101,22 @@ const provisional = ref<Entity[]>([])
 const sources = ref<Record<string, unknown>[]>([])
 const exporting = ref(false)
 const loading = ref(true)
+const loadError = ref(false)
 const acting = ref<string | null>(null)
 const loadingSources = ref(false)
 
 async function loadProvisional() {
   loading.value = true
+  loadError.value = false
   try {
     const r = await $fetch<Record<string, unknown>>('/admin-api/provisional', { headers: authHeaders() })
     provisional.value = (r.provisional || []) as Entity[]
   } catch {
+    loadError.value = true
     showToast('Không thể tải danh sách entity tự học', 'error')
+  } finally {
+    loading.value = false
   }
-  loading.value = false
 }
 async function approve(e: Entity) {
   if (!await confirmDialog(`Duyệt "${e.name}" vào hệ thống?`)) return
@@ -117,7 +125,7 @@ async function approve(e: Entity) {
     await $fetch(`/admin-api/provisional/${e.id}/approve`, { method: 'POST', headers: authHeaders() })
     provisional.value = provisional.value.filter(x => x.id !== e.id)
     showToast(`Đã duyệt ${e.name}`, 'success')
-  } catch (err: unknown) { showToast((err as any)?.data?.detail || 'Duyệt lỗi', 'error') }
+  } catch (err: unknown) { showToast(getErrorDetail(err, 'Duyệt lỗi', 'error') }
   acting.value = null
 }
 async function reject(e: Entity) {
@@ -127,7 +135,7 @@ async function reject(e: Entity) {
     await $fetch(`/admin-api/provisional/${e.id}/reject`, { method: 'POST', headers: authHeaders() })
     provisional.value = provisional.value.filter(x => x.id !== e.id)
     showToast('Đã từ chối', 'success')
-  } catch (err: unknown) { showToast((err as any)?.data?.detail || 'Từ chối lỗi', 'error') }
+  } catch (err: unknown) { showToast(getErrorDetail(err, 'Từ chối lỗi', 'error') }
   acting.value = null
 }
 

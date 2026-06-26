@@ -13,18 +13,22 @@
       <input v-model="searchText" class="input" style="max-width: 260px" placeholder="Tìm lịch trình…" aria-label="Tìm lịch trình" />
     </div>
 
-    <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
+    <div v-if="loading" class="admin-loading" role="status" aria-label="Đang tải lịch trình"><div class="spinner"></div></div>
+    <div v-else-if="loadError" class="admin-empty">
+      <p>Không tải được danh sách lịch trình.</p>
+      <button type="button" class="btn btn-secondary" @click="fetchItineraries">Thử lại</button>
+    </div>
     <template v-else>
       <div class="admin-table-wrap">
         <table class="admin-table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Tên</th>
-              <th>Khu vực</th>
-              <th>Thời gian</th>
-              <th>Điểm dừng</th>
-              <th>Thao tác</th>
+              <th scope="col">ID</th>
+              <th scope="col">Tên</th>
+              <th scope="col">Khu vực</th>
+              <th scope="col">Thời gian</th>
+              <th scope="col">Điểm dừng</th>
+              <th scope="col">Thao tác</th>
             </tr>
           </thead>
           <tbody>
@@ -143,6 +147,7 @@ const editing = ref<Record<string, unknown> | null>(null)
 const form = ref<Record<string, unknown>>({})
 const stopsJson = ref('[]')
 const loading = ref(true)
+const loadError = ref(false)
 const acting = ref<string | null>(null)
 const saving = ref(false)
 
@@ -277,13 +282,16 @@ function toggleJsonMode() {
 
 async function fetchItineraries() {
   loading.value = true
+  loadError.value = false
   try {
     const res = await $fetch<Record<string, unknown>>('/admin-api/itineraries', { headers: authHeaders() })
     itineraries.value = (res.itineraries || res || []) as Itinerary[]
   } catch {
+    loadError.value = true
     showToast('Không thể tải danh sách lịch trình', 'error')
+  } finally {
+    loading.value = false
   }
-  loading.value = false
 }
 
 function openCreate() {
@@ -308,6 +316,7 @@ function openEdit(it: Itinerary) {
 }
 
 async function save() {
+  if (saving.value) return
   if (!form.value.name?.trim()) { showToast('Tên không được để trống', 'error'); return }
   if (!editing.value && !form.value.id?.trim()) { showToast('ID không được để trống', 'error'); return }
   let stopsPayload: unknown[]
@@ -329,9 +338,10 @@ async function save() {
     showModal.value = false
     await fetchItineraries()
   } catch (e: unknown) {
-    showToast((e as any)?.data?.detail || 'Lỗi khi lưu lịch trình', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi lưu lịch trình', 'error')
+  } finally {
+    saving.value = false
   }
-  saving.value = false
 }
 
 async function deleteItinerary(id: string) {
@@ -342,12 +352,14 @@ async function deleteItinerary(id: string) {
     showToast('Đã xóa lịch trình', 'success')
     await fetchItineraries()
   } catch (e: unknown) {
-    showToast((e as any)?.data?.detail || 'Lỗi khi xóa', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi xóa', 'error')
+  } finally {
+    acting.value = null
   }
-  acting.value = null
 }
 
 onMounted(() => fetchItineraries())
+onUnmounted(() => { if (entitySearchTimer) clearTimeout(entitySearchTimer) })
 </script>
 
 <style scoped>

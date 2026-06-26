@@ -25,7 +25,11 @@
       </button>
     </div>
 
-    <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
+    <div v-if="loading" class="admin-loading" role="status" aria-label="Đang tải ảnh chờ duyệt"><div class="spinner"></div></div>
+    <div v-else-if="loadError" class="admin-empty">
+      <p>Không tải được hàng đợi ảnh.</p>
+      <button type="button" class="btn btn-secondary" @click="fetchQueue()">Thử lại</button>
+    </div>
     <template v-else>
       <!-- License legend: orient admins on which badges are safe to approve -->
       <div v-if="queue.length" class="img-legend" aria-hidden="true">
@@ -161,6 +165,7 @@ const total = ref(0)
 const offset = ref(0)
 const limit = 30
 const loading = ref(true)
+const loadError = ref(false)
 const acting = ref<string | null>(null)
 const status = ref<ImgStatus>('pending')
 const rejectingId = ref<string | null>(null)
@@ -190,6 +195,7 @@ function onImgError(ev: Event) {
 
 async function fetchQueue(append = false) {
   loading.value = true
+  if (!append) loadError.value = false
   try {
     const q = await $fetch<any>(
       `/admin-api/image-suggestions?status=${status.value}&limit=${limit}&offset=${offset.value}`,
@@ -200,9 +206,11 @@ async function fetchQueue(append = false) {
     total.value = q.total ?? items.length
     if (q.counts) counts.value = q.counts
   } catch {
+    if (!append) loadError.value = true
     showToast('Không thể tải hàng đợi ảnh', 'error')
+  } finally {
+    loading.value = false
   }
-  loading.value = false
 }
 
 function setStatus(s: ImgStatus) {
@@ -216,21 +224,24 @@ function setStatus(s: ImgStatus) {
 function loadMore() { offset.value += limit; fetchQueue(true) }
 
 async function approve(id: string) {
+  if (acting.value) return
   acting.value = id
   try {
     await $fetch(`/admin-api/image-suggestions/${id}/approve`, { method: 'POST', headers: authHeaders() })
     showToast('Đã duyệt và gắn ảnh vào entity', 'success')
     await refresh()
   } catch (e: unknown) {
-    showToast((e as any)?.data?.detail || 'Lỗi khi duyệt ảnh', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi duyệt ảnh', 'error')
+  } finally {
+    acting.value = null
   }
-  acting.value = null
 }
 
 function startReject(id: string) { rejectingId.value = id; rejectReason.value = '' }
 function cancelReject() { rejectingId.value = null; rejectReason.value = '' }
 
 async function confirmReject(id: string) {
+  if (acting.value) return
   acting.value = id
   try {
     await $fetch(`/admin-api/image-suggestions/${id}/reject`, {
@@ -242,9 +253,10 @@ async function confirmReject(id: string) {
     rejectReason.value = ''
     await refresh()
   } catch (e: unknown) {
-    showToast((e as any)?.data?.detail || 'Lỗi khi từ chối', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi từ chối', 'error')
+  } finally {
+    acting.value = null
   }
-  acting.value = null
 }
 
 // Reload from the top so counts + list stay consistent after an action.

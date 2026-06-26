@@ -165,7 +165,7 @@
           <div class="ent-field">
             <label class="form-label" for="ent-summary">Tóm tắt <span class="ent-char-count" :class="{ 'ent-char-warn': (form.summary || '').length > 400, 'ent-char-danger': (form.summary || '').length > 450 }">{{ (form.summary || '').length }}/500</span></label>
             <textarea v-if="!previewSummary" id="ent-summary" v-model="form.summary" class="input admin-textarea" placeholder="Tóm tắt" aria-label="Tóm tắt" rows="3" maxlength="500"></textarea>
-            <div v-else class="ent-summary-preview" v-html="form.summary"></div>
+            <div v-else class="ent-summary-preview" v-text="form.summary"></div>
             <button type="button" class="btn btn-ghost btn-sm" @click="previewSummary = !previewSummary">{{ previewSummary ? 'Sửa' : 'Xem trước' }}</button>
           </div>
           </fieldset>
@@ -416,10 +416,10 @@ async function saveInline(e: Entity) {
     await $fetch(`/admin-api/entities/${e.id}`, { method: 'PUT', headers: authHeaders(), body })
     ;(e as Record<string, any>)[field] = value.trim()
     showToast('Đã cập nhật', 'success')
+    inlineEdit.value.id = ''
   } catch (err: unknown) {
     showToast(getErrorDetail(err, 'Lỗi khi cập nhật'), 'error')
   }
-  inlineEdit.value.id = ''
 }
 
 const duplicates = ref<Array<{ id: string; name: string; type: string }>>([])
@@ -447,7 +447,7 @@ function clearSearch() {
   search.value = ''
   fetchEntities(true)
 }
-onUnmounted(() => { if (debounceTimer) clearTimeout(debounceTimer) })
+onUnmounted(() => { if (debounceTimer) clearTimeout(debounceTimer); if (dupTimer) clearTimeout(dupTimer) })
 
 async function fetchEntities(reset = false) {
   if (reset) page.value = 1
@@ -579,7 +579,7 @@ async function addBulkRels() {
       body: { from_id: form.value.id, pairs },
     })
     showToast(`Đã thêm ${r.added} quan hệ${r.errors?.length ? `, ${r.errors.length} lỗi` : ''}`, r.errors?.length ? 'warning' : 'success')
-    bulkRelIds.value = ''
+    if (!r.errors?.length) bulkRelIds.value = ''
     await fetchRels(form.value.id as string)
   } catch { showToast('Thêm hàng loạt lỗi', 'error') }
   bulkRelSaving.value = false
@@ -609,10 +609,13 @@ function validateForm(): boolean {
   const errs: Record<string, string> = {}
   if (!String(form.value.name || '').trim()) errs.name = 'Tên không được để trống'
   if (!editingEntity.value && !String(form.value.id || '').trim()) errs.id = 'ID không được để trống'
+  if (!editingEntity.value && form.value.id && !/^[a-z0-9\-_]+$/.test(String(form.value.id))) errs.id = 'ID chỉ chứa chữ thường, số, dấu gạch'
+  if (!form.value.type) errs.type = 'Loại không được để trống'
   fieldErrors.value = errs
   return Object.keys(errs).length === 0
 }
 async function saveEntity() {
+  if (saving.value) return
   if (!validateForm()) {
     showToast(Object.values(fieldErrors.value)[0] || 'Vui lòng kiểm tra biểu mẫu', 'error')
     return
@@ -672,9 +675,9 @@ async function uploadImageFile(e: Event) {
       method: 'POST', headers: authHeaders(), body: fd })
     form.value.images = (r.images as string[]) || form.value.images
     showToast('Đã tải & tối ưu ảnh', 'success')
+    input.value = ''
   } catch (err: unknown) { showToast(getErrorDetail(err, 'Tải ảnh lỗi'), 'error') }
   uploadingImg.value = false
-  input.value = ''
 }
 
 // ── Thao tác hàng loạt ──
@@ -688,28 +691,32 @@ function toggleAll() {
   selected.value = allSelected.value ? new Set() : new Set(entities.value.map(e => e.id))
 }
 async function bulkDelete() {
+  if (bulkBusy.value) return
   const ids = [...selected.value]
   if (!ids.length || !await confirmDialog(`Xóa ${ids.length} entity đã chọn?`, { danger: true })) return
   bulkBusy.value = true
   try {
     const r = await $fetch<Record<string, unknown>>('/admin-api/entities/bulk-delete', { method: 'POST', headers: authHeaders(), body: ids })
-    showToast(`Đã xóa ${r.count}`, 'success')
+    const deleted = Number(r.count) || 0
+    showToast(`Đã xóa ${deleted}/${ids.length} entity`, deleted === ids.length ? 'success' : 'warning')
     selected.value = new Set()
     await fetchEntities()
   } catch (e: unknown) { showToast(getErrorDetail(e, 'Xóa hàng loạt lỗi'), 'error') }
   bulkBusy.value = false
 }
 async function deleteEntity(id: string) {
+  if (acting.value) return
   if (!await confirmDialog(`Xóa entity "${id}"?`, { danger: true })) return
   acting.value = id
   try {
     await $fetch(`/admin-api/entities/${id}`, { method: 'DELETE', headers: authHeaders() })
     showToast('Đã xóa entity', 'success')
+    acting.value = null
     await fetchEntities()
   } catch (e: unknown) {
     showToast(getErrorDetail(e, 'Lỗi khi xóa entity'), 'error')
+    acting.value = null
   }
-  acting.value = null
 }
 
 // Esc clears bulk selection (only when modal is closed) — additive

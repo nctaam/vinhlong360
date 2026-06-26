@@ -8,7 +8,7 @@
       <button type="button" class="admin-refresh" :disabled="refreshing" @click="refreshAll"><span :class="{ 'refresh-spin': refreshing }">&#8635;</span> Làm mới</button>
     </div>
 
-    <div v-if="!health && !healthError" class="admin-loading"><div class="spinner"></div></div>
+    <div v-if="!health && !healthError" class="admin-loading" role="status" aria-label="Đang tải trạng thái agent"><div class="spinner"></div></div>
     <div v-else-if="!health && healthError" class="admin-empty">
       <p>Không kết nối được Knowledge Agent.</p>
       <button type="button" class="btn btn-secondary" @click="refreshAll">Thử lại</button>
@@ -286,9 +286,10 @@ async function triggerLearn() {
     const res = await $fetch<Record<string, unknown>>('/admin-api/trigger-learn', { method: 'POST', headers: authHeaders() })
     triggerResult.value = (res.message as string) || 'Learning triggered successfully'
   } catch (e: unknown) {
-    triggerResult.value = 'Error: ' + ((e as any)?.data?.detail || (e as any)?.message || 'failed')
+    triggerResult.value = 'Error: ' + getErrorDetail(e, 'failed')
+  } finally {
+    triggerLoading.value = false
   }
-  triggerLoading.value = false
 }
 
 const cost = ref<Record<string, unknown> | null>(null)
@@ -311,9 +312,10 @@ async function triage() {
       ? `${r.suggestion}`
       : `${r.note || 'LLM lỗi'}\n\n${r.context || ''}`
   } catch (e: unknown) {
-    triageOut.value = 'Lỗi: ' + ((e as any)?.data?.detail || (e as any)?.message || 'không gọi được')
+    triageOut.value = 'Lỗi: ' + getErrorDetail(e, 'không gọi được')
+  } finally {
+    triageLoading.value = false
   }
-  triageLoading.value = false
 }
 
 async function reload() {

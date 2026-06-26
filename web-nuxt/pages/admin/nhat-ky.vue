@@ -24,7 +24,7 @@
       <button type="button" class="btn btn-outline btn-sm" :disabled="!filtered.length" @click="exportCSV">CSV</button>
     </div>
 
-    <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
+    <div v-if="loading" class="admin-loading" role="status" aria-label="Đang tải nhật ký"><div class="spinner"></div></div>
     <template v-else>
       <div class="audit-summary">{{ filtered.length }} mục{{ total > entries.length ? ` (hiển thị ${entries.length}/${total})` : '' }}</div>
 
@@ -32,11 +32,11 @@
         <table class="admin-table">
           <thead>
             <tr>
-              <th>Thời gian</th>
-              <th>Method</th>
-              <th>Path</th>
-              <th>Actor</th>
-              <th>IP</th>
+              <th scope="col">Thời gian</th>
+              <th scope="col">Method</th>
+              <th scope="col">Path</th>
+              <th scope="col">Actor</th>
+              <th scope="col">IP</th>
             </tr>
           </thead>
           <tbody>
@@ -120,7 +120,7 @@ function exportCSV() {
   const csvCell = (v: string) => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v
   const header = 'Thời gian,Method,Path,Actor,IP'
   const lines = rows.map(e => [e.ts, e.method, e.path, e.actor, e.ip].map(v => csvCell(String(v || ''))).join(','))
-  const blob = new Blob([header + '\n' + lines.join('\n')], { type: 'text/csv;charset=utf-8' })
+  const blob = new Blob(['﻿' + header + '\n' + lines.join('\n')], { type: 'text/csv;charset=utf-8' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
   a.download = `audit-log-${new Date().toISOString().slice(0, 10)}.csv`
@@ -135,6 +135,7 @@ function formatTs(ts: string): string {
 }
 
 onMounted(fetchLog)
+onUnmounted(() => { if (searchTimer) clearTimeout(searchTimer) })
 </script>
 
 <style scoped>

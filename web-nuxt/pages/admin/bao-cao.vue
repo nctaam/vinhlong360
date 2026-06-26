@@ -10,7 +10,7 @@
       </button>
     </div>
 
-    <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
+    <div v-if="loading" class="admin-loading" role="status" aria-label="Đang tải báo cáo"><div class="spinner"></div></div>
     <template v-else>
       <!-- ── Filter chips ── -->
       <div class="rpt-filters">
@@ -63,13 +63,13 @@
                   :checked="allPageSelected" :indeterminate.prop="somePageSelected && !allPageSelected"
                   :disabled="!pageSelectableIds.length" @change="toggleSelectAllPage($event)">
               </th>
-              <th>Người báo</th>
-              <th>Loại</th>
-              <th>Đối tượng</th>
-              <th>Lý do</th>
-              <th>Trạng thái</th>
-              <th>Ngày</th>
-              <th>Thao tác</th>
+              <th scope="col">Người báo</th>
+              <th scope="col">Loại</th>
+              <th scope="col">Đối tượng</th>
+              <th scope="col">Lý do</th>
+              <th scope="col">Trạng thái</th>
+              <th scope="col">Ngày</th>
+              <th scope="col">Thao tác</th>
             </tr>
           </thead>
           <tbody>
@@ -136,7 +136,7 @@
       </div>
       <div class="admin-table-wrap">
         <table class="admin-table">
-          <thead><tr><th>Loại</th><th>Đối tượng</th><th>Lý do</th><th>Trạng thái</th><th>Ngày</th><th>Thao tác</th></tr></thead>
+          <thead><tr><th scope="col">Loại</th><th scope="col">Đối tượng</th><th scope="col">Lý do</th><th scope="col">Trạng thái</th><th scope="col">Ngày</th><th scope="col">Thao tác</th></tr></thead>
           <tbody>
             <tr v-for="r in infoReports" :key="r.ts" :style="{ opacity: (r.status || 'open') === 'open' ? 1 : .5 }">
               <td>{{ r.target_type }}</td>
@@ -258,6 +258,7 @@ function clearSelection() {
 }
 
 async function bulkAction(kind: 'resolve' | 'dismiss') {
+  if (bulkActing.value) return
   const ids = [...selectedIds.value]
   if (!ids.length) return
   const verb = kind === 'resolve' ? 'xử lý' : 'bỏ qua'
@@ -266,16 +267,16 @@ async function bulkAction(kind: 'resolve' | 'dismiss') {
   try {
     await $fetch('/admin-api/reports/bulk', { method: 'POST', headers: authHeaders(), body: { ids, action: kind } })
     showToast(`Đã ${verb} ${ids.length} báo cáo`, 'success')
-  } catch { showToast('Không thể cập nhật báo cáo', 'error') }
-  bulkActing.value = false
+  } catch { showToast('Không thể cập nhật báo cáo', 'error') } finally {
+    bulkActing.value = false
+  }
   clearSelection()
   await fetchReports()
 }
 
 async function fetchAll() {
   loading.value = true
-  await Promise.all([fetchReports(), fetchInfoReports()])
-  loading.value = false
+  try { await Promise.all([fetchReports(), fetchInfoReports()]) } finally { loading.value = false }
 }
 
 async function fetchInfoReports() {
@@ -294,7 +295,7 @@ async function infoAction(r: Record<string, unknown>, status: string) {
     await $fetch('/admin-api/info-reports/action', { method: 'POST', headers: authHeaders(), body: { ts: r.ts, status } })
     r.status = status
     infoOpen.value = infoReports.value.filter(x => (x.status || 'open') === 'open').length
-  } catch (e: unknown) { showToast(e?.data?.detail || 'Lỗi cập nhật', 'error') }
+  } catch (e: unknown) { showToast(getErrorDetail(e, 'Lỗi cập nhật', 'error') }
   infoActing.value = null
 }
 
@@ -329,7 +330,7 @@ async function resolve(id: string) {
     showToast('Đã xử lý báo cáo', 'success')
     await fetchReports()
   } catch (e: unknown) {
-    showToast(e.data?.detail || 'Lỗi khi xử lý báo cáo', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi xử lý báo cáo', 'error')
   }
   acting.value = null
 }
@@ -342,7 +343,7 @@ async function dismiss(id: string) {
     showToast('Đã bỏ qua báo cáo', 'success')
     await fetchReports()
   } catch (e: unknown) {
-    showToast(e.data?.detail || 'Lỗi khi bỏ qua', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi bỏ qua', 'error')
   }
   acting.value = null
 }
@@ -457,7 +458,7 @@ onMounted(() => fetchAll())
 /* make the primary bulk action more prominent than the secondary ones */
 .rpt-bulk-primary { font-weight: 600; box-shadow: 0 2px 8px rgba(33,150,83,.18); }
 .rpt-bulk-clear {
-  min-height: 32px; padding: 4px 12px; border: none; border-radius: 8px;
+  min-height: 44px; padding: 6px 12px; border: none; border-radius: 8px;
   background: transparent; color: var(--muted); font-size: .78rem; cursor: pointer;
   transition: color .2s;
 }
@@ -466,7 +467,7 @@ onMounted(() => fetchAll())
 
 /* ── Checkboxes / selected row ── */
 .rpt-th-check, .rpt-td-check { width: 36px; text-align: center; }
-.rpt-checkbox { width: 17px; height: 17px; cursor: pointer; accent-color: var(--primary, #0071e3); }
+.rpt-checkbox { width: 17px; height: 17px; cursor: pointer; accent-color: var(--primary, #0071e3); padding: 13px; margin: -13px; box-sizing: content-box; }
 .rpt-checkbox:focus-visible { outline: 2px solid var(--primary, #0071e3); outline-offset: 2px; }
 .rpt-row-selected { background: rgba(0,113,227,.05); }
 

@@ -42,7 +42,11 @@
       </div>
     </div>
 
-    <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
+    <div v-if="loading" class="admin-loading" role="status" aria-label="Đang tải nội dung chờ duyệt"><div class="spinner"></div></div>
+    <div v-else-if="loadError" class="admin-empty">
+      <p>Không tải được hàng đợi kiểm duyệt.</p>
+      <button type="button" class="btn btn-secondary" @click="fetchQueue()">Thử lại</button>
+    </div>
     <template v-else>
     <!-- Keyboard shortcuts legend -->
     <div class="mod-kbd-legend">
@@ -69,13 +73,13 @@
     <table class="admin-table">
       <thead>
         <tr>
-          <th class="admin-th-check"><input type="checkbox" :checked="allBatchSelected" @change="toggleBatchAll" aria-label="Chọn tất cả" /></th>
-          <th>Tác giả</th>
-          <th>Nội dung</th>
-          <th>Loại</th>
-          <th>Trạng thái<span class="admin-help" data-tip="Chờ duyệt → Đã duyệt (hiện public) hoặc Từ chối (ẩn). Gắn cờ = user báo cáo." tabindex="0" role="img" aria-label="Giải thích trạng thái">?</span></th>
-          <th>Ngày</th>
-          <th>Thao tác</th>
+          <th scope="col" class="admin-th-check"><input type="checkbox" :checked="allBatchSelected" @change="toggleBatchAll" aria-label="Chọn tất cả" /></th>
+          <th scope="col">Tác giả</th>
+          <th scope="col">Nội dung</th>
+          <th scope="col">Loại</th>
+          <th scope="col">Trạng thái<span class="admin-help" data-tip="Chờ duyệt → Đã duyệt (hiện public) hoặc Từ chối (ẩn). Gắn cờ = user báo cáo." tabindex="0" role="img" aria-label="Giải thích trạng thái">?</span></th>
+          <th scope="col">Ngày</th>
+          <th scope="col">Thao tác</th>
         </tr>
       </thead>
       <tbody>
@@ -231,6 +235,7 @@ const modStats = ref<Record<string, number>>({})
 const total = ref(0)
 const page = ref(1)
 const loading = ref(true)
+const loadError = ref(false)
 const acting = ref<string | null>(null)
 const previewPost = ref<any>(null)
 const modModalRef = ref<HTMLElement | null>(null)
@@ -251,6 +256,7 @@ function toggleBatch(id: string) { batchSelected.value.has(id) ? batchSelected.v
 function toggleBatchAll() { if (allBatchSelected.value) { batchSelected.value = new Set() } else { batchSelected.value = new Set(queue.value.map(p => p.id)) } }
 
 async function batchAction(action: 'approve' | 'reject') {
+  if (batchBusy.value || acting.value) return
   batchBusy.value = true
   try {
     await $fetch('/admin-api/moderation/batch', { method: 'POST', headers: authHeaders(), body: { post_ids: [...batchSelected.value], action } })
@@ -258,8 +264,9 @@ async function batchAction(action: 'approve' | 'reject') {
     batchSelected.value = new Set()
     fetchQueue()
     fetchStats()
-  } catch { showToast('Lỗi batch moderation', 'error') }
-  batchBusy.value = false
+  } catch { showToast('Lỗi batch moderation', 'error') } finally {
+    batchBusy.value = false
+  }
 }
 
 const hasMore = computed(() => queue.value.length < total.value)
@@ -283,6 +290,7 @@ function tabCount(key: string): number | null {
 
 async function fetchQueue(append = false) {
   loading.value = true
+  if (!append) loadError.value = false
   try {
     const [q, s] = await Promise.all([
       $fetch<any>(`/admin-api/moderation/queue?status=${status.value}&page=${page.value}&limit=20`, { headers: authHeaders() }),
@@ -293,9 +301,11 @@ async function fetchQueue(append = false) {
     total.value = q.total ?? posts.length
     if (s) modStats.value = s.counts || s || {}
   } catch {
+    if (!append) loadError.value = true
     showToast('Không thể tải hàng đợi kiểm duyệt', 'error')
+  } finally {
+    loading.value = false
   }
-  loading.value = false
 }
 
 function setStatus(s: ModStatus) {
@@ -316,6 +326,7 @@ function toggleExpand(id: string) {
 }
 
 async function approve(id: string) {
+  if (acting.value || batchBusy.value) return
   acting.value = id
   try {
     await $fetch(`/admin-api/moderation/${id}/approve`, { method: 'POST', headers: authHeaders() })
@@ -324,15 +335,17 @@ async function approve(id: string) {
     removeFromQueue(id)
     fetchStats()
   } catch (e: unknown) {
-    showToast((e as any)?.data?.detail || 'Lỗi khi duyệt', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi duyệt', 'error')
+  } finally {
+    acting.value = null
   }
-  acting.value = null
 }
 
 function startReject(id: string) { rejectingId.value = id; rejectReason.value = '' }
 function cancelReject() { rejectingId.value = null; rejectReason.value = '' }
 
 async function confirmReject(id: string) {
+  if (acting.value || batchBusy.value) return
   acting.value = id
   try {
     await $fetch(`/admin-api/moderation/${id}/reject`, {
@@ -346,9 +359,10 @@ async function confirmReject(id: string) {
     removeFromQueue(id)
     fetchStats()
   } catch (e: unknown) {
-    showToast((e as any)?.data?.detail || 'Lỗi khi từ chối', 'error')
+    showToast(getErrorDetail(e, 'Lỗi khi từ chối', 'error')
+  } finally {
+    acting.value = null
   }
-  acting.value = null
 }
 
 const sessionApproved = ref(0)

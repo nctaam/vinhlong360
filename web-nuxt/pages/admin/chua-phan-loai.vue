@@ -24,7 +24,7 @@
       <span v-if="typeFilter || q" class="cpl-total-badge cpl-filter-badge">{{ filtered.length }} khớp bộ lọc</span>
     </div>
 
-    <div v-if="loading" class="admin-loading"><div class="spinner"></div></div>
+    <div v-if="loading" class="admin-loading" role="status" aria-label="Đang tải entity chưa phân loại"><div class="spinner"></div></div>
     <template v-else>
       <!-- Bulk action bar -->
       <div v-if="selectedIds.length" class="cpl-bulk-bar" role="region" aria-label="Gán hàng loạt">
@@ -56,10 +56,10 @@
                   @change="togglePage"
                 />
               </th>
-              <th>Entity</th>
-              <th>Loại</th>
-              <th>Gán xã/phường</th>
-              <th></th>
+              <th scope="col">Entity</th>
+              <th scope="col">Loại</th>
+              <th scope="col">Gán xã/phường</th>
+              <th scope="col"><span class="sr-only">Thao tác</span></th>
             </tr>
           </thead>
           <tbody>
@@ -88,7 +88,7 @@
                 </select>
               </td>
               <td>
-                <button type="button" class="btn btn-primary btn-sm" :disabled="!pick[e.id] || busy[e.id]" @click="assign(e)">
+                <button type="button" class="btn btn-primary btn-sm" :disabled="!pick[e.id] || busy[e.id] || bulkBusy" @click="assign(e)">
                   {{ busy[e.id] ? '...' : 'Gán' }}
                 </button>
               </td>
@@ -228,8 +228,9 @@ async function load() {
     visibleCount.value = PAGE_SIZE
     // Drop type filter if it no longer matches anything
     if (typeFilter.value && !items.value.some(e => (e.type || '—') === typeFilter.value)) typeFilter.value = ''
-  } catch { showToast('Không tải được danh sách', 'error') }
-  loading.value = false
+  } catch { showToast('Không tải được danh sách', 'error') } finally {
+    loading.value = false
+  }
 }
 
 async function assign(e: Entity) {
@@ -241,13 +242,15 @@ async function assign(e: Entity) {
     removeItem(e.id)
     showToast(`Đã gán ${e.name}`, 'success')
   } catch (err: unknown) {
-    showToast((err as any)?.data?.detail || 'Gán thất bại', 'error')
+    showToast(getErrorDetail(err, 'Gán thất bại', 'error')
+  } finally {
+    busy.value = { ...busy.value, [e.id]: false }
   }
-  busy.value = { ...busy.value, [e.id]: false }
 }
 
 // Bulk assign: loop the existing single-item endpoint (no bulk endpoint exists yet).
 async function assignBulk() {
+  if (bulkBusy.value) return
   const pid = bulkPick.value
   const ids = selectedIds.value
   if (!pid || !ids.length) return

@@ -77,7 +77,7 @@
       <template v-else>
         <div v-if="facilities.length" class="admin-table-wrap">
           <table class="admin-table">
-            <thead><tr><th>Cơ quan</th><th>Liên hệ</th><th>Nguồn</th><th></th></tr></thead>
+            <thead><tr><th scope="col">Cơ quan</th><th scope="col">Liên hệ</th><th scope="col">Nguồn</th><th scope="col"><span class="sr-only">Thao tác</span></th></tr></thead>
             <tbody>
               <tr v-for="e in facilities" :key="e.id">
                 <td>
@@ -197,7 +197,7 @@ async function create() {
     formErrors.value = {}
     await loadFacilities()
   } catch (e: unknown) {
-    showToast((e as any)?.data?.detail || 'Thêm thất bại (id trùng?)', 'error')
+    showToast(getErrorDetail(e, 'Thêm thất bại (id trùng?)', 'error')
   }
   busy.value = false
 }
