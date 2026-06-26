@@ -615,6 +615,19 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
             agg["reviewCount"] = review_count
         ld["aggregateRating"] = agg
 
+    kw_parts: list[str] = []
+    entity_name = entity.get("name")
+    if entity_name:
+        kw_parts.append(str(entity_name))
+    type_label = TYPE_BREADCRUMB_LABEL.get(str(entity.get("type")))
+    if type_label and type_label not in kw_parts:
+        kw_parts.append(type_label)
+    area_name = AREA_NAMES.get(area) if area else None
+    if area_name and area_name not in kw_parts:
+        kw_parts.append(area_name)
+    if kw_parts:
+        ld["keywords"] = ", ".join(kw_parts)
+
     ld["mainEntityOfPage"] = {
         "@type": "WebPage",
         "@id": _entity_url(entity_id),

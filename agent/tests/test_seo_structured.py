@@ -2235,6 +2235,26 @@ def test_same_as_includes_facebook():
     assert "https://facebook.com/test" in values
 
 
+def test_entity_jsonld_keywords_with_type_and_area():
+    entity = {
+        "id": "kw-test", "name": "Cam sành", "type": "product",
+        "area": "vinh-long",
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "keywords" in ld
+    assert "Cam sành" in ld["keywords"]
+    assert "Sản phẩm" in ld["keywords"]
+    assert "Vĩnh Long" in ld["keywords"]
+
+
+def test_entity_jsonld_keywords_without_area():
+    entity = {"id": "kw-no-area", "name": "Test", "type": "attraction"}
+    ld = seo.build_entity_jsonld(entity, {})
+    kw = ld["keywords"]
+    assert "Test" in kw
+    assert "Du lịch" in kw
+
+
 def test_same_as_no_duplicate_social():
     entity = {
         "source": [],
