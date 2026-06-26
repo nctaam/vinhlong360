@@ -98,7 +98,10 @@ const attrs = computed(() => props.attributes || {})
 const amenities = computed(() => {
   const badges = attrs.value.amenity_badges
   if (Array.isArray(badges)) {
-    return badges.map((key: string) => AMENITY_MAP[key]).filter(Boolean)
+    return badges.map((key: string) => {
+      const meta = AMENITY_MAP[key]
+      return meta ? { key, ...meta } : null
+    }).filter(Boolean) as { key: string; icon: string; label: string }[]
   }
   const result: { key: string; icon: string; label: string }[] = []
   for (const [key, meta] of Object.entries(AMENITY_MAP)) {
