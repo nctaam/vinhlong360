@@ -149,6 +149,7 @@
             <NuxtImg v-if="isRemoteUrl(e.images[0])" :src="e.images[0]" :alt="e.name" loading="lazy" decoding="async" width="80" height="60" @error="(ev: Event) => { const t = ev.target as HTMLImageElement; t.style.display = 'none' }" />
             <img v-else :src="e.images[0]" :alt="e.name" loading="lazy" decoding="async" width="80" height="60" @error="(ev) => { const t = ev.target as HTMLImageElement; t.style.display = 'none' }" />
           </div>
+          <button v-if="e.attributes?.date_start" type="button" class="ical-btn" title="Thêm vào lịch" @click.stop.prevent="downloadIcal(e)">📅</button>
         </NuxtLink>
       </div>
       <EmptyState v-else icon="🎋" title="Không tìm thấy lễ hội" message="Thử thay đổi trạng thái, khu vực hoặc từ khóa tìm kiếm.">
@@ -350,6 +351,31 @@ function truncate(s: string, n: number): string {
   return s.length > n ? s.slice(0, n) + '…' : s
 }
 
+function downloadIcal(e: Entity) {
+  const attrs = e.attributes || {}
+  const ds = String(attrs.date_start || '').replace(/-/g, '')
+  if (!ds) return
+  const de = String(attrs.date_end || attrs.date_start || '').replace(/-/g, '')
+  const lines = [
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//vinhlong360.vn//VI',
+    'BEGIN:VEVENT',
+    `DTSTART;VALUE=DATE:${ds}`,
+    `DTEND;VALUE=DATE:${de}`,
+    `SUMMARY:${(e.name || '').replace(/[,;\\]/g, ' ')}`,
+    `DESCRIPTION:${(e.summary || '').slice(0, 200).replace(/\n/g, '\\n')}`,
+    `LOCATION:${(e.place_name || '').replace(/[,;\\]/g, ' ')}`,
+    `URL:https://vinhlong360.vn/dia-diem/${e.id}`,
+    'END:VEVENT', 'END:VCALENDAR',
+  ]
+  const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${e.id}.ics`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 // Calendar
 const today = new Date()
 const calMonth = ref(today.getMonth())
@@ -543,5 +569,29 @@ useHead({
 
 @media (prefers-reduced-motion: reduce) {
   .lehoi-status.status-now { animation: none; }
+}
+
+.event-row { position: relative; }
+.ical-btn {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  opacity: 0;
+  transition: opacity .15s;
+  z-index: 1;
+}
+.event-row:hover .ical-btn,
+.event-row:focus-within .ical-btn {
+  opacity: 1;
+}
+.ical-btn:hover {
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
 }
 </style>

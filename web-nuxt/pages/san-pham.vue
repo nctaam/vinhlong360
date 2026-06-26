@@ -173,6 +173,17 @@ const gridSection = ref<HTMLElement | null>(null)
 useFilterUrl({ mua: seasonFilter, sort: sortBy }, { mua: String(currentMonth), sort: 'relevant' })
 const { sortByRegion } = useRegionPref()
 
+onMounted(() => {
+  const h = (e: KeyboardEvent) => {
+    if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as Element)?.tagName)) {
+      e.preventDefault()
+      document.querySelector<HTMLInputElement>('.search-row input[type="search"]')?.focus()
+    }
+  }
+  document.addEventListener('keydown', h)
+  onUnmounted(() => document.removeEventListener('keydown', h))
+})
+
 const { data, error: fetchError } = await useAsyncData('catalog-products', () =>
   apiFetch<{ entities: Entity[] }>('/api/entities?type=product&limit=200')
 )

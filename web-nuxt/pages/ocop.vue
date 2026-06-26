@@ -231,6 +231,17 @@ const starFilterStr = computed({
 useFilterUrl({ sao: starFilterStr, vung: areaFilter, mua: seasonFilter, sort: sortBy }, { sao: '0', vung: 'all', mua: 'all', sort: 'relevant' })
 const { sortByRegion } = useRegionPref()
 
+onMounted(() => {
+  const h = (e: KeyboardEvent) => {
+    if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as Element)?.tagName)) {
+      e.preventDefault()
+      document.querySelector<HTMLInputElement>('.search-row input[type="search"]')?.focus()
+    }
+  }
+  document.addEventListener('keydown', h)
+  onUnmounted(() => document.removeEventListener('keydown', h))
+})
+
 const { data, error: fetchError } = await useAsyncData('catalog-ocop', () =>
   apiFetch<{ entities: Entity[] }>('/api/entities?type=product&limit=200')
 )
