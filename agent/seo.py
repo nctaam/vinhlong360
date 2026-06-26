@@ -16,7 +16,7 @@ from typing import Any
 from urllib.parse import quote, urlparse
 from xml.sax.saxutils import escape as xml_escape
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse, Response
 
 router = APIRouter()
@@ -33,12 +33,14 @@ AREA_NAMES = {
 TYPE_SCHEMA = {
     "accommodation": "LodgingBusiness",
     "attraction": "TouristAttraction",
+    "cafe": "CafeOrCoffeeShop",
     "craft_village": "LocalBusiness",
     "dish": "FoodEstablishment",
     "drink": "Product",
     "economy": "LocalBusiness",
     "event": "Event",
     "experience": "TouristAttraction",
+    "facility": "CivicStructure",
     "history": "LandmarksOrHistoricalBuildings",
     "itinerary": "TouristTrip",
     "nature": "TouristAttraction",
@@ -46,6 +48,7 @@ TYPE_SCHEMA = {
     "person": "Person",
     "place": "Place",
     "product": "Product",
+    "restaurant": "Restaurant",
 }
 
 # Maps entity type -> existing catalog/list route used as the breadcrumb's
@@ -426,12 +429,15 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
 
     if schema_type == "Product":
         if attrs.get("price"):
-            ld["offers"] = {
-                "@type": "Offer",
-                "price": re.sub(r"[^0-9]", "", str(attrs["price"])) or str(attrs["price"]),
-                "priceCurrency": "VND",
-                "availability": "https://schema.org/InStock",
-            }
+            price_digits = re.sub(r"[^0-9]", "", str(attrs["price"]))
+            price_value = price_digits if price_digits else str(attrs["price"])
+            if price_value.strip():
+                ld["offers"] = {
+                    "@type": "Offer",
+                    "price": price_value,
+                    "priceCurrency": "VND",
+                    "availability": "https://schema.org/InStock",
+                }
         if attrs.get("ocop"):
             ld["brand"] = {"@type": "Brand", "name": f"OCOP {attrs['ocop']}"}
 
@@ -461,7 +467,7 @@ def entity_jsonld(entity_id: str):
     by_id = _by_id(data)
     entity = by_id.get(entity_id)
     if not entity:
-        return {"error": "not found"}
+        raise HTTPException(status_code=404, detail="not found")
     return build_entity_jsonld(entity, by_id)
 
 
@@ -527,7 +533,7 @@ def collection_jsonld(collection_type: str):
     data = _load()
     result = build_collection_jsonld(collection_type, data)
     if result is None:
-        return {"error": "not found"}
+        raise HTTPException(status_code=404, detail="not found")
     return result
 
 
@@ -618,6 +624,8 @@ def sitemap_media():
     urls: list[str] = []
     for entity in data.get("entities", []):
         if not isinstance(entity, dict) or not entity.get("id") or entity.get("type") == "place":
+            continue
+        if not _is_public(entity):
             continue
         imgs = entity.get("images")
         if not isinstance(imgs, list) or not imgs:

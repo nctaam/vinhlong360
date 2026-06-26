@@ -74,10 +74,14 @@ def test_collection_jsonld_unknown_returns_none(sample_data):
     assert seo.build_collection_jsonld("khong-ton-tai", sample_data) is None
 
 
-def test_collection_route_handler_unknown_returns_error(monkeypatch, sample_data):
+def test_collection_route_handler_unknown_raises_404(monkeypatch, sample_data):
+    import pytest
+    from fastapi import HTTPException
     monkeypatch.setattr(seo, "_load", lambda: sample_data)
     monkeypatch.setattr(seo, "_by_id_cache", None)
-    assert seo.collection_jsonld("khong-ton-tai") == {"error": "not found"}
+    with pytest.raises(HTTPException) as exc_info:
+        seo.collection_jsonld("khong-ton-tai")
+    assert exc_info.value.status_code == 404
 
 
 def test_collection_ocop_requires_ocop_attr(sample_data):
@@ -148,3 +152,99 @@ def test_image_object_includes_attribution_when_present():
 def test_image_object_skips_non_http_values():
     out = seo._build_image_objects(["/relative/path.jpg", "data:image/png;base64,xxx", None, 42], "X", {})
     assert out == []
+
+
+# ── TYPE_SCHEMA coverage ────────────────────────────────────────────────────
+
+
+def test_type_schema_maps_restaurant():
+    entity = {"id": "nha-hang-test", "name": "Nhà hàng test", "type": "restaurant"}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["@type"] == "Restaurant"
+
+
+def test_type_schema_maps_cafe():
+    entity = {"id": "cafe-test", "name": "Cafe test", "type": "cafe"}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["@type"] == "CafeOrCoffeeShop"
+
+
+def test_type_schema_maps_facility():
+    entity = {"id": "facility-test", "name": "UBND test", "type": "facility"}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["@type"] == "CivicStructure"
+
+
+def test_unknown_type_falls_back_to_thing():
+    entity = {"id": "unknown-type", "name": "Unknown", "type": "nonexistent_type"}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["@type"] == "Thing"
+
+
+# ── 404 for entity_jsonld ───────────────────────────────────────────────────
+
+
+def test_entity_jsonld_raises_404_for_missing(monkeypatch, sample_data):
+    import pytest
+    from fastapi import HTTPException
+    monkeypatch.setattr(seo, "_load", lambda: sample_data)
+    monkeypatch.setattr(seo, "_by_id_cache", None)
+    with pytest.raises(HTTPException) as exc_info:
+        seo.entity_jsonld("nonexistent-entity-id")
+    assert exc_info.value.status_code == 404
+
+
+# ── Offer price guard ───────────────────────────────────────────────────────
+
+
+def test_offer_omitted_when_price_has_no_digits():
+    entity = {
+        "id": "product-no-price",
+        "name": "Test product",
+        "type": "product",
+        "attributes": {"price": ""},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    # Empty price string should not produce an Offer
+    assert "offers" not in ld
+
+
+def test_offer_emitted_when_price_has_digits():
+    entity = {
+        "id": "product-with-price",
+        "name": "Test product",
+        "type": "product",
+        "attributes": {"price": "50.000 VND"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "offers" in ld
+    assert ld["offers"]["price"] == "50000"
+    assert ld["offers"]["priceCurrency"] == "VND"
+
+
+# ── Event JSON-LD ───────────────────────────────────────────────────────────
+
+
+def test_event_jsonld_reads_date_start_field():
+    entity = {
+        "id": "event-test",
+        "name": "Test event",
+        "type": "event",
+        "attributes": {"date_start": "2026-03-01", "date_end": "2026-03-05"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["@type"] == "Event"
+    assert ld["startDate"] == "2026-03-01"
+    assert ld["endDate"] == "2026-03-05"
+
+
+def test_event_without_date_omits_startDate():
+    entity = {
+        "id": "event-no-date",
+        "name": "Event without date",
+        "type": "event",
+        "attributes": {},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["@type"] == "Event"
+    assert "startDate" not in ld
