@@ -155,7 +155,8 @@
     <div v-if="activeTab === 'thong-bao'" class="settings-card card" role="tabpanel">
       <h2>Tùy chọn thông báo</h2>
       <p class="sf-hint" style="margin-bottom: 1rem;">Chọn loại thông báo bạn muốn nhận.</p>
-      <div class="notif-prefs">
+      <div v-if="notifPrefsLoading" class="sf-hint">Đang tải...</div>
+      <div v-else class="notif-prefs">
         <label v-for="np in NOTIF_TYPES" :key="np.key" class="notif-pref-item">
           <div class="notif-pref-info">
             <span class="notif-pref-icon" aria-hidden="true">{{ np.icon }}</span>
@@ -164,7 +165,7 @@
               <span class="sf-hint">{{ np.desc }}</span>
             </div>
           </div>
-          <input type="checkbox" :checked="notifPrefs[np.key]" class="toggle" @change="toggleNotifPref(np.key)" />
+          <input type="checkbox" :checked="notifPrefs[np.pref]" class="toggle" @change="toggleNotifPref(np.pref)" />
         </label>
       </div>
     </div>
@@ -352,6 +353,7 @@ onMounted(async () => {
   loadLoginHistory()
   loadPrivacy()
   loadBlocked()
+  loadNotifPrefs()
 })
 
 const currentPw = ref('')
@@ -487,23 +489,35 @@ async function unblockUser(id: string, name: string) {
 }
 
 const NOTIF_TYPES = [
-  { key: 'like', icon: '❤️', label: 'Lượt thích', desc: 'Khi ai đó thích bài viết của bạn' },
-  { key: 'comment', icon: '💬', label: 'Bình luận', desc: 'Khi ai đó bình luận bài viết của bạn' },
-  { key: 'follow', icon: '👤', label: 'Theo dõi', desc: 'Khi ai đó theo dõi bạn' },
-  { key: 'mention', icon: '📣', label: 'Nhắc đến', desc: 'Khi ai đó nhắc đến bạn' },
+  { key: 'like', pref: 'pref_like', icon: '❤️', label: 'Lượt thích', desc: 'Khi ai đó thích bài viết của bạn' },
+  { key: 'comment', pref: 'pref_comment', icon: '💬', label: 'Bình luận', desc: 'Khi ai đó bình luận bài viết của bạn' },
+  { key: 'follow', pref: 'pref_follow', icon: '👤', label: 'Theo dõi', desc: 'Khi ai đó theo dõi bạn' },
+  { key: 'mention', pref: 'pref_mention', icon: '📣', label: 'Nhắc đến', desc: 'Khi ai đó nhắc đến bạn' },
+  { key: 'system', pref: 'pref_system', icon: '🔔', label: 'Hệ thống', desc: 'Thông báo từ hệ thống và quản trị' },
 ] as const
 
-const notifPrefs = ref<Record<string, boolean>>({ like: true, comment: true, follow: true, mention: true })
-onMounted(() => {
+const notifPrefs = ref<Record<string, boolean>>({ pref_like: true, pref_comment: true, pref_follow: true, pref_mention: true, pref_system: true })
+const notifPrefsLoading = ref(true)
+
+async function loadNotifPrefs() {
+  notifPrefsLoading.value = true
   try {
-    const saved = localStorage.getItem('vl360_notif_prefs')
-    if (saved) Object.assign(notifPrefs.value, JSON.parse(saved))
-  } catch { /* ignore */ }
-})
-function toggleNotifPref(key: string) {
-  notifPrefs.value[key] = !notifPrefs.value[key]
-  localStorage.setItem('vl360_notif_prefs', JSON.stringify(notifPrefs.value))
-  showToast('Đã lưu tùy chọn thông báo', 'success')
+    const res = await $fetch<Record<string, boolean>>('/api/notification-preferences', { headers: authHeaders() })
+    Object.assign(notifPrefs.value, res)
+  } catch { /* defaults stay */ }
+  notifPrefsLoading.value = false
+}
+
+async function toggleNotifPref(prefKey: string) {
+  const prev = notifPrefs.value[prefKey]
+  notifPrefs.value[prefKey] = !prev
+  try {
+    await $fetch('/api/notification-preferences', { method: 'PUT', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: { [prefKey]: !prev } })
+    showToast('Đã lưu tùy chọn thông báo', 'success')
+  } catch {
+    notifPrefs.value[prefKey] = prev
+    showToast('Không thể cập nhật tùy chọn', 'error')
+  }
 }
 
 const { confirm } = useConfirm()
