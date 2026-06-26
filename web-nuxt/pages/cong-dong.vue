@@ -564,8 +564,13 @@ function autoGrow(e: Event) {
 const {
   mentionResults, mentionOpen, mentionActive,
   onInput: onMentionInput, pick: pickMention,
-  onKeydown: onComposerKeydown, reset: resetMention, activeMentions,
+  onKeydown: onMentionKeydownComposer, closeMention, reset: resetMention, activeMentions,
 } = useMentionAutocomplete(newContent, composeInputEl)
+
+function onComposerKeydown(e: KeyboardEvent) {
+  if (onMentionKeydownComposer(e)) return
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); submitPost() }
+}
 
 function onComposerInput(e: Event) {
   autoGrow(e)
@@ -885,10 +890,23 @@ watch(reportEntityId, () => fetchReportEntity())
 let draftTimer: ReturnType<typeof setTimeout> | null = null
 watch(newContent, (v) => {
   if (draftTimer) clearTimeout(draftTimer)
-  draftTimer = setTimeout(() => saveDraft(v, newType.value), 3000)
+  draftTimer = setTimeout(() => {
+    try {
+      saveDraft(v, newType.value)
+    } catch {
+      showToast('Không thể lưu bản nháp', 'warning')
+    }
+  }, 3000)
 })
 
+function onClickOutsideMention(e: MouseEvent) {
+  if (mentionOpen.value && !(e.target as HTMLElement)?.closest('.compose-mention-wrap')) {
+    closeMention()
+  }
+}
+
 onMounted(() => {
+  document.addEventListener('click', onClickOutsideMention)
   const draft = loadDraft()
   if (draft && draft.content) { newContent.value = draft.content; newType.value = draft.postType }
   fetchReportEntity()
@@ -915,6 +933,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   loadObserver?.disconnect()
+  document.removeEventListener('click', onClickOutsideMention)
 })
 
 useSeoMeta({
@@ -1235,6 +1254,7 @@ useHead({
   .threads-page { max-width: 100%; }
   .threads-feed { padding-inline: var(--space-1); }
   .threads-compose { padding-inline: var(--space-3); }
+  .compose-input { min-height: 48px; font-size: var(--text-base); }
 }
 
 @media (prefers-reduced-motion: reduce) {

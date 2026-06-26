@@ -79,7 +79,7 @@
               autocomplete="one-time-code"
               :aria-label="`Ô mã OTP số ${i}`"
               @input="onOtpInput(i - 1)"
-              @keydown.backspace="onOtpBackspace(i - 1, $event)"
+              @keydown="onOtpKeydown(i - 1, $event)"
               @paste="onOtpPaste"
             />
           </div>
@@ -315,10 +315,12 @@ function onOtpInput(idx: number) {
   }
 }
 
-function onOtpBackspace(idx: number, e: KeyboardEvent) {
-  if (!otpDigits.value[idx] && idx > 0) {
+function onOtpKeydown(idx: number, e: KeyboardEvent) {
+  if (e.key === 'Backspace' && !otpDigits.value[idx] && idx > 0) {
     otpRefs.value[idx - 1]?.focus()
   }
+  if (e.key === 'ArrowLeft' && idx > 0) { e.preventDefault(); otpRefs.value[idx - 1]?.focus() }
+  if (e.key === 'ArrowRight' && idx < 5) { e.preventDefault(); otpRefs.value[idx + 1]?.focus() }
 }
 
 function onOtpPaste(e: ClipboardEvent) {

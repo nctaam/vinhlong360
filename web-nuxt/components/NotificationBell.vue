@@ -28,11 +28,12 @@
           </button>
           <div v-if="loading && !notifications.length" class="notif-loading" role="status" aria-label="Đang tải thông báo">
             <div class="spinner spinner-sm"></div>
+            <span class="notif-loading-text">Đang tải thông báo…</span>
           </div>
           <div v-else-if="fetchError && !notifications.length" class="notif-error" role="alert">
             <span class="notif-error-icon" aria-hidden="true">⚠️</span>
             <p>Không thể tải thông báo</p>
-            <button type="button" class="notif-retry" @click="fetchNotifications">Thử lại</button>
+            <button type="button" class="notif-retry" :disabled="retrying" @click="retryFetch">{{ retrying ? 'Đang thử…' : 'Thử lại' }}</button>
           </div>
           <div v-else-if="!notifications.length" class="notif-empty">
             <span class="notif-empty-icon">🔔</span>
@@ -51,9 +52,16 @@ const { isLoggedIn } = useAuth()
 const { notifications, unreadCount, loading, fetchError, fetchNotifications, markAllRead, markRead, startPolling, stopPolling } = useNotifications()
 
 const open = ref(false)
+const retrying = ref(false)
 
 function toggle() {
   open.value = !open.value
+}
+
+async function retryFetch() {
+  retrying.value = true
+  await fetchNotifications()
+  setTimeout(() => { retrying.value = false }, 3000)
 }
 
 function doMarkRead() {
@@ -106,8 +114,13 @@ onUnmounted(() => { stopPolling(); document.removeEventListener('keydown', onEsc
 .notif-retry:hover { background: var(--bg-alt); border-color: var(--ink); }
 .notif-retry:active { transform: scale(.96); transition-duration: .08s; }
 .notif-retry:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.notif-loading-text { font-size: var(--text-xs); color: var(--muted); margin-top: var(--space-1); }
 :global(.dark) .notif-retry { background: var(--bg-alt); border-color: var(--line); }
 :global(.dark) .notif-retry:hover { border-color: rgba(255,255,255,.2); }
+@media (max-width: 600px) {
+  .notif-dropdown { max-height: 60vh; }
+  .notif-list { max-height: calc(60vh - 80px); overflow-y: auto; }
+}
 @media (prefers-reduced-motion: reduce) {
   .notif-retry { transition: none; }
   .notif-retry:active { transform: none; }

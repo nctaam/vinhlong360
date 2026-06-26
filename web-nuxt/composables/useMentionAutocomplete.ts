@@ -64,6 +64,8 @@ export function useMentionAutocomplete(
     return false
   }
 
+  function closeMention() { mentionOpen.value = false }
+
   function reset() { selectedMentions.value = []; mentionOpen.value = false; mentionResults.value = [] }
 
   // Chỉ giữ mention còn xuất hiện trong text (user có thể đã xoá tay).
@@ -71,5 +73,5 @@ export function useMentionAutocomplete(
     return selectedMentions.value.filter(m => text.value.includes(`@${m.label}`))
   }
 
-  return { mentionResults, mentionOpen, mentionActive, selectedMentions, onInput, pick, onKeydown, reset, activeMentions }
+  return { mentionResults, mentionOpen, mentionActive, selectedMentions, onInput, pick, onKeydown, closeMention, reset, activeMentions }
 }

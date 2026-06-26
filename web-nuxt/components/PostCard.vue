@@ -22,7 +22,7 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
         </button>
         <Transition name="menu-pop">
-          <div v-if="showMenu" class="thread-menu" role="menu" aria-label="Tùy chọn bài viết" @keydown.escape="showMenu = false">
+          <div v-if="showMenu" class="thread-menu" role="menu" aria-label="Tùy chọn bài viết" @keydown="onPostMenuKey">
             <button v-if="isOwner" type="button" role="menuitem" @click="$emit('edit', post.id); showMenu = false">Sửa bài</button>
             <button v-if="isOwner" type="button" role="menuitem" class="menu-danger" @click="confirmDelete">Xoá bài</button>
             <button v-if="!isOwner" type="button" role="menuitem" @click="$emit('report', post.id); showMenu = false">Báo cáo</button>
@@ -62,8 +62,8 @@
           class="thread-img-wrap"
           @click="openLightbox(i)"
         >
-          <NuxtImg v-if="isRemoteUrl(img)" :src="img" :alt="`Ảnh ${i + 1}`" loading="lazy" decoding="async" width="400" height="300" sizes="sm:100vw md:50vw lg:400px" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
-          <img v-else :src="img" :alt="`Ảnh ${i + 1}`" loading="lazy" decoding="async" width="400" height="300" @error="(e) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
+          <NuxtImg v-if="isRemoteUrl(img)" :src="img" :alt="`Ảnh ${i + 1}`" loading="lazy" decoding="async" width="400" height="300" sizes="sm:100vw md:50vw lg:400px" @error="onImgError" />
+          <img v-else :src="img" :alt="`Ảnh ${i + 1}`" loading="lazy" decoding="async" width="400" height="300" @error="onImgError" />
           <span v-if="i === 3 && extraCount > 0" class="thread-img-more">+{{ extraCount }}</span>
         </button>
       </div>
@@ -82,7 +82,7 @@
           <button type="button" class="thread-act" @click="repostMenu = !repostMenu" :aria-expanded="repostMenu" aria-haspopup="true" aria-label="Đăng lại hoặc trích dẫn">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
           </button>
-          <div v-if="repostMenu" class="thread-repost-menu" role="menu" aria-label="Đăng lại hoặc trích dẫn" @keydown.escape="repostMenu = false">
+          <div v-if="repostMenu" class="thread-repost-menu" role="menu" aria-label="Đăng lại hoặc trích dẫn" @keydown="onRepostMenuKey">
             <button type="button" role="menuitem" @click="$emit('repost', post.id); repostMenu = false">🔁 Đăng lại</button>
             <button type="button" role="menuitem" @click="$emit('quote', post.id); repostMenu = false">✍️ Trích dẫn</button>
           </div>
@@ -178,12 +178,42 @@ const typeLabels: Record<string, string> = {
 }
 const typeLabel = computed(() => typeLabels[props.post?.post_type] || '')
 
+function onPostMenuKey(e: KeyboardEvent) {
+  if (e.key === 'Escape') { showMenu.value = false; return }
+  if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
+  e.preventDefault()
+  const menu = (e.currentTarget as HTMLElement)
+  const items = Array.from(menu.querySelectorAll<HTMLElement>('[role="menuitem"]'))
+  if (!items.length) return
+  const cur = items.indexOf(document.activeElement as HTMLElement)
+  const next = e.key === 'ArrowDown' ? (cur + 1) % items.length : (cur - 1 + items.length) % items.length
+  items[next]?.focus()
+}
+
+function onRepostMenuKey(e: KeyboardEvent) {
+  if (e.key === 'Escape') { repostMenu.value = false; return }
+  if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
+  e.preventDefault()
+  const menu = (e.currentTarget as HTMLElement)
+  const items = Array.from(menu.querySelectorAll<HTMLElement>('[role="menuitem"]'))
+  if (!items.length) return
+  const cur = items.indexOf(document.activeElement as HTMLElement)
+  const next = e.key === 'ArrowDown' ? (cur + 1) % items.length : (cur - 1 + items.length) % items.length
+  items[next]?.focus()
+}
+
 function onLike() {
   emit('like', props.post.id)
   if (!props.post.user_liked) {
     likePop.value = true
     setTimeout(() => { likePop.value = false }, 400)
   }
+}
+
+function onImgError(e: Event) {
+  const el = e.target as HTMLImageElement
+  el.style.opacity = '.15'
+  el.alt = 'Không tải được ảnh'
 }
 
 const { show: showToast } = useToast()

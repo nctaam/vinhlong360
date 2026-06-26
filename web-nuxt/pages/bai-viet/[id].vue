@@ -199,12 +199,14 @@ const commentInputEl = ref<HTMLInputElement | null>(null)
 const {
   mentionResults, mentionOpen, mentionActive,
   onInput: onMentionInput, pick: pickMention,
-  onKeydown: onMentionKeydown, reset: resetMention, activeMentions,
+  onKeydown: onMentionKeydown, closeMention: closeMentionComment, reset: resetMention, activeMentions,
 } = useMentionAutocomplete(commentText, commentInputEl)
 
 function onCommentKeydown(e: KeyboardEvent) {
-  const consumed = onMentionKeydown(e)            // điều hướng menu khi đang mở
-  if (e.key === 'Enter' && !consumed) submitComment()
+  const consumed = onMentionKeydown(e)
+  if (consumed) return
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); submitComment(); return }
+  if (e.key === 'Enter') submitComment()
 }
 
 // ── Q&A: câu trả lời hay (chủ bài hỏi chọn) ──
@@ -385,7 +387,14 @@ async function fetchRelated() {
   } catch { /* non-critical */ }
 }
 
+function onClickOutsideMention(e: MouseEvent) {
+  if (mentionOpen.value && !(e.target as HTMLElement)?.closest('.comment-mention-wrap')) {
+    closeMentionComment()
+  }
+}
+
 onMounted(() => {
+  document.addEventListener('click', onClickOutsideMention)
   fetchComments()
   fetchRelated()
   // mở editor khi điều hướng từ trang khác: /bai-viet/{id}?edit=1 (chủ bài)

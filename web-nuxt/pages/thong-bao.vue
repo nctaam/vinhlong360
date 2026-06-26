@@ -24,7 +24,7 @@
       </div>
 
       <SkeletonList v-if="loading && !items.length" :count="6" />
-      <EmptyState v-else-if="fetchError && !items.length" icon="⚠️" tone="error" title="Không thể tải thông báo" message="Lỗi kết nối. Vui lòng thử lại.">
+      <EmptyState v-else-if="fetchError && !items.length" icon="⚠️" tone="error" title="Không thể tải thông báo" message="Không kết nối được máy chủ. Kiểm tra mạng và thử lại.">
         <template #actions><button type="button" class="btn btn-outline btn-sm" @click="load">Thử lại</button></template>
       </EmptyState>
       <EmptyState v-else-if="!filtered.length" icon="🔔" :title="filter === 'all' ? 'Chưa có thông báo' : 'Không có thông báo loại này'" message="Khi có hoạt động mới, bạn sẽ thấy ở đây." />
