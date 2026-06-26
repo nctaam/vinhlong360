@@ -565,8 +565,8 @@ const blockedLoading = ref(true)
 async function loadBlocked() {
   blockedLoading.value = true
   try {
-    const res = await $fetch<{ users: any[] }>('/api/blocked-users', { headers: authHeaders() })
-    blockedUsers.value = res.users || []
+    const res = await $fetch<{ blocked: any[] }>('/api/blocked-users', { headers: authHeaders() })
+    blockedUsers.value = res.blocked || []
   } catch { /* ignore */ }
   blockedLoading.value = false
 }

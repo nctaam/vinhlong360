@@ -38,6 +38,9 @@
           <NuxtLink v-if="isSelf" to="/cai-dat" class="btn btn-ghost btn-sm">
             <svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Sửa hồ sơ
           </NuxtLink>
+          <button type="button" class="btn btn-ghost btn-sm btn-icon" aria-label="Chia sẻ hồ sơ" @click="shareProfile">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          </button>
         </div>
         <p v-if="profile.bio" class="profile-bio">{{ profile.bio }}</p>
         <div v-if="profile.reputation" class="profile-reputation">
@@ -446,8 +449,8 @@ onUnmounted(() => document.removeEventListener('click', onClickOutsideMore))
 async function checkBlocked() {
   if (!isLoggedIn.value || isSelf.value) return
   try {
-    const res = await $fetch<{ users: any[] }>('/api/blocked-users', { headers: authHeaders() })
-    isBlocked.value = (res.users || []).some(u => u.id === userId.value)
+    const res = await $fetch<{ blocked: any[] }>('/api/blocked-users', { headers: authHeaders() })
+    isBlocked.value = (res.blocked || []).some(u => u.id === userId.value)
   } catch { /* non-critical */ }
 }
 
@@ -486,6 +489,19 @@ async function toggleBlock() {
 function reportUser() {
   showMoreMenu.value = false
   openReport('user', userId.value)
+}
+
+async function shareProfile() {
+  const url = `${window.location.origin}/nguoi-dung/${profile.value?.username || userId.value}`
+  const name = profile.value?.display_name || 'Người dùng'
+  if (navigator.share) {
+    try { await navigator.share({ title: `${name} — vinhlong360`, url }) } catch {}
+  } else {
+    try {
+      await navigator.clipboard.writeText(url)
+      showToast('Đã sao chép liên kết hồ sơ', 'success')
+    } catch { showToast('Không thể sao chép', 'error') }
+  }
 }
 
 onMounted(() => {
