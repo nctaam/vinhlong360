@@ -4,7 +4,7 @@
 
 ## Bối cảnh
 
-Worktree `C:/Code/vl360-backend-sec`, nhánh `dev/backend-security`. Dự án vinhlong360. **Đọc `CLAUDE.md` + `docs/PARALLEL-BRANCHES.md`.**
+Worktree `C:/Code/vinhlong360/vl360-backend-sec`, nhánh `dev/backend-security`. Dự án vinhlong360. **Đọc `CLAUDE.md` + `docs/PARALLEL-BRANCHES.md`.**
 
 ## Phạm vi file SỞ HỮU
 

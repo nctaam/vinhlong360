@@ -21,16 +21,16 @@
 
 | # | Branch | Worktree | Scope |
 |---|--------|----------|-------|
-| 1 | `dev/public-front` | `C:/Code/vl360-public-front` | Homepage + catalog + static pages |
-| 2 | `dev/public-detail` | `C:/Code/vl360-public-detail` | Entity detail + ward/area + directory |
-| 3 | `dev/interactive` | `C:/Code/vl360-interactive` | Map + search + itinerary + chat |
-| 4 | `dev/admincp` | `C:/Code/vl360-admincp` | Admin CMS |
-| 5 | `dev/usercp` | `C:/Code/vl360-usercp` | User profile + community + notifications |
-| 6 | `dev/backend-security` | `C:/Code/vl360-backend-sec` | Auth/moderation hardening |
-| 7 | `dev/backend-resilience` | `C:/Code/vl360-backend-res` | LLM pipeline resilience |
-| 8 | `dev/data-seo` | `C:/Code/vl360-data-seo` | SEO + data validation scripts |
-| 9 | `dev/shared-fe` | `C:/Code/vl360-shared-fe` | Shared FE: layouts, composables, CSS, components |
-| 10 | `dev/backend-infra` | `C:/Code/vl360-backend-infra` | Backend core + scripts + legacy cleanup |
+| 1 | `dev/public-front` | `C:/Code/vinhlong360/vl360-public-front` | Homepage + catalog + static pages |
+| 2 | `dev/public-detail` | `C:/Code/vinhlong360/vl360-public-detail` | Entity detail + ward/area + directory |
+| 3 | `dev/interactive` | `C:/Code/vinhlong360/vl360-interactive` | Map + search + itinerary + chat |
+| 4 | `dev/admincp` | `C:/Code/vinhlong360/vl360-admincp` | Admin CMS |
+| 5 | `dev/usercp` | `C:/Code/vinhlong360/vl360-usercp` | User profile + community + notifications |
+| 6 | `dev/backend-security` | `C:/Code/vinhlong360/vl360-backend-sec` | Auth/moderation hardening |
+| 7 | `dev/backend-resilience` | `C:/Code/vinhlong360/vl360-backend-res` | LLM pipeline resilience |
+| 8 | `dev/data-seo` | `C:/Code/vinhlong360/vl360-data-seo` | SEO + data validation scripts |
+| 9 | `dev/shared-fe` | `C:/Code/vinhlong360/vl360-shared-fe` | Shared FE: layouts, composables, CSS, components |
+| 10 | `dev/backend-infra` | `C:/Code/vinhlong360/vl360-backend-infra` | Backend core + scripts + legacy cleanup |
 
 ---
 

@@ -4,7 +4,7 @@
 
 ## Bối cảnh
 
-Bạn đang làm trong **worktree** `C:/Code/vl360-public-front`, nhánh `dev/public-front`. Dự án vinhlong360 — MXH du lịch/OCOP cho 3 tỉnh sáp nhập (VL+BT+TV). Solo dev, Nuxt 4 SSR + FastAPI.
+Bạn đang làm trong **worktree** `C:/Code/vinhlong360/vl360-public-front`, nhánh `dev/public-front`. Dự án vinhlong360 — MXH du lịch/OCOP cho 3 tỉnh sáp nhập (VL+BT+TV). Solo dev, Nuxt 4 SSR + FastAPI.
 
 **Đọc `CLAUDE.md` và `docs/PARALLEL-BRANCHES.md` trước khi bắt đầu.**
 

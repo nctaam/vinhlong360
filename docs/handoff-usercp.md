@@ -4,7 +4,7 @@
 
 ## Bối cảnh
 
-Worktree `C:/Code/vl360-usercp`, nhánh `dev/usercp`. Dự án vinhlong360. **Đọc `CLAUDE.md` + `docs/PARALLEL-BRANCHES.md`.**
+Worktree `C:/Code/vinhlong360/vl360-usercp`, nhánh `dev/usercp`. Dự án vinhlong360. **Đọc `CLAUDE.md` + `docs/PARALLEL-BRANCHES.md`.**
 
 ## Phạm vi file SỞ HỮU
 

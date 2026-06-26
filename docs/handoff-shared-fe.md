@@ -4,7 +4,7 @@
 
 ## Bối cảnh
 
-Worktree `C:/Code/vl360-shared-fe`, nhánh `dev/shared-fe`. Dự án vinhlong360. **Đọc `CLAUDE.md` + `docs/PARALLEL-BRANCHES.md`.**
+Worktree `C:/Code/vinhlong360/vl360-shared-fe`, nhánh `dev/shared-fe`. Dự án vinhlong360. **Đọc `CLAUDE.md` + `docs/PARALLEL-BRANCHES.md`.**
 
 ## Phạm vi file SỞ HỮU
 

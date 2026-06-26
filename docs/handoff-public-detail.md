@@ -4,7 +4,7 @@
 
 ## Bối cảnh
 
-Worktree `C:/Code/vl360-public-detail`, nhánh `dev/public-detail`. Dự án vinhlong360 — MXH du lịch/OCOP cho 3 tỉnh sáp nhập. **Đọc `CLAUDE.md` + `docs/PARALLEL-BRANCHES.md`.**
+Worktree `C:/Code/vinhlong360/vl360-public-detail`, nhánh `dev/public-detail`. Dự án vinhlong360 — MXH du lịch/OCOP cho 3 tỉnh sáp nhập. **Đọc `CLAUDE.md` + `docs/PARALLEL-BRANCHES.md`.**
 
 ## Phạm vi file SỞ HỮU
 
