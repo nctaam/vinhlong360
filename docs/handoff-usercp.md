@@ -1,4 +1,5 @@
-# Session 5: UserCP — User Profile + Community + Notifications
+# Session 5: Tài khoản & Cộng đồng
+<!-- Phạm vi: Cài đặt tài khoản, cộng đồng (feed/bài viết), hồ sơ người dùng, thông báo + component riêng (PostCard, AuthModal, UserMenu, NotificationBell...) + composable auth/notification/draft -->
 
 > Paste toàn bộ nội dung này làm message đầu tiên.
 

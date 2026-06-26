@@ -1,4 +1,5 @@
-# Session 2: Public Detail — Entity Detail + Ward/Area + Directory
+# Session 2: Chi tiết địa điểm & Thư mục
+<!-- Phạm vi: Trang chi tiết địa điểm, xã/phường, khu vực, danh bạ hành chính, tuyến đường, lưu trú + component riêng (NearbyEntities, ImageGallery, Breadcrumb...) -->
 
 > Paste toàn bộ nội dung này làm message đầu tiên.
 

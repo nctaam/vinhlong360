@@ -1,4 +1,5 @@
-# Session 1: Public Front — Homepage + Catalog + Static
+# Session 1: Trang chủ & Danh mục
+<!-- Phạm vi: Homepage, catalog (du lịch/sản phẩm/OCOP/lễ hội/sự kiện/theo mùa), trang tĩnh (giới thiệu/liên hệ/chính sách) + component riêng (EntityCard, CatalogSpotlight, HeroIllustration...) -->
 
 > Paste toàn bộ nội dung này làm message đầu tiên.
 
