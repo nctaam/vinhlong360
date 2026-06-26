@@ -1138,3 +1138,97 @@ def test_validate_itinerary_normal_stops_not_flagged(tmp_path: Path) -> None:
 
     assert stats["itinerary_empty_stops"] == 0
     assert stats["itinerary_excessive_stops"] == 0
+
+
+# ── Source URL validation (DI-019) ──────────────────────────────────────
+
+
+def test_validate_flags_invalid_source_urls(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long",
+             "source": [{"url": "ftp://bad.com/file"}]},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["invalid_source_urls"] == 1
+    assert "invalid_source_urls" in {issue.code for issue in issues}
+
+
+def test_validate_valid_source_urls_not_flagged(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long",
+             "source": [{"url": "https://example.com/page"}]},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["invalid_source_urls"] == 0
+
+
+def test_validate_source_url_string_in_list(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long",
+             "source": ["javascript:alert(1)"]},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["invalid_source_urls"] == 1
+
+
+# ── Phone format validation (DI-020) ───────────────────────────────────
+
+
+def test_validate_flags_invalid_phone_format(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "restaurant", "name": "A", "summary": "A", "area": "vinh-long",
+             "attributes": {"phone": "abc-not-a-phone"}},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["invalid_phone_format"] == 1
+    assert "invalid_phone_format" in {issue.code for issue in issues}
+
+
+def test_validate_valid_vn_phone_not_flagged(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "restaurant", "name": "A", "summary": "A", "area": "vinh-long",
+             "attributes": {"phone": "0270 3822 456"}},
+            {"id": "b", "type": "restaurant", "name": "B", "summary": "B", "area": "vinh-long",
+             "attributes": {"phone": "+84 909 123 456"}},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["invalid_phone_format"] == 0
+
+
+def test_vn_phone_regex_patterns() -> None:
+    """Direct test of the VN phone regex."""
+    assert validate_data.VN_PHONE.match("0909123456")
+    assert validate_data.VN_PHONE.match("+84909123456")
+    assert validate_data.VN_PHONE.match("02703822456")
+    assert not validate_data.VN_PHONE.match("12345")
+    assert not validate_data.VN_PHONE.match("abc")

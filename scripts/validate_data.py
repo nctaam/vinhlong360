@@ -25,7 +25,12 @@ MAX_DIRECT_RELATIONSHIPS = 120
 HIERARCHICAL_REL_TYPES = {"located_in", "part_of"}
 # Placeholder summaries from failed LLM enrichment — must never ship to users.
 # Phase 0 quarantined these (blanked to ""); this guard stops them returning.
+from urllib.parse import urlparse  # noqa: E402
+
 import re  # noqa: E402
+
+VN_PHONE = re.compile(r"^(\+84|0)\d{9,10}$")
+
 BOILERPLATE_SUMMARY = re.compile(
     r"không\s*(có\s*)?đủ thông tin|404|không tìm thấy thông tin|no information|not found",
     re.IGNORECASE,
@@ -273,6 +278,8 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     has_images_non_place = 0
     name_too_short = 0
     name_too_long = 0
+    invalid_source_urls = 0
+    invalid_phone_format = 0
 
     for index, entity in enumerate(entities):
         if not isinstance(entity, dict):
@@ -361,6 +368,23 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
                 name_too_short += 1
             elif elen > 100:
                 name_too_long += 1
+
+        # DI-019: source URL validation
+        if isinstance(source, list):
+            for src_item in source:
+                url_val = src_item.get("url") if isinstance(src_item, dict) else (src_item if isinstance(src_item, str) else None)
+                if isinstance(url_val, str) and url_val.strip():
+                    parsed = urlparse(url_val.strip())
+                    if parsed.scheme not in ("http", "https", "") or (parsed.scheme and not parsed.netloc):
+                        invalid_source_urls += 1
+
+        # DI-020: phone format validation
+        attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
+        phone = attrs.get("phone") if isinstance(attrs, dict) else None
+        if isinstance(phone, str) and phone.strip():
+            cleaned = re.sub(r"[\s\-\.]", "", phone.strip())
+            if not VN_PHONE.match(cleaned):
+                invalid_phone_format += 1
 
         if is_place:
             level = entity.get("level", "")
@@ -696,6 +720,10 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         issues.append(Issue("warning", "missing_place_id", f"{missing_place_id} non-place entities are missing placeId"))
     if missing_location:
         issues.append(Issue("warning", "missing_location", f"{missing_location} entities have no coordinates or coords ({missing_location_non_place} non-place, {missing_location_place} place)"))
+    if invalid_source_urls:
+        issues.append(Issue("warning", "invalid_source_urls", f"{invalid_source_urls} source URLs have invalid format"))
+    if invalid_phone_format:
+        issues.append(Issue("warning", "invalid_phone_format", f"{invalid_phone_format} entities have phone not matching VN format (+84/0 + 9-10 digits)"))
 
     name_counts = Counter((e.get("name") or "").strip() for e in entities if isinstance(e, dict) and e.get("name"))
     duplicate_names = {name: count for name, count in name_counts.items() if count > 1}
@@ -763,6 +791,8 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         "name_too_long": name_too_long,
         "itinerary_empty_stops": itinerary_empty_stops,
         "itinerary_excessive_stops": itinerary_excessive_stops,
+        "invalid_source_urls": invalid_source_urls,
+        "invalid_phone_format": invalid_phone_format,
         "data_js_status": data_js_status,
     }
 
@@ -857,6 +887,8 @@ def print_report(issues: list[Issue], stats: dict[str, Any]) -> None:
         "name_too_long",
         "itinerary_empty_stops",
         "itinerary_excessive_stops",
+        "invalid_source_urls",
+        "invalid_phone_format",
     ]:
         print(f"  {key}: {stats.get(key)}")
 

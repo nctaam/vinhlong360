@@ -1191,3 +1191,105 @@ def test_robots_references_sitemap_index():
     resp = seo.robots()
     assert "sitemap-index.xml" in resp
     assert "sitemap.xml\n" not in resp
+
+
+# ── Adversarial edge cases ──────────────────────────────────────────────
+
+
+def test_entity_jsonld_unicode_name():
+    entity = {"id": "unicode", "name": "Bánh tráng phơi sương 🌙", "type": "dish"}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "🌙" in ld["name"]
+    assert ld["@type"] == "FoodEstablishment"
+
+
+def test_entity_jsonld_very_long_summary_truncation():
+    """Very long summary should be included as-is (JSON-LD has no length limit)."""
+    entity = {"id": "long-desc", "name": "Test", "type": "attraction", "summary": "X" * 5000}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert len(ld["description"]) == 5000
+
+
+def test_entity_jsonld_coordinates_zero_zero():
+    """Coordinates [0, 0] are valid (Gulf of Guinea) but unusual."""
+    entity = {"id": "zero", "name": "Zero", "type": "attraction", "coordinates": [0, 0]}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["geo"]["latitude"] == 0
+    assert ld["geo"]["longitude"] == 0
+
+
+def test_entity_jsonld_source_with_html():
+    """Source title with HTML should not be sanitized — JSON-LD handles it."""
+    entity = {
+        "id": "html-src",
+        "name": "Test",
+        "type": "attraction",
+        "source": [{"title": "<b>Source</b>", "url": "https://example.com"}],
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["citation"]["name"] == "<b>Source</b>"
+
+
+def test_collection_jsonld_empty_entities():
+    data = {"entities": [], "relationships": [], "itineraries": []}
+    ld = seo.build_collection_jsonld("du-lich", data)
+    assert ld is not None
+    assert ld["numberOfItems"] == 0
+    assert ld["itemListElement"] == []
+
+
+def test_sitemap_xml_special_chars_in_id(monkeypatch):
+    """Entity IDs with special XML chars should be escaped in sitemap."""
+    data = {
+        "entities": [
+            {"id": "test&entity<>", "name": "Test", "type": "attraction"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    monkeypatch.setattr(seo, "_load", lambda: data)
+    monkeypatch.setattr(seo, "_sitemap_cache", None)
+    monkeypatch.setattr(seo, "_data_mtime_ns", 0)
+    resp = seo.sitemap()
+    xml = resp.body.decode()
+    assert "%26" in xml or "&amp;" in xml
+    assert "%3C" in xml or "&lt;" in xml
+
+
+def test_itinerary_jsonld_with_entity_ref_and_name():
+    """Stop with both entityId and name — entity name wins."""
+    it = {
+        "id": "mixed-stop",
+        "title": "Mixed",
+        "stops": [{"entityId": "cam", "name": "Override Name"}],
+    }
+    by_id = {"cam": {"id": "cam", "name": "Cam sành", "type": "product"}}
+    ld = seo.build_itinerary_jsonld(it, by_id)
+    assert ld["itinerary"]["itemListElement"][0]["item"]["name"] == "Cam sành"
+
+
+def test_build_entity_jsonld_multiple_same_as():
+    entity = {
+        "id": "multi-same",
+        "name": "Multi",
+        "type": "attraction",
+        "source": "https://source.example.com",
+        "attributes": {"website": "https://website.example.com"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert isinstance(ld["sameAs"], list)
+    assert len(ld["sameAs"]) == 2
+
+
+def test_event_with_place_emits_location():
+    """Event with placeId should emit location."""
+    place = {"id": "xa-a", "name": "Xã A", "type": "place", "area": "vinh-long"}
+    event = {
+        "id": "ev-1", "name": "Lễ hội", "type": "event",
+        "placeId": "xa-a",
+        "attributes": {"date_start": "2026-07-01"},
+    }
+    by_id = _by_id([place, event])
+    ld = seo.build_entity_jsonld(event, by_id)
+    assert "location" in ld
+    assert ld["location"]["name"] == "Xã A"
