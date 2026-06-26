@@ -63,12 +63,14 @@ class ReflexionEngine:
 
     def _save(self):
         try:
-            self._reflections_file.write_text(
+            tmp = self._reflections_file.with_suffix(".tmp")
+            tmp.write_text(
                 json.dumps(self._reflections[-500:], ensure_ascii=False, indent=2),
                 encoding="utf-8"
             )
-        except Exception as exc:
-            logger.warning("Failed to save reflections: %s", exc)
+            tmp.replace(self._reflections_file)
+        except Exception:
+            logger.warning("Failed to save reflections", exc_info=True)
 
     # ── Evaluation ──
 

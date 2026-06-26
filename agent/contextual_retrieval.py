@@ -41,10 +41,10 @@ CONTEXTUAL_FILE = DATA_DIR / "contextual_texts.json"
 # ── Reuse Vietnamese tokenizer from vector_search ──
 
 try:
-    from vector_search import _tokenize, _normalize_vietnamese, STOP_WORDS
+    from vector_search import tokenize as _tokenize, normalize_vietnamese as _normalize_vietnamese, STOP_WORDS
 except ImportError:
     try:
-        from agent.vector_search import _tokenize, _normalize_vietnamese, STOP_WORDS
+        from agent.vector_search import tokenize as _tokenize, normalize_vietnamese as _normalize_vietnamese, STOP_WORDS
     except ImportError:
         # Inline fallback so module still works standalone
         STOP_WORDS = {
@@ -107,7 +107,7 @@ class ContextualRetrieval:
                 raw = json.loads(CONTEXTUAL_FILE.read_text(encoding="utf-8"))
                 self._cache = raw.get("texts", {})
         except Exception as exc:
-            logger.warning("contextual cache load failed: %s", exc)
+            logger.warning("contextual cache load failed: %s", exc, exc_info=True)
         self._loaded = True
 
     def _save_cache(self):
@@ -117,10 +117,12 @@ class ContextualRetrieval:
                 "count": len(self._cache),
                 "texts": self._cache,
             }
-            CONTEXTUAL_FILE.write_text(
+            tmp = CONTEXTUAL_FILE.with_suffix(".tmp")
+            tmp.write_text(
                 json.dumps(data, ensure_ascii=False, indent=2),
                 encoding="utf-8",
             )
+            tmp.replace(CONTEXTUAL_FILE)
         except Exception as exc:
             logger.warning("contextual cache save failed: %s", exc)
 

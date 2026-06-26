@@ -62,8 +62,10 @@ def _load() -> dict:
 
 def _save(data: dict):
     try:
-        with open(ANALYTICS_FILE, "w", encoding="utf-8") as f:
+        tmp = ANALYTICS_FILE.with_suffix(".tmp")
+        with open(tmp, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
+        tmp.replace(ANALYTICS_FILE)
     except OSError as exc:
         logger.warning("Failed to save analytics: %s", exc)
 
@@ -130,12 +132,14 @@ def track_session():
 def save_conversation(session_id: str, messages: list[dict]):
     """Lưu lịch sử hội thoại."""
     filepath = CONVERSATIONS_DIR / f"{session_id}.json"
-    with open(filepath, "w", encoding="utf-8") as f:
+    tmp = filepath.with_suffix(".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
         json.dump({
             "session_id": session_id,
             "timestamp": datetime.now().isoformat(),
             "messages": messages[-50:],
         }, f, ensure_ascii=False, indent=2)
+    tmp.replace(filepath)
 
 
 # ── Report functions ──

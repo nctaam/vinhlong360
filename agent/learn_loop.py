@@ -82,7 +82,7 @@ def _get_knowledge_gaps() -> list[dict]:
         gaps = analytics.get_knowledge_gaps(limit=10)
         return gaps if gaps else []
     except Exception as e:
-        _logger.debug(f"No knowledge gaps available: {e}")
+        _logger.debug("No knowledge gaps available: %s", e)
         return []
 
 
@@ -95,7 +95,7 @@ def _web_search_light(query: str, max_results: int = 3) -> list[dict]:
                                      region="vn-vi", max_results=max_results))
         return results
     except Exception as e:
-        _logger.warning(f"Web search failed: {e}")
+        _logger.warning("Web search failed: %s", e)
         return []
 
 
@@ -216,7 +216,7 @@ def learn_from_gaps(max_gaps: int = 5, dry_run: bool = False) -> dict:
             if ename:
                 existing_names.add(_norm_name(ename))
     except Exception as exc:
-        _logger.debug(f"DB dedup check unavailable: {exc}")
+        _logger.debug("DB dedup check unavailable: %s", exc)
 
     new_entities = []
     processed = 0
@@ -224,7 +224,7 @@ def learn_from_gaps(max_gaps: int = 5, dry_run: bool = False) -> dict:
     for gap in gaps[:max_gaps]:
         query = gap["query"]
         count = gap["count"]
-        _logger.info(f"Learning from gap: '{query}' (asked {count}x)")
+        _logger.info("Learning from gap: '%s' (asked %dx)", query, count)
         processed += 1
 
         results = _web_search_light(query)
@@ -249,7 +249,7 @@ def learn_from_gaps(max_gaps: int = 5, dry_run: bool = False) -> dict:
                 import kb_curation
                 dup = kb_curation.find_near_duplicate(entity["name"], entity["type"], kb["entities"])
                 if dup:
-                    _logger.info(f"  Skipped near-duplicate of '{dup}': {entity['name']}")
+                    _logger.info("  Skipped near-duplicate of '%s': %s", dup, entity['name'])
                     continue
             except Exception:
                 pass
@@ -266,7 +266,7 @@ def learn_from_gaps(max_gaps: int = 5, dry_run: bool = False) -> dict:
             new_entities.append(entity)
             existing_ids.add(entity["id"])
             existing_names.add(_norm_name(entity["name"]))
-            _logger.info(f"  Found: [{entity['type']}] {entity['name']} (conf={entity['confidence']})")
+            _logger.info("  Found: [%s] %s (conf=%s)", entity['type'], entity['name'], entity['confidence'])
 
         time.sleep(1)  # Rate limit
 
@@ -281,9 +281,9 @@ def learn_from_gaps(max_gaps: int = 5, dry_run: bool = False) -> dict:
             for e in new_entities:
                 db.upsert_entity(e)
         except Exception as exc:  # noqa: BLE001
-            _logger.error(f"learn_loop: ghi DB that bai: {exc}")
+            _logger.error("learn_loop: ghi DB that bai: %s", exc)
         added = len(new_entities)
-        _logger.info(f"Added {added} entities to KB (low confidence, needs review)")
+        _logger.info("Added %d entities to KB (low confidence, needs review)", added)
 
         # Reload knowledge module
         try:
@@ -351,7 +351,7 @@ def record_feedback(query: str, rating: int, entity_id: str = None, session_id: 
     # Nếu feedback negative + có entity → giảm confidence
     if rating == 0 and entity_id:
         _adjust_entity_confidence(entity_id, delta=-0.05)
-        _logger.info(f"Negative feedback → reduced confidence for {entity_id}")
+        _logger.info("Negative feedback → reduced confidence for %s", entity_id)
 
     # Nếu feedback positive + có entity → tăng confidence
     if rating == 1 and entity_id:
@@ -375,11 +375,11 @@ def _adjust_entity_confidence(entity_id: str, delta: float):
                     if db.get_entity(entity_id):
                         db.upsert_entity(e)
                 except Exception as exc:  # noqa: BLE001
-                    _logger.error(f"learn_loop: cap nhat confidence DB that bai: {exc}")
-                _logger.debug(f"Confidence {entity_id}: {old_conf} → {new_conf}")
+                    _logger.error("learn_loop: cap nhat confidence DB that bai: %s", exc)
+                _logger.debug("Confidence %s: %s → %s", entity_id, old_conf, new_conf)
                 return
     except Exception as e:
-        _logger.error(f"Failed to adjust confidence: {e}")
+        _logger.error("Failed to adjust confidence: %s", e)
 
 
 def process_feedback_batch() -> dict:
@@ -410,12 +410,12 @@ def process_feedback_batch() -> dict:
         if count >= 3:
             _adjust_entity_confidence(entity_id, delta=-0.1)
             entities_adjusted += 1
-            _logger.warning(f"Entity {entity_id} got {count} negative votes → reduced confidence")
+            _logger.warning("Entity %s got %d negative votes → reduced confidence", entity_id, count)
 
     # Query bị negative >= 3 lần → đánh dấu là knowledge gap
     for query, count in neg_queries.most_common(10):
         if count >= 3:
-            _logger.info(f"Frequent negative query: '{query}' ({count}x) → priority gap")
+            _logger.info("Frequent negative query: '%s' (%dx) → priority gap", query, count)
 
     total = len(feedback)
     negative = sum(1 for fb in feedback if fb["rating"] == 0)
@@ -462,7 +462,7 @@ def enrich_entities(max_entities: int = 10, dry_run: bool = False) -> dict:
         _logger.info("All entities have summaries — nothing to enrich")
         return {"scanned": 0, "enriched": 0, "skipped": 0}
 
-    _logger.info(f"Found {len(missing)} entities without summary")
+    _logger.info("Found %d entities without summary", len(missing))
 
     for entity in missing[:max_entities]:
         name = entity.get("name", "")
@@ -496,19 +496,19 @@ def enrich_entities(max_entities: int = 10, dry_run: bool = False) -> dict:
                 entity["summary"] = summary
                 entity["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
                 enriched += 1
-                _logger.info(f"  Enriched: {name} ← {summary[:60]}...")
+                _logger.info("  Enriched: %s ← %s...", name, summary[:60])
             else:
                 enriched += 1
-                _logger.info(f"  [DRY RUN] Would enrich: {name}")
+                _logger.info("  [DRY RUN] Would enrich: %s", name)
         else:
             skipped += 1
-            _logger.debug(f"  No good snippet for: {name}")
+            _logger.debug("  No good snippet for: %s", name)
 
         time.sleep(1)  # Rate limit
 
     if enriched > 0 and not dry_run:
         _save_kb(kb)
-        _logger.info(f"Enriched {enriched} entities with summaries")
+        _logger.info("Enriched %d entities with summaries", enriched)
 
         try:
             import knowledge
@@ -653,7 +653,7 @@ def backfill_coords(max_entities: int = 15, dry_run: bool = False) -> dict:
             knowledge.reload()
         except Exception:
             pass
-        _logger.info(f"Backfilled coords for {len(geocoded)} entities")
+        _logger.info("Backfilled coords for %d entities", len(geocoded))
 
     return {"checked": min(len(candidates), max_entities), "geocoded": len(geocoded), "ids": geocoded}
 
@@ -687,11 +687,11 @@ def run_full_cycle(dry_run: bool = False) -> dict:
     _logger.info("Step 4: Backfilling map coordinates...")
     results["geocoding"] = backfill_coords(max_entities=15, dry_run=dry_run)
 
-    _logger.info(f"═══ Learning Loop Complete ═══")
-    _logger.info(f"  Feedback processed: {results['feedback']['total_feedback']}")
-    _logger.info(f"  Gaps learned: {results['gap_learning']['entities_added']}")
-    _logger.info(f"  Entities enriched: {results['enrichment']['enriched']}")
-    _logger.info(f"  Coords geocoded: {results['geocoding']['geocoded']}")
+    _logger.info("═══ Learning Loop Complete ═══")
+    _logger.info("  Feedback processed: %d", results['feedback']['total_feedback'])
+    _logger.info("  Gaps learned: %d", results['gap_learning']['entities_added'])
+    _logger.info("  Entities enriched: %d", results['enrichment']['enriched'])
+    _logger.info("  Coords geocoded: %d", results['geocoding']['geocoded'])
 
     return results
 

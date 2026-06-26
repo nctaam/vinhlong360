@@ -20,9 +20,9 @@ import threading
 import unicodedata
 from pathlib import Path
 
-from openai import OpenAI
-
 logger = logging.getLogger(__name__)
+
+from openai import OpenAI
 
 # ── Config ──
 
@@ -375,7 +375,7 @@ def recognize_image(
         model = _get_model()
         messages = build_vision_message(image_b64)
 
-        logger.info("Calling vision API model=%s", model)
+        logger.debug("Calling vision API model=%s", model)
         response = client.chat.completions.create(
             model=model,
             messages=messages,
@@ -385,7 +385,7 @@ def recognize_image(
         )
 
         raw = response.choices[0].message.content.strip()
-        logger.info("Vision API response length=%d", len(raw))
+        logger.debug("Vision API response length=%d", len(raw))
 
         # Parse JSON from response (handle markdown code fences)
         json_text = raw

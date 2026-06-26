@@ -491,8 +491,8 @@ class Orchestrator:
                     _temp = tuned.get("temperature", _temp)
                     _rounds = int(tuned.get("max_rounds", _rounds))
                     _tool_cap = int(tuned.get("max_tool_calls", _tool_cap))
-            except Exception as exc:
-                logger.warning("get_params_fn failed: %s", exc)
+            except Exception:
+                logger.debug("get_params_fn failed for category %s, using defaults", category.value, exc_info=True)
 
         # Try specialist first, fall back to general on failure.
         # Outer try/except catches the case where BOTH agents fail —
@@ -517,8 +517,8 @@ class Orchestrator:
                         order = tool_order_fn(category.value)
                         rank = {name: i for i, name in enumerate(order)}
                         tools.sort(key=lambda t: rank.get(t["function"]["name"], 999))
-                    except Exception as exc:
-                        logger.warning("tool_order_fn failed: %s", exc)
+                    except Exception:
+                        logger.debug("tool_order_fn failed for category %s, using default order", category.value, exc_info=True)
 
                 try:
                     result = self._agent_loop(
@@ -602,15 +602,15 @@ class Orchestrator:
                     if sug:
                         suggestions.clear()
                         suggestions.extend(sug)
-                except Exception as exc:
-                    logger.debug("suggest_followups parse failed: %s", exc)
+                except Exception:
+                    logger.debug("Failed to parse suggest_followups result", exc_info=True)
             if fn_name == "search":
                 try:
                     parsed = json.loads(result)
                     if isinstance(parsed, list) and len(parsed) == 0:
                         return True
-                except Exception as exc:
-                    logger.debug("search result parse failed: %s", exc)
+                except Exception:
+                    logger.debug("Failed to parse search result for empty-check", exc_info=True)
             return False
 
         tools_used: list[str] = []
@@ -653,8 +653,8 @@ class Orchestrator:
                     continue
                 try:
                     fn_args = json.loads(tc.function.arguments)
-                except Exception as exc:
-                    logger.warning("Malformed tool arguments for %s: %s", tc.function.name, exc)
+                except Exception:
+                    logger.warning("Failed to parse tool call arguments for %s, using empty dict", tc.function.name, exc_info=True)
                     fn_args = {}
                 fn_name = tc.function.name
                 if allowed_tool_names and fn_name not in allowed_tool_names:
@@ -678,8 +678,8 @@ class Orchestrator:
             if tool_executor is not None and len(pending) > 1:
                 try:
                     exec_results = tool_executor.execute_smart(pending)
-                except Exception as exc:
-                    logger.warning("Parallel executor failed, falling back to serial: %s", exc)
+                except Exception:
+                    logger.warning("Parallel tool executor failed, falling back to serial execution", exc_info=True)
                     exec_results = [
                         {"id": c["id"], "name": c["name"], "result": call_tool_fn(c["name"], c["args"])}
                         for c in pending
@@ -741,8 +741,8 @@ class Orchestrator:
                     })
                     final_resp = llm_call_fn(messages, [], temperature)
                     last_content = (final_resp.choices[0].message.content or "").strip()
-                except Exception as exc:
-                    logger.warning("Final synthesis LLM call failed: %s", exc)
+                except Exception:
+                    logger.warning("Final synthesis LLM call failed after rounds exhausted", exc_info=True)
                     last_content = ""
             if not last_content:
                 last_content = "Xin lỗi, tôi không thể trả lời đầy đủ câu hỏi này."

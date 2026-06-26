@@ -49,19 +49,25 @@ _last_request = [0.0]
 _cache = None
 
 
+_cache_lock = Lock()
+
+
 def _load_cache() -> dict:
     global _cache
     if _cache is not None:
         return _cache
-    if CACHE_FILE.exists():
-        try:
-            _cache = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
-        except Exception as exc:
-            logger.warning("Failed to load geocode cache: %s", exc)
+    with _cache_lock:
+        if _cache is not None:
+            return _cache
+        if CACHE_FILE.exists():
+            try:
+                _cache = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
+            except Exception as exc:
+                logger.warning("Failed to load geocode cache: %s", exc)
+                _cache = {}
+        else:
             _cache = {}
-    else:
-        _cache = {}
-    return _cache
+        return _cache
 
 
 def _save_cache():
@@ -109,7 +115,7 @@ def _query_nominatim(query: str) -> list | None:
         if in_box(lat, lon):
             return [round(lat, 7), round(lon, 7)]
     except Exception as exc:
-        logger.debug("Geocode API failed for %s: %s", name, exc)
+        logger.debug("Nominatim query failed for %r: %s", query, exc)
     return None
 
 

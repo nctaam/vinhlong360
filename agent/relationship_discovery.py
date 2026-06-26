@@ -258,7 +258,9 @@ def main():
     # Apply
     if args.apply and new_rels:
         data["relationships"].extend(new_rels)
-        DATA_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        tmp = DATA_PATH.with_suffix(".tmp")
+        tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        tmp.replace(DATA_PATH)
         # GĐ-audit (B1): ghi quan hệ mới vào DB (chat đọc DB) — không chỉ data.json.
         try:
             from database import db

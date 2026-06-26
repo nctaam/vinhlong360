@@ -1,3 +1,7 @@
+"""DEPRECATED: This module is dead code (zero references in codebase).
+One-time data diagnostic script. Use scripts/validate_data.py instead.
+See docs/DEAD-CODE-AUDIT.md."""
+
 import sys, json
 sys.path.insert(0, "agent")
 from database import Database

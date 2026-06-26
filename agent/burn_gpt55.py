@@ -1,4 +1,7 @@
 """
+DEPRECATED: This module is dead code (CLI-only, not imported by any module).
+One-time batch enrichment script. See docs/DEAD-CODE-AUDIT.md.
+
 vinhlong360 — GPT 5.5 Token Burner: Enrichment Mega-Batch
 
 Chạy SONG SONG tối đa để đốt token GPT 5.5 nhanh nhất:

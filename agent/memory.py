@@ -332,7 +332,9 @@ class ColdMemory:
             data = {uid: p.to_dict() for uid, p in self._profiles.items()}
             plaintext = json.dumps(data, ensure_ascii=False, indent=2)
             encrypted = _encrypt(plaintext)
-            self._profiles_file.write_text(encrypted, encoding="utf-8")
+            tmp = self._profiles_file.with_suffix(".tmp")
+            tmp.write_text(encrypted, encoding="utf-8")
+            tmp.replace(self._profiles_file)
         except Exception as e:
             logger.warning("Failed to save profiles: %s", e)
 
@@ -448,10 +450,12 @@ class SkillDocumentStore:
 
     def _save(self):
         try:
-            self._skills_file.write_text(
+            tmp = self._skills_file.with_suffix(".tmp")
+            tmp.write_text(
                 json.dumps(self._skills, ensure_ascii=False, indent=2),
                 encoding="utf-8"
             )
+            tmp.replace(self._skills_file)
         except Exception as exc:
             logger.warning("Failed to save skill documents: %s", exc)
 
@@ -767,7 +771,8 @@ class MemoryExtractor:
                 from agent import knowledge as _knowledge
             _knowledge._ensure()
             knowledge_entities = _knowledge._entities or {}
-        except Exception:
+        except Exception as e:
+            logger.debug("Failed to load knowledge entities for memory extraction: %s", e)
             knowledge_entities = {}
 
         # 1. Extract preferences

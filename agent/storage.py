@@ -148,15 +148,15 @@ class Storage:
     def _put(self, data: bytes, key: str, content_type: str) -> str:
         if self.use_s3:
             extra = {"ContentType": content_type, "CacheControl": "public, max-age=31536000, immutable"}
-            # R2 has no per-object ACL (public access is via the bucket's custom
-            # domain); generic S3 needs public-read.
             if self.backend == "s3":
                 extra["ACL"] = "public-read"
             _s3.upload_fileobj(io.BytesIO(data), _BUCKET, key, ExtraArgs=extra)
+            logger.debug("Uploaded %s to %s/%s (%d bytes)", content_type, self.backend, key, len(data))
             return f"{_PUBLIC_BASE}/{key}"
         path = LOCAL_MEDIA_DIR / key
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)
+        logger.debug("Saved local file %s (%d bytes)", path, len(data))
         return f"/media/{key}"
 
     # ── responsive set (cover/detail images) ───────────────────────────────
@@ -165,6 +165,8 @@ class Storage:
         """Process to WebP at sm/md/lg widths, upload all, return {size: url}."""
         if len(data) > MAX_IMAGE_SIZE:
             raise ValueError(f"Ảnh quá lớn (tối đa {MAX_IMAGE_SIZE // 1024 // 1024}MB)")
+        if ".." in folder or folder.startswith("/"):
+            raise ValueError(f"Invalid folder path: {folder}")
         base = f"{_slugify(slug)}-{uuid.uuid4().hex[:8]}"
         urls = {}
         for size, width in WEBP_SIZES.items():
@@ -178,6 +180,8 @@ class Storage:
                            content_type: str = "image/webp") -> str:
         if len(data) > MAX_IMAGE_SIZE:
             raise ValueError(f"File quá lớn (tối đa {MAX_IMAGE_SIZE // 1024 // 1024}MB)")
+        if ".." in folder or folder.startswith("/"):
+            raise ValueError(f"Invalid folder path: {folder}")
         if content_type not in ALLOWED_TYPES:
             raise ValueError(f"Định dạng không hỗ trợ: {content_type}")
         # Normalise everything to a single 1600px WebP for consistency + size.
@@ -191,10 +195,12 @@ class Storage:
             if key.startswith("http"):
                 key = key.split(f"{_PUBLIC_BASE}/")[-1] if _PUBLIC_BASE in key else key.rsplit("/", 1)[-1]
             _s3.delete_object(Bucket=_BUCKET, Key=key)
+            logger.debug("Deleted %s/%s", self.backend, key)
         else:
             path = LOCAL_MEDIA_DIR / key_or_url.replace("/media/", "")
             if path.exists():
                 path.unlink()
+                logger.debug("Deleted local file %s", path)
 
 
 storage = Storage()

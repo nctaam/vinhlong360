@@ -40,8 +40,10 @@ def enabled() -> bool:
 def _load() -> dict:
     try:
         return json.loads(_DATA.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return {}
     except Exception as exc:
-        logger.warning("Failed to load budget file: %s", exc)
+        logger.warning("Budget file corrupt or unreadable (%s), counter reset to 0", exc)
         return {}
 
 
@@ -64,7 +66,7 @@ def try_consume(n: int = 1) -> bool:
             tmp.write_text(json.dumps({"date": _today(), "count": count + n}), encoding="utf-8")
             tmp.replace(_DATA)
         except Exception as exc:
-            logger.warning("Failed to persist budget file: %s", exc)
+            logger.warning("Budget file write failed (%s) — cap enforced in RAM only this session", exc)
         return True
 
 

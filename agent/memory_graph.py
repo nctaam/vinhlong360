@@ -830,7 +830,7 @@ class MemoryGraph:
                 self.add_node(obj, type="entity", properties={"name": obj})
                 self.add_edge(subj, obj, normalized_rel)
         except Exception:
-            pass  # Fact extraction is best-effort
+            logger.debug("Fact extraction failed (best-effort)", exc_info=True)
 
         # Final save
         self.save()

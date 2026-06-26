@@ -67,7 +67,7 @@ def guarded_evolve(name: str, apply_fn, snapshot_id: str | None = None,
     try:
         before = self_eval.compute_fitness()
     except Exception as e:
-        _logger.error(f"[{name}] fitness_before failed: {e}")
+        _logger.error("[%s] fitness_before failed: %s", name, e)
         before = None
 
     # 2. Snapshot (rollback point)
@@ -80,7 +80,7 @@ def guarded_evolve(name: str, apply_fn, snapshot_id: str | None = None,
         change_result = apply_fn()
     except Exception as e:
         apply_error = f"{e}\n{traceback.format_exc()}"
-        _logger.error(f"[{name}] apply_fn failed: {e}")
+        _logger.error("[%s] apply_fn failed: %s", name, e)
 
     # Ensure live KB reflects any file changes
     try:
@@ -92,7 +92,7 @@ def guarded_evolve(name: str, apply_fn, snapshot_id: str | None = None,
     try:
         after = self_eval.compute_fitness()
     except Exception as e:
-        _logger.error(f"[{name}] fitness_after failed: {e}")
+        _logger.error("[%s] fitness_after failed: %s", name, e)
         after = None
 
     # 5. Gate decision
@@ -128,7 +128,7 @@ def guarded_evolve(name: str, apply_fn, snapshot_id: str | None = None,
         "change_result": change_result if isinstance(change_result, (dict, list, str, int, float, type(None))) else str(change_result),
     }
     _audit(summary)
-    _logger.info(f"[{name}] decision={decision} reason={reason}")
+    _logger.info("[%s] decision=%s reason=%s", name, decision, reason)
     return summary
 
 

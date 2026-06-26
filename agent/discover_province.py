@@ -311,7 +311,6 @@ def _next_topic():
         CURSOR_FILE.write_text(json.dumps({"idx": (idx + 1) % len(_TOPIC_ORDER)}), encoding="utf-8")
     except Exception as exc:
         logger.debug("Failed to write topic cursor: %s", exc)
-        pass
     return topic
 
 

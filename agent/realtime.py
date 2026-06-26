@@ -98,8 +98,8 @@ def get_weather(area: str = "vinh-long") -> dict | None:
 
         return result
 
-    except Exception as exc:
-        logger.warning("Weather API failed for %s: %s", area, exc)
+    except Exception:
+        logger.warning("Weather API failed for area %s, using fallback", area, exc_info=True)
         return _fallback_weather(area)
 
 

@@ -13,6 +13,7 @@ Usage:
 """
 
 import json
+import logging
 import math
 import os
 import sqlite3
@@ -21,6 +22,8 @@ from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from threading import Lock
+
+logger = logging.getLogger(__name__)
 
 # ── Config ──
 
@@ -296,7 +299,7 @@ class Database:
                         )
                     """)
                 except sqlite3.OperationalError:
-                    pass
+                    logger.debug("FTS5 not available, full-text search disabled")
 
             self._initialized = True
 
@@ -392,7 +395,7 @@ class Database:
                         "INSERT OR REPLACE INTO entities_fts(id, name, summary, type) VALUES (?, ?, ?, ?)",
                         (entity["id"], entity["name"], entity.get("summary", ""), entity["type"]))
                 except sqlite3.OperationalError:
-                    pass
+                    logger.debug("FTS5 insert skipped for entity %s", entity["id"])
 
     def update_description(self, entity_id: str, description: str):
         """Update only the description field (won't be overwritten by upsert_entity)."""
@@ -433,7 +436,7 @@ class Database:
                 try:
                     conn.execute("DELETE FROM entities_fts WHERE id = ?", (entity_id,))
                 except sqlite3.OperationalError:
-                    pass
+                    logger.debug("FTS5 delete skipped for entity %s", entity_id)
             return cur.rowcount > 0
 
     def search_entities(self, q: str = None, entity_type: str = None,
@@ -847,6 +850,21 @@ class Database:
                 rows = self._fetchall(conn, "SELECT * FROM itineraries")
             return [self._parse_itinerary(r) for r in rows]
 
+    def export_all(self) -> dict:
+        """Export all entities, relationships, and itineraries for data dump."""
+        self.initialize()
+        with self._conn() as conn:
+            entity_rows = self._fetchall(conn, "SELECT * FROM entities")
+            rel_rows = self._fetchall(conn, "SELECT from_id, to_id, type FROM relationships")
+            itin_rows = self._fetchall(conn, "SELECT * FROM itineraries")
+        entities = [self._parse_entity(r) for r in entity_rows]
+        relationships = []
+        for r in rel_rows:
+            d = self._row_to_dict(r)
+            relationships.append({"from": d["from_id"], "to": d["to_id"], "type": d["type"]})
+        itineraries = [self._parse_itinerary(r) for r in itin_rows]
+        return {"entities": entities, "relationships": relationships, "itineraries": itineraries}
+
     # ── Feedback ──
 
     def save_feedback(self, user_id: str, query: str, rating: int, entity_id: str = None):
@@ -978,7 +996,7 @@ class Database:
                 try:
                     conn.execute("DELETE FROM entities_fts")
                 except sqlite3.OperationalError:
-                    pass
+                    logger.debug("FTS5 clear skipped (table may not exist)")
             self._execute(conn, "DELETE FROM entities")
 
             result = self._bulk_load(conn, data)
@@ -1056,7 +1074,7 @@ class Database:
                     "INSERT OR REPLACE INTO entities_fts(id, name, summary, type) VALUES (?, ?, ?, ?)",
                     fts_rows)
             except sqlite3.OperationalError:
-                pass
+                logger.debug("FTS5 bulk insert skipped (%d rows)", len(fts_rows))
             conn.executemany(
                 "INSERT OR IGNORE INTO relationships (from_id, to_id, type) VALUES (?, ?, ?)", rel_rows)
             conn.executemany(
@@ -1206,7 +1224,7 @@ class Database:
                 try:
                     d[field] = json.loads(d[field])
                 except Exception:
-                    pass
+                    logger.warning("Corrupt JSON in entity %s field %s", d.get("id"), field)
         _normalize_entity_timestamps(d)
         return d
 
@@ -1217,6 +1235,7 @@ class Database:
                 try:
                     d["stops"] = json.loads(d["stops"])
                 except Exception:
+                    logger.warning("Corrupt JSON in itinerary %s stops", d.get("id"))
                     d["stops"] = []
         return d
 
