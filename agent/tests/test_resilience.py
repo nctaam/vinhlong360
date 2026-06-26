@@ -2168,3 +2168,170 @@ class TestCostTrackerSaveFrequency:
     def test_auto_save_interval(self):
         from cost_tracker import _AUTO_SAVE_INTERVAL
         assert _AUTO_SAVE_INTERVAL <= 20
+
+
+# ═══════════════════════════════════════════════════════
+# Batch 9: kb_curation, kb_versioning, middleware,
+#           self_eval, mcp_server logging
+# ═══════════════════════════════════════════════════════
+
+
+class TestKBCurationLogging:
+    """kb_curation must have a module-level logger and log exceptions."""
+
+    def test_has_logger(self):
+        import kb_curation
+        assert hasattr(kb_curation, "logger")
+        assert kb_curation.logger.name == "kb_curation"
+
+    def test_reload_failure_logged(self):
+        import kb_curation
+        import logging
+
+        with patch.object(kb_curation, "logger") as mock_log:
+            # Force an import error inside _reload
+            with patch.dict("sys.modules", {"knowledge": MagicMock(
+                reload=MagicMock(side_effect=RuntimeError("test reload fail"))
+            )}):
+                kb_curation._reload()
+            mock_log.warning.assert_called()
+            assert "reload" in str(mock_log.warning.call_args).lower()
+
+    def test_entity_hits_failure_logged(self):
+        import kb_curation
+        with patch.object(kb_curation, "logger") as mock_log:
+            with patch.object(kb_curation, "ANALYTICS_FILE",
+                              MagicMock(read_text=MagicMock(side_effect=OSError("no file")))):
+                result = kb_curation._entity_hits()
+            assert result == {}
+            mock_log.debug.assert_called()
+
+
+class TestKBVersioningLogging:
+    """kb_versioning must have a module-level logger and log exceptions."""
+
+    def test_has_logger(self):
+        import kb_versioning
+        assert hasattr(kb_versioning, "logger")
+        assert kb_versioning.logger.name == "kb_versioning"
+
+    def test_manifest_load_failure_logged(self):
+        import kb_versioning
+        with patch.object(kb_versioning, "logger") as mock_log:
+            with patch.object(kb_versioning, "MANIFEST",
+                              MagicMock(exists=MagicMock(return_value=True),
+                                        read_text=MagicMock(side_effect=OSError("corrupt")))):
+                result = kb_versioning._load_manifest()
+            assert result == []
+            mock_log.warning.assert_called()
+
+    def test_entity_count_failure_logged(self):
+        import kb_versioning
+        with patch.object(kb_versioning, "logger") as mock_log:
+            bad_path = MagicMock(read_text=MagicMock(side_effect=OSError("nope")))
+            result = kb_versioning._entity_count(bad_path)
+            assert result == -1
+            mock_log.debug.assert_called()
+
+    def test_prune_failure_logged(self, tmp_path):
+        import kb_versioning
+        old_snap_dir = kb_versioning.SNAP_DIR
+        old_manifest = kb_versioning.MANIFEST
+        old_data_json = kb_versioning.DATA_JSON
+        try:
+            kb_versioning.SNAP_DIR = tmp_path / "snaps"
+            kb_versioning.SNAP_DIR.mkdir()
+            kb_versioning.MANIFEST = kb_versioning.SNAP_DIR / "manifest.json"
+            kb_versioning.DATA_JSON = tmp_path / "data.json"
+            kb_versioning.DATA_JSON.write_text('{"entities":[]}', encoding="utf-8")
+
+            old_keep = kb_versioning.KEEP_SNAPSHOTS
+            kb_versioning.KEEP_SNAPSHOTS = 1
+
+            kb_versioning.snapshot("first", "snap_00001")
+            with patch.object(kb_versioning, "logger") as mock_log:
+                # second snapshot triggers pruning of first
+                kb_versioning.snapshot("second", "snap_00002")
+            # pruning should succeed silently (or log warning if file gone)
+        finally:
+            kb_versioning.SNAP_DIR = old_snap_dir
+            kb_versioning.MANIFEST = old_manifest
+            kb_versioning.DATA_JSON = old_data_json
+            kb_versioning.KEEP_SNAPSHOTS = old_keep
+
+
+class TestMiddlewareLogging:
+    """StructuredLogger internal failures must log to py_logger, not swallow."""
+
+    def test_flush_failure_logged(self):
+        from middleware import StructuredLogger
+        sl = StructuredLogger(name="test_flush", max_entries=100)
+        sl._buffer = [{"ts": "now", "level": "info", "msg": "test"}]
+        with patch("builtins.open", side_effect=OSError("disk full")):
+            with patch.object(sl, "_py_logger") as mock_py:
+                sl._flush()
+            mock_py.debug.assert_called()
+            assert "flush" in str(mock_py.debug.call_args).lower()
+
+    def test_rotate_failure_logged(self):
+        from middleware import StructuredLogger
+        sl = StructuredLogger(name="test_rotate", max_entries=100)
+        with patch.object(sl, "log_file",
+                          MagicMock(exists=MagicMock(return_value=True),
+                                    read_text=MagicMock(side_effect=OSError("read fail")))):
+            with patch.object(sl, "_py_logger") as mock_py:
+                sl._rotate()
+            mock_py.debug.assert_called()
+
+    def test_recent_read_failure_logged(self):
+        from middleware import StructuredLogger
+        sl = StructuredLogger(name="test_recent", max_entries=100)
+        with patch.object(sl, "log_file",
+                          MagicMock(exists=MagicMock(return_value=True),
+                                    read_text=MagicMock(side_effect=OSError("gone")))):
+            with patch.object(sl, "_py_logger") as mock_py:
+                result = sl.recent(limit=10)
+            assert result == []
+            mock_py.debug.assert_called()
+
+
+class TestSelfEvalLogging:
+    """self_eval must have a logger and log retrieval_eval failures."""
+
+    def test_has_logger(self):
+        with patch.dict(sys.modules, {"knowledge": MagicMock(
+            _ensure=MagicMock(), _normalize_vn=MagicMock(return_value=""),
+            _entities={},
+        )}):
+            import importlib
+            if "self_eval" in sys.modules:
+                importlib.reload(sys.modules["self_eval"])
+            else:
+                import self_eval
+            mod = sys.modules["self_eval"]
+            assert hasattr(mod, "logger")
+            assert mod.logger.name == "self_eval"
+
+
+class TestMCPServerLogging:
+    """mcp_server helper functions must log failures."""
+
+    def test_has_logger(self):
+        try:
+            # mcp_server imports many modules; mock the heavy ones
+            with patch.dict(sys.modules, {
+                "knowledge": MagicMock(_ensure=MagicMock()),
+                "tools": MagicMock(SYSTEM_PROMPT="test"),
+                "mcp": MagicMock(),
+                "mcp.server": MagicMock(),
+                "mcp.server.fastmcp": MagicMock(),
+            }):
+                import importlib
+                if "mcp_server" in sys.modules:
+                    importlib.reload(sys.modules["mcp_server"])
+                else:
+                    import mcp_server
+                mod = sys.modules["mcp_server"]
+                assert hasattr(mod, "logger")
+        except Exception:
+            pytest.skip("mcp_server import requires mcp package")

@@ -19,8 +19,11 @@ All writes go to web/data.json and trigger knowledge.reload().
 """
 
 import json
+import logging
 import sys
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 AGENT_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = AGENT_DIR.parent
@@ -42,8 +45,8 @@ def _reload():
     try:
         import knowledge
         knowledge.reload()
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.warning("Failed to reload knowledge: %s", exc)
 
 
 # GĐ-audit (B1): DB là nguồn sự thật cho chat (knowledge.reload đọc DB). Mọi mutate KB
@@ -191,7 +194,8 @@ def _entity_hits() -> dict:
     try:
         data = json.loads(ANALYTICS_FILE.read_text(encoding="utf-8"))
         return data.get("entity_hits", {}) or {}
-    except Exception:
+    except Exception as exc:
+        logger.debug("Failed to load entity hits: %s", exc)
         return {}
 
 
