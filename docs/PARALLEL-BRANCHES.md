@@ -27,10 +27,10 @@
 | 4 | **Quản trị** | `dev/admincp` | `vl360-admincp` | Toàn bộ admin/**: dashboard, entity CRUD, kiểm duyệt, thống kê, media, CMS |
 | 5 | **Tài khoản & Cộng đồng** | `dev/usercp` | `vl360-usercp` | Cài đặt, cộng đồng, hồ sơ, bài viết, thông báo, auth composable |
 | 6 | **Bảo mật API** | `dev/backend-security` | `vl360-backend-sec` | Middleware xác thực, rate limit, kiểm duyệt nội dung, test bảo mật |
-| 7 | **Chịu lỗi AI** | `dev/backend-resilience` | `vl360-backend-res` | Pipeline LLM: orchestrator, knowledge, guardrails, circuit breaker |
+| 7 | **Chịu lỗi AI** | `dev/backend-resilience` | `vl360-backend-res` | Toàn bộ pipeline chat AI: orchestrator, knowledge, guardrails, memory, proactive, recommender, prompt cache/compiler, semantic cache, reflexion, agentic RAG, dynamic agents, smart rank, autocorrect |
 | 8 | **Dữ liệu & SEO** | `dev/data-seo` | `vl360-data-seo` | Scripts kiểm tra dữ liệu, SEO (JSON-LD/sitemap/og), data.json |
 | 9 | **Khung giao diện** | `dev/shared-fe` | `vl360-shared-fe` | Layout, CSS tokens, shared component (Toast/Confirm/Skeleton...), composable chung |
-| 10 | **Hạ tầng Backend** | `dev/backend-infra` | `vl360-backend-infra` | Database core, cache, storage, config, scheduler, legacy modules |
+| 10 | **Hạ tầng Backend** | `dev/backend-infra` | `vl360-backend-infra` | Database core, cache, storage, config, scheduler, self-evolve/eval chain, KB versioning, feature modules (itinerary_gen/saved/visits/plans/analytics/site_settings/cost_tracker/ab_testing), geocode, dead code cleanup |
 
 ---
 
