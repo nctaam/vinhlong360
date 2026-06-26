@@ -29,7 +29,7 @@
           </NuxtLink>
         </aside>
       </div>
-      <div v-if="stats" class="hero-stats">
+      <div v-if="statsItems.length" class="hero-stats" role="group" aria-label="Thống kê nổi bật">
         <div class="hero-stat" v-for="s in statsItems" :key="s.label">
           <span class="hero-stat-num"><CountUp :value="s.value" /></span>
           <span class="hero-stat-label">{{ s.label }}</span>
@@ -195,7 +195,7 @@
     </section>
 
     <!-- 5. Từ cộng đồng — compact + trending tags -->
-      <section class="block reveal">
+      <section v-if="communityPosts.length || communityStats" class="block reveal">
         <div class="section-head">
           <div class="sh-text">
             <h2>Từ cộng đồng</h2>
@@ -280,8 +280,8 @@
         <div class="scroll-row" role="region" aria-label="Đã lưu gần đây">
           <NuxtLink v-for="fav in recentSaved" :key="fav.id" :to="`/dia-diem/${fav.id}`" class="card">
             <div v-if="fav.image" class="cover cover-img">
-              <NuxtImg v-if="isRemoteUrl(fav.image)" :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="480" height="192" sizes="sm:100vw md:50vw lg:480px" />
-              <img v-else :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="480" height="192" />
+              <NuxtImg v-if="isRemoteUrl(fav.image)" :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="480" height="192" sizes="sm:100vw md:50vw lg:480px" @error="onImgError" />
+              <img v-else :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="480" height="192" @error="onImgError" />
             </div>
             <div class="card-b">
               <span class="card-type">{{ getFavTypeMeta(fav.type).label }}</span>
@@ -465,6 +465,17 @@ function formatRating(rating: number): string {
   return rating > 0 ? rating.toFixed(1) : 'Mới'
 }
 
+function onImgError(e: Event) {
+  const img = e.target as HTMLImageElement
+  img.style.display = 'none'
+}
+
+function areaName(slug: string | undefined): string {
+  if (!slug) return ''
+  const meta = (AREA_META as Record<string, { name: string }>)[slug]
+  return meta ? meta.name : slug
+}
+
 function openChat() {
   if (import.meta.client) {
     const fab = document.querySelector('.chat-fab') as HTMLElement
@@ -492,7 +503,7 @@ const eventListSchema = computed(() => {
       url: `https://vinhlong360.vn/dia-diem/${ev.id}`,
       eventStatus: 'https://schema.org/EventScheduled',
       eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-      location: { '@type': 'Place', name: ev.place_name || 'Vĩnh Long', address: { '@type': 'PostalAddress', addressRegion: ev.place_area || 'Vĩnh Long', addressCountry: 'VN' } },
+      location: { '@type': 'Place', name: ev.place_name || 'Vĩnh Long', address: { '@type': 'PostalAddress', addressRegion: areaName(ev.place_area) || 'Vĩnh Long', addressCountry: 'VN' } },
     },
   }))
   if (!events.length) return ''
@@ -538,7 +549,6 @@ useHead({
         description: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long.',
         inLanguage: 'vi-VN',
         areaServed: { '@type': 'AdministrativeArea', name: 'Vĩnh Long' },
-        sameAs: [],
       }),
     },
     ...(eventListSchema.value ? [{ type: 'application/ld+json', innerHTML: eventListSchema.value }] : []),
