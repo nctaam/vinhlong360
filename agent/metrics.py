@@ -21,8 +21,11 @@ Export:
 Thread-safe: all state mutations guarded by threading.Lock.
 """
 
+import logging
 import math
 import time
+
+logger = logging.getLogger(__name__)
 from threading import Lock
 from typing import Dict, List, Optional, Sequence, Tuple
 

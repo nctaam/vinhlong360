@@ -230,7 +230,7 @@ def web_search(query: str, max_results: int = 5) -> list[dict]:
             results = list(ddgs.text(query, region="vn-vi", max_results=max_results))
         return results
     except Exception as e:
-        print(f"  ⚠ Search error: {e}")
+        logger.warning("Search error: %s", e)
         return []
 
 

@@ -30,12 +30,15 @@ Requires the server running (default http://localhost:8360) and ADMIN_API_KEY in
 
 import argparse
 import json
+import logging
 import os
 import re
 import sys
 import time
 import unicodedata
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 AGENT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(AGENT_DIR))
@@ -90,7 +93,7 @@ def call_chat(query: str, session_id: str) -> tuple[str, list]:
                 tools.append(t.get("name", "") if isinstance(t, dict) else str(t))
             return d.get("reply", ""), tools
     except Exception as e:
-        print(f"  [chat error] {e}")
+        logger.warning("Chat error: %s", e)
     return "", []
 
 
