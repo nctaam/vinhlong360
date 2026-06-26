@@ -1,172 +1,56 @@
-# Parallel Branch Strategy — vinhlong360
+# Parallel Worktree Strategy — vinhlong360
 
-> Tạo 2026-06-26. 3 nhánh dev song song, mỗi nhánh = 1 session Claude Code riêng.
-> **Merge flow:** branch → main (sau khi build+test xanh). KHÔNG merge chéo giữa dev branches.
+> Tạo 2026-06-26. 10 session song song qua **git worktree** (mỗi session = thư mục riêng).
+> **Merge flow:** branch → main (build+test xanh). KHÔNG merge chéo giữa dev branches.
 
 ---
 
-## Quy tắc chung cho TẤT CẢ session
+## Quy tắc chung
 
 1. **Đọc `CLAUDE.md` trước** — mọi bất biến §2 vẫn áp dụng.
-2. **Không sửa file chung** trừ khi được ghi rõ ở đây:
-   - `base.css` — chỉ **thêm** class mới (không sửa/xoá class hiện tại)
-   - `nuxt.config.ts` — KHÔNG sửa
-   - `database.py` — chỉ nhánh cần migration mới sửa, additive-only
-   - `server.py` — KHÔNG sửa (dùng router riêng)
+2. **Chỉ sửa file trong phạm vi SỞ HỮU** — file ngoài scope là READ-ONLY.
 3. **Build + test trước merge:** `python -m pytest -q` + `cd web-nuxt && npm run build`
-4. **Commit message prefix:** `[admincp]`, `[usercp]`, `[public]`
+4. **Commit message prefix:** `[tên-session]`
+5. **Additive-first (§B2):** thêm mới → verify → xoá cũ.
+6. **nuxt.config.ts / server.py** — KHÔNG sửa.
+7. **base.css** — chỉ session `shared-fe` được sửa.
 
 ---
 
-## Branch 1: `dev/admincp` — AdminCP & CMS
+## 10 Session
 
-**Phạm vi file SỞ HỮU (chỉ nhánh này được sửa):**
-- `web-nuxt/pages/admin/**` (trừ `admin/index.vue` dashboard — shared)
-- `web-nuxt/layouts/admin.vue`
-- `web-nuxt/components/CommandPalette.vue`
-- `agent/admin.py` (additive: thêm endpoint, không sửa endpoint hiện tại)
-
-**Công việc từ deep upgrade plan:**
-- [ ] **B2e** Rich summary editor — character counter + markdown preview toggle trong entity editor
-- [ ] **B7b** Bulk relationship add — `POST /admin/relationships/bulk` + textarea UI
-- [ ] **B8c** Contextual help tooltips — CSS-only `?` icons cạnh data quality, moderation status
-
-**Polish thêm (tự audit):**
-- Admin entity editor UX improvements
-- Moderation workflow optimizations
-- Media library filters/sort
-- Dashboard widget improvements
+| # | Branch | Worktree | Scope |
+|---|--------|----------|-------|
+| 1 | `dev/public-front` | `C:/Code/vl360-public-front` | Homepage + catalog + static pages |
+| 2 | `dev/public-detail` | `C:/Code/vl360-public-detail` | Entity detail + ward/area + directory |
+| 3 | `dev/interactive` | `C:/Code/vl360-interactive` | Map + search + itinerary + chat |
+| 4 | `dev/admincp` | `C:/Code/vl360-admincp` | Admin CMS |
+| 5 | `dev/usercp` | `C:/Code/vl360-usercp` | User profile + community + notifications |
+| 6 | `dev/backend-security` | `C:/Code/vl360-backend-sec` | Auth/moderation hardening |
+| 7 | `dev/backend-resilience` | `C:/Code/vl360-backend-res` | LLM pipeline resilience |
+| 8 | `dev/data-seo` | `C:/Code/vl360-data-seo` | SEO + data validation scripts |
+| 9 | `dev/shared-fe` | `C:/Code/vl360-shared-fe` | Shared FE: layouts, composables, CSS, components |
+| 10 | `dev/backend-infra` | `C:/Code/vl360-backend-infra` | Backend core + scripts + legacy cleanup |
 
 ---
 
-## Branch 2: `dev/usercp` — User System & Cộng đồng
+## Merge order
 
-**Phạm vi file SỞ HỮU:**
-- `web-nuxt/pages/cai-dat.vue`
-- `web-nuxt/pages/cong-dong.vue`
-- `web-nuxt/pages/nguoi-dung/[id].vue`
-- `web-nuxt/pages/bai-viet/[id].vue`
-- `web-nuxt/pages/thong-bao.vue`
-- `web-nuxt/components/PostCard.vue`
-- `web-nuxt/components/NotificationBell.vue`
-- `web-nuxt/components/AuthModal.vue`
-- `web-nuxt/composables/useNotifications.ts`
-- `agent/social.py`, `agent/auth.py`, `agent/notifications.py` (additive)
-
-**Công việc từ deep upgrade plan:**
-- [ ] **A2d** Notification preferences — migration table + toggle switches per type (like/comment/mention/follow) + gate trong `create_notification`
-
-**Polish thêm (tự audit):**
-- Profile page UX improvements
-- Community feed performance
-- Settings page completeness
-- Notification UX polish
-- Comment/reply interaction improvements
+1. `dev/data-seo` → main
+2. `dev/backend-infra` → main
+3. `dev/backend-security` → main
+4. `dev/backend-resilience` → main
+5. `dev/shared-fe` → main
+6. `dev/public-front` → main
+7. `dev/public-detail` → main
+8. `dev/interactive` → main
+9. `dev/usercp` → main
+10. `dev/admincp` → main
 
 ---
 
-## Branch 3: `dev/public-pages` — Trang công khai & SEO
+## Cách mở session
 
-**Phạm vi file SỞ HỮU:**
-- `web-nuxt/pages/index.vue`
-- `web-nuxt/pages/dia-diem/[id].vue`
-- `web-nuxt/pages/du-lich.vue`
-- `web-nuxt/pages/san-pham.vue`
-- `web-nuxt/pages/ocop.vue`
-- `web-nuxt/pages/le-hoi.vue`, `su-kien.vue`
-- `web-nuxt/pages/ban-do.vue`
-- `web-nuxt/pages/lich-trinh/**`
-- `web-nuxt/pages/tao-lich-trinh.vue`
-- `web-nuxt/pages/theo-mua.vue`
-- `web-nuxt/pages/kham-pha/**`
-- `web-nuxt/pages/xa-phuong/[id].vue`, `khu-vuc/[area].vue`
-- `web-nuxt/pages/danh-ba.vue`, `tuyen-duong.vue`, `luu-tru.vue`
-- `web-nuxt/pages/tim-kiem.vue`
-- `web-nuxt/components/EntityCard.vue`
-- `web-nuxt/components/KnowBeforeYouGo.vue`
-- `agent/public_api.py`, `agent/seo.py` (additive)
+Trong Claude Desktop: mở terminal tại thư mục worktree rồi chạy `claude`.
 
-**Công việc:**
-- Catalog page UX polish (du-lich, san-pham, ocop)
-- Entity detail page improvements
-- Homepage optimization
-- SEO: JSON-LD enrichment, og:image improvements
-- Search page UX
-- Map page improvements
-- Itinerary pages polish
-
----
-
-## Branch 4: `dev/data-quality` — Dữ liệu & Validation
-
-**Phạm vi file SỞ HỮU:**
-- `scripts/*.py` (trừ `backup_data.py` — chạy nhưng không sửa)
-- `agent/tests/test_database.py`, `agent/tests/test_knowledge.py` (thêm test)
-- `web/data.json` (chỉ qua script, KHÔNG sửa tay)
-
-**Công việc:**
-- [ ] P1-16: Thêm check vào `validate_data.py` (self-loop, dangling itinerary-stop, produced_in target-type, place level=None)
-- [ ] Audit 38 entity mis-type (từ ke-hoach-hoan-thien) → viết script fix
-- [ ] Audit 9 entity duplicate → viết script dedup
-- [ ] Cải thiện entity descriptions (summary quá ngắn/thiếu)
-- [ ] Viết test mới cho database.py / knowledge.py edge cases
-
-**QUAN TRỌNG:**
-- **§B1** Chạy `python scripts/backup_data.py` TRƯỚC MỌI thao tác data
-- **§B7** KHÔNG chạy lệnh phá dữ liệu — viết script dry-run trước, xác nhận rồi mới apply
-- KHÔNG bịa dữ liệu — chỉ sửa lỗi cấu trúc/type/duplicate có bằng chứng
-
----
-
-## Branch 5: `dev/backend-perf` — Backend Performance & Resilience
-
-**Phạm vi file SỞ HỮU:**
-- `agent/knowledge.py`, `agent/contextual_retrieval.py`
-- `agent/orchestrator.py`, `agent/tools/*.py`
-- `agent/guardrails.py`, `agent/middleware.py`
-- `agent/llm_judge.py`, `agent/image_recognition.py`
-- `agent/tests/*.py` (thêm test mới, không sửa test hiện tại)
-
-**Công việc:**
-- [ ] P1-2: Thêm timeout cho LLM calls (judge, vision, scheduler, rerank)
-- [ ] P2-11: Sửa `except: pass` nuốt lỗi → log warning
-- [ ] EH-01/02: generate_followups + json.loads guard (timeout/fallback)
-- [ ] Mở rộng test coverage cho orchestrator error paths
-- [ ] Search quality improvements (knowledge.py)
-
-**KHÔNG SỬA:** `server.py` (router chính), `database.py`, `admin.py`, `social.py`, `auth.py`, FE files.
-
----
-
-## Merge order (recommended)
-
-1. `dev/data-quality` → main (scripts only, không chạm FE/BE code)
-2. `dev/backend-perf` → main (backend only)
-3. `dev/public-pages` → main (FE public pages)
-4. `dev/usercp` → main (FE user + BE social/auth)
-5. `dev/admincp` → main (FE admin + BE admin)
-
-Nếu conflict: resolve bằng cách giữ CẢ HAI thay đổi (additive-first §B2).
-
----
-
-## Cách mở session mới
-
-```bash
-# Session 1 (AdminCP)
-git checkout dev/admincp
-
-# Session 2 (UserCP)
-git checkout dev/usercp
-
-# Session 3 (Public pages)
-git checkout dev/public-pages
-
-# Session 4 (Data quality)
-git checkout dev/data-quality
-
-# Session 5 (Backend perf)
-git checkout dev/backend-perf
-```
-
-Paste handoff prompt tương ứng (bên dưới) vào session mới.
+Paste handoff prompt tương ứng (`docs/handoff-*.md`) làm message đầu tiên.

@@ -1,65 +1,56 @@
-# Handoff: Session AdminCP (`dev/admincp`)
+# Session 4: AdminCP — Admin CMS
 
-> Paste toàn bộ nội dung này làm message đầu tiên trong session Claude Code mới.
-
----
+> Paste toàn bộ nội dung này làm message đầu tiên.
 
 ## Bối cảnh
 
-Bạn đang làm trên nhánh `dev/admincp` của dự án vinhlong360 — MXH du lịch/OCOP cho Vĩnh Long (3 tỉnh sáp nhập). Solo dev, Nuxt 4 SSR + FastAPI. **Đọc `CLAUDE.md` và `docs/PARALLEL-BRANCHES.md` trước khi bắt đầu.**
+Worktree `C:/Code/vl360-admincp`, nhánh `dev/admincp`. Dự án vinhlong360. **Đọc `CLAUDE.md` + `docs/PARALLEL-BRANCHES.md`.**
 
-## Nhánh hiện tại
+## Phạm vi file SỞ HỮU
 
-```bash
-git checkout dev/admincp
-```
+**Pages:**
+- `web-nuxt/pages/admin/index.vue` — Dashboard
+- `web-nuxt/pages/admin/entities.vue` — Entity CRUD
+- `web-nuxt/pages/admin/kiem-duyet.vue` — Moderation
+- `web-nuxt/pages/admin/duyet-anh.vue` — Image review
+- `web-nuxt/pages/admin/data-quality.vue` — Data quality
+- `web-nuxt/pages/admin/thong-ke.vue` — Analytics
+- `web-nuxt/pages/admin/users.vue` — User management
+- `web-nuxt/pages/admin/nhat-ky.vue` — Audit log
+- `web-nuxt/pages/admin/media.vue` — Media library
+- `web-nuxt/pages/admin/ai.vue` — AI tools
+- `web-nuxt/pages/admin/bao-cao.vue`, `lich-trinh.vue`, `danh-ba.vue`, `chua-phan-loai.vue`, `duyet-tu-hoc.vue`
+- `web-nuxt/pages/admin/cai-dat/**` — Admin settings (CMS)
 
-## Phạm vi file bạn SỞ HỮU (chỉ sửa các file này)
-
-- `web-nuxt/pages/admin/**` (trừ `admin/index.vue` — shared)
+**Components + Layout:**
 - `web-nuxt/layouts/admin.vue`
 - `web-nuxt/components/CommandPalette.vue`
-- `agent/admin.py` (chỉ thêm endpoint mới, không sửa hiện tại)
+- `web-nuxt/components/admin/**`
 
-**KHÔNG SỬA:** `base.css`, `nuxt.config.ts`, `database.py`, `server.py`, bất kỳ file nào ngoài phạm vi trên.
+**Backend (additive only):**
+- `agent/admin.py`
+
+**KHÔNG SỬA:** base.css, default.vue layout, user pages, public pages, server.py.
 
 ## Công việc
 
-### Từ deep upgrade plan (ưu tiên cao):
+### Deep upgrade (còn lại):
+- [ ] **B7b** Bulk relationship add — `POST /admin/relationships/bulk` + textarea UI
 
-1. **B2e — Rich summary editor** trong entity editor (`admin/entities.vue`):
-   - Character counter cho textarea summary (hiển thị `{count}/500`)
-   - Toggle button markdown preview (render summary thành HTML xem trước)
-   - Giữ textarea hiện tại, chỉ thêm counter + preview toggle
+### Audit 10 tầng admin pages:
+- T1: CRUD hoạt động, form validate, error handling
+- T3: Batch operations, keyboard shortcuts
+- T4: Focus trap modals, ARIA labels, form a11y
+- T8: Error states cho API calls, loading spinners
+- T9: Responsive sidebar collapse, table scroll
 
-2. **B7b — Bulk relationship add** (`admin/entities.vue` hoặc panel mới):
-   - Backend: `POST /admin-api/relationships/bulk` nhận `{source_id, targets: [{target_id, rel_type}]}`
-   - Frontend: textarea cho admin paste nhiều entity ID + chọn loại quan hệ → tạo hàng loạt
-   - Validate: entity tồn tại, không duplicate, không self-loop
-
-3. **B8c — Contextual help tooltips**:
-   - CSS-only `?` icon (`.help-tip`) cạnh các thuật ngữ admin khó hiểu
-   - Áp dụng cho: data quality buckets, moderation status, entity completeness score
-   - Tooltip hiện bằng `:hover` / `:focus`, không cần JS
-
-### Tự audit thêm:
-- Mở từng trang admin, tìm UX pain point
-- Cải thiện entity editor workflow
-- Media library: thêm sort/filter nếu thiếu
-- Moderation: keyboard shortcuts nếu chưa có
-- Dashboard: cải thiện visual hierarchy
+**Đã xong:** B2e, B8c, B2a, B1d, B2c, B3d, B4a/B4b, B1f.
 
 ## Verify
 
 ```bash
-python -m pytest -q                    # backend xanh
-cd web-nuxt && npm run build           # FE build OK
+python -m pytest -q
+cd web-nuxt && npm run build
 ```
 
-## Commit convention
-
-```
-[admincp] mô tả ngắn
-
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
-```
+## Commit prefix: `[admincp]`
