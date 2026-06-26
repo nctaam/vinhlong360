@@ -15,12 +15,15 @@ Kiến trúc:
 """
 
 import json
+import logging
 import math
 import re
 import time
 from collections import Counter
 from pathlib import Path
 from threading import Lock
+
+logger = logging.getLogger(__name__)
 
 # ── Config ──
 
@@ -44,7 +47,7 @@ STOP_WORDS = {
 #  VIETNAMESE TEXT PROCESSING
 # ══════════════════════════════════════════════════
 
-def _normalize_vietnamese(text: str) -> str:
+def normalize_vietnamese(text: str) -> str:
     """Normalize Vietnamese text for tokenization."""
     text = text.lower().strip()
     # Remove special chars but keep Vietnamese diacritics
@@ -52,13 +55,15 @@ def _normalize_vietnamese(text: str) -> str:
     text = re.sub(r'\s+', ' ', text)
     return text
 
+_normalize_vietnamese = normalize_vietnamese
 
-def _tokenize(text: str) -> list[str]:
+
+def tokenize(text: str) -> list[str]:
     """
     Tokenize Vietnamese text into unigrams + bigrams.
     Bigrams help capture compound words (e.g., 'cù lao', 'bún nước').
     """
-    text = _normalize_vietnamese(text)
+    text = normalize_vietnamese(text)
     words = [w for w in text.split() if w not in STOP_WORDS and len(w) > 1]
 
     # Unigrams
@@ -69,6 +74,8 @@ def _tokenize(text: str) -> list[str]:
         tokens.append(f"{words[i]}_{words[i+1]}")
 
     return tokens
+
+_tokenize = tokenize
 
 
 # ══════════════════════════════════════════════════
@@ -131,7 +138,7 @@ class TFIDFStore:
                 # Định dạng cũ (dense "tfidf") → KHÔNG nạp (tránh phình RAM 208MB);
                 # để build_index() dựng lại dạng sparse ở lần build kế tiếp.
         except Exception:
-            pass
+            logger.warning("Failed to load embeddings from %s", EMBEDDINGS_FILE, exc_info=True)
         self._loaded = True
 
     def _save(self):
@@ -147,12 +154,14 @@ class TFIDFStore:
                 "vectors": self._vectors,
                 "texts": self._texts,
             }
-            EMBEDDINGS_FILE.write_text(
+            tmp = EMBEDDINGS_FILE.with_suffix(".tmp")
+            tmp.write_text(
                 json.dumps(data, ensure_ascii=False),
                 encoding="utf-8"
             )
+            tmp.replace(EMBEDDINGS_FILE)
         except Exception:
-            pass
+            logger.error("Failed to save embeddings to %s", EMBEDDINGS_FILE, exc_info=True)
 
     def build_index(self, entities: dict, force: bool = False):
         """
@@ -190,7 +199,7 @@ class TFIDFStore:
             # Step 1: Tokenize all documents
             doc_tokens: dict[str, list[str]] = {}
             for eid, text in docs.items():
-                doc_tokens[eid] = _tokenize(text)
+                doc_tokens[eid] = tokenize(text)
 
             # Step 2: Compute IDF (Inverse Document Frequency)
             N = len(docs)
@@ -240,7 +249,7 @@ class TFIDFStore:
         if not self._idf:
             return None
 
-        tokens = _tokenize(query)
+        tokens = tokenize(query)
         if not tokens:
             return None
 
@@ -384,7 +393,7 @@ def hybrid_search(
                 if e:
                     merged.append(e)
             except Exception:
-                pass
+                logger.debug("Could not fetch entity %s from knowledge", eid, exc_info=True)
 
     return merged
 

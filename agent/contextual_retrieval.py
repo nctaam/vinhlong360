@@ -41,10 +41,10 @@ CONTEXTUAL_FILE = DATA_DIR / "contextual_texts.json"
 # ── Reuse Vietnamese tokenizer from vector_search ──
 
 try:
-    from vector_search import _tokenize, _normalize_vietnamese, STOP_WORDS
+    from vector_search import tokenize as _tokenize, normalize_vietnamese as _normalize_vietnamese, STOP_WORDS
 except ImportError:
     try:
-        from agent.vector_search import _tokenize, _normalize_vietnamese, STOP_WORDS
+        from agent.vector_search import tokenize as _tokenize, normalize_vietnamese as _normalize_vietnamese, STOP_WORDS
     except ImportError:
         # Inline fallback so module still works standalone
         STOP_WORDS = {
@@ -106,8 +106,8 @@ class ContextualRetrieval:
             if CONTEXTUAL_FILE.exists():
                 raw = json.loads(CONTEXTUAL_FILE.read_text(encoding="utf-8"))
                 self._cache = raw.get("texts", {})
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("contextual cache load failed: %s", exc, exc_info=True)
         self._loaded = True
 
     def _save_cache(self):
@@ -117,10 +117,12 @@ class ContextualRetrieval:
                 "count": len(self._cache),
                 "texts": self._cache,
             }
-            CONTEXTUAL_FILE.write_text(
+            tmp = CONTEXTUAL_FILE.with_suffix(".tmp")
+            tmp.write_text(
                 json.dumps(data, ensure_ascii=False, indent=2),
                 encoding="utf-8",
             )
+            tmp.replace(CONTEXTUAL_FILE)
         except Exception as exc:
             logger.warning("contextual cache save failed: %s", exc)
 
@@ -383,7 +385,7 @@ class LLMReranker:
         if not api_key or not base_url:
             raise RuntimeError("LLM_API_KEY and LLM_BASE_URL must be set for reranking")
 
-        self._client = OpenAI(api_key=api_key, base_url=base_url)
+        self._client = OpenAI(api_key=api_key, base_url=base_url, timeout=15)
 
     def rerank(
         self, query: str, candidates: list[dict], top_k: int = 5
@@ -616,14 +618,25 @@ def enhanced_hybrid_search(
             merged.append(entity_map[eid])
 
     # ── Optional LLM reranking ──
+    reranked = False
     if rerank and len(merged) > 1:
         try:
             merged = reranker.rerank(query, merged, top_k=top_k)
+            reranked = True
         except Exception as exc:
             logger.warning("Reranking failed, using score-based order: %s", exc)
             merged = merged[:top_k]
     else:
         merged = merged[:top_k]
+
+    # Attach degradation metadata so callers know which signals contributed.
+    for item in merged:
+        item["_search_meta"] = {
+            "has_bm25": has_bm25,
+            "has_semantic": has_semantic,
+            "has_contextual": has_ctx,
+            "reranked": reranked,
+        }
 
     return merged
 
@@ -635,6 +648,17 @@ def enhanced_hybrid_search(
 contextual = ContextualRetrieval()
 bm25 = BM25()
 reranker = LLMReranker()  # lazy, only calls LLM when rerank=True
+
+
+def search_health() -> dict:
+    """Quick readiness probe for the search pipeline."""
+    return {
+        "bm25_ready": bm25._built,
+        "bm25_doc_count": len(bm25._doc_lengths) if bm25._built else 0,
+        "contextual_loaded": contextual._loaded,
+        "contextual_doc_count": len(contextual._cache) if contextual._loaded else 0,
+        "embedding_store_ready": embedding_store is not None,
+    }
 
 
 # =====================================================================

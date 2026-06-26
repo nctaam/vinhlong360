@@ -10,7 +10,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT/"web/data.json"
 APPLY = "--apply" in sys.argv
-d = json.load(open(DATA, encoding="utf-8"))
+with open(DATA, encoding="utf-8") as f:
+    d = json.load(f)
 ents = d["entities"]; byid = {e["id"]: e for e in ents}
 wards = {e["id"]: e for e in ents if e.get("type")=="place" and e.get("level") in ("xa","phuong")}
 ward_centroid = {wid: tuple(w["coordinates"]) for wid,w in wards.items() if w.get("coordinates")}
@@ -23,7 +24,7 @@ def A(e):
     a=e.get("attributes")
     if isinstance(a,str):
         try:a=json.loads(a)
-        except:a={}
+        except (ValueError, json.JSONDecodeError): a = {}
     return a if isinstance(a,dict) else {}
 
 realign=[]; nulled=[]; flagged_only=0

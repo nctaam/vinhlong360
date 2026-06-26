@@ -1,7 +1,7 @@
 <template>
   <slot v-if="!error" />
-  <div v-else class="error-boundary">
-    <div class="error-boundary-inner">
+  <div v-else class="error-boundary" role="alert">
+    <div ref="errorRef" class="error-boundary-inner" tabindex="-1">
       <span class="error-boundary-icon" aria-hidden="true">⚠️</span>
       <p class="error-boundary-msg">{{ message }}</p>
       <button v-if="retryable" class="error-boundary-retry" @click="retry">Thử lại</button>
@@ -23,7 +23,12 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{ retry: [] }>()
 
 const error = ref<Error | null>(null)
+const errorRef = ref<HTMLElement | null>(null)
 const message = computed(() => props.fallbackMessage)
+
+watch(error, (err) => {
+  if (err) nextTick(() => errorRef.value?.focus())
+})
 
 onErrorCaptured((err: Error) => {
   error.value = err
@@ -80,4 +85,9 @@ defineExpose({ error, retry })
   background: var(--bg-warm, #eee);
 }
 .error-boundary-retry:active { transform: scale(.96); transition-duration: .08s; }
+.error-boundary-retry:focus-visible { outline: 2px solid var(--primary, #9C3D22); outline-offset: 2px; }
+@media (forced-colors: active) {
+  .error-boundary-inner { border: 1px solid CanvasText; }
+  .error-boundary-retry { border: 1px solid ButtonText; }
+}
 </style>

@@ -19,12 +19,15 @@ Usage:
 
 import hashlib
 import json
+import logging
 import math
 import os
 import sys
 import time
 from pathlib import Path
 from threading import Lock
+
+logger = logging.getLogger(__name__)
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 if hasattr(sys.stdout, "reconfigure") and sys.stdout.encoding != "utf-8":
@@ -235,6 +238,7 @@ class ABTestManager:
         Raises:
             KeyError: If experiment does not exist.
         """
+        _ensure_defaults()
         with self._lock:
             exp = self._get_experiment(experiment_name)
 
@@ -275,10 +279,14 @@ class ABTestManager:
         Raises:
             KeyError: If experiment does not exist.
         """
+        _ensure_defaults()
         with self._lock:
             self._get_experiment(experiment_name)  # validate existence
             bucket = self._outcomes.setdefault(experiment_name, {})
-            bucket.setdefault(user_id, []).append(float(metric_value))
+            values = bucket.setdefault(user_id, [])
+            values.append(float(metric_value))
+            if len(values) > 100:
+                bucket[user_id] = values[-100:]
             self._save()
 
     def get_results(self, experiment_name: str) -> dict:
@@ -303,6 +311,7 @@ class ABTestManager:
         Raises:
             KeyError: If experiment does not exist.
         """
+        _ensure_defaults()
         with self._lock:
             exp = self._get_experiment(experiment_name)
             assignments = self._assignments.get(experiment_name, {})
@@ -342,6 +351,7 @@ class ABTestManager:
         Raises:
             KeyError: If experiment does not exist.
         """
+        _ensure_defaults()
         with self._lock:
             exp = self._get_experiment(experiment_name)
             assignments = self._assignments.get(experiment_name, {})
@@ -382,6 +392,7 @@ class ABTestManager:
         Returns:
             List of dicts with name, metric_name, active, description, variant_count.
         """
+        _ensure_defaults()
         with self._lock:
             results = []
             for exp in self._experiments.values():
@@ -622,11 +633,21 @@ def create_default_experiments(manager: ABTestManager):
 
 
 # ---------------------------------------------------------------------------
-# Module-level singleton
+# Module-level singleton (defaults loaded lazily on first use)
 # ---------------------------------------------------------------------------
 
 ab_manager = ABTestManager()
-create_default_experiments(ab_manager)
+
+_defaults_initialized = False
+
+
+def _ensure_defaults():
+    """Load default experiments on first public use, not at import time."""
+    global _defaults_initialized
+    if _defaults_initialized:
+        return
+    _defaults_initialized = True
+    create_default_experiments(ab_manager)
 
 
 # ---------------------------------------------------------------------------

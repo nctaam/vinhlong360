@@ -33,7 +33,9 @@ def geocode(q):
     except Exception as ex:
         return ("ERR", str(ex)[:40])
 
-d=json.load(open(DATA,encoding="utf-8")); ents=d["entities"]; byid={e["id"]:e for e in ents}
+with open(DATA, encoding="utf-8") as f:
+    d = json.load(f)
+ents=d["entities"]; byid={e["id"]:e for e in ents}
 wards={e["id"]:e for e in ents if e.get("type")=="place" and e.get("level") in ("xa","phuong")}
 cand=[]
 for e in ents:

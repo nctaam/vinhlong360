@@ -5,12 +5,15 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import logging
 import shutil
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
+
+logger = logging.getLogger(__name__)
 
 from database import db
 
@@ -204,13 +207,17 @@ def _write_data_files(data: dict[str, Any]) -> str:
     return str(backup)
 
 def _write_data_without_backup(data: dict[str, Any]) -> None:
-    DATA_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+    tmp = DATA_PATH.with_suffix(".tmp")
+    tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+    tmp.replace(DATA_PATH)
 
     spec = importlib.util.spec_from_file_location("normalize_data", ROOT / "scripts" / "normalize_data.py")
     if spec and spec.loader:
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)  # type: ignore[union-attr]
-        DATA_JS_PATH.write_text(module.render_data_js(data), encoding="utf-8", newline="\n")
+        tmp_js = DATA_JS_PATH.with_suffix(".tmp")
+        tmp_js.write_text(module.render_data_js(data), encoding="utf-8", newline="\n")
+        tmp_js.replace(DATA_JS_PATH)
 
 def _apply_history_path(output_dir: Path | None = None) -> Path:
     output_dir = output_dir or BURST_DIR

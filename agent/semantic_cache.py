@@ -24,10 +24,10 @@ logger = logging.getLogger(__name__)
 
 # ── Try importing tokenizer from vector_search ──
 try:
-    from agent.vector_search import _tokenize, _normalize_vietnamese
+    from agent.vector_search import tokenize as _tokenize, normalize_vietnamese as _normalize_vietnamese
 except ImportError:
     try:
-        from vector_search import _tokenize, _normalize_vietnamese
+        from vector_search import tokenize as _tokenize, normalize_vietnamese as _normalize_vietnamese
     except ImportError:
         logger.info("vector_search not available — using simple tokenizer fallback")
 
@@ -224,10 +224,12 @@ class MultiTierCache:
 
     def _save_l2(self):
         try:
-            ENTRIES_FILE.write_text(
+            tmp = ENTRIES_FILE.with_suffix(".tmp")
+            tmp.write_text(
                 json.dumps(dict(self._l2), ensure_ascii=False),
                 encoding="utf-8",
             )
+            tmp.replace(ENTRIES_FILE)
         except Exception as exc:
             logger.warning("Failed to save L2 cache: %s", exc)
 
@@ -397,8 +399,10 @@ class RequestDeduplicator:
         # dedup_key -> {query, timestamp, event: Event, result: dict|None}
         self._pending: dict[str, dict] = {}
 
+    _MAX_PENDING = 500
+
     def _cleanup(self):
-        """Remove stale entries older than _EXPIRY seconds."""
+        """Remove stale entries older than _EXPIRY seconds + enforce size cap."""
         now = time.time()
         stale = [
             k for k, v in self._pending.items()
@@ -406,6 +410,9 @@ class RequestDeduplicator:
         ]
         for k in stale:
             self._pending.pop(k, None)
+        while len(self._pending) > self._MAX_PENDING:
+            oldest = min(self._pending, key=lambda k: self._pending[k]["timestamp"])
+            self._pending.pop(oldest, None)
 
     def acquire(self, query: str, timeout: float = 5.0) -> tuple[bool, str]:
         """

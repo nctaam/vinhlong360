@@ -59,7 +59,8 @@ def clean_address(addr: str) -> str:
 
 
 def main():
-    data = json.load(open(DATA_PATH, "r", encoding="utf-8"))
+    with open(DATA_PATH, "r", encoding="utf-8") as f:
+        data = json.load(f)
     entities = data["entities"]
 
     missing = []

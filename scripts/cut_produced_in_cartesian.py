@@ -13,7 +13,8 @@ ROOT=Path(__file__).resolve().parent.parent
 DATA=ROOT/"web/data.json"
 APPLY="--apply" in sys.argv
 THRESH=6
-d=json.load(open(DATA,encoding="utf-8"))
+with open(DATA,encoding="utf-8") as f:
+    d=json.load(f)
 byid={e["id"]:e for e in d["entities"]}
 rels=d["relationships"]
 pin=[r for r in rels if r.get("type")=="produced_in"]

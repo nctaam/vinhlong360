@@ -91,11 +91,13 @@ def merge_enriched_into_current(enriched_path: str):
     shutil.copy2(DATA_FILE, backup_path)
     print(f"Backup: {backup_path}")
 
-    # Write merged
-    DATA_FILE.write_text(
+    # Write merged (atomic: tmp + replace)
+    tmp = DATA_FILE.with_suffix(".tmp")
+    tmp.write_text(
         json.dumps(result, ensure_ascii=False, indent=2),
         encoding="utf-8"
     )
+    tmp.replace(DATA_FILE)
 
     # Verify
     verify = json.loads(DATA_FILE.read_text(encoding="utf-8"))

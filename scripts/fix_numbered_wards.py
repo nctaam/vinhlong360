@@ -10,7 +10,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT/"web/data.json"
 APPLY = "--apply" in sys.argv
-d = json.load(open(DATA, encoding="utf-8"))
+with open(DATA, encoding="utf-8") as f:
+    d = json.load(f)
 ents = d["entities"]; byid = {e["id"]: e for e in ents}
 
 XW = {  # (area, phường-số) -> ward_id  [verbatim NQ1687, verified 2x]
@@ -33,7 +34,7 @@ def A(e):
     a=e.get("attributes")
     if isinstance(a,str):
         try:a=json.loads(a)
-        except:a={}
+        except (ValueError, json.JSONDecodeError): a = {}
     return a if isinstance(a,dict) else {}
 
 fixed=[]; skip_nocity=[]; skip_nomap=[]

@@ -10,9 +10,12 @@ Old snapshots are pruned (keep last N). All writes are atomic.
 """
 
 import json
+import logging
 import shutil
 import sys
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 AGENT_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = AGENT_DIR.parent
@@ -28,7 +31,8 @@ def _load_manifest() -> list:
     if MANIFEST.exists():
         try:
             return json.loads(MANIFEST.read_text(encoding="utf-8"))
-        except Exception:
+        except Exception as exc:
+            logger.warning("Failed to load snapshot manifest: %s", exc)
             return []
     return []
 
@@ -43,7 +47,8 @@ def _entity_count(path: Path) -> int:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
         return len(data.get("entities", []))
-    except Exception:
+    except Exception as exc:
+        logger.debug("Failed to count entities in %s: %s", path, exc)
         return -1
 
 
@@ -78,8 +83,8 @@ def snapshot(reason: str, snapshot_id: str | None = None) -> dict | None:
             try:
                 if old_path.exists():
                     old_path.unlink()
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.warning("Failed to prune snapshot %s: %s", old_path, exc)
         entries = entries[-KEEP_SNAPSHOTS:]
 
     _save_manifest(entries)

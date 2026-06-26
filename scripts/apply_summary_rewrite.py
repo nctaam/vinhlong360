@@ -17,7 +17,8 @@ OBJ = re.compile(r'"id"\s*:\s*"([^"]+)"\s*,\s*"new_summary"\s*:\s*"(.*?)"\s*,\s*
 def load_out(f):
     txt = open(f, encoding="utf-8").read()
     try:
-        return json.load(open(f, encoding="utf-8"))
+        with open(f, encoding="utf-8") as fh:
+            return json.load(fh)
     except Exception:  # agent quên escape " bên trong → cứu bằng regex (verify-det vẫn chặn cuối)
         out=[]
         for m in OBJ.finditer(txt):
@@ -33,12 +34,15 @@ for f in sorted(glob.glob(str(ROOT/"scratch/rw_out/out_*.json"))):
 vf = {}
 for f in sorted(glob.glob(str(ROOT/"scratch/rw_verify/v_*.json"))):
     try:
-        for it in json.load(open(f, encoding="utf-8")):
+        with open(f, encoding="utf-8") as fh:
+            items = json.load(fh)
+        for it in items:
             vf[it["id"]] = it
     except Exception:
         pass
 
-d = json.load(open(DATA, encoding="utf-8"))
+with open(DATA, encoding="utf-8") as f:
+    d = json.load(f)
 byid = {e["id"]: e for e in d["entities"]}
 
 HUYEN_NEW = re.compile(r"\bhuyện\s+(?!lộ\b|lô\b|lo\b)[A-ZĐ]")

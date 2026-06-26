@@ -23,7 +23,8 @@ sys.argv = _argv
 norm, OLD2NEW, NUMBERED, ward_idx, ward_by_name = mig.norm, mig.OLD2NEW, mig.NUMBERED, mig.ward_idx, mig.ward_by_name
 COMMUNE, CITY, attrs = mig.COMMUNE, mig.CITY, mig.attrs
 
-d = json.load(open(DATA, encoding="utf-8"))
+with open(DATA, encoding="utf-8") as f:
+    d = json.load(f)
 ents = d["entities"]; byid = {e["id"]: e for e in ents}
 ward_ids = {w["id"] for w in mig.wards}
 place_ids = mig.place_ids

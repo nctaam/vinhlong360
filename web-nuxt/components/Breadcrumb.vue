@@ -48,4 +48,8 @@ if (props.jsonLd) {
 .breadcrumb a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .breadcrumb span { color: var(--muted); max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (prefers-reduced-motion: reduce) { .breadcrumb { animation: none; } }
+@media (forced-colors: active) {
+  .breadcrumb a { color: LinkText; }
+  .breadcrumb li + li::before { color: GrayText; }
+}
 </style>

@@ -27,7 +27,9 @@ MERGE = {
     # đợt 4 — cùng 1 đình Long Thanh (Long Thanh Miếu Vũ) P5 Vĩnh Long; bản đủ là -long-thanh-vo-mieu
     "dinh-long-thanh": "dinh-long-thanh-long-thanh-vo-mieu",   # rỗng → di tích QG 1991
 }
-d=json.load(open(DATA,encoding="utf-8")); ents=d["entities"]; byid={e["id"]:e for e in ents}
+with open(DATA,encoding="utf-8") as f:
+    d=json.load(f)
+ents=d["entities"]; byid={e["id"]:e for e in ents}
 # 1. gộp field từ dup vào canonical (giữ canonical, lấy summary DÀI hơn, fill thiếu)
 for dup,can in MERGE.items():
     if dup not in byid or can not in byid:

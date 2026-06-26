@@ -401,8 +401,8 @@ if (import.meta.client) {
 .ac-empty-all:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-sm); }
 
 /* ── Dark mode for new sections ────────────────────────────────────────────*/
-:global(.dark) .ac-chip { background: rgba(255, 255, 255, .05); border-color: rgba(255, 255, 255, .1); }
-:global(.dark) .ac-chip:hover { background: rgba(255, 255, 255, .08); border-color: rgba(255, 255, 255, .2); }
+:global(.dark) .ac-chip { background: var(--glass-subtle); border-color: var(--glass-border); }
+:global(.dark) .ac-chip:hover { background: var(--overlay-light); border-color: rgba(255, 255, 255, .2); }
 :global(.dark) .ac-empty-title { color: rgba(255, 255, 255, .9); }
 
 /* ── Reduced motion ────────────────────────────────────────────────────────*/
@@ -411,5 +411,11 @@ if (import.meta.client) {
   .ac-loading { animation: none; }
   .ac-chip:hover { transform: none; }
   .ac-chip:active { transform: none; }
+}
+@media (forced-colors: active) {
+  .ac-dropdown { border: 1px solid CanvasText; background: Canvas; }
+  .ac-item.highlighted { border-left-color: Highlight; }
+  .ac-chip { border: 1px solid ButtonText; }
+  .ac-remove-recent { border: 1px solid GrayText; }
 }
 </style>
