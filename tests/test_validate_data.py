@@ -1472,3 +1472,184 @@ def test_known_rel_types_constant() -> None:
     """KNOWN_REL_TYPES should include all hierarchical types."""
     for t in validate_data.HIERARCHICAL_REL_TYPES:
         assert t in validate_data.KNOWN_REL_TYPES
+
+
+# ── Entity ID format (DI-024) ────────────────────────────────────────
+
+
+def test_validate_flags_entity_id_with_spaces(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "has space", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["invalid_entity_ids"] == 1
+    assert "invalid_entity_ids" in {issue.code for issue in issues}
+
+
+def test_validate_flags_entity_id_with_control_chars(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "tab\there", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["invalid_entity_ids"] == 1
+
+
+def test_validate_flags_entity_id_too_long(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "x" * 201, "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["invalid_entity_ids"] == 1
+
+
+def test_validate_valid_entity_id_not_flagged(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "cam-sanh-vinh-long", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["invalid_entity_ids"] == 0
+
+
+# ── produced_in source type (DI-025) ─────────────────────────────────
+
+
+def test_validate_flags_produced_in_source_type_error(tmp_path: Path) -> None:
+    """produced_in source should be product/dish/drink/craft_village."""
+    data = {
+        "entities": [
+            {"id": "att-src", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long",
+             "coordinates": [10.25, 106.0]},
+            {"id": "place-dst", "type": "place", "name": "P", "summary": "P", "area": "vinh-long",
+             "coordinates": [10.26, 106.01]},
+        ],
+        "relationships": [
+            {"from": "att-src", "to": "place-dst", "type": "produced_in"},
+        ],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["produced_in_source_type_errors"] == 1
+    assert "produced_in_source_type" in {issue.code for issue in issues}
+
+
+def test_validate_produced_in_source_product_ok(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "prod-src", "type": "product", "name": "P", "summary": "P", "area": "vinh-long",
+             "coordinates": [10.25, 106.0]},
+            {"id": "place-dst", "type": "place", "name": "PL", "summary": "PL", "area": "vinh-long",
+             "coordinates": [10.26, 106.01]},
+        ],
+        "relationships": [
+            {"from": "prod-src", "to": "place-dst", "type": "produced_in"},
+        ],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["produced_in_source_type_errors"] == 0
+
+
+# ── Confidence distribution ──────────────────────────────────────────
+
+
+def test_validate_confidence_distribution(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long",
+             "confidence": 0.3},
+            {"id": "b", "type": "dish", "name": "B", "summary": "B", "area": "vinh-long",
+             "confidence": 0.7},
+            {"id": "c", "type": "product", "name": "C", "summary": "C", "area": "vinh-long",
+             "confidence": 0.9},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    cd = stats["confidence_distribution"]
+    assert cd["min"] == 0.3
+    assert cd["max"] == 0.9
+    assert cd["median"] == 0.7
+    assert cd["count"] == 3
+
+
+def test_validate_confidence_distribution_even_count(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "confidence": 0.4},
+            {"id": "b", "type": "dish", "name": "B", "summary": "B", "confidence": 0.8},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    cd = stats["confidence_distribution"]
+    assert cd["median"] == 0.6
+
+
+def test_validate_no_confidence_distribution_without_values(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert "confidence_distribution" not in stats
+
+
+# ── print_report with all new keys ───────────────────────────────────
+
+
+def test_print_report_includes_new_keys(tmp_path: Path, capsys: "pytest.CaptureFixture[str]") -> None:
+    import pytest  # noqa: F811
+    data = {
+        "entities": [
+            {"id": "a", "type": "restaurant", "name": "A", "summary": "A test restaurant",
+             "area": "vinh-long", "coordinates": [10.25, 106.0],
+             "attributes": {"specialty": "Hải sản"}, "confidence": 0.8},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+    validate_data.print_report(issues, stats)
+    out = capsys.readouterr().out
+    assert "invalid_website_urls" in out
+    assert "orphan_entities" in out
+    assert "Confidence distribution" in out

@@ -286,6 +286,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     invalid_source_urls = 0
     invalid_phone_format = 0
     invalid_website_urls = 0
+    invalid_entity_ids = 0
 
     for index, entity in enumerate(entities):
         if not isinstance(entity, dict):
@@ -296,6 +297,9 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
             missing_id += 1
         else:
             ids.append(str(entity_id))
+            eid_str = str(entity_id)
+            if " " in eid_str or len(eid_str) > 200 or any(ord(c) < 32 for c in eid_str):
+                invalid_entity_ids += 1
         if not entity.get("name"):
             missing_name += 1
         if not entity.get("type"):
@@ -513,6 +517,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     area_place_conflicts = 0
     produced_in_area_conflicts = 0
     produced_in_target_type_errors = 0  # produced_in should target place or craft_village
+    produced_in_source_type_errors = 0  # produced_in source should be product/dish/drink
     far_near_relationships = 0
     near_missing_location = 0
     self_loop_relationships = 0  # DI-005: rel có source==target
@@ -584,13 +589,16 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
                 far_near_relationships += 1
         elif kind == "produced_in":
             dst_entity = entity_by_id.get(dst)
-            # produced_in should target place or craft_village (a product is produced
-            # in a location or workshop). Targeting another product is wrong.
+            src_entity = entity_by_id.get(src)
             if isinstance(dst_entity, dict) and dst_entity.get("type") not in (
                 "place", "craft_village", None
             ):
                 produced_in_target_type_errors += 1
-            src_area = effective_area(entity_by_id.get(src))
+            if isinstance(src_entity, dict) and src_entity.get("type") not in (
+                "product", "dish", "drink", "craft_village", None
+            ):
+                produced_in_source_type_errors += 1
+            src_area = effective_area(src_entity)
             dst_area = effective_area(dst_entity)
             if src_area and dst_area and src_area != dst_area:
                 produced_in_area_conflicts += 1
@@ -612,6 +620,8 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         issues.append(Issue("error", "produced_in_area_conflicts", f"{produced_in_area_conflicts} produced_in relationships cross conflicting entity areas"))
     if produced_in_target_type_errors:
         issues.append(Issue("error", "produced_in_target_type", f"{produced_in_target_type_errors} produced_in relationships target an entity that is not place or craft_village"))
+    if produced_in_source_type_errors:
+        issues.append(Issue("error", "produced_in_source_type", f"{produced_in_source_type_errors} produced_in relationships have source that is not product/dish/drink/craft_village"))
     if self_loop_relationships:
         issues.append(Issue("error", "self_loop_relationships", f"{self_loop_relationships} relationships have source==target"))
     if unknown_rel_types:
@@ -737,6 +747,8 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         issues.append(Issue("warning", "missing_place_id", f"{missing_place_id} non-place entities are missing placeId"))
     if missing_location:
         issues.append(Issue("warning", "missing_location", f"{missing_location} entities have no coordinates or coords ({missing_location_non_place} non-place, {missing_location_place} place)"))
+    if invalid_entity_ids:
+        issues.append(Issue("warning", "invalid_entity_ids", f"{invalid_entity_ids} entity IDs contain spaces, control chars, or are excessively long"))
     if invalid_source_urls:
         issues.append(Issue("warning", "invalid_source_urls", f"{invalid_source_urls} source URLs have invalid format"))
     if invalid_phone_format:
@@ -813,6 +825,8 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         "invalid_source_urls": invalid_source_urls,
         "invalid_phone_format": invalid_phone_format,
         "invalid_website_urls": invalid_website_urls,
+        "invalid_entity_ids": invalid_entity_ids,
+        "produced_in_source_type_errors": produced_in_source_type_errors,
         "unknown_rel_types": len(unknown_rel_types),
         "data_js_status": data_js_status,
     }
@@ -836,6 +850,23 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
 
     # DI-017: entity quality score distribution
     non_place = [e for e in entities if isinstance(e, dict) and e.get("type") != "place"]
+    confidence_values = []
+    for e in entities:
+        if isinstance(e, dict) and e.get("type") != "place":
+            c = e.get("confidence")
+            if isinstance(c, (int, float)):
+                confidence_values.append(float(c))
+    if confidence_values:
+        sorted_conf = sorted(confidence_values)
+        mid = len(sorted_conf) // 2
+        median = sorted_conf[mid] if len(sorted_conf) % 2 else round((sorted_conf[mid - 1] + sorted_conf[mid]) / 2, 3)
+        stats["confidence_distribution"] = {
+            "min": round(min(sorted_conf), 3),
+            "max": round(max(sorted_conf), 3),
+            "median": median,
+            "count": len(sorted_conf),
+        }
+
     if non_place:
         scores = [entity_quality_score(e) for e in non_place]
         stats["quality_score_avg"] = round(sum(scores) / len(scores), 1)
@@ -939,6 +970,11 @@ def print_report(issues: list[Issue], stats: dict[str, Any]) -> None:
         "itinerary_excessive_stops",
         "invalid_source_urls",
         "invalid_phone_format",
+        "invalid_website_urls",
+        "unknown_rel_types",
+        "orphan_entities",
+        "invalid_entity_ids",
+        "produced_in_source_type_errors",
     ]:
         print(f"  {key}: {stats.get(key)}")
 
@@ -959,6 +995,10 @@ def print_report(issues: list[Issue], stats: dict[str, Any]) -> None:
         print(f"  needs_work (30-59): {qs_dist.get('needs_work_30_59', 0)}")
         print(f"  ok (60-79): {qs_dist.get('ok_60_79', 0)}")
         print(f"  good (80-100): {qs_dist.get('good_80_100', 0)}")
+
+    cd = stats.get("confidence_distribution")
+    if cd:
+        print(f"\nConfidence distribution: min={cd['min']}, max={cd['max']}, median={cd['median']}, n={cd['count']}")
 
     gc = stats.get("graph_connectivity", {})
     if gc:

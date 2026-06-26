@@ -467,7 +467,10 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
         if attrs.get("check_out"):
             ld["checkoutTime"] = attrs["check_out"]
         if attrs.get("rooms"):
-            ld["numberOfRooms"] = attrs["rooms"]
+            try:
+                ld["numberOfRooms"] = int(attrs["rooms"])
+            except (TypeError, ValueError):
+                pass
         amenities = attrs.get("amenities")
         if isinstance(amenities, list) and amenities:
             ld["amenityFeature"] = [

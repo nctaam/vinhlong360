@@ -1511,3 +1511,91 @@ def test_entity_jsonld_main_entity_of_page():
     assert meop["@type"] == "WebPage"
     assert meop["@id"] == seo._entity_url("meop-test")
     assert meop["url"] == seo._entity_url("meop-test")
+
+
+# ── numberOfRooms coercion ────────────────────────────────────────────
+
+
+def test_accommodation_rooms_string_coerced_to_int():
+    entity = {
+        "id": "ks-str-rooms",
+        "name": "KS String Rooms",
+        "type": "accommodation",
+        "attributes": {"rooms": "25"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["numberOfRooms"] == 25
+    assert isinstance(ld["numberOfRooms"], int)
+
+
+def test_accommodation_rooms_int_preserved():
+    entity = {
+        "id": "ks-int-rooms",
+        "name": "KS Int Rooms",
+        "type": "accommodation",
+        "attributes": {"rooms": 30},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["numberOfRooms"] == 30
+
+
+def test_accommodation_rooms_invalid_string_omitted():
+    entity = {
+        "id": "ks-bad-rooms",
+        "name": "KS Bad Rooms",
+        "type": "accommodation",
+        "attributes": {"rooms": "many"},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "numberOfRooms" not in ld
+
+
+# ── _load edge cases ─────────────────────────────────────────────────
+
+
+def test_load_returns_empty_on_corrupted_json(monkeypatch, tmp_path):
+    bad_file = tmp_path / "bad.json"
+    bad_file.write_text("{corrupted", encoding="utf-8")
+    monkeypatch.setattr(seo, "DATA_PATH", bad_file)
+    monkeypatch.setattr(seo, "_data", None)
+    monkeypatch.setattr(seo, "_data_mtime_ns", 1)
+    data = seo._load()
+    assert data["entities"] == []
+    assert data["relationships"] == []
+
+
+def test_load_invalidates_by_id_cache_on_data_change(monkeypatch, tmp_path):
+    f = tmp_path / "data.json"
+    import json
+    f.write_text(json.dumps({"entities": [{"id": "a"}]}), encoding="utf-8")
+    monkeypatch.setattr(seo, "DATA_PATH", f)
+    monkeypatch.setattr(seo, "_data", None)
+    monkeypatch.setattr(seo, "_data_mtime_ns", 1)
+    seo._load()
+    by_id1 = seo._by_id()
+    assert "a" in by_id1
+    f.write_text(json.dumps({"entities": [{"id": "b"}]}), encoding="utf-8")
+    monkeypatch.setattr(seo, "_data_mtime_ns", 1)
+    seo._load()
+    by_id2 = seo._by_id()
+    assert "b" in by_id2
+
+
+# ── Sitemap deduplication ────────────────────────────────────────────
+
+
+def test_sitemap_deduplicates_entity_urls(monkeypatch):
+    data = {
+        "entities": [
+            {"id": "dup", "name": "Dup 1", "type": "attraction"},
+            {"id": "dup", "name": "Dup 2", "type": "dish"},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    monkeypatch.setattr(seo, "_load", lambda: data)
+    monkeypatch.setattr(seo, "_sitemap_cache", None)
+    monkeypatch.setattr(seo, "_data_mtime_ns", 0)
+    resp = seo.sitemap()
+    xml = resp.body.decode()
+    assert xml.count("/dia-diem/dup") == 1
