@@ -407,6 +407,7 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
     if coordinates:
         lat, lng = coordinates
         ld["geo"] = {"@type": "GeoCoordinates", "latitude": lat, "longitude": lng}
+        ld["hasMap"] = f"https://www.google.com/maps?q={lat},{lng}"
 
     if area or place or attrs.get("address"):
         address: dict[str, Any] = {"@type": "PostalAddress", "addressCountry": "VN"}
@@ -500,6 +501,9 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
 
     if schema_type == "Person" and attrs.get("role"):
         ld["jobTitle"] = attrs["role"]
+
+    if schema_type == "LocalBusiness" and str(entity.get("type")) == "craft_village":
+        ld["additionalType"] = "https://schema.org/TouristAttraction"
 
     if schema_type == "Place":
         ld["additionalType"] = "AdministrativeArea"

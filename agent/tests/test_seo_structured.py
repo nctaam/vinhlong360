@@ -1815,6 +1815,37 @@ def test_entity_jsonld_ocop_identifier():
     assert ld["identifier"]["value"] == "4 sao"
 
 
+def test_craft_village_has_tourist_attraction_additional_type():
+    entity = {"id": "cv-test", "name": "Làng nghề Test", "type": "craft_village"}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["@type"] == "LocalBusiness"
+    assert ld["additionalType"] == "https://schema.org/TouristAttraction"
+
+
+def test_non_craft_village_local_business_no_additional_type():
+    entity = {"id": "econ-test", "name": "Kinh tế Test", "type": "economy"}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert ld["@type"] == "LocalBusiness"
+    assert "additionalType" not in ld
+
+
+def test_entity_jsonld_has_map_with_coordinates():
+    entity = {
+        "id": "map-test", "name": "Map test", "type": "attraction",
+        "coordinates": [10.25, 106.0],
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "hasMap" in ld
+    assert "10.25,106.0" in ld["hasMap"]
+    assert ld["hasMap"].startswith("https://www.google.com/maps")
+
+
+def test_entity_jsonld_no_map_without_coordinates():
+    entity = {"id": "no-map", "name": "No map", "type": "attraction"}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "hasMap" not in ld
+
+
 def test_entity_jsonld_no_identifier_without_ocop():
     entity = {
         "id": "no-ocop", "name": "SP", "type": "product",
