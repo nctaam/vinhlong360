@@ -3,7 +3,7 @@
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sản phẩm' }]" />
 
     <!-- Hero -->
-    <section class="catalog-hero cat-product">
+    <section class="catalog-hero cat-product" aria-label="Giới thiệu sản phẩm">
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true">🍊</span>
         <div>
@@ -76,7 +76,7 @@
     </div>
 
     <!-- Full filterable grid -->
-    <section ref="gridSection" class="block">
+    <section ref="gridSection" class="block" aria-label="Duyệt tất cả sản phẩm">
       <div class="controls">
         <div class="search-row">
           <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm trong sản phẩm…" aria-label="Tìm sản phẩm" />
@@ -112,7 +112,7 @@
     </section>
 
     <!-- Cross-links -->
-    <section class="block catalog-cross">
+    <section class="block catalog-cross" aria-label="Khám phá thêm">
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/ocop" class="cross-card">
