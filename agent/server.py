@@ -477,7 +477,12 @@ def _call_tool_impl(name: str, args: dict) -> str:
         return json.dumps(detail, ensure_ascii=False, default=str)
 
     elif name == "seasonal_now":
-        result = knowledge.seasonal_now(args["month"])
+        raw_month = args["month"]
+        try:
+            raw_month = max(1, min(12, int(raw_month)))
+        except (TypeError, ValueError):
+            raw_month = datetime.now().month
+        result = knowledge.seasonal_now(raw_month)
         def _seasonal_card(e):
             attrs = e.get("attributes") or {}
             card = {

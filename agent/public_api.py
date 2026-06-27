@@ -176,11 +176,11 @@ async def list_entities(
     db_month = month if month else None
 
     if q:
-        results = db.search_entities(q=q, entity_type=single_type, area=area, limit=limit, offset=offset, entity_types=entity_types, public_only=True, month=db_month)
-        total = db.count_entities_filtered(entity_type=single_type, area=area, q=q, entity_types=entity_types, public_only=True, month=db_month)
+        results = await asyncio.to_thread(db.search_entities, q=q, entity_type=single_type, area=area, limit=limit, offset=offset, entity_types=entity_types, public_only=True, month=db_month)
+        total = await asyncio.to_thread(db.count_entities_filtered, entity_type=single_type, area=area, q=q, entity_types=entity_types, public_only=True, month=db_month)
     else:
-        results = db.list_entities(entity_type=single_type, area=area, limit=limit, offset=offset, entity_types=entity_types, public_only=True, sort=db_sort, month=db_month)
-        total = db.count_entities_filtered(entity_type=single_type, area=area, entity_types=entity_types, public_only=True, month=db_month)
+        results = await asyncio.to_thread(db.list_entities, entity_type=single_type, area=area, limit=limit, offset=offset, entity_types=entity_types, public_only=True, sort=db_sort, month=db_month)
+        total = await asyncio.to_thread(db.count_entities_filtered, entity_type=single_type, area=area, entity_types=entity_types, public_only=True, month=db_month)
     _enrich_place(results)
     if fields == "minimal":
         results = [_to_minimal(e) for e in results]
@@ -361,9 +361,9 @@ async def search(
 ):
     from ratelimit import check_rate
     check_rate(f"search:{get_client_ip(request)}", 30, 60, "Tìm kiếm quá nhanh. Vui lòng thử lại sau.")
-    results = db.search_entities(q=q, entity_type=type, area=area, limit=limit)
+    results = await asyncio.to_thread(db.search_entities, q=q, entity_type=type, area=area, limit=limit)
     _enrich_place(results)
-    total = db.count_entities_filtered(entity_type=type, area=area, q=q)
+    total = await asyncio.to_thread(db.count_entities_filtered, entity_type=type, area=area, q=q)
     return {"q": q, "total": total, "results": results}
 
 
@@ -482,8 +482,8 @@ async def homepage_curated(response: Response):
             and _now - _homepage_cache["ts"] < _HOMEPAGE_TTL):
         return _homepage_cache["data"]
 
-    all_ents = await asyncio.to_thread(db.list_entities, limit=100000, offset=0)
-    public = [e for e in all_ents if _is_public(e) and not _event_is_past(e)]
+    all_ents = await asyncio.to_thread(db.list_entities, limit=100000, offset=0, public_only=True)
+    public = [e for e in all_ents if not _event_is_past(e)]
     _enrich_place(public)
 
     for e in public:
@@ -723,11 +723,9 @@ async def get_map_pins(
         type_filters = [t.strip() for t in type.split(",") if t.strip()]
 
     def _query():
-        all_ents = db.list_entities(limit=100000, offset=0, area=area)
+        all_ents = db.list_entities(limit=100000, offset=0, area=area, public_only=True, entity_types=type_filters)
         pins = []
         for e in all_ents:
-            if not _is_public(e):
-                continue
             coords = e.get("coordinates")
             if not coords or not isinstance(coords, (list, tuple)) or len(coords) < 2:
                 continue
@@ -736,8 +734,6 @@ async def get_map_pins(
             except (TypeError, ValueError, IndexError):
                 continue
             etype = e.get("type", "")
-            if type_filters and etype not in type_filters:
-                continue
             meta = _TYPE_META.get(etype, {"emoji": "\U0001f4cd", "color": "#9E9E9E"})
             attrs = e.get("attributes") or {}
             pin = {
@@ -774,8 +770,8 @@ async def list_events(
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     """Sự kiện: sắp xếp theo date_start, mặc định ẩn sự kiện đã qua."""
     today = datetime.now().date()
-    all_ents = await asyncio.to_thread(db.list_entities, entity_type="event", limit=100000, offset=0)
-    events = [e for e in all_ents if _is_public(e)]
+    all_ents = await asyncio.to_thread(db.list_entities, entity_type="event", limit=100000, offset=0, public_only=True)
+    events = list(all_ents)
     _enrich_place(events)
 
     if area:

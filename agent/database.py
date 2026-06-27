@@ -99,10 +99,15 @@ class Database:
         # tối ưu perf, <10k user connect-trực-tiếp dư sức. CHỈ bật lại sau khi test được với PG thật.
         self._pg_pool = None
         self._pg_pool_failed = False
+        self._pg_pool_fail_ts = 0.0
 
     def _get_pg_pool(self):
-        if self._pg_pool_failed or os.environ.get("PG_USE_POOL", "false").strip().lower() not in ("1", "true", "yes", "on"):
+        if os.environ.get("PG_USE_POOL", "false").strip().lower() not in ("1", "true", "yes", "on"):
             return None
+        if self._pg_pool_failed:
+            if time.time() - self._pg_pool_fail_ts < 60:
+                return None
+            self._pg_pool_failed = False
         if self._pg_pool is None:
             with self._lock:
                 if self._pg_pool is None:
@@ -111,7 +116,8 @@ class Database:
                         mx = max(2, int(os.environ.get("PG_POOL_MAX", "10")))
                         self._pg_pool = ThreadedConnectionPool(1, mx, self._dsn, connect_timeout=5)
                     except Exception:
-                        self._pg_pool_failed = True  # fallback connect-trực-tiếp
+                        self._pg_pool_failed = True
+                        self._pg_pool_fail_ts = time.time()
                         return None
         return self._pg_pool
 

@@ -666,26 +666,25 @@ def test_map_pins_filters_no_coords():
 
 
 def test_map_pins_type_filter():
-    """Comma-separated type filter should work."""
+    """Comma-separated type filter passes entity_types to DB."""
     import public_api
-    entities = [
+    from unittest.mock import patch, call
+    filtered = [
         {"id": "a", "name": "A", "type": "dish", "coordinates": [10.25, 106.01],
          "attributes": {}, "placeId": None},
         {"id": "b", "name": "B", "type": "attraction", "coordinates": [10.26, 106.02],
          "attributes": {}, "placeId": None},
-        {"id": "c", "name": "C", "type": "product", "coordinates": [10.27, 106.03],
-         "attributes": {}, "placeId": None},
     ]
-    from unittest.mock import patch
-    with patch.object(public_api.db, "list_entities", return_value=entities):
+    with patch.object(public_api.db, "list_entities", return_value=filtered) as mock_list:
         public_api._map_pins_cache.update(data=None, filters=None, ts=0.0)
         client = _public_client()
         resp = client.get("/api/map-pins?type=dish,attraction")
+        mock_list.assert_called_once()
+        _, kwargs = mock_list.call_args
+        assert set(kwargs.get("entity_types")) == {"dish", "attraction"}
     assert resp.status_code == 200
     pins = resp.json()
     assert len(pins) == 2
-    ids = {p["id"] for p in pins}
-    assert ids == {"a", "b"}
 
 
 # ── Review stats ──────────────────────────────────────────────────────
