@@ -65,18 +65,20 @@ async def get_notifications(
     user=Depends(require_user),
 ):
     ph = db._ph
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT * FROM notifications
-            WHERE user_id = {ph}::uuid
-            ORDER BY created_at DESC
-            LIMIT {ph} OFFSET {ph}
-        """, (str(user["id"]), limit, offset))
-
-        unread = db._fetchone(conn, f"""
-            SELECT COUNT(*) as c FROM notifications
-            WHERE user_id = {ph}::uuid AND is_read = FALSE
-        """, (str(user["id"]),))
+    def _query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT * FROM notifications
+                WHERE user_id = {ph}::uuid
+                ORDER BY created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, (str(user["id"]), limit, offset))
+            unread = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM notifications
+                WHERE user_id = {ph}::uuid AND is_read = FALSE
+            """, (str(user["id"]),))
+        return rows, unread
+    rows, unread = await asyncio.to_thread(_query)
 
     raw = [_format_notif(db._row_to_dict(r)) for r in rows]
     grouped = _group_notifications(raw)
@@ -88,24 +90,28 @@ async def get_notifications(
 
 @router.post("/notifications/read-all")
 async def mark_all_read(user=Depends(require_user)):
-    ph = db._ph
-    with db._conn() as conn:
-        db._execute(conn, f"""
-            UPDATE notifications SET is_read = TRUE
-            WHERE user_id = {ph}::uuid AND is_read = FALSE
-        """, (str(user["id"]),))
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                UPDATE notifications SET is_read = TRUE
+                WHERE user_id = {ph}::uuid AND is_read = FALSE
+            """, (str(user["id"]),))
+    await asyncio.to_thread(_query)
     return {"success": True}
 
 
 @router.post("/notifications/{notif_id}/read")
 async def mark_notification_read(notif_id: str, user=Depends(require_user)):
     notif_id = validate_path_id(notif_id, "notif_id")
-    ph = db._ph
-    with db._conn() as conn:
-        db._execute(conn, f"""
-            UPDATE notifications SET is_read = TRUE
-            WHERE id::text = {ph} AND user_id = {ph}::uuid
-        """, (notif_id, str(user["id"])))
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                UPDATE notifications SET is_read = TRUE
+                WHERE id::text = {ph} AND user_id = {ph}::uuid
+            """, (notif_id, str(user["id"])))
+    await asyncio.to_thread(_query)
     return {"success": True}
 
 
@@ -123,11 +129,13 @@ class NotifPrefsUpdate(BaseModel):
 async def get_notification_preferences(user=Depends(require_user)):
     ph = db._ph
     uid = str(user["id"])
-    with db._conn() as conn:
-        row = db._fetchone(conn, f"""
-            SELECT pref_like, pref_comment, pref_mention, pref_follow, pref_system
-            FROM notification_preferences WHERE user_id = {ph}::uuid
-        """, (uid,))
+    def _query():
+        with db._conn() as conn:
+            return db._fetchone(conn, f"""
+                SELECT pref_like, pref_comment, pref_mention, pref_follow, pref_system
+                FROM notification_preferences WHERE user_id = {ph}::uuid
+            """, (uid,))
+    row = await asyncio.to_thread(_query)
     if row:
         d = db._row_to_dict(row)
         return {k: bool(d[k]) for k in ("pref_like", "pref_comment", "pref_mention", "pref_follow", "pref_system")}
@@ -145,15 +153,17 @@ async def update_notification_preferences(body: NotifPrefsUpdate, user=Depends(r
     set_parts.append(f"updated_at = NOW()")
     vals = list(updates.values())
     vals.append(uid)
-    with db._conn() as conn:
-        db._execute(conn, f"""
-            INSERT INTO notification_preferences (user_id) VALUES ({ph}::uuid)
-            ON CONFLICT (user_id) DO NOTHING
-        """, (uid,))
-        db._execute(conn, f"""
-            UPDATE notification_preferences SET {', '.join(set_parts)}
-            WHERE user_id = {ph}::uuid
-        """, vals)
+    def _query():
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                INSERT INTO notification_preferences (user_id) VALUES ({ph}::uuid)
+                ON CONFLICT (user_id) DO NOTHING
+            """, (uid,))
+            db._execute(conn, f"""
+                UPDATE notification_preferences SET {', '.join(set_parts)}
+                WHERE user_id = {ph}::uuid
+            """, vals)
+    await asyncio.to_thread(_query)
     return {"success": True}
 
 
@@ -175,12 +185,14 @@ async def notification_stream(request: Request, token: str = Query(None)):
     from auth import _hash_token
     if not token:
         raise HTTPException(401, "Token required")
-    with db._conn() as conn:
-        row = db._fetchone(conn, f"""
-            SELECT u.id FROM user_sessions s
-            JOIN users u ON u.id = s.user_id
-            WHERE s.token = {db._ph} AND s.expires_at > NOW() AND u.is_active = TRUE
-        """, (_hash_token(token),))
+    def _check_token():
+        with db._conn() as conn:
+            return db._fetchone(conn, f"""
+                SELECT u.id FROM user_sessions s
+                JOIN users u ON u.id = s.user_id
+                WHERE s.token = {db._ph} AND s.expires_at > NOW() AND u.is_active = TRUE
+            """, (_hash_token(token),))
+    row = await asyncio.to_thread(_check_token)
     if not row:
         raise HTTPException(401, "Invalid token")
     uid = str(db._row_to_dict(row)["id"])
@@ -273,35 +285,37 @@ async def toggle_follow(target_type: str, target_id: str, user=Depends(require_u
         raise HTTPException(404, "Không tìm thấy địa điểm")
     if target_type == "user":
         ph = db._ph
-        with db._conn() as conn:
-            if not db._fetchone(conn, f"SELECT 1 FROM users WHERE id::text = {ph} AND is_active = TRUE", (target_id,)):
-                raise HTTPException(404, "Không tìm thấy người dùng")
+        def _check_user():
+            with db._conn() as conn:
+                return db._fetchone(conn, f"SELECT 1 FROM users WHERE id::text = {ph} AND is_active = TRUE", (target_id,))
+        if not await asyncio.to_thread(_check_user):
+            raise HTTPException(404, "Không tìm thấy người dùng")
 
     ph = db._ph
     uid = str(user["id"])
-    with db._conn() as conn:
-        deleted = db._fetchone(conn, f"""
-            DELETE FROM follows
-            WHERE follower_id = {ph}::uuid AND target_type = {ph} AND target_id = {ph}
-            RETURNING 1
-        """, (uid, target_type, target_id))
-
-        if deleted:
-            following = False
-        else:
+    def _toggle():
+        with db._conn() as conn:
+            deleted = db._fetchone(conn, f"""
+                DELETE FROM follows
+                WHERE follower_id = {ph}::uuid AND target_type = {ph} AND target_id = {ph}
+                RETURNING 1
+            """, (uid, target_type, target_id))
+            if deleted:
+                return False
             db._execute(conn, f"""
                 INSERT INTO follows (follower_id, target_type, target_id)
                 VALUES ({ph}::uuid, {ph}, {ph})
                 ON CONFLICT DO NOTHING
             """, (uid, target_type, target_id))
-            following = True
+            return True
+    following = await asyncio.to_thread(_toggle)
 
-            if target_type == "user":
-                create_notification(
-                    target_id, "follow",
-                    f"{user.get('display_name', 'Ai đó')} đã theo dõi bạn",
-                    ref_type="user", ref_id=str(user["id"]),
-                )
+    if following and target_type == "user":
+        create_notification(
+            target_id, "follow",
+            f"{user.get('display_name', 'Ai đó')} đã theo dõi bạn",
+            ref_type="user", ref_id=str(user["id"]),
+        )
 
     return {"following": following}
 
@@ -313,11 +327,13 @@ async def check_follow(target_type: str, target_id: str, user=Depends(require_us
         raise HTTPException(400, "Loại follow: user hoặc entity")
     ph = db._ph
     uid = str(user["id"])
-    with db._conn() as conn:
-        row = db._fetchone(conn, f"""
-            SELECT 1 FROM follows
-            WHERE follower_id = {ph}::uuid AND target_type = {ph} AND target_id = {ph}
-        """, (uid, target_type, target_id))
+    def _query():
+        with db._conn() as conn:
+            return db._fetchone(conn, f"""
+                SELECT 1 FROM follows
+                WHERE follower_id = {ph}::uuid AND target_type = {ph} AND target_id = {ph}
+            """, (uid, target_type, target_id))
+    row = await asyncio.to_thread(_query)
     return {"following": row is not None}
 
 
@@ -339,19 +355,21 @@ async def get_following(
     where = " AND ".join(conditions)
     params.extend([limit, offset])
 
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT f.*,
-                   CASE WHEN f.target_type = 'user' THEN u.display_name
-                        WHEN f.target_type = 'entity' THEN e.name END as target_name,
-                   CASE WHEN f.target_type = 'entity' THEN e.type END as entity_type
-            FROM follows f
-            LEFT JOIN users u ON f.target_type = 'user' AND u.id::text = f.target_id
-            LEFT JOIN entities e ON f.target_type = 'entity' AND e.id = f.target_id
-            WHERE {where}
-            ORDER BY f.created_at DESC
-            LIMIT {ph} OFFSET {ph}
-        """, params)
+    def _query():
+        with db._conn() as conn:
+            return db._fetchall(conn, f"""
+                SELECT f.*,
+                       CASE WHEN f.target_type = 'user' THEN u.display_name
+                            WHEN f.target_type = 'entity' THEN e.name END as target_name,
+                       CASE WHEN f.target_type = 'entity' THEN e.type END as entity_type
+                FROM follows f
+                LEFT JOIN users u ON f.target_type = 'user' AND u.id::text = f.target_id
+                LEFT JOIN entities e ON f.target_type = 'entity' AND e.id = f.target_id
+                WHERE {where}
+                ORDER BY f.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, params)
+    rows = await asyncio.to_thread(_query)
 
     items = [{
         "target_type": r["target_type"],
@@ -365,12 +383,15 @@ async def get_following(
 
 @router.get("/followers/count/{target_type}/{target_id}")
 async def get_follower_count(target_type: str, target_id: str):
-    ph = db._ph
-    with db._conn() as conn:
-        row = db._fetchone(conn, f"""
-            SELECT COUNT(*) as c FROM follows
-            WHERE target_type = {ph} AND target_id = {ph}
-        """, (target_type, target_id))
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM follows
+                WHERE target_type = {ph} AND target_id = {ph}
+            """, (target_type, target_id))
+        return row
+    row = await asyncio.to_thread(_query)
     return {"count": row["c"] if row else 0}
 
 
@@ -381,21 +402,20 @@ async def get_follower_count(target_type: str, target_id: str):
 @router.post("/report-ugc")
 async def create_report(body: ReportRequest, user=Depends(require_user)):
     ph = db._ph
-    with db._conn() as conn:
-        existing = db._fetchone(conn, f"""
-            SELECT 1 FROM reports
-            WHERE reporter_id = {ph}::uuid AND target_type = {ph} AND target_id = {ph}
-                AND status = 'pending'
-        """, (str(user["id"]), body.target_type, body.target_id))
-
-        if existing:
-            raise HTTPException(400, "Bạn đã báo cáo nội dung này rồi")
-
-        db._execute(conn, f"""
-            INSERT INTO reports (reporter_id, target_type, target_id, reason)
-            VALUES ({ph}::uuid, {ph}, {ph}, {ph})
-        """, (str(user["id"]), body.target_type, body.target_id, body.reason))
-
+    def _query():
+        with db._conn() as conn:
+            existing = db._fetchone(conn, f"""
+                SELECT 1 FROM reports
+                WHERE reporter_id = {ph}::uuid AND target_type = {ph} AND target_id = {ph}
+                    AND status = 'pending'
+            """, (str(user["id"]), body.target_type, body.target_id))
+            if existing:
+                raise HTTPException(400, "Bạn đã báo cáo nội dung này rồi")
+            db._execute(conn, f"""
+                INSERT INTO reports (reporter_id, target_type, target_id, reason)
+                VALUES ({ph}::uuid, {ph}, {ph}, {ph})
+            """, (str(user["id"]), body.target_type, body.target_id, body.reason))
+    await asyncio.to_thread(_query)
     return {"success": True, "message": "Báo cáo đã được gửi. Cảm ơn bạn!"}
 
 
@@ -409,16 +429,15 @@ async def toggle_block(blocked_id: str, user=Depends(require_user)):
 
     ph = db._ph
     uid = str(user["id"])
-    with db._conn() as conn:
-        deleted = db._fetchone(conn, f"""
-            DELETE FROM blocks
-            WHERE blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid
-            RETURNING 1
-        """, (uid, blocked_id))
-
-        if deleted:
-            blocked = False
-        else:
+    def _query():
+        with db._conn() as conn:
+            deleted = db._fetchone(conn, f"""
+                DELETE FROM blocks
+                WHERE blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid
+                RETURNING 1
+            """, (uid, blocked_id))
+            if deleted:
+                return False
             db._execute(conn, f"""
                 INSERT INTO blocks (blocker_id, blocked_id)
                 VALUES ({ph}::uuid, {ph}::uuid)
@@ -429,21 +448,23 @@ async def toggle_block(blocked_id: str, user=Depends(require_user)):
                 WHERE follower_id = {ph}::uuid AND followed_id = {ph}::uuid
                    OR follower_id = {ph}::uuid AND followed_id = {ph}::uuid
             """, (uid, blocked_id, blocked_id, uid))
-            blocked = True
-
+            return True
+    blocked = await asyncio.to_thread(_query)
     return {"blocked": blocked}
 
 
 @router.get("/blocked-users")
 async def list_blocked_users(user=Depends(require_user)):
-    ph = db._ph
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT u.id, u.display_name, u.avatar_url, u.username, b.created_at
-            FROM blocks b JOIN users u ON u.id = b.blocked_id
-            WHERE b.blocker_id = {ph}::uuid
-            ORDER BY b.created_at DESC
-        """, (str(user["id"]),))
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            return db._fetchall(conn, f"""
+                SELECT u.id, u.display_name, u.avatar_url, u.username, b.created_at
+                FROM blocks b JOIN users u ON u.id = b.blocked_id
+                WHERE b.blocker_id = {ph}::uuid
+                ORDER BY b.created_at DESC
+            """, (str(user["id"]),))
+    rows = await asyncio.to_thread(_query)
     return {"blocked": [{"id": str(db._row_to_dict(r)["id"]), "display_name": db._row_to_dict(r).get("display_name"), "avatar_url": db._row_to_dict(r).get("avatar_url"), "username": db._row_to_dict(r).get("username"), "blocked_at": str(db._row_to_dict(r).get("created_at", ""))} for r in rows]}
 
 
@@ -491,32 +512,37 @@ def _format_notif(row: dict) -> dict:
 
 @router.post("/events/{entity_id}/rsvp")
 async def toggle_rsvp(entity_id: str, user=Depends(require_user)):
-    """Bật/tắt RSVP cho 1 sự-kiện. Trả {going, count}."""
     ph = db._ph
     uid = str(user["id"])
-    with db._conn() as conn:
-        deleted = db._fetchone(conn,
-            f"DELETE FROM event_rsvp WHERE user_id = {ph}::uuid AND entity_id = {ph} RETURNING 1", (uid, entity_id))
-        if deleted:
-            going = False
-        else:
-            db._execute(conn, f"INSERT INTO event_rsvp (user_id, entity_id) VALUES ({ph}::uuid, {ph}) ON CONFLICT DO NOTHING", (uid, entity_id))
-            going = True
-        cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM event_rsvp WHERE entity_id = {ph}", (entity_id,))
-    return {"going": going, "count": int(db._row_to_dict(cnt)["c"]) if cnt else 0}
+    def _query():
+        with db._conn() as conn:
+            deleted = db._fetchone(conn,
+                f"DELETE FROM event_rsvp WHERE user_id = {ph}::uuid AND entity_id = {ph} RETURNING 1", (uid, entity_id))
+            if deleted:
+                going = False
+            else:
+                db._execute(conn, f"INSERT INTO event_rsvp (user_id, entity_id) VALUES ({ph}::uuid, {ph}) ON CONFLICT DO NOTHING", (uid, entity_id))
+                going = True
+            cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM event_rsvp WHERE entity_id = {ph}", (entity_id,))
+        return going, int(db._row_to_dict(cnt)["c"]) if cnt else 0
+    going, count = await asyncio.to_thread(_query)
+    return {"going": going, "count": count}
 
 
 @router.get("/events/{entity_id}/rsvp")
 async def get_rsvp(entity_id: str, request: Request = None):
-    """Số người RSVP + (nếu đăng nhập) trạng thái của mình."""
-    ph = db._ph
-    with db._conn() as conn:
-        cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM event_rsvp WHERE entity_id = {ph}", (entity_id,))
-        count = int(db._row_to_dict(cnt)["c"]) if cnt else 0
-        going = False
-        u = await get_current_user(request) if request else None
-        if u:
-            mine = db._fetchone(conn,
-                f"SELECT 1 FROM event_rsvp WHERE user_id = {ph}::uuid AND entity_id = {ph}", (str(u["id"]), entity_id))
-            going = bool(mine)
+    u = await get_current_user(request) if request else None
+    uid = str(u["id"]) if u else None
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM event_rsvp WHERE entity_id = {ph}", (entity_id,))
+            count = int(db._row_to_dict(cnt)["c"]) if cnt else 0
+            going = False
+            if uid:
+                mine = db._fetchone(conn,
+                    f"SELECT 1 FROM event_rsvp WHERE user_id = {ph}::uuid AND entity_id = {ph}", (uid, entity_id))
+                going = bool(mine)
+        return count, going
+    count, going = await asyncio.to_thread(_query)
     return {"count": count, "going": going}

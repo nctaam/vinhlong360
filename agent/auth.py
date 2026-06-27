@@ -14,6 +14,7 @@ Tuân thủ NĐ 147/2024: xác thực SĐT VN trước khi cho đăng bài/bình
 """
 import html as _html
 
+import asyncio
 import base64
 import hashlib
 import hmac
@@ -264,11 +265,13 @@ async def request_otp(body: OTPRequest, request: Request):
     hashed = _hash_otp(code)
     expires = datetime.now(timezone.utc) + timedelta(minutes=OTP_EXPIRE_MINUTES)
 
-    with db._conn() as conn:
-        db._execute(conn, f"""
-            INSERT INTO otp_sessions (phone, code, expires_at)
-            VALUES ({db._ph}, {db._ph}, {db._ph})
-        """, (phone, hashed, expires.isoformat()))
+    def _save_otp():
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                INSERT INTO otp_sessions (phone, code, expires_at)
+                VALUES ({db._ph}, {db._ph}, {db._ph})
+            """, (phone, hashed, expires.isoformat()))
+    await asyncio.to_thread(_save_otp)
 
     message = f"Ma OTP cua ban la {code}. Het han sau {OTP_EXPIRE_MINUTES} phut."
     sent = await _send_sms(phone, message)
@@ -290,42 +293,36 @@ async def verify_otp(body: OTPVerify, request: Request):
     phone = _normalize_phone(body.phone)
     hashed = _hash_otp(body.code.strip())
 
-    with db._conn() as conn:
-        row = db._fetchone(conn, f"""
-            SELECT * FROM otp_sessions
-            WHERE phone = {db._ph} AND verified = FALSE
-            ORDER BY created_at DESC LIMIT 1
-        """, (phone,))
-
-        if not row:
-            raise HTTPException(400, "Không tìm thấy OTP. Vui lòng yêu cầu mã mới")
-
-        otp = db._row_to_dict(row)
-
-        if isinstance(otp.get("expires_at"), str):
-            exp = datetime.fromisoformat(otp["expires_at"])
-        else:
-            exp = otp["expires_at"]
-
-        if exp.tzinfo is None:
-            exp = exp.replace(tzinfo=timezone.utc)
-
-        if datetime.now(timezone.utc) > exp:
-            raise HTTPException(400, "OTP đã hết hạn. Vui lòng yêu cầu mã mới")
-
-        attempts = otp.get("attempts", 0) + 1
-        if attempts > OTP_MAX_ATTEMPTS:
-            raise HTTPException(429, "Quá nhiều lần thử. Vui lòng yêu cầu mã mới")
-
-        if not hmac.compare_digest(otp["code"], hashed):
+    def _verify():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT * FROM otp_sessions
+                WHERE phone = {db._ph} AND verified = FALSE
+                ORDER BY created_at DESC LIMIT 1
+            """, (phone,))
+            if not row:
+                raise HTTPException(400, "Không tìm thấy OTP. Vui lòng yêu cầu mã mới")
+            otp = db._row_to_dict(row)
+            if isinstance(otp.get("expires_at"), str):
+                exp = datetime.fromisoformat(otp["expires_at"])
+            else:
+                exp = otp["expires_at"]
+            if exp.tzinfo is None:
+                exp = exp.replace(tzinfo=timezone.utc)
+            if datetime.now(timezone.utc) > exp:
+                raise HTTPException(400, "OTP đã hết hạn. Vui lòng yêu cầu mã mới")
+            attempts = otp.get("attempts", 0) + 1
+            if attempts > OTP_MAX_ATTEMPTS:
+                raise HTTPException(429, "Quá nhiều lần thử. Vui lòng yêu cầu mã mới")
+            if not hmac.compare_digest(otp["code"], hashed):
+                db._execute(conn, f"""
+                    UPDATE otp_sessions SET attempts = {db._ph} WHERE id::text = {db._ph}
+                """, (attempts, str(otp["id"])))
+                raise HTTPException(400, f"OTP không đúng. Còn {OTP_MAX_ATTEMPTS - attempts} lần thử")
             db._execute(conn, f"""
-                UPDATE otp_sessions SET attempts = {db._ph} WHERE id::text = {db._ph}
-            """, (attempts, str(otp["id"])))
-            raise HTTPException(400, f"OTP không đúng. Còn {OTP_MAX_ATTEMPTS - attempts} lần thử")
-
-        db._execute(conn, f"""
-            UPDATE otp_sessions SET verified = TRUE WHERE id::text = {db._ph}
-        """, (str(otp["id"]),))
+                UPDATE otp_sessions SET verified = TRUE WHERE id::text = {db._ph}
+            """, (str(otp["id"]),))
+    await asyncio.to_thread(_verify)
 
     user = db.get_user_by_phone(phone)
     if not user:
@@ -345,11 +342,13 @@ async def verify_otp(body: OTPVerify, request: Request):
         _log_consent(str(user["id"]), CONSENT_VERSION, ip)
     ua = request.headers.get("user-agent", "")
 
-    with db._conn() as conn:
-        db._execute(conn, f"""
-            INSERT INTO user_sessions (user_id, token, user_agent, ip_address, expires_at)
-            VALUES ({db._ph}::uuid, {db._ph}, {db._ph}, {db._ph}, {db._ph})
-        """, (str(user["id"]), _hash_token(token), ua, ip, expires.isoformat()))
+    def _create_session():
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                INSERT INTO user_sessions (user_id, token, user_agent, ip_address, expires_at)
+                VALUES ({db._ph}::uuid, {db._ph}, {db._ph}, {db._ph}, {db._ph})
+            """, (str(user["id"]), _hash_token(token), ua, ip, expires.isoformat()))
+    await asyncio.to_thread(_create_session)
 
     _log_login(phone, "otp", True, request, str(user["id"]))
 
@@ -427,11 +426,13 @@ async def login_password(body: PasswordLogin, request: Request):
     expires = datetime.now(timezone.utc) + timedelta(days=SESSION_EXPIRE_DAYS)
     ua = request.headers.get("user-agent", "")
 
-    with db._conn() as conn:
-        db._execute(conn, f"""
-            INSERT INTO user_sessions (user_id, token, user_agent, ip_address, expires_at)
-            VALUES ({db._ph}::uuid, {db._ph}, {db._ph}, {db._ph}, {db._ph})
-        """, (str(user["id"]), _hash_token(token), ua, ip, expires.isoformat()))
+    def _create_session():
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                INSERT INTO user_sessions (user_id, token, user_agent, ip_address, expires_at)
+                VALUES ({db._ph}::uuid, {db._ph}, {db._ph}, {db._ph}, {db._ph})
+            """, (str(user["id"]), _hash_token(token), ua, ip, expires.isoformat()))
+    await asyncio.to_thread(_create_session)
 
     _log_login(phone, "password", True, request, str(user["id"]))
 
@@ -461,13 +462,14 @@ async def set_password(body: SetPassword, request: Request):
     # P1-9: đổi mật khẩu → thu hồi MỌI phiên khác (giữ phiên hiện tại), chống chiếm dụng.
     cur = _extract_token(request)
     cur_hash = _hash_token(cur) if cur else None
-    with db._conn() as conn:
-        if cur_hash:
-            db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph} AND token != {db._ph}",
-                        (str(user["id"]), cur_hash))
-        else:
-            db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph}", (str(user["id"]),))
-
+    def _revoke_others():
+        with db._conn() as conn:
+            if cur_hash:
+                db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph} AND token != {db._ph}",
+                            (str(user["id"]), cur_hash))
+            else:
+                db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph}", (str(user["id"]),))
+    await asyncio.to_thread(_revoke_others)
     return {"success": True, "message": "Đã đặt mật khẩu thành công"}
 
 
@@ -476,8 +478,10 @@ async def logout(request: Request):
     token = _extract_token(request)
     if not token:
         return {"success": True}
-    with db._conn() as conn:
-        db._execute(conn, f"DELETE FROM user_sessions WHERE token = {db._ph}", (_hash_token(token),))
+    def _query():
+        with db._conn() as conn:
+            db._execute(conn, f"DELETE FROM user_sessions WHERE token = {db._ph}", (_hash_token(token),))
+    await asyncio.to_thread(_query)
     return {"success": True}
 
 
@@ -488,13 +492,15 @@ async def list_sessions(request: Request):
         raise HTTPException(401, "Chưa đăng nhập")
     cur_token = _extract_token(request)
     cur_hash = _hash_token(cur_token) if cur_token else None
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT id, user_agent, ip_address, created_at, expires_at, token
-            FROM user_sessions
-            WHERE user_id::text = {db._ph} AND expires_at > NOW()
-            ORDER BY created_at DESC
-        """, (str(user["id"]),))
+    def _query():
+        with db._conn() as conn:
+            return db._fetchall(conn, f"""
+                SELECT id, user_agent, ip_address, created_at, expires_at, token
+                FROM user_sessions
+                WHERE user_id::text = {db._ph} AND expires_at > NOW()
+                ORDER BY created_at DESC
+            """, (str(user["id"]),))
+    rows = await asyncio.to_thread(_query)
     sessions = []
     for r in rows:
         rd = db._row_to_dict(r)
@@ -514,11 +520,13 @@ async def revoke_session(session_id: str, request: Request):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
-    with db._conn() as conn:
-        db._execute(conn, f"""
-            DELETE FROM user_sessions
-            WHERE id::text = {db._ph} AND user_id::text = {db._ph}
-        """, (session_id, str(user["id"])))
+    def _query():
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                DELETE FROM user_sessions
+                WHERE id::text = {db._ph} AND user_id::text = {db._ph}
+            """, (session_id, str(user["id"])))
+    await asyncio.to_thread(_query)
     return {"success": True}
 
 
@@ -537,8 +545,10 @@ async def deactivate_account(request: Request):
         raise HTTPException(401, "Chưa đăng nhập")
     uid = str(user["id"])
     db.update_user(uid, is_active=False)
-    with db._conn() as conn:
-        db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph}", (uid,))
+    def _query():
+        with db._conn() as conn:
+            db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph}", (uid,))
+    await asyncio.to_thread(_query)
     return {"success": True, "message": "Tài khoản đã bị vô hiệu hóa. Đăng nhập lại bằng OTP để kích hoạt."}
 
 
@@ -550,8 +560,10 @@ async def delete_account(request: Request):
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
     uid = str(user["id"])
-    with db._conn() as conn:
-        db._execute(conn, f"DELETE FROM users WHERE id::text = {db._ph}", (uid,))
+    def _query():
+        with db._conn() as conn:
+            db._execute(conn, f"DELETE FROM users WHERE id::text = {db._ph}", (uid,))
+    await asyncio.to_thread(_query)
     return {"status": "deleted", "message": "Tài khoản và dữ liệu liên quan đã được xoá."}
 
 
@@ -584,10 +596,12 @@ async def update_profile(body: ProfileUpdate, request: Request):
             if uname in _reserved:
                 raise HTTPException(400, "Username này không được phép sử dụng")
             ph = db._ph
-            with db._conn() as conn:
-                existing = db._fetchone(conn,
-                    f"SELECT id FROM users WHERE lower(username) = {ph} AND id != {ph}::uuid",
-                    (uname, str(user["id"])))
+            def _check_uname():
+                with db._conn() as conn:
+                    return db._fetchone(conn,
+                        f"SELECT id FROM users WHERE lower(username) = {ph} AND id != {ph}::uuid",
+                        (uname, str(user["id"])))
+            existing = await asyncio.to_thread(_check_uname)
             if existing:
                 raise HTTPException(409, "Username đã được sử dụng")
             fields["username"] = uname
@@ -606,8 +620,10 @@ async def check_username(username: str, request: Request):
     if not re.match(r'^[a-z][a-z0-9._-]*$', uname):
         return {"available": False, "reason": "Username chỉ gồm chữ cái, số, dấu chấm, gạch ngang"}
     ph = db._ph
-    with db._conn() as conn:
-        existing = db._fetchone(conn, f"SELECT id FROM users WHERE lower(username) = {ph}", (uname,))
+    def _query():
+        with db._conn() as conn:
+            return db._fetchone(conn, f"SELECT id FROM users WHERE lower(username) = {ph}", (uname,))
+    existing = await asyncio.to_thread(_query)
     if existing:
         user = await _get_current_user_or_none(request)
         if user and str(existing["id"]) == str(user["id"]):

@@ -2,6 +2,8 @@
 visits.py — "Đã đi / Muốn đi": đánh dấu địa điểm theo người dùng (bản đồ cá nhân).
 Postgres-only (UGC parity); 503 ở SQLite dev. status ∈ {want, visited}, 1 status/địa-điểm.
 """
+import asyncio
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, field_validator
 
@@ -28,42 +30,50 @@ class VisitBody(BaseModel):
 
 @router.get("")
 async def list_visits(status: str = Query(None), user=Depends(require_user)):
-    ph = db._ph
-    sql = f"SELECT entity_id, status, created_at FROM user_visits WHERE user_id = {ph}::uuid"
-    params = [str(user["id"])]
-    if status in ("want", "visited"):
-        sql += f" AND status = {ph}"
-        params.append(status)
-    sql += " ORDER BY created_at DESC"
-    with db._conn() as conn:
-        rows = db._fetchall(conn, sql, tuple(params))
-    return {"visits": [{"entity_id": db._row_to_dict(r)["entity_id"], "status": db._row_to_dict(r)["status"]} for r in rows]}
+    def _query():
+        ph = db._ph
+        sql = f"SELECT entity_id, status, created_at FROM user_visits WHERE user_id = {ph}::uuid"
+        params = [str(user["id"])]
+        if status in ("want", "visited"):
+            sql += f" AND status = {ph}"
+            params.append(status)
+        sql += " ORDER BY created_at DESC"
+        with db._conn() as conn:
+            rows = db._fetchall(conn, sql, tuple(params))
+        return {"visits": [{"entity_id": db._row_to_dict(r)["entity_id"], "status": db._row_to_dict(r)["status"]} for r in rows]}
+    return await asyncio.to_thread(_query)
 
 
 @router.get("/check/{entity_id}")
 async def check_visit(entity_id: str, user=Depends(require_user)):
-    ph = db._ph
-    with db._conn() as conn:
-        row = db._fetchone(conn, f"SELECT status FROM user_visits WHERE user_id = {ph}::uuid AND entity_id = {ph}",
-                           (str(user["id"]), entity_id))
-    return {"status": db._row_to_dict(row)["status"] if row else None}
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT status FROM user_visits WHERE user_id = {ph}::uuid AND entity_id = {ph}",
+                               (str(user["id"]), entity_id))
+        return {"status": db._row_to_dict(row)["status"] if row else None}
+    return await asyncio.to_thread(_query)
 
 
 @router.post("")
 async def set_visit(body: VisitBody, user=Depends(require_user)):
-    ph = db._ph
-    with db._conn() as conn:
-        db._execute(conn, f"""
-            INSERT INTO user_visits (user_id, entity_id, status) VALUES ({ph}::uuid, {ph}, {ph})
-            ON CONFLICT (user_id, entity_id) DO UPDATE SET status = EXCLUDED.status, created_at = NOW()
-        """, (str(user["id"]), body.entity_id, body.status))
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                INSERT INTO user_visits (user_id, entity_id, status) VALUES ({ph}::uuid, {ph}, {ph})
+                ON CONFLICT (user_id, entity_id) DO UPDATE SET status = EXCLUDED.status, created_at = NOW()
+            """, (str(user["id"]), body.entity_id, body.status))
+    await asyncio.to_thread(_query)
     return {"status": body.status}
 
 
 @router.delete("/{entity_id}")
 async def remove_visit(entity_id: str, user=Depends(require_user)):
-    ph = db._ph
-    with db._conn() as conn:
-        db._execute(conn, f"DELETE FROM user_visits WHERE user_id = {ph}::uuid AND entity_id = {ph}",
-                    (str(user["id"]), entity_id))
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            db._execute(conn, f"DELETE FROM user_visits WHERE user_id = {ph}::uuid AND entity_id = {ph}",
+                        (str(user["id"]), entity_id))
+    await asyncio.to_thread(_query)
     return {"status": None}

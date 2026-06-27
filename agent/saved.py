@@ -7,6 +7,7 @@ device can render saved cards without fetching each entity. Postgres-only
 (UGC parity); returns 503 on SQLite dev, like the rest of the social layer.
 """
 
+import asyncio
 import json
 from typing import Optional
 
@@ -70,35 +71,41 @@ def _upsert(conn, uid: str, item: SavedItem) -> None:
 
 @router.get("")
 async def list_saved(user=Depends(require_user)):
-    with db._conn() as conn:
-        return {"items": _list(conn, str(user["id"]))}
+    def _query():
+        with db._conn() as conn:
+            return {"items": _list(conn, str(user["id"]))}
+    return await asyncio.to_thread(_query)
 
 
 @router.post("")
 async def add_saved(item: SavedItem, user=Depends(require_user)):
-    with db._conn() as conn:
-        _upsert(conn, str(user["id"]), item)
+    def _query():
+        with db._conn() as conn:
+            _upsert(conn, str(user["id"]), item)
+    await asyncio.to_thread(_query)
     return {"saved": True}
 
 
 @router.delete("/{entity_id}")
 async def remove_saved(entity_id: str, user=Depends(require_user)):
-    ph = db._ph
-    with db._conn() as conn:
-        db._execute(conn, f"""
-            DELETE FROM saved_entities WHERE user_id = {ph}::uuid AND entity_id = {ph}
-        """, (str(user["id"]), entity_id))
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                DELETE FROM saved_entities WHERE user_id = {ph}::uuid AND entity_id = {ph}
+            """, (str(user["id"]), entity_id))
+    await asyncio.to_thread(_query)
     return {"saved": False}
 
 
 @router.post("/merge")
 async def merge_saved(body: MergeBody, user=Depends(require_user)):
-    """Merge local (device) favorites into the account on login; returns the
-    full merged list (account is the union — nothing is dropped)."""
     uid = str(user["id"])
     items = (body.items or [])[:500]
-    with db._conn() as conn:
-        for it in items:
-            if it.id:
-                _upsert(conn, uid, it)
-        return {"items": _list(conn, uid)}
+    def _query():
+        with db._conn() as conn:
+            for it in items:
+                if it.id:
+                    _upsert(conn, uid, it)
+            return {"items": _list(conn, uid)}
+    return await asyncio.to_thread(_query)

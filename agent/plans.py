@@ -4,6 +4,7 @@ plans.py — Lịch trình cá nhân đồng-bộ tài-khoản (builder /tao-lic
 Cho phép plan tự-tạo của user theo họ qua nhiều thiết bị (như favorites ở saved.py).
 Postgres-only (UGC parity); 503 ở SQLite dev. Mỗi plan = {title, stops[]}.
 """
+import asyncio
 import json
 from typing import Optional
 
@@ -70,43 +71,49 @@ def _insert(conn, uid: str, body: PlanBody) -> str:
 
 @router.get("")
 async def list_plans(user=Depends(require_user)):
-    with db._conn() as conn:
-        return {"plans": _list(conn, str(user["id"]))}
+    def _query():
+        with db._conn() as conn:
+            return {"plans": _list(conn, str(user["id"]))}
+    return await asyncio.to_thread(_query)
 
 
 @router.post("")
 async def add_plan(body: PlanBody, user=Depends(require_user)):
     uid = str(user["id"])
-    with db._conn() as conn:
-        # cap số plan/user (chống phình)
-        ph = db._ph
-        cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM user_plans WHERE user_id = {ph}::uuid", (uid,))
-        if cnt and int(db._row_to_dict(cnt)["c"]) >= MAX_PLANS:
-            raise HTTPException(400, f"Tối đa {MAX_PLANS} lịch trình. Hãy xoá bớt.")
-        pid = _insert(conn, uid, body)
-        return {"id": pid, "saved": True}
+    def _query():
+        with db._conn() as conn:
+            ph = db._ph
+            cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM user_plans WHERE user_id = {ph}::uuid", (uid,))
+            if cnt and int(db._row_to_dict(cnt)["c"]) >= MAX_PLANS:
+                raise HTTPException(400, f"Tối đa {MAX_PLANS} lịch trình. Hãy xoá bớt.")
+            pid = _insert(conn, uid, body)
+            return {"id": pid, "saved": True}
+    return await asyncio.to_thread(_query)
 
 
 @router.delete("/{plan_id}")
 async def remove_plan(plan_id: str, user=Depends(require_user)):
-    ph = db._ph
-    with db._conn() as conn:
-        db._execute(conn, f"""
-            DELETE FROM user_plans WHERE id::text = {ph} AND user_id = {ph}::uuid
-        """, (plan_id, str(user["id"])))
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                DELETE FROM user_plans WHERE id::text = {ph} AND user_id = {ph}::uuid
+            """, (plan_id, str(user["id"])))
+    await asyncio.to_thread(_query)
     return {"deleted": True}
 
 
 @router.post("/merge")
 async def merge_plans(body: MergeBody, user=Depends(require_user)):
-    """Đẩy plan local (khách) lên tài-khoản khi đăng nhập, trả danh sách đầy đủ."""
     uid = str(user["id"])
     incoming = (body.plans or [])[:MAX_PLANS]
-    with db._conn() as conn:
-        for p in incoming:
-            if p.stops:
-                _insert(conn, uid, p)
-        return {"plans": _list(conn, uid)}
+    def _query():
+        with db._conn() as conn:
+            for p in incoming:
+                if p.stops:
+                    _insert(conn, uid, p)
+            return {"plans": _list(conn, uid)}
+    return await asyncio.to_thread(_query)
 
 
 class PublishBody(BaseModel):
@@ -115,12 +122,13 @@ class PublishBody(BaseModel):
 
 @router.post("/{plan_id}/publish")
 async def publish_plan(plan_id: str, body: PublishBody, user=Depends(require_user)):
-    """Bật/tắt chia-sẻ công-khai 1 lịch trình (chỉ chủ sở hữu)."""
-    ph = db._ph
-    with db._conn() as conn:
-        db._execute(conn, f"""
-            UPDATE user_plans SET is_public = {ph} WHERE id::text = {ph} AND user_id = {ph}::uuid
-        """, (body.is_public, plan_id, str(user["id"])))
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                UPDATE user_plans SET is_public = {ph} WHERE id::text = {ph} AND user_id = {ph}::uuid
+            """, (body.is_public, plan_id, str(user["id"])))
+    await asyncio.to_thread(_query)
     return {"is_public": body.is_public}
 
 
@@ -130,35 +138,39 @@ public_router = APIRouter(prefix="/api/shared-plans", tags=["plans"], dependenci
 
 @public_router.get("")
 async def list_shared(limit: int = 30):
-    ph = db._ph
     limit = max(1, min(int(limit), 60))
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT p.id, p.title, p.stops, p.is_public, p.created_at, u.display_name AS author
-            FROM user_plans p JOIN users u ON u.id = p.user_id
-            WHERE p.is_public = TRUE ORDER BY p.created_at DESC LIMIT {ph}
-        """, (limit,))
-    out = []
-    for r in rows:
-        d = db._row_to_dict(r)
-        plan = _row_plan(r)
-        plan["author"] = d.get("author")
-        plan["stop_count"] = len(plan["stops"])
-        out.append(plan)
-    return {"plans": out}
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT p.id, p.title, p.stops, p.is_public, p.created_at, u.display_name AS author
+                FROM user_plans p JOIN users u ON u.id = p.user_id
+                WHERE p.is_public = TRUE ORDER BY p.created_at DESC LIMIT {ph}
+            """, (limit,))
+        out = []
+        for r in rows:
+            d = db._row_to_dict(r)
+            plan = _row_plan(r)
+            plan["author"] = d.get("author")
+            plan["stop_count"] = len(plan["stops"])
+            out.append(plan)
+        return {"plans": out}
+    return await asyncio.to_thread(_query)
 
 
 @public_router.get("/{plan_id}")
 async def get_shared(plan_id: str):
-    ph = db._ph
-    with db._conn() as conn:
-        row = db._fetchone(conn, f"""
-            SELECT p.id, p.title, p.stops, p.is_public, p.created_at, u.display_name AS author
-            FROM user_plans p JOIN users u ON u.id = p.user_id
-            WHERE p.id::text = {ph} AND p.is_public = TRUE
-        """, (plan_id,))
-    if not row:
-        raise HTTPException(404, "Lịch trình không tồn tại hoặc chưa công khai")
-    plan = _row_plan(row)
-    plan["author"] = db._row_to_dict(row).get("author")
-    return {"plan": plan}
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT p.id, p.title, p.stops, p.is_public, p.created_at, u.display_name AS author
+                FROM user_plans p JOIN users u ON u.id = p.user_id
+                WHERE p.id::text = {ph} AND p.is_public = TRUE
+            """, (plan_id,))
+        if not row:
+            raise HTTPException(404, "Lịch trình không tồn tại hoặc chưa công khai")
+        plan = _row_plan(row)
+        plan["author"] = db._row_to_dict(row).get("author")
+        return {"plan": plan}
+    return await asyncio.to_thread(_query)

@@ -249,14 +249,15 @@ async def create_post(body: CreatePost, user=Depends(require_user)):
 
     if body.content.strip() and not body.repost_of:
         ph = db._ph
-        with db._conn() as conn:
-            dup = db._fetchone(conn, f"""
-                SELECT 1 FROM posts
-                WHERE user_id = {ph}::uuid AND content = {ph}
-                  AND created_at > NOW() - INTERVAL '1 hour'
-                LIMIT 1
-            """, (str(user["id"]), body.content.strip()))
-        if dup:
+        def _check_dup():
+            with db._conn() as conn:
+                return db._fetchone(conn, f"""
+                    SELECT 1 FROM posts
+                    WHERE user_id = {ph}::uuid AND content = {ph}
+                      AND created_at > NOW() - INTERVAL '1 hour'
+                    LIMIT 1
+                """, (str(user["id"]), body.content.strip()))
+        if await asyncio.to_thread(_check_dup):
             raise HTTPException(409, "Bài viết trùng nội dung. Vui lòng chỉnh sửa trước khi đăng lại.")
 
     if body.post_type in ENTITY_LINK_REQUIRED and not body.entity_id:
@@ -278,12 +279,14 @@ async def create_post(body: CreatePost, user=Depends(require_user)):
     repost_snapshot = None
     orig_author_id = None
     if body.repost_of:
-        with db._conn() as conn:
-            orig = db._fetchone(conn, f"""
-                SELECT p.id, p.content, p.user_id, p.created_at, p.repost_of, u.display_name
-                FROM posts p JOIN users u ON u.id = p.user_id
-                WHERE p.id::text = {ph} AND p.moderation_status = 'approved'
-            """, (body.repost_of,))
+        def _check_repost():
+            with db._conn() as conn:
+                return db._fetchone(conn, f"""
+                    SELECT p.id, p.content, p.user_id, p.created_at, p.repost_of, u.display_name
+                    FROM posts p JOIN users u ON u.id = p.user_id
+                    WHERE p.id::text = {ph} AND p.moderation_status = 'approved'
+                """, (body.repost_of,))
+        orig = await asyncio.to_thread(_check_repost)
         if not orig:
             raise HTTPException(404, "Bài gốc không tồn tại")
         od = db._row_to_dict(orig)
@@ -300,19 +303,20 @@ async def create_post(body: CreatePost, user=Depends(require_user)):
     mentions = _clean_mentions(body.mentions)
     hashtags = _extract_hashtags(body.content)
 
-    with db._conn() as conn:
-        row = db._fetchone(conn, f"""
-            INSERT INTO posts (user_id, entity_id, content, images, post_type, rating, moderation_status, mentions, hashtags, repost_of, repost_snapshot)
-            VALUES ({ph}::uuid, {ph}, {ph}, {ph}::jsonb, {ph}, {ph}, {ph}, {ph}::jsonb, {ph}::jsonb, {ph}, {ph}::jsonb)
-            RETURNING *
-        """, (
-            str(user["id"]), body.entity_id, body.content,
-            json.dumps(body.images), body.post_type, body.rating, status,
-            json.dumps(mentions, ensure_ascii=False), json.dumps(hashtags, ensure_ascii=False),
-            body.repost_of,
-            json.dumps(repost_snapshot, ensure_ascii=False) if repost_snapshot else None,
-        ))
-
+    def _insert():
+        with db._conn() as conn:
+            return db._fetchone(conn, f"""
+                INSERT INTO posts (user_id, entity_id, content, images, post_type, rating, moderation_status, mentions, hashtags, repost_of, repost_snapshot)
+                VALUES ({ph}::uuid, {ph}, {ph}, {ph}::jsonb, {ph}, {ph}, {ph}, {ph}::jsonb, {ph}::jsonb, {ph}, {ph}::jsonb)
+                RETURNING *
+            """, (
+                str(user["id"]), body.entity_id, body.content,
+                json.dumps(body.images), body.post_type, body.rating, status,
+                json.dumps(mentions, ensure_ascii=False), json.dumps(hashtags, ensure_ascii=False),
+                body.repost_of,
+                json.dumps(repost_snapshot, ensure_ascii=False) if repost_snapshot else None,
+            ))
+    row = await asyncio.to_thread(_insert)
     post = db._row_to_dict(row)
     log_moderation("post", str(post["id"]), status, mod_result, auto=True)
 
@@ -383,14 +387,15 @@ async def delete_post(post_id: str, user=Depends(require_user)):
     check_rate(f"delete:{user['id']}", RL_DELETE_LIMIT, RL_DELETE_WINDOW,
                "Bạn xóa quá nhanh. Vui lòng đợi ít phút.")
     ph = db._ph
-    with db._conn() as conn:
-        row = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
-        if not row:
-            raise HTTPException(404)
-        if str(row["user_id"]) != str(user["id"]) and user.get("role") not in ("admin", "moderator"):
-            raise HTTPException(403, "Không có quyền xóa bài viết này")
-        db._execute(conn, f"DELETE FROM posts WHERE id::text = {ph}", (post_id,))
-
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
+            if not row:
+                raise HTTPException(404)
+            if str(row["user_id"]) != str(user["id"]) and user.get("role") not in ("admin", "moderator"):
+                raise HTTPException(403, "Không có quyền xóa bài viết này")
+            db._execute(conn, f"DELETE FROM posts WHERE id::text = {ph}", (post_id,))
+    await asyncio.to_thread(_query)
     return {"success": True}
 
 
@@ -399,13 +404,16 @@ async def update_post(post_id: str, body: UpdatePost, user=Depends(require_user)
     """Sửa bài của CHÍNH MÌNH (nội dung; review đổi sao). Kiểm duyệt + hashtag lại."""
     post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
-    with db._conn() as conn:
-        row = db._fetchone(conn, f"SELECT user_id, post_type FROM posts WHERE id::text = {ph}", (post_id,))
-        if not row:
-            raise HTTPException(404, "Bài viết không tồn tại")
-        d = db._row_to_dict(row)
-        if str(d["user_id"]) != str(user["id"]):
-            raise HTTPException(403, "Không có quyền sửa bài viết này")
+    def _check_owner():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT user_id, post_type FROM posts WHERE id::text = {ph}", (post_id,))
+            if not row:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            d = db._row_to_dict(row)
+            if str(d["user_id"]) != str(user["id"]):
+                raise HTTPException(403, "Không có quyền sửa bài viết này")
+            return d
+    d = await asyncio.to_thread(_check_owner)
 
     new_content = (body.content or "").strip()
     if len(new_content) < 10:
@@ -420,22 +428,23 @@ async def update_post(post_id: str, body: UpdatePost, user=Depends(require_user)
     if set_rating and (body.rating < 1 or body.rating > 5):
         raise HTTPException(400, "Đánh giá từ 1 đến 5 sao")
 
-    with db._conn() as conn:
-        if set_rating:
-            db._execute(conn, f"""UPDATE posts SET content={ph}, hashtags={ph}::jsonb,
-                          rating={ph}, moderation_status={ph} WHERE id::text={ph}""",
-                        (new_content, json.dumps(hashtags, ensure_ascii=False), body.rating, status, post_id))
-        else:
-            db._execute(conn, f"""UPDATE posts SET content={ph}, hashtags={ph}::jsonb,
-                          moderation_status={ph} WHERE id::text={ph}""",
-                        (new_content, json.dumps(hashtags, ensure_ascii=False), status, post_id))
-        post = db._fetchone(conn, f"""
-            SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
-                   e.name as entity_name, e.type as entity_type
-            FROM posts p JOIN users u ON u.id = p.user_id
-            LEFT JOIN entities e ON e.id = p.entity_id WHERE p.id::text = {ph}
-        """, (post_id,))
-
+    def _update():
+        with db._conn() as conn:
+            if set_rating:
+                db._execute(conn, f"""UPDATE posts SET content={ph}, hashtags={ph}::jsonb,
+                              rating={ph}, moderation_status={ph} WHERE id::text={ph}""",
+                            (new_content, json.dumps(hashtags, ensure_ascii=False), body.rating, status, post_id))
+            else:
+                db._execute(conn, f"""UPDATE posts SET content={ph}, hashtags={ph}::jsonb,
+                              moderation_status={ph} WHERE id::text={ph}""",
+                            (new_content, json.dumps(hashtags, ensure_ascii=False), status, post_id))
+            return db._fetchone(conn, f"""
+                SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
+                       e.name as entity_name, e.type as entity_type
+                FROM posts p JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id WHERE p.id::text = {ph}
+            """, (post_id,))
+    post = await asyncio.to_thread(_update)
     return {"post": _format_post(db._row_to_dict(post)), "moderation_status": status}
 
 
@@ -604,23 +613,25 @@ async def search_posts(
     offset = (page - 1) * limit
     pattern = "%" + stripped.lower() + "%"
 
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
-                   e.name as entity_name, e.type as entity_type
-            FROM posts p
-            JOIN users u ON u.id = p.user_id
-            LEFT JOIN entities e ON e.id = p.entity_id
-            WHERE p.moderation_status = 'approved'
-              AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph})
-            ORDER BY p.created_at DESC
-            LIMIT {ph} OFFSET {ph}
-        """, (pattern, limit, offset))
-
-        total = db._fetchone(conn, f"""
-            SELECT COUNT(*) as c FROM posts p
-            WHERE p.moderation_status = 'approved' AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph})
-        """, (pattern,))
+    def _query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
+                       e.name as entity_name, e.type as entity_type
+                FROM posts p
+                JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE p.moderation_status = 'approved'
+                  AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph})
+                ORDER BY p.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, (pattern, limit, offset))
+            total = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts p
+                WHERE p.moderation_status = 'approved' AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph})
+            """, (pattern,))
+        return rows, total
+    rows, total = await asyncio.to_thread(_query)
 
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
     _enrich_user_status(posts, user)
@@ -649,18 +660,20 @@ async def search_users(
     bc, bc_p = _block_sql(user)
     params: list = [pattern] + bc_p + [limit, offset]
 
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT u.id, u.display_name, u.avatar_url, u.username,
-                   (SELECT COUNT(*) FROM posts p
-                      WHERE p.user_id = u.id AND p.moderation_status = 'approved') AS post_count
-            FROM users u
-            WHERE u.is_active = TRUE
-              AND f_unaccent(lower(u.display_name)) LIKE f_unaccent({ph})
-              {bc}
-            ORDER BY post_count DESC, u.display_name
-            LIMIT {ph} OFFSET {ph}
-        """, tuple(params))
+    def _query():
+        with db._conn() as conn:
+            return db._fetchall(conn, f"""
+                SELECT u.id, u.display_name, u.avatar_url, u.username,
+                       (SELECT COUNT(*) FROM posts p
+                          WHERE p.user_id = u.id AND p.moderation_status = 'approved') AS post_count
+                FROM users u
+                WHERE u.is_active = TRUE
+                  AND f_unaccent(lower(u.display_name)) LIKE f_unaccent({ph})
+                  {bc}
+                ORDER BY post_count DESC, u.display_name
+                LIMIT {ph} OFFSET {ph}
+            """, tuple(params))
+    rows = await asyncio.to_thread(_query)
 
     users = []
     for r in rows:
@@ -679,11 +692,13 @@ async def community_stats():
     """Số liệu THẬT của cộng đồng (không phải đếm 20 bài đã tải) cho sidebar /cong-dong."""
     def _c(row):
         return int(db._row_to_dict(row)["c"]) if row else 0
-    with db._conn() as conn:
-        posts = db._fetchone(conn, "SELECT COUNT(*) c FROM posts WHERE moderation_status='approved'")
-        reviews = db._fetchone(conn, "SELECT COUNT(*) c FROM posts WHERE post_type='review' AND moderation_status='approved'")
-        members = db._fetchone(conn, "SELECT COUNT(*) c FROM users WHERE is_active=TRUE")
-    return {"posts": _c(posts), "reviews": _c(reviews), "members": _c(members)}
+    def _query():
+        with db._conn() as conn:
+            posts = db._fetchone(conn, "SELECT COUNT(*) c FROM posts WHERE moderation_status='approved'")
+            reviews = db._fetchone(conn, "SELECT COUNT(*) c FROM posts WHERE post_type='review' AND moderation_status='approved'")
+            members = db._fetchone(conn, "SELECT COUNT(*) c FROM users WHERE is_active=TRUE")
+        return {"posts": _c(posts), "reviews": _c(reviews), "members": _c(members)}
+    return await asyncio.to_thread(_query)
 
 
 _trending_cache: dict = {"ts": 0.0, "data": {}}
@@ -699,16 +714,18 @@ async def trending_tags(limit: int = Query(10, ge=1, le=20)):
         return _trending_cache["data"][cache_key]
 
     ph = db._ph
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT tag, COUNT(*) AS c
-            FROM posts p, jsonb_array_elements_text(p.hashtags) AS tag
-            WHERE p.moderation_status = 'approved'
-              AND p.created_at > NOW() - INTERVAL '30 days'
-            GROUP BY tag
-            ORDER BY c DESC, tag
-            LIMIT {ph}
-        """, (limit,))
+    def _query():
+        with db._conn() as conn:
+            return db._fetchall(conn, f"""
+                SELECT tag, COUNT(*) AS c
+                FROM posts p, jsonb_array_elements_text(p.hashtags) AS tag
+                WHERE p.moderation_status = 'approved'
+                  AND p.created_at > NOW() - INTERVAL '30 days'
+                GROUP BY tag
+                ORDER BY c DESC, tag
+                LIMIT {ph}
+            """, (limit,))
+    rows = await asyncio.to_thread(_query)
     tags = [{"tag": (d := db._row_to_dict(r))["tag"], "count": int(d["c"])} for r in rows]
     result = {"tags": tags}
     _trending_cache["ts"] = now
@@ -721,28 +738,30 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
     """Bảng xếp hạng: thành viên tích cực theo điểm danh-tiếng (1 query gộp)."""
     ph = db._ph
     bc, bc_p = _block_sql(user)
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT u.id, u.display_name, u.avatar_url, u.username,
-                   COUNT(p.id) FILTER (WHERE p.post_type='review') AS reviews,
-                   COUNT(p.id) AS posts,
-                   COUNT(p.id) FILTER (WHERE jsonb_typeof(p.images)='array'
-                                         AND jsonb_array_length(p.images) > 0) AS photos,
-                   COALESCE(fc.c, 0) AS followers,
-                   COUNT(DISTINCT p.entity_id) FILTER (WHERE p.entity_id IS NOT NULL) AS places,
-                   COALESCE(SUM(CASE WHEN jsonb_typeof(p.likes)='number' THEN p.likes::int
-                                     WHEN jsonb_typeof(p.likes)='array' THEN jsonb_array_length(p.likes)
-                                     ELSE 0 END), 0) AS likes
-            FROM users u
-            LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved'
-            LEFT JOIN (SELECT target_id, COUNT(*) c FROM follows
-                         WHERE target_type='user' GROUP BY target_id) fc
-                   ON fc.target_id = u.id::text
-            WHERE u.is_active = TRUE AND u.display_name IS NOT NULL
-            {bc}
-            GROUP BY u.id, u.display_name, u.avatar_url, u.username, fc.c
-            HAVING COUNT(p.id) > 0
-        """, tuple(bc_p))
+    def _query():
+        with db._conn() as conn:
+            return db._fetchall(conn, f"""
+                SELECT u.id, u.display_name, u.avatar_url, u.username,
+                       COUNT(p.id) FILTER (WHERE p.post_type='review') AS reviews,
+                       COUNT(p.id) AS posts,
+                       COUNT(p.id) FILTER (WHERE jsonb_typeof(p.images)='array'
+                                             AND jsonb_array_length(p.images) > 0) AS photos,
+                       COALESCE(fc.c, 0) AS followers,
+                       COUNT(DISTINCT p.entity_id) FILTER (WHERE p.entity_id IS NOT NULL) AS places,
+                       COALESCE(SUM(CASE WHEN jsonb_typeof(p.likes)='number' THEN p.likes::int
+                                         WHEN jsonb_typeof(p.likes)='array' THEN jsonb_array_length(p.likes)
+                                         ELSE 0 END), 0) AS likes
+                FROM users u
+                LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved'
+                LEFT JOIN (SELECT target_id, COUNT(*) c FROM follows
+                             WHERE target_type='user' GROUP BY target_id) fc
+                       ON fc.target_id = u.id::text
+                WHERE u.is_active = TRUE AND u.display_name IS NOT NULL
+                {bc}
+                GROUP BY u.id, u.display_name, u.avatar_url, u.username, fc.c
+                HAVING COUNT(p.id) > 0
+            """, tuple(bc_p))
+    rows = await asyncio.to_thread(_query)
 
     leaders = []
     for r in rows:
@@ -774,13 +793,15 @@ async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100
     uid = _resolve_user_id(user_id)
     if not uid:
         raise HTTPException(404, "Người dùng không tồn tại")
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT u.id, u.display_name, u.avatar_url, u.username
-            FROM follows f JOIN users u ON u.id::text = f.target_id
-            WHERE f.follower_id = {ph}::uuid AND f.target_type = 'user' AND u.is_active = TRUE
-            ORDER BY f.created_at DESC LIMIT {ph} OFFSET {ph}
-        """, (uid, limit, offset))
+    def _query():
+        with db._conn() as conn:
+            return db._fetchall(conn, f"""
+                SELECT u.id, u.display_name, u.avatar_url, u.username
+                FROM follows f JOIN users u ON u.id::text = f.target_id
+                WHERE f.follower_id = {ph}::uuid AND f.target_type = 'user' AND u.is_active = TRUE
+                ORDER BY f.created_at DESC LIMIT {ph} OFFSET {ph}
+            """, (uid, limit, offset))
+    rows = await asyncio.to_thread(_query)
     users = [{"id": str(db._row_to_dict(r)["id"]),
               "display_name": db._row_to_dict(r)["display_name"],
               "username": db._row_to_dict(r).get("username"),
@@ -795,13 +816,15 @@ async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), off
     uid = _resolve_user_id(user_id)
     if not uid:
         raise HTTPException(404, "Người dùng không tồn tại")
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT u.id, u.display_name, u.avatar_url, u.username
-            FROM follows f JOIN users u ON u.id = f.follower_id
-            WHERE f.target_type = 'user' AND f.target_id = {ph} AND u.is_active = TRUE
-            ORDER BY f.created_at DESC LIMIT {ph} OFFSET {ph}
-        """, (uid, limit, offset))
+    def _query():
+        with db._conn() as conn:
+            return db._fetchall(conn, f"""
+                SELECT u.id, u.display_name, u.avatar_url, u.username
+                FROM follows f JOIN users u ON u.id = f.follower_id
+                WHERE f.target_type = 'user' AND f.target_id = {ph} AND u.is_active = TRUE
+                ORDER BY f.created_at DESC LIMIT {ph} OFFSET {ph}
+            """, (uid, limit, offset))
+    rows = await asyncio.to_thread(_query)
     users = [{"id": str(db._row_to_dict(r)["id"]),
               "display_name": db._row_to_dict(r)["display_name"],
               "username": db._row_to_dict(r).get("username"),
@@ -815,29 +838,31 @@ async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge
     ph = db._ph
     me = str(user["id"])
     bc, bc_p = _block_sql(user)
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT u.id, u.display_name, u.avatar_url, u.username,
-                   COUNT(p.id) FILTER (WHERE p.post_type='review') AS reviews,
-                   COUNT(p.id) AS posts,
-                   COUNT(p.id) FILTER (WHERE jsonb_typeof(p.images)='array'
-                                         AND jsonb_array_length(p.images) > 0) AS photos,
-                   COALESCE(fc.c, 0) AS followers,
-                   COUNT(DISTINCT p.entity_id) FILTER (WHERE p.entity_id IS NOT NULL) AS places,
-                   COALESCE(SUM(CASE WHEN jsonb_typeof(p.likes)='number' THEN p.likes::int
-                                     WHEN jsonb_typeof(p.likes)='array' THEN jsonb_array_length(p.likes)
-                                     ELSE 0 END), 0) AS likes
-            FROM users u
-            LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved'
-            LEFT JOIN (SELECT target_id, COUNT(*) c FROM follows
-                         WHERE target_type='user' GROUP BY target_id) fc ON fc.target_id = u.id::text
-            WHERE u.is_active = TRUE AND u.display_name IS NOT NULL
-              AND u.id::text <> {ph}
-              AND u.id::text NOT IN (SELECT target_id FROM follows
-                                       WHERE follower_id = {ph}::uuid AND target_type='user')
-              {bc}
-            GROUP BY u.id, u.display_name, u.avatar_url, u.username, fc.c
-        """, (me, me) + tuple(bc_p))
+    def _query():
+        with db._conn() as conn:
+            return db._fetchall(conn, f"""
+                SELECT u.id, u.display_name, u.avatar_url, u.username,
+                       COUNT(p.id) FILTER (WHERE p.post_type='review') AS reviews,
+                       COUNT(p.id) AS posts,
+                       COUNT(p.id) FILTER (WHERE jsonb_typeof(p.images)='array'
+                                             AND jsonb_array_length(p.images) > 0) AS photos,
+                       COALESCE(fc.c, 0) AS followers,
+                       COUNT(DISTINCT p.entity_id) FILTER (WHERE p.entity_id IS NOT NULL) AS places,
+                       COALESCE(SUM(CASE WHEN jsonb_typeof(p.likes)='number' THEN p.likes::int
+                                         WHEN jsonb_typeof(p.likes)='array' THEN jsonb_array_length(p.likes)
+                                         ELSE 0 END), 0) AS likes
+                FROM users u
+                LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved'
+                LEFT JOIN (SELECT target_id, COUNT(*) c FROM follows
+                             WHERE target_type='user' GROUP BY target_id) fc ON fc.target_id = u.id::text
+                WHERE u.is_active = TRUE AND u.display_name IS NOT NULL
+                  AND u.id::text <> {ph}
+                  AND u.id::text NOT IN (SELECT target_id FROM follows
+                                           WHERE follower_id = {ph}::uuid AND target_type='user')
+                  {bc}
+                GROUP BY u.id, u.display_name, u.avatar_url, u.username, fc.c
+            """, (me, me) + tuple(bc_p))
+    rows = await asyncio.to_thread(_query)
     cands = []
     for r in rows:
         d = db._row_to_dict(r)
@@ -922,46 +947,48 @@ async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10)):
     """Bài viết liên quan: cùng entity hoặc cùng hashtag."""
     post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
-    with db._conn() as conn:
-        src = db._fetchone(conn, f"""
-            SELECT entity_id, hashtags FROM posts
-            WHERE id::text = {ph} AND moderation_status = 'approved'
-        """, (post_id,))
-        if not src:
-            return {"posts": []}
-        d = db._row_to_dict(src)
-        entity_id = d.get("entity_id")
-        tags = d.get("hashtags") or []
+    def _query():
+        with db._conn() as conn:
+            src = db._fetchone(conn, f"""
+                SELECT entity_id, hashtags FROM posts
+                WHERE id::text = {ph} AND moderation_status = 'approved'
+            """, (post_id,))
+            if not src:
+                return []
+            d = db._row_to_dict(src)
+            entity_id = d.get("entity_id")
+            tags = d.get("hashtags") or []
 
-        candidates = []
-        if entity_id:
-            rows = db._fetchall(conn, f"""
-                SELECT p.*, u.display_name, u.avatar_url
-                FROM posts p JOIN users u ON u.id = p.user_id
-                WHERE p.entity_id = {ph} AND p.id::text <> {ph}
-                  AND p.moderation_status = 'approved'
-                ORDER BY p.like_count DESC, p.created_at DESC
-                LIMIT {ph}
-            """, (entity_id, post_id, limit))
-            candidates.extend(rows)
+            candidates = []
+            if entity_id:
+                rows = db._fetchall(conn, f"""
+                    SELECT p.*, u.display_name, u.avatar_url
+                    FROM posts p JOIN users u ON u.id = p.user_id
+                    WHERE p.entity_id = {ph} AND p.id::text <> {ph}
+                      AND p.moderation_status = 'approved'
+                    ORDER BY p.like_count DESC, p.created_at DESC
+                    LIMIT {ph}
+                """, (entity_id, post_id, limit))
+                candidates.extend(rows)
 
-        if len(candidates) < limit and tags:
-            seen = {post_id} | {str(db._row_to_dict(r)["id"]) for r in candidates}
-            tag_rows = db._fetchall(conn, f"""
-                SELECT p.*, u.display_name, u.avatar_url
-                FROM posts p JOIN users u ON u.id = p.user_id
-                WHERE p.moderation_status = 'approved' AND p.id::text <> {ph}
-                  AND p.hashtags && ARRAY[{','.join(ph for _ in tags)}]::text[]
-                ORDER BY p.like_count DESC
-                LIMIT {ph}
-            """, (post_id, *tags, limit))
-            for r in tag_rows:
-                d = db._row_to_dict(r)
-                rid = str(d["id"])
-                if rid not in seen:
-                    candidates.append(r)
-                    seen.add(rid)
-
+            if len(candidates) < limit and tags:
+                seen = {post_id} | {str(db._row_to_dict(r)["id"]) for r in candidates}
+                tag_rows = db._fetchall(conn, f"""
+                    SELECT p.*, u.display_name, u.avatar_url
+                    FROM posts p JOIN users u ON u.id = p.user_id
+                    WHERE p.moderation_status = 'approved' AND p.id::text <> {ph}
+                      AND p.hashtags && ARRAY[{','.join(ph for _ in tags)}]::text[]
+                    ORDER BY p.like_count DESC
+                    LIMIT {ph}
+                """, (post_id, *tags, limit))
+                for r in tag_rows:
+                    d = db._row_to_dict(r)
+                    rid = str(d["id"])
+                    if rid not in seen:
+                        candidates.append(r)
+                        seen.add(rid)
+            return candidates
+    candidates = await asyncio.to_thread(_query)
     return {"posts": [_format_post(db._row_to_dict(r)) for r in candidates[:limit]]}
 
 
@@ -1020,27 +1047,26 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
     mentions = _clean_mentions(body.mentions)
 
     ph = db._ph
-    with db._conn() as conn:
-        post = db._fetchone(conn, f"SELECT id FROM posts WHERE id::text = {ph}", (post_id,))
-        if not post:
-            raise HTTPException(404, "Bài viết không tồn tại")
-
-        row = db._fetchone(conn, f"""
-            INSERT INTO comments (post_id, user_id, parent_id, content, moderation_status, mentions)
-            VALUES ({ph}::uuid, {ph}::uuid, {ph}::uuid, {ph}, {ph}, {ph}::jsonb)
-            RETURNING *
-        """, (post_id, str(user["id"]),
-              body.parent_id if body.parent_id else None,
-              body.content, status, json.dumps(mentions, ensure_ascii=False)))
-
-        post_owner = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
-
-        # threaded reply: lấy tác-giả bình-luận-cha để báo
-        parent_author = None
-        if body.parent_id:
-            pa = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph}", (body.parent_id,))
-            if pa:
-                parent_author = str(pa["user_id"])
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"SELECT id FROM posts WHERE id::text = {ph}", (post_id,))
+            if not post:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            row = db._fetchone(conn, f"""
+                INSERT INTO comments (post_id, user_id, parent_id, content, moderation_status, mentions)
+                VALUES ({ph}::uuid, {ph}::uuid, {ph}::uuid, {ph}, {ph}, {ph}::jsonb)
+                RETURNING *
+            """, (post_id, str(user["id"]),
+                  body.parent_id if body.parent_id else None,
+                  body.content, status, json.dumps(mentions, ensure_ascii=False)))
+            post_owner = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
+            parent_author = None
+            if body.parent_id:
+                pa = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph}", (body.parent_id,))
+                if pa:
+                    parent_author = str(pa["user_id"])
+        return row, post_owner, parent_author
+    row, post_owner, parent_author = await asyncio.to_thread(_query)
 
     log_moderation("comment", str(db._row_to_dict(row)["id"]), status, mod_result, auto=True)
 
@@ -1087,22 +1113,27 @@ async def edit_comment(comment_id: str, body: EditComment, user=Depends(require_
     comment_id = validate_path_id(comment_id, "comment_id")
     ph = db._ph
     uid = str(user["id"])
-    with db._conn() as conn:
-        row = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph}", (comment_id,))
-        if not row:
-            raise HTTPException(404, "Bình luận không tồn tại")
-        if str(row["user_id"]) != uid:
-            raise HTTPException(403, "Bạn chỉ có thể sửa bình luận của mình")
-        mod_result = await moderate_content_enhanced(body.content, user_id=uid)
-        db._execute(conn, f"""
-            UPDATE comments SET content = {ph}, moderation_status = {ph}, updated_at = NOW()
-            WHERE id::text = {ph}
-        """, (body.content, mod_result["status"], comment_id))
-        updated = db._fetchone(conn, f"""
-            SELECT c.*, u.display_name, u.avatar_url, u.phone
-            FROM comments c JOIN users u ON u.id = c.user_id
-            WHERE c.id::text = {ph}
-        """, (comment_id,))
+    def _check():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph}", (comment_id,))
+            if not row:
+                raise HTTPException(404, "Bình luận không tồn tại")
+            if str(row["user_id"]) != uid:
+                raise HTTPException(403, "Bạn chỉ có thể sửa bình luận của mình")
+    await asyncio.to_thread(_check)
+    mod_result = await moderate_content_enhanced(body.content, user_id=uid)
+    def _update():
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                UPDATE comments SET content = {ph}, moderation_status = {ph}, updated_at = NOW()
+                WHERE id::text = {ph}
+            """, (body.content, mod_result["status"], comment_id))
+            return db._fetchone(conn, f"""
+                SELECT c.*, u.display_name, u.avatar_url, u.phone
+                FROM comments c JOIN users u ON u.id = c.user_id
+                WHERE c.id::text = {ph}
+            """, (comment_id,))
+    updated = await asyncio.to_thread(_update)
     return {"comment": _format_comment(db._row_to_dict(updated))}
 
 
@@ -1113,13 +1144,15 @@ async def delete_comment(comment_id: str, user=Depends(require_user)):
                "Bạn xóa quá nhanh. Vui lòng đợi chút.")
     ph = db._ph
     uid = str(user["id"])
-    with db._conn() as conn:
-        row = db._fetchone(conn, f"SELECT user_id, post_id FROM comments WHERE id::text = {ph}", (comment_id,))
-        if not row:
-            raise HTTPException(404, "Bình luận không tồn tại")
-        if str(row["user_id"]) != uid:
-            raise HTTPException(403, "Bạn chỉ có thể xóa bình luận của mình")
-        db._execute(conn, f"DELETE FROM comments WHERE id::text = {ph}", (comment_id,))
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT user_id, post_id FROM comments WHERE id::text = {ph}", (comment_id,))
+            if not row:
+                raise HTTPException(404, "Bình luận không tồn tại")
+            if str(row["user_id"]) != uid:
+                raise HTTPException(403, "Bạn chỉ có thể xóa bình luận của mình")
+            db._execute(conn, f"DELETE FROM comments WHERE id::text = {ph}", (comment_id,))
+    await asyncio.to_thread(_query)
     return {"success": True}
 
 
@@ -1133,21 +1166,23 @@ class BestAnswerBody(BaseModel):
 async def set_best_answer(post_id: str, body: BestAnswerBody, user=Depends(require_user)):
     post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
-    with db._conn() as conn:
-        post = db._fetchone(conn, f"SELECT user_id, post_type FROM posts WHERE id::text = {ph}", (post_id,))
-        if not post:
-            raise HTTPException(404, "Bài viết không tồn tại")
-        d = db._row_to_dict(post)
-        if str(d["user_id"]) != str(user["id"]):
-            raise HTTPException(403, "Chỉ người hỏi mới chọn được câu trả lời hay")
-        if body.comment_id:
-            c = db._fetchone(conn, f"SELECT 1 FROM comments WHERE id::text = {ph} AND post_id::text = {ph}",
-                             (body.comment_id, post_id))
-            if not c:
-                raise HTTPException(400, "Bình luận không thuộc bài này")
-            db._execute(conn, f"UPDATE posts SET best_answer_id = {ph}::uuid WHERE id::text = {ph}", (body.comment_id, post_id))
-        else:
-            db._execute(conn, f"UPDATE posts SET best_answer_id = NULL WHERE id::text = {ph}", (post_id,))
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"SELECT user_id, post_type FROM posts WHERE id::text = {ph}", (post_id,))
+            if not post:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            d = db._row_to_dict(post)
+            if str(d["user_id"]) != str(user["id"]):
+                raise HTTPException(403, "Chỉ người hỏi mới chọn được câu trả lời hay")
+            if body.comment_id:
+                c = db._fetchone(conn, f"SELECT 1 FROM comments WHERE id::text = {ph} AND post_id::text = {ph}",
+                                 (body.comment_id, post_id))
+                if not c:
+                    raise HTTPException(400, "Bình luận không thuộc bài này")
+                db._execute(conn, f"UPDATE posts SET best_answer_id = {ph}::uuid WHERE id::text = {ph}", (body.comment_id, post_id))
+            else:
+                db._execute(conn, f"UPDATE posts SET best_answer_id = NULL WHERE id::text = {ph}", (post_id,))
+    await asyncio.to_thread(_query)
     return {"best_answer_id": body.comment_id}
 
 
@@ -1160,25 +1195,26 @@ async def toggle_like(post_id: str, user=Depends(require_user)):
                "Bạn thao tác quá nhanh. Vui lòng đợi chút.")
     ph = db._ph
     uid = str(user["id"])
-    with db._conn() as conn:
-        # Atomic toggle: DELETE first; if nothing deleted, INSERT
-        result = db._fetchone(conn, f"""
-            WITH removed AS (
-                DELETE FROM likes WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
-                RETURNING 1
-            ),
-            inserted AS (
-                INSERT INTO likes (user_id, post_id)
-                SELECT {ph}::uuid, {ph}::uuid
-                WHERE NOT EXISTS (SELECT 1 FROM removed)
-                ON CONFLICT DO NOTHING
-                RETURNING 1
-            )
-            SELECT
-                EXISTS (SELECT 1 FROM inserted) AS liked,
-                (SELECT like_count FROM posts WHERE id::text = {ph}) AS like_count,
-                (SELECT user_id FROM posts WHERE id::text = {ph}) AS post_owner
-        """, (uid, post_id, uid, post_id, post_id, post_id))
+    def _query():
+        with db._conn() as conn:
+            return db._fetchone(conn, f"""
+                WITH removed AS (
+                    DELETE FROM likes WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
+                    RETURNING 1
+                ),
+                inserted AS (
+                    INSERT INTO likes (user_id, post_id)
+                    SELECT {ph}::uuid, {ph}::uuid
+                    WHERE NOT EXISTS (SELECT 1 FROM removed)
+                    ON CONFLICT DO NOTHING
+                    RETURNING 1
+                )
+                SELECT
+                    EXISTS (SELECT 1 FROM inserted) AS liked,
+                    (SELECT like_count FROM posts WHERE id::text = {ph}) AS like_count,
+                    (SELECT user_id FROM posts WHERE id::text = {ph}) AS post_owner
+            """, (uid, post_id, uid, post_id, post_id, post_id))
+    result = await asyncio.to_thread(_query)
 
     liked = result["liked"] if result else False
     like_count = result["like_count"] if result else 0
@@ -1203,21 +1239,20 @@ async def toggle_bookmark(post_id: str, user=Depends(require_user)):
                "Bạn thao tác quá nhanh. Vui lòng đợi chút.")
     ph = db._ph
     uid = str(user["id"])
-    with db._conn() as conn:
-        deleted = db._fetchone(conn, f"""
-            DELETE FROM bookmarks WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
-            RETURNING 1
-        """, (uid, post_id))
-
-        if deleted:
-            saved = False
-        else:
+    def _query():
+        with db._conn() as conn:
+            deleted = db._fetchone(conn, f"""
+                DELETE FROM bookmarks WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
+                RETURNING 1
+            """, (uid, post_id))
+            if deleted:
+                return False
             db._execute(conn, f"""
                 INSERT INTO bookmarks (user_id, post_id) VALUES ({ph}::uuid, {ph}::uuid)
                 ON CONFLICT DO NOTHING
             """, (uid, post_id))
-            saved = True
-
+            return True
+    saved = await asyncio.to_thread(_query)
     return {"bookmarked": saved}
 
 
@@ -1228,19 +1263,20 @@ async def get_my_bookmarks(
 ):
     ph = db._ph
     offset = (page - 1) * limit
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
-                   e.name as entity_name, e.type as entity_type
-            FROM bookmarks b
-            JOIN posts p ON p.id = b.post_id
-            JOIN users u ON u.id = p.user_id
-            LEFT JOIN entities e ON e.id = p.entity_id
-            WHERE b.user_id = {ph}::uuid AND p.moderation_status = 'approved'
-            ORDER BY b.created_at DESC
-            LIMIT {ph} OFFSET {ph}
-        """, (str(user["id"]), limit, offset))
-
+    def _query():
+        with db._conn() as conn:
+            return db._fetchall(conn, f"""
+                SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
+                       e.name as entity_name, e.type as entity_type
+                FROM bookmarks b
+                JOIN posts p ON p.id = b.post_id
+                JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE b.user_id = {ph}::uuid AND p.moderation_status = 'approved'
+                ORDER BY b.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, (str(user["id"]), limit, offset))
+    rows = await asyncio.to_thread(_query)
     return {"posts": [_format_post(db._row_to_dict(r)) for r in rows]}
 
 
@@ -1361,79 +1397,84 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
     _is_uuid = len(user_id) == 36 and user_id.count("-") == 4
     viewer_id = str(user["id"]) if user else None
 
-    with db._conn() as conn:
-        if _is_uuid:
-            profile = db._fetchone(conn, f"""
-                SELECT id, display_name, avatar_url, cover_url, bio, username, created_at
-                FROM users WHERE id::text = {ph} AND is_active = TRUE
-            """, (user_id,))
-        else:
-            profile = db._fetchone(conn, f"""
-                SELECT id, display_name, avatar_url, cover_url, bio, username, created_at
-                FROM users WHERE lower(username) = {ph} AND is_active = TRUE
-            """, (user_id.lower(),))
+    def _query():
+        with db._conn() as conn:
+            if _is_uuid:
+                profile = db._fetchone(conn, f"""
+                    SELECT id, display_name, avatar_url, cover_url, bio, username, created_at
+                    FROM users WHERE id::text = {ph} AND is_active = TRUE
+                """, (user_id,))
+            else:
+                profile = db._fetchone(conn, f"""
+                    SELECT id, display_name, avatar_url, cover_url, bio, username, created_at
+                    FROM users WHERE lower(username) = {ph} AND is_active = TRUE
+                """, (user_id.lower(),))
 
-        if not profile:
-            raise HTTPException(404, "Người dùng không tồn tại")
+            if not profile:
+                raise HTTPException(404, "Người dùng không tồn tại")
 
-        profile = db._row_to_dict(profile)
-        resolved_id = str(profile["id"])
-        is_self = viewer_id == resolved_id
+            profile = db._row_to_dict(profile)
+            resolved_id = str(profile["id"])
+            is_self = viewer_id == resolved_id
 
-        # Block check
-        if not is_self and viewer_id:
-            is_blocked = db._fetchone(conn, f"""
-                SELECT 1 FROM blocks
-                WHERE (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
-                   OR (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
-            """, (viewer_id, resolved_id, resolved_id, viewer_id))
-            if is_blocked:
-                return {
-                    "user": {
-                        "id": str(profile["id"]),
-                        "username": profile.get("username"),
-                        "display_name": profile["display_name"],
-                        "avatar_url": profile.get("avatar_url"),
-                        "is_blocked": True,
-                    },
-                }
+            if not is_self and viewer_id:
+                is_blocked = db._fetchone(conn, f"""
+                    SELECT 1 FROM blocks
+                    WHERE (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+                       OR (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+                """, (viewer_id, resolved_id, resolved_id, viewer_id))
+                if is_blocked:
+                    return "blocked", profile, None, None, None, None, None, None, None
 
-        # Post counts (combined into one query)
-        counts = db._fetchone(conn, f"""
-            SELECT COUNT(*) as total,
-                   COUNT(*) FILTER (WHERE post_type = 'review') as reviews
-            FROM posts
-            WHERE user_id::text = {ph} AND moderation_status = 'approved'
-        """, (resolved_id,))
-        posts_n = counts["total"] if counts else 0
-        reviews_n = counts["reviews"] if counts else 0
+            counts = db._fetchone(conn, f"""
+                SELECT COUNT(*) as total,
+                       COUNT(*) FILTER (WHERE post_type = 'review') as reviews
+                FROM posts
+                WHERE user_id::text = {ph} AND moderation_status = 'approved'
+            """, (resolved_id,))
+            posts_n = counts["total"] if counts else 0
+            reviews_n = counts["reviews"] if counts else 0
 
-        # Reputation + following in same connection
-        reputation = _reputation(conn, resolved_id, posts_n, reviews_n)
-        following_row = db._fetchone(conn, f"""
-            SELECT COUNT(*) as c FROM follows
-            WHERE follower_id::text = {ph} AND target_type = 'user'
-        """, (resolved_id,))
-        follower_count = reputation["followers"]
+            reputation = _reputation(conn, resolved_id, posts_n, reviews_n)
+            following_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM follows
+                WHERE follower_id::text = {ph} AND target_type = 'user'
+            """, (resolved_id,))
 
-        # Privacy settings
-        privacy = None
-        try:
-            prow = db._fetchone(conn, f"SELECT * FROM user_privacy WHERE user_id = {ph}::uuid", (resolved_id,))
-            if prow:
-                privacy = db._row_to_dict(prow)
-        except Exception:
-            logger.warning("Failed to load privacy settings for user %s", resolved_id)
+            privacy = None
+            try:
+                prow = db._fetchone(conn, f"SELECT * FROM user_privacy WHERE user_id = {ph}::uuid", (resolved_id,))
+                if prow:
+                    privacy = db._row_to_dict(prow)
+            except Exception:
+                logger.warning("Failed to load privacy settings for user %s", resolved_id)
 
-        vis = privacy["profile_visibility"] if privacy else "public"
+            vis = privacy["profile_visibility"] if privacy else "public"
+            is_follower = False
+            if not is_self and vis != "public" and viewer_id:
+                frow = db._fetchone(conn, f"""
+                    SELECT 1 FROM follows
+                    WHERE follower_id = {ph}::uuid AND target_type = 'user' AND target_id = {ph}
+                """, (viewer_id, resolved_id))
+                is_follower = frow is not None
 
-        is_follower = False
-        if not is_self and vis != "public" and viewer_id:
-            frow = db._fetchone(conn, f"""
-                SELECT 1 FROM follows
-                WHERE follower_id = {ph}::uuid AND target_type = 'user' AND target_id = {ph}
-            """, (viewer_id, resolved_id))
-            is_follower = frow is not None
+        return vis, profile, is_self, is_follower, reputation, following_row, posts_n, reviews_n, privacy
+
+    result = await asyncio.to_thread(_query)
+    vis, profile, is_self, is_follower, reputation, following_row, posts_n, reviews_n, privacy = result
+
+    if vis == "blocked":
+        return {
+            "user": {
+                "id": str(profile["id"]),
+                "username": profile.get("username"),
+                "display_name": profile["display_name"],
+                "avatar_url": profile.get("avatar_url"),
+                "is_blocked": True,
+            },
+        }
+
+    follower_count = reputation["followers"] if reputation else 0
 
     if vis == "private" and not is_self and not is_follower:
         return {
@@ -1486,18 +1527,19 @@ async def get_user_posts(
     if not uid:
         raise HTTPException(404, "Người dùng không tồn tại")
     offset = (page - 1) * limit
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username, u.username,
-                   e.name as entity_name, e.type as entity_type
-            FROM posts p
-            JOIN users u ON u.id = p.user_id
-            LEFT JOIN entities e ON e.id = p.entity_id
-            WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved'
-            ORDER BY p.created_at DESC
-            LIMIT {ph} OFFSET {ph}
-        """, (uid, limit, offset))
-
+    def _query():
+        with db._conn() as conn:
+            return db._fetchall(conn, f"""
+                SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username, u.username,
+                       e.name as entity_name, e.type as entity_type
+                FROM posts p
+                JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved'
+                ORDER BY p.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, (uid, limit, offset))
+    rows = await asyncio.to_thread(_query)
     return {"posts": [_format_post(db._row_to_dict(r)) for r in rows]}
 
 
