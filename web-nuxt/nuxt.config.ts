@@ -72,6 +72,9 @@ export default defineNuxtConfig({
         { name: 'twitter:image', content: 'https://vinhlong360.vn/img/og-default.jpg' },
       ],
       link: [
+        { rel: 'canonical', href: 'https://vinhlong360.vn' },
+        { rel: 'preconnect', href: 'https://vinhlong360.vn' },
+        { rel: 'dns-prefetch', href: '//vinhlong360.vn' },
         { rel: 'preconnect', href: 'https://images.weserv.nl' },
         { rel: 'dns-prefetch', href: 'https://maptiles.openmap.vn' },
         { rel: 'sitemap', type: 'application/xml', href: '/sitemap.xml' },
@@ -85,6 +88,30 @@ export default defineNuxtConfig({
         // present — no flash-of-hidden, and full visibility when JS is off/slow.
         { children: "document.documentElement.classList.add('js')", tagPosition: 'head' },
         { innerHTML: "if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js')})}", type: 'text/javascript' },
+        {
+          type: 'application/ld+json',
+          innerHTML: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            'name': 'VinhLong360',
+            'alternateName': 'Khám phá Vĩnh Long – Bến Tre – Trà Vinh',
+            'url': 'https://vinhlong360.vn',
+            'description': 'Nền tảng khám phá du lịch, OCOP và cộng đồng cho vùng Vĩnh Long – Bến Tre – Trà Vinh',
+            'potentialAction': {
+              '@type': 'SearchAction',
+              'target': {
+                '@type': 'EntryPoint',
+                'urlTemplate': 'https://vinhlong360.vn/tim-kiem?q={search_term_string}',
+              },
+              'query-input': 'required name=search_term_string',
+            },
+            'publisher': {
+              '@type': 'Organization',
+              'name': 'VinhLong360',
+              'url': 'https://vinhlong360.vn',
+            },
+          }),
+        },
       ],
     },
   },
