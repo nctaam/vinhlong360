@@ -1103,6 +1103,28 @@ async def dashboard_alerts():
     return {"alerts": alerts[:5]}
 
 
+@router.get("/activity-feed")
+async def activity_feed(limit: int = Query(10, ge=1, le=50)):
+    """10 admin actions gần nhất từ audit JSONL."""
+    if not _AUDIT_FILE.exists():
+        return {"actions": []}
+    try:
+        lines = _AUDIT_FILE.read_text(encoding="utf-8").strip().split("\n")
+        actions = []
+        for line in reversed(lines):
+            if not line.strip():
+                continue
+            try:
+                actions.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue
+            if len(actions) >= limit:
+                break
+        return {"actions": actions}
+    except Exception:
+        return {"actions": []}
+
+
 _learn_proc: Optional[subprocess.Popen] = None
 
 @router.post("/trigger-learn")

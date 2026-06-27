@@ -855,18 +855,26 @@ async def get_entity_feed(
     ph = db._ph
     offset = (page - 1) * limit
 
+    block_clause = ""
+    params: list = [entity_id]
+    if user:
+        block_clause = f"AND u.id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = {ph}::uuid)"
+        params.append(str(user["id"]))
+    params.extend([limit, offset])
+
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
             SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username
             FROM posts p
             JOIN users u ON u.id = p.user_id
             WHERE p.entity_id = {ph} AND p.moderation_status = 'approved'
+            {block_clause}
             ORDER BY (CASE WHEN jsonb_typeof(p.images)='array' AND jsonb_array_length(p.images) > 0
                            THEN 1 ELSE 0 END) DESC,
                      p.like_count DESC,
                      p.created_at DESC
             LIMIT {ph} OFFSET {ph}
-        """, (entity_id, limit, offset))
+        """, tuple(params))
 
         total = db._fetchone(conn, f"""
             SELECT COUNT(*) as c FROM posts
@@ -1281,6 +1289,27 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
     profile = db._row_to_dict(profile)
     resolved_id = str(profile["id"])
 
+    viewer_id = str(user["id"]) if user else None
+    is_self = viewer_id == resolved_id
+
+    if not is_self and viewer_id:
+        with db._conn() as conn:
+            is_blocked = db._fetchone(conn, f"""
+                SELECT 1 FROM blocks
+                WHERE (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+                   OR (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+            """, (viewer_id, resolved_id, resolved_id, viewer_id))
+        if is_blocked:
+            return {
+                "user": {
+                    "id": str(profile["id"]),
+                    "username": profile.get("username"),
+                    "display_name": profile["display_name"],
+                    "avatar_url": profile.get("avatar_url"),
+                    "is_blocked": True,
+                },
+            }
+
     with db._conn() as conn:
         post_count = db._fetchone(conn, f"""
             SELECT COUNT(*) as c FROM posts
@@ -1310,8 +1339,6 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
     except Exception:
         logger.warning("Failed to load privacy settings for user %s", resolved_id)
 
-    viewer_id = str(user["id"]) if user else None
-    is_self = viewer_id == resolved_id
     vis = privacy["profile_visibility"] if privacy else "public"
 
     is_follower = False

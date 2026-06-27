@@ -1145,3 +1145,53 @@ Allow: /
 Host: {SITE}
 Sitemap: {SITE}/sitemap-index.xml
 """
+
+
+DEFAULT_OG_IMAGE = f"{SITE}/og-default.png"
+
+
+def build_og_meta(entity: dict[str, Any] | None = None) -> dict[str, str]:
+    """Open Graph meta data. Site-wide default + per-entity override."""
+    meta: dict[str, str] = {
+        "og:site_name": "VinhLong360",
+        "og:locale": "vi_VN",
+        "og:type": "website",
+        "og:image": DEFAULT_OG_IMAGE,
+        "og:image:width": "1200",
+        "og:image:height": "630",
+    }
+    if not entity:
+        meta["og:title"] = "VinhLong360 — Khám phá Vĩnh Long, Bến Tre, Trà Vinh"
+        meta["og:description"] = "Điểm đến, ẩm thực, OCOP, lưu trú và cộng đồng miền Tây."
+        meta["og:url"] = SITE
+        return meta
+
+    entity_id = str(entity.get("id", ""))
+    meta["og:title"] = entity.get("name") or entity_id
+    meta["og:url"] = _entity_url(entity_id)
+    meta["og:type"] = "article"
+    if entity.get("summary"):
+        meta["og:description"] = str(entity["summary"])[:200]
+
+    images = entity.get("images")
+    if isinstance(images, list):
+        for img in images:
+            if isinstance(img, str) and img.startswith("http"):
+                meta["og:image"] = img
+                break
+    return meta
+
+
+@router.get("/seo/og/{entity_id}")
+def entity_og_meta(entity_id: str):
+    data = _load()
+    by_id = _by_id(data)
+    entity = by_id.get(entity_id)
+    if not entity:
+        raise HTTPException(status_code=404, detail="not found")
+    return build_og_meta(entity)
+
+
+@router.get("/seo/og")
+def site_og_meta():
+    return build_og_meta()

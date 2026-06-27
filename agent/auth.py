@@ -341,7 +341,10 @@ async def verify_otp(body: OTPVerify, request: Request):
     token = _generate_token()
     expires = datetime.now(timezone.utc) + timedelta(days=SESSION_EXPIRE_DAYS)
     from middleware import get_client_ip
-    ip = get_client_ip(request)  # P1-19: IP thật (trusted-proxy), không phải IP proxy
+    ip = get_client_ip(request)
+
+    if body.consent:
+        _log_consent(str(user["id"]), CONSENT_VERSION, ip)
     ua = request.headers.get("user-agent", "")
 
     with db._conn() as conn:
@@ -656,6 +659,37 @@ async def upload_cover(request: Request, file: UploadFile = File(...)):
     cover_url = urls.get("lg") or urls.get("md")
     db.update_user(str(user["id"]), cover_url=cover_url)
     return {"cover_url": cover_url, "sizes": urls}
+
+
+# ── Consent logging ──
+
+def _log_consent(user_id: str, version: str, ip: str):
+    try:
+        ph = db._ph
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                INSERT INTO consent_log (user_id, version, ip)
+                VALUES ({ph}::uuid, {ph}, {ph})
+            """, (user_id, version, ip))
+    except Exception:
+        pass
+
+
+@router.get("/consent-history")
+async def consent_history(request: Request):
+    user = await _get_current_user_or_none(request)
+    if not user:
+        raise HTTPException(401, "Chưa đăng nhập")
+    ph = db._ph
+    with db._conn() as conn:
+        rows = db._fetchall(conn, f"""
+            SELECT id, version, ip, created_at
+            FROM consent_log
+            WHERE user_id = {ph}::uuid
+            ORDER BY created_at DESC
+            LIMIT 20
+        """, (str(user["id"]),))
+    return {"history": [dict(r) for r in rows]}
 
 
 # ── Login history ──
