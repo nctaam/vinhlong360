@@ -320,17 +320,18 @@ async def create_post(body: CreatePost, user=Depends(require_user)):
     post = db._row_to_dict(row)
     log_moderation("post", str(post["id"]), status, mod_result, auto=True)
 
-    # Báo: người được @-nhắc + người theo-dõi địa-điểm + chủ bài được đăng-lại (chỉ khi duyệt)
     if status == "approved":
-        _notify_mentions(mentions, str(user["id"]), user.get("display_name"), str(post["id"]), body.content)
-        _notify_entity_followers(body.entity_id, str(user["id"]), user.get("display_name"), str(post["id"]))
-        if orig_author_id and orig_author_id != str(user["id"]):
-            try:
-                create_notification(orig_author_id, "repost",
-                                    f"{user.get('display_name') or 'Ai đó'} đã đăng lại bài của bạn",
-                                    ref_type="post", ref_id=str(post["id"]))
-            except Exception:
-                logger.exception("Failed to notify repost to user %s", orig_author_id)
+        def _notify_post():
+            _notify_mentions(mentions, str(user["id"]), user.get("display_name"), str(post["id"]), body.content)
+            _notify_entity_followers(body.entity_id, str(user["id"]), user.get("display_name"), str(post["id"]))
+            if orig_author_id and orig_author_id != str(user["id"]):
+                try:
+                    create_notification(orig_author_id, "repost",
+                                        f"{user.get('display_name') or 'Ai đó'} đã đăng lại bài của bạn",
+                                        ref_type="post", ref_id=str(post["id"]))
+                except Exception:
+                    logger.exception("Failed to notify repost to user %s", orig_author_id)
+        await asyncio.to_thread(_notify_post)
 
     result = _enrich_post(post, user)
     if status != "approved":
@@ -1071,25 +1072,24 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
     log_moderation("comment", str(db._row_to_dict(row)["id"]), status, mod_result, auto=True)
 
     if status == "approved":
-        me = str(user["id"])
-        owner_id = str(post_owner["user_id"]) if post_owner else None
-        preview = body.content[:80] + ("..." if len(body.content) > 80 else "")
-        # báo chủ bài (nếu khác người bình luận)
-        if owner_id and owner_id != me:
-            create_notification(
-                owner_id, "comment",
-                f"{user.get('display_name', 'Ai đó')} đã bình luận bài viết của bạn",
-                body=preview, ref_type="post", ref_id=post_id,
-            )
-        # báo tác-giả bình-luận-cha khi có người trả lời (tránh trùng chủ bài + chính mình)
-        if parent_author and parent_author != me and parent_author != owner_id:
-            create_notification(
-                parent_author, "comment",
-                f"{user.get('display_name', 'Ai đó')} đã trả lời bình luận của bạn",
-                body=preview, ref_type="post", ref_id=post_id,
-            )
-        # @-mention trong bình luận
-        _notify_mentions(mentions, str(user["id"]), user.get("display_name"), post_id, body.content)
+        def _notify_comment():
+            me = str(user["id"])
+            owner_id = str(post_owner["user_id"]) if post_owner else None
+            preview = body.content[:80] + ("..." if len(body.content) > 80 else "")
+            if owner_id and owner_id != me:
+                create_notification(
+                    owner_id, "comment",
+                    f"{user.get('display_name', 'Ai đó')} đã bình luận bài viết của bạn",
+                    body=preview, ref_type="post", ref_id=post_id,
+                )
+            if parent_author and parent_author != me and parent_author != owner_id:
+                create_notification(
+                    parent_author, "comment",
+                    f"{user.get('display_name', 'Ai đó')} đã trả lời bình luận của bạn",
+                    body=preview, ref_type="post", ref_id=post_id,
+                )
+            _notify_mentions(mentions, str(user["id"]), user.get("display_name"), post_id, body.content)
+        await asyncio.to_thread(_notify_comment)
 
     return {"comment": _format_comment(db._row_to_dict(row))}
 
@@ -1221,11 +1221,13 @@ async def toggle_like(post_id: str, user=Depends(require_user)):
     post_owner = str(result["post_owner"]) if result and result["post_owner"] else None
 
     if liked and post_owner and post_owner != uid:
-        create_notification(
-            post_owner, "like",
-            f"{user.get('display_name', 'Ai đó')} đã thích bài viết của bạn",
-            ref_type="post", ref_id=post_id,
-        )
+        def _notify_like():
+            create_notification(
+                post_owner, "like",
+                f"{user.get('display_name', 'Ai đó')} đã thích bài viết của bạn",
+                ref_type="post", ref_id=post_id,
+            )
+        await asyncio.to_thread(_notify_like)
 
     return {"liked": liked, "like_count": like_count}
 

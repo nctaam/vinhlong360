@@ -1022,9 +1022,9 @@ class Database:
 
             result = self._bulk_load(conn, data)
             if result.get("relationships_dropped", 0) > 0:
-                print(f"[replace_from_json] CANH BAO: {result['relationships_dropped']} quan he trung "
-                      f"(from,to,type) bi bo khi luu (input {result['relationships']} -> stored "
-                      f"{result['relationships_stored']})")
+                logger.warning("replace_from_json: %d quan he trung (from,to,type) bi bo khi luu "
+                               "(input %d -> stored %d)",
+                               result['relationships_dropped'], result['relationships'], result['relationships_stored'])
 
         result["mode"] = "replace"
         if backup_path:

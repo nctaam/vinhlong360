@@ -311,11 +311,13 @@ async def toggle_follow(target_type: str, target_id: str, user=Depends(require_u
     following = await asyncio.to_thread(_toggle)
 
     if following and target_type == "user":
-        create_notification(
-            target_id, "follow",
-            f"{user.get('display_name', 'Ai đó')} đã theo dõi bạn",
-            ref_type="user", ref_id=str(user["id"]),
-        )
+        def _notify_follow():
+            create_notification(
+                target_id, "follow",
+                f"{user.get('display_name', 'Ai đó')} đã theo dõi bạn",
+                ref_type="user", ref_id=str(user["id"]),
+            )
+        await asyncio.to_thread(_notify_follow)
 
     return {"following": following}
 
