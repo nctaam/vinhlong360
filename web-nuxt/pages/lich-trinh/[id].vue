@@ -78,7 +78,7 @@
     <div class="reveal">
       <NuxtErrorBoundary>
         <ClientOnly>
-          <AIRecommendations v-if="itinerary.area" title="Khám phá thêm" :limit="4" />
+          <LazyAIRecommendations v-if="itinerary.area" title="Khám phá thêm" :limit="4" />
         </ClientOnly>
       </NuxtErrorBoundary>
     </div>

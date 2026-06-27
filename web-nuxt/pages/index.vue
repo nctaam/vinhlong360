@@ -292,7 +292,7 @@
         </div>
       </section>
       <NuxtErrorBoundary>
-        <AIRecommendations title="Có thể bạn quan tâm" :limit="4" />
+        <LazyAIRecommendations title="Có thể bạn quan tâm" :limit="4" />
       </NuxtErrorBoundary>
     </ClientOnly>
 

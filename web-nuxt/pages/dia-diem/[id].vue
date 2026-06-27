@@ -211,7 +211,7 @@
         <!-- Community Reviews -->
         <NuxtErrorBoundary>
           <ClientOnly>
-            <EntityReviews v-if="ff('reviews')" :entity-id="id" :entity-name="entity.name" />
+            <LazyEntityReviews v-if="ff('reviews')" :entity-id="id" :entity-name="entity.name" />
             <template #fallback><div class="detail-skeleton"><div class="sk-title"></div><div class="sk-line w80"></div><div class="sk-line w60"></div></div></template>
           </ClientOnly>
         </NuxtErrorBoundary>
@@ -219,7 +219,7 @@
         <!-- Community Feed -->
         <NuxtErrorBoundary>
           <ClientOnly>
-            <EntityFeed :entity-id="id" :entity-name="entity.name" />
+            <LazyEntityFeed :entity-id="id" :entity-name="entity.name" />
             <template #fallback><div class="detail-skeleton"><div class="sk-title"></div><div class="sk-line w90"></div><div class="sk-line w70"></div></div></template>
           </ClientOnly>
         </NuxtErrorBoundary>
@@ -227,7 +227,7 @@
         <!-- AI Travel Tips -->
         <NuxtErrorBoundary>
           <ClientOnly>
-            <AITravelTips v-if="entity && ff('ai_tips')" :entity-id="id" :entity-name="entity.name" />
+            <LazyAITravelTips v-if="entity && ff('ai_tips')" :entity-id="id" :entity-name="entity.name" />
             <template #fallback><div class="detail-skeleton"><div class="sk-title"></div><div class="sk-line w80"></div></div></template>
           </ClientOnly>
         </NuxtErrorBoundary>
@@ -235,7 +235,7 @@
         <!-- AI Recommendations -->
         <NuxtErrorBoundary>
           <ClientOnly>
-            <AIRecommendations :entity-id="id" :title="ss('labels.detail.recommendations_title', 'Bạn cũng có thể thích')" :limit="4" />
+            <LazyAIRecommendations :entity-id="id" :title="ss('labels.detail.recommendations_title', 'Bạn cũng có thể thích')" :limit="4" />
             <template #fallback><div class="detail-skeleton"><div class="sk-grid"><div class="sk-card"></div><div class="sk-card"></div><div class="sk-card"></div><div class="sk-card"></div></div></div></template>
           </ClientOnly>
         </NuxtErrorBoundary>
@@ -377,7 +377,7 @@
 
         <NuxtErrorBoundary>
           <ClientOnly>
-            <AIBestTime v-if="ff('ai_best_time')" :entity-id="id" :entity-name="entity.name" />
+            <LazyAIBestTime v-if="ff('ai_best_time')" :entity-id="id" :entity-name="entity.name" />
           </ClientOnly>
         </NuxtErrorBoundary>
 

@@ -35,7 +35,7 @@
 
     <NuxtErrorBoundary>
       <ClientOnly>
-        <AISearchAssist v-if="q" :query="q" />
+        <LazyAISearchAssist v-if="q" :query="q" />
         <template #fallback>
           <div v-if="q" class="ai-loading ai-loading-padded" aria-hidden="true"><div class="spinner spinner-center"></div></div>
         </template>
@@ -103,7 +103,7 @@
         </EmptyState>
         <NuxtErrorBoundary>
           <ClientOnly>
-            <AIRecommendations title="Gợi ý cho bạn" :limit="6" />
+            <LazyAIRecommendations title="Gợi ý cho bạn" :limit="6" />
           </ClientOnly>
         </NuxtErrorBoundary>
       </template>
