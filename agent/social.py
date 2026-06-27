@@ -792,7 +792,7 @@ async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100
     """Danh sách NGƯỜI mà user này đang theo dõi (hồ-sơ công-khai)."""
     validate_path_id(user_id, "user_id")
     ph = db._ph
-    uid = _resolve_user_id(user_id)
+    uid = await asyncio.to_thread(_resolve_user_id, user_id)
     if not uid:
         raise HTTPException(404, "Người dùng không tồn tại")
     def _query():
@@ -816,7 +816,7 @@ async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), off
     """Danh sách NGƯỜI đang theo dõi user này (hồ-sơ công-khai)."""
     validate_path_id(user_id, "user_id")
     ph = db._ph
-    uid = _resolve_user_id(user_id)
+    uid = await asyncio.to_thread(_resolve_user_id, user_id)
     if not uid:
         raise HTTPException(404, "Người dùng không tồn tại")
     def _query():
@@ -1532,7 +1532,7 @@ async def get_user_posts(
 ):
     validate_path_id(user_id, "user_id")
     ph = db._ph
-    uid = _resolve_user_id(user_id)
+    uid = await asyncio.to_thread(_resolve_user_id, user_id)
     if not uid:
         raise HTTPException(404, "Người dùng không tồn tại")
     offset = (page - 1) * limit
