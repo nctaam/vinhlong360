@@ -838,3 +838,49 @@ def test_gallery_empty_images():
     data = resp.json()
     assert data["total"] == 0
     assert data["images"] == []
+
+
+# ── Contact view tracking ─────────────────────────────────────────────
+
+def test_view_contact_endpoint_mounted():
+    pairs = _route_pairs(_public_client().app)
+    assert ("POST", "/api/entities/{entity_id}/view-contact") in pairs
+
+
+def test_view_contact_writes_log(tmp_path, monkeypatch):
+    import public_api
+    import ratelimit
+    ratelimit._reset()
+    log_file = tmp_path / "contact_views.jsonl"
+    monkeypatch.setattr(public_api, "CONTACT_VIEWS_FILE", log_file)
+    client = _public_client()
+    resp = client.post("/api/entities/test-entity/view-contact?action=zalo")
+    assert resp.status_code == 200
+    assert resp.json()["ok"] is True
+    lines = log_file.read_text(encoding="utf-8").strip().split("\n")
+    assert len(lines) == 1
+    record = json.loads(lines[0])
+    assert record["entity_id"] == "test-entity"
+    assert record["action"] == "zalo"
+    assert "ts" in record
+    assert "ip" in record
+
+
+def test_view_contact_invalid_action():
+    client = _public_client()
+    resp = client.post("/api/entities/test-entity/view-contact?action=invalid")
+    assert resp.status_code == 422
+
+
+def test_view_contact_rate_limit(tmp_path, monkeypatch):
+    import public_api
+    import ratelimit
+    ratelimit._reset()
+    log_file = tmp_path / "contact_views.jsonl"
+    monkeypatch.setattr(public_api, "CONTACT_VIEWS_FILE", log_file)
+    client = _public_client()
+    for i in range(10):
+        resp = client.post("/api/entities/test-entity/view-contact?action=phone")
+        assert resp.status_code == 200
+    resp = client.post("/api/entities/test-entity/view-contact?action=phone")
+    assert resp.status_code == 429

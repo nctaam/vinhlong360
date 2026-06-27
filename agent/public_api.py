@@ -1021,6 +1021,44 @@ async def get_review_stats(entity_id: str, response: Response):
     return result
 
 
+# ── Contact view tracking (CTA analytics) ───────────────────────────
+
+CONTACT_VIEWS_FILE = Path(__file__).resolve().parent / "data" / "contact_views.jsonl"
+_VALID_CONTACT_ACTIONS = {"zalo", "phone", "website", "map"}
+
+
+@router.post("/entities/{entity_id}/view-contact")
+async def track_contact_view(
+    entity_id: str,
+    request: Request,
+    action: str = Query(..., pattern="^(zalo|phone|website|map)$"),
+):
+    validate_path_id(entity_id, "entity_id")
+    ip = get_client_ip(request)
+    from ratelimit import check_rate
+    check_rate(f"contact-view:{ip}", 10, 60,
+               "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
+
+    record = {
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "entity_id": entity_id,
+        "action": action,
+        "ip": ip,
+    }
+
+    def _write():
+        CONTACT_VIEWS_FILE.parent.mkdir(exist_ok=True)
+        with open(CONTACT_VIEWS_FILE, "a", encoding="utf-8") as f:
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+    try:
+        await asyncio.to_thread(_write)
+    except OSError:
+        logger.exception("Failed to write contact view log")
+        return JSONResponse(status_code=500, content={"error": "store_failed"})
+    return {"ok": True}
+
+
 # ── ND 147/2024 Compliance & Transparency ──────────────────────────────
 
 @router.get("/transparency")
