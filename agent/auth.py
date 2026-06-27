@@ -610,7 +610,7 @@ async def update_profile(body: ProfileUpdate, request: Request):
             fields["username"] = uname
 
     if fields:
-        user = db.update_user(str(user["id"]), **fields)
+        user = await asyncio.to_thread(lambda: db.update_user(str(user["id"]), **fields))
 
     return {"user": _safe_user(user)}
 
@@ -660,7 +660,7 @@ async def upload_avatar(request: Request, file: UploadFile = File(...)):
         raise HTTPException(500, "Không thể upload ảnh, vui lòng thử lại")
 
     avatar_url = urls.get("md") or urls.get("sm")
-    db.update_user(str(user["id"]), avatar_url=avatar_url)
+    await asyncio.to_thread(db.update_user, str(user["id"]), avatar_url=avatar_url)
     return {"avatar_url": avatar_url, "sizes": urls}
 
 
@@ -689,7 +689,7 @@ async def upload_cover(request: Request, file: UploadFile = File(...)):
         raise HTTPException(500, "Không thể upload ảnh, vui lòng thử lại")
 
     cover_url = urls.get("lg") or urls.get("md")
-    db.update_user(str(user["id"]), cover_url=cover_url)
+    await asyncio.to_thread(db.update_user, str(user["id"]), cover_url=cover_url)
     return {"cover_url": cover_url, "sizes": urls}
 
 
