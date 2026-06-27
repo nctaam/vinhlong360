@@ -878,11 +878,15 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 @app.middleware("http")
 async def security_headers(request, call_next):
+    from auth_middleware import generate_csp_nonce, build_csp
+    nonce = generate_csp_nonce()
+    request.state.csp_nonce = nonce
     response = await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(self)"
+    response.headers["Content-Security-Policy"] = build_csp(nonce)
     if os.environ.get("ENVIRONMENT") == "production":
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     return response
@@ -3198,8 +3202,9 @@ async def dynamic_agents_create(req: DynamicAgentCreateRequest, request: Request
 # ── Chat UI ──
 
 @app.get("/", response_class=HTMLResponse)
-async def home():
-    return CHAT_HTML
+async def home(request: Request):
+    nonce = getattr(request.state, "csp_nonce", "")
+    return CHAT_HTML.replace("<script>", f'<script nonce="{nonce}">', 1)
 
 
 CHAT_HTML = """<!DOCTYPE html>

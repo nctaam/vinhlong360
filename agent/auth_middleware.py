@@ -397,16 +397,24 @@ SECURITY_HEADERS = {
 SECURITY_HEADERS_PROD = {
     **SECURITY_HEADERS,
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
-    "Content-Security-Policy": (
+}
+
+
+def generate_csp_nonce() -> str:
+    return secrets.token_urlsafe(16)
+
+
+def build_csp(nonce: str = "") -> str:
+    script_src = f"'self' 'nonce-{nonce}'" if nonce else "'self'"
+    return (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline'; "
+        f"script-src {script_src}; "
         "style-src 'self' 'unsafe-inline'; "
         "img-src 'self' data: https:; "
         "font-src 'self'; "
         "connect-src 'self'; "
         "frame-ancestors 'none'"
-    ),
-}
+    )
 
 
 def get_security_headers(is_production: bool = False) -> dict:

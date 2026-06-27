@@ -38,13 +38,13 @@ TYPE_SCHEMA = {
     "attraction": "TouristAttraction",
     "cafe": "CafeOrCoffeeShop",
     "craft_village": "LocalBusiness",
-    "dish": "FoodEstablishment",
+    "dish": "Recipe",
     "drink": "Product",
     "economy": "LocalBusiness",
     "event": "Event",
     "experience": "TouristAttraction",
     "facility": "CivicStructure",
-    "history": "LandmarksOrHistoricalBuildings",
+    "history": "LandmarkOrHistoricalBuilding",
     "itinerary": "TouristTrip",
     "nature": "TouristAttraction",
     "organization": "Organization",
@@ -481,7 +481,11 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
             ld["material"] = attrs["material"]
         ld["countryOfOrigin"] = {"@type": "Country", "name": "Việt Nam"}
 
-    if schema_type in ("FoodEstablishment", "Restaurant", "CafeOrCoffeeShop"):
+    if schema_type == "Recipe":
+        cuisine = attrs.get("specialty") or attrs.get("food_type")
+        if cuisine:
+            ld["recipeCuisine"] = cuisine
+    elif schema_type in ("FoodEstablishment", "Restaurant", "CafeOrCoffeeShop"):
         cuisine = attrs.get("specialty") or attrs.get("food_type")
         if cuisine:
             ld["servesCuisine"] = cuisine
@@ -1031,7 +1035,7 @@ def sitemap():
             loc,
             changefreq="weekly",
             priority=DETAIL_PRIORITY.get(str(entity.get("type")), "0.5"),
-            lastmod=_safe_date(entity.get("updatedAt"), now),
+            lastmod=_safe_date(entity.get("updatedAt"), None),
         ))
 
     for itinerary in data.get("itineraries", []):
@@ -1041,7 +1045,7 @@ def sitemap():
             _itinerary_url(str(itinerary["id"])),
             changefreq="monthly",
             priority="0.7",
-            lastmod=_safe_date(itinerary.get("updatedAt"), now),
+            lastmod=_safe_date(itinerary.get("updatedAt"), None),
         ))
 
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'

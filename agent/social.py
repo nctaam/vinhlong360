@@ -23,7 +23,7 @@ from pydantic import BaseModel, field_validator
 
 from auth_middleware import get_current_user, require_user
 from database import db
-from moderation import moderate_content, log_moderation
+from moderation import moderate_content, moderate_content_enhanced, log_moderation
 from notifications import create_notification
 from storage import storage
 from ratelimit import check_rate
@@ -286,7 +286,7 @@ async def create_post(body: CreatePost, user=Depends(require_user)):
             "content": (od.get("content") or "")[:280], "created_at": str(od.get("created_at") or ""),
         }
 
-    mod_result = await moderate_content(body.content, body.images)
+    mod_result = await moderate_content_enhanced(body.content, user_id=str(user["id"]), image_urls=body.images)
     status = mod_result["status"]
     mentions = _clean_mentions(body.mentions)
     hashtags = _extract_hashtags(body.content)
@@ -397,7 +397,7 @@ async def update_post(post_id: str, body: UpdatePost, user=Depends(require_user)
     if len(new_content) > 5000:
         raise HTTPException(400, "Nội dung tối đa 5000 ký tự")
 
-    mod_result = await moderate_content(new_content, [])
+    mod_result = await moderate_content_enhanced(new_content, user_id=str(user["id"]))
     status = mod_result["status"]
     hashtags = _extract_hashtags(new_content)
     set_rating = body.rating is not None and d["post_type"] == "review"
@@ -991,8 +991,7 @@ async def get_comments(
 async def create_comment(post_id: str, body: CreateComment, user=Depends(require_user)):
     check_rate(f"comment:{user['id']}", RL_COMMENT_LIMIT, RL_COMMENT_WINDOW,
                "Bạn bình luận quá nhanh. Vui lòng đợi chút rồi thử lại.")
-    # P0-7: bình luận PHẢI qua kiểm duyệt như bài viết (trước đây bỏ qua → spam/abuse public ngay).
-    mod_result = await moderate_content(body.content, [])
+    mod_result = await moderate_content_enhanced(body.content, user_id=str(user["id"]))
     status = mod_result["status"]
     mentions = _clean_mentions(body.mentions)
 
@@ -1069,7 +1068,7 @@ async def edit_comment(comment_id: str, body: EditComment, user=Depends(require_
             raise HTTPException(404, "Bình luận không tồn tại")
         if str(row["user_id"]) != uid:
             raise HTTPException(403, "Bạn chỉ có thể sửa bình luận của mình")
-        mod_result = await moderate_content(body.content, [])
+        mod_result = await moderate_content_enhanced(body.content, user_id=uid)
         db._execute(conn, f"""
             UPDATE comments SET content = {ph}, moderation_status = {ph}, updated_at = NOW()
             WHERE id::text = {ph}

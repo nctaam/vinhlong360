@@ -650,12 +650,12 @@ class TestSecurityHeaders:
         assert "max-age=" in headers["Strict-Transport-Security"]
 
     def test_prod_headers_include_csp(self):
-        from auth_middleware import get_security_headers
-        headers = get_security_headers(is_production=True)
-        assert "Content-Security-Policy" in headers
-        csp = headers["Content-Security-Policy"]
+        from auth_middleware import build_csp, generate_csp_nonce
+        nonce = generate_csp_nonce()
+        csp = build_csp(nonce)
         assert "default-src" in csp
-        assert "script-src" in csp
+        assert f"'nonce-{nonce}'" in csp
+        assert "'unsafe-inline'" not in csp.split("script-src")[1].split(";")[0]
         assert "frame-ancestors 'none'" in csp
 
     def test_prod_headers_superset_of_dev(self):

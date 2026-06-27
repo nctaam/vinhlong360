@@ -1213,21 +1213,23 @@ class Database:
                 changes.append((entity_id, field, old_val[:2000], new_val[:2000], actor))
         if not changes:
             return
+        ph = self._ph
         with self._conn() as conn:
             for c in changes:
-                self._execute(conn, """
+                self._execute(conn, f"""
                     INSERT INTO entity_changes (entity_id, field, old_value, new_value, actor)
-                    VALUES (?, ?, ?, ?, ?)
+                    VALUES ({ph}, {ph}, {ph}, {ph}, {ph})
                 """, c)
 
     def get_entity_history(self, entity_id: str, limit: int = 50) -> list[dict]:
+        ph = self._ph
         with self._conn() as conn:
-            rows = self._fetchall(conn, """
+            rows = self._fetchall(conn, f"""
                 SELECT id, entity_id, field, old_value, new_value, actor, created_at
                 FROM entity_changes
-                WHERE entity_id = ?
+                WHERE entity_id = {ph}
                 ORDER BY created_at DESC
-                LIMIT ?
+                LIMIT {ph}
             """, (entity_id, limit))
         return [self._row_to_dict(r) for r in rows]
 
