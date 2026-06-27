@@ -880,25 +880,21 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
-    allow_headers=["Content-Type", "X-Admin-Key", "Authorization"],
+    allow_headers=["Content-Type", "X-Admin-Key", "Authorization", "X-CSRF-Token"],
 )
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 
 @app.middleware("http")
 async def security_headers(request, call_next):
-    from auth_middleware import generate_csp_nonce, build_csp
+    from auth_middleware import generate_csp_nonce, build_csp, get_security_headers
     nonce = generate_csp_nonce()
     request.state.csp_nonce = nonce
     response = await call_next(request)
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(self)"
+    for k, v in get_security_headers(_IS_PROD).items():
+        response.headers[k] = v
     response.headers["Content-Security-Policy"] = build_csp(nonce)
     response.headers["X-API-Version"] = "1.0"
-    if os.environ.get("ENVIRONMENT") == "production":
-        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     return response
 
 
@@ -959,18 +955,31 @@ async def mention_search(q: str = ""):
 
 
 MAX_BODY_SIZE = 1_048_576  # 1MB
+_BODY_LIMITS = {
+    "/api/comments": 10_240,        # 10KB for comments
+    "/api/posts": 51_200,           # 50KB for posts (text+mentions)
+    "/chat": 10_240,                # 10KB for chat messages
+    "/auth/avatar": MAX_BODY_SIZE,  # 1MB for avatar upload
+}
 
 @app.middleware("http")
 async def limit_request_size(request: Request, call_next):
-    """Reject requests with body > 1MB to prevent DoS."""
+    """Reject requests with body > limit to prevent DoS. Per-endpoint limits."""
     content_length = request.headers.get("content-length")
     if content_length:
         try:
-            if int(content_length) > MAX_BODY_SIZE:
-                return JSONResponse(status_code=413, content={"error": "Request body too large (max 1MB)"})
+            size = int(content_length)
         except ValueError:
-            # Content-Length không phải số -> request hỏng, trả 400 (tránh 500 do int() ném).
             return JSONResponse(status_code=400, content={"error": "Invalid Content-Length header"})
+        path = request.url.path
+        limit = MAX_BODY_SIZE
+        for prefix, plimit in _BODY_LIMITS.items():
+            if path.startswith(prefix):
+                limit = plimit
+                break
+        if size > limit:
+            return JSONResponse(status_code=413,
+                                content={"error": f"Request body too large (max {limit // 1024}KB)"})
     return await call_next(request)
 
 

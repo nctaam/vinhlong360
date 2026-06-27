@@ -565,3 +565,41 @@ def test_pg_connect_timeout_set():
     from database import Database
     src = inspect.getsource(Database._conn)
     assert "connect_timeout" in src
+
+
+# ── Security headers consolidation ────────────────────────────────────
+
+def test_security_headers_complete():
+    """Verify all security headers are defined."""
+    from auth_middleware import SECURITY_HEADERS, SECURITY_HEADERS_PROD
+    assert "X-Content-Type-Options" in SECURITY_HEADERS
+    assert "X-Frame-Options" in SECURITY_HEADERS
+    assert "Permissions-Policy" in SECURITY_HEADERS
+    assert "Cross-Origin-Opener-Policy" in SECURITY_HEADERS
+    assert "Cross-Origin-Resource-Policy" in SECURITY_HEADERS
+    assert "Strict-Transport-Security" in SECURITY_HEADERS_PROD
+    assert "preload" in SECURITY_HEADERS_PROD["Strict-Transport-Security"]
+
+
+def test_get_security_headers_prod_includes_hsts():
+    from auth_middleware import get_security_headers
+    headers = get_security_headers(is_production=True)
+    assert "Strict-Transport-Security" in headers
+
+
+def test_get_security_headers_dev_no_hsts():
+    from auth_middleware import get_security_headers
+    headers = get_security_headers(is_production=False)
+    assert "Strict-Transport-Security" not in headers
+
+
+# ── Per-endpoint body limits ──────────────────────────────────────────
+
+def test_body_limits_defined():
+    """Verify per-endpoint body limits exist in server config."""
+    import inspect
+    # Can't import server.py without LLM_API_KEY, so check the source file
+    src = (Path(__file__).parent.parent / "server.py").read_text(encoding="utf-8")
+    assert "_BODY_LIMITS" in src
+    assert "/api/comments" in src
+    assert "/api/posts" in src
