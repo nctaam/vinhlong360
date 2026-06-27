@@ -93,7 +93,7 @@ async function submit() {
 
 <style scoped>
 .rm-overlay {
-  position: fixed; inset: 0; z-index: 9000;
+  position: fixed; inset: 0; z-index: var(--z-lightbox);
   background: rgba(0,0,0,.45); backdrop-filter: blur(2px);
   display: flex; align-items: flex-end; justify-content: center;
   padding: 0;

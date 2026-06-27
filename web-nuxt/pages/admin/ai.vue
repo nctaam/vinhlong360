@@ -77,7 +77,7 @@
             />
           </svg>
           <div class="ai-ring-center">
-            <span class="ai-ring-val" :style="{ color: hitRate >= 70 ? '#219653' : hitRate >= 40 ? '#e67e22' : '#D94F3D' }">{{ hitRate }}%</span>
+            <span class="ai-ring-val" :style="{ color: hitRate >= 70 ? 'var(--success)' : hitRate >= 40 ? 'var(--warning)' : 'var(--danger)' }">{{ hitRate }}%</span>
             <span class="ai-ring-lbl">hit rate</span>
           </div>
         </div>
@@ -87,11 +87,11 @@
             <span class="ai-metric-lbl">Entries</span>
           </div>
           <div class="ai-metric">
-            <span class="ai-metric-val" style="color: #219653">{{ health.cache.hits || 0 }}</span>
+            <span class="ai-metric-val" style="color: var(--success)">{{ health.cache.hits || 0 }}</span>
             <span class="ai-metric-lbl">Hits</span>
           </div>
           <div class="ai-metric">
-            <span class="ai-metric-val" style="color: #D94F3D">{{ health.cache.misses || 0 }}</span>
+            <span class="ai-metric-val" style="color: var(--danger)">{{ health.cache.misses || 0 }}</span>
             <span class="ai-metric-lbl">Misses</span>
           </div>
         </div>
@@ -105,10 +105,10 @@
         <div class="ai-dq-bar-wrap">
           <div class="ai-dq-bar-label">
             <span>Coverage</span>
-            <span class="ai-dq-bar-pct" :style="{ color: health.data_quality.coverage_pct >= 80 ? '#219653' : '#e67e22' }">{{ health.data_quality.coverage_pct }}%</span>
+            <span class="ai-dq-bar-pct" :style="{ color: health.data_quality.coverage_pct >= 80 ? 'var(--success)' : 'var(--warning)' }">{{ health.data_quality.coverage_pct }}%</span>
           </div>
           <div class="ai-dq-track">
-            <div class="ai-dq-fill" :style="{ width: health.data_quality.coverage_pct + '%', background: health.data_quality.coverage_pct >= 80 ? '#219653' : '#e67e22' }"></div>
+            <div class="ai-dq-fill" :style="{ width: health.data_quality.coverage_pct + '%', background: health.data_quality.coverage_pct >= 80 ? 'var(--success)' : 'var(--warning)' }"></div>
           </div>
         </div>
         <div class="ai-metric">
@@ -146,7 +146,7 @@
       <h2 class="admin-section-title">Errors</h2>
       <div class="ai-metrics">
         <div class="ai-metric">
-          <span class="ai-metric-val" :style="{ color: (health.errors.total || 0) > 0 ? '#D94F3D' : '#219653' }">{{ health.errors.total || 0 }}</span>
+          <span class="ai-metric-val" :style="{ color: (health.errors.total || 0) > 0 ? 'var(--danger)' : 'var(--success)' }">{{ health.errors.total || 0 }}</span>
           <span class="ai-metric-lbl">Tổng lỗi</span>
         </div>
         <div class="ai-metric">
@@ -332,9 +332,9 @@ async function reload() {
 function rtColor(ms: number | undefined): string {
   const v = Number(ms) || 0
   if (v <= 0) return 'var(--ink)'
-  if (v < 500) return '#219653'
-  if (v <= 1000) return '#e67e22'
-  return '#D94F3D'
+  if (v < 500) return 'var(--success)'
+  if (v <= 1000) return 'var(--warning)'
+  return 'var(--danger)'
 }
 const triggerResultIsError = computed(() => /error|failed|lỗi/i.test(triggerResult.value))
 const triageOutIsError = computed(() => /^lỗi|llm lỗi|error/i.test(triageOut.value.trim()))

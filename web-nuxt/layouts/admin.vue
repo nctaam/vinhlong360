@@ -293,7 +293,7 @@ onUnmounted(() => {
   content: attr(title); position: absolute; left: calc(100% + 8px); top: 50%;
   transform: translateY(-50%); background: rgba(0,0,0,.85); color: #fff;
   padding: 4px 10px; border-radius: 6px; font-size: .75rem; font-weight: 600;
-  white-space: nowrap; z-index: 200; pointer-events: none;
+  white-space: nowrap; z-index: var(--z-overlay); pointer-events: none;
   animation: tooltipIn .15s ease-out;
 }
 @keyframes tooltipIn { from { opacity: 0; transform: translateY(-50%) translateX(-4px); } to { opacity: 1; transform: translateY(-50%) translateX(0); } }
@@ -529,7 +529,7 @@ onUnmounted(() => {
   .admin-shell { flex-direction: column; }
   .admin-sidebar {
     width: 100% !important; height: auto; flex-direction: row; padding: 0;
-    align-items: center; flex-wrap: wrap; position: sticky; top: 0; z-index: 100;
+    align-items: center; flex-wrap: wrap; position: sticky; top: 0; z-index: var(--z-sticky);
   }
   .admin-sidebar-head { border-bottom: none; padding: var(--space-3) var(--space-4); }
   .admin-brand small { display: none; }
@@ -588,7 +588,7 @@ onUnmounted(() => {
   transform: translateX(-50%); padding: 6px 10px; border-radius: 8px;
   background: var(--ink, #1a1a2e); color: #fff; font-size: .72rem; font-weight: 400;
   white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .15s;
-  z-index: 100; max-width: 260px; white-space: normal; line-height: 1.4;
+  z-index: var(--z-sticky); max-width: 260px; white-space: normal; line-height: 1.4;
 }
 .admin-help:hover::after, .admin-help:focus::after { opacity: 1; }
 </style>

@@ -1248,7 +1248,7 @@ useHead({
 
 /* ── Bookmark momentum cue (bottom-center, clears the right-side FAB) ── */
 .bookmark-momentum {
-  position: fixed; z-index: 50;
+  position: fixed; z-index: var(--z-dropdown);
   bottom: calc(var(--space-6) + env(safe-area-inset-bottom));
   left: 50%; transform: translateX(-50%);
   display: flex; align-items: center; gap: var(--space-2);

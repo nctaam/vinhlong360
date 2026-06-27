@@ -601,7 +601,7 @@ onMounted(() => fetchUsers())
 .dark .usr-confirm-cancel:hover { background: rgba(255,255,255,.06); }
 
 /* ── User detail drawer ── */
-.ud-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.45); display: flex; justify-content: flex-end; }
+.ud-overlay { position: fixed; inset: 0; z-index: var(--z-modal-high); background: rgba(0,0,0,.45); display: flex; justify-content: flex-end; }
 .ud-drawer { width: 100%; max-width: 440px; background: var(--card); height: 100%; display: flex; flex-direction: column; box-shadow: -4px 0 24px rgba(0,0,0,.15); animation: udSlideIn .25s var(--ease-out, cubic-bezier(.2,1,.4,1)); overflow: hidden; }
 @keyframes udSlideIn { from { transform: translateX(100%); } }
 .ud-head { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4); border-bottom: .5px solid var(--line); }

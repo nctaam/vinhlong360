@@ -48,7 +48,7 @@ watch(() => state.value.open, async (open) => {
 
 <style scoped>
 .confirm-overlay {
-  position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center;
+  position: fixed; inset: 0; z-index: var(--z-modal-high); display: flex; align-items: center; justify-content: center;
   background: rgba(var(--ink-rgb, 0,0,0), .45); padding: var(--space-4);
 }
 .confirm-box {

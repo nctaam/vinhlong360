@@ -244,6 +244,10 @@ async function submitReport(f: Entity) {
 
 let facilitiesAbort: AbortController | null = null
 
+onBeforeUnmount(() => {
+  facilitiesAbort?.abort()
+})
+
 async function loadFacilities() {
   if (facilitiesAbort) facilitiesAbort.abort()
   const id = wardId.value

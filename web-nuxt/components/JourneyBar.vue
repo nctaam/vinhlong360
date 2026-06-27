@@ -35,7 +35,7 @@ onUnmounted(() => { if (popTimer) clearTimeout(popTimer) })
 
 <style scoped>
 .journey-bar {
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 900;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: var(--z-modal-high);
   display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
   padding: var(--space-3) var(--space-5);
   background: var(--card); border-top: .5px solid var(--line);
