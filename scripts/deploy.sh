@@ -24,6 +24,23 @@
 #   * data sync into Postgres needs ALLOW_DESTRUCTIVE_DB_REPLACE=1 (B7 lock) + restart to reload RAM cache.
 #   * pg_dump to /tmp then move (peer-auth postgres user can't write root-owned backups/).
 #   * NEVER touch prod .env (a parse error there crash-loops vl-agent: server.py hard-reads os.environ["LLM_API_KEY"]).
+#
+# ROLLBACK GUIDE:
+#   Every deploy creates two rollback artifacts in /opt/vinhlong360/backups/:
+#     1. pre-deploy-<TS>.tar.gz  — code snapshot (agent/, web/data.json, web-nuxt/.output)
+#     2. db-pre-deploy-<TS>.sql  — full Postgres dump
+#
+#   To rollback on VPS:
+#     cd /opt/vinhlong360
+#     tar -xzf backups/pre-deploy-<TS>.tar.gz        # restore code
+#     psql "$DATABASE_URL" < backups/db-pre-deploy-<TS>.sql  # restore DB
+#     systemctl restart vl-agent vl-nuxt              # restart services
+#     curl -s http://127.0.0.1:8360/health            # verify
+#
+#   If only the frontend broke:
+#     tar -xzf backups/pre-deploy-<TS>.tar.gz web-nuxt/.output
+#     cd web-nuxt/.output/server && npm install --omit=dev
+#     systemctl restart vl-nuxt
 
 set -euo pipefail
 
@@ -57,7 +74,25 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 echo "==> deploy $TS  (frontend=$DO_FRONTEND backend=$DO_BACKEND data=$DO_DATA replace=$DO_REPLACE backup=$DO_BACKUP)"
 
-# 0. Pre-flight: connectivity + current health -------------------------------
+# 0a. Pre-deploy local checks -----------------------------------------------
+echo "==> pre-deploy checks (local)"
+if ! python -m pytest -q 2>&1 | tail -3; then
+  echo "❌ Tests failed — aborting deploy. Fix tests first."
+  exit 1
+fi
+
+if [ "$DO_BACKEND" = 1 ]; then
+  python scripts/validate_data.py --json > /dev/null 2>&1 || echo "⚠️  validate_data.py exited non-zero (warnings only, continuing)"
+fi
+
+if [ "$DO_FRONTEND" = 1 ] && [ "$DO_BUILD" = 0 ]; then
+  if [ ! -f web-nuxt/.output/server/index.mjs ]; then
+    echo "❌ --skip-build but web-nuxt/.output/server/index.mjs missing — build first or drop --skip-build."
+    exit 1
+  fi
+fi
+
+# 0b. Pre-flight: connectivity + current health ------------------------------
 echo "==> pre-flight health"
 $SSH "$VPS" 'systemctl is-active vl-agent vl-nuxt >/dev/null && echo "services up" || echo "WARN: a service is down"'
 
