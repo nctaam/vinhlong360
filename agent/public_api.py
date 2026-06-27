@@ -731,10 +731,12 @@ async def submit_report(payload: ReportIn, request: Request):
         "ip": ip,
         "status": "open",
     }
-    try:
+    def _write():
         REPORTS_FILE.parent.mkdir(exist_ok=True)
         with open(REPORTS_FILE, "a", encoding="utf-8") as f:
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    try:
+        await asyncio.to_thread(_write)
     except OSError:
         return JSONResponse(status_code=500, content={"error": "store_failed"})
     return {"ok": True, "message": "Đã ghi nhận. Cảm ơn bạn đã góp ý — chúng tôi sẽ kiểm tra."}

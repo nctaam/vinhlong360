@@ -709,16 +709,18 @@ async def consent_history(request: Request):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
-    ph = db._ph
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT id, version, ip, created_at
-            FROM consent_log
-            WHERE user_id = {ph}::uuid
-            ORDER BY created_at DESC
-            LIMIT 20
-        """, (str(user["id"]),))
-    return {"history": [dict(r) for r in rows]}
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT id, version, ip, created_at
+                FROM consent_log
+                WHERE user_id = {ph}::uuid
+                ORDER BY created_at DESC
+                LIMIT 20
+            """, (str(user["id"]),))
+        return {"history": [dict(r) for r in rows]}
+    return await asyncio.to_thread(_query)
 
 
 # ── Login history ──
@@ -743,16 +745,18 @@ async def get_login_history(request: Request, limit: int = 20):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
-    ph = db._ph
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT id, method, success, ip, user_agent, created_at
-            FROM login_history
-            WHERE user_id = {ph}::uuid
-            ORDER BY created_at DESC
-            LIMIT {ph}
-        """, (str(user["id"]), min(limit, 50)))
-    return {"history": [dict(r) for r in rows]}
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT id, method, success, ip, user_agent, created_at
+                FROM login_history
+                WHERE user_id = {ph}::uuid
+                ORDER BY created_at DESC
+                LIMIT {ph}
+            """, (str(user["id"]), min(limit, 50)))
+        return {"history": [dict(r) for r in rows]}
+    return await asyncio.to_thread(_query)
 
 
 # ── Privacy settings ──
@@ -768,13 +772,15 @@ async def get_privacy(request: Request):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
-    ph = db._ph
-    with db._conn() as conn:
-        row = db._fetchone(conn, f"SELECT * FROM user_privacy WHERE user_id = {ph}::uuid", (str(user["id"]),))
-    if row:
-        row = db._row_to_dict(row)
-        return {"profile_visibility": row["profile_visibility"], "show_activity": row["show_activity"], "show_saved": row["show_saved"]}
-    return {"profile_visibility": "public", "show_activity": True, "show_saved": True}
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT * FROM user_privacy WHERE user_id = {ph}::uuid", (str(user["id"]),))
+        if row:
+            row = db._row_to_dict(row)
+            return {"profile_visibility": row["profile_visibility"], "show_activity": row["show_activity"], "show_saved": row["show_saved"]}
+        return {"profile_visibility": "public", "show_activity": True, "show_saved": True}
+    return await asyncio.to_thread(_query)
 
 
 @router.put("/privacy")
@@ -787,31 +793,32 @@ async def update_privacy(body: PrivacyUpdate, request: Request):
     if body.profile_visibility and body.profile_visibility not in valid_vis:
         raise HTTPException(400, f"profile_visibility phải là một trong: {', '.join(valid_vis)}")
 
-    ph = db._ph
-    uid = str(user["id"])
-    with db._conn() as conn:
-        existing = db._fetchone(conn, f"SELECT 1 FROM user_privacy WHERE user_id = {ph}::uuid", (uid,))
-        if existing:
-            sets, params = [], []
-            if body.profile_visibility is not None:
-                sets.append(f"profile_visibility = {ph}")
-                params.append(body.profile_visibility)
-            if body.show_activity is not None:
-                sets.append(f"show_activity = {ph}")
-                params.append(body.show_activity)
-            if body.show_saved is not None:
-                sets.append(f"show_saved = {ph}")
-                params.append(body.show_saved)
-            if sets:
-                sets.append(f"updated_at = NOW()")
-                params.append(uid)
-                db._execute(conn, f"UPDATE user_privacy SET {', '.join(sets)} WHERE user_id = {ph}::uuid", params)
-        else:
-            db._execute(conn, f"""
-                INSERT INTO user_privacy (user_id, profile_visibility, show_activity, show_saved)
-                VALUES ({ph}::uuid, {ph}, {ph}, {ph})
-            """, (uid, body.profile_visibility or "public", body.show_activity if body.show_activity is not None else True, body.show_saved if body.show_saved is not None else True))
-
+    def _query():
+        ph = db._ph
+        uid = str(user["id"])
+        with db._conn() as conn:
+            existing = db._fetchone(conn, f"SELECT 1 FROM user_privacy WHERE user_id = {ph}::uuid", (uid,))
+            if existing:
+                sets, params = [], []
+                if body.profile_visibility is not None:
+                    sets.append(f"profile_visibility = {ph}")
+                    params.append(body.profile_visibility)
+                if body.show_activity is not None:
+                    sets.append(f"show_activity = {ph}")
+                    params.append(body.show_activity)
+                if body.show_saved is not None:
+                    sets.append(f"show_saved = {ph}")
+                    params.append(body.show_saved)
+                if sets:
+                    sets.append(f"updated_at = NOW()")
+                    params.append(uid)
+                    db._execute(conn, f"UPDATE user_privacy SET {', '.join(sets)} WHERE user_id = {ph}::uuid", params)
+            else:
+                db._execute(conn, f"""
+                    INSERT INTO user_privacy (user_id, profile_visibility, show_activity, show_saved)
+                    VALUES ({ph}::uuid, {ph}, {ph}, {ph})
+                """, (uid, body.profile_visibility or "public", body.show_activity if body.show_activity is not None else True, body.show_saved if body.show_saved is not None else True))
+    await asyncio.to_thread(_query)
     return await get_privacy(request)
 
 
@@ -828,17 +835,19 @@ async def _get_current_user_or_none(request: Request) -> dict | None:
     token = _extract_token(request)
     if not token:
         return None
-    try:
-        with db._conn() as conn:
-            row = db._fetchone(conn, f"""
-                SELECT u.* FROM user_sessions s
-                JOIN users u ON u.id = s.user_id
-                WHERE s.token = {db._ph} AND s.expires_at > NOW() AND u.is_active = TRUE
-            """, (_hash_token(token),))
-            return db._row_to_dict(row)
-    except Exception:
-        logger.exception("DB error in _get_current_user_or_none")
-        return None
+    def _query():
+        try:
+            with db._conn() as conn:
+                row = db._fetchone(conn, f"""
+                    SELECT u.* FROM user_sessions s
+                    JOIN users u ON u.id = s.user_id
+                    WHERE s.token = {db._ph} AND s.expires_at > NOW() AND u.is_active = TRUE
+                """, (_hash_token(token),))
+                return db._row_to_dict(row)
+        except Exception:
+            logger.exception("DB error in _get_current_user_or_none")
+            return None
+    return await asyncio.to_thread(_query)
 
 
 def _safe_user(user: dict) -> dict:
