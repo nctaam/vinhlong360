@@ -191,7 +191,9 @@ h4 { font-size: var(--text-lg);  line-height: var(--lh-lg);  letter-spacing: var
 
 /* ── Accessibility ── */
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-a:focus-visible, button:focus-visible, [role="button"]:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
+input:not([type="hidden"]):focus-visible, textarea:focus-visible, select:focus-visible,
+[tabindex]:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 a:focus:not(:focus-visible), button:focus:not(:focus-visible) { outline: none; }
 
 /* ── Global touch target baseline (WCAG 2.5.8) ── */
