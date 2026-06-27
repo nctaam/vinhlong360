@@ -65,6 +65,15 @@
       <small v-if="imageCredit" class="dc-credit">{{ imageCredit }}</small>
     </div>
 
+    <!-- Photo Gallery (asymmetric grid for 2+ images) -->
+    <PhotoGallery
+      v-if="hasEntityImages && entity.images.length >= 2"
+      :images="entity.images"
+      :alt="entity.name"
+      class="detail-gallery"
+      @open-lightbox="openCoverLightbox"
+    />
+
     <!-- Lightbox (replaces old ImageGallery) -->
     <Teleport to="body">
       <Transition name="lb-fade">
@@ -234,6 +243,9 @@
 
       <!-- Sidebar -->
       <aside class="detail-aside" aria-label="Thông tin bổ sung">
+        <!-- Contact Widget (sticky, replaces old contact-row on desktop) -->
+        <ContactWidget :entity="entity" class="detail-contact-widget" />
+
         <!-- OCOP highlight -->
         <div v-if="entity.attributes?.ocop" class="ocop-highlight">
           <div class="ocop-stars">
@@ -1047,3 +1059,31 @@ useHead({
 
 <!-- detail.css nạp theo route (bỏ khỏi global entry.css; phần dùng-chung ở detail-shared.css) -->
 <style src="~/assets/css/detail.css"></style>
+
+<style scoped>
+/* PhotoGallery placement below hero */
+.detail-gallery {
+  max-width: var(--maxw, 1200px);
+  margin: var(--space-4) auto;
+  padding: 0 var(--space-5);
+}
+
+/* ContactWidget: let the component handle its own sticky/positioning,
+   but override width inside the sidebar context */
+.detail-contact-widget {
+  width: 100%;
+  position: static;
+  margin-bottom: var(--space-5);
+}
+
+/* Hide old contact-row on desktop when ContactWidget is present */
+@media (min-width: 768px) {
+  .contact-row { display: none; }
+}
+
+/* On mobile, hide the desktop ContactWidget (it renders its own fixed bottom bar) */
+@media (max-width: 767px) {
+  /* Hide existing sticky-cta-bar since ContactWidget provides mobile bottom bar */
+  .sticky-cta-bar { display: none; }
+}
+</style>
