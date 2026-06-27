@@ -17,20 +17,9 @@ dist/
 .coverage
 *.coverage
 
-# Scratch / ETL intermediates (xem GĐ0.2)
+# Scratch / ETL intermediates
 scratch/
 scripts/_*.json
-tmp_*.json
-tmp2_*.json
-prov_*.json
-out_*.json
-so_*.json
-provisional_*.json
-result_temp.json
-top200_output.json
-final_structured.json
-final_entities.json
-final_output.json
 
 # Local dev DB stub + scratch (regenerable)
 *.db
