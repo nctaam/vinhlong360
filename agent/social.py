@@ -14,7 +14,6 @@ Post types:
 
 import json
 import logging
-import math
 import re
 from datetime import datetime
 from typing import Optional
@@ -121,7 +120,7 @@ def _notify_mentions(mentions: list[dict], author_id: str, author_name, post_id:
 
 
 def _notify_entity_followers(entity_id, author_id, author_name, post_id: str) -> None:
-    """Báo cho người THEO DÕI địa-điểm khi có bài mới về địa-điểm đó."""
+    """Báo cho người THEO DÕI địa-điểm khi có bài mới về địa-điểm đó (batch insert)."""
     if not entity_id:
         return
     ph = db._ph
@@ -129,16 +128,16 @@ def _notify_entity_followers(entity_id, author_id, author_name, post_id: str) ->
         with db._conn() as conn:
             rows = db._fetchall(conn,
                 f"SELECT follower_id FROM follows WHERE target_type='entity' AND target_id = {ph}", (entity_id,))
-        for r in rows:
-            uid = str(db._row_to_dict(r)["follower_id"])
-            if uid == author_id:
-                continue
-            try:
-                create_notification(uid, "entity_post",
-                                    f"{author_name or 'Ai đó'} đã đăng về địa điểm bạn theo dõi",
-                                    ref_type="post", ref_id=post_id)
-            except Exception:
-                logger.exception("Failed to notify entity follower %s on post %s", uid, post_id)
+            follower_ids = [str(db._row_to_dict(r)["follower_id"]) for r in rows
+                           if str(db._row_to_dict(r)["follower_id"]) != author_id]
+            if not follower_ids:
+                return
+            title = f"{author_name or 'Ai đó'} đã đăng về địa điểm bạn theo dõi"
+            for uid in follower_ids:
+                try:
+                    create_notification(uid, "entity_post", title, ref_type="post", ref_id=post_id)
+                except Exception:
+                    logger.exception("Failed to notify entity follower %s on post %s", uid, post_id)
     except Exception:
         logger.exception("Failed to load entity followers for entity %s", entity_id)
 
@@ -1079,32 +1078,37 @@ async def toggle_like(post_id: str, user=Depends(require_user)):
     ph = db._ph
     uid = str(user["id"])
     with db._conn() as conn:
-        deleted = db._fetchone(conn, f"""
-            DELETE FROM likes WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
-            RETURNING 1
-        """, (uid, post_id))
-
-        if deleted:
-            liked = False
-        else:
-            db._execute(conn, f"""
-                INSERT INTO likes (user_id, post_id) VALUES ({ph}::uuid, {ph}::uuid)
+        # Atomic toggle: DELETE first; if nothing deleted, INSERT
+        result = db._fetchone(conn, f"""
+            WITH removed AS (
+                DELETE FROM likes WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
+                RETURNING 1
+            ),
+            inserted AS (
+                INSERT INTO likes (user_id, post_id)
+                SELECT {ph}::uuid, {ph}::uuid
+                WHERE NOT EXISTS (SELECT 1 FROM removed)
                 ON CONFLICT DO NOTHING
-            """, (uid, post_id))
-            liked = True
+                RETURNING 1
+            )
+            SELECT
+                EXISTS (SELECT 1 FROM inserted) AS liked,
+                (SELECT like_count FROM posts WHERE id::text = {ph}) AS like_count,
+                (SELECT user_id FROM posts WHERE id::text = {ph}) AS post_owner
+        """, (uid, post_id, uid, post_id, post_id, post_id))
 
-        post_row = db._fetchone(conn, f"""
-            SELECT user_id, like_count FROM posts WHERE id::text = {ph}
-        """, (post_id,))
+    liked = result["liked"] if result else False
+    like_count = result["like_count"] if result else 0
+    post_owner = str(result["post_owner"]) if result and result["post_owner"] else None
 
-    if liked and post_row and str(post_row["user_id"]) != str(user["id"]):
+    if liked and post_owner and post_owner != uid:
         create_notification(
-            str(post_row["user_id"]), "like",
+            post_owner, "like",
             f"{user.get('display_name', 'Ai đó')} đã thích bài viết của bạn",
             ref_type="post", ref_id=post_id,
         )
 
-    return {"liked": liked, "like_count": post_row["like_count"] if post_row else 0}
+    return {"liked": liked, "like_count": like_count}
 
 
 # ── Bookmarks ──
@@ -1271,6 +1275,8 @@ def _reputation(conn, user_id: str, posts: int, reviews: int) -> dict:
 async def get_user_profile(user_id: str, user=Depends(get_current_user)):
     ph = db._ph
     _is_uuid = len(user_id) == 36 and user_id.count("-") == 4
+    viewer_id = str(user["id"]) if user else None
+
     with db._conn() as conn:
         if _is_uuid:
             profile = db._fetchone(conn, f"""
@@ -1283,67 +1289,62 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
                 FROM users WHERE lower(username) = {ph} AND is_active = TRUE
             """, (user_id.lower(),))
 
-    if not profile:
-        raise HTTPException(404, "Người dùng không tồn tại")
+        if not profile:
+            raise HTTPException(404, "Người dùng không tồn tại")
 
-    profile = db._row_to_dict(profile)
-    resolved_id = str(profile["id"])
+        profile = db._row_to_dict(profile)
+        resolved_id = str(profile["id"])
+        is_self = viewer_id == resolved_id
 
-    viewer_id = str(user["id"]) if user else None
-    is_self = viewer_id == resolved_id
-
-    if not is_self and viewer_id:
-        with db._conn() as conn:
+        # Block check
+        if not is_self and viewer_id:
             is_blocked = db._fetchone(conn, f"""
                 SELECT 1 FROM blocks
                 WHERE (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
                    OR (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
             """, (viewer_id, resolved_id, resolved_id, viewer_id))
-        if is_blocked:
-            return {
-                "user": {
-                    "id": str(profile["id"]),
-                    "username": profile.get("username"),
-                    "display_name": profile["display_name"],
-                    "avatar_url": profile.get("avatar_url"),
-                    "is_blocked": True,
-                },
-            }
+            if is_blocked:
+                return {
+                    "user": {
+                        "id": str(profile["id"]),
+                        "username": profile.get("username"),
+                        "display_name": profile["display_name"],
+                        "avatar_url": profile.get("avatar_url"),
+                        "is_blocked": True,
+                    },
+                }
 
-    with db._conn() as conn:
-        post_count = db._fetchone(conn, f"""
-            SELECT COUNT(*) as c FROM posts
+        # Post counts (combined into one query)
+        counts = db._fetchone(conn, f"""
+            SELECT COUNT(*) as total,
+                   COUNT(*) FILTER (WHERE post_type = 'review') as reviews
+            FROM posts
             WHERE user_id::text = {ph} AND moderation_status = 'approved'
         """, (resolved_id,))
-        review_count = db._fetchone(conn, f"""
-            SELECT COUNT(*) as c FROM posts
-            WHERE user_id::text = {ph} AND post_type = 'review' AND moderation_status = 'approved'
-        """, (resolved_id,))
+        posts_n = counts["total"] if counts else 0
+        reviews_n = counts["reviews"] if counts else 0
 
-    posts_n = post_count["c"] if post_count else 0
-    reviews_n = review_count["c"] if review_count else 0
-    with db._conn() as conn:
+        # Reputation + following in same connection
         reputation = _reputation(conn, resolved_id, posts_n, reviews_n)
         following_row = db._fetchone(conn, f"""
             SELECT COUNT(*) as c FROM follows
             WHERE follower_id::text = {ph} AND target_type = 'user'
         """, (resolved_id,))
-    follower_count = reputation["followers"]
+        follower_count = reputation["followers"]
 
-    privacy = None
-    try:
-        with db._conn() as conn:
+        # Privacy settings
+        privacy = None
+        try:
             prow = db._fetchone(conn, f"SELECT * FROM user_privacy WHERE user_id = {ph}::uuid", (resolved_id,))
             if prow:
                 privacy = db._row_to_dict(prow)
-    except Exception:
-        logger.warning("Failed to load privacy settings for user %s", resolved_id)
+        except Exception:
+            logger.warning("Failed to load privacy settings for user %s", resolved_id)
 
-    vis = privacy["profile_visibility"] if privacy else "public"
+        vis = privacy["profile_visibility"] if privacy else "public"
 
-    is_follower = False
-    if not is_self and vis != "public" and viewer_id:
-        with db._conn() as conn:
+        is_follower = False
+        if not is_self and vis != "public" and viewer_id:
             frow = db._fetchone(conn, f"""
                 SELECT 1 FROM follows
                 WHERE follower_id = {ph}::uuid AND target_type = 'user' AND target_id = {ph}

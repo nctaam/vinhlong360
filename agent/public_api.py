@@ -24,7 +24,10 @@ from middleware import report_limiter, get_client_ip
 
 router = APIRouter(prefix="/api", tags=["public"])
 
-_place_cache: dict[str, dict] = {}
+from collections import OrderedDict
+
+_PLACE_CACHE_MAX = 500
+_place_cache: OrderedDict[str, dict] = OrderedDict()
 DEFAULT_RELATIONSHIP_LIMIT = 24
 
 # Perf-P0: cache payload /homepage (endpoint nóng nhất) — trước đây scan toàn bảng entity
@@ -33,7 +36,8 @@ import time as _time
 _homepage_cache: dict = {"month": None, "data": None, "ts": 0.0}
 _HOMEPAGE_TTL = 120  # giây
 
-_entity_cache: dict[str, tuple[float, dict]] = {}
+_ENTITY_CACHE_MAX = 1000
+_entity_cache: OrderedDict[str, tuple[float, dict]] = OrderedDict()
 _ENTITY_TTL = 60  # 60s cache per entity
 
 def invalidate_entity_cache(entity_id: str | None = None):
@@ -75,10 +79,13 @@ async def get_site_settings(response: Response):
 
 def _get_place(place_id: str) -> dict | None:
     if place_id in _place_cache:
+        _place_cache.move_to_end(place_id)
         return _place_cache[place_id]
     place = db.get_entity(place_id)
     if place:
         _place_cache[place_id] = {"name": place["name"], "area": place.get("area")}
+        if len(_place_cache) > _PLACE_CACHE_MAX:
+            _place_cache.popitem(last=False)
     return _place_cache.get(place_id)
 
 def _enrich_place(entities: list[dict]):
@@ -189,6 +196,7 @@ async def get_entity(
     now = _time.time()
     cached = _entity_cache.get(cache_key)
     if cached and now - cached[0] < _ENTITY_TTL:
+        _entity_cache.move_to_end(cache_key)
         return cached[1]
 
     entity = db.get_entity(entity_id)
@@ -201,10 +209,8 @@ async def get_entity(
     entity["quality"] = entity_quality(entity)
 
     _entity_cache[cache_key] = (now, entity)
-    if len(_entity_cache) > 500:
-        oldest = sorted(_entity_cache, key=lambda k: _entity_cache[k][0])[:250]
-        for k in oldest:
-            del _entity_cache[k]
+    while len(_entity_cache) > _ENTITY_CACHE_MAX:
+        _entity_cache.popitem(last=False)
 
     return entity
 

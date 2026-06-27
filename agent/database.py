@@ -662,6 +662,12 @@ class Database:
                 conn.execute(
                     "INSERT OR IGNORE INTO relationships (from_id, to_id, type) VALUES (?, ?, ?)",
                     (from_id, to_id, rel_type))
+        try:
+            from public_api import invalidate_entity_cache
+            invalidate_entity_cache(from_id)
+            invalidate_entity_cache(to_id)
+        except Exception:
+            pass
 
     def _parse_coordinates(self, value) -> list[float] | None:
         current = value
