@@ -863,6 +863,71 @@ async def submit_report(payload: ReportIn, request: Request):
     return {"ok": True, "message": "Đã ghi nhận. Cảm ơn bạn đã góp ý — chúng tôi sẽ kiểm tra."}
 
 
+# ── Entity gallery (entity images + review images) ───────────────────
+
+@router.get("/entities/{entity_id}/gallery")
+async def get_entity_gallery(entity_id: str, response: Response):
+    validate_path_id(entity_id, "entity_id")
+    response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
+
+    entity = await asyncio.to_thread(db.get_entity, entity_id)
+    if not entity:
+        return JSONResponse(status_code=404, content={"error": "not_found"})
+
+    images: list[dict] = []
+    attrs = entity.get("attributes") or {}
+    default_credit = attrs.get("image_credit", "AI-generated")
+    for url in (entity.get("images") or []):
+        if isinstance(url, str) and url:
+            images.append({
+                "url": url,
+                "alt": f"{entity['name']} — ảnh {len(images) + 1}",
+                "credit": default_credit,
+                "width": None,
+                "height": None,
+            })
+
+    if db._use_pg:
+        ph = db._ph
+        def _review_images():
+            with db._conn() as conn:
+                rows = db._fetchall(conn, f"""
+                    SELECT p.images, u.display_name
+                    FROM posts p
+                    JOIN users u ON u.id = p.user_id
+                    WHERE p.entity_id = {ph} AND p.post_type = 'review'
+                        AND p.moderation_status = 'approved'
+                        AND p.images IS NOT NULL
+                    ORDER BY p.created_at DESC
+                    LIMIT 50
+                """, (entity_id,))
+            return [db._row_to_dict(r) for r in rows]
+
+        try:
+            review_rows = await asyncio.to_thread(_review_images)
+            for row in review_rows:
+                review_imgs = row.get("images") or []
+                if isinstance(review_imgs, str):
+                    try:
+                        review_imgs = json.loads(review_imgs)
+                    except (json.JSONDecodeError, ValueError):
+                        continue
+                credit = row.get("display_name", "Người dùng")
+                for url in review_imgs:
+                    if isinstance(url, str) and url:
+                        images.append({
+                            "url": url,
+                            "alt": f"{entity['name']} — ảnh đánh giá",
+                            "credit": credit,
+                            "width": None,
+                            "height": None,
+                        })
+        except Exception:
+            logger.exception("gallery review-images query failed for %s", entity_id)
+
+    return {"images": images, "total": len(images)}
+
+
 # ── Review stats (rating distribution + mention extraction) ──────────
 
 _REVIEW_STATS_CACHE: dict[str, tuple[float, dict]] = {}

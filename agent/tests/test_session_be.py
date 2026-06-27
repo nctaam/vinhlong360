@@ -789,3 +789,52 @@ def test_sort_db_method_has_sort_param():
     import inspect
     sig = inspect.signature(db.list_entities)
     assert "sort" in sig.parameters
+
+
+# ── Entity gallery ────────────────────────────────────────────────────
+
+def test_gallery_endpoint_mounted():
+    pairs = _route_pairs(_public_client().app)
+    assert ("GET", "/api/entities/{entity_id}/gallery") in pairs
+
+
+def test_gallery_entity_images():
+    """Gallery should include entity images."""
+    import public_api
+    from unittest.mock import patch
+    entity = {
+        "id": "test-gallery", "name": "Test", "type": "dish",
+        "images": ["https://img1.jpg", "https://img2.jpg"],
+        "attributes": {"image_credit": "VL360"},
+    }
+    with patch.object(public_api.db, "get_entity", return_value=entity):
+        client = _public_client()
+        resp = client.get("/api/entities/test-gallery/gallery")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["total"] == 2
+    assert data["images"][0]["url"] == "https://img1.jpg"
+    assert data["images"][0]["credit"] == "VL360"
+    assert "Test" in data["images"][0]["alt"]
+
+
+def test_gallery_no_entity_404():
+    import public_api
+    from unittest.mock import patch
+    with patch.object(public_api.db, "get_entity", return_value=None):
+        client = _public_client()
+        resp = client.get("/api/entities/nonexistent/gallery")
+    assert resp.status_code == 404
+
+
+def test_gallery_empty_images():
+    import public_api
+    from unittest.mock import patch
+    entity = {"id": "empty", "name": "Empty", "type": "dish", "images": [], "attributes": {}}
+    with patch.object(public_api.db, "get_entity", return_value=entity):
+        client = _public_client()
+        resp = client.get("/api/entities/empty/gallery")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["total"] == 0
+    assert data["images"] == []
