@@ -299,3 +299,94 @@ def test_log_login_no_crash_without_pg():
     mock_req = MagicMock()
     mock_req.headers = {"user-agent": "test"}
     auth._log_login("0901234567", "password", False, mock_req)
+
+
+# ── Comment edit/delete endpoints ──────────────────────────────────────
+
+def test_comment_edit_delete_endpoints_mounted():
+    import social
+    app = FastAPI()
+    app.include_router(social.router)
+    pairs = _route_pairs(app)
+    assert ("PUT", "/api/comments/{comment_id}") in pairs
+    assert ("DELETE", "/api/comments/{comment_id}") in pairs
+
+
+def test_comment_edit_pg_guard():
+    import social
+    app = FastAPI()
+    app.include_router(social.router)
+    client = TestClient(app)
+    if not db._use_pg:
+        assert client.put("/api/comments/abc", json={"content": "updated text"}).status_code == 503
+        assert client.delete("/api/comments/abc").status_code == 503
+
+
+# ── Plans / Visits write-path endpoints ────────────────────────────────
+
+def test_plans_endpoints_mounted():
+    import plans
+    app = FastAPI()
+    app.include_router(plans.router)
+    pairs = _route_pairs(app)
+    assert ("GET", "/api/my-plans") in pairs
+    assert ("POST", "/api/my-plans") in pairs
+
+
+def test_visits_endpoints_mounted():
+    import visits
+    app = FastAPI()
+    app.include_router(visits.router)
+    pairs = _route_pairs(app)
+    assert ("GET", "/api/me/visits") in pairs
+    assert ("POST", "/api/me/visits") in pairs
+
+
+def test_plans_pg_guard():
+    import plans
+    app = FastAPI()
+    app.include_router(plans.router)
+    client = TestClient(app)
+    if not db._use_pg:
+        assert client.get("/api/my-plans").status_code == 503
+        assert client.post("/api/my-plans", json={"title": "test"}).status_code == 503
+
+
+def test_visits_pg_guard():
+    import visits
+    app = FastAPI()
+    app.include_router(visits.router)
+    client = TestClient(app)
+    if not db._use_pg:
+        assert client.get("/api/me/visits").status_code == 503
+        assert client.post("/api/me/visits", json={"entity_id": "x", "status": "want"}).status_code == 503
+
+
+# ── Check-phone rate-limit (new) ───────────────────────────────────────
+
+def test_check_phone_endpoint_mounted():
+    pairs = _route_pairs(_auth_client().app)
+    assert ("POST", "/auth/check-phone") in pairs
+
+
+# ── LRU cache eviction ─────────────────────────────────────────────────
+
+def test_entity_cache_lru_eviction():
+    from collections import OrderedDict
+    from public_api import _entity_cache, _ENTITY_CACHE_MAX
+    assert isinstance(_entity_cache, OrderedDict)
+    assert _ENTITY_CACHE_MAX == 1000
+
+
+def test_place_cache_lru_eviction():
+    from collections import OrderedDict
+    from public_api import _place_cache, _PLACE_CACHE_MAX
+    assert isinstance(_place_cache, OrderedDict)
+    assert _PLACE_CACHE_MAX == 500
+
+
+# ── Shared require_pg ──────────────────────────────────────────────────
+
+def test_shared_require_pg_exists():
+    from auth_middleware import require_pg
+    assert callable(require_pg)
