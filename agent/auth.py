@@ -35,8 +35,6 @@ from database import db
 
 
 def _require_pg():
-    # GĐ3.1 (quyết định): UGC/auth chạy trên Postgres (dev/prod parity, đúng kiến trúc).
-    # SQLite dev -> trả 503 rõ ràng thay vì crash 500.
     if not db._use_pg:
         raise HTTPException(503, detail="Tính năng UGC/auth cần Postgres. Local dev: docker compose up postgres.")
 
@@ -59,18 +57,18 @@ VN_PHONE_RE = re.compile(r"^(0|\+84)(3|5|7|8|9)\d{8}$")
 
 _otp_rate: dict[str, float] = {}
 
-# GĐ4.7: rate-limit theo IP (chống SMS-pump bằng cách xoay nhiều số điện thoại).
-OTP_IP_LIMIT = 5          # tối đa 5 lần / cửa sổ
-OTP_IP_WINDOW = 600       # 10 phút
+from config import settings as _cfg
+
+OTP_IP_LIMIT = _cfg.OTP_IP_LIMIT
+OTP_IP_WINDOW = _cfg.OTP_IP_WINDOW
 _otp_ip_rate: dict[str, list[float]] = {}
 
-# P0-15: rate-limit /login theo IP (chống brute-force mật khẩu — OTP đã có limit, login thì chưa).
-LOGIN_IP_LIMIT = 10       # tối đa 10 lần / cửa sổ
-LOGIN_IP_WINDOW = 300     # 5 phút
+LOGIN_IP_LIMIT = _cfg.LOGIN_IP_LIMIT
+LOGIN_IP_WINDOW = _cfg.LOGIN_IP_WINDOW
 _login_ip_rate: dict[str, list[float]] = {}
 
-LOGIN_PHONE_LIMIT = 5     # 5 sai → khoá phone 15 phút
-LOGIN_PHONE_WINDOW = 900  # 15 phút
+LOGIN_PHONE_LIMIT = _cfg.LOGIN_PHONE_LIMIT
+LOGIN_PHONE_WINDOW = _cfg.LOGIN_PHONE_WINDOW
 _login_phone_fails: dict[str, list[float]] = {}
 
 _RATE_MAX_KEYS = 2000
@@ -364,8 +362,8 @@ async def verify_otp(body: OTPVerify, request: Request):
     }
 
 
-CHECK_PHONE_IP_LIMIT = 10
-CHECK_PHONE_IP_WINDOW = 300
+CHECK_PHONE_IP_LIMIT = _cfg.CHECK_PHONE_IP_LIMIT
+CHECK_PHONE_IP_WINDOW = _cfg.CHECK_PHONE_IP_WINDOW
 _check_phone_ip_rate: dict[str, list[float]] = {}
 
 

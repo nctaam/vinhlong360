@@ -26,11 +26,7 @@ from auth_middleware import get_current_user, require_user
 from database import db
 
 
-def _require_pg():
-    # GĐ3.1 (quyết định): UGC chạy Postgres. SQLite dev -> 503 rõ ràng.
-    if not db._use_pg:
-        raise HTTPException(503, detail="Tính năng cộng đồng (UGC) cần Postgres. Local dev: docker compose up postgres.")
-
+from auth_middleware import require_pg as _require_pg
 
 router = APIRouter(prefix="/api", tags=["community"], dependencies=[Depends(_require_pg)])
 

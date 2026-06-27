@@ -64,7 +64,8 @@ def _safe(fn, default):
 _AUDIT_FILE = Path(__file__).resolve().parent / "data" / "admin_audit.jsonl"
 
 
-_AUDIT_MAX_LINES = 5000
+from config import settings as _cfg
+_AUDIT_MAX_LINES = _cfg.AUDIT_MAX_LINES
 
 
 def _log_admin_audit(actor: str, method: str, path: str, ip: str) -> None:

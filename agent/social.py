@@ -30,19 +30,16 @@ from ratelimit import check_rate
 
 logger = logging.getLogger("social")
 
-# Chống spam UGC (per-user sliding-window). Đủ rộng cho dùng bình thường, chặn flood.
-RL_POST_LIMIT, RL_POST_WINDOW = 10, 600        # 10 bài / 10 phút
-RL_COMMENT_LIMIT, RL_COMMENT_WINDOW = 20, 300  # 20 bình luận / 5 phút
+from config import settings as _cfg
+
+RL_POST_LIMIT, RL_POST_WINDOW = _cfg.RL_POST_LIMIT, _cfg.RL_POST_WINDOW
+RL_COMMENT_LIMIT, RL_COMMENT_WINDOW = _cfg.RL_COMMENT_LIMIT, _cfg.RL_COMMENT_WINDOW
 RL_UPLOAD_LIMIT, RL_UPLOAD_WINDOW = 40, 600    # 40 ảnh / 10 phút
-RL_LIKE_LIMIT, RL_LIKE_WINDOW = 60, 60         # 60 like / 1 phút
+RL_LIKE_LIMIT, RL_LIKE_WINDOW = _cfg.RL_LIKE_LIMIT, _cfg.RL_LIKE_WINDOW
 RL_DELETE_LIMIT, RL_DELETE_WINDOW = 10, 300     # 10 xóa / 5 phút
 
 
-def _require_pg():
-    # GĐ3.1 (quyết định): UGC chạy Postgres. SQLite dev -> 503 rõ ràng.
-    if not db._use_pg:
-        raise HTTPException(503, detail="Tính năng cộng đồng (UGC) cần Postgres. Local dev: docker compose up postgres.")
-
+from auth_middleware import require_pg as _require_pg
 
 router = APIRouter(prefix="/api", tags=["social"], dependencies=[Depends(_require_pg)])
 

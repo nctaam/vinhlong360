@@ -14,10 +14,7 @@ from auth_middleware import require_user
 from database import db
 
 
-def _require_pg():
-    if not db._use_pg:
-        raise HTTPException(status_code=503, detail="Tính năng cần Postgres (không khả dụng ở chế độ SQLite).")
-
+from auth_middleware import require_pg as _require_pg
 
 router = APIRouter(prefix="/api/my-plans", tags=["plans"], dependencies=[Depends(_require_pg)])
 

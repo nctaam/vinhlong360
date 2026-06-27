@@ -41,6 +41,15 @@ import secrets
 from fastapi import Depends, HTTPException, Request
 
 from auth import _get_current_user_or_none
+from database import db
+
+
+# ── Postgres guard (shared) ──
+
+def require_pg():
+    """Dependency: UGC/auth endpoints need Postgres. Returns 503 on SQLite."""
+    if not db._use_pg:
+        raise HTTPException(503, detail="Tính năng UGC/auth cần Postgres. Local dev: docker compose up postgres.")
 
 
 # ── Auth Dependencies ──
