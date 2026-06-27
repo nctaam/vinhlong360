@@ -285,8 +285,8 @@ async function submitReview() {
     formImages.value = []
     page.value = 1
     await fetchReviews()
-  } catch (e: any) {
-    submitError.value = e.data?.detail || e.message || 'Gửi thất bại'
+  } catch (e: unknown) {
+    submitError.value = extractErrorMessage(e, 'Gửi thất bại')
   }
   submitting.value = false
 }

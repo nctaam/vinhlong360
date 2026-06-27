@@ -94,8 +94,8 @@ async function load() {
     const res = await $fetch<any>(`/api/notifications?limit=${PAGE_SIZE}`, { headers: authHeaders() })
     items.value = res.notifications || []
     hasMore.value = (res.notifications || []).length >= PAGE_SIZE
-  } catch (e: any) {
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     fetchError.value = true
   } finally { loading.value = false }
 }

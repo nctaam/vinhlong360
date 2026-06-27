@@ -332,10 +332,10 @@ async function toggleLike(postId: string) {
   post.likes = (post.likes || 0) + (post.user_liked ? 1 : -1)
   try {
     await $fetch(`/api/posts/${postId}/like`, { method: 'POST', headers: authHeaders() })
-  } catch (e: any) {
+  } catch (e: unknown) {
     post.user_liked = !post.user_liked
     post.likes = (post.likes || 0) + (post.user_liked ? 1 : -1)
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể thích bài viết', 'error')
   } finally { pendingActions.delete(`like:${postId}`) }
 }
@@ -359,9 +359,9 @@ async function toggleBookmark(postId: string) {
   post.user_bookmarked = !post.user_bookmarked
   try {
     await $fetch(`/api/posts/${postId}/bookmark`, { method: 'POST', headers: authHeaders() })
-  } catch (e: any) {
+  } catch (e: unknown) {
     post.user_bookmarked = !post.user_bookmarked
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể lưu bài viết', 'error')
   } finally { pendingActions.delete(`bm:${postId}`) }
 }
@@ -379,9 +379,9 @@ async function loadFollowList(which: 'followers' | 'following') {
   try {
     const res = await $fetch<any>(`/api/users/${userId.value}/${which}`, { headers: authHeaders() })
     followLists.value[which] = res.users || []
-  } catch (e: any) {
+  } catch (e: unknown) {
     followLists.value[which] = []
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể tải danh sách', 'error')
   }
   followLoadingList.value = false
@@ -420,10 +420,10 @@ async function toggleFollow() {
   try {
     await $fetch(`/api/follow/user/${userId.value}`, { method: 'POST', headers: authHeaders() })
     followLists.value = { followers: null, following: null }
-  } catch (e: any) {
+  } catch (e: unknown) {
     isFollowing.value = was
     followerCount.value += was ? 1 : -1
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể theo dõi', 'error')
   }
   followLoading.value = false
@@ -460,8 +460,8 @@ async function toggleBlock() {
       await $fetch(`/api/block/${userId.value}`, { method: 'POST', headers: authHeaders() })
       isBlocked.value = false
       showToast('Đã bỏ chặn', 'success')
-    } catch (e: any) {
-      if (e?.response?.status === 401) { handleSessionExpired(); return }
+    } catch (e: unknown) {
+      if (getStatusCode(e) === 401) { handleSessionExpired(); return }
       showToast('Không thể bỏ chặn', 'error')
     }
     return
@@ -480,8 +480,8 @@ async function toggleBlock() {
     isBlocked.value = true
     if (isFollowing.value) { isFollowing.value = false; followerCount.value-- }
     showToast('Đã chặn người dùng', 'success')
-  } catch (e: any) {
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể chặn', 'error')
   }
 }

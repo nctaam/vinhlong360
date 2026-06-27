@@ -364,8 +364,8 @@ async function _doSave() {
         body: { title: plan.title, stops: plan.stops },
       })
       plan.id = res.id
-    } catch (e: any) {
-      showToast(e?.data?.detail || 'Không thể lưu lên tài khoản', 'error')
+    } catch (e: unknown) {
+      showToast(extractErrorMessage(e, 'Không thể lưu lên tài khoản'), 'error')
       return
     }
   } else {
@@ -398,8 +398,8 @@ async function deletePlan(idx: number) {
   if (plan?.id && isLoggedIn.value) {
     try {
       await $fetch(`/api/my-plans/${plan.id}`, { method: 'DELETE', headers: authHeaders() })
-    } catch (e: any) {
-      showToast(e?.data?.detail || 'Không thể xoá trên tài khoản', 'error')
+    } catch (e: unknown) {
+      showToast(extractErrorMessage(e, 'Không thể xoá trên tài khoản'), 'error')
       return
     }
   }
@@ -424,7 +424,7 @@ async function publishPlan(idx: number) {
     } else {
       showToast('Đã chuyển về riêng tư', 'success')
     }
-  } catch (e: any) { showToast(e?.data?.detail || 'Không thể đổi trạng thái', 'error') }
+  } catch (e: unknown) { showToast(extractErrorMessage(e, 'Không thể đổi trạng thái'), 'error') }
 }
 
 function sharePlan(idx: number) {

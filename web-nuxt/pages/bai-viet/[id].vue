@@ -220,9 +220,9 @@ async function setBestAnswer(commentId: string) {
   try {
     await $fetch(`/api/posts/${postId.value}/best-answer`, { method: 'POST', headers: authHeaders(), body: { comment_id: commentId } })
     showToast('Đã chọn câu trả lời hay', 'success')
-  } catch (e: any) {
+  } catch (e: unknown) {
     bestAnswerId.value = prev
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể chọn, thử lại', 'error')
   }
 }
@@ -233,8 +233,8 @@ async function deletePost() {
     await $fetch(`/api/posts/${postId.value}`, { method: 'DELETE', headers: authHeaders() })
     showToast('Đã xoá bài viết', 'success')
     navigateTo('/cong-dong')
-  } catch (e: any) {
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể xoá bài viết', 'error')
   }
 }
@@ -273,9 +273,9 @@ async function saveEdit() {
     }
     editing.value = false
     showToast(res.moderation_status === 'pending' ? 'Đã lưu — đang chờ duyệt lại' : 'Đã cập nhật bài viết', 'success')
-  } catch (e: any) {
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
-    showToast(e?.data?.detail || 'Không thể lưu bài viết', 'error')
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    showToast(extractErrorMessage(e, 'Không thể lưu bài viết'), 'error')
   }
   editSaving.value = false
 }
@@ -352,10 +352,9 @@ async function submitComment() {
     showToast(t ? 'Đã gửi trả lời' : 'Đã gửi bình luận', 'success')
     if (post.value) post.value.comments_count = (post.value.comments_count || 0) + 1
     await fetchComments()
-  } catch (e: any) {
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
-    const detail = e?.data?.detail
-    showToast(detail || 'Gửi bình luận thất bại — vui lòng thử lại', 'error')
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    showToast(extractErrorMessage(e, 'Gửi bình luận thất bại — vui lòng thử lại'), 'error')
   }
   submitting.value = false
 }
@@ -370,10 +369,10 @@ async function toggleLike(id: string) {
   post.value.likes = (post.value.likes || 0) + (post.value.user_liked ? 1 : -1)
   try {
     await $fetch(`/api/posts/${id}/like`, { method: 'POST', headers: authHeaders() })
-  } catch (e: any) {
+  } catch (e: unknown) {
     post.value.user_liked = !post.value.user_liked
     post.value.likes = (post.value.likes || 0) + (post.value.user_liked ? 1 : -1)
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể thích bài viết', 'error')
   } finally { pendingActions.delete('like') }
 }
@@ -385,9 +384,9 @@ async function toggleBookmark(id: string) {
   post.value.user_bookmarked = !post.value.user_bookmarked
   try {
     await $fetch(`/api/posts/${id}/bookmark`, { method: 'POST', headers: authHeaders() })
-  } catch (e: any) {
+  } catch (e: unknown) {
     post.value.user_bookmarked = !post.value.user_bookmarked
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể lưu bài viết', 'error')
   } finally { pendingActions.delete('bookmark') }
 }

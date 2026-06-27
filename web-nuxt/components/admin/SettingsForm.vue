@@ -196,8 +196,8 @@ function validateJson(key: string): boolean {
     localValues.value[key] = parsed
     jsonErrors.value[key] = ''
     return true
-  } catch (e: any) {
-    jsonErrors.value[key] = `JSON không hợp lệ: ${e.message}`
+  } catch (e: unknown) {
+    jsonErrors.value[key] = `JSON không hợp lệ: ${extractErrorMessage(e, 'cú pháp sai')}`
     return false
   }
 }
@@ -250,8 +250,8 @@ async function onSave() {
     initialSnapshot.value = snapshotOf(localValues.value, jsonTexts.value)
     showToast('Đã lưu cài đặt', 'success')
     emit('saved')
-  } catch (e: any) {
-    showToast(getErrorDetail(e, 'Lỗi khi lưu'), 'error')
+  } catch (e: unknown) {
+    showToast(extractErrorMessage(e, 'Lỗi khi lưu'), 'error')
   }
   saving.value = false
 }
@@ -277,8 +277,8 @@ async function onReset() {
       })
       showToast('Đã đặt lại về mặc định', 'success')
       emit('saved')
-    } catch (e: any) {
-      showToast(getErrorDetail(e, 'Lỗi'), 'error')
+    } catch (e: unknown) {
+      showToast(extractErrorMessage(e, 'Lỗi'), 'error')
     }
     saving.value = false
     return
@@ -292,8 +292,8 @@ async function onReset() {
     })
     showToast('Đã đặt lại về mặc định', 'success')
     emit('saved')
-  } catch (e: any) {
-    showToast(getErrorDetail(e, 'Lỗi'), 'error')
+  } catch (e: unknown) {
+    showToast(extractErrorMessage(e, 'Lỗi'), 'error')
   }
   saving.value = false
 }

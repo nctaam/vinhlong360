@@ -90,10 +90,21 @@ export interface Itinerary {
 
 export interface User {
   id: string
-  display_name?: string
-  avatar_url?: string
+  phone?: string
+  display_name?: string | null
+  avatar_url?: string | null
+  avatar?: string | null
+  cover_url?: string | null
+  username?: string | null
+  bio?: string
   role?: string
+  is_private?: boolean
   created_at?: string
+  has_password?: boolean
+  post_count?: number
+  review_count?: number
+  follower_count?: number
+  following_count?: number
 }
 
 export interface Post {
@@ -104,10 +115,29 @@ export interface Post {
   created_at: string
   updated_at?: string
   like_count?: number
+  likes?: number
   comment_count?: number
+  comments_count?: number
   user?: User
+  display_name?: string
+  username?: string
+  avatar?: string
+  phone?: string
   liked_by_me?: boolean
+  user_liked?: boolean
   bookmarked_by_me?: boolean
+  user_bookmarked?: boolean
+  post_type?: string
+  post_type_label?: string
+  rating?: number
+  hashtags?: string[]
+  mentions?: Mention[]
+  entity_id?: string
+  entity_name?: string
+  entity_emoji?: string
+  moderation_status?: string
+  best_answer_id?: string
+  repost?: { id: string; content?: string; author?: string }
 }
 
 export interface Comment {
@@ -123,12 +153,39 @@ export interface Review {
   id: string
   user_id: string
   avatar_url?: string
+  avatar?: string
   display_name?: string
+  username?: string
   content?: string
   rating?: number
   likes?: number
   user_liked?: boolean
   created_at?: string
+  images?: string[]
+}
+
+export interface Mention {
+  type: 'user' | 'entity'
+  id: string
+  label: string
+  sub?: string
+}
+
+export interface Media {
+  url: string
+  entity_id: string
+  entity_name?: string
+  entity_type?: string
+  credit?: string
+  license?: string
+  usage_count?: number
+}
+
+export interface FetchError {
+  response?: { status: number; _data?: { detail?: string; message?: string } }
+  data?: { detail?: string; message?: string }
+  message?: string
+  statusCode?: number
 }
 
 export interface ReviewFeedResponse {

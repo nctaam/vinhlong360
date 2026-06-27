@@ -74,7 +74,7 @@ async function onSave() {
       body: { value: navGroups.value },
     })
     showToast('Đã lưu điều hướng', 'success')
-  } catch (e: any) { showToast(e?.data?.detail || 'Lỗi khi lưu', 'error') }
+  } catch (e: unknown) { showToast(extractErrorMessage(e, 'Lỗi khi lưu'), 'error') }
   saving.value = false
 }
 
@@ -86,7 +86,7 @@ async function onReset() {
     await $fetch('/admin-api/site-settings/reset/navigation', { method: 'POST', headers: authHeaders() })
     showToast('Đã đặt lại', 'success')
     await reload()
-  } catch (e: any) { showToast(e?.data?.detail || 'Lỗi', 'error') }
+  } catch (e: unknown) { showToast(extractErrorMessage(e, 'Lỗi'), 'error') }
   saving.value = false
 }
 

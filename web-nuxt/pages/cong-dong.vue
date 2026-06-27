@@ -696,8 +696,8 @@ async function fetchFeed(reset = false) {
       posts.value.push(...newPosts.filter(p => !existing.has(p.id)))
     }
     hasMore.value = newPosts.length === 20
-  } catch (e: any) {
-    if (e?.name === 'AbortError') return
+  } catch (e: unknown) {
+    if (e instanceof DOMException && e.name === 'AbortError') return
     if (reset && !posts.value.length) feedError.value = true
     showToast(reset ? 'Không thể tải bảng tin' : 'Không thể tải thêm', 'error')
   }
@@ -813,10 +813,9 @@ async function submitPost() {
     showToast(wasQuote ? 'Đã đăng trích dẫn 🔁' : 'Đã đăng bài viết', 'success')
     activeTab.value = 'latest'
     await fetchFeed(true)
-  } catch (e: any) {
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
-    const detail = e?.data?.detail
-    showToast(detail || 'Gửi bài thất bại — vui lòng thử lại', 'error')
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    showToast(extractErrorMessage(e, 'Gửi bài thất bại — vui lòng thử lại'), 'error')
   }
   posting.value = false
 }
@@ -852,10 +851,9 @@ async function submitEntityReport() {
     const nextQuery = { ...route.query }
     delete nextQuery.report
     router.replace({ query: nextQuery })
-  } catch (e: any) {
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
-    const detail = e?.data?.detail
-    showToast(detail || 'Không thể gửi báo cáo', 'error')
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    showToast(extractErrorMessage(e, 'Không thể gửi báo cáo'), 'error')
   }
   reportSubmitting.value = false
 }
@@ -884,9 +882,9 @@ async function toggleLike(postId: string) {
   flip()
   try {
     await $fetch(`/api/posts/${postId}/like`, { method: 'POST', headers: authHeaders() })
-  } catch (e: any) {
+  } catch (e: unknown) {
     flip()
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể thích bài viết', 'error')
   } finally { pendingActions.delete(`like:${postId}`) }
 }
@@ -907,9 +905,9 @@ async function toggleBookmark(postId: string) {
       showToast('Đã lưu bài viết', 'success')
       if (!sessionBookmarked.value) sessionBookmarked.value = true
     }
-  } catch (e: any) {
+  } catch (e: unknown) {
     copies.forEach(p => { p.user_bookmarked = !p.user_bookmarked })
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể lưu bài viết', 'error')
   } finally { pendingActions.delete(`bm:${postId}`) }
 }
@@ -923,8 +921,8 @@ async function deletePost(postId: string) {
     bookmarks.value = bookmarks.value.filter(p => p.id !== postId)
     searchResults.value = searchResults.value.filter(p => p.id !== postId)
     showToast('Đã xoá bài viết', 'success')
-  } catch (e: any) {
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể xoá bài viết', 'error')
   }
 }

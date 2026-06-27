@@ -98,7 +98,7 @@ async function onSave() {
       method: 'PUT', headers: authHeaders(), body: { value: full },
     })
     showToast('Đã lưu tính năng', 'success')
-  } catch (e: any) { showToast(e?.data?.detail || 'Lỗi khi lưu', 'error') }
+  } catch (e: unknown) { showToast(extractErrorMessage(e, 'Lỗi khi lưu'), 'error') }
   saving.value = false
 }
 
@@ -112,7 +112,7 @@ async function onReset() {
     })
     showToast('Đã bật lại tất cả', 'success')
     await reload()
-  } catch (e: any) { showToast(e?.data?.detail || 'Lỗi', 'error') }
+  } catch (e: unknown) { showToast(extractErrorMessage(e, 'Lỗi'), 'error') }
   saving.value = false
 }
 

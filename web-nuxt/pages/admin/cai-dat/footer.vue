@@ -126,7 +126,7 @@ async function saveSocial() {
       body: { value: socialLinks.value },
     })
     showToast('Đã lưu mạng xã hội', 'success')
-  } catch (e: any) { showToast(e?.data?.detail || 'Lỗi khi lưu', 'error') }
+  } catch (e: unknown) { showToast(extractErrorMessage(e, 'Lỗi khi lưu'), 'error') }
   saving.value = false
 }
 
@@ -139,7 +139,7 @@ async function saveLegalLinks() {
       body: { value: legalLinks.value },
     })
     showToast('Đã lưu liên kết pháp lý', 'success')
-  } catch (e: any) { showToast(e?.data?.detail || 'Lỗi khi lưu', 'error') }
+  } catch (e: unknown) { showToast(extractErrorMessage(e, 'Lỗi khi lưu'), 'error') }
   saving.value = false
 }
 
@@ -152,7 +152,7 @@ async function saveColumns() {
       body: { value: footerColumns.value },
     })
     showToast('Đã lưu cột footer', 'success')
-  } catch (e: any) { showToast(e?.data?.detail || 'Lỗi khi lưu', 'error') }
+  } catch (e: unknown) { showToast(extractErrorMessage(e, 'Lỗi khi lưu'), 'error') }
   saving.value = false
 }
 

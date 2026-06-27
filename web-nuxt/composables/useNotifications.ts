@@ -1,10 +1,13 @@
+import type { Notification } from '~/types'
+
 let pollTimer: ReturnType<typeof setTimeout> | null = null
 let eventSource: EventSource | null = null
 let pollInterval = 30_000
 let sseDebounce: ReturnType<typeof setTimeout> | null = null
+let isActive = false
 
 export function useNotifications() {
-  const notifications = useState<any[]>('notifications', () => [])
+  const notifications = useState<Notification[]>('notifications', () => [])
   const unreadCount = useState('unread-count', () => 0)
   const loading = useState('notif-loading', () => true)
   const fetchError = useState('notif-fetch-error', () => false)
@@ -29,15 +32,15 @@ export function useNotifications() {
     try {
       await $fetch('/api/notifications/read-all', { method: 'POST', headers: authHeaders() })
       unreadCount.value = 0
-      notifications.value.forEach(n => n.is_read = true)
+      notifications.value.forEach(n => (n as any).is_read = true)
     } catch { /* ignore */ }
   }
 
   async function markRead(id: string) {
     if (!isLoggedIn.value) return
     const n = notifications.value.find(x => x.id === id)
-    if (!n || n.is_read) return
-    n.is_read = true
+    if (!n || (n as any).is_read) return
+    ;(n as any).is_read = true
     unreadCount.value = Math.max(0, unreadCount.value - 1)
     try {
       await $fetch(`/api/notifications/${id}/read`, { method: 'POST', headers: authHeaders() })
@@ -45,11 +48,15 @@ export function useNotifications() {
   }
 
   function _schedulePoll() {
-    if (pollTimer) clearTimeout(pollTimer)
+    _clearPollTimer()
     pollTimer = setTimeout(async () => {
       await fetchNotifications()
       if (!eventSource) _schedulePoll()
     }, pollInterval)
+  }
+
+  function _clearPollTimer() {
+    if (pollTimer) { clearTimeout(pollTimer); pollTimer = null }
   }
 
   function _connectSSE() {
@@ -57,7 +64,7 @@ export function useNotifications() {
     _closeSSE()
     const headers = authHeaders()
     const token = (headers as any)?.Authorization?.replace('Bearer ', '')
-    if (!token) return
+    if (!token) { _schedulePoll(); return }
     const es = new EventSource(`/api/notifications/stream?token=${encodeURIComponent(token)}`)
     es.onmessage = () => {
       if (sseDebounce) clearTimeout(sseDebounce)
@@ -72,22 +79,24 @@ export function useNotifications() {
   }
 
   function _closeSSE() {
+    if (sseDebounce) { clearTimeout(sseDebounce); sseDebounce = null }
     if (eventSource) { eventSource.close(); eventSource = null }
   }
 
   function startPolling() {
-    stopPolling()
+    if (isActive) return
+    isActive = true
     pollInterval = 30_000
     fetchNotifications()
     _connectSSE()
-    _schedulePoll()
     if (import.meta.client) {
       document.addEventListener('visibilitychange', _onVisibility)
     }
   }
 
   function stopPolling() {
-    if (pollTimer) { clearTimeout(pollTimer); pollTimer = null }
+    isActive = false
+    _clearPollTimer()
     _closeSSE()
     if (import.meta.client) {
       document.removeEventListener('visibilitychange', _onVisibility)
@@ -96,13 +105,12 @@ export function useNotifications() {
 
   function _onVisibility() {
     if (document.hidden) {
-      if (pollTimer) { clearTimeout(pollTimer); pollTimer = null }
+      _clearPollTimer()
       _closeSSE()
     } else {
       pollInterval = 30_000
       fetchNotifications()
       _connectSSE()
-      _schedulePoll()
     }
   }
 

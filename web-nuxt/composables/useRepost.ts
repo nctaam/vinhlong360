@@ -13,8 +13,8 @@ export function useRepost() {
       showToast('Đã đăng lại 🔁', 'success')
       onDone?.()
       return true
-    } catch (e: any) {
-      showToast(e?.data?.detail || 'Không thể đăng lại', 'error')
+    } catch (e: unknown) {
+      showToast(extractErrorMessage(e, 'Không thể đăng lại'), 'error')
       return false
     }
   }

@@ -257,7 +257,7 @@ async function loadFacilities() {
     const res = await $fetch<{ facilities: Entity[] }>(`/api/facilities?place=${encodeURIComponent(id)}`, { signal: ctrl.signal })
     if (ctrl.signal.aborted) return
     facilities.value = res.facilities || []
-  } catch (err: any) {
+  } catch (err: unknown) {
     if (ctrl.signal.aborted) return
     facilitiesError.value = true
     showToast('Không thể tải danh bạ cơ quan', 'error')
