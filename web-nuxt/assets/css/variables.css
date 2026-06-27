@@ -561,3 +561,28 @@
   --secondary-fg: #4BA97D;
   --tertiary-fg: #6BA6B2;
 }
+
+/* === Travel Platform UX Tokens (2026-06-27) === */
+:root {
+  /* Filter chips */
+  --chip-height: 36px;
+  --chip-radius: 18px;
+  --chip-border: 1px solid var(--border, var(--line));
+  --chip-active-bg: var(--surface-inverse, var(--ink));
+  --chip-active-text: var(--text-on-inverse, var(--bg));
+  --chip-gap: var(--space-2);
+
+  /* Gallery grid */
+  --gallery-gap: var(--space-1);
+  --gallery-main-ratio: 3 / 2;
+  --gallery-thumb-ratio: 1 / 1;
+
+  /* Contact widget */
+  --contact-widget-width: 320px;
+  --contact-cta-height: 48px;
+  --contact-cta-radius: var(--radius-full, 999px);
+
+  /* Detail page */
+  --detail-section-gap: var(--space-8);
+  --detail-divider: 1px solid var(--line);
+}
