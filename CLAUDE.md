@@ -1,63 +1,109 @@
-# CLAUDE.md — Hiến pháp thực thi cho dự án vinhlong360
+# SESSION SCOPE: Frontend UI/UX — branch `session-fe`
 
-> File này được nạp mỗi phiên. Nó là **giao thức bắt buộc** khi tự động hoàn thiện dự án.
-> Nguồn sự thật của *việc cần làm* là **`docs/ROADMAP.md`**. File này là *cách làm để không đi sai*.
+> **Session song song 1/3.** CHỈ sửa file trong `web-nuxt/`. KHÔNG sửa `agent/`, `scripts/`, `docs/`, `tests/`, `web/`, config gốc.
+> Sau khi xong, session gốc sẽ merge + deploy. KHÔNG tự push/merge.
 
 ---
 
-## 0. Bối cảnh 1 dòng
+## 0. Bối cảnh
 
-MXH du lịch/OCOP/cộng đồng cho Vĩnh Long mới (VL+Bến Tre+Trà Vinh). Solo dev, vibe code, <10k user, **ngân sách <1.000.000đ/tháng**, web-first, **không tính năng nặng**. Backend FastAPI (`agent/`) + frontend Nuxt 4 SSR (`web-nuxt/`). Kiến trúc & lý do: `docs/kien-truc-va-lo-trinh.md`, `docs/architecture-decisions.md`, `docs/stabilization-plan.md`.
+MXH du lịch/OCOP/cộng đồng cho Vĩnh Long mới (VL+Bến Tre+Trà Vinh). Solo dev, budget <1tr/th, web-first.
+Backend FastAPI (`agent/`) + Nuxt 4 SSR (`web-nuxt/`). Kiến trúc: `docs/architecture-decisions.md`.
 
-## 1. Hai quyết định kiến trúc đã chốt (KHÔNG tự ý đổi)
+## 1. Giới hạn file (TUYỆT ĐỐI — vi phạm = hỏng merge)
 
-1. **DB là nguồn sự thật duy nhất** cho entity/relationship/itinerary + user/UGC. Chat **nạp toàn bộ vào RAM lúc khởi động** (giữ tốc độ); `web/data.json` chỉ còn là **export/backup + nguồn build prerender**.
-2. **Một frontend = Nuxt + hybrid rendering**. Xoá `web-astro`, bỏ JS/HTML legacy trong `web/`.
-3. **UGC/auth (users/posts/comments/...) = Postgres-only** (dev/prod parity). SQLite chỉ phục vụ tầng tri thức (entity/rel/itinerary); endpoint UGC trên SQLite trả **503** rõ ràng. Dev cộng đồng: `docker compose up postgres`. KHÔNG port UGC sang SQLite (tránh nợ 2 phương ngữ SQL).
-4. **CHỈ GIỚI THIỆU — KHÔNG đặt hàng/booking/thanh toán on-site, KHÔNG sàn bên-thứ-ba.** Giữ ở "tầng nhẹ" pháp lý (không kích đăng ký TMĐT NĐ52/85). CTA chỉ là liên hệ Zalo/điện thoại/hỏi-giá (KHÔNG form chốt đơn giá+SL+xác nhận). Doanh thu: premium/featured listing + hợp đồng B2G + quảng cáo (KHÔNG hoa hồng booking). Cũng KHÔNG đăng lại nguyên văn tin báo (crawler chỉ trích-đoạn+link — tránh giấy phép trang TTĐT tổng hợp).
+**ĐƯỢC sửa:**
+- `web-nuxt/pages/**`
+- `web-nuxt/components/**`
+- `web-nuxt/composables/**`
+- `web-nuxt/layouts/**`
+- `web-nuxt/assets/**`
+- `web-nuxt/plugins/**`
+- `web-nuxt/middleware/**`
+- `web-nuxt/public/**`
+- `web-nuxt/app.vue`
+- `web-nuxt/error.vue`
 
-## 2. Bất biến — VI PHẠM = DỪNG NGAY (không bao giờ phá)
+**KHÔNG ĐƯỢC sửa:**
+- `web-nuxt/nuxt.config.ts` — chung, dễ conflict
+- `web-nuxt/package.json` — KHÔNG thêm dependency (dùng cái đã có)
+- `agent/**` — session backend phụ trách
+- `scripts/**`, `docs/**`, `tests/**` — session khác
+- `web/data.json` — DỮ LIỆU GỐC, TUYỆT ĐỐI KHÔNG SỬA
+- File root: `CLAUDE.md` gốc, `docker-compose.yml`, `.env.example`
 
-- **B1. Snapshot trước mọi thao tác dữ liệu.** Chạy `python scripts/backup_data.py` trước bất kỳ script ETL/migrate/normalize nào. `web/data.json` + DB **không tái tạo được**.
-- **B2. Additive-first.** Thêm đường mới + verify xong mới xoá đường cũ. Giữ shim tương thích (`coords`,`from`/`to`) tới khi đã bỏ frontend legacy.
-- **B3. Test trước khi refactor vùng mù.** Module 0% test (`database.py`, `server.py` chat handler, `social.py`, `auth.py`, ETL) **phải có test bao phủ TRƯỚC khi sửa**.
-- **B4. Một thay đổi schema = một test.** Không merge thay đổi schema nếu thiếu test.
-- **B5. Mỗi task để lại hệ thống chạy được.** Không big-bang. Commit nhỏ sau mỗi task.
-- **B6. Không re-host nội dung/ảnh có bản quyền** cào từ gov/báo/mytour. Chỉ lưu tiêu đề + trích đoạn + link gốc; ảnh chỉ dùng nguồn cấp phép (Wikimedia/UGC/Pexels-Unsplash theo điều khoản).
-- **B7. Không bao giờ chạy lệnh phá dữ liệu** (`database.py --replace`, `/admin/data-quality/apply`, `/reload`) khi chưa tới đúng task cho phép trong roadmap, và luôn backup trước.
-- **B8. Tôn trọng ngân sách.** Không thêm dịch vụ trả phí. Mặc định free-tier. **Ngoại lệ DUY NHẤT cho "vòng lặp LLM nền"** (chủ dự án duyệt 2026-06-14, kiểm soát chặt): agent tự động gọi LLM CHỈ khi đủ 3 điều kiện — (a) opt-in `AUTONOMOUS_AGENT_ENABLED=true` (OFF mặc định), (b) cap cứng/ngày qua `agent/autonomous_budget.py` (`AUTONOMOUS_AGENT_MAX_CALLS_PER_DAY`, mặc định 20; vượt cap = bỏ qua), (c) kill-switch tức thì (đổi flag = tắt). Vòng lặp LLM nền CŨ (auto-learn/discovery/promotion qua `SCHEDULER_ENABLE_AUTONOMOUS_TASKS`) VẪN tắt mặc định. KHÔNG nới các điều kiện này nếu không có chủ dự án.
+## 2. Bất biến
 
-## 3. Giao thức thực thi tự động (chống trôi)
+- **B5.** Mỗi commit để lại build pass (`cd web-nuxt && npm run build`)
+- **B8.** Không thêm dependency trả phí, không thêm package mới
+- KHÔNG thêm Tailwind/UI library — giữ CSS thuần + tokens hiện tại
+- KHÔNG gợi ý AR, audio guide, native app
+- CTA chỉ liên hệ Zalo/điện thoại — KHÔNG form đặt hàng/booking (§1.4)
+- Vue auto-escape `{{ }}` → không cần escape UGC thủ công
 
-1. **Đọc `docs/ROADMAP.md`. Làm đúng thứ tự task.** Không nhảy cóc, không tự thêm việc ngoài roadmap.
-2. Mỗi task: làm → chạy **lệnh verify** ghi trong task → chỉ khi **tiêu chí nghiệm thu** đạt mới tick `[x]` và commit (`git commit` 1 task/commit, message rõ).
-3. **Cổng Definition-of-Done (DoD) cuối mỗi Giai đoạn**: phải pass toàn bộ checklist DoD **mới được sang giai đoạn sau**. Không pass → sửa, không đi tiếp.
-4. Nếu một test **đang xanh bỗng đỏ** mà chưa rõ nguyên nhân → **DỪNG, báo người** (đừng "sửa cho xanh" bằng cách yếu đi assertion).
-5. Mỗi phiên bắt đầu: chạy `python -m pytest -q` (live-path subset) để biết baseline xanh, rồi mới làm tiếp.
-6. Giữ phạm vi: nếu phát hiện việc đáng làm ngoài roadmap → **ghi vào mục "Backlog phát sinh" cuối ROADMAP.md**, KHÔNG tự làm.
+## 3. Commit
 
-## 4. ĐIỀU KIỆN DỪNG — phải hỏi người, KHÔNG tự quyết
+- Branch: `session-fe` (đã checkout)
+- Format: `[FE] <mô tả ngắn>`
+- Commit nhỏ, 1 feature/fix = 1 commit
+- **KHÔNG push, KHÔNG merge vào main**
 
-- Bất cứ việc cần **pháp nhân / luật sư / đăng ký NĐ147 / hồ sơ pháp lý** (Track-H trong roadmap).
-- **`git push` / tạo remote** (cần URL người cấp), **rotate/đặt giá trị secret thật**.
-- **Xoá file/thư mục/dữ liệu** không do roadmap chỉ định rõ; xoá `web-astro`/`web/` legacy chỉ làm ở đúng task và sau khi verify.
-- **Thêm dịch vụ trả phí** hoặc thao tác phát sinh chi phí (mua domain, bật tier trả phí, deploy public).
-- **Deploy lên môi trường công khai.**
-- Khi **tiêu chí nghiệm thu không thể đạt** sau 2 lần thử, hoặc yêu cầu mâu thuẫn với bất biến §2.
+## 4. Verify mỗi commit
 
-## 5. Lệnh hay dùng (môi trường: Windows, PowerShell)
-
+```powershell
+cd C:\Code\vinhlong360\vl360-session-fe\web-nuxt
+npm run build
 ```
-# Backend smoke (không gọi LLM, không build index nặng)
-$env:BUILD_SEARCH_INDEXES='false'; $env:BACKGROUND_INDEX_BUILD='false'; $env:SCHEDULER_ENABLED='false'; python agent/server.py
-python -m pytest -q                      # test
-python scripts/validate_data.py          # kiểm dữ liệu
-python scripts/backup_data.py            # BẮT BUỘC trước thao tác dữ liệu (tạo ở GĐ0)
-cd web-nuxt; npm run build               # build frontend
-```
 
-## 6. Quy ước
+## 5. Danh sách task (làm theo thứ tự, tick [x] khi xong)
 
-- File reference dạng `path:line`. Commit message: `<GĐx.y> <mô tả>`. 
-- Không skip hook, không `--no-verify`. Không sửa file ngoài phạm vi task.
-- Mọi nghi ngờ → đọc `docs/ROADMAP.md` + `docs/architecture-decisions.md`, không phỏng đoán.
+### Nhóm 1: Accessibility (ưu tiên cao nhất)
+- [ ] **FE-1** Clickable `<div @click>` → `<button>` hoặc `<NuxtLink>` toàn bộ pages + components. Đảm bảo keyboard accessible.
+- [ ] **FE-2** Focus visible — mọi interactive element có `:focus-visible` outline rõ ràng.
+- [ ] **FE-3** Alt text cho `<img>` — rà toàn bộ, thêm alt mô tả (dùng entity name/title).
+- [ ] **FE-4** Skip navigation link — "Chuyển đến nội dung chính" ẩn ở layout, hiện khi Tab.
+- [ ] **FE-5** ARIA landmarks — `<header>`, `<main>`, `<nav>`, `<footer>` semantic đúng.
+
+### Nhóm 2: UI/UX trải nghiệm
+- [ ] **FE-6** Empty states — `/cong-dong`, `/lich-trinh`, `/theo-mua`, `/danh-ba` khi không có data: thêm illustration/icon + message hướng dẫn.
+- [ ] **FE-7** Loading states — mọi trang dùng `useAsyncData`/`useFetch` có skeleton/spinner thống nhất (component `LoadingSkeleton.vue`).
+- [ ] **FE-8** Error states — API fail hiện message thân thiện + nút thử lại, không raw error.
+- [ ] **FE-9** Mobile responsive — kiểm `/du-lich`, `/san-pham`, `/cong-dong`, trang chi tiết trên 375px. Fix overflow, font, spacing.
+- [ ] **FE-10** Dark mode consistency — mọi component dùng CSS variable, không hardcode màu. Fix chỗ bị trắng/đen lạc.
+
+### Nhóm 3: Component cải thiện
+- [ ] **FE-11** PostCard — image preview (nếu post có images), truncate long content, time relative ("2 giờ trước").
+- [ ] **FE-12** EntityCard — subtle hover effect + focus ring. Card là semantic link.
+- [ ] **FE-13** SearchBar — debounce input, dropdown suggestions, keyboard nav (arrow keys + Enter).
+- [ ] **FE-14** Toast/notification — component nhẹ cho feedback (đã lưu, đã báo cáo...) thay `alert()`.
+- [ ] **FE-15** Pagination — thống nhất: visual feedback loading more, scroll behavior.
+
+### Nhóm 4: Admin pages polish (FE only)
+- [ ] **FE-16** Admin entity editor — character counter cho summary, better form layout.
+- [ ] **FE-17** Admin moderation — content preview modal lớn (full post + images + author context).
+- [ ] **FE-18** Admin responsive — sidebar collapse mobile, table horizontal scroll.
+- [ ] **FE-19** Command palette (Ctrl+K) — quick nav + entity search, mount ở admin layout.
+
+### Nhóm 5: Performance
+- [ ] **FE-20** Lazy images — `loading="lazy"` cho images below fold.
+- [ ] **FE-21** Code splitting — lazy import heavy components (Map modal, editor).
+- [ ] **FE-22** CSS cleanup — remove unused rules, consolidate duplicates (KHÔNG xóa token variables).
+
+### Nhóm 6: Cross-cutting FE (consume endpoints BE session tạo)
+> Ghi chú: Các task này dùng endpoint mà session BE sẽ tạo. Nếu endpoint chưa có, code FE PHẢI
+> degrade gracefully (check response, fallback UI). Không bị block — FE hoạt động dù BE chưa merge.
+
+- [ ] **FE-23** Avatar display — sửa `PostCard.vue`, `nguoi-dung/[id].vue`, comment list: nếu user có `avatar_url` thì hiện ảnh, không thì dùng `AvatarPlaceholder.vue` hiện tại. Nhất quán toàn site.
+- [ ] **FE-24** Avatar upload form — thêm vào `/cai-dat` tab Hồ sơ: file input + preview + gọi `POST /auth/avatar`. Fallback: ẩn nếu endpoint trả 404.
+- [ ] **FE-25** Notification bell — component `NotificationBell.vue` ở nav (layout chính): badge đỏ + dropdown 5 item gần nhất. Dùng `useNotifications.ts` polling đã có.
+- [ ] **FE-26** Notification preferences — toggle switches per type (like/comment/mention/follow) trong `/cai-dat` tab Thông báo. Gọi `GET/PUT /api/notification-preferences`. Fallback: ẩn tab nếu 404.
+- [ ] **FE-27** Image responsive — entity có `images` array: hiển thị ảnh chính + gallery nhỏ ở trang chi tiết. `srcset`/`sizes` cho responsive. `loading="lazy"` cho ảnh phụ.
+- [ ] **FE-28** og:image per entity — sửa `useSeo.ts`: nếu entity có image, dùng làm `og:image` thay default. Fallback: giữ default site image.
+
+## 6. Lưu ý kỹ thuật
+
+- Đọc `agent/public_api.py` hoặc `agent/admin.py` để hiểu API response shape, nhưng KHÔNG sửa.
+- Design tokens: `assets/css/tokens.css` hoặc `base.css`.
+- Hệ màu: `--color-vinh-long`, `--color-ben-tre`, `--color-tra-vinh`.
+- Khi tạo component mới, đặt trong `components/` với tên PascalCase.
+- Admin pages ở `pages/admin/`.
