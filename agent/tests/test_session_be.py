@@ -696,11 +696,14 @@ def test_review_stats_endpoint_mounted():
 
 
 def test_review_stats_no_pg_returns_empty():
-    """Without Postgres, review-stats returns empty defaults."""
+    """Without Postgres, review-stats returns empty defaults for existing entity."""
     import public_api
+    from unittest.mock import patch
     if not db._use_pg:
-        client = _public_client()
-        resp = client.get("/api/entities/test-entity/review-stats")
+        fake_entity = {"id": "test-entity", "type": "attraction", "name": "Test"}
+        with patch.object(public_api.db, "get_entity", return_value=fake_entity):
+            client = _public_client()
+            resp = client.get("/api/entities/test-entity/review-stats")
         assert resp.status_code == 200
         data = resp.json()
         assert data["avg"] == 0

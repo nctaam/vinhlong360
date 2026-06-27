@@ -99,13 +99,15 @@ class StructuredLogger:
             self._py_logger.debug("Log flush failed: %s", exc)
 
     def _rotate(self):
-        """Keep only last N entries."""
+        """Keep only last N entries (streaming read to avoid loading entire file)."""
         try:
             if self.log_file.exists():
-                lines = self.log_file.read_text(encoding="utf-8").strip().split("\n")
+                with open(self.log_file, "r", encoding="utf-8") as f:
+                    lines = f.readlines()
                 if len(lines) > self.max_entries:
                     keep = lines[-self.max_entries:]
-                    self.log_file.write_text("\n".join(keep) + "\n", encoding="utf-8")
+                    with open(self.log_file, "w", encoding="utf-8") as f:
+                        f.writelines(keep)
             self._flush_count = 0
         except Exception as exc:
             self._py_logger.debug("Log rotation failed: %s", exc)
@@ -120,7 +122,8 @@ class StructuredLogger:
         entries = []
         try:
             if self.log_file.exists():
-                lines = self.log_file.read_text(encoding="utf-8").strip().split("\n")
+                with open(self.log_file, "r", encoding="utf-8") as f:
+                    lines = f.readlines()
                 for line in lines[-limit * 2:]:
                     try:
                         entry = json.loads(line)

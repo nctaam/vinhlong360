@@ -975,6 +975,10 @@ async def get_review_stats(entity_id: str, response: Response):
 
     _empty = {"avg": 0, "count": 0, "distribution": {}, "mentions": []}
 
+    entity = await asyncio.to_thread(db.get_entity, entity_id)
+    if not entity:
+        return JSONResponse(status_code=404, content={"error": "not_found"})
+
     if not db._use_pg:
         return _empty
 
