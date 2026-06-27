@@ -28,9 +28,17 @@ def check_rate(key: str, limit: int, window: int,
     now = _now()
     hits = [t for t in _buckets.get(key, []) if now - t < window]
     if len(hits) >= limit:
-        # cập nhật lại bucket đã lọc (không thêm lượt) rồi từ chối
         _buckets[key] = hits
-        raise HTTPException(429, msg)
+        retry_after = int(window - (now - hits[0])) + 1
+        raise HTTPException(
+            429, msg,
+            headers={
+                "Retry-After": str(max(1, retry_after)),
+                "X-RateLimit-Limit": str(limit),
+                "X-RateLimit-Remaining": "0",
+                "X-RateLimit-Reset": str(int(hits[0] + window)),
+            },
+        )
     hits.append(now)
     _buckets[key] = hits
     if len(_buckets) > _MAX_KEYS:

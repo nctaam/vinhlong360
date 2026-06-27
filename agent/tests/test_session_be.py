@@ -266,6 +266,27 @@ def test_twitter_card_meta_entity():
     assert meta["twitter:image"] == "https://example.com/photo.jpg"
 
 
+def test_aggregate_rating_in_jsonld():
+    entity = {
+        "id": "rated-place",
+        "name": "Rated Place",
+        "type": "attraction",
+        "avg_rating": 4.2,
+        "rating_count": 15,
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "aggregateRating" in ld
+    assert ld["aggregateRating"]["ratingValue"] == 4.2
+    assert ld["aggregateRating"]["ratingCount"] == 15
+    assert ld["aggregateRating"]["bestRating"] == 5
+
+
+def test_aggregate_rating_omitted_when_no_ratings():
+    entity = {"id": "no-ratings", "name": "No Ratings", "type": "attraction"}
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "aggregateRating" not in ld
+
+
 def test_og_endpoints_mounted():
     app = FastAPI()
     app.include_router(seo.router)

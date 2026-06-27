@@ -603,6 +603,22 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
         if related_urls:
             ld["relatedLink"] = related_urls
 
+    avg_rating = attrs.get("avg_rating") or entity.get("avg_rating")
+    rating_count = attrs.get("rating_count") or entity.get("rating_count")
+    if avg_rating is not None and rating_count:
+        try:
+            rv = float(avg_rating)
+            rc = int(rating_count)
+            if 1.0 <= rv <= 5.0 and rc > 0:
+                ld["aggregateRating"] = {
+                    "@type": "AggregateRating",
+                    "ratingValue": round(rv, 1),
+                    "bestRating": 5,
+                    "ratingCount": rc,
+                }
+        except (ValueError, TypeError):
+            pass
+
     date_modified = _safe_date(entity.get("updatedAt"))
     if date_modified:
         ld["dateModified"] = date_modified
