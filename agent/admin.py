@@ -275,9 +275,11 @@ async def list_entities(
             results = [e for e in (results + [p for p in places if p["type"] == "place"])]
 
         if orphans_only:
-            all_rels = db.all_relationships()
-            ent_ids_with_rels = {r["from"] for r in all_rels} | {r["to"] for r in all_rels}
-            results = [e for e in results if e.get("type") != "place" and e["id"] not in ent_ids_with_rels]
+            with db._conn() as conn:
+                rows = db._fetchall(conn,
+                    "SELECT from_id AS eid FROM relationships UNION SELECT to_id FROM relationships", ())
+                rel_ids = {db._row_to_dict(r)["eid"] for r in rows}
+            results = [e for e in results if e.get("type") != "place" and e["id"] not in rel_ids]
 
         total = len(results)
         items = results[:limit] if q else results
@@ -351,8 +353,10 @@ async def update_entity(entity_id: str, update: EntityUpdate):
         db.upsert_entity(existing)
         db.log_entity_changes(entity_id, old_snapshot, existing)
         _sync_kb()
-        from public_api import invalidate_entity_cache
+        from public_api import invalidate_entity_cache, invalidate_place_cache
         invalidate_entity_cache(entity_id)
+        if existing.get("type") == "place":
+            invalidate_place_cache()
         return {"status": "updated", "entity": existing}
     return await asyncio.to_thread(_query)
 
@@ -390,9 +394,14 @@ async def delete_entity(entity_id: str):
     """Xóa entity."""
     entity_id = validate_path_id(entity_id, "entity_id")
     def _query():
-        if not db.delete_entity(entity_id):
+        entity = db.get_entity(entity_id)
+        if not entity:
             raise HTTPException(404, f"Entity '{entity_id}' not found")
+        db.delete_entity(entity_id)
         _sync_kb()
+        if entity.get("type") == "place":
+            from public_api import invalidate_place_cache
+            invalidate_place_cache()
     await asyncio.to_thread(_query)
     return {"status": "deleted", "entity_id": entity_id}
 
