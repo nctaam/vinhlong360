@@ -68,7 +68,7 @@ TYPE_LABELS = {
 PRIORITY_TYPES = ["attraction", "experience", "nature", "history", "craft_village",
                   "dish", "product", "event", "accommodation",
                   "cafe", "restaurant", "drink", "facility", "organization",
-                  "person", "economy"]
+                  "person", "economy", "itinerary"]
 
 db = Database()
 stats = {"success": 0, "skip": 0, "fail": 0, "tokens": 0}
