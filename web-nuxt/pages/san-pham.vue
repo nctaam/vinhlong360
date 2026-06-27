@@ -88,16 +88,19 @@
           </select>
         </div>
         <p class="control-label">Theo tháng</p>
-        <div class="chip-row" role="group" aria-label="Lọc theo tháng">
-          <button type="button" :class="['chip', 'season', { active: seasonFilter === 'all' }]" :aria-pressed="seasonFilter === 'all'" @click="seasonFilter = 'all'">Tất cả</button>
-          <button type="button" v-for="m in 12" :key="m" :class="['chip', 'season', { active: seasonFilter === String(m) }]" :aria-pressed="seasonFilter === String(m)" :aria-label="`Tháng ${m}`" @click="seasonFilter = String(m)">
-            T{{ m }}
-          </button>
-          <button type="button" :class="['chip', 'season', { active: seasonFilter === 'flood' }]" :aria-pressed="seasonFilter === 'flood'" @click="seasonFilter = 'flood'">🌊 Mùa nước nổi</button>
-        </div>
-        <div class="chip-row chip-row-extra" role="group" aria-label="Lọc nâng cao">
-          <button type="button" :class="['chip', { active: ocopOnly }]" :aria-pressed="ocopOnly" aria-label="Chỉ sản phẩm OCOP" @click="ocopOnly = !ocopOnly">⭐ Chỉ sản phẩm OCOP</button>
-        </div>
+        <FilterChips
+          :filters="seasonFilterOptions"
+          :model-value="[seasonFilter]"
+          single-select
+          aria-label="Lọc theo tháng"
+          @update:model-value="v => seasonFilter = v.length ? v[0] : 'all'"
+        />
+        <FilterChips
+          :filters="[{ key: 'ocop', label: 'Chỉ sản phẩm OCOP', icon: '⭐' }]"
+          :model-value="ocopOnly ? ['ocop'] : []"
+          aria-label="Lọc nâng cao"
+          @update:model-value="v => ocopOnly = v.includes('ocop')"
+        />
         <div v-if="activeFilterCount > 0" class="filter-status">
           <span class="filter-count">{{ activeFilterCount }} bộ lọc</span>
           <button type="button" class="filter-clear" @click="clearFilters">Xóa tất cả</button>
@@ -165,6 +168,12 @@ const currentMonth = new Date().getMonth() + 1
 const q = ref('')
 const seasonFilter = ref(String(currentMonth))
 const ocopOnly = ref(false)
+
+const seasonFilterOptions = computed(() => [
+  { key: 'all', label: 'Tất cả' },
+  ...Array.from({ length: 12 }, (_, i) => ({ key: String(i + 1), label: `T${i + 1}` })),
+  { key: 'flood', label: 'Mùa nước nổi', icon: '🌊' },
+])
 const sortBy = ref('relevant')
 const sortLabels: Record<string, string> = { popular: 'Phổ biến', newest: 'Mới nhất', name: 'Tên A-Z' }
 const viewMode = ref('grid')
