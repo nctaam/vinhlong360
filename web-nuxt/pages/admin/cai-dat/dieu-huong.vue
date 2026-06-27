@@ -39,6 +39,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Điều hướng — Admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const { confirmDialog } = useConfirm()

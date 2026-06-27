@@ -29,6 +29,7 @@
 <script setup lang="ts">
 import { DEFAULT_ROUTES } from '~/utils/routesContent'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Tuyến đường — Admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 

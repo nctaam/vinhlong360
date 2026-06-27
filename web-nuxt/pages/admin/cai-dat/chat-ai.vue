@@ -28,6 +28,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Chat AI — Admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const chatFields = ref<any[]>([])

@@ -77,6 +77,8 @@ const emit = defineEmits<{
   'update:items': [items: any[]]
 }>()
 
+const { confirmDialog } = useConfirm()
+
 const localItems = ref<any[]>([])
 const editingIndex = ref<number | null>(null)
 
@@ -110,8 +112,8 @@ function moveDown(i: number) {
   emitUpdate()
 }
 
-function removeItem(i: number) {
-  if (!confirm('Xoá mục này?')) return
+async function removeItem(i: number) {
+  if (!await confirmDialog('Xoá mục này?', { danger: true })) return
   localItems.value.splice(i, 1)
   editingIndex.value = null
   emitUpdate()
@@ -186,17 +188,17 @@ function addChild(parentIdx: number) {
 
 .sl-actions { display: flex; gap: 4px; flex-shrink: 0; }
 .sl-btn {
-  width: 34px; height: 34px; border-radius: 8px;
+  min-width: 44px; min-height: 44px; border-radius: 8px;
   border: .5px solid var(--line); background: var(--bg);
   font-size: .72rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
   transition: background .2s cubic-bezier(.2,1,.4,1), color .2s, transform .15s cubic-bezier(.2,1,.4,1);
 }
-.sl-btn:hover:not(:disabled) { background: rgba(52,120,246,.06); color: #3478F6; }
+.sl-btn:hover:not(:disabled) { background: rgba(var(--primary-rgb), .06); color: var(--primary-fg); }
 .sl-btn:active:not(:disabled) { transform: scale(.9); }
 .sl-btn:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 1px; }
 .sl-btn:disabled { opacity: .25; cursor: not-allowed; }
-.sl-btn-edit:hover:not(:disabled) { background: rgba(33,150,83,.06); color: #219653; }
-.sl-btn-remove:hover:not(:disabled) { background: rgba(217,79,61,.06); color: #D94F3D; }
+.sl-btn-edit:hover:not(:disabled) { background: rgba(var(--primary-rgb), .06); color: var(--primary, #219653); }
+.sl-btn-remove:hover:not(:disabled) { background: rgba(var(--danger-rgb, 217,79,61), .06); color: var(--danger, #D94F3D); }
 
 .sl-edit-fields { display: flex; flex-direction: column; gap: var(--space-3); }
 .sl-edit-group { display: flex; flex-direction: column; gap: 4px; }
@@ -226,10 +228,10 @@ function addChild(parentIdx: number) {
   align-self: flex-start; padding: 8px 14px; border-radius: 10px;
   font-size: .8rem; font-weight: 500; color: var(--primary, #219653);
   background: rgba(33,150,83,.06); border: none; cursor: pointer;
-  min-height: 36px;
+  min-height: 44px;
   transition: background .2s, transform .15s cubic-bezier(.2,1,.4,1);
 }
-.sl-add-child:hover { background: rgba(33,150,83,.1); }
+.sl-add-child:hover { background: rgba(var(--primary-rgb), .1); }
 .sl-add-child:active { transform: scale(.97); }
 
 .sl-add {

@@ -40,6 +40,7 @@
 <script setup lang="ts">
 import { getPageManifest } from '~/utils/pageManifest'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Chỉnh sửa trang — Admin' })
 
 const route = useRoute()
 const slug = computed(() => String(route.params.slug || ''))

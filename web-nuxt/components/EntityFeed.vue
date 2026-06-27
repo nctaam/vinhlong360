@@ -18,7 +18,7 @@
             </span>
           </div>
           <NuxtImg v-if="firstImage(p) && isRemoteUrl(firstImage(p)!)" :src="firstImage(p)!" :alt="`Ảnh bài viết của ${p.display_name || 'người dùng'}`" class="ef-thumb" loading="lazy" decoding="async" width="80" height="80" />
-          <img v-else-if="firstImage(p)" :src="firstImage(p)!" :alt="`Ảnh bài viết của ${p.display_name || 'người dùng'}`" class="ef-thumb" loading="lazy" decoding="async" />
+          <img v-else-if="firstImage(p)" :src="firstImage(p)!" :alt="`Ảnh bài viết của ${p.display_name || 'người dùng'}`" class="ef-thumb" loading="lazy" decoding="async" width="80" height="80" />
         </NuxtLink>
       </li>
     </ul>

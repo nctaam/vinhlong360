@@ -307,7 +307,7 @@ onMounted(() => fetchReviews())
 
 /* Image attach */
 .rf-photo-hint { margin: var(--space-2) 0 0; font-size: var(--text-sm); color: var(--ink-700); }
-.ri-helpful { margin-top: var(--space-2); display: inline-flex; align-items: center; gap: .3rem; font-size: var(--text-sm); padding: .3rem .7rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink-700); cursor: pointer; min-height: 36px; }
+.ri-helpful { margin-top: var(--space-2); display: inline-flex; align-items: center; gap: .3rem; font-size: var(--text-sm); padding: .3rem .7rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink-700); cursor: pointer; min-height: 44px; }
 .ri-helpful.active { background: color-mix(in srgb, var(--primary) 12%, var(--bg)); border-color: var(--primary); color: var(--primary-fg); }
 .ri-helpful-count { font-weight: var(--weight-medium); }
 .rf-images { display: flex; flex-direction: column; gap: var(--space-2); margin-block: var(--space-2); }

@@ -143,6 +143,7 @@
 <script setup lang="ts">
 import type { Entity } from '~/types'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Thống kê — Admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()

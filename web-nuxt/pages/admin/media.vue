@@ -96,6 +96,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Thư viện ảnh — Admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
@@ -219,13 +220,13 @@ onMounted(fetchMedia)
 .media-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
 .media-dup-badge {
   position: absolute; top: 6px; right: 6px; padding: 2px 8px; border-radius: 100px;
-  background: rgba(255,159,10,.9); color: #fff; font-size: .7rem; font-weight: 700;
+  background: rgba(var(--warning-rgb, 255,159,10),.9); color: var(--text-on-dark, #fff); font-size: .7rem; font-weight: 700;
 }
 .media-card-info { padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; }
 .media-entity-name { font-weight: 600; font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .media-entity-type { font-size: .72rem; color: var(--muted); text-transform: uppercase; }
-.media-credit { font-size: .72rem; color: var(--primary-fg, #219653); }
-.media-no-credit { font-size: .72rem; color: #FF9F0A; font-style: italic; }
+.media-credit { font-size: .72rem; color: var(--primary-fg); }
+.media-no-credit { font-size: .72rem; color: var(--warning, #FF9F0A); font-style: italic; }
 
 .media-load-more { margin-top: var(--space-4); }
 
@@ -236,7 +237,7 @@ onMounted(fetchMedia)
 .media-preview-url code { font-size: .75rem; background: var(--bg-alt); padding: 2px 6px; border-radius: 4px; }
 .media-preview-actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); padding-top: var(--space-3); border-top: .5px solid var(--line); }
 
-.stat-card.status-warn { border-left: 4px solid #FF9F0A; }
+.stat-card.status-warn { border-left: 4px solid var(--warning, #FF9F0A); }
 @media (max-width: 640px) { .media-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }
 @media (prefers-reduced-motion: reduce) { .media-card:hover { transform: none; } }
 </style>

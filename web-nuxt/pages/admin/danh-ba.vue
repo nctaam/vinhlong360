@@ -110,6 +110,7 @@
 import type { Entity, Place } from '~/types'
 import { AREA_META, OFFICE_KIND } from '~/composables/useConstants'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Danh bạ — Admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()

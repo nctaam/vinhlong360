@@ -93,6 +93,7 @@
 <script setup lang="ts">
 import type { Entity } from '~/types'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Duyệt tự học — Admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const { confirmDialog } = useConfirm()

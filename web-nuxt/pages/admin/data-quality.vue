@@ -242,6 +242,7 @@
 <script setup lang="ts">
 import type { Entity } from '~/types'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Chất lượng dữ liệu — Admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()

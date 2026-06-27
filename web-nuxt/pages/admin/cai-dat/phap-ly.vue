@@ -38,6 +38,7 @@
 <script setup lang="ts">
 import { LEGAL_PRIVACY, LEGAL_TERMS } from '~/utils/legalContent'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Pháp lý — Admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 

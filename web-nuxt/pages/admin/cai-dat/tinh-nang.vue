@@ -46,6 +46,7 @@
 <script setup lang="ts">
 import { FEATURE_FLAGS, featureFlagDefault } from '~/utils/featureFlags'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Tính năng — Admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const { confirmDialog } = useConfirm()

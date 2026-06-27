@@ -220,6 +220,7 @@
 <script setup lang="ts">
 import type { Entity } from '~/types'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'AI Quản lý — Admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const { confirmDialog } = useConfirm()

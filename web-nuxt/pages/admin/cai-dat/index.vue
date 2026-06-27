@@ -88,6 +88,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Cài đặt — Admin' })
 
 interface Category { slug: string; icon: string; title: string; desc: string; group: string }
 

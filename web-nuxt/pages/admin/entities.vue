@@ -286,6 +286,7 @@
 import type { Entity } from '~/types'
 import { TYPE_META } from '~/composables/useConstants'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Quản lý Entity — Admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()

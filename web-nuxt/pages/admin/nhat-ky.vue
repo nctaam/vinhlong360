@@ -65,6 +65,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Nhật ký — Admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()

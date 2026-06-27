@@ -129,6 +129,7 @@
 <script setup lang="ts">
 import type { Itinerary } from '~/types'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Lịch trình — Admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
