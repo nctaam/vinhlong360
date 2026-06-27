@@ -3,7 +3,7 @@
     "type": "attraction",
     "label": "Tham quan",
     "emoji": "📸",
-    "count": 320
+    "count": 318
   },
   {
     "type": "product",
@@ -15,7 +15,7 @@
     "type": "history",
     "label": "Di tích",
     "emoji": "🏛️",
-    "count": 192
+    "count": 188
   },
   {
     "type": "accommodation",
@@ -51,7 +51,7 @@
     "type": "craft_village",
     "label": "Làng nghề",
     "emoji": "🏺",
-    "count": 85
+    "count": 84
   },
   {
     "type": "event",
