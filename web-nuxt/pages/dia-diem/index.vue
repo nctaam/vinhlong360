@@ -22,23 +22,23 @@
       <button type="button" class="btn btn-primary btn-sm" @click="applyQuery">Tìm</button>
     </div>
 
-    <div class="dd-filters" role="region" aria-label="Lọc theo loại">
-      <button type="button" :class="['chip', { active: typeFilter === 'all' }]" :aria-pressed="typeFilter === 'all'" @click="setType('all')">Tất cả</button>
-      <button
-        v-for="t in typeChips" :key="t.value"
-        type="button" :class="['chip', { active: typeFilter === t.value }]"
-        :aria-pressed="typeFilter === t.value" @click="setType(t.value)"
-      >{{ t.emoji }} {{ t.label }}</button>
-    </div>
+    <FilterChips
+      :filters="typeFilterOptions"
+      :model-value="[typeFilter]"
+      single-select
+      class="dd-filters"
+      aria-label="Lọc theo loại"
+      @update:model-value="v => setType(v.length ? v[0] : 'all')"
+    />
 
-    <div class="dd-filters dd-areas" role="region" aria-label="Lọc theo khu vực">
-      <button type="button" :class="['chip', 'chip-area', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="setArea('all')">Toàn vùng</button>
-      <button
-        v-for="a in areaChips" :key="a.slug"
-        type="button" :class="['chip', 'chip-area', { active: areaFilter === a.slug }]"
-        :aria-pressed="areaFilter === a.slug" @click="setArea(a.slug)"
-      >{{ a.emoji }} {{ a.name }}</button>
-    </div>
+    <FilterChips
+      :filters="areaFilterOptions"
+      :model-value="[areaFilter]"
+      single-select
+      class="dd-filters dd-areas"
+      aria-label="Lọc theo khu vực"
+      @update:model-value="v => setArea(v.length ? v[0] : 'all')"
+    />
 
     <p v-if="!pending" class="dd-count" aria-live="polite">
       <strong>{{ total }}</strong> địa điểm<template v-if="qApplied"> cho “{{ qApplied }}”</template>
@@ -94,6 +94,15 @@ const qInput = ref<string>(qApplied.value)
 
 const typeChips = CARD_TYPES.map(t => ({ value: t, emoji: TYPE_META[t]?.emoji || '📍', label: TYPE_META[t]?.label || t }))
 const areaChips = Object.entries(AREA_META).map(([slug, m]) => ({ slug, name: m.name, emoji: m.emoji }))
+
+const typeFilterOptions = computed(() => [
+  { key: 'all', label: 'Tất cả' },
+  ...typeChips.map(t => ({ key: t.value, label: t.label, icon: t.emoji })),
+])
+const areaFilterOptions = computed(() => [
+  { key: 'all', label: 'Toàn vùng' },
+  ...areaChips.map(a => ({ key: a.slug, label: a.name, icon: a.emoji })),
+])
 
 function buildUrl(offset: number) {
   const p = new URLSearchParams({ limit: String(PAGE), offset: String(offset) })

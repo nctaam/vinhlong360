@@ -78,20 +78,21 @@
           </select>
         </div>
         <p class="control-label">Loại</p>
-        <div class="chip-row" role="group" aria-label="Lọc theo loại">
-          <button type="button" :class="['chip', { active: typeFilter === 'all' }]" :aria-pressed="typeFilter === 'all'" @click="typeFilter = 'all'">Tất cả</button>
-          <button type="button" v-for="t in typeChips" :key="t.value" :class="['chip', { active: typeFilter === t.value }]" :aria-pressed="typeFilter === t.value" @click="typeFilter = t.value">
-            {{ t.label }}
-          </button>
-        </div>
+        <FilterChips
+          :filters="typeFilterOptions"
+          :model-value="[typeFilter]"
+          single-select
+          aria-label="Lọc theo loại"
+          @update:model-value="v => typeFilter = v.length ? v[0] : 'all'"
+        />
         <p class="control-label">Theo tháng</p>
-        <div class="chip-row" role="group" aria-label="Lọc theo tháng">
-          <button type="button" :class="['chip', 'season', { active: seasonFilter === 'all' }]" :aria-pressed="seasonFilter === 'all'" @click="seasonFilter = 'all'">Tất cả</button>
-          <button type="button" v-for="m in 12" :key="m" :class="['chip', 'season', { active: seasonFilter === String(m) }]" :aria-pressed="seasonFilter === String(m)" :title="MONTH_NAMES[m - 1]" :aria-label="MONTH_NAMES[m - 1]" @click="seasonFilter = String(m)">
-            {{ MONTH_ABBR[m - 1] }}
-          </button>
-          <button type="button" :class="['chip', 'season', { active: seasonFilter === 'flood' }]" :aria-pressed="seasonFilter === 'flood'" @click="seasonFilter = 'flood'">🌊 Mùa nước nổi</button>
-        </div>
+        <FilterChips
+          :filters="seasonFilterOptions"
+          :model-value="[seasonFilter]"
+          single-select
+          aria-label="Lọc theo tháng"
+          @update:model-value="v => seasonFilter = v.length ? v[0] : 'all'"
+        />
         <div v-if="activeFilterCount > 0" class="filter-status">
           <span class="filter-count">{{ activeFilterCount }} bộ lọc</span>
           <button type="button" class="filter-clear" @click="clearFilters">Xóa tất cả</button>
@@ -173,6 +174,16 @@ const typeChips = TYPES.map(t => ({
 const q = ref('')
 const typeFilter = ref('all')
 const seasonFilter = ref('all')
+
+const typeFilterOptions = computed(() => [
+  { key: 'all', label: 'Tất cả' },
+  ...typeChips.map(t => ({ key: t.value, label: t.label })),
+])
+const seasonFilterOptions = computed(() => [
+  { key: 'all', label: 'Tất cả' },
+  ...Array.from({ length: 12 }, (_, i) => ({ key: String(i + 1), label: MONTH_ABBR[i] })),
+  { key: 'flood', label: 'Mùa nước nổi', icon: '🌊' },
+])
 const sortBy = ref('relevant')
 const sortLabels: Record<string, string> = { popular: 'Phổ biến', newest: 'Mới nhất', name: 'Tên A-Z' }
 const viewMode = ref('grid')

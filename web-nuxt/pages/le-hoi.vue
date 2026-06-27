@@ -97,17 +97,20 @@
       <div class="search-row">
         <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm lễ hội…" aria-label="Tìm lễ hội" />
       </div>
-      <div class="chip-row" role="group" aria-label="Lọc theo trạng thái">
-        <button type="button" :class="['chip', { active: statusFilter === 'all' }]" :aria-pressed="statusFilter === 'all'" @click="statusFilter = 'all'">Tất cả</button>
-        <button type="button" :class="['chip', { active: statusFilter === 'now' }]" :aria-pressed="statusFilter === 'now'" @click="statusFilter = statusFilter === 'now' ? 'all' : 'now'">🔴 Đang diễn ra</button>
-        <button type="button" :class="['chip', { active: statusFilter === 'soon' }]" :aria-pressed="statusFilter === 'soon'" @click="statusFilter = statusFilter === 'soon' ? 'all' : 'soon'">🟡 Sắp khai mạc</button>
-      </div>
-      <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
-        <button type="button" :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả vùng</button>
-        <button type="button" v-for="(meta, slug) in AREA_META" :key="slug" :class="['chip', { active: areaFilter === slug }]" :aria-pressed="areaFilter === slug" @click="areaFilter = slug">
-          {{ meta.emoji }} {{ meta.name }}
-        </button>
-      </div>
+      <FilterChips
+        :filters="statusFilterOptions"
+        :model-value="[statusFilter]"
+        single-select
+        aria-label="Lọc theo trạng thái"
+        @update:model-value="v => statusFilter = v.length ? v[0] : 'all'"
+      />
+      <FilterChips
+        :filters="areaFilterOptions"
+        :model-value="[areaFilter]"
+        single-select
+        aria-label="Lọc theo khu vực"
+        @update:model-value="v => areaFilter = v.length ? v[0] : 'all'"
+      />
     </div>
 
     <div class="view-toggle" role="group" aria-label="Chế độ hiển thị">
@@ -236,6 +239,16 @@ const statusFilter = ref('all')
 const view = ref('list')
 
 useFilterUrl({ vung: areaFilter, trang_thai: statusFilter }, { vung: 'all', trang_thai: 'all' })
+
+const statusFilterOptions = [
+  { key: 'all', label: 'Tất cả' },
+  { key: 'now', label: 'Đang diễn ra', icon: '🔴' },
+  { key: 'soon', label: 'Sắp khai mạc', icon: '🟡' },
+]
+const areaFilterOptions = computed(() => [
+  { key: 'all', label: 'Tất cả vùng' },
+  ...Object.entries(AREA_META).map(([slug, m]) => ({ key: slug, label: m.name, icon: m.emoji })),
+])
 
 const { data, error: fetchError } = await useAsyncData('festivals', () =>
   apiFetch<{ events: Entity[] }>('/api/events?limit=200&include_past=true')

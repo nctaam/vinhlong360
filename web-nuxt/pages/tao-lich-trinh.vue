@@ -32,21 +32,26 @@
       <!-- Left: Entity picker -->
       <div class="planner-picker">
         <!-- Source tabs: All vs Favorites -->
-        <div class="chip-row chip-row-spaced">
-          <button type="button" :class="['chip', { active: sourceTab === 'all' }]" :aria-pressed="sourceTab === 'all'" @click="sourceTab = 'all'">Tất cả</button>
-          <button type="button" :class="['chip', { active: sourceTab === 'saved' }]" :aria-pressed="sourceTab === 'saved'" @click="sourceTab = 'saved'">
-            ❤️ Đã lưu ({{ favCount }})
-          </button>
-        </div>
+        <FilterChips
+          :filters="sourceTabOptions"
+          :model-value="[sourceTab]"
+          single-select
+          class="chip-row-spaced"
+          aria-label="Nguồn"
+          @update:model-value="v => sourceTab = v.length ? v[0] : 'all'"
+        />
         <div class="search-row search-row-spaced">
           <input v-model="searchQ" type="search" enterkeyhint="search" aria-label="Tìm điểm đến" placeholder="Tìm điểm đến, đặc sản, lưu trú…" />
         </div>
-        <div v-if="sourceTab === 'all'" class="chip-row chip-row-spaced">
-          <button type="button" :class="['chip', { active: typeFilter === 'all' }]" :aria-pressed="typeFilter === 'all'" @click="typeFilter = 'all'">Tất cả</button>
-          <button type="button" v-for="t in typeChips" :key="t.value" :class="['chip', { active: typeFilter === t.value }]" :aria-pressed="typeFilter === t.value" @click="typeFilter = t.value">
-            {{ t.label }}
-          </button>
-        </div>
+        <FilterChips
+          v-if="sourceTab === 'all'"
+          :filters="typeFilterOptions"
+          :model-value="[typeFilter]"
+          single-select
+          class="chip-row-spaced"
+          aria-label="Lọc theo loại"
+          @update:model-value="v => typeFilter = v.length ? v[0] : 'all'"
+        />
         <div class="picker-list">
           <div
             v-for="e in pickerResults"
@@ -226,6 +231,15 @@ const transportModes = [
 const sourceTab = ref('all')
 const searchQ = ref('')
 const typeFilter = ref('all')
+
+const sourceTabOptions = computed(() => [
+  { key: 'all', label: 'Tất cả' },
+  { key: 'saved', label: 'Đã lưu', icon: '❤️', count: favCount.value },
+])
+const typeFilterOptions = computed(() => [
+  { key: 'all', label: 'Tất cả' },
+  ...typeChips.map(t => ({ key: t.value, label: t.label })),
+])
 const planTitle = ref('')
 const stops = ref<PlanStop[]>([])
 const savedPlans = ref<SavedPlan[]>([])

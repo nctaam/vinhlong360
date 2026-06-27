@@ -15,11 +15,12 @@
 
     <ClientOnly>
       <div class="controls map-filters reveal">
-        <div class="chip-row" role="group" aria-label="Lọc theo loại địa điểm">
-          <button type="button" v-for="f in typeFilters" :key="f.value" :class="['chip', { active: activeTypes.has(f.value) }]" :aria-pressed="activeTypes.has(f.value)" @click="toggleType(f.value)">
-            {{ f.label }}
-          </button>
-        </div>
+        <FilterChips
+          :filters="typeFilterOptions"
+          :model-value="activeTypeArray"
+          aria-label="Lọc theo loại địa điểm"
+          @update:model-value="onTypeFilterChange"
+        />
         <p class="result-meta" aria-live="polite">
           {{ visibleLabel }}
         </p>
@@ -99,6 +100,22 @@ const typeFilters = [
 
 const route = useRoute()
 const activeTypes = ref(new Set(['all']))
+
+const typeFilterOptions = typeFilters.map(f => {
+  const parts = f.label.match(/^(\S+)\s+(.+)$/)
+  return parts ? { key: f.value, label: parts[2], icon: parts[1] } : { key: f.value, label: f.label }
+})
+const activeTypeArray = computed(() => [...activeTypes.value])
+
+function onTypeFilterChange(v: string[]) {
+  if (v.includes('all') || v.length === 0) {
+    activeTypes.value = new Set(['all'])
+  } else {
+    activeTypes.value = new Set(v)
+  }
+  if (updateRaf) cancelAnimationFrame(updateRaf)
+  updateRaf = requestAnimationFrame(() => { updateRaf = null; updateMarkers() })
+}
 
 let updateRaf: number | null = null
 function toggleType(type: string) {
