@@ -138,8 +138,11 @@ def score_entity(entity: dict) -> tuple[int, list[str]]:
     else:
         issues.append("no_coords")
 
-    # Season data (+5)
-    if season and isinstance(season, dict) and season.get("peak"):
+    # Season data (+5) — skip for types that are inherently non-seasonal
+    SEASON_EXEMPT = {"facility", "organization", "person", "itinerary", "cafe", "restaurant"}
+    if etype in SEASON_EXEMPT:
+        score += 5
+    elif season and isinstance(season, dict) and season.get("peak"):
         score += 5
     else:
         issues.append("no_season")
