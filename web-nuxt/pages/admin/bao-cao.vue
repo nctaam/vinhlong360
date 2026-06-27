@@ -413,7 +413,7 @@ onMounted(() => fetchAll())
 .rpt-filter-label { font-size: .72rem; font-weight: 600; color: var(--muted); margin-right: 2px; }
 .rpt-chip {
   display: inline-flex; align-items: center; gap: 6px;
-  min-height: 32px; padding: 4px 12px;
+  min-height: 44px; padding: 4px 12px;
   border: 1px solid var(--border); border-radius: 100px;
   background: var(--surface, #fff); color: var(--text, #1d1d1f);
   font-size: .78rem; font-weight: 500; cursor: pointer;
@@ -490,7 +490,7 @@ onMounted(() => fetchAll())
 }
 .rpt-pager-info { font-size: .76rem; color: var(--muted); }
 .rpt-loadmore {
-  min-height: 36px; padding: 6px 18px;
+  min-height: 44px; padding: 6px 18px;
   border: 1px solid var(--border); border-radius: 100px;
   background: var(--surface, #fff); color: var(--text, #1d1d1f);
   font-size: .82rem; font-weight: 600; cursor: pointer;

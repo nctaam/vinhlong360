@@ -206,7 +206,7 @@ function addChild(parentIdx: number) {
 .sl-edit-input {
   padding: 8px 12px; border: .5px solid var(--line); border-radius: 10px;
   font-size: .85rem; background: var(--bg); color: var(--ink);
-  min-height: 38px;
+  min-height: 44px;
   transition: border-color .2s, box-shadow .2s;
 }
 .sl-edit-input:focus {

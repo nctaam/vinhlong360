@@ -394,7 +394,7 @@ async function onReset() {
 }
 .sf-save {
   padding: 12px 28px; border-radius: 12px; font-weight: 600; font-size: .88rem;
-  background: var(--primary, #219653); color: #fff; border: none; cursor: pointer;
+  background: var(--primary, #219653); color: var(--text-on-dark, #fff); border: none; cursor: pointer;
   min-height: 44px;
   transition: transform .2s cubic-bezier(.2,1,.4,1), opacity .2s, box-shadow .2s;
 }
@@ -416,7 +416,7 @@ async function onReset() {
 .sf-save { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 .sf-spinner {
   width: 16px; height: 16px; flex-shrink: 0;
-  border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.4); border-top-color: var(--text-on-dark, #fff); border-radius: 50%;
   animation: sf-spin .7s linear infinite;
 }
 @keyframes sf-spin { to { transform: rotate(360deg); } }

@@ -375,7 +375,7 @@ if (import.meta.client) {
 .ac-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .ac-chip {
   display: inline-flex; align-items: center; gap: var(--space-1);
-  min-height: 36px; padding: var(--space-2) var(--space-3);
+  min-height: 44px; padding: var(--space-2) var(--space-3);
   background: var(--bg-alt); border: .5px solid var(--line);
   border-radius: var(--radius-full); color: var(--ink);
   font-size: var(--text-sm); font-weight: var(--weight-medium);
@@ -395,7 +395,7 @@ if (import.meta.client) {
 .ac-empty-all {
   margin-top: var(--space-2); font-size: var(--text-sm);
   font-weight: var(--weight-semibold); color: var(--primary-fg);
-  text-decoration: none; min-height: 36px; display: inline-flex; align-items: center;
+  text-decoration: none; min-height: 44px; display: inline-flex; align-items: center;
 }
 .ac-empty-all:hover { text-decoration: underline; }
 .ac-empty-all:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-sm); }

@@ -327,7 +327,7 @@ onMounted(() => fetchReviews())
 .rf-image-remove:focus-visible { outline: 2px solid var(--brand, currentColor); outline-offset: 1px; }
 .rf-image-add {
   display: inline-flex; align-items: center; gap: var(--space-2);
-  min-height: 36px; padding-inline: var(--space-3);
+  min-height: 44px; padding-inline: var(--space-3);
   border: 1px dashed var(--line); border-radius: var(--radius-md);
   font-size: var(--text-sm); color: var(--muted); cursor: pointer;
   align-self: flex-start;
@@ -342,7 +342,7 @@ onMounted(() => fetchReviews())
 /* Own-review actions */
 .ri-actions { margin-inline-start: auto; display: inline-flex; gap: var(--space-2); }
 .ri-action-btn {
-  min-height: 28px; padding-inline: var(--space-2);
+  min-height: 44px; padding-inline: var(--space-2);
   border: .5px solid var(--line); border-radius: var(--radius-sm);
   background: transparent; font-size: var(--text-xs); color: var(--muted);
   cursor: pointer;

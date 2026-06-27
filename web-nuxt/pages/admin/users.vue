@@ -498,7 +498,7 @@ onMounted(() => fetchUsers())
 
 /* ── Role select ── */
 .usr-role-select {
-  padding: 4px 8px; min-height: 32px; font-size: .78rem;
+  padding: 4px 8px; min-height: 44px; font-size: .78rem;
   border: .5px solid var(--line); border-radius: 8px;
   background: var(--bg); color: var(--ink);
   cursor: pointer; transition: border-color .2s cubic-bezier(.2,1,.4,1), box-shadow .2s;
@@ -558,7 +558,7 @@ onMounted(() => fetchUsers())
 .usr-confirm-actions button {
   padding: 6px var(--space-3); font-size: .8rem; border-radius: 8px;
   border: .5px solid var(--line); background: var(--bg); cursor: pointer;
-  font-weight: 500; min-height: 36px;
+  font-weight: 500; min-height: 44px;
   transition: background .25s, color .25s, border-color .25s, transform .35s cubic-bezier(.2,1,.4,1), box-shadow .25s;
 }
 .usr-confirm-actions button:active { transform: scale(.95); transition-duration: .08s; }

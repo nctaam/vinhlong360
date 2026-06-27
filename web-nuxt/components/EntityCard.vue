@@ -153,12 +153,12 @@ const ratingDisplay = computed(() => {
 .dark .badge.ocop-4 { color: var(--secondary-fg); }
 .badge.new-badge {
   background: rgba(52, 199, 89, .14);
-  color: #1a8a3c;
+  color: #157a33;
   font-weight: 600;
 }
 .dark .badge.new-badge {
   background: rgba(52, 199, 89, .22);
-  color: #34c759;
+  color: #4ade80;
 }
 .peak-dot {
   display: inline-block;

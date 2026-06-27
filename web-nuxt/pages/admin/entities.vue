@@ -835,7 +835,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
 /* ── Row action buttons: consistent sizing + 44px touch + focus ── */
 .admin-actions { display: flex; gap: var(--space-1); align-items: center; }
-.admin-actions button { min-height: 36px; }
+.admin-actions button { min-height: 44px; }
 .admin-actions button:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
 @media (max-width: 768px) {
   .admin-actions button { min-height: 44px; }

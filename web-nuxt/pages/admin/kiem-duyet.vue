@@ -170,7 +170,7 @@
         </div>
         <div class="mod-preview-body">{{ previewPost.content }}</div>
         <div v-if="previewPost.images?.length" class="mod-preview-images">
-          <img v-for="(img, i) in previewPost.images" :key="i" :src="img" :alt="`Ảnh ${i+1}`" loading="lazy" />
+          <img v-for="(img, i) in previewPost.images" :key="i" :src="img" :alt="`Ảnh ${i+1}`" loading="lazy" width="200" height="150" />
         </div>
         <!-- Moderation notes -->
         <div class="mod-notes-section">
@@ -456,7 +456,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 /* ── Status tabs ── */
 .mod-tabs { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-5); }
 .mod-tab {
-  display: inline-flex; align-items: center; gap: 6px; min-height: 38px;
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px;
   padding: 7px 14px; border-radius: 100px; border: .5px solid var(--line);
   background: var(--bg); color: var(--muted); font-size: .82rem; font-weight: 500; cursor: pointer;
   transition: background .2s, color .2s, border-color .2s, transform .15s cubic-bezier(.2,1,.4,1);
@@ -527,7 +527,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-empty-action {
   background: none; border: .5px solid var(--line); border-radius: 8px;
   padding: 7px 14px; font-size: .82rem; font-weight: 500; color: var(--primary, #219653);
-  cursor: pointer; min-height: 36px;
+  cursor: pointer; min-height: 44px;
   transition: border-color .25s, background .25s, transform .15s cubic-bezier(.2,1,.4,1);
 }
 .mod-empty-action:hover { border-color: var(--primary, #219653); background: rgba(33,150,83,.04); }
