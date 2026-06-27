@@ -1316,9 +1316,9 @@ async def reject_post(post_id: str, body: RejectBody = RejectBody()):
 
 
 class BatchModerationBody(BaseModel):
-    post_ids: list[str]
+    post_ids: list[str] = Field(..., min_length=1, max_length=100)
     action: str  # 'approve' or 'reject'
-    reason: str = ""
+    reason: str = Field("", max_length=500)
 
 
 @router.post("/moderation/batch")
