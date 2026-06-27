@@ -2,7 +2,7 @@
   {
     "id": "vinh-long",
     "name": "Vĩnh Long",
-    "entity_count": 671
+    "entity_count": 675
   },
   {
     "id": "ben-tre",
@@ -17,6 +17,6 @@
   {
     "id": "unknown",
     "name": "unknown",
-    "entity_count": 11
+    "entity_count": 7
   }
 ]

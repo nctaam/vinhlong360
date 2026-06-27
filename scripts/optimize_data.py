@@ -333,12 +333,106 @@ def audit_summaries(db, apply=False):
 # Main
 # ──────────────────────────────────────────────
 
+def fix_truncated_summaries(db, apply=False):
+    entities = [e for e in db.all_entities() if e.get("type") != "place"]
+    truncated = []
+    for e in entities:
+        s = (e.get("summary") or "").strip()
+        if s.endswith("...") or s.endswith("…"):
+            truncated.append(e)
+
+    print(f"\n{'='*50}")
+    print(f"[truncated-summaries] Found: {len(truncated)}")
+
+    if not truncated:
+        print("  OK — no truncated summaries")
+        return 0
+
+    if apply:
+        fixed = 0
+        for e in truncated:
+            s = (e.get("summary") or "").strip()
+            s = s.rstrip(".…").rstrip(".")
+            while s.endswith("..."):
+                s = s[:-3]
+            s = s.rstrip()
+            if s and s[-1] not in ".!?。":
+                last_period = max(s.rfind(". "), s.rfind("! "), s.rfind("? "))
+                if last_period > len(s) * 0.6:
+                    s = s[:last_period + 1]
+                else:
+                    s = s + "."
+            e["summary"] = s
+            db.upsert_entity(e)
+            fixed += 1
+        print(f"  APPLIED: cleaned {fixed} summaries")
+    else:
+        print("  DRY-RUN samples:")
+        for e in truncated[:5]:
+            s = (e.get("summary") or "")
+            print(f"    {e['id']:40s} ...{s[-50:]}")
+
+    return len(truncated)
+
+
+def fix_place_ids(db, apply=False):
+    import math
+
+    entities = db.all_entities()
+    places = [e for e in entities if e.get("type") == "place" and e.get("coordinates")]
+    no_place = [e for e in entities if e.get("type") != "place" and not e.get("placeId")]
+
+    def dist_km(c1, c2):
+        return math.sqrt((c1[0] - c2[0]) ** 2 + (c1[1] - c2[1]) ** 2) * 111
+
+    MAX_DIST = 5.0
+    assignable = []
+    for e in no_place:
+        c = e.get("coordinates")
+        if not c or not isinstance(c, (list, tuple)) or len(c) != 2:
+            continue
+        if _is_city_center(c):
+            continue
+        best = min(places, key=lambda p: dist_km(c, p["coordinates"]))
+        d = dist_km(c, best["coordinates"])
+        if d <= MAX_DIST:
+            assignable.append((e, best, d))
+
+    print(f"\n{'='*50}")
+    print(f"[place-ids] Entities without placeId: {len(no_place)}")
+    print(f"  Auto-assignable (< {MAX_DIST}km): {len(assignable)}")
+
+    if not assignable:
+        print("  OK — nothing to assign")
+        return 0
+
+    if apply:
+        fixed = 0
+        for e, place, d in assignable:
+            e["placeId"] = place["id"]
+            if not e.get("area") and place.get("area"):
+                e["area"] = place["area"]
+            db.upsert_entity(e)
+            fixed += 1
+        print(f"  APPLIED: assigned {fixed} placeIds")
+    else:
+        print(f"\n  DRY-RUN samples:")
+        for e, place, d in assignable[:10]:
+            print(f"    {e['id']:40s} -> {place['id']:25s} ({d:.1f}km)")
+        if len(assignable) > 10:
+            print(f"    ... and {len(assignable)-10} more")
+
+    return len(assignable)
+
+
 MODULES = {
     "near": fix_near_symmetry,
     "timestamps": fix_timestamps,
     "phones": fix_phones,
     "clusters": audit_coord_clusters,
     "summaries": audit_summaries,
+    "truncated": fix_truncated_summaries,
+    "placeids": fix_place_ids,
 }
 
 
