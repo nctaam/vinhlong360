@@ -457,7 +457,8 @@ class Database:
     def search_entities(self, q: str = None, entity_type: str = None,
                         area: str = None, limit: int = 20, offset: int = 0,
                         entity_types: list[str] | None = None,
-                        public_only: bool = False) -> list[dict]:
+                        public_only: bool = False,
+                        month: int | None = None) -> list[dict]:
         """Search entities with filters (offset hỗ-trợ phân-trang — FIX bug search lặp)."""
         self.initialize()
         ph = self._ph
@@ -484,6 +485,10 @@ class Database:
             """)
             params.extend([area, area])
 
+        if month is not None:
+            conditions.append(self._month_condition())
+            params.append(self._month_param(month))
+
         if q:
             if self._use_pg:
                 # không phân-biệt-dấu (f_unaccent + functional GIN trgm index, migration 015)
@@ -508,11 +513,22 @@ class Database:
 
     _SORT_OPTIONS = {"newest", "name", "rating"}
 
+    def _month_condition(self) -> str:
+        if self._use_pg:
+            return "e.season IS NOT NULL AND e.season::jsonb->'months' @> %s::jsonb"
+        return "e.season IS NOT NULL AND EXISTS (SELECT 1 FROM json_each(json_extract(e.season, '$.months')) WHERE value = ?)"
+
+    def _month_param(self, month: int):
+        if self._use_pg:
+            return json.dumps([month])
+        return month
+
     def list_entities(self, entity_type: str = None, area: str = None,
                       limit: int = 500, offset: int = 0,
                       entity_types: list[str] | None = None,
                       public_only: bool = False,
-                      sort: str | None = None) -> list[dict]:
+                      sort: str | None = None,
+                      month: int | None = None) -> list[dict]:
         """List entities with pagination."""
         self.initialize()
         ph = self._ph
@@ -536,6 +552,9 @@ class Database:
                 ))
             """)
             params.extend([area, area])
+        if month is not None:
+            conditions.append(self._month_condition())
+            params.append(self._month_param(month))
 
         where = " AND ".join(conditions)
         params.extend([limit, offset])
@@ -560,7 +579,8 @@ class Database:
 
     def count_entities_filtered(self, entity_type: str = None, area: str = None,
                                 q: str = None, entity_types: list[str] | None = None,
-                                public_only: bool = False) -> int:
+                                public_only: bool = False,
+                                month: int | None = None) -> int:
         """Count non-place entities with the same public filters as list/search."""
         self.initialize()
         ph = self._ph
@@ -577,6 +597,9 @@ class Database:
         elif entity_type:
             conditions.append(f"e.type = {ph}")
             params.append(entity_type)
+        if month is not None:
+            conditions.append(self._month_condition())
+            params.append(self._month_param(month))
         if area:
             place_col = 'e."placeId"' if self._use_pg else "e.placeId"
             conditions.append(f"""

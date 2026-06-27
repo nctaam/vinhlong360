@@ -173,27 +173,14 @@ async def list_entities(
         single_type = None
 
     db_sort = sort if sort in ("rating", "name", "newest") else None
-
-    def _in_month(e):
-        return month in ((e.get("season") or {}).get("months") or [])
+    db_month = month if month else None
 
     if q:
-        if month:
-            full = db.search_entities(q=q, entity_type=single_type, area=area, limit=100000, entity_types=entity_types, public_only=True)
-            filtered = [e for e in full if _in_month(e)]
-            total = len(filtered)
-            results = filtered[offset:offset + limit]
-        else:
-            results = db.search_entities(q=q, entity_type=single_type, area=area, limit=limit, offset=offset, entity_types=entity_types, public_only=True)
-            total = db.count_entities_filtered(entity_type=single_type, area=area, q=q, entity_types=entity_types, public_only=True)
-    elif month:
-        full = db.list_entities(entity_type=single_type, area=area, limit=100000, offset=0, entity_types=entity_types, public_only=True, sort=db_sort)
-        filtered = [e for e in full if _in_month(e)]
-        total = len(filtered)
-        results = filtered[offset:offset + limit]
+        results = db.search_entities(q=q, entity_type=single_type, area=area, limit=limit, offset=offset, entity_types=entity_types, public_only=True, month=db_month)
+        total = db.count_entities_filtered(entity_type=single_type, area=area, q=q, entity_types=entity_types, public_only=True, month=db_month)
     else:
-        results = db.list_entities(entity_type=single_type, area=area, limit=limit, offset=offset, entity_types=entity_types, public_only=True, sort=db_sort)
-        total = db.count_entities_filtered(entity_type=single_type, area=area, q=q, entity_types=entity_types, public_only=True)
+        results = db.list_entities(entity_type=single_type, area=area, limit=limit, offset=offset, entity_types=entity_types, public_only=True, sort=db_sort, month=db_month)
+        total = db.count_entities_filtered(entity_type=single_type, area=area, entity_types=entity_types, public_only=True, month=db_month)
     _enrich_place(results)
     if fields == "minimal":
         results = [_to_minimal(e) for e in results]

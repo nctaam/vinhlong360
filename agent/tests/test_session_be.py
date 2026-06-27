@@ -934,3 +934,65 @@ def test_jsonl_rotation_missing_file(tmp_path):
     """Rotation on nonexistent file should be a no-op."""
     import public_api
     public_api._maybe_rotate_jsonl(tmp_path / "nope.jsonl")
+
+
+# ── DB-level month filtering ──────────────────────────────────────────────
+
+class TestMonthFilter:
+    """Verify list_entities month param filters at SQL level (SQLite json_each)."""
+
+    def test_month_condition_sqlite(self):
+        """SQLite _month_condition uses json_each subquery."""
+        if db._use_pg:
+            pytest.skip("SQLite-specific test")
+        cond = db._month_condition()
+        assert "json_each" in cond
+        assert "json_extract" in cond
+
+    def test_month_param_sqlite(self):
+        """SQLite _month_param returns raw int."""
+        if db._use_pg:
+            pytest.skip("SQLite-specific test")
+        assert db._month_param(3) == 3
+
+    def test_month_condition_pg(self):
+        """PG _month_condition uses @> jsonb containment."""
+        if not db._use_pg:
+            pytest.skip("PG-specific test")
+        cond = db._month_condition()
+        assert "@>" in cond
+        assert "jsonb" in cond
+
+    def test_month_param_pg(self):
+        """PG _month_param returns JSON array string."""
+        if not db._use_pg:
+            pytest.skip("PG-specific test")
+        assert db._month_param(6) == "[6]"
+
+    def test_list_entities_accepts_month(self):
+        """list_entities method signature includes month param."""
+        import inspect
+        sig = inspect.signature(db.list_entities)
+        assert "month" in sig.parameters
+
+    def test_search_entities_accepts_month(self):
+        """search_entities method signature includes month param."""
+        import inspect
+        sig = inspect.signature(db.search_entities)
+        assert "month" in sig.parameters
+
+    def test_count_entities_accepts_month(self):
+        """count_entities_filtered method signature includes month param."""
+        import inspect
+        sig = inspect.signature(db.count_entities_filtered)
+        assert "month" in sig.parameters
+
+    def test_list_entities_month_filter(self):
+        """Month filter actually filters at DB level (SQLite)."""
+        if db._use_pg:
+            pytest.skip("SQLite-specific test")
+        all_ents = db.list_entities(limit=50)
+        month_3 = db.list_entities(limit=50, month=3)
+        for e in month_3:
+            months = (e.get("season") or {}).get("months") or []
+            assert 3 in months, f"Entity {e['id']} missing month 3 in season"
