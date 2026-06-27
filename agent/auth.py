@@ -684,8 +684,8 @@ def _log_consent(user_id: str, version: str, ip: str):
                 INSERT INTO consent_log (user_id, version, ip)
                 VALUES ({ph}::uuid, {ph}, {ph})
             """, (user_id, version, ip))
-    except Exception:
-        logger.warning("Failed to log consent for user %s", user_id)
+    except Exception as e:
+        logger.warning("Failed to log consent for user %s: %s", user_id, e)
 
 
 @router.get("/consent-history")
@@ -718,8 +718,8 @@ def _log_login(phone: str, method: str, success: bool, request: Request, user_id
                 INSERT INTO login_history (user_id, phone, method, success, ip, user_agent)
                 VALUES ({ph}::uuid, {ph}, {ph}, {ph}, {ph}, {ph})
             """, (user_id, phone, method, success, ip, ua))
-    except Exception:
-        logger.warning("Failed to log login for %s", phone)
+    except Exception as e:
+        logger.warning("Failed to log login for %s: %s", phone, e)
 
 
 @router.get("/login-history")

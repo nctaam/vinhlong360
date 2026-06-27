@@ -552,7 +552,7 @@ def analyze_url_deep(url: str) -> dict:
         parsed = _urlparse.urlparse(url if '://' in url else f"http://{url}")
         hostname = (parsed.hostname or "").lower()
         path = parsed.path or ""
-    except Exception:
+    except (ValueError, AttributeError):
         return {"risk_score": 0.8, "reasons": ["unparseable_url"], "risk_level": "high"}
 
     # Skip analysis for legitimate domains

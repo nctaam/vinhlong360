@@ -1564,14 +1564,14 @@ def _format_post(row: dict) -> dict:
     if isinstance(images, str):
         try:
             images = json.loads(images)
-        except Exception:
+        except (json.JSONDecodeError, ValueError, TypeError):
             images = []
 
     def _jlist(val):
         if isinstance(val, str):
             try:
                 val = json.loads(val)
-            except Exception:
+            except (json.JSONDecodeError, ValueError, TypeError):
                 val = []
         return val if isinstance(val, list) else []
 
@@ -1579,7 +1579,7 @@ def _format_post(row: dict) -> dict:
         if isinstance(val, str):
             try:
                 val = json.loads(val)
-            except Exception:
+            except (json.JSONDecodeError, ValueError, TypeError):
                 val = None
         return val if isinstance(val, dict) else None
     mentions = _jlist(row.get("mentions"))
@@ -1632,7 +1632,7 @@ def _format_comment(row: dict) -> dict:
     if isinstance(mentions, str):
         try:
             mentions = json.loads(mentions)
-        except Exception:
+        except (json.JSONDecodeError, ValueError, TypeError):
             mentions = []
     return {
         "id": str(row["id"]),

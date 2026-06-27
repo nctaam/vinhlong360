@@ -1246,7 +1246,7 @@ class Database:
             if d.get(field) and isinstance(d[field], str):
                 try:
                     d[field] = json.loads(d[field])
-                except Exception:
+                except (json.JSONDecodeError, ValueError, TypeError):
                     logger.warning("Corrupt JSON in entity %s field %s", d.get("id"), field)
         _normalize_entity_timestamps(d)
         return d
@@ -1257,7 +1257,7 @@ class Database:
             if d.get("stops") and isinstance(d["stops"], str):
                 try:
                     d["stops"] = json.loads(d["stops"])
-                except Exception:
+                except (json.JSONDecodeError, ValueError, TypeError):
                     logger.warning("Corrupt JSON in itinerary %s stops", d.get("id"))
                     d["stops"] = []
         return d

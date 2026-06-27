@@ -252,7 +252,7 @@ def parse_coordinates(value: Any) -> tuple[float, float] | None:
             break
         try:
             value = json.loads(value)
-        except Exception:
+        except (json.JSONDecodeError, ValueError, TypeError):
             return None
     if isinstance(value, dict):
         value = [value.get("lat", value.get("latitude")), value.get("lng", value.get("lon", value.get("longitude")))]
