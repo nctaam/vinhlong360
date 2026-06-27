@@ -114,6 +114,13 @@ def test_password_validation_rules():
     auth.SetPassword(password="Valid1pw!")
 
 
+def test_password_max_length():
+    """Password > 128 chars should be rejected (prevent PBKDF2 CPU burn)."""
+    from pydantic import ValidationError
+    with pytest.raises(ValidationError):
+        auth.SetPassword(password="A1" + "x" * 200)
+
+
 def test_set_password_requires_current_if_has_password():
     """SetPassword model allows current_password=None (for first-time set)."""
     sp = auth.SetPassword(password="NewPass1x")
@@ -612,6 +619,14 @@ def _public_client():
     app = FastAPI()
     app.include_router(public_api.router)
     return TestClient(app)
+
+
+def test_entities_month_param_validated():
+    """month must be 1-12; out-of-range should return 422."""
+    client = _public_client()
+    assert client.get("/api/entities?month=0").status_code == 422
+    assert client.get("/api/entities?month=13").status_code == 422
+    assert client.get("/api/entities?month=-1").status_code == 422
 
 
 def test_map_pins_endpoint_mounted():

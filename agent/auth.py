@@ -30,7 +30,7 @@ logger = logging.getLogger("auth")
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
 from fastapi.concurrency import run_in_threadpool
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 from database import db
 
@@ -130,8 +130,8 @@ class PasswordLogin(BaseModel):
 
 
 class SetPassword(BaseModel):
-    password: str
-    current_password: str | None = None
+    password: str = Field(..., max_length=128)
+    current_password: str | None = Field(None, max_length=128)
 
     @field_validator("password")
     @classmethod

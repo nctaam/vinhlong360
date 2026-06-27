@@ -142,7 +142,7 @@ async def list_entities(
     type: Optional[str] = None,
     area: Optional[str] = None,
     q: Optional[str] = None,
-    month: Optional[int] = None,
+    month: Optional[int] = Query(None, ge=1, le=12),
     sort: Optional[str] = Query(None, pattern="^(rating|newest|name)$"),
     fields: Optional[str] = Query(None, pattern="^(minimal|full)$"),
     limit: int = Query(50, le=1000),
