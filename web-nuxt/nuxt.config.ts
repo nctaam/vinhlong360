@@ -50,7 +50,9 @@ export default defineNuxtConfig({
       viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
       title: 'vinhlong360 — Du lịch & Sản phẩm địa phương',
       meta: [
-        { name: 'description', content: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long: trải nghiệm miệt vườn, đặc sản theo mùa, OCOP, làng nghề và lịch trình gợi ý.' },
+        { name: 'description', content: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long – Bến Tre – Trà Vinh: trải nghiệm miệt vườn, đặc sản theo mùa, OCOP, làng nghề và lịch trình gợi ý.' },
+        { property: 'og:title', content: 'vinhlong360 — Du lịch & Sản phẩm địa phương' },
+        { property: 'og:description', content: 'Khám phá Vĩnh Long, Bến Tre, Trà Vinh: du lịch miệt vườn, đặc sản OCOP, làng nghề, lưu trú và lịch trình gợi ý.' },
         { name: 'theme-color', content: '#9C3D22', media: '(prefers-color-scheme: light)' },
         { name: 'theme-color', content: '#1a1a1a', media: '(prefers-color-scheme: dark)' },
         { name: 'color-scheme', content: 'light dark' },
@@ -136,6 +138,8 @@ export default defineNuxtConfig({
     '/freshness/**': { proxy: `${apiBase}/freshness/**` },
     '/events': { proxy: `${apiBase}/events` },
     '/sitemap.xml': { proxy: `${apiBase}/sitemap.xml` },
+    '/sitemap-media.xml': { proxy: `${apiBase}/sitemap-media.xml` },
+    '/sitemap-index.xml': { proxy: `${apiBase}/sitemap-index.xml` },
     '/robots.txt': { proxy: `${apiBase}/robots.txt` },
   },
 
