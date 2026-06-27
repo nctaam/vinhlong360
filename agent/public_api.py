@@ -72,6 +72,23 @@ def invalidate_place_cache():
 REPORTS_FILE = Path(__file__).resolve().parent / "data" / "reports.jsonl"
 _VALID_TARGET_TYPES = {"facility", "entity", "post", "comment", "other"}
 
+_JSONL_MAX_LINES = 5000
+
+
+def _maybe_rotate_jsonl(filepath: Path) -> None:
+    try:
+        if not filepath.exists():
+            return
+        lines = filepath.read_text(encoding="utf-8").splitlines()
+        if len(lines) <= _JSONL_MAX_LINES:
+            return
+        archive = filepath.with_suffix(f".{datetime.now().strftime('%Y%m%d%H%M%S')}.jsonl")
+        archive.write_text("\n".join(lines[:-_JSONL_MAX_LINES]) + "\n", encoding="utf-8")
+        filepath.write_text("\n".join(lines[-_JSONL_MAX_LINES:]) + "\n", encoding="utf-8")
+    except Exception:
+        logger.exception("JSONL rotation failed for %s", filepath)
+
+
 import site_settings
 
 
@@ -856,9 +873,11 @@ async def submit_report(payload: ReportIn, request: Request):
         REPORTS_FILE.parent.mkdir(exist_ok=True)
         with open(REPORTS_FILE, "a", encoding="utf-8") as f:
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
+        _maybe_rotate_jsonl(REPORTS_FILE)
     try:
         await asyncio.to_thread(_write)
     except OSError:
+        logger.exception("Failed to write report to %s", REPORTS_FILE)
         return JSONResponse(status_code=500, content={"error": "store_failed"})
     return {"ok": True, "message": "Đã ghi nhận. Cảm ơn bạn đã góp ý — chúng tôi sẽ kiểm tra."}
 
@@ -1050,6 +1069,7 @@ async def track_contact_view(
         CONTACT_VIEWS_FILE.parent.mkdir(exist_ok=True)
         with open(CONTACT_VIEWS_FILE, "a", encoding="utf-8") as f:
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
+        _maybe_rotate_jsonl(CONTACT_VIEWS_FILE)
 
     try:
         await asyncio.to_thread(_write)

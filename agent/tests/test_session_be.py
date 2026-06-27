@@ -899,3 +899,38 @@ def test_view_contact_rate_limit(tmp_path, monkeypatch):
         assert resp.status_code == 200
     resp = client.post("/api/entities/test-entity/view-contact?action=phone")
     assert resp.status_code == 429
+
+
+# ── JSONL log rotation ────────────────────────────────────────────────
+
+def test_jsonl_rotation_under_limit(tmp_path):
+    """File under _JSONL_MAX_LINES should NOT be rotated."""
+    import public_api
+    log_file = tmp_path / "test.jsonl"
+    log_file.write_text("line1\nline2\nline3\n", encoding="utf-8")
+    public_api._maybe_rotate_jsonl(log_file)
+    assert len(log_file.read_text(encoding="utf-8").splitlines()) == 3
+    archives = list(tmp_path.glob("test.*.jsonl"))
+    assert len(archives) == 0
+
+
+def test_jsonl_rotation_over_limit(tmp_path, monkeypatch):
+    """File over limit should be split: archive old, keep newest."""
+    import public_api
+    monkeypatch.setattr(public_api, "_JSONL_MAX_LINES", 3)
+    log_file = tmp_path / "test.jsonl"
+    log_file.write_text("old1\nold2\nnew1\nnew2\nnew3\n", encoding="utf-8")
+    public_api._maybe_rotate_jsonl(log_file)
+    remaining = log_file.read_text(encoding="utf-8").splitlines()
+    assert len(remaining) == 3
+    assert remaining == ["new1", "new2", "new3"]
+    archives = list(tmp_path.glob("test.*.jsonl"))
+    assert len(archives) == 1
+    archived = archives[0].read_text(encoding="utf-8").splitlines()
+    assert archived == ["old1", "old2"]
+
+
+def test_jsonl_rotation_missing_file(tmp_path):
+    """Rotation on nonexistent file should be a no-op."""
+    import public_api
+    public_api._maybe_rotate_jsonl(tmp_path / "nope.jsonl")
