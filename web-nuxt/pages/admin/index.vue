@@ -40,7 +40,7 @@
         </div>
       </div>
       <div class="dash-stat-card">
-        <div class="dash-stat-icon" aria-hidden="true" style="background: rgba(52,120,246,.1); color: #3478F6;">&#127963;</div>
+        <div class="dash-stat-icon" aria-hidden="true" style="background: rgba(var(--blue-rgb),.1); color: #3478F6;">&#127963;</div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ stats.total_places || 0 }}</div>
           <div class="dash-stat-label">Địa điểm HC</div>
@@ -341,14 +341,14 @@ onMounted(fetchDashboard)
 .dash-error-state {
   display: flex; align-items: flex-start; gap: var(--space-4);
   padding: var(--space-6); border-radius: 14px; margin-bottom: var(--space-6);
-  background: rgba(217,79,61,.06); border: .5px solid rgba(217,79,61,.2);
+  background: rgba(var(--danger-rgb),.06); border: .5px solid rgba(var(--danger-rgb),.2);
   color: var(--ink);
 }
 .dash-error-icon { font-size: 2rem; flex-shrink: 0; opacity: .6; }
 .dash-error-body { display: flex; flex-direction: column; gap: var(--space-2); }
 .dash-error-body strong { font-size: 1rem; }
 .dash-error-body p { font-size: .88rem; color: var(--muted); margin: 0; }
-.dark .dash-error-state { background: rgba(217,79,61,.08); border-color: rgba(217,79,61,.15); }
+.dark .dash-error-state { background: rgba(var(--danger-rgb),.08); border-color: rgba(var(--danger-rgb),.15); }
 
 /* Signal freshly-loaded (vs stale) data: fade content in after fetch resolves */
 .dash-loaded { animation: dash-fade-in .4s ease-out both; }
@@ -400,8 +400,8 @@ onMounted(fetchDashboard)
 .dash-alert:hover { transform: translateX(4px); }
 .dash-alert:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 .dash-alert.warn { background: rgba(var(--warning-rgb),.1); color: #c67a00; border: .5px solid rgba(var(--warning-rgb),.2); }
-.dash-alert.error { background: rgba(217,79,61,.1); color: #b33a2a; border: .5px solid rgba(217,79,61,.2); }
-.dash-alert.info { background: rgba(52,120,246,.08); color: #2563EB; border: .5px solid rgba(52,120,246,.15); }
+.dash-alert.error { background: rgba(var(--danger-rgb),.1); color: #b33a2a; border: .5px solid rgba(var(--danger-rgb),.2); }
+.dash-alert.info { background: rgba(var(--blue-rgb),.08); color: #2563EB; border: .5px solid rgba(var(--blue-rgb),.15); }
 .dash-alert-icon { font-size: 1.1rem; flex-shrink: 0; }
 .dash-alert-num { font-size: 1.3rem; font-weight: 800; min-width: 32px; }
 .dash-alert-arrow { margin-left: auto; opacity: .5; }
@@ -530,7 +530,7 @@ onMounted(fetchDashboard)
 .dark .dash-stat-card { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 .dark .dash-stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.3); }
 .dark .dash-alert.warn { background: rgba(var(--warning-rgb),.08); color: #ffb340; border-color: rgba(var(--warning-rgb),.15); }
-.dark .dash-alert.error { background: rgba(217,79,61,.08); color: #ff6b5a; border-color: rgba(217,79,61,.15); }
+.dark .dash-alert.error { background: rgba(var(--danger-rgb),.08); color: #ff6b5a; border-color: rgba(var(--danger-rgb),.15); }
 .dark .dash-action { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 .dark .dash-action:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,.3); background: color-mix(in oklab, var(--primary, #219653) 12%, var(--card, #2c2c2e)); }
 .dark .admin-refresh:disabled { border-color: rgba(255,255,255,.12); }

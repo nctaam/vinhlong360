@@ -308,14 +308,14 @@ onMounted(() => fetchQueue())
 }
 .conf-high { background: rgba(var(--primary-rgb),.9); }
 .conf-mid { background: rgba(201,138,26,.9); }
-.conf-low { background: rgba(217,79,61,.9); }
+.conf-low { background: rgba(var(--danger-rgb),.9); }
 
 .img-meta { padding: var(--space-3) var(--space-3) 0; display: flex; flex-direction: column; gap: 6px; }
 .img-entity { font-weight: 600; font-size: .9rem; color: var(--ink); line-height: 1.3; }
 .img-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .img-type-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .7rem; font-weight: 600; background: rgba(142,142,147,.1); color: var(--muted); }
 .img-lic-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .7rem; font-weight: 700; background: rgba(var(--primary-rgb),.12); color: #219653; }
-.img-lic-badge.lic-warn { background: rgba(217,79,61,.13); color: #D94F3D; }
+.img-lic-badge.lic-warn { background: rgba(var(--danger-rgb),.13); color: #D94F3D; }
 .img-detail { font-size: .76rem; color: var(--muted); line-height: 1.4; }
 .img-detail-k { font-weight: 600; color: var(--ink); }
 .img-reject-note { color: #D94F3D; }
@@ -332,7 +332,7 @@ onMounted(() => fetchQueue())
 
 .img-reject { padding: 0 var(--space-3) var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); }
 .img-reason-input { padding: 9px 12px; border: .5px solid var(--line); border-radius: 10px; font-size: .85rem; background: var(--bg); color: var(--ink); min-height: 40px; }
-.img-reason-input:focus { outline: none; border-color: #D94F3D; box-shadow: 0 0 0 3px rgba(217,79,61,.1); }
+.img-reason-input:focus { outline: none; border-color: #D94F3D; box-shadow: 0 0 0 3px rgba(var(--danger-rgb),.1); }
 .img-reject-btns { display: flex; gap: var(--space-2); }
 .img-reject-btns .btn-danger { flex: 1; }
 .btn-ghost-sm { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; padding: 8px 12px; border-radius: 8px; }
@@ -364,7 +364,7 @@ onMounted(() => fetchQueue())
   content: "Ảnh không tải được"; position: absolute; inset: 0;
   display: none; align-items: center; justify-content: center; text-align: center;
   font-size: .76rem; font-weight: 600; color: #D94F3D; padding: var(--space-3);
-  background: rgba(217,79,61,.08);
+  background: rgba(var(--danger-rgb),.08);
 }
 .img-thumb-wrap:has(.img-broken)::after { display: flex; }
 

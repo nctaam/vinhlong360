@@ -107,7 +107,7 @@ defineExpose({ open })
 .cmd-input::placeholder { color: var(--muted); }
 .cmd-results { max-height: 360px; overflow-y: auto; border-top: .5px solid var(--line); }
 .cmd-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 20px; border: none; background: none; cursor: pointer; text-align: left; font: inherit; color: var(--ink); }
-.cmd-item.active { background: rgba(52,120,246,.08); }
+.cmd-item.active { background: rgba(var(--blue-rgb),.08); }
 .cmd-icon { font-size: 1.1rem; flex-shrink: 0; width: 24px; text-align: center; }
 .cmd-label { font-weight: 500; flex: 1; }
 .cmd-hint { font-size: .78rem; color: var(--muted); }
@@ -118,7 +118,7 @@ defineExpose({ open })
 .cmd-fade-enter-active, .cmd-fade-leave-active { transition: opacity .15s; }
 .cmd-fade-enter-from, .cmd-fade-leave-to { opacity: 0; }
 :global(.dark) .cmd-palette { background: var(--card, #2c2c2e); }
-:global(.dark) .cmd-item.active { background: rgba(52,120,246,.15); }
+:global(.dark) .cmd-item.active { background: rgba(var(--blue-rgb),.15); }
 :global(.dark) .cmd-footer kbd { background: rgba(255,255,255,.12); color: rgba(255,255,255,.7); }
 @media (max-width: 600px) {
   .cmd-overlay { padding-top: 0; align-items: flex-end; }

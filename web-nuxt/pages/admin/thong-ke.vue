@@ -38,7 +38,7 @@
     <!-- Summary cards -->
     <div class="stat-grid">
       <div class="stat-card">
-        <div class="tk-icon" style="background: rgba(52,120,246,.1); color: #3478F6;">&#128172;</div>
+        <div class="tk-icon" style="background: rgba(var(--blue-rgb),.1); color: #3478F6;">&#128172;</div>
         <div class="tk-stat-body">
           <div class="stat-value">{{ data.summary?.total_queries ?? '—' }}</div>
           <div class="stat-label">Tổng truy vấn</div>
@@ -293,7 +293,7 @@ onMounted(fetchData)
   padding: var(--space-5); overflow: hidden;
   transition: transform .3s cubic-bezier(.2,1,.4,1), box-shadow .3s, border-color .3s;
 }
-.tk-panel:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,.06); border-color: rgba(52,120,246,.15); }
+.tk-panel:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,.06); border-color: rgba(var(--blue-rgb),.15); }
 
 .tk-panel-head {
   display: flex; align-items: center; justify-content: space-between;
@@ -305,14 +305,14 @@ onMounted(fetchData)
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 24px; height: 24px; padding: 0 8px;
   border-radius: 100px; font-size: .72rem; font-weight: 700;
-  background: rgba(52,120,246,.1); color: #3478F6;
+  background: rgba(var(--blue-rgb),.1); color: #3478F6;
   font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
   font-variant-numeric: tabular-nums;
   transition: background .2s, color .2s;
 }
 .tk-count-warn { background: rgba(var(--warning-rgb),.1); color: #c67a00; }
 /* Brighten badge when scanning the panel */
-.tk-panel:hover .tk-count-badge { background: rgba(52,120,246,.22); }
+.tk-panel:hover .tk-count-badge { background: rgba(var(--blue-rgb),.22); }
 .tk-panel:hover .tk-count-warn { background: rgba(var(--warning-rgb),.22); }
 
 /* ── List items ── */
@@ -383,13 +383,13 @@ onMounted(fetchData)
   border-color: rgba(255,255,255,.1);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
 }
-.dark .tk-panel:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 4px 16px rgba(0,0,0,.3); border-color: rgba(52,120,246,.3); }
+.dark .tk-panel:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 4px 16px rgba(0,0,0,.3); border-color: rgba(var(--blue-rgb),.3); }
 .dark .tk-list li:hover { background: rgba(255,255,255,.03); }
 .dark .tk-rank { background: rgba(255,255,255,.06); }
 .dark .tk-list li:nth-child(n+4):nth-child(-n+10) .tk-rank { border-color: rgba(var(--primary-rgb),.5); color: #4fb87a; }
-.dark .tk-count-badge { background: rgba(52,120,246,.15); }
+.dark .tk-count-badge { background: rgba(var(--blue-rgb),.15); }
 .dark .tk-count-warn { background: rgba(var(--warning-rgb),.15); color: #ffb340; }
-.dark .tk-panel:hover .tk-count-badge { background: rgba(52,120,246,.3); }
+.dark .tk-panel:hover .tk-count-badge { background: rgba(var(--blue-rgb),.3); }
 .dark .tk-panel:hover .tk-count-warn { background: rgba(var(--warning-rgb),.28); }
 /* stat-value (primary green) — keep high contrast in dark */
 .dark .stat-card .stat-value { color: #4fb87a; }

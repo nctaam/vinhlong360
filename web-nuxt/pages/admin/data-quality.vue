@@ -12,7 +12,7 @@
 
     <div v-if="summary" class="stat-grid dq-stats">
       <div class="stat-card">
-        <div class="dq-icon" style="background: rgba(52,120,246,.1); color: #3478F6;">&#127760;</div>
+        <div class="dq-icon" style="background: rgba(var(--blue-rgb),.1); color: #3478F6;">&#127760;</div>
         <div>
           <div class="stat-value">{{ summary.data?.public_entities || 0 }}</div>
           <div class="stat-label">Entity public</div>
@@ -493,7 +493,7 @@ onMounted(() => refreshAll())
 .dq-sev-badge, .dq-status-badge { display: inline-flex; align-items: center; justify-content: center; font-size: .68rem; font-weight: 700; letter-spacing: .02em; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
 .dq-sev-success { background: rgba(var(--primary-rgb),.12); color: var(--primary, #219653); }
 .dq-sev-warning { background: rgba(var(--warning-rgb),.14); color: #C77700; }
-.dq-sev-error { background: rgba(217,79,61,.12); color: var(--error, #D94F3D); }
+.dq-sev-error { background: rgba(var(--danger-rgb),.12); color: var(--error, #D94F3D); }
 .dq-sev-neutral { background: rgba(142,142,147,.14); color: var(--muted); }
 
 .dq-evidence-more { display: inline-block; font-size: .72rem; font-weight: 600; color: var(--muted); cursor: help; }
@@ -541,7 +541,7 @@ onMounted(() => refreshAll())
 .dq-history-meta { margin: var(--space-2) 0; color: var(--muted); font-size: .86rem; word-break: break-word; }
 .dq-diff-list { display: grid; gap: var(--space-2); margin-top: var(--space-3); }
 .dq-diff-item { display: grid; grid-template-columns: minmax(160px, 240px) 1fr; gap: var(--space-3); align-items: start; padding: var(--space-2); background: var(--bg-alt, #f8faf9); border-radius: 8px; transition: background .15s; }
-.dq-diff-item:hover { background: rgba(52,120,246,.04); }
+.dq-diff-item:hover { background: rgba(var(--blue-rgb),.04); }
 .dq-diff-item code { white-space: pre-wrap; word-break: break-word; font-size: .76rem; }
 .dq-skipped-list { display: grid; gap: var(--space-2); margin-top: var(--space-3); padding: var(--space-3); border: .5px solid var(--warning, #e67e22); border-radius: var(--radius-sm); background: var(--warning-bg, rgba(230, 126, 34, .08)); }
 .dq-skipped-list > strong { font-size: .86rem; color: var(--warning, #e67e22); }
@@ -557,7 +557,7 @@ onMounted(() => refreshAll())
 
 .dark .dq-history-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.3); }
 .dark .dq-diff-item { background: rgba(255,255,255,.03); }
-.dark .dq-diff-item:hover { background: rgba(52,120,246,.08); }
+.dark .dq-diff-item:hover { background: rgba(var(--blue-rgb),.08); }
 .dark .dq-select-all { color: var(--ink, #e5e5e7); }
 .dark .dq-apply-result { background: rgba(var(--primary-rgb),.1); color: var(--ink, #e5e5e7); }
 .dark .dq-apply-result--warn { background: rgba(230,126,34,.12); }

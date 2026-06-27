@@ -393,7 +393,7 @@ onUnmounted(() => {
 .admin-actions button:active { transform: scale(.95); transition-duration: .08s; }
 .admin-actions button:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .admin-actions .btn-danger { color: var(--error, #D94F3D); border-color: var(--error, #D94F3D); }
-.admin-actions .btn-danger:hover { background: var(--error, #D94F3D); color: #fff; box-shadow: 0 2px 8px rgba(217,79,61,.2); }
+.admin-actions .btn-danger:hover { background: var(--error, #D94F3D); color: #fff; box-shadow: 0 2px 8px rgba(var(--danger-rgb),.2); }
 .admin-actions .btn-success { color: var(--primary, #219653); border-color: var(--primary); }
 .admin-actions .btn-success:hover { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(var(--primary-rgb),.2); }
 

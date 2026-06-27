@@ -25,7 +25,7 @@
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon" style="background: rgba(52,120,246,.1); color: #3478F6;">&#128640;</div>
+        <div class="ai-icon" style="background: rgba(var(--blue-rgb),.1); color: #3478F6;">&#128640;</div>
         <div>
           <div class="stat-value">{{ health?.version || '—' }}</div>
           <div class="stat-label">Phiên bản</div>
@@ -247,7 +247,7 @@ const statusBg = computed(() => {
   if (!health.value) return 'rgba(142,142,147,.1)'
   if (health.value.status === 'ok') return 'rgba(var(--primary-rgb),.1)'
   if (health.value.status === 'degraded') return 'rgba(var(--warning-rgb),.1)'
-  return 'rgba(217,79,61,.1)'
+  return 'rgba(var(--danger-rgb),.1)'
 })
 
 const uptime = computed(() => {
@@ -465,7 +465,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 }
 .ai-subsys-on { background: rgba(var(--primary-rgb),.06); color: #219653; }
 .ai-subsys-on .ai-subsys-dot { background: #219653; animation: ai-sub-pulse 2.5s ease-in-out infinite; }
-.ai-subsys-off { background: rgba(217,79,61,.06); color: #D94F3D; }
+.ai-subsys-off { background: rgba(var(--danger-rgb),.06); color: #D94F3D; }
 .ai-subsys-off .ai-subsys-dot { background: #D94F3D; opacity: .5; }
 @keyframes ai-sub-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 
@@ -517,7 +517,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
   color: #219653;
 }
 .ai-trigger-result.ai-result-error {
-  background: rgba(217,79,61,.08); border-color: #D94F3D; color: #D94F3D;
+  background: rgba(var(--danger-rgb),.08); border-color: #D94F3D; color: #D94F3D;
 }
 .ai-triage-box {
   display: flex; align-items: flex-start; gap: var(--space-2);
@@ -529,7 +529,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-triage-box .ai-triage-text { white-space: pre-wrap; flex: 1; min-width: 0; }
 .ai-triage-icon { font-weight: 800; color: #219653; flex-shrink: 0; line-height: 1.6; }
 .ai-triage-box.ai-triage-error {
-  background: rgba(217,79,61,.08); border-color: #D94F3D; border-left-color: #D94F3D;
+  background: rgba(var(--danger-rgb),.08); border-color: #D94F3D; border-left-color: #D94F3D;
 }
 .ai-triage-box.ai-triage-error .ai-triage-icon { color: #D94F3D; }
 
@@ -548,14 +548,14 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .dark .ai-dq-track { background: rgba(255,255,255,.06); }
 .dark .ai-metric { background: var(--bg, #1c1c1e); border-color: rgba(255,255,255,.08); }
 .dark .ai-subsys-on { background: rgba(var(--primary-rgb),.1); }
-.dark .ai-subsys-off { background: rgba(217,79,61,.1); }
+.dark .ai-subsys-off { background: rgba(var(--danger-rgb),.1); }
 .dark .ai-action-secondary { background: var(--bg, #1c1c1e); border-color: rgba(255,255,255,.08); color: var(--ink); }
 .dark .ai-action-btn:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(0,0,0,.3); }
 .dark .ai-action-primary { color: #fff; }
 .dark .ai-triage-box { background: rgba(var(--primary-rgb),.1); border-color: rgba(var(--primary-rgb),.3); }
-.dark .ai-triage-box.ai-triage-error { background: rgba(217,79,61,.12); border-color: #D94F3D; border-left-color: #D94F3D; }
+.dark .ai-triage-box.ai-triage-error { background: rgba(var(--danger-rgb),.12); border-color: #D94F3D; border-left-color: #D94F3D; }
 .dark .ai-trigger-result { background: rgba(var(--primary-rgb),.1); border-color: rgba(var(--primary-rgb),.2); }
-.dark .ai-trigger-result.ai-result-error { background: rgba(217,79,61,.12); border-color: #D94F3D; }
+.dark .ai-trigger-result.ai-result-error { background: rgba(var(--danger-rgb),.12); border-color: #D94F3D; }
 .dark .ai-cost-note { background: rgba(var(--warning-rgb),.06); border-color: rgba(var(--warning-rgb),.25); }
 
 /* ── Reduced motion ── */

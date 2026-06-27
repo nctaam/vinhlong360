@@ -136,6 +136,9 @@
   --secondary-rgb: 46, 125, 91;
   --river-rgb: 91, 108, 196;
   --ink-rgb: 43, 38, 34;
+  --danger-rgb: 217, 79, 61;
+  --blue-rgb: 52, 120, 246;
+  --success-rgb: 95, 207, 138;
   --focus-ring: 0 0 0 4px rgba(var(--primary-rgb), .12);
   --shadow: 0 1px 3px rgba(0, 0, 0, .04), 0 6px 20px rgba(0, 0, 0, .06);
 
@@ -459,6 +462,9 @@
   --secondary-rgb: 75, 169, 125;
   --river-rgb: 123, 140, 224;
   --ink-rgb: 245, 245, 247;
+  --danger-rgb: 255, 105, 97;
+  --blue-rgb: 80, 145, 255;
+  --success-rgb: 130, 225, 170;
   --focus-ring: 0 0 0 3px rgba(196, 105, 78, .25);
   --overlay-dark: rgba(0,0,0,.82);
   --overlay-dark-heavy: rgba(0,0,0,.92);
