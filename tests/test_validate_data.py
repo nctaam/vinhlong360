@@ -1902,3 +1902,62 @@ def test_validate_places_excluded_from_coords_without_address(tmp_path: Path) ->
     data_path.write_text(json.dumps(data), encoding="utf-8")
     _, stats = validate_data.validate(data, data_path)
     assert stats["coords_without_address"] == 0
+
+
+def test_validate_flags_unknown_entity_type(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "e1", "type": "totally_made_up", "name": "Bad", "summary": "x" * 60},
+            {"id": "e2", "type": "attraction", "name": "Good", "summary": "x" * 60},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+    assert stats["unknown_entity_types"] == 1
+    assert "unknown_entity_type" in {i.code for i in issues}
+
+
+def test_validate_no_unknown_type_for_valid_types(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": f"e-{t}", "type": t, "name": t, "summary": "x" * 60}
+            for t in ("attraction", "dish", "place", "person", "history", "cafe")
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+    assert stats["unknown_entity_types"] == 0
+    assert "unknown_entity_type" not in {i.code for i in issues}
+
+
+def test_validate_short_summary_examples(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "e1", "type": "dish", "name": "Short", "summary": "Hi"},
+            {"id": "e2", "type": "dish", "name": "Long enough", "summary": "x" * 60},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    _, stats = validate_data.validate(data, tmp_path / "data.json")
+    examples = stats.get("short_summary_examples", [])
+    assert any("e1" in ex for ex in examples)
+    assert not any("e2" in ex for ex in examples)
+
+
+def test_validate_dangling_rel_entity_ids(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "e1", "type": "attraction", "name": "A", "summary": "x" * 60},
+        ],
+        "relationships": [
+            {"source_id": "e1", "target_id": "ghost", "rel_type": "near"},
+        ],
+        "itineraries": [],
+    }
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+    ids = stats.get("dangling_rel_entity_ids", [])
+    assert "ghost" in ids
+    assert any("broken_relationships" == i.code for i in issues)
