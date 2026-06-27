@@ -167,24 +167,20 @@ async def get_entity_relationships(
     type: Optional[str] = None,
     include_near: bool = True,
 ):
-    entity = db.get_entity(entity_id)
-    if not entity:
+    def _query():
+        e = db.get_entity(entity_id)
+        if not e:
+            return None
+        rels, t = db.get_relationships(
+            entity_id, limit=limit, offset=offset,
+            rel_type=type, include_near=include_near, return_total=True,
+        )
+        return {"entity_id": entity_id, "total": t, "limit": limit,
+                "offset": offset, "relationships": rels}
+    result = await asyncio.to_thread(_query)
+    if not result:
         return JSONResponse(status_code=404, content={"error": "not_found"})
-    relationships, total = db.get_relationships(
-        entity_id,
-        limit=limit,
-        offset=offset,
-        rel_type=type,
-        include_near=include_near,
-        return_total=True,
-    )
-    return {
-        "entity_id": entity_id,
-        "total": total,
-        "limit": limit,
-        "offset": offset,
-        "relationships": relationships,
-    }
+    return result
 
 @router.get("/entities/{entity_id}")
 async def get_entity(
@@ -200,14 +196,19 @@ async def get_entity(
         _entity_cache.move_to_end(cache_key)
         return cached[1]
 
-    entity = db.get_entity(entity_id)
+    def _query():
+        e = db.get_entity(entity_id)
+        if not e:
+            return None
+        rels, rel_total = db.get_relationships(entity_id, limit=relationship_limit, return_total=True)
+        e["relationship_total"] = rel_total
+        e["relationships"] = rels
+        _enrich_entity_place(e)
+        e["quality"] = entity_quality(e)
+        return e
+    entity = await asyncio.to_thread(_query)
     if not entity:
         return JSONResponse(status_code=404, content={"error": "not_found"})
-    rels, rel_total = db.get_relationships(entity_id, limit=relationship_limit, return_total=True)
-    entity["relationship_total"] = rel_total
-    entity["relationships"] = rels
-    _enrich_entity_place(entity)
-    entity["quality"] = entity_quality(entity)
 
     _entity_cache[cache_key] = (now, entity)
     while len(_entity_cache) > _ENTITY_CACHE_MAX:
@@ -254,35 +255,38 @@ async def place_overview(place_id: str):
 
     Gom theo placeId trong 1 lượt gọi. facilities rỗng đến khi có dữ liệu thật (Track-H 13.6).
     """
-    place = db.get_entity(place_id)
-    if not place or place.get("type") != "place":
+    def _query():
+        p = db.get_entity(place_id)
+        if not p or p.get("type") != "place":
+            return None
+        ents = db.entities_by_place(place_id)
+        groups: dict[str, list] = {"tourism": [], "lodging": [], "products": [], "other": []}
+        for e in ents:
+            t = e.get("type")
+            placed = False
+            for g, types in _WARD_GROUPS.items():
+                if t in types:
+                    groups[g].append(e)
+                    placed = True
+                    break
+            if not placed:
+                groups["other"].append(e)
+        return {
+            "place": {"id": p["id"], "name": p.get("name"), "area": p.get("area"),
+                      "level": p.get("level"), "summary": p.get("summary"),
+                      "attributes": p.get("attributes", {}),
+                      "coordinates": p.get("coordinates")},
+            "facilities": db.facilities_by_place(place_id),
+            "counts": {g: len(v) for g, v in groups.items()},
+            "tourism": groups["tourism"],
+            "lodging": groups["lodging"],
+            "products": groups["products"],
+            "other": groups["other"],
+        }
+    result = await asyncio.to_thread(_query)
+    if not result:
         return JSONResponse(status_code=404, content={"error": "not_found", "detail": "Không phải xã/phường"})
-
-    ents = db.entities_by_place(place_id)
-    groups: dict[str, list] = {"tourism": [], "lodging": [], "products": [], "other": []}
-    for e in ents:
-        t = e.get("type")
-        placed = False
-        for g, types in _WARD_GROUPS.items():
-            if t in types:
-                groups[g].append(e)
-                placed = True
-                break
-        if not placed:
-            groups["other"].append(e)
-
-    return {
-        "place": {"id": place["id"], "name": place.get("name"), "area": place.get("area"),
-                  "level": place.get("level"), "summary": place.get("summary"),
-                  "attributes": place.get("attributes", {}),
-                  "coordinates": place.get("coordinates")},
-        "facilities": db.facilities_by_place(place_id),
-        "counts": {g: len(v) for g, v in groups.items()},
-        "tourism": groups["tourism"],
-        "lodging": groups["lodging"],
-        "products": groups["products"],
-        "other": groups["other"],
-    }
+    return result
 
 
 @router.get("/itineraries")

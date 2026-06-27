@@ -324,14 +324,17 @@ async def verify_otp(body: OTPVerify, request: Request):
             """, (str(otp["id"]),))
     await asyncio.to_thread(_verify)
 
-    user = db.get_user_by_phone(phone)
-    if not user:
-        if not body.consent:
-            raise HTTPException(400, "Vui lòng đồng ý Điều khoản sử dụng và Chính sách bảo mật")
-        user = db.create_user(phone, consent_version=CONSENT_VERSION)
-    elif not user.get("is_active", True):
-        db.update_user(str(user["id"]), is_active=True)
-        user["is_active"] = True
+    def _get_or_create_user():
+        u = db.get_user_by_phone(phone)
+        if not u:
+            if not body.consent:
+                raise HTTPException(400, "Vui lòng đồng ý Điều khoản sử dụng và Chính sách bảo mật")
+            u = db.create_user(phone, consent_version=CONSENT_VERSION)
+        elif not u.get("is_active", True):
+            db.update_user(str(u["id"]), is_active=True)
+            u["is_active"] = True
+        return u
+    user = await asyncio.to_thread(_get_or_create_user)
 
     token = _generate_token()
     expires = datetime.now(timezone.utc) + timedelta(days=SESSION_EXPIRE_DAYS)
@@ -339,7 +342,7 @@ async def verify_otp(body: OTPVerify, request: Request):
     ip = get_client_ip(request)
 
     if body.consent:
-        _log_consent(str(user["id"]), CONSENT_VERSION, ip)
+        await asyncio.to_thread(_log_consent, str(user["id"]), CONSENT_VERSION, ip)
     ua = request.headers.get("user-agent", "")
 
     def _create_session():
@@ -350,7 +353,7 @@ async def verify_otp(body: OTPVerify, request: Request):
             """, (str(user["id"]), _hash_token(token), ua, ip, expires.isoformat()))
     await asyncio.to_thread(_create_session)
 
-    _log_login(phone, "otp", True, request, str(user["id"]))
+    await asyncio.to_thread(_log_login, phone, "otp", True, request, str(user["id"]))
 
     return {
         "success": True,
@@ -379,7 +382,7 @@ async def check_phone(body: CheckPhone, request: Request):
     _gc_rate_dict(_check_phone_ip_rate, CHECK_PHONE_IP_WINDOW)
 
     phone = _normalize_phone(body.phone)
-    user = db.get_user_by_phone(phone)
+    user = await asyncio.to_thread(db.get_user_by_phone, phone)
     return {"has_password": bool(user and user.get("password_hash"))}
 
 
@@ -402,22 +405,22 @@ async def login_password(body: PasswordLogin, request: Request):
     if len(phone_hits) >= LOGIN_PHONE_LIMIT:
         raise HTTPException(429, "Tài khoản tạm khoá do đăng nhập sai nhiều lần. Thử lại sau 15 phút.")
 
-    user = db.get_user_by_phone(phone)
+    user = await asyncio.to_thread(db.get_user_by_phone, phone)
 
     if not user or not user.get("password_hash"):
         phone_hits.append(now)
         _login_phone_fails[phone] = phone_hits
-        _log_login(phone, "password", False, request)
+        await asyncio.to_thread(_log_login, phone, "password", False, request)
         raise HTTPException(401, "Số điện thoại hoặc mật khẩu không đúng")
 
     if not user.get("is_active", True):
-        _log_login(phone, "password", False, request, str(user["id"]))
+        await asyncio.to_thread(_log_login, phone, "password", False, request, str(user["id"]))
         raise HTTPException(403, "Tài khoản đã bị vô hiệu hóa")
 
     if not _verify_password(body.password, user["password_hash"]):
         phone_hits.append(now)
         _login_phone_fails[phone] = phone_hits
-        _log_login(phone, "password", False, request, str(user["id"]))
+        await asyncio.to_thread(_log_login, phone, "password", False, request, str(user["id"]))
         raise HTTPException(401, "Số điện thoại hoặc mật khẩu không đúng")
 
     _login_phone_fails.pop(phone, None)
@@ -434,7 +437,7 @@ async def login_password(body: PasswordLogin, request: Request):
             """, (str(user["id"]), _hash_token(token), ua, ip, expires.isoformat()))
     await asyncio.to_thread(_create_session)
 
-    _log_login(phone, "password", True, request, str(user["id"]))
+    await asyncio.to_thread(_log_login, phone, "password", True, request, str(user["id"]))
 
     return {
         "success": True,
@@ -457,7 +460,7 @@ async def set_password(body: SetPassword, request: Request):
             raise HTTPException(400, "Mật khẩu hiện tại không đúng")
 
     hashed = _hash_password(body.password)
-    db.update_user(str(user["id"]), password_hash=hashed)
+    await asyncio.to_thread(db.update_user, str(user["id"]), password_hash=hashed)
 
     # P1-9: đổi mật khẩu → thu hồi MỌI phiên khác (giữ phiên hiện tại), chống chiếm dụng.
     cur = _extract_token(request)
@@ -544,7 +547,7 @@ async def deactivate_account(request: Request):
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
     uid = str(user["id"])
-    db.update_user(uid, is_active=False)
+    await asyncio.to_thread(db.update_user, uid, is_active=False)
     def _query():
         with db._conn() as conn:
             db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph}", (uid,))

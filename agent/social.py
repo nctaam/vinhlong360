@@ -267,7 +267,7 @@ async def create_post(body: CreatePost, user=Depends(require_user)):
         raise HTTPException(400, "Đánh giá cần có số sao (1-5)")
 
     if body.entity_id:
-        entity = db.get_entity(body.entity_id)
+        entity = await asyncio.to_thread(db.get_entity, body.entity_id)
         if not entity:
             raise HTTPException(404, "Không tìm thấy địa điểm/sản phẩm")
 
@@ -538,7 +538,7 @@ async def get_feed(
 
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
 
-    _enrich_user_status(posts, user)
+    await asyncio.to_thread(_enrich_user_status, posts, user)
 
     return {
         "posts": posts,
@@ -589,7 +589,7 @@ async def get_following_feed(
     rows, total = await asyncio.to_thread(_following_query)
 
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
-    _enrich_user_status(posts, user)
+    await asyncio.to_thread(_enrich_user_status, posts, user)
 
     total_c = total["c"] if total else 0
     return {"posts": posts, "page": page, "total": total_c,
@@ -635,7 +635,7 @@ async def search_posts(
     rows, total = await asyncio.to_thread(_query)
 
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
-    _enrich_user_status(posts, user)
+    await asyncio.to_thread(_enrich_user_status, posts, user)
 
     total_c = total["c"] if total else 0
     return {"posts": posts, "q": q, "total": total_c,
@@ -889,7 +889,7 @@ async def get_entity_feed(
 ):
     """Feed cho một entity cụ thể (điểm du lịch, sản phẩm...)."""
     entity_id = validate_path_id(entity_id, "entity_id")
-    entity = db.get_entity(entity_id)
+    entity = await asyncio.to_thread(db.get_entity, entity_id)
     if not entity:
         raise HTTPException(404, "Không tìm thấy")
 
@@ -927,6 +927,9 @@ async def get_entity_feed(
 
     rows, total, rating_row = await asyncio.to_thread(_entity_feed_query)
 
+    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+    await asyncio.to_thread(_enrich_user_status, posts, user)
+
     return {
         "entity": {
             "id": entity["id"],
@@ -938,7 +941,7 @@ async def get_entity_feed(
             "avg": round(rating_row["avg_rating"], 1) if rating_row else 0,
             "count": rating_row["rating_count"] if rating_row else 0,
         },
-        "posts": _enrich_user_status([_format_post(db._row_to_dict(r)) for r in rows], user),
+        "posts": posts,
         "total": total["c"] if total else 0,
     }
 

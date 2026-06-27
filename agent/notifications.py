@@ -281,7 +281,7 @@ async def toggle_follow(target_type: str, target_id: str, user=Depends(require_u
         raise HTTPException(400, "Không thể tự follow chính mình")
 
     # Guard: không tạo follow rác trỏ đối tượng không tồn tại
-    if target_type == "entity" and not db.get_entity(target_id):
+    if target_type == "entity" and not await asyncio.to_thread(db.get_entity, target_id):
         raise HTTPException(404, "Không tìm thấy địa điểm")
     if target_type == "user":
         ph = db._ph
