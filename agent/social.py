@@ -46,11 +46,16 @@ router = APIRouter(prefix="/api", tags=["social"], dependencies=[Depends(_requir
 
 
 def _block_sql(user: dict | None, column: str = "u.id") -> tuple[str, list]:
-    """Return (AND … NOT IN …, [user_id]) to exclude blocked users, or ("", [])."""
+    """Return (AND … NOT IN …, [user_id]) to exclude blocked users in both directions."""
     if not user:
         return "", []
     ph = db._ph
-    return f"AND {column} NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = {ph}::uuid)", [str(user["id"])]
+    uid = str(user["id"])
+    return (
+        f"AND {column} NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = {ph}::uuid) "
+        f"AND {column} NOT IN (SELECT blocker_id FROM blocks WHERE blocked_id = {ph}::uuid)",
+        [uid, uid],
+    )
 
 # ── Models ──
 
@@ -665,12 +670,13 @@ async def search_users(
         with db._conn() as conn:
             return db._fetchall(conn, f"""
                 SELECT u.id, u.display_name, u.avatar_url, u.username,
-                       (SELECT COUNT(*) FROM posts p
-                          WHERE p.user_id = u.id AND p.moderation_status = 'approved') AS post_count
+                       COUNT(p.id) AS post_count
                 FROM users u
+                LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved'
                 WHERE u.is_active = TRUE
                   AND f_unaccent(lower(u.display_name)) LIKE f_unaccent({ph})
                   {bc}
+                GROUP BY u.id, u.display_name, u.avatar_url, u.username
                 ORDER BY post_count DESC, u.display_name
                 LIMIT {ph} OFFSET {ph}
             """, tuple(params))

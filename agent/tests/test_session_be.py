@@ -480,7 +480,8 @@ def test_block_sql_helper_with_user():
     clause, params = _block_sql({"id": "abc-123"})
     assert "NOT IN" in clause
     assert "blocked_id" in clause
-    assert params == ["abc-123"]
+    assert "blocker_id" in clause
+    assert params == ["abc-123", "abc-123"]
 
 
 def test_block_sql_helper_custom_column():
