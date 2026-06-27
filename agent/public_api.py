@@ -238,7 +238,8 @@ async def list_places(response: Response, area: Optional[str] = None):
 @router.get("/facilities")
 async def list_facilities(place: Optional[str] = None):
     """GĐ13.4: danh bạ hành chính — cơ quan công vụ (UBND/công an/...) theo xã/phường."""
-    return {"facilities": db.facilities_by_place(place)}
+    facilities = await asyncio.to_thread(db.facilities_by_place, place)
+    return {"facilities": facilities}
 
 
 # Nhóm loại entity cho trang hub xã/phường (theo 4 mục người dùng cần).
@@ -291,26 +292,31 @@ async def place_overview(place_id: str):
 
 @router.get("/itineraries")
 async def list_itineraries(area: Optional[str] = None):
-    return db.list_itineraries(area=area)
+    return await asyncio.to_thread(db.list_itineraries, area=area)
 
 
 @router.get("/itineraries/{itin_id}")
 async def get_itinerary(itin_id: str):
-    it = db.get_itinerary(itin_id)
-    if not it:
+    def _query():
+        it = db.get_itinerary(itin_id)
+        if not it:
+            return None
+        stop_ids = [s.get("id", "") for s in it.get("stops", []) if s.get("id")]
+        entities = db.get_entities_batch(stop_ids)
+        for stop in it.get("stops", []):
+            entity = entities.get(stop.get("id", ""))
+            if entity:
+                stop["name"] = entity["name"]
+                if not stop.get("summary"):
+                    stop["summary"] = entity.get("summary", "")
+                stop["type"] = entity["type"]
+                if entity.get("coordinates"):
+                    stop["coordinates"] = entity["coordinates"]
+        return it
+    result = await asyncio.to_thread(_query)
+    if not result:
         return JSONResponse(status_code=404, content={"error": "not_found"})
-    stop_ids = [s.get("id", "") for s in it.get("stops", []) if s.get("id")]
-    entities = db.get_entities_batch(stop_ids)
-    for stop in it.get("stops", []):
-        entity = entities.get(stop.get("id", ""))
-        if entity:
-            stop["name"] = entity["name"]
-            if not stop.get("summary"):
-                stop["summary"] = entity.get("summary", "")
-            stop["type"] = entity["type"]
-            if entity.get("coordinates"):
-                stop["coordinates"] = entity["coordinates"]
-    return it
+    return result
 
 
 @router.get("/search")
@@ -444,7 +450,7 @@ async def homepage_curated(response: Response):
             and _now - _homepage_cache["ts"] < _HOMEPAGE_TTL):
         return _homepage_cache["data"]
 
-    all_ents = db.list_entities(limit=100000, offset=0)
+    all_ents = await asyncio.to_thread(db.list_entities, limit=100000, offset=0)
     public = [e for e in all_ents if _is_public(e) and not _event_is_past(e)]
     _enrich_place(public)
 
@@ -515,7 +521,7 @@ async def homepage_curated(response: Response):
     products = _dedup_by_name(products_pool, limit=8)
 
     # Itineraries: score by seasonal relevance + area diversity
-    all_itineraries = db.list_itineraries()
+    all_itineraries = await asyncio.to_thread(db.list_itineraries)
     for it in all_itineraries:
         it_score = 0.0
         stops = it.get("stops") or []
@@ -557,7 +563,7 @@ async def homepage_curated(response: Response):
     for it in itineraries:
         it.pop("_score", None)
 
-    stats = db.stats()
+    stats = await asyncio.to_thread(db.stats)
 
     # Area counts for region tiles
     card_types = {"product", "dish", "drink", "experience", "attraction", "nature",
@@ -652,7 +658,7 @@ async def list_events(
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     """Sự kiện: sắp xếp theo date_start, mặc định ẩn sự kiện đã qua."""
     today = datetime.now().date()
-    all_ents = db.list_entities(entity_type="event", limit=100000, offset=0)
+    all_ents = await asyncio.to_thread(db.list_entities, entity_type="event", limit=100000, offset=0)
     events = [e for e in all_ents if _is_public(e)]
     _enrich_place(events)
 
