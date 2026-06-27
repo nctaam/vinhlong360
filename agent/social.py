@@ -951,13 +951,18 @@ async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10)):
 # ── Comments ──
 
 @router.get("/posts/{post_id}/comments")
-async def get_comments(post_id: str, request: Request, user=Depends(get_current_user)):
+async def get_comments(
+    post_id: str, request: Request,
+    limit: int = Query(100, ge=1, le=200),
+    user=Depends(get_current_user),
+):
     ph = db._ph
     block_clause = ""
     params: list = [post_id]
     if user:
         block_clause = f"AND c.user_id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = {ph}::uuid)"
         params.append(str(user["id"]))
+    params.append(min(limit, 200))
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
             SELECT c.*, u.display_name, u.avatar_url, u.phone
@@ -966,6 +971,7 @@ async def get_comments(post_id: str, request: Request, user=Depends(get_current_
             WHERE c.post_id::text = {ph} AND c.moderation_status = 'approved'
             {block_clause}
             ORDER BY c.created_at ASC
+            LIMIT {ph}
         """, tuple(params))
 
     comments = [_format_comment(db._row_to_dict(r)) for r in rows]
@@ -1040,6 +1046,59 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
         _notify_mentions(mentions, str(user["id"]), user.get("display_name"), post_id, body.content)
 
     return {"comment": _format_comment(db._row_to_dict(row))}
+
+
+class EditComment(BaseModel):
+    content: str
+
+    @field_validator("content")
+    @classmethod
+    def validate_content(cls, v):
+        v = (v or "").strip()
+        if len(v) < 2:
+            raise ValueError("Bình luận quá ngắn")
+        if len(v) > 2000:
+            raise ValueError("Bình luận tối đa 2000 ký tự")
+        return v
+
+
+@router.put("/comments/{comment_id}")
+async def edit_comment(comment_id: str, body: EditComment, user=Depends(require_user)):
+    ph = db._ph
+    uid = str(user["id"])
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph}", (comment_id,))
+        if not row:
+            raise HTTPException(404, "Bình luận không tồn tại")
+        if str(row["user_id"]) != uid:
+            raise HTTPException(403, "Bạn chỉ có thể sửa bình luận của mình")
+        mod_result = await moderate_content(body.content, [])
+        db._execute(conn, f"""
+            UPDATE comments SET content = {ph}, moderation_status = {ph}, updated_at = NOW()
+            WHERE id::text = {ph}
+        """, (body.content, mod_result["status"], comment_id))
+        updated = db._fetchone(conn, f"""
+            SELECT c.*, u.display_name, u.avatar_url, u.phone
+            FROM comments c JOIN users u ON u.id = c.user_id
+            WHERE c.id::text = {ph}
+        """, (comment_id,))
+    return {"comment": _format_comment(db._row_to_dict(updated))}
+
+
+@router.delete("/comments/{comment_id}")
+async def delete_comment(comment_id: str, user=Depends(require_user)):
+    check_rate(f"del:{user['id']}", RL_DELETE_LIMIT, RL_DELETE_WINDOW,
+               "Bạn xóa quá nhanh. Vui lòng đợi chút.")
+    ph = db._ph
+    uid = str(user["id"])
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"SELECT user_id, post_id FROM comments WHERE id::text = {ph}", (comment_id,))
+        if not row:
+            raise HTTPException(404, "Bình luận không tồn tại")
+        if str(row["user_id"]) != uid:
+            raise HTTPException(403, "Bạn chỉ có thể xóa bình luận của mình")
+        db._execute(conn, f"DELETE FROM comments WHERE id::text = {ph}", (comment_id,))
+    return {"success": True}
 
 
 # ── Q&A: câu trả lời hay nhất (chủ bài hỏi chọn 1 bình luận) ──
