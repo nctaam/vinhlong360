@@ -243,6 +243,29 @@ def test_og_meta_entity_no_image():
     assert meta["og:image"] == seo.DEFAULT_OG_IMAGE
 
 
+def test_twitter_card_meta_site_default():
+    meta = seo.build_og_meta()
+    assert meta["twitter:card"] == "summary_large_image"
+    assert meta["twitter:title"] == meta["og:title"]
+    assert meta["twitter:description"] == meta["og:description"]
+    assert meta["twitter:image"] == meta["og:image"]
+
+
+def test_twitter_card_meta_entity():
+    entity = {
+        "id": "test-entity",
+        "name": "Test Entity",
+        "type": "attraction",
+        "summary": "A test attraction",
+        "images": ["https://example.com/photo.jpg"],
+    }
+    meta = seo.build_og_meta(entity)
+    assert meta["twitter:card"] == "summary_large_image"
+    assert meta["twitter:title"] == "Test Entity"
+    assert meta["twitter:description"] == "A test attraction"
+    assert meta["twitter:image"] == "https://example.com/photo.jpg"
+
+
 def test_og_endpoints_mounted():
     app = FastAPI()
     app.include_router(seo.router)

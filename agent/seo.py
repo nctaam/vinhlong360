@@ -1155,7 +1155,7 @@ DEFAULT_OG_IMAGE = f"{SITE}/og-default.png"
 
 
 def build_og_meta(entity: dict[str, Any] | None = None) -> dict[str, str]:
-    """Open Graph meta data. Site-wide default + per-entity override."""
+    """Open Graph + Twitter Card + Zalo meta data."""
     meta: dict[str, str] = {
         "og:site_name": "VinhLong360",
         "og:locale": "vi_VN",
@@ -1163,26 +1163,41 @@ def build_og_meta(entity: dict[str, Any] | None = None) -> dict[str, str]:
         "og:image": DEFAULT_OG_IMAGE,
         "og:image:width": "1200",
         "og:image:height": "630",
+        "twitter:card": "summary_large_image",
+        "twitter:site": "@vinhlong360",
     }
     if not entity:
-        meta["og:title"] = "VinhLong360 — Khám phá Vĩnh Long, Bến Tre, Trà Vinh"
-        meta["og:description"] = "Điểm đến, ẩm thực, OCOP, lưu trú và cộng đồng miền Tây."
+        title = "VinhLong360 — Khám phá Vĩnh Long, Bến Tre, Trà Vinh"
+        desc = "Điểm đến, ẩm thực, OCOP, lưu trú và cộng đồng miền Tây."
+        meta["og:title"] = title
+        meta["og:description"] = desc
         meta["og:url"] = SITE
+        meta["twitter:title"] = title
+        meta["twitter:description"] = desc
+        meta["twitter:image"] = DEFAULT_OG_IMAGE
         return meta
 
     entity_id = str(entity.get("id", ""))
-    meta["og:title"] = entity.get("name") or entity_id
-    meta["og:url"] = _entity_url(entity_id)
+    title = entity.get("name") or entity_id
+    url = _entity_url(entity_id)
+    meta["og:title"] = title
+    meta["og:url"] = url
     meta["og:type"] = "article"
+    meta["twitter:title"] = title
+
     if entity.get("summary"):
-        meta["og:description"] = str(entity["summary"])[:200]
+        desc = str(entity["summary"])[:200]
+        meta["og:description"] = desc
+        meta["twitter:description"] = desc
 
     images = entity.get("images")
     if isinstance(images, list):
         for img in images:
             if isinstance(img, str) and img.startswith("http"):
                 meta["og:image"] = img
+                meta["twitter:image"] = img
                 break
+    meta["twitter:image"] = meta.get("twitter:image", meta["og:image"])
     return meta
 
 
