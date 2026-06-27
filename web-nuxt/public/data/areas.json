@@ -1,0 +1,22 @@
+[
+  {
+    "id": "vinh-long",
+    "name": "Vĩnh Long",
+    "entity_count": 671
+  },
+  {
+    "id": "ben-tre",
+    "name": "Bến Tre",
+    "entity_count": 505
+  },
+  {
+    "id": "tra-vinh",
+    "name": "Trà Vinh",
+    "entity_count": 442
+  },
+  {
+    "id": "unknown",
+    "name": "unknown",
+    "entity_count": 11
+  }
+]

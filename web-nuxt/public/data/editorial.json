@@ -1,0 +1,42 @@
+{
+  "sections": [
+    {
+      "key": "dish",
+      "heading": "Ẩm thực miền Tây",
+      "tagline": "Hương vị đặc trưng từ vùng sông nước",
+      "cta": "Khám phá tất cả món ngon"
+    },
+    {
+      "key": "experience",
+      "heading": "Trải nghiệm nổi bật",
+      "tagline": "Những điều chỉ có ở miền Tây Nam Bộ",
+      "cta": "Xem tất cả trải nghiệm"
+    },
+    {
+      "key": "nature",
+      "heading": "Thiên nhiên sông nước",
+      "tagline": "Cù lao, vườn trái cây, đồng lúa xanh bát ngát",
+      "cta": "Khám phá thiên nhiên"
+    },
+    {
+      "key": "product",
+      "heading": "Đặc sản & OCOP",
+      "tagline": "Sản phẩm được chứng nhận từ địa phương",
+      "cta": "Xem sản phẩm OCOP"
+    },
+    {
+      "key": "history",
+      "heading": "Di tích & Văn hoá",
+      "tagline": "Câu chuyện lịch sử vùng đất mới",
+      "cta": "Tìm hiểu di tích"
+    },
+    {
+      "key": "accommodation",
+      "heading": "Nơi nghỉ chân",
+      "tagline": "Homestay, khách sạn giữa vườn cây",
+      "cta": "Tìm nơi ở"
+    }
+  ],
+  "hero_tagline": "Khám phá vùng đất mới — nơi ba dòng sông hội tụ",
+  "search_placeholder": "Tìm địa điểm, món ăn, trải nghiệm..."
+}

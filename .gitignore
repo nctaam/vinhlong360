@@ -8,6 +8,7 @@ agent/data/
 *.log.jsonl
 ssl/
 data/
+!web-nuxt/public/data/
 .key
 
 # Build artifacts
