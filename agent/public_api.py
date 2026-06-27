@@ -642,6 +642,7 @@ async def homepage_curated(response: Response):
         if isinstance(_ov, dict):
             seasonal_tagline = _ov.get(str(month)) or _ov.get(month) or ""
     except Exception:
+        logger.warning("Failed to load seasonal taglines override", exc_info=True)
         seasonal_tagline = ""
     if not seasonal_tagline:
         seasonal_tagline = _TAGLINES.get(month, "Khám phá miệt vườn theo cách của người bản địa")

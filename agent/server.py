@@ -422,12 +422,11 @@ def call_tool(name: str, args: dict) -> str:
 def _call_tool_impl(name: str, args: dict) -> str:
     if name == "search":
         result = _hybrid_rerank_search(args)
-        # Track entity hits (wrapped to prevent analytics errors from breaking search)
         try:
             for e in result[:3]:
                 analytics.track_entity_hit(e["id"])
         except Exception:
-            pass
+            logger.warning("analytics.track_entity_hit failed (search)", exc_info=True)
         def _search_card(e):
             attrs = e.get("attributes") or {}
             place_obj = knowledge.get_place(e["id"]) or {}
@@ -470,7 +469,7 @@ def _call_tool_impl(name: str, args: dict) -> str:
         try:
             analytics.track_entity_hit(args["entity_id"])
         except Exception:
-            pass
+            logger.warning("analytics.track_entity_hit failed (entity_detail)", exc_info=True)
         if not detail:
             return json.dumps({"error": "Không tìm thấy: " + args["entity_id"]})
         conf = detail.pop("confidence", 1.0)
@@ -1592,7 +1591,7 @@ def _post_tool_process(fn_name, fn_args, result, suggestions, messages, empty_re
         try:
             analytics.track_entity_hit(fn_args["entity_id"])
         except Exception:
-            pass
+            logger.warning("analytics.track_entity_hit failed (post-tool)", exc_info=True)
 
     # Collect suggestions
     if fn_name == "suggest_followups":
