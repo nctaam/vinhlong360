@@ -10,6 +10,8 @@ Mount: app.include_router(public_router)
 import asyncio
 import json
 import logging
+import re
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
@@ -838,6 +840,99 @@ async def submit_report(payload: ReportIn, request: Request):
     except OSError:
         return JSONResponse(status_code=500, content={"error": "store_failed"})
     return {"ok": True, "message": "Đã ghi nhận. Cảm ơn bạn đã góp ý — chúng tôi sẽ kiểm tra."}
+
+
+# ── Review stats (rating distribution + mention extraction) ──────────
+
+_REVIEW_STATS_CACHE: dict[str, tuple[float, dict]] = {}
+_REVIEW_STATS_TTL = 300
+
+_VN_STOPWORDS = frozenset(
+    "và của là này đó có không được cho với từ tại ở về để bị do theo "
+    "đã sẽ đang rất rồi nhưng hay hoặc nếu thì mà cũng các những một nhiều "
+    "khi nên ra vào lên xuống đi lại còn quá nào ai gì sao thế nữa đây".split()
+)
+_PUNCT_RE = re.compile(r"[.,!?;:\"'()\[\]{}<>/\\@#$%^&*+=~`|…–—]")
+
+
+def _extract_mentions(texts: list[str], top_n: int = 8) -> list[dict]:
+    unigrams: Counter = Counter()
+    bigrams: Counter = Counter()
+    for text in texts:
+        clean = _PUNCT_RE.sub(" ", text.lower())
+        words = [w for w in clean.split() if w and w not in _VN_STOPWORDS and len(w) > 1]
+        unigrams.update(words)
+        for i in range(len(words) - 1):
+            bigrams[f"{words[i]} {words[i+1]}"] += 1
+    combined: Counter = Counter()
+    for w, c in unigrams.items():
+        if c >= 2:
+            combined[w] = c
+    for bg, c in bigrams.items():
+        if c >= 2:
+            combined[bg] = c
+    return [{"keyword": kw, "count": cnt} for kw, cnt in combined.most_common(top_n)]
+
+
+@router.get("/entities/{entity_id}/review-stats")
+async def get_review_stats(entity_id: str, response: Response):
+    validate_path_id(entity_id, "entity_id")
+    response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
+
+    now = _time.time()
+    cached = _REVIEW_STATS_CACHE.get(entity_id)
+    if cached and now - cached[0] < _REVIEW_STATS_TTL:
+        return cached[1]
+
+    _empty = {"avg": 0, "count": 0, "distribution": {}, "mentions": []}
+
+    if not db._use_pg:
+        return _empty
+
+    ph = db._ph
+
+    def _query():
+        with db._conn() as conn:
+            dist_rows = db._fetchall(conn, f"""
+                SELECT rating, COUNT(*) as cnt
+                FROM posts
+                WHERE entity_id = {ph} AND post_type = 'review'
+                    AND moderation_status = 'approved' AND rating IS NOT NULL
+                GROUP BY rating
+            """, (entity_id,))
+            content_rows = db._fetchall(conn, f"""
+                SELECT content FROM posts
+                WHERE entity_id = {ph} AND post_type = 'review'
+                    AND moderation_status = 'approved' AND content IS NOT NULL
+                    AND content != ''
+            """, (entity_id,))
+        return dist_rows, content_rows
+
+    try:
+        dist_rows, content_rows = await asyncio.to_thread(_query)
+    except Exception:
+        logger.exception("review-stats query failed for %s", entity_id)
+        return _empty
+
+    distribution = {}
+    total = 0
+    weighted_sum = 0
+    for row in dist_rows:
+        r = db._row_to_dict(row)
+        rating = int(r["rating"])
+        cnt = int(r["cnt"])
+        distribution[str(rating)] = cnt
+        total += cnt
+        weighted_sum += rating * cnt
+
+    avg = round(weighted_sum / total, 1) if total > 0 else 0
+
+    texts = [db._row_to_dict(r)["content"] for r in content_rows]
+    mentions = _extract_mentions(texts)
+
+    result = {"avg": avg, "count": total, "distribution": distribution, "mentions": mentions}
+    _REVIEW_STATS_CACHE[entity_id] = (now, result)
+    return result
 
 
 # ── ND 147/2024 Compliance & Transparency ──────────────────────────────

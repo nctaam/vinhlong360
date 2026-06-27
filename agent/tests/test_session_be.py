@@ -671,3 +671,54 @@ def test_map_pins_type_filter():
     assert len(pins) == 2
     ids = {p["id"] for p in pins}
     assert ids == {"a", "b"}
+
+
+# ── Review stats ──────────────────────────────────────────────────────
+
+def test_review_stats_endpoint_mounted():
+    pairs = _route_pairs(_public_client().app)
+    assert ("GET", "/api/entities/{entity_id}/review-stats") in pairs
+
+
+def test_review_stats_no_pg_returns_empty():
+    """Without Postgres, review-stats returns empty defaults."""
+    import public_api
+    if not db._use_pg:
+        client = _public_client()
+        resp = client.get("/api/entities/test-entity/review-stats")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["avg"] == 0
+        assert data["count"] == 0
+        assert data["distribution"] == {}
+        assert data["mentions"] == []
+
+
+def test_mention_extraction():
+    """_extract_mentions extracts unigrams + bigrams with count >= 2."""
+    import public_api
+    texts = [
+        "Món ăn ngon lắm, view đẹp quá",
+        "Ngon quá, giá rẻ nữa",
+        "View đẹp, ngon và giá rẻ",
+        "Tuyệt vời, rất ngon",
+    ]
+    mentions = public_api._extract_mentions(texts)
+    keywords = {m["keyword"] for m in mentions}
+    assert "ngon" in keywords
+    counts = {m["keyword"]: m["count"] for m in mentions}
+    assert counts["ngon"] >= 3
+
+
+def test_mention_extraction_empty():
+    import public_api
+    mentions = public_api._extract_mentions([])
+    assert mentions == []
+
+
+def test_mention_stopwords_filtered():
+    import public_api
+    texts = ["và của là này đó có không được", "và của là này đó có không được"]
+    mentions = public_api._extract_mentions(texts)
+    keywords = {m["keyword"] for m in mentions}
+    assert len(keywords & public_api._VN_STOPWORDS) == 0
