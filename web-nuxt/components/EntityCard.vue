@@ -1,8 +1,15 @@
 <template>
   <NuxtLink :to="`/dia-diem/${entity.id}`" :class="['card', `cat-${typeMeta.cat}`]">
     <div v-if="coverImage && !imgError" class="cover cover-img">
-      <NuxtImg v-if="isRemote" :src="coverImage" :alt="entity.name" loading="lazy" width="400" height="240" sizes="sm:100vw md:50vw lg:400px" decoding="async" @load="($event.target as HTMLElement)?.classList.add('loaded')" @error="imgError = true" />
-      <img v-else :src="coverImage" :alt="entity.name" loading="lazy" width="400" height="240" decoding="async" @load="($event.target as HTMLElement)?.classList.add('loaded')" @error="imgError = true" />
+      <NuxtImg v-if="isRemote" :src="allImages[activeSlide]" :alt="entity.name" :key="allImages[activeSlide]" loading="lazy" width="400" height="267" sizes="sm:100vw md:50vw lg:400px" decoding="async" @load="($event.target as HTMLElement)?.classList.add('loaded')" @error="imgError = true" />
+      <img v-else :src="allImages[activeSlide]" :alt="entity.name" :key="allImages[activeSlide]" loading="lazy" width="400" height="267" decoding="async" @load="($event.target as HTMLElement)?.classList.add('loaded')" @error="imgError = true" />
+      <template v-if="allImages.length > 1">
+        <button v-if="activeSlide > 0" type="button" class="card-arrow card-arrow-prev" aria-label="Ảnh trước" @click.prevent="activeSlide--">‹</button>
+        <button v-if="activeSlide < allImages.length - 1" type="button" class="card-arrow card-arrow-next" aria-label="Ảnh sau" @click.prevent="activeSlide++">›</button>
+        <div class="card-dots" aria-hidden="true">
+          <span v-for="(_, i) in allImages.slice(0, 5)" :key="i" :class="['card-dot', { active: i === activeSlide }]" />
+        </div>
+      </template>
       <span class="cover-tag" :class="`cat-${typeMeta.cat}`">{{ typeMeta.emoji }} {{ typeMeta.label }}</span>
       <ClientOnly><SaveButton class="card-save" :entity="entity" size="sm" /></ClientOnly>
     </div>
@@ -64,7 +71,12 @@ const props = defineProps<{
 }>()
 
 const imgError = ref(false)
+const activeSlide = ref(0)
 const typeMeta = computed(() => TYPE_META[props.entity.type] || { emoji: '•', label: props.entity.type, cat: 'place' })
+const allImages = computed(() => {
+  const imgs = props.entity.images
+  return Array.isArray(imgs) && imgs.length ? imgs : coverImage.value ? [coverImage.value] : []
+})
 // Deterministic per-entity placeholder (no real photos exist yet) — seeded by id.
 const placeholderBg = computed(() => generateCategoryPlaceholder(props.entity.id, typeMeta.value.cat))
 const placeholderSvg = computed(() => generateCategoryIcon(typeMeta.value.cat))
@@ -132,6 +144,63 @@ const ratingDisplay = computed(() => {
 <style scoped>
 .card-name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 :deep(.card) { contain: content; }
+/* 3:2 aspect ratio for card images */
+.cover-img { aspect-ratio: 3 / 2; height: auto; }
+/* Heart pop animation */
+@keyframes heart-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+.card-save :deep(.save-active) { animation: heart-pop 300ms; }
+/* Carousel arrows */
+.card-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--ink-900, #1a1a1a);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 200ms, transform 200ms;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+.card-arrow-prev { left: var(--space-2); }
+.card-arrow-next { right: var(--space-2); }
+.card-arrow:hover { transform: translateY(-50%) scale(1.1); }
+.card-arrow:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; opacity: 1; }
+:deep(.card:hover) .card-arrow { opacity: 1; }
+/* Carousel dots */
+.card-dots {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  z-index: 3;
+}
+.card-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  transition: background 200ms, transform 200ms;
+}
+.card-dot.active {
+  background: #fff;
+  transform: scale(1.3);
+}
 .card-amenities { display: flex; align-items: center; gap: 2px; margin-top: .25rem; }
 .ca-icon { font-size: .7rem; opacity: .7; cursor: default; }
 .ca-more { font-size: .65rem; color: var(--muted); font-weight: 600; margin-left: 1px; }
