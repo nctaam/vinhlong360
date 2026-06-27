@@ -372,7 +372,7 @@ async function onReset() {
 .sf-toggle-thumb {
   position: absolute; top: 2px; left: 2px;
   width: 27px; height: 27px; border-radius: 50%;
-  background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.18), 0 0 1px rgba(0,0,0,.04);
+  background: var(--white, #fff); box-shadow: 0 1px 4px rgba(0,0,0,.18), 0 0 1px rgba(0,0,0,.04);
   transition: transform .3s cubic-bezier(.2,1,.4,1);
 }
 .sf-toggle input:checked + .sf-toggle-track .sf-toggle-thumb { transform: translateX(20px); }

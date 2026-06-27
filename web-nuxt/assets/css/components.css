@@ -333,7 +333,7 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
   font-size: .65rem; font-weight: 800;
   min-width: 18px; height: 18px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  border: 2px solid #fff; padding: 0 3px;
+  border: 2px solid var(--card); padding: 0 3px;
   /* badge floats over the trigger button; ignore pointer so it never
      swallows hover/click on the bell beneath it */
   pointer-events: none;

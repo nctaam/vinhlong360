@@ -260,14 +260,14 @@ onMounted(fetchData)
   font-size: .62rem; font-weight: 700; line-height: 1;
   text-transform: uppercase; letter-spacing: .4px;
   padding: 2px 6px; border-radius: 100px;
-  background: rgba(var(--primary-rgb),.12); color: #219653;
+  background: rgba(var(--primary-rgb),.12); color: var(--secondary-fg);
   align-self: center;
 }
 
 /* ── Warn-state card: tint + border/icon only, neutral text ── */
 .stat-card.status-warn {
   border-color: var(--warning, #e67e22);
-  background: rgba(230,126,34,.04);
+  background: var(--warning-bg);
 }
 .stat-card.status-warn .tk-icon {
   background: rgba(var(--warning-rgb),.18) !important;
@@ -305,7 +305,7 @@ onMounted(fetchData)
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 24px; height: 24px; padding: 0 8px;
   border-radius: 100px; font-size: .72rem; font-weight: 700;
-  background: rgba(var(--blue-rgb),.1); color: #3478F6;
+  background: rgba(var(--blue-rgb),.1); color: var(--info);
   font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
   font-variant-numeric: tabular-nums;
   transition: background .2s, color .2s;
@@ -335,9 +335,9 @@ onMounted(fetchData)
   font-variant-numeric: tabular-nums;
 }
 /* Semantic ranking: top-3 solid, 4-10 muted outline, rest plain */
-.tk-list li:nth-child(-n+3) .tk-rank { background: var(--primary, #219653); color: #fff; }
+.tk-list li:nth-child(-n+3) .tk-rank { background: var(--primary, #219653); color: var(--text-on-dark); }
 .tk-list li:nth-child(n+4):nth-child(-n+10) .tk-rank {
-  background: transparent; border: 1px solid rgba(var(--primary-rgb),.3); color: #219653;
+  background: transparent; border: 1px solid rgba(var(--primary-rgb),.3); color: var(--secondary-fg);
 }
 .tk-query { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tk-hits {
@@ -352,12 +352,12 @@ onMounted(fetchData)
 .tk-bar-bg {
   position: absolute; left: 0; top: 0; bottom: 0;
   border-radius: 6px; opacity: .07;
-  background: #3478F6;
+  background: var(--info);
   animation: tk-bar-grow .5s cubic-bezier(.4,0,.2,1) both;
   pointer-events: none;
 }
-.tk-bar-warn { background: #FF9F0A; }
-.tk-bar-green { background: #219653; }
+.tk-bar-warn { background: var(--warning); }
+.tk-bar-green { background: var(--secondary-fg); }
 @keyframes tk-bar-grow { from { width: 0 !important; } }
 
 .tk-rank { position: relative; }
@@ -445,7 +445,7 @@ onMounted(fetchData)
   cursor: pointer; transition: all .2s;
 }
 .tk-chip:hover { border-color: var(--primary, #219653); color: var(--ink); }
-.tk-chip.active { background: var(--primary, #219653); color: #fff; border-color: var(--primary, #219653); }
+.tk-chip.active { background: var(--primary, #219653); color: var(--text-on-dark); border-color: var(--primary, #219653); }
 .tk-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .dark .tk-chip.active { background: var(--primary, #219653); }
 

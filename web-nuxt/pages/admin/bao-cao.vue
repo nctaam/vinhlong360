@@ -397,9 +397,9 @@ onMounted(() => fetchAll())
   content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
 }
 .status-pending { background: rgba(var(--warning-rgb),.08); color: #c67a00; }
-.status-pending::before { background: #FF9F0A; animation: rpt-pulse 2s ease-in-out infinite; }
-.status-resolved { background: rgba(var(--primary-rgb),.08); color: #219653; }
-.status-resolved::before { background: #219653; }
+.status-pending::before { background: var(--warning); animation: rpt-pulse 2s ease-in-out infinite; }
+.status-resolved { background: rgba(var(--primary-rgb),.08); color: var(--secondary-fg); }
+.status-resolved::before { background: var(--secondary-fg); }
 .status-dismissed { background: rgba(142,142,147,.08); color: var(--muted); }
 .status-dismissed::before { background: var(--muted); opacity: .4; }
 @keyframes rpt-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
@@ -422,7 +422,7 @@ onMounted(() => fetchAll())
 .rpt-chip:hover { border-color: var(--primary, #0071e3); }
 .rpt-chip:active { transform: scale(.96); }
 .rpt-chip.active {
-  background: var(--primary, #0071e3); border-color: var(--primary, #0071e3); color: #fff;
+  background: var(--primary, #0071e3); border-color: var(--primary, #0071e3); color: var(--text-on-dark);
   position: relative; box-shadow: 0 2px 8px rgba(0,113,227,.22);
 }
 /* subtle affordance dot under the active chip */
@@ -440,7 +440,7 @@ onMounted(() => fetchAll())
   border-radius: 100px; font-size: .68rem; font-weight: 600;
   background: rgba(0,0,0,.06); color: var(--muted);
 }
-.rpt-chip.active .rpt-chip-count { background: rgba(255,255,255,.25); color: #fff; }
+.rpt-chip.active .rpt-chip-count { background: rgba(255,255,255,.25); color: var(--text-on-dark); }
 
 /* ── Bulk action bar ── */
 .rpt-bulkbar {

@@ -913,7 +913,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--amber-700);
   background: rgba(154, 109, 30, .08); padding: var(--space-1) var(--space-2); border-radius: var(--radius-full);
 }
-.ec-today { color: #b93a2a; }
+.ec-today { color: var(--error); }
 .ec-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--error); animation: pulse-dot 1.5s ease-in-out infinite; }
 @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(.7); } }
 .happening-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--primary-fg); margin: var(--space-4) 0 var(--space-2); }

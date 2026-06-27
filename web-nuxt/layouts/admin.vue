@@ -482,7 +482,7 @@ onUnmounted(() => {
 .status-error .stat-value { color: var(--error, #D94F3D); }
 
 /* ── Dark mode ── */
-.dark .admin-sidebar { background: #0a0a0a; border-right-color: rgba(255,255,255,.08); }
+.dark .admin-sidebar { background: var(--bg); border-right-color: rgba(255,255,255,.08); }
 .dark .nav-group-label { color: rgba(255,255,255,.35); }
 .dark .admin-nav a { color: rgba(255,255,255,.65); }
 .dark .admin-nav a:hover { color: #fff; background: rgba(255,255,255,.12); }

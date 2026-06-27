@@ -787,7 +787,7 @@ onUnmounted(() => {
 .notif-pref-info strong { display: block; font-size: .9rem; }
 .notif-pref-info .sf-hint { display: block; margin-top: .1rem; }
 .toggle { appearance: none; width: 40px; height: 22px; background: var(--muted); border-radius: 11px; position: relative; cursor: pointer; transition: background .2s; flex-shrink: 0; min-height: 44px; padding: 11px 0; box-sizing: content-box; }
-.toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: transform .2s; }
+.toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: var(--white, #fff); border-radius: 50%; transition: transform .2s; }
 .toggle:checked { background: var(--accent, var(--primary)); }
 .toggle:checked::after { transform: translateX(18px); }
 .toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
