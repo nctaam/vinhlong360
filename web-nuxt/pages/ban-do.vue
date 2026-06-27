@@ -108,10 +108,16 @@ const typeFilterOptions = typeFilters.map(f => {
 const activeTypeArray = computed(() => [...activeTypes.value])
 
 function onTypeFilterChange(v: string[]) {
-  if (v.includes('all') || v.length === 0) {
+  if (v.length === 0) {
     activeTypes.value = new Set(['all'])
   } else {
-    activeTypes.value = new Set(v)
+    const wasAll = activeTypes.value.has('all') && activeTypes.value.size === 1
+    if (v.includes('all') && !wasAll) {
+      activeTypes.value = new Set(['all'])
+    } else {
+      const filtered = v.filter(k => k !== 'all')
+      activeTypes.value = new Set(filtered.length ? filtered : ['all'])
+    }
   }
   if (updateRaf) cancelAnimationFrame(updateRaf)
   updateRaf = requestAnimationFrame(() => { updateRaf = null; updateMarkers() })
