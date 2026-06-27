@@ -145,7 +145,7 @@ async def require_csrf(request: Request) -> None:
 #  INPUT VALIDATION UTILITIES
 # ══════════════════════════════════════════════════
 
-_PATH_ID_RE = re.compile(r'^[a-zA-Z0-9\-_]{1,128}$')
+_PATH_ID_RE = re.compile(r'^[a-zA-Z0-9\-_.]{1,128}$')
 _UUID_RE = re.compile(
     r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
     re.IGNORECASE,

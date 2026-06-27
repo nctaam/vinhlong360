@@ -790,6 +790,7 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
 @router.get("/users/{user_id}/following")
 async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0)):
     """Danh sách NGƯỜI mà user này đang theo dõi (hồ-sơ công-khai)."""
+    validate_path_id(user_id, "user_id")
     ph = db._ph
     uid = _resolve_user_id(user_id)
     if not uid:
@@ -813,6 +814,7 @@ async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100
 @router.get("/users/{user_id}/followers")
 async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0)):
     """Danh sách NGƯỜI đang theo dõi user này (hồ-sơ công-khai)."""
+    validate_path_id(user_id, "user_id")
     ph = db._ph
     uid = _resolve_user_id(user_id)
     if not uid:
@@ -1398,6 +1400,7 @@ def _reputation(conn, user_id: str, posts: int, reviews: int) -> dict:
 
 @router.get("/users/{user_id}")
 async def get_user_profile(user_id: str, user=Depends(get_current_user)):
+    validate_path_id(user_id, "user_id")
     ph = db._ph
     _is_uuid = len(user_id) == 36 and user_id.count("-") == 4
     viewer_id = str(user["id"]) if user else None
@@ -1527,6 +1530,7 @@ async def get_user_posts(
     user_id: str,
     page: int = Query(1, ge=1), limit: int = Query(20, ge=1, le=50),
 ):
+    validate_path_id(user_id, "user_id")
     ph = db._ph
     uid = _resolve_user_id(user_id)
     if not uid:
