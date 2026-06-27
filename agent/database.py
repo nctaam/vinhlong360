@@ -220,6 +220,15 @@ class Database:
                         )
                         if not cur.fetchone():
                             cur.execute(f"ALTER TABLE entities ADD COLUMN {col} {coldef}")
+                    for idx_sql in [
+                        "CREATE INDEX IF NOT EXISTS idx_entities_area ON entities(area)",
+                        "CREATE INDEX IF NOT EXISTS idx_entities_status ON entities(status)",
+                        "CREATE INDEX IF NOT EXISTS idx_entities_verified ON entities(verified)",
+                    ]:
+                        try:
+                            cur.execute(idx_sql)
+                        except Exception:
+                            pass
                     conn.commit()
                 self._initialized = True
                 return
@@ -296,6 +305,7 @@ class Database:
                     CREATE INDEX IF NOT EXISTS idx_entities_type ON entities(type);
                     CREATE INDEX IF NOT EXISTS idx_entities_placeId ON entities(placeId);
                     CREATE INDEX IF NOT EXISTS idx_entities_updated ON entities(updatedAt DESC);
+                    CREATE INDEX IF NOT EXISTS idx_entities_area ON entities(area);
                     CREATE INDEX IF NOT EXISTS idx_itineraries_area ON itineraries(area);
                     CREATE INDEX IF NOT EXISTS idx_relationships_from ON relationships(from_id);
                     CREATE INDEX IF NOT EXISTS idx_relationships_to ON relationships(to_id);
@@ -319,6 +329,14 @@ class Database:
                     for col in ("status TEXT", "verified INTEGER DEFAULT 1"):
                         try:
                             conn.execute(f"ALTER TABLE entities ADD COLUMN {col}")
+                        except sqlite3.OperationalError:
+                            pass
+                    for idx_sql in [
+                        "CREATE INDEX IF NOT EXISTS idx_entities_status ON entities(status)",
+                        "CREATE INDEX IF NOT EXISTS idx_entities_verified ON entities(verified)",
+                    ]:
+                        try:
+                            conn.execute(idx_sql)
                         except sqlite3.OperationalError:
                             pass
 

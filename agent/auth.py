@@ -78,7 +78,8 @@ def _gc_rate_dict(d: dict, window: float) -> None:
     if len(d) <= _RATE_MAX_KEYS:
         return
     now = time.time()
-    stale = [k for k, v in d.items() if not v or now - max(v) > window]
+    stale = [k for k, v in d.items()
+             if not v or now - (max(v) if isinstance(v, list) else v) > window]
     for k in stale:
         del d[k]
 
@@ -260,6 +261,7 @@ async def request_otp(body: OTPRequest, request: Request):
     _gc_rate_dict(_otp_ip_rate, OTP_IP_WINDOW)
 
     _otp_rate[phone] = now
+    _gc_rate_dict(_otp_rate, OTP_RATE_LIMIT_SECONDS)
 
     code = _generate_otp()
     hashed = _hash_otp(code)
@@ -410,6 +412,7 @@ async def login_password(body: PasswordLogin, request: Request):
     if not user or not user.get("password_hash"):
         phone_hits.append(now)
         _login_phone_fails[phone] = phone_hits
+        _gc_rate_dict(_login_phone_fails, LOGIN_PHONE_WINDOW)
         await asyncio.to_thread(_log_login, phone, "password", False, request)
         raise HTTPException(401, "Số điện thoại hoặc mật khẩu không đúng")
 
@@ -420,6 +423,7 @@ async def login_password(body: PasswordLogin, request: Request):
     if not _verify_password(body.password, user["password_hash"]):
         phone_hits.append(now)
         _login_phone_fails[phone] = phone_hits
+        _gc_rate_dict(_login_phone_fails, LOGIN_PHONE_WINDOW)
         await asyncio.to_thread(_log_login, phone, "password", False, request, str(user["id"]))
         raise HTTPException(401, "Số điện thoại hoặc mật khẩu không đúng")
 
