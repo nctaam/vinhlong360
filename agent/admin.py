@@ -404,6 +404,7 @@ class _EntityImageURL(BaseModel):
 @router.post("/entities/{entity_id}/images")
 async def add_entity_image_url(entity_id: str, body: _EntityImageURL):
     """GĐ8.4: thêm ảnh entity theo URL (chỉ nguồn cấp phép — B6)."""
+    entity_id = validate_path_id(entity_id, "entity_id")
     url = (body.url or "").strip()
     if not (url.startswith("http://") or url.startswith("https://") or url.startswith("/")):
         raise HTTPException(400, "URL ảnh không hợp lệ")
@@ -428,6 +429,7 @@ async def add_entity_image_url(entity_id: str, body: _EntityImageURL):
 async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
     """GĐ8.4: upload file ảnh → WebP 3 cỡ → R2 (fallback đĩa) → entity.images.
     Lưu URL cỡ md (800px) làm ảnh hiển thị; sm/lg cũng được upload để dùng srcset sau."""
+    entity_id = validate_path_id(entity_id, "entity_id")
     from fastapi.concurrency import run_in_threadpool
     from storage import storage, MAX_IMAGE_SIZE
 
@@ -464,6 +466,7 @@ async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
 @router.delete("/entities/{entity_id}/images/{idx}")
 async def remove_entity_image(entity_id: str, idx: int):
     """Gỡ ảnh thứ idx khỏi entity.images (không xoá file R2 — tránh mất ảnh dùng chung)."""
+    entity_id = validate_path_id(entity_id, "entity_id")
     def _query():
         entity = db.get_entity(entity_id)
         if not entity:
@@ -509,6 +512,7 @@ class AssignPlaceRequest(BaseModel):
 @router.post("/entities/{entity_id}/place")
 async def assign_place(entity_id: str, body: AssignPlaceRequest):
     """Gán (hoặc gỡ) xã/phường cho 1 entity. Validate place_id là place thật (chống gán bừa)."""
+    entity_id = validate_path_id(entity_id, "entity_id")
     def _query():
         e = db.get_entity(entity_id)
         if not e:
@@ -535,6 +539,7 @@ async def list_itineraries_admin(area: Optional[str] = None):
 
 @router.get("/itineraries/{itin_id}")
 async def get_itinerary_admin(itin_id: str):
+    itin_id = validate_path_id(itin_id, "itin_id")
     def _query():
         it = db.get_itinerary(itin_id)
         if not it:
@@ -581,6 +586,7 @@ async def create_itinerary(body: ItineraryCreate):
 
 @router.put("/itineraries/{itin_id}")
 async def update_itinerary(itin_id: str, body: ItineraryUpdate):
+    itin_id = validate_path_id(itin_id, "itin_id")
     def _query():
         data = body.model_dump(exclude_none=True)
         data["id"] = itin_id
@@ -590,6 +596,7 @@ async def update_itinerary(itin_id: str, body: ItineraryUpdate):
 
 @router.delete("/itineraries/{itin_id}")
 async def delete_itinerary(itin_id: str):
+    itin_id = validate_path_id(itin_id, "itin_id")
     def _query():
         db.initialize()
         ph = db._ph
@@ -691,6 +698,7 @@ async def data_quality_history(limit: int = Query(20, ge=1, le=200)):
 
 @router.post("/data-quality/rollback/{batch_id}")
 async def data_quality_rollback(batch_id: str):
+    validate_path_id(batch_id)
     def _query():
         try:
             result = data_quality.rollback_apply(batch_id)
@@ -761,6 +769,7 @@ async def list_image_suggestions(
 @router.get("/image-suggestions/{suggestion_id}")
 async def get_image_suggestion(suggestion_id: str):
     """Chi tiết 1 ứng viên ảnh (kèm tên entity để review)."""
+    validate_path_id(suggestion_id)
     def _query():
         s = _imgq.get_suggestion(suggestion_id)
         if not s:
@@ -802,6 +811,7 @@ def _assert_public_url(url: str) -> None:
 async def approve_image_suggestion(suggestion_id: str):
     """Duyệt 1 ứng viên: tải ảnh → WebP 3 cỡ → R2 → gắn vào entity.images + lưu
     license/author/source vào attributes.image_credits (B6). Chỉ xử lý khi đang 'pending'."""
+    validate_path_id(suggestion_id)
     from fastapi.concurrency import run_in_threadpool
     from storage import storage, MAX_IMAGE_SIZE
 
@@ -878,6 +888,7 @@ async def approve_image_suggestion(suggestion_id: str):
 @router.post("/image-suggestions/{suggestion_id}/reject")
 async def reject_image_suggestion(suggestion_id: str, body: RejectSuggestionRequest = RejectSuggestionRequest()):
     """Từ chối 1 ứng viên (ghi lý do). Không tải/không upload gì."""
+    validate_path_id(suggestion_id)
     def _query():
         s = _imgq.get_suggestion(suggestion_id)
         if not s:
@@ -1198,9 +1209,6 @@ _learn_proc: Optional[subprocess.Popen] = None
 @router.post("/trigger-learn")
 async def trigger_learn(category: Optional[str] = None, topics: int = 3):
     """Trigger 1 vòng auto-learn (chạy background)."""
-    global _learn_proc
-    if _learn_proc is not None and _learn_proc.poll() is None:
-        raise HTTPException(409, f"Auto-learn đang chạy (PID {_learn_proc.pid}). Vui lòng chờ xong.")
     if topics < 1 or topics > 20:
         raise HTTPException(400, "topics must be between 1 and 20")
     if category:
@@ -1210,23 +1218,28 @@ async def trigger_learn(category: Optional[str] = None, topics: int = 3):
     if category:
         cmd.extend(["--category", category])
 
-    try:
-        _learn_proc = subprocess.Popen(
-            cmd,
-            cwd=str(ROOT),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            env={**os.environ, "PYTHONIOENCODING": "utf-8"},
-        )
-        return {
-            "status": "started",
-            "pid": _learn_proc.pid,
-            "command": " ".join(cmd),
-            "note": "Chạy background. Gọi POST /reload sau khi xong.",
-        }
-    except Exception:
-        logger.exception("Auto-learn trigger failed")
-        raise HTTPException(500, "Không thể khởi chạy auto-learn. Kiểm tra log server.")
+    def _start():
+        global _learn_proc
+        if _learn_proc is not None and _learn_proc.poll() is None:
+            raise HTTPException(409, f"Auto-learn đang chạy (PID {_learn_proc.pid}). Vui lòng chờ xong.")
+        try:
+            _learn_proc = subprocess.Popen(
+                cmd,
+                cwd=str(ROOT),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                env={**os.environ, "PYTHONIOENCODING": "utf-8"},
+            )
+            return {
+                "status": "started",
+                "pid": _learn_proc.pid,
+                "command": " ".join(cmd),
+                "note": "Chạy background. Gọi POST /reload sau khi xong.",
+            }
+        except Exception:
+            logger.exception("Auto-learn trigger failed")
+            raise HTTPException(500, "Không thể khởi chạy auto-learn. Kiểm tra log server.")
+    return await asyncio.to_thread(_start)
 
 
 # ── Quarantine review queue (provisional auto-learned entities) ──
@@ -1243,6 +1256,7 @@ async def list_provisional_entities():
 @router.post("/provisional/{entity_id}/approve")
 async def approve_provisional(entity_id: str):
     """Duyệt 1 entity provisional → verified (tin cậy)."""
+    validate_path_id(entity_id)
     def _query():
         import kb_curation
         result = kb_curation.promote(entity_id)
@@ -1255,6 +1269,7 @@ async def approve_provisional(entity_id: str):
 @router.post("/provisional/{entity_id}/reject")
 async def reject_provisional(entity_id: str):
     """Từ chối + xóa 1 entity provisional khỏi KB."""
+    validate_path_id(entity_id)
     def _query():
         import kb_curation
         result = kb_curation.reject(entity_id)
