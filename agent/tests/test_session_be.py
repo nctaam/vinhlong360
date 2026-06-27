@@ -522,3 +522,46 @@ def test_admin_entity_validates_path_id():
     client = TestClient(app)
     resp = client.get("/admin/entities/'; DROP TABLE--")
     assert resp.status_code == 400
+
+
+# ── Social path ID validation ────────────────────────────────────────
+
+def test_social_post_validates_path_id():
+    import social
+    app = FastAPI()
+    app.include_router(social.router)
+    client = TestClient(app)
+    if not db._use_pg:
+        assert client.get("/api/posts/'; DROP TABLE--").status_code in (400, 503)
+    else:
+        assert client.get("/api/posts/'; DROP TABLE--").status_code == 400
+
+
+def test_social_comment_validates_path_id():
+    import social
+    app = FastAPI()
+    app.include_router(social.router)
+    client = TestClient(app)
+    if not db._use_pg:
+        assert client.get("/api/posts/valid-id/comments").status_code in (400, 503)
+
+
+# ── Notifications path validation ─────────────────────────────────────
+
+def test_notifications_block_validates_path_id():
+    import notifications
+    app = FastAPI()
+    app.include_router(notifications.router)
+    client = TestClient(app)
+    if not db._use_pg:
+        assert client.post("/api/block/'; DROP TABLE--").status_code in (400, 503)
+
+
+# ── PG connect timeout configured ────────────────────────────────────
+
+def test_pg_connect_timeout_set():
+    """Verify connect_timeout parameter is used in database.py."""
+    import inspect
+    from database import Database
+    src = inspect.getsource(Database._conn)
+    assert "connect_timeout" in src

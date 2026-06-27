@@ -22,7 +22,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from starlette.responses import StreamingResponse
 from pydantic import BaseModel, field_validator
 
-from auth_middleware import get_current_user, require_user
+from auth_middleware import get_current_user, require_user, validate_path_id
 from database import db
 
 
@@ -99,6 +99,7 @@ async def mark_all_read(user=Depends(require_user)):
 
 @router.post("/notifications/{notif_id}/read")
 async def mark_notification_read(notif_id: str, user=Depends(require_user)):
+    notif_id = validate_path_id(notif_id, "notif_id")
     ph = db._ph
     with db._conn() as conn:
         db._execute(conn, f"""
@@ -260,6 +261,7 @@ def create_notification(user_id: str, notif_type: str, title: str,
 
 @router.post("/follow/{target_type}/{target_id}")
 async def toggle_follow(target_type: str, target_id: str, user=Depends(require_user)):
+    target_id = validate_path_id(target_id, "target_id")
     if target_type not in ("user", "entity"):
         raise HTTPException(400, "Loại follow: user hoặc entity")
 
@@ -401,6 +403,7 @@ async def create_report(body: ReportRequest, user=Depends(require_user)):
 
 @router.post("/block/{blocked_id}")
 async def toggle_block(blocked_id: str, user=Depends(require_user)):
+    blocked_id = validate_path_id(blocked_id, "blocked_id")
     if blocked_id == str(user["id"]):
         raise HTTPException(400, "Không thể tự chặn chính mình")
 

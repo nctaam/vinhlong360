@@ -22,7 +22,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, File
 from pydantic import BaseModel, field_validator
 
-from auth_middleware import get_current_user, require_user
+from auth_middleware import get_current_user, require_user, validate_path_id
 from database import db
 from moderation import moderate_content, moderate_content_enhanced, log_moderation
 from notifications import create_notification
@@ -340,6 +340,7 @@ async def create_post(body: CreatePost, user=Depends(require_user)):
 
 @router.get("/posts/{post_id}")
 async def get_post(post_id: str, user=Depends(get_current_user)):
+    post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
     uid = str(user["id"]) if user else None
 
@@ -378,6 +379,7 @@ async def get_post(post_id: str, user=Depends(get_current_user)):
 
 @router.delete("/posts/{post_id}")
 async def delete_post(post_id: str, user=Depends(require_user)):
+    post_id = validate_path_id(post_id, "post_id")
     check_rate(f"delete:{user['id']}", RL_DELETE_LIMIT, RL_DELETE_WINDOW,
                "Bạn xóa quá nhanh. Vui lòng đợi ít phút.")
     ph = db._ph
@@ -395,6 +397,7 @@ async def delete_post(post_id: str, user=Depends(require_user)):
 @router.patch("/posts/{post_id}")
 async def update_post(post_id: str, body: UpdatePost, user=Depends(require_user)):
     """Sửa bài của CHÍNH MÌNH (nội dung; review đổi sao). Kiểm duyệt + hashtag lại."""
+    post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
     with db._conn() as conn:
         row = db._fetchone(conn, f"SELECT user_id, post_type FROM posts WHERE id::text = {ph}", (post_id,))
@@ -859,6 +862,7 @@ async def get_entity_feed(
     user=Depends(get_current_user),
 ):
     """Feed cho một entity cụ thể (điểm du lịch, sản phẩm...)."""
+    entity_id = validate_path_id(entity_id, "entity_id")
     entity = db.get_entity(entity_id)
     if not entity:
         raise HTTPException(404, "Không tìm thấy")
@@ -916,6 +920,7 @@ async def get_entity_feed(
 @router.get("/posts/{post_id}/related")
 async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10)):
     """Bài viết liên quan: cùng entity hoặc cùng hashtag."""
+    post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
     with db._conn() as conn:
         src = db._fetchone(conn, f"""
@@ -968,6 +973,7 @@ async def get_comments(
     limit: int = Query(100, ge=1, le=200),
     user=Depends(get_current_user),
 ):
+    post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
     bc, bc_p = _block_sql(user, "c.user_id")
     params: list = [post_id] + bc_p + [min(limit, 200)]
@@ -1006,6 +1012,7 @@ async def get_comments(
 
 @router.post("/posts/{post_id}/comments")
 async def create_comment(post_id: str, body: CreateComment, user=Depends(require_user)):
+    post_id = validate_path_id(post_id, "post_id")
     check_rate(f"comment:{user['id']}", RL_COMMENT_LIMIT, RL_COMMENT_WINDOW,
                "Bạn bình luận quá nhanh. Vui lòng đợi chút rồi thử lại.")
     mod_result = await moderate_content_enhanced(body.content, user_id=str(user["id"]))
@@ -1077,6 +1084,7 @@ class EditComment(BaseModel):
 
 @router.put("/comments/{comment_id}")
 async def edit_comment(comment_id: str, body: EditComment, user=Depends(require_user)):
+    comment_id = validate_path_id(comment_id, "comment_id")
     ph = db._ph
     uid = str(user["id"])
     with db._conn() as conn:
@@ -1100,6 +1108,7 @@ async def edit_comment(comment_id: str, body: EditComment, user=Depends(require_
 
 @router.delete("/comments/{comment_id}")
 async def delete_comment(comment_id: str, user=Depends(require_user)):
+    comment_id = validate_path_id(comment_id, "comment_id")
     check_rate(f"del:{user['id']}", RL_DELETE_LIMIT, RL_DELETE_WINDOW,
                "Bạn xóa quá nhanh. Vui lòng đợi chút.")
     ph = db._ph
@@ -1122,6 +1131,7 @@ class BestAnswerBody(BaseModel):
 
 @router.post("/posts/{post_id}/best-answer")
 async def set_best_answer(post_id: str, body: BestAnswerBody, user=Depends(require_user)):
+    post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
     with db._conn() as conn:
         post = db._fetchone(conn, f"SELECT user_id, post_type FROM posts WHERE id::text = {ph}", (post_id,))
@@ -1145,6 +1155,7 @@ async def set_best_answer(post_id: str, body: BestAnswerBody, user=Depends(requi
 
 @router.post("/posts/{post_id}/like")
 async def toggle_like(post_id: str, user=Depends(require_user)):
+    post_id = validate_path_id(post_id, "post_id")
     check_rate(f"like:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW,
                "Bạn thao tác quá nhanh. Vui lòng đợi chút.")
     ph = db._ph
@@ -1187,6 +1198,7 @@ async def toggle_like(post_id: str, user=Depends(require_user)):
 
 @router.post("/posts/{post_id}/bookmark")
 async def toggle_bookmark(post_id: str, user=Depends(require_user)):
+    post_id = validate_path_id(post_id, "post_id")
     check_rate(f"bookmark:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW,
                "Bạn thao tác quá nhanh. Vui lòng đợi chút.")
     ph = db._ph

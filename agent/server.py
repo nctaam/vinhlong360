@@ -1007,6 +1007,14 @@ async def track_response_time(request: Request, call_next):
 
         response.headers["X-Request-Id"] = req_id
         response.headers["X-Response-Time"] = f"{duration_ms:.0f}ms"
+        if "Cache-Control" not in response.headers:
+            path = request.url.path
+            if path.startswith(("/auth/", "/api/posts", "/api/comments", "/admin/")):
+                response.headers["Cache-Control"] = "no-store"
+            elif path.startswith(("/seo/", "/api/entities", "/api/transparency")):
+                response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=300"
+            else:
+                response.headers["Cache-Control"] = "no-cache"
         return response
 
     except Exception as exc:
@@ -1014,6 +1022,8 @@ async def track_response_time(request: Request, call_next):
         endpoint = f"{request.method} {request.url.path}"
         error_tracker.record_error(endpoint, str(exc), traceback.format_exc())
         response_tracker.record(endpoint, duration_ms, 500)
+        logger.error("Unhandled exception", endpoint=endpoint, req_id=req_id,
+                      duration_ms=round(duration_ms), error=str(exc)[:200])
         return JSONResponse(
             status_code=500,
             content={"error": "Internal server error", "request_id": req_id},

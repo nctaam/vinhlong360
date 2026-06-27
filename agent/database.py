@@ -109,7 +109,7 @@ class Database:
                     try:
                         from psycopg2.pool import ThreadedConnectionPool
                         mx = max(2, int(os.environ.get("PG_POOL_MAX", "10")))
-                        self._pg_pool = ThreadedConnectionPool(1, mx, self._dsn)
+                        self._pg_pool = ThreadedConnectionPool(1, mx, self._dsn, connect_timeout=5)
                     except Exception:
                         self._pg_pool_failed = True  # fallback connect-trực-tiếp
                         return None
@@ -120,7 +120,7 @@ class Database:
         """Thread-safe connection context manager."""
         if self._use_pg:
             pool = self._get_pg_pool()
-            conn = pool.getconn() if pool else psycopg2.connect(self._dsn)
+            conn = pool.getconn() if pool else psycopg2.connect(self._dsn, connect_timeout=5)
             conn.autocommit = False
             ok = True
             try:
