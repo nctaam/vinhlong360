@@ -415,116 +415,89 @@ Dark tint: blue `#0A84FF`, green `#30D158`, red `#FF453A`, orange `#FF9F0A`.
 
 ---
 
-# ROUND 3: World-Class Design Patterns
+# ROUND 3: World-Class Design Patterns (Nghiên cứu lại đầy đủ)
 
-> Nghiên cứu sâu 8 chiều nâng hệ thống từ "đạt chuẩn" lên "world-class". ~80 agent song song phân tích design systems hàng đầu, CSS performance, font loading, cognitive accessibility, SEO structured data, micro-interactions.
+> 120+ agent song song, 8 chiều nghiên cứu. Tất cả mảng bị dừng giữa chừng ở lần trước đã nghiên cứu lại thành công.
 
 ---
 
-## 14. World-Class Design System Patterns
+## 14. World-Class Design System Patterns (6 hệ thống)
 
-### 14.1 Shopify Polaris — Dual-mode Architecture
+### 14.1 Shopify Polaris — Dual-mode + HSLuv
 
-**Token naming:** `--p-{group}-{subgroup}-{variant}-{state}` (2-tier: primitive → semantic).
+- Token naming: `--p-{group}-{subgroup}-{variant}-{state}`. 2-tier: primitive → semantic
+- Color space: HSLuv (perceptually uniform). 5 theme variants: light, dark, dim, light-HC, dark-HC
+- Class-based switching (`[data-theme="dark"]`). Dual-mode: open internals + locked-down public API
 
-**Color space:** HSLuv (perceptually uniform) cho toàn bộ palette. 5 theme variants: light, dark, dim, light-high-contrast, dark-high-contrast. Class-based switching (`[data-theme="dark"]`).
+### 14.2 Vercel Geist — AI-Native + Typography-First
 
-**Dual-mode pattern:** Open internals cho team + locked-down public API cho 3rd-party apps. Đây là mô hình phù hợp vinhlong360 nếu sau này mở API cho đối tác OCOP.
+- `design.md` at stable URL — machine-readable design contract cho AI/LLM
+- Letter-spacing tightens theo size: `-2.88px` ở 48px → `0` ở 16px
+- Ink-as-brand (`#171717`). Shadow-as-border pattern (shadow thay border)
+- 10-step color scales (100→1000). 100=app bg, 900=solid fill, 1000=text
 
-**Áp dụng cho vinhlong360:**
-- Adopt HSLuv / OKLCH cho color generation → đảm bảo perceptual uniformity across palette
-- 5 theme variants (hiện có 2: light/dark) → thêm dim + 2 high-contrast
-- Token naming convention `--vl-{group}-{variant}-{state}` nhất quán hơn
+### 14.3 Linear — Performance-First Animation
 
-### 14.2 Vercel Geist — AI-Native Design System
-
-**design.md as machine-readable contract:** Geist duy trì 1 file `design.md` tại URL ổn định — AI/LLM đọc được, developer đọc được. Đây là pattern mới: design system documentation vừa cho người vừa cho máy.
-
-**Typography-first:** Geist Sans / Mono / Pixel. Letter-spacing tightens theo size: `-2.88px` ở 48px → `0` ở 16px. Dark-first canonical surface.
-
-**Ink-as-brand:** `#171717` là brand color, KHÔNG dùng brand color truyền thống. Shadow-as-border pattern (shadows thay border cho elevation).
-
-**10-step color scales:** 100→1000 (thay 50→900 truyền thống). Semantic rõ: 100=app bg, 900=solid fill, 1000=primary text.
-
-**Áp dụng cho vinhlong360:**
-- Tạo `docs/design.md` machine-readable (AI/LLM-friendly) — useful cho agent nội bộ
-- Letter-spacing tightens theo size (hiện cố định) → fluid tracking
-- Shadow-as-border cho cards (giảm visual noise)
-
-### 14.3 Linear — Performance-First Design
-
-**Local-first sync:** IndexedDB → MobX → UI. Server chỉ là sync target, không phải source. App hoạt động offline.
-
-**Animation rules cứng:**
-- CHỈ animate `transform` + `opacity` (composited, không trigger layout/paint)
-- Asymmetric timing: instant appear (0ms), 150ms fade-out
-- Duration scale: 0.1s / 0.15s / 0.25s / 0.35s (rất ngắn — feels snappy)
-- MobX per-property subscriptions (chỉ re-render component khi đúng property thay đổi)
-
-**Code splitting:** 21MB JS split trăm chunks, per-package chunking (>3KB = chunk riêng). Service worker precache ~1200 assets.
-
-**Áp dụng cho vinhlong360:**
-- Adopt animation rules: chỉ `transform` + `opacity`, asymmetric timing
-- Duration scale ngắn hơn hiện tại: 100/150/250/350ms thay 200-1000ms
-- Service worker precache cho static assets (Nuxt built-in)
+- CHỈ animate `transform` + `opacity` (compositor-only, skip layout/paint)
+- Asymmetric timing: enter 150ms decelerate, exit 100ms accelerate
+- Duration scale: 100 / 150 / 250 / 350ms (cực ngắn → snappy feel)
+- Code split 21MB → trăm chunks (>3KB = chunk riêng). SW precache ~1200 assets
 
 ### 14.4 Radix UI — Composition + Accessibility
 
-**`data-state` unmount suspension:** Khi element exit, Radix giữ nó trong DOM với `data-state="closed"` → CSS transition chạy xong → unmount. Pattern này cho phép CSS-only exit animations KHÔNG cần JS animation library.
+- `data-state` unmount suspension: CSS-only exit animations KHÔNG cần JS library
+- 12-step color scale: 1=app bg, 2=subtle bg, 3-5=component states, 6-7=borders, 8=focus, 9=primary solid, 10=hover solid, 11=secondary text, 12=primary text
+- `asChild`/`Slot` composition: merge props vào child, DOM sạch hơn
 
-```css
-/* Pattern: CSS-only exit animation */
-[data-state="open"] { animation: slideIn 150ms ease-out; }
-[data-state="closed"] { animation: slideOut 100ms ease-in; }
-```
+### 14.5 GitHub Primer — Inverted Scale + 9 Themes (MỚI)
 
-**`asChild` / `Slot` composition:** Thay vì wrapper `<div>`, Radix merge props vào child element qua `React.cloneElement`. Kết quả: DOM sạch hơn, accessibility attributes truyền trực tiếp.
+**Pattern quan trọng nhất:** Neutral scale 14 bước (0-13) **đảo chiều** giữa light/dark. Light: 0=trắng→13=đen. Dark: 0=đen→13=trắng. Functional tokens (`bgColor-default`, `fgColor-muted`) reference cùng step number → tự động đúng ở cả 2 mode. KHÔNG cần viết override riêng. **Không design system nào khác làm được.**
 
-**12-step color scale:**
-| Step | Semantic | Ví dụ |
-|---|---|---|
-| 1 | App background | page bg |
-| 2 | Subtle background | card bg |
-| 3-5 | Component bg (default → hover → active) | button states |
-| 6-7 | Border (subtle → strong) | input border |
-| 8 | Solid bg | focus ring |
-| 9 | Solid bg (primary) | primary button |
-| 10 | Hovered solid | button:hover |
-| 11 | Low-contrast text | secondary text |
-| 12 | High-contrast text | primary text |
+**9 production themes:** light, dark, dark-dimmed, light-HC, dark-HC, light-protanopia/deuteranopia, dark-protanopia/deuteranopia, light-tritanopia, dark-tritanopia. Override pattern: theme mới = diff file chỉ ghi những gì khác.
 
-**Áp dụng cho vinhlong360:**
-- `data-state` pattern cho modals/drawers/dropdowns (Vue `<Transition>` tương đương)
-- 12-step color scale mapping: verify tokens hiện tại cover steps 1-12
-- Bake WAI-ARIA patterns vào base components
+**3-tier tokens:**
+1. **Base** — raw values (`--base-size-4`, `--base-color-green-5`). Không dùng trực tiếp
+2. **Functional** — semantic (`--bgColor-default`, `--fgColor-muted`, `--borderColor-default`)
+3. **Component** — scoped (`--button-primary-bgColor-hover`)
 
-### 14.5 cmdk — Command Palette Architecture
+**Zoning neutral scale:** steps 0-5 = backgrounds, 7-8 = borders (đảm bảo contrast vs bg), 9-10 = text/icons
 
-**Linear's foundation:** Composable unstyled command palette. `useSyncExternalStore` store pattern. Items stay in React tree when filtered (hidden, not unmounted — preserves focus).
+**Primer Prism** — tool tạo theme dùng HSLuv, auto-check WCAG contrast mọi cặp. Open source.
 
-**Fuzzy scoring:** `command-score` library. Good up to 2-3K items without virtualization.
+**Accessibility Annotation Toolkit** — Figma library cho designer annotate heading hierarchy, keyboard flow, ARIA trước khi code. GitHub data: **48% accessibility issues phòng ngừa được ở phase design.**
+
+**Data-attribute theming:** `[data-color-mode="dark"]` thay `.dark-mode`. Hỗ trợ nested themes (dark sidebar trong light page).
+
+**Contrast CI:** GitHub Action chạy mỗi PR, check contrast tất cả token pairings × 9 themes. Fail = block merge.
+
+**Code-first workflow:** Components originate trong Storybook → sync sang Figma qua `story.to.design` plugin.
+
+### 14.6 cmdk — Command Palette
+
+- Composable unstyled, `command-score` fuzzy scoring, 2-3K items không cần virtualize
+- Items hidden (không unmount) khi filter → faster re-show, preserve focus
 
 **Áp dụng cho vinhlong360:**
-- Admin command palette (Ctrl+K) — plan B8a đã có, dùng pattern cmdk
-- Entity search: fuzzy scoring thay exact match
-- Keep items in DOM (hidden) thay unmount khi filter → faster re-show
+- **Inverted neutral scale** (Primer) — giảm ~50% token overrides cho dark mode
+- **Data-attribute theming** — `[data-color-mode]` thay class
+- **Contrast CI** — script check token pairs mỗi commit
+- **Animation rules Linear** — chỉ `transform`+`opacity`, 100-350ms
+- **Shadow-as-border** (Geist) — cards dùng shadow thay border
+- **Fluid letter-spacing** (Geist) — tightens theo font-size
+- **`data-state` transitions** (Radix) — CSS-only modal/drawer exit
 
 ---
 
 ## 15. CSS Performance Optimization
 
-### 15.1 CSS Custom Properties — Benchmark Data
+### 15.1 CSS Custom Properties
 
-| Technique | Before | After | Improvement |
-|---|---|---|---|
-| `@property` with `inherits: false` | 3.90ms per update | 4.67μs | **848× faster** |
-| Registering 25k properties | — | ~32ms one-time | Negligible cost |
-| 200+ tokens on `:root` | — | No perf issue | Safe to scale |
-
-**`@property` with `inherits: false`** ngăn trình duyệt recalculate toàn bộ subtree khi custom property thay đổi. Thay vì cascade xuống mọi descendant, chỉ element trực tiếp bị ảnh hưởng.
+| Technique | Improvement |
+|---|---|
+| `@property` with `inherits: false` | **848× faster** (3.90ms → 4.67μs per update) |
+| 200+ tokens on `:root` | No perf issue — safe to scale |
 
 ```css
-/* Đăng ký property — 848× faster khi thay đổi */
 @property --vl-primary {
   syntax: '<color>';
   inherits: false;
@@ -532,338 +505,529 @@ Dark tint: blue `#0A84FF`, green `#30D158`, red `#FF453A`, orange `#FF9F0A`.
 }
 ```
 
-**Áp dụng:** Đăng ký tất cả component-level tokens với `inherits: false`. Semantic tokens (cần cascade cho dark mode) giữ `inherits: true`.
+### 15.2 CSS Containment
 
-### 15.2 CSS Containment — Real-World Benchmarks
-
-| Site | Technique | Before | After | Improvement |
-|---|---|---|---|---|
-| OpenTable | `contain: content` on cards | 11.21ms layout | 1.89ms | **6× faster** |
-| Generic | `content-visibility: auto` | 232ms render | 30ms | **7× faster** |
-
-**`contain: content`** (= `contain: layout paint style`) là safe default cho cards. Nó nói trình duyệt: "nội dung bên trong không ảnh hưởng layout bên ngoài" → skip recalc siblings.
-
-**`content-visibility: auto`** cho off-screen content: trình duyệt skip rendering hoàn toàn, chỉ render khi scroll vào viewport. Cần `contain-intrinsic-size` để tránh scroll jumps.
+| Site | Technique | Improvement |
+|---|---|---|
+| OpenTable | `contain: content` on cards | **6× faster** layout (11.21→1.89ms) |
+| Generic | `content-visibility: auto` | **7× faster** render (232→30ms) |
 
 ```css
-/* Card containment — 6× layout speed */
-.entity-card {
-  contain: content;
-}
-
-/* Off-screen skip — 7× rendering speed */
-.entity-list-item {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 200px;
-}
+.entity-card { contain: content; }
+.entity-list-item { content-visibility: auto; contain-intrinsic-size: auto 200px; }
 ```
 
-**Cảnh báo:** `contain: paint` clips overflow — break tooltips, dropdowns. Dùng `contain: content` (không có `size`) cho cards.
+Cảnh báo: `contain: paint` clips overflow (break tooltips). Dùng `contain: content`.
 
-### 15.3 CSS Nesting & @layer
+### 15.3 Rendering Pipeline (MỚI)
 
-**CSS Nesting:** Zero perf difference — trình duyệt desugar thành flat selectors trước khi matching (confirmed cả WebKit lẫn Blink). Dùng nesting cho readability, không phải perf.
+**Compositor-only properties** (skip layout AND paint): `transform`, `opacity`. 
+`filter`, `backdrop-filter` chạy trên compositor CHỈ khi element đã composited.
 
-**CSS @layer:** Maintainability win (giảm `!important`), không phải perf win. Không benchmark nào isolate `!important` là perf variable.
+**Layout/paint triggers:** `width/height/margin/padding` = layout+paint. `background-color`, `box-shadow` = paint only.
+
+**GPU layer memory:** Mỗi layer = width × height × 4 bytes. 800×600 element = ~1.9MB. Mobile GPU budget ~200-300MB.
+
+**box-shadow animation trick:**
+```css
+/* CHẬM: animate box-shadow (paint mỗi frame) */
+.card:hover { box-shadow: 0 5px 15px rgba(0,0,0,.3); }
+
+/* NHANH: animate opacity pseudo-element (compositor-only) */
+.card::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  box-shadow: 0 5px 15px rgba(0,0,0,.3);
+  opacity: 0; transition: opacity .3s;
+}
+.card:hover::after { opacity: 1; }
+```
+
+### 15.4 CSS @layer
 
 ```css
-/* Layer architecture cho vinhlong360 */
 @layer reset, tokens, base, components, utilities, overrides;
 ```
 
-**Áp dụng:** Adopt `@layer` cho token cascade clarity. 6 layers: reset → tokens → base → components → utilities → overrides.
+Maintainability win (giảm `!important`), không phải perf win.
 
 ---
 
-## 16. Font Loading Excellence
+## 16. Core Web Vitals — INP + LCP (MỚI)
 
-### 16.1 Strategy: swap + metric overrides
+### 16.1 INP (Interaction to Next Paint)
 
-**Mobile:** `font-display: swap` + font metric overrides → zero CLS.
-**Desktop:** `font-display: optional` + `<link rel="preload">` → no FOUT.
+**Ngưỡng:** Good ≤200ms | Needs improvement 200-500ms | Poor >500ms (thay FID từ 03/2024).
 
-**Font metric overrides** (CSS) tạo fallback font dimensions khớp chính xác custom font:
+**Case studies:**
+| Site | Before | After | Business Impact |
+|---|---|---|---|
+| QuintoAndar | 1,006ms | 216ms (-80%) | +36% conversions |
+| Economic Times | ~1,000ms | 257ms (-4×) | -50% bounce, +43% pageviews |
+| Disney+ Hotstar | — | -61% | +100% weekly card views |
 
-```css
-@font-face {
-  font-family: 'Inter Fallback';
-  src: local('Arial');
-  size-adjust: 107.64%;
-  ascent-override: 90.49%;
-  descent-override: 22.56%;
-  line-gap-override: 0%;
+**Fixes:**
+```js
+// scheduler.yield() — Chrome 129+, Firefox 142+
+async function handleClick() {
+  giveImmediateFeedback();
+  await scheduler.yield();
+  slowerComputation();
+}
+
+// Fallback universal
+requestAnimationFrame(() => { setTimeout(() => { heavyWork(); }, 0); });
+```
+
+### 16.2 LCP (Largest Contentful Paint)
+
+**Budget 2.5s:** TTFB ~1000ms + resource load delay <250ms + resource load ~1000ms + render delay <250ms.
+
+```html
+<!-- Hero image: fetchpriority="high", KHÔNG lazy -->
+<img src="hero.webp" fetchpriority="high" alt="..." width="1200" height="800">
+
+<!-- Preload with responsive -->
+<link rel="preload" as="image" href="hero-800.webp"
+      imagesrcset="hero-400.webp 400w, hero-800.webp 800w, hero-1600.webp 1600w"
+      imagesizes="(max-width: 600px) 100vw, 50vw" fetchpriority="high">
+```
+
+Google Flights: `fetchpriority="high"` → LCP **2.6s→1.9s** (-27%). Vodafone: LCP optimizations → **+8% sales**.
+
+### 16.3 Vietnam Network Context
+
+- 4G coverage: **99.8%** dân số. 5G: **~90%**. Avg mobile: **188 Mbps** (rank 14th global)
+- Tại 90 Mbps 4G, hero 200KB tải ~18ms → **TTFB và render delay quan trọng hơn image download**
+- Nông thôn ĐBSCL vẫn có vùng 30-40 Mbps 4G
+
+### 16.4 Network-Aware Design (MỚI)
+
+```js
+// composables/useNetworkQuality.ts
+export function useNetworkQuality() {
+  const quality = ref('unknown');
+  function update() {
+    const conn = navigator?.connection;
+    if (!conn) { quality.value = 'unknown'; return; }
+    if (conn.saveData) { quality.value = 'save-data'; return; }
+    if (/slow-2g|2g/.test(conn.effectiveType)) { quality.value = 'slow'; return; }
+    if (conn.effectiveType === '3g') { quality.value = 'medium'; return; }
+    quality.value = 'fast';
+  }
+  onMounted(() => { update(); navigator.connection?.addEventListener('change', update); });
+  const isSlow = computed(() => ['slow', 'save-data'].includes(quality.value));
+  return { quality, isSlow };
 }
 ```
 
-**Kết quả:** CLS từ 0.1+ → effectively 0. Duda platform: **30% CLS improvement** across 1M+ sites.
+Browser support ~77% (Chrome, Edge, Samsung). Safari/Firefox = `'unknown'` fallback (default full quality).
 
-### 16.2 Safari Compatibility
+```css
+[data-connection-quality="slow"] * {
+  animation-duration: 0s !important;
+  transition-duration: 0s !important;
+}
+```
 
-Safari **KHÔNG** support `ascent-override`, `descent-override`, `line-gap-override` (chỉ `size-adjust` từ Safari 17+). Fallback: chấp nhận minor CLS trên Safari, hoặc dùng JS-based approach.
+**Server-side:** `Save-Data: on` header → FastAPI middleware trả ảnh nhỏ, skip gallery. PHẢI set `Vary: Save-Data`.
 
-### 16.3 Nuxt Integration
+---
 
-**`@nuxtjs/fontaine`** — auto-generates override CSS cho Nuxt. Zero config:
+## 17. Font Loading + Image Optimization
 
-```js
+### 17.1 Font Loading
+
+- Mobile: `font-display: swap` + metric overrides → CLS=0. Desktop: `font-display: optional` + preload
+- `@nuxtjs/fontaine` — auto-generates override CSS cho Nuxt, zero config
+- Safari KHÔNG support `ascent-override`/`descent-override` (chỉ `size-adjust` từ 17+)
+
+### 17.2 Image Optimization for Vietnam (MỚI)
+
+**Vietnam browser share (05/2026):** Chrome 63%, Safari 28%, UC 3.2%, Cốc Cốc 2.7%.
+**WebP:** ~99% VN users. **AVIF:** ~95% VN users.
+
+| Format | Quality | Approx Size | vs JPEG |
+|---|---|---|---|
+| JPEG | q85 | ~120KB | baseline |
+| WebP | q75 | ~70KB | **-42%** |
+| AVIF | q50 | ~45KB | **-63%** |
+
+**Recommendation:** WebP q75 primary (99% coverage, 40× faster encode vs AVIF). AVIF pre-generate chỉ cho hero images.
+
+```ts
 // nuxt.config.ts
 export default defineNuxtConfig({
-  modules: ['@nuxtjs/fontaine'],
-  // Tự động tạo fallback @font-face với metric overrides
+  image: {
+    provider: 'ipx',
+    quality: 75,
+    format: ['avif', 'webp'],
+    densities: [1, 2],
+    presets: {
+      hero: { modifiers: { width: 1200, height: 800, fit: 'cover', format: 'webp', quality: 75 } },
+      thumbnail: { modifiers: { width: 400, height: 300, fit: 'cover', format: 'webp', quality: 70 } }
+    }
+  }
 })
 ```
 
-**Áp dụng:** Install `@nuxtjs/fontaine` → CLS improvement tự động, không cần manual metric calculation.
-
----
-
-## 17. Advanced Accessibility — WCAG AAA Cognitive
-
-### 17.1 Link Purpose — Link Only (2.4.9 AAA)
-
-Mỗi link text phải tự giải thích, KHÔNG cần context xung quanh. "Xem thêm" / "Chi tiết" fail.
-
-**Patterns:**
 ```html
-<!-- FAIL (AAA) -->
-<a href="/dia-diem/cho-noi">Xem thêm</a>
+<!-- Above fold: eager + fetchpriority -->
+<NuxtImg src="/hero.jpg" format="webp" quality="75" loading="eager" fetchpriority="high" />
 
-<!-- PASS (AAA) — visually hidden text -->
-<a href="/dia-diem/cho-noi">
-  Xem thêm <span class="sr-only">về Chợ Nổi Cái Bè</span>
-</a>
-
-<!-- PASS (AAA) — aria-label -->
-<a href="/dia-diem/cho-noi" aria-label="Xem thêm về Chợ Nổi Cái Bè">
-  Xem thêm
-</a>
+<!-- Below fold: lazy + async -->
+<NuxtImg src="/card.jpg" format="webp" quality="75" loading="lazy" decoding="async" />
 ```
-
-### 17.2 Reading Level (3.1.5 AAA)
-
-Nội dung vượt trình độ THCS (lớp 9) cần phiên bản đơn giản hóa.
-
-**Thách thức tiếng Việt:** Không có công thức readability chuẩn (Flesch-Kincaid dựa syllable, không áp dụng cho tiếng Việt đơn âm). Thay vào đó, đánh giá theo:
-- Chiều dài câu (>20 từ = phức tạp)
-- Mật độ từ Hán-Việt (cao = khó đọc)
-- Cấu trúc câu (mệnh đề phụ lồng nhau = khó đọc)
-
-**Áp dụng:** Summary entities / điểm đến dùng câu ngắn (<15 từ), ít từ Hán-Việt, cấu trúc chủ-vị-bổ đơn giản. Nội dung chuyên sâu (lịch sử, pháp lý) thêm `<details>` "Giải thích đơn giản".
 
 ---
 
-## 18. SEO Structured Data for Tourism
+## 18. OKLCH Color Science (MỚI)
 
-### 18.1 Schema.org — Event/Festival
+### 18.1 Tại sao OKLCH thay HSL
 
-**Lưu ý:** `FAQPage` rich results **deprecated bởi Google tháng 5/2026**. Vẫn valid cho Bing/AI nhưng không hiện rich snippet trên Google Search nữa.
+HSL lightness là mathematical, KHÔNG perceptual. `hsl(120,100%,50%)` (green, L=50%) trông **sáng hơn nhiều** so với `hsl(240,100%,50%)` (blue, L=50%):
+
+| Color | HSL L | OKLCH L | Thực tế |
+|---|---|---|---|
+| Green `#00FF00` | 50% | **86.6%** | Rất sáng |
+| Blue `#0000FF` | 50% | **45.2%** | Rất tối |
+| Red `#FF0000` | 50% | 62.8% | Trung bình |
+
+OKLCH fix: cùng L = cùng perceived brightness, bất kể hue.
+
+### 18.2 Browser Support
+
+**90.55% global** (06/2026). Chrome 111+, Firefox 113+, Safari 15.4+, Edge 111+.
+
+`color-mix(in oklch)` — cùng support. Ưu điểm: colors stay vibrant khi mix (không muddy/gray như sRGB).
+
+### 18.3 Palette Generation — Green Scale cho vinhlong360
+
+```css
+:root {
+  --green-50:  oklch(0.97 0.02 155);
+  --green-100: oklch(0.93 0.05 155);
+  --green-200: oklch(0.87 0.10 155);
+  --green-300: oklch(0.79 0.14 155);
+  --green-400: oklch(0.70 0.17 155);
+  --green-500: oklch(0.62 0.19 155);  /* base */
+  --green-600: oklch(0.53 0.17 155);
+  --green-700: oklch(0.45 0.14 155);
+  --green-800: oklch(0.36 0.11 155);
+  --green-900: oklch(0.27 0.08 155);
+}
+```
+
+Algorithm: fix hue, vary L linearly, giảm chroma ở cực sáng/tối.
+
+### 18.4 Dark Mode = L Inversion
+
+```css
+:root { --surface: oklch(0.97 0.01 155); --text: oklch(0.20 0.02 155); }
+@media (prefers-color-scheme: dark) {
+  :root { --surface: oklch(0.15 0.02 155); --text: oklch(0.93 0.01 155); }
+}
+/* 2 dòng swap toàn bộ. H và C giữ nguyên. */
+```
+
+### 18.5 Accessibility: delta-L ≥ 0.40
+
+| Text L | BG L | delta-L | Contrast Ratio |
+|---|---|---|---|
+| 0.15 | 0.95 | 0.80 | ~17:1 (AAA) |
+| 0.30 | 0.90 | 0.60 | ~10:1 (AAA) |
+| 0.40 | 0.80 | **0.40** | **~5:1 (AA)** |
+| 0.45 | 0.80 | 0.35 | ~4:1 (fail) |
+
+Rule: **delta-L ≥ 0.40 = WCAG AA.** Background L ≥ 0.87 = safe với black text.
+
+### 18.6 Fallback + Wide Gamut
+
+```css
+:root { --brand: #2d5016; }
+@supports (color: oklch(0% 0 0)) { :root { --brand: oklch(0.45 0.12 155); } }
+@media (color-gamut: p3) {
+  @supports (color: oklch(0% 0 0)) { :root { --brand: oklch(0.45 0.18 155); } }
+}
+```
+
+### 18.7 Adoption
+
+- **Tailwind v4:** Toàn bộ default palette = OKLCH. 242 shades, một số vượt sRGB vào P3.
+- **Open Props v2:** 17 CSS custom properties generate full palette từ 1 hue angle.
+- **Figma:** KHÔNG support OKLCH native (requested 3+ năm). Plugin OkColor là workaround.
+- **Gradient caveat:** OKLCH gradients vibrant nhưng bất ngờ. Dùng **OKLab** (không OKLCH) cho gradient interpolation.
+
+---
+
+## 19. Cognitive Accessibility (MỞ RỘNG)
+
+### 19.1 WCAG AAA
+
+- **2.4.9 Link Purpose (Link Only):** "Xem thêm" fail → thêm `<span class="sr-only">về Chợ Nổi</span>`
+- **3.1.5 Reading Level:** Câu <15 từ, ít Hán-Việt, cấu trúc đơn giản
+
+### 19.2 W3C COGA — 8 Design Objectives (MỚI)
+
+1. Giúp người dùng hiểu trang làm gì — heading rõ, hierarchy nhất quán
+2. Giúp tìm nội dung — search nổi bật, chia nhỏ
+3. Nội dung rõ ràng — plain language, không double negatives, tóm tắt
+4. Tránh sai sót — auto-save, undo, input linh hoạt, upfront fees
+5. Giữ tập trung — không autoplay, giảm content density
+6. Không dựa trí nhớ — hiện lại data bước trước, passwordless/simple login
+7. Trợ giúp — help link mỗi trang, tooltip, nói hệ quả trước khi action
+8. Tùy chỉnh — user control motion, simple mode
+
+### 19.3 Neurodiversity (MỚI)
+
+**ADHD:** Generous whitespace, chunked content (<1 idea/section), clear headings, `prefers-reduced-motion`, limit competing CTAs.
+
+**Dyslexia:** Sans-serif, `font-size: 16px+`, `line-height: 1.5+`, `max-width: 70ch`, `letter-spacing: 0.05em`, `text-align: left` (KHÔNG justify), bold > italic, word-spacing 0.16em.
+
+**Autism:** Consistent layout mọi trang, explicit button labels (nói action sẽ xảy ra), breadcrumbs, tránh idioms/metaphors, muted transitions, no surprise audio.
+
+### 19.4 Low-Literacy UX (MỚI)
+
+- Icon **PHẢI** paired với label (icon alone = semantically opaque, SARAL framework CSCW 2021)
+- Touch targets: **56-72px** cho elderly/low-dexterity (WCAG AAA 44px, nghiên cứu elderly 19mm+ ≈ 72px)
+- Photo-heavy content, linear navigation, swipeable carousels
+- Buttons: 2-3 words max, action verbs
+- Breadcrumbs: max 2-3 levels, horizontal scroll mobile
+
+### 19.5 Age-Inclusive 60+ (MỚI)
+
+- Body text: **18-20px** (không 16px). Sans-serif, relative units (rem)
+- Contrast: target **AAA 7:1** (compensation cho vision loss age-80 = ~20/80)
+- Touch targets: **20mm minimum** (~76px). 80% seniors prefer size này
+- **KHÔNG infinite scroll** — dùng pagination hoặc "Xem thêm" button. Infinite scroll = keyboard/SR unusable + cognitive overload
+- Persistent breadcrumbs + visible "Quay lại" button
+- Consistent navigation across pages
+
+### 19.6 Tourism Cognitive Load (MỚI)
+
+- **Cowan (2001):** Working memory = **~4 chunks** (Miller's 7±2 outdated). Nav menu >8 items = vượt capacity
+- **Homepage:** 5-7 main categories max. Subcategories >10 items → split
+- **Progressive disclosure:** Max **2 levels deep.** Day overview → activities → details
+- **Decision fatigue:** Curated "Staff picks" + pre-built itineraries giảm paralysis
+- **Scan, don't read:** Users muddle through. Visual hierarchy phải pre-process trang giùm user
+
+### 19.7 Vietnamese Plain Language (MỚI)
+
+| Hán-Việt | Thuần Việt | Ghi chú |
+|---|---|---|
+| tham quan | đi xem, đi chơi | "tham quan" hiểu rộng nhưng formal |
+| ẩm thực | đồ ăn, ăn uống | đơn giản hơn nhiều |
+| di tích | nơi lịch sử | nhưng "di tích" SEO tốt hơn |
+| du khách | khách đi chơi | |
+| lưu trú | nơi ở, chỗ ở | |
+| giao thông | đi lại, đường đi | |
+
+**Rule:** Heading dùng Hán-Việt (SEO value, formal). Body text dùng thuần Việt. Câu <15 từ. Paragraphs: 3-4 câu max.
+
+---
+
+## 20. Tourism UX Patterns (MỚI)
+
+### 20.1 Airbnb
+
+- **Split-view map+list** (desktop): 65% list / 35% map. 95% users engage map khi có split-view; 65% KHÔNG tìm map khi list-only (Baymard)
+- **Mobile:** Map ẩn sau toggle button. Breakpoint ~1100px → collapse thành 1 column
+- **Cards:** Rounded photo (12-20px radius), NO border/shadow. Photo carries the card. `repeat(auto-fill, minmax(230px, 1fr))`
+- **Photo carousel:** 5 photos max/card, dot indicators, swipe. First image loads, rest lazy on swipe
+- **Reviews:** Không hiện average rating dưới 3 reviews. Star + numeric + count: `4.92 (1,234)`
+- **Heart save:** Switching star→heart tăng saves 30%. Cần thêm "Lưu" label giảm misclick
+- **Bottom nav:** 5 tabs (Explore, Wishlists, Trips, Inbox, Profile). ~56px. Icon + label
+- **Spacing:** 4px base — 4, 8, 12, 16, 24, 32, 48, 64. Cards 12-20px radius
+
+### 20.2 Google Travel/Maps
+
+- **Place card hierarchy:** Name (bold) → star rating → category tags → address → hours → action buttons
+- **Hours display:** "Open" (green) / "Closed" (red) + next change. Expandable 7-day table, today bold
+- **Photo strip:** Horizontal scroll, first = hero full-width. Category tabs (All, Menu, Inside, Outside)
+- **Popular times:** 24 bars/day, relative height. Live overlay red bar at current hour
+- **Structured data impact:** Pages với schema = **3.2× more likely** được AI cite
+
+### 20.3 Booking.com / Klook
+
+- **Trust signals:** Bold colored score pill (`8.6 Fabulous`), review count inline, "Verified" tag
+- **ETHICAL social proof:** "Booked 3 times in 24h", "Last booked 5 min ago" — nếu data thật. EU đã phạt fake scarcity
+- **Filter pills:** Horizontal scroll, ~32-40px height, multi-select toggle, "×" remove. Applied filters = removable tags
+- **Skeleton screens:** CSS-only shimmer `background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%)` + `animation: shimmer 1.5s infinite`
+- **Card hierarchy (Klook):** 50/50 photo/text. Title → Price (bold red) → Rating + count → Duration
+
+### 20.4 Tourism UX Research Data
+
+- **Photos per listing:** 5-8 optimal (Salsify/Baymard). 56% users explore images first. Multi-angle +22% conversion
+- **Review display:** Ratings distribution bar chart = #1 most used feature (Baymard). 43% top sites lack it
+- **Map on mobile:** `gestureHandling: 'cooperative'` — 1-finger scrolls page, 2-finger pans map (Google 2016)
+- **Nearby recommendations:** 3-6 items horizontal carousel. Distance thresholds context-dependent
+- **Mobile = 62.66% global traffic.** Mobile bounce 50-60% vs desktop 35-45%. 1s speed boost = +12% conversion
+
+### 20.5 Vietnamese Tourism Sites Analysis
+
+**vinhlongtourist.vn (fail):** Dense text walls, zero alt text, no visual hierarchy, legal text in UI, no search/filter, no social proof, no map integration.
+
+**vietnam.travel (mixed):** Strong photography + card layout + multi-path discovery. Fails: no search, 100+ cards no filter (choice paralysis), weak CTAs, deep dropdowns.
+
+**traveloka.com/vi-vn (best practices):** Specific discount amounts ("75,000₫ off"), layered social proof (rating + app stats), icon+label nav, consistent card design. Fail: 100+ footer links.
+
+**Gap cả 3 sites chia sẻ:** Không có split-view map+list, không real search, không inline reviews.
+
+---
+
+## 21. SEO Structured Data (MỞ RỘNG)
+
+### 21.1 Event/Festival + Place/GeoCoordinates (đã có §18 cũ)
+
+`TouristAttraction` nested trong `LocalBusiness` → eligible cho rich results. `TouristAttraction` standalone = valid cho AI/Knowledge Graph nhưng KHÔNG trigger rich results.
+
+### 21.2 BreadcrumbList (MỚI)
+
+**Google bỏ breadcrumbs khỏi mobile** (01/2025). Vẫn hiện desktop. Vẫn recommend implement cho site hierarchy + AI crawling.
 
 ```json
 {
   "@context": "https://schema.org",
-  "@type": "Festival",
-  "name": "Lễ hội Trái cây Vĩnh Long",
-  "startDate": "2026-06-01",
-  "endDate": "2026-06-05",
-  "location": {
-    "@type": "Place",
-    "name": "Công viên Tượng đài Chiến thắng",
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "Vĩnh Long",
-      "addressRegion": "Vĩnh Long",
-      "addressCountry": "VN"
-    },
-    "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": 10.2539,
-      "longitude": 105.9572
-    }
-  },
-  "description": "Lễ hội trái cây thường niên...",
-  "organizer": {
-    "@type": "Organization",
-    "name": "UBND tỉnh Vĩnh Long"
-  }
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Trang chủ", "item": "https://vinhlong360.vn/" },
+    { "@type": "ListItem", "position": 2, "name": "Cái Bè", "item": "https://vinhlong360.vn/huyen/cai-be" },
+    { "@type": "ListItem", "position": 3, "name": "Chợ Nổi Cái Bè" }
+  ]
 }
 ```
 
-### 18.2 Place + GeoCoordinates + containedInPlace
+### 21.3 LocalBusiness / FoodEstablishment (MỚI)
 
-```json
-{
-  "@context": "https://schema.org",
-  "@type": "TouristAttraction",
-  "name": "Chợ Nổi Cái Bè",
-  "description": "Chợ nổi truyền thống trên sông...",
-  "geo": {
-    "@type": "GeoCoordinates",
-    "latitude": 10.3731,
-    "longitude": 106.0089
-  },
-  "containedInPlace": {
-    "@type": "AdministrativeArea",
-    "name": "Huyện Cái Bè",
-    "containedInPlace": {
-      "@type": "AdministrativeArea",
-      "name": "Tỉnh Vĩnh Long"
-    }
-  },
-  "image": "https://vinhlong360.vn/images/cho-noi-cai-be.webp",
-  "isAccessibleForFree": true
-}
-```
+Required: `name`, `address` (PostalAddress). Strongly recommended: `telephone`, `url`, `geo`, `openingHoursSpecification`, `priceRange`, `image` (≥50,000 pixels, 3 aspect ratios: 16:9, 4:3, 1:1).
 
-### 18.3 Event Subtypes phù hợp
+`FoodEstablishment` subtypes: Restaurant, CafeOrCoffeeShop, Bakery, FastFoodRestaurant.
 
-| Subtype | Dùng cho |
-|---|---|
-| `Festival` | Lễ hội trái cây, Vía Bà, đua ghe |
-| `FoodEvent` | Hội chợ ẩm thực, food tour |
-| `ExhibitionEvent` | Triển lãm gốm, OCOP fair |
-| `Event` (generic) | Hội thảo du lịch, ra mắt sản phẩm |
+### 21.4 Review / AggregateRating (MỚI)
 
-**Áp dụng:** Auto-generate JSON-LD từ entity data trong Nuxt `useHead()`. `containedInPlace` hierarchy cho SEO địa phương. Tất cả events có `startDate` + `location` + `geo`.
+**Critical rule:** Self-serving reviews (entity review chính nó) = **KHÔNG eligible** cho star snippets (từ 09/2019).
+
+**vinhlong360 = third-party platform** → eligible cho review stars (giống TripAdvisor model). Required: `author.name`, `itemReviewed.name`, `reviewRating.ratingValue`. Decimal dùng dot (4.4 không 4,4).
+
+### 21.5 Article / BlogPosting (MỚI)
+
+Vẫn generate rich results (2026). Without `image` = ineligible cho Top Stories/Discover. Image ≥696px wide, 3 aspect ratios. `headline` <110 chars.
+
+### 21.6 ItemList / Carousel (MỚI)
+
+Cho "Top 10 điểm đến" pages. Min 3 items, `position` integers, cùng domain. `itemListOrder: "ItemListOrderDescending"` cho rankings.
+
+### 21.7 Organization (MỚI)
+
+Đặt trên homepage hoặc `/gioi-thieu`. `sameAs` array → Zalo, Facebook. `logo` ≥112×112px (recommend 512×512). `areaServed` cho local SEO.
+
+### 21.8 Vietnamese SEO Specifics (MỚI)
+
+- **URL slugs:** ASCII only (không dấu). VnExpress, Tuổi Trẻ đều dùng unaccented. Giữ dấu trong content/title
+- **hreflang:** Nếu thêm English: subdirectory `/en/`, self-referencing + bidirectional links, `x-default` → Vietnamese
+- **.vn ccTLD:** Auto-targeted Vietnam. Không cần geo.region meta (Google bỏ qua). Dùng `LocalBusiness` schema thay thế
+- **Google Search share Vietnam:** 94.41%. Cốc Cốc 4.41%
+- **GBP (Google Business Profile):** Foundational cho Local Pack. Reviews trên Foody.vn + Facebook cũng quan trọng
+
+### 21.9 GEO — Generative Engine Optimization (MỚI)
+
+Pages có structured data = **3.2× more likely** được AI cite. Schema + Article/FAQPage/HowTo = **+73% selection rate** cho AI Overview citations.
+
+**Schema types impact cho AI:**
+1. FAQPage (strongest extraction lift — dù Google deprecated rich results)
+2. HowTo (step-by-step mapping)
+3. Article + BreadcrumbList (universal baseline)
+4. TouristAttraction/TouristDestination (travel queries)
+5. LocalBusiness (3.5× more voice search traffic)
+
+**Tips:** Bullet points + clear H2/H3 + direct answers early. Content updated <3 tháng = avg 6 citations vs 3.6 older. Claude 30% more likely cite bullet-pointed pages.
 
 ---
 
-## 19. Micro-Interaction Patterns
+## 22. Micro-Interaction Patterns
 
-### 19.1 Animation Rules (từ Linear)
+### 22.1 Animation Rules (Linear)
 
-```css
-/* CHỈ animate composited properties */
-.card-enter { 
-  animation: fadeSlideIn 150ms var(--ease-decelerate) forwards; 
-}
-.card-exit { 
-  animation: fadeOut 100ms var(--ease-accelerate) forwards; 
-}
-
-@keyframes fadeSlideIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeOut {
-  from { opacity: 1; }
-  to   { opacity: 0; }
-}
-```
-
-**Rules:**
-1. Chỉ `transform` + `opacity` — never `width`, `height`, `top`, `left`, `margin`, `padding`
-2. Enter chậm hơn exit (150ms vs 100ms) — asymmetric timing
-3. Enter = decelerate, Exit = accelerate
-4. `prefers-reduced-motion: reduce` → tắt hoàn toàn, không giảm
-
-### 19.2 State Transition Pattern (từ Radix)
+Chỉ `transform` + `opacity`. Enter 150ms decelerate, exit 100ms accelerate. `prefers-reduced-motion: reduce` → tắt hoàn toàn.
 
 ```css
-/* data-state pattern cho Vue Transition */
-.modal[data-state="open"] {
-  animation: dialogIn 200ms var(--ease-emphasized-decelerate);
-}
-.modal[data-state="closed"] {
-  animation: dialogOut 150ms var(--ease-emphasized-accelerate);
-}
-
-/* Scrim */
-.scrim[data-state="open"]   { animation: fadeIn 200ms ease-out; }
-.scrim[data-state="closed"] { animation: fadeOut 150ms ease-in; }
+@keyframes fadeSlideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
 ```
 
-### 19.3 Hover Feedback
+### 22.2 box-shadow Fast Path
 
 ```css
-/* Card hover — subtle elevation + scale */
-.entity-card {
-  transition: box-shadow 200ms var(--ease-standard),
-              transform 200ms var(--ease-standard);
+.card::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  box-shadow: 0 5px 15px rgba(0,0,0,.3); opacity: 0; transition: opacity .3s;
 }
-.entity-card:hover {
-  box-shadow: var(--shadow-3); /* +1 level */
-  transform: scale(1.01);
-}
-
-/* Button press — instant feedback */
-.btn:active {
-  transform: scale(0.97);
-  transition-duration: 50ms;
-}
+.card:hover::after { opacity: 1; }
 ```
 
-### 19.4 Scroll-triggered Reveals
+### 22.3 Scroll Reveals
 
-```css
-/* Intersection Observer + CSS */
-.reveal {
-  opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 300ms var(--ease-decelerate),
-              transform 300ms var(--ease-decelerate);
-}
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Stagger children */
-.reveal-group > .reveal:nth-child(1) { transition-delay: 0ms; }
-.reveal-group > .reveal:nth-child(2) { transition-delay: 50ms; }
-.reveal-group > .reveal:nth-child(3) { transition-delay: 100ms; }
-```
+IntersectionObserver + CSS transition. Stagger children 0/50/100ms delay.
 
 ---
 
-## 20. Implementation: Round 3 Tasks
+## 23. Implementation: Round 3 Tasks (MỞ RỘNG)
 
-### NEW-FE — Frontend (Round 3)
-
-| ID | Task | Source | P |
-|---|---|---|---|
-| R3-FE-1 | **CSS containment** — `contain: content` cho cards, `content-visibility: auto` cho lists | §15.2 | P1 |
-| R3-FE-2 | **@property registration** — component tokens `inherits: false` | §15.1 | P2 |
-| R3-FE-3 | **@layer architecture** — 6 layers: reset→tokens→base→components→utilities→overrides | §15.3 | P2 |
-| R3-FE-4 | **Font loading** — install `@nuxtjs/fontaine`, verify CLS=0 | §16 | P1 |
-| R3-FE-5 | **Asymmetric animation timing** — enter 150ms/exit 100ms, decelerate/accelerate | §19.1 | P2 |
-| R3-FE-6 | **data-state transitions** — modals/drawers dùng `data-state` pattern | §19.2 | P2 |
-| R3-FE-7 | **Scroll-triggered reveals** — IntersectionObserver + stagger | §19.4 | P3 |
-| R3-FE-8 | **Shadow-as-border** — cards dùng shadow thay border (Geist pattern) | §14.2 | P3 |
-| R3-FE-9 | **Fluid letter-spacing** — tightens theo font-size (Geist pattern) | §14.2 | P2 |
-| R3-FE-10 | **Link text AAA** — audit "Xem thêm" → contextual sr-only text | §17.1 | P2 |
-
-### NEW-BE — Backend (Round 3)
+### R3-FE — Frontend (15 tasks)
 
 | ID | Task | Source | P |
 |---|---|---|---|
-| R3-BE-1 | **JSON-LD structured data** — auto-generate TouristAttraction/Festival/Event | §18 | P1 |
-| R3-BE-2 | **containedInPlace hierarchy** — entity→district→province nesting | §18.2 | P1 |
-| R3-BE-3 | **design.md machine-readable** — AI-native design documentation | §14.2 | P3 |
+| R3-FE-1 | CSS containment cards + `content-visibility: auto` lists | §15.2 | P1 |
+| R3-FE-2 | `fetchpriority="high"` hero + responsive `srcset`/`sizes` | §16.2 | P1 |
+| R3-FE-3 | `@nuxtjs/fontaine` install → CLS=0 | §17.1 | P1 |
+| R3-FE-4 | `<NuxtPicture>` AVIF→WebP→JPEG fallback chain | §17.2 | P1 |
+| R3-FE-5 | Network-aware composable + `[data-connection-quality]` | §16.4 | P1 |
+| R3-FE-6 | OKLCH tokens migration (green palette, `@supports` fallback) | §18 | P2 |
+| R3-FE-7 | `@property` registration component tokens `inherits: false` | §15.1 | P2 |
+| R3-FE-8 | `@layer` architecture 6 layers | §15.4 | P2 |
+| R3-FE-9 | Asymmetric animation timing 150/100ms + box-shadow fast path | §22 | P2 |
+| R3-FE-10 | `data-state` transitions cho modals/drawers | §22 | P2 |
+| R3-FE-11 | Fluid letter-spacing (tightens theo font-size) | §14.2 | P2 |
+| R3-FE-12 | Link text AAA audit — `sr-only` context cho "Xem thêm" | §19.1 | P2 |
+| R3-FE-13 | Age-inclusive: body 18px, touch 56px+, no infinite scroll | §19.5 | P2 |
+| R3-FE-14 | Shadow-as-border cards (Geist pattern) | §14.2 | P3 |
+| R3-FE-15 | Scroll-triggered reveals + stagger | §22.3 | P3 |
 
-### NEW-QA — Content/Docs (Round 3)
+### R3-BE — Backend (5 tasks)
 
 | ID | Task | Source | P |
 |---|---|---|---|
-| R3-QA-1 | **Reading level guidelines** — câu <15 từ, ít Hán-Việt, cấu trúc đơn | §17.2 | P2 |
-| R3-QA-2 | **Cognitive accessibility checklist** — Vietnamese-specific patterns | §17 | P2 |
-| R3-QA-3 | **CSS performance benchmark script** — verify containment + font CLS | §15-16 | P2 |
+| R3-BE-1 | JSON-LD: TouristAttraction nested trong LocalBusiness | §21.1 | P1 |
+| R3-BE-2 | JSON-LD: BreadcrumbList + Organization (homepage) | §21.2,21.7 | P1 |
+| R3-BE-3 | JSON-LD: Review/AggregateRating (third-party eligible) | §21.4 | P1 |
+| R3-BE-4 | JSON-LD: Article/BlogPosting cho community posts | §21.5 | P2 |
+| R3-BE-5 | `Save-Data` middleware + `Vary: Save-Data` | §16.4 | P2 |
+
+### R3-QA — Content/Docs (6 tasks)
+
+| ID | Task | Source | P |
+|---|---|---|---|
+| R3-QA-1 | Vietnamese plain language guide (Hán-Việt alternatives table) | §19.7 | P1 |
+| R3-QA-2 | COGA + neurodiversity checklist | §19.2-19.4 | P1 |
+| R3-QA-3 | Age-inclusive design checklist (60+) | §19.5 | P2 |
+| R3-QA-4 | Tourism cognitive load guidelines (5-7 categories, 2-level disclosure) | §19.6 | P2 |
+| R3-QA-5 | CSS performance benchmark script (containment + CLS + INP) | §15-16 | P2 |
+| R3-QA-6 | SEO structured data implementation guide (all 7 types) | §21 | P2 |
 
 ---
 
-## 21. Tổng hợp: Thứ tự thực hiện toàn bộ (Round 1-2-3)
+## 24. Tổng hợp: Thứ tự thực hiện toàn bộ (Round 1-2-3)
 
-**Wave 1 — P1 Critical (Round 1-2 + Round 3):**
-- FE: DS-FE-1,2,5,6,13,14,15,16,17,19,20 + **R3-FE-1,4** (13 tasks)
-- BE: DS-BE-5,6,7 + **R3-BE-1,2** (5 tasks)
-- QA: DS-QA-1,2,6 (3 tasks)
+**Wave 1 — P1 Critical (21 tasks):**
+- FE: DS-FE-1,2,5,6,13,14,15,16,17,19,20 + R3-FE-1,2,3,4,5 (16)
+- BE: DS-BE-5,6,7 + R3-BE-1,2,3 (6)
+- QA: DS-QA-1,2,6 + R3-QA-1,2 (5)
 
-**Wave 2 — P2 Polish (Round 1-2 + Round 3):**
-- FE: DS-FE-3,4,7,8,10,11,18 + **R3-FE-2,3,5,6,9,10** (13 tasks)
-- BE: DS-BE-1,3 (2 tasks)
-- QA: DS-QA-3,4,7,8,9 + **R3-QA-1,2,3** (8 tasks)
+**Wave 2 — P2 Polish (27 tasks):**
+- FE: DS-FE-3,4,7,8,10,11,18 + R3-FE-6,7,8,9,10,11,12,13 (15)
+- BE: DS-BE-1,3 + R3-BE-4,5 (4)
+- QA: DS-QA-3,4,7,8,9 + R3-QA-3,4,5,6 (9)
 
-**Wave 3 — P3 Nice-to-have (Round 1-2 + Round 3):**
-- FE: DS-FE-9,12 + **R3-FE-7,8** (4 tasks)
-- BE: DS-BE-2,4 + **R3-BE-3** (3 tasks)
-- QA: DS-QA-5 (1 task)
+**Wave 3 — P3 Nice-to-have (5 tasks):**
+- FE: DS-FE-9,12 + R3-FE-14,15 (4)
+- BE: DS-BE-2,4 (2)
+- QA: DS-QA-5 (1)
