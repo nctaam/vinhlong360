@@ -869,7 +869,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   display: flex; align-items: center; gap: var(--space-5);
   padding: var(--space-6); border-radius: var(--radius-lg);
   background: linear-gradient(135deg, rgba(var(--primary-rgb), .96) 0%, rgba(var(--accent-rgb), .88) 100%);
-  color: #fff; text-decoration: none; box-shadow: var(--shadow-md);
+  color: var(--text-on-dark, #fff); text-decoration: none; box-shadow: var(--shadow-md);
   transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo);
   position: relative; overflow: hidden; isolation: isolate;
 }
@@ -887,7 +887,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 }
 .event-hero:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
 .event-hero:active { transform: scale(.99); transition-duration: .1s; }
-.event-hero:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.event-hero:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 3px; }
 .eh-date { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 88px; padding: var(--space-4); background: rgba(255,255,255,.2); border-radius: var(--radius-md); flex-shrink: 0; }
 .eh-day { font-size: var(--text-4xl); font-weight: var(--weight-extrabold); line-height: 1; font-variant-numeric: tabular-nums; }
 .eh-month { font-size: var(--text-sm); font-weight: var(--weight-semibold); opacity: .92; }
@@ -961,7 +961,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .spot-region {
   position: absolute; top: var(--space-4); left: var(--space-4);
   padding: var(--space-1) var(--space-3); background: rgba(0,0,0,.5);
-  color: #fff; border-radius: var(--radius-full);
+  color: var(--text-on-dark, #fff); border-radius: var(--radius-full);
   font-size: var(--text-xs); font-weight: var(--weight-semibold);
   backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
 }

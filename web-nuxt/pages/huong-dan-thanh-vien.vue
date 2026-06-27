@@ -247,7 +247,7 @@ useHead({
 .tip-num {
   flex-shrink: 0; width: 28px; height: 28px;
   display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; background: var(--primary-fg); color: #fff;
+  border-radius: 50%; background: var(--primary-fg); color: var(--text-on-dark, #fff);
   font-size: var(--text-xs); font-weight: var(--weight-bold);
 }
 .tip-item strong { display: block; margin-bottom: var(--space-1); }
