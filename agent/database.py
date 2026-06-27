@@ -506,10 +506,13 @@ class Database:
             """, params)
             return [self._parse_entity(r) for r in rows]
 
+    _SORT_OPTIONS = {"newest", "name", "rating"}
+
     def list_entities(self, entity_type: str = None, area: str = None,
                       limit: int = 500, offset: int = 0,
                       entity_types: list[str] | None = None,
-                      public_only: bool = False) -> list[dict]:
+                      public_only: bool = False,
+                      sort: str | None = None) -> list[dict]:
         """List entities with pagination."""
         self.initialize()
         ph = self._ph
@@ -537,11 +540,21 @@ class Database:
         where = " AND ".join(conditions)
         params.extend([limit, offset])
 
-        col = 'e."updatedAt"' if self._use_pg else "e.updatedAt"
+        updated_col = 'e."updatedAt"' if self._use_pg else "e.updatedAt"
+        if sort == "name":
+            order = "e.name ASC"
+        elif sort == "rating":
+            if self._use_pg:
+                order = "(e.attributes->>'rating')::float DESC NULLS LAST"
+            else:
+                order = "json_extract(e.attributes, '$.rating') DESC"
+        else:
+            order = f"{updated_col} DESC"
+
         with self._conn() as conn:
             rows = self._fetchall(conn, f"""
                 SELECT e.* FROM entities e WHERE {where}
-                ORDER BY {col} DESC LIMIT {ph} OFFSET {ph}
+                ORDER BY {order} LIMIT {ph} OFFSET {ph}
             """, params)
             return [self._parse_entity(r) for r in rows]
 

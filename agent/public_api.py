@@ -122,12 +122,29 @@ def _enrich_entity_place(entity: dict):
         entity["place_area"] = explicit_area
 
 
+_MINIMAL_FIELDS = {"id", "name", "type", "summary", "images", "place_name",
+                    "place_area", "coordinates", "attributes"}
+
+
+def _to_minimal(entity: dict) -> dict:
+    out = {k: entity[k] for k in _MINIMAL_FIELDS if k in entity}
+    imgs = entity.get("images")
+    if imgs and isinstance(imgs, list):
+        out["images"] = imgs[:1]
+    attrs = entity.get("attributes") or {}
+    out["rating"] = attrs.get("rating")
+    out["review_count"] = attrs.get("review_count", 0)
+    return out
+
+
 @router.get("/entities")
 async def list_entities(
     type: Optional[str] = None,
     area: Optional[str] = None,
     q: Optional[str] = None,
     month: Optional[int] = None,
+    sort: Optional[str] = Query(None, pattern="^(rating|newest|name)$"),
+    fields: Optional[str] = Query(None, pattern="^(minimal|full)$"),
     limit: int = Query(50, le=1000),
     offset: int = Query(0, ge=0),
 ):
@@ -137,6 +154,8 @@ async def list_entities(
     if type and "," in type:
         entity_types = [t.strip() for t in type.split(",") if t.strip()]
         single_type = None
+
+    db_sort = sort if sort in ("rating", "name", "newest") else None
 
     def _in_month(e):
         return month in ((e.get("season") or {}).get("months") or [])
@@ -151,14 +170,16 @@ async def list_entities(
             results = db.search_entities(q=q, entity_type=single_type, area=area, limit=limit, offset=offset, entity_types=entity_types, public_only=True)
             total = db.count_entities_filtered(entity_type=single_type, area=area, q=q, entity_types=entity_types, public_only=True)
     elif month:
-        full = db.list_entities(entity_type=single_type, area=area, limit=100000, offset=0, entity_types=entity_types, public_only=True)
+        full = db.list_entities(entity_type=single_type, area=area, limit=100000, offset=0, entity_types=entity_types, public_only=True, sort=db_sort)
         filtered = [e for e in full if _in_month(e)]
         total = len(filtered)
         results = filtered[offset:offset + limit]
     else:
-        results = db.list_entities(entity_type=single_type, area=area, limit=limit, offset=offset, entity_types=entity_types, public_only=True)
+        results = db.list_entities(entity_type=single_type, area=area, limit=limit, offset=offset, entity_types=entity_types, public_only=True, sort=db_sort)
         total = db.count_entities_filtered(entity_type=single_type, area=area, q=q, entity_types=entity_types, public_only=True)
     _enrich_place(results)
+    if fields == "minimal":
+        results = [_to_minimal(e) for e in results]
     return {"total": total, "entities": results}
 
 

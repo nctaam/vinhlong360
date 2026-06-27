@@ -722,3 +722,70 @@ def test_mention_stopwords_filtered():
     mentions = public_api._extract_mentions(texts)
     keywords = {m["keyword"] for m in mentions}
     assert len(keywords & public_api._VN_STOPWORDS) == 0
+
+
+# ── Sort + fields params ──────────────────────────────────────────────
+
+def test_to_minimal_fields():
+    import public_api
+    entity = {
+        "id": "test", "name": "Test", "type": "dish", "summary": "Good",
+        "images": ["img1.jpg", "img2.jpg", "img3.jpg"],
+        "description": "Long desc", "attributes": {"rating": 4.5, "review_count": 10},
+        "relationships": [{"type": "near"}], "coordinates": [10.2, 106.0],
+        "place_name": "Xã A", "place_area": "Vĩnh Long",
+    }
+    minimal = public_api._to_minimal(entity)
+    assert minimal["id"] == "test"
+    assert minimal["rating"] == 4.5
+    assert minimal["review_count"] == 10
+    assert len(minimal["images"]) == 1
+    assert "description" not in minimal
+    assert "relationships" not in minimal
+
+
+def test_sort_param_accepted():
+    """Sort parameter should be accepted by the entities endpoint."""
+    import public_api
+    from unittest.mock import patch
+    entities = [
+        {"id": "a", "name": "Aaa", "type": "dish", "attributes": {"rating": 3.0}},
+        {"id": "b", "name": "Bbb", "type": "dish", "attributes": {"rating": 5.0}},
+    ]
+    with patch.object(public_api.db, "list_entities", return_value=entities) as mock_list, \
+         patch.object(public_api.db, "count_entities_filtered", return_value=2):
+        client = _public_client()
+        resp = client.get("/api/entities?sort=rating")
+    assert resp.status_code == 200
+    mock_list.assert_called_once()
+    call_kwargs = mock_list.call_args
+    assert call_kwargs[1].get("sort") == "rating" or (len(call_kwargs[0]) > 0)
+
+
+def test_fields_minimal_response():
+    """fields=minimal should return reduced payload."""
+    import public_api
+    from unittest.mock import patch
+    entities = [
+        {"id": "a", "name": "A", "type": "dish", "summary": "Good",
+         "images": ["img1.jpg", "img2.jpg"], "description": "Long",
+         "attributes": {"rating": 4.5, "review_count": 3},
+         "coordinates": [10.2, 106.0]},
+    ]
+    with patch.object(public_api.db, "list_entities", return_value=entities), \
+         patch.object(public_api.db, "count_entities_filtered", return_value=1):
+        client = _public_client()
+        resp = client.get("/api/entities?fields=minimal")
+    assert resp.status_code == 200
+    data = resp.json()
+    e = data["entities"][0]
+    assert e["rating"] == 4.5
+    assert len(e["images"]) == 1
+    assert "description" not in e
+
+
+def test_sort_db_method_has_sort_param():
+    """database.py list_entities should accept sort parameter."""
+    import inspect
+    sig = inspect.signature(db.list_entities)
+    assert "sort" in sig.parameters
