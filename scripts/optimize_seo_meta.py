@@ -34,6 +34,7 @@ LOCATION_KEYWORDS = [
 
 TOPIC_KEYWORDS = {
     "dish": ["ẩm thực", "món ăn", "đặc sản", "hương vị", "thưởng thức", "nấu", "chế biến"],
+    "drink": ["nước", "thức uống", "sinh tố", "rượu", "bia", "cà phê", "trà"],
     "experience": ["trải nghiệm", "du lịch", "tham quan", "khám phá", "tour"],
     "product": ["ocop", "sản phẩm", "đặc sản", "thủ công", "nông sản", "chất lượng"],
     "accommodation": ["khách sạn", "homestay", "nghỉ dưỡng", "phòng", "lưu trú"],
@@ -41,6 +42,13 @@ TOPIC_KEYWORDS = {
     "history": ["lịch sử", "di tích", "văn hóa", "di sản", "truyền thống", "đền", "chùa"],
     "attraction": ["tham quan", "du lịch", "điểm đến", "nổi bật", "thu hút"],
     "craft_village": ["làng nghề", "thủ công", "truyền thống", "nghệ nhân", "tay nghề"],
+    "event": ["lễ hội", "sự kiện", "festival", "mùa", "kỷ niệm", "hội"],
+    "person": ["nhân vật", "nhà thơ", "anh hùng", "danh nhân", "nghệ sĩ", "tướng", "liệt sĩ"],
+    "facility": ["bệnh viện", "trường", "chợ", "bến xe", "bưu điện", "ngân hàng"],
+    "organization": ["hiệp hội", "hội", "tổ chức", "đoàn", "hợp tác xã"],
+    "economy": ["kinh tế", "sản xuất", "nông nghiệp", "công nghiệp", "thương mại"],
+    "cafe": ["cà phê", "quán", "không gian", "thư giãn"],
+    "restaurant": ["nhà hàng", "quán ăn", "đặc sản", "ẩm thực", "buffet"],
 }
 
 BOILERPLATE_PATTERNS = [
@@ -105,9 +113,19 @@ def score_entity(entity: dict) -> tuple[int, list[str]]:
         if len(summary) >= 200:
             score += 10
 
-    # Location keywords in summary (+10)
     summary_lower = summary.lower()
-    if any(kw in summary_lower for kw in LOCATION_KEYWORDS):
+
+    # Types exempt from certain criteria (inherently don't have this data)
+    CONTACT_EXEMPT = {"person", "nature", "history", "event", "itinerary", "economy"}
+    SEASON_EXEMPT = {"facility", "organization", "person", "itinerary",
+                     "cafe", "restaurant", "history", "economy"}
+    LOCATION_KW_EXEMPT = {"person", "event", "itinerary"}
+    COORDS_EXEMPT = {"itinerary"}
+
+    # Location keywords in summary (+10)
+    if etype in LOCATION_KW_EXEMPT:
+        score += 10
+    elif any(kw in summary_lower for kw in LOCATION_KEYWORDS):
         score += 10
     else:
         issues.append("no_location_keyword")
@@ -118,6 +136,8 @@ def score_entity(entity: dict) -> tuple[int, list[str]]:
         score += 10
     elif type_keywords:
         issues.append("no_topic_keyword")
+    else:
+        score += 10
 
     # Images (+15)
     if images and len(images) > 0:
@@ -126,20 +146,22 @@ def score_entity(entity: dict) -> tuple[int, list[str]]:
         issues.append("no_images")
 
     # Contact info (+10)
-    has_contact = bool(attrs.get("phone") or attrs.get("zalo") or attrs.get("email"))
-    if has_contact:
+    if etype in CONTACT_EXEMPT:
+        score += 10
+    elif attrs.get("phone") or attrs.get("zalo") or attrs.get("email"):
         score += 10
     else:
         issues.append("no_contact")
 
     # Coordinates (+10)
-    if coords and isinstance(coords, (list, tuple)) and len(coords) == 2:
+    if etype in COORDS_EXEMPT:
+        score += 10
+    elif coords and isinstance(coords, (list, tuple)) and len(coords) == 2:
         score += 10
     else:
         issues.append("no_coords")
 
-    # Season data (+5) — skip for types that are inherently non-seasonal
-    SEASON_EXEMPT = {"facility", "organization", "person", "itinerary", "cafe", "restaurant"}
+    # Season data (+5)
     if etype in SEASON_EXEMPT:
         score += 5
     elif season and isinstance(season, dict) and season.get("peak"):
