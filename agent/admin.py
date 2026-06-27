@@ -50,7 +50,7 @@ def _sync_kb():
     try:
         knowledge.reload()
     except Exception:
-        pass
+        logger.exception("Knowledge reload failed after admin write — chat may serve stale data")
 
 
 def _safe(fn, default):
@@ -77,7 +77,7 @@ def _log_admin_audit(actor: str, method: str, path: str, ip: str) -> None:
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
         _maybe_rotate_audit()
     except Exception:
-        pass
+        logger.exception("Failed to write admin audit log")
 
 
 def _maybe_rotate_audit() -> None:
@@ -91,7 +91,7 @@ def _maybe_rotate_audit() -> None:
         archive.write_text("\n".join(lines[:-_AUDIT_MAX_LINES]) + "\n", encoding="utf-8")
         _AUDIT_FILE.write_text("\n".join(lines[-_AUDIT_MAX_LINES:]) + "\n", encoding="utf-8")
     except Exception:
-        pass
+        logger.exception("Audit log rotation failed")
 
 
 async def require_admin(request: Request):
@@ -962,8 +962,9 @@ async def trigger_backup():
         raise HTTPException(504, "Backup timed out")
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(500, str(e))
+    except Exception:
+        logger.exception("Backup failed")
+        raise HTTPException(500, "Backup thất bại. Kiểm tra log server.")
 
 
 @router.get("/media")
@@ -1156,8 +1157,9 @@ async def trigger_learn(category: Optional[str] = None, topics: int = 3):
             "command": " ".join(cmd),
             "note": "Chạy background. Gọi POST /reload sau khi xong.",
         }
-    except Exception as e:
-        raise HTTPException(500, str(e))
+    except Exception:
+        logger.exception("Auto-learn trigger failed")
+        raise HTTPException(500, "Không thể khởi chạy auto-learn. Kiểm tra log server.")
 
 
 # ── Quarantine review queue (provisional auto-learned entities) ──

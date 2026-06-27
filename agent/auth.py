@@ -213,7 +213,7 @@ def _verify_password(password: str, stored: str) -> bool:
 async def _send_sms(phone: str, message: str) -> bool:
     """Send SMS via eSMS.vn API."""
     if not ESMS_API_KEY:
-        print(f"[AUTH] DEV MODE — SMS to {phone}: {message}")
+        logger.debug("DEV MODE — SMS to %s: %s", phone, message)
         return True
 
     intl_phone = "84" + phone[1:] if phone.startswith("0") else phone
@@ -232,8 +232,8 @@ async def _send_sms(phone: str, message: str) -> bool:
             )
             data = resp.json()
             return data.get("CodeResult") == "100"
-    except Exception as e:
-        print(f"[AUTH] SMS send failed: {e}")
+    except Exception:
+        logger.exception("SMS send failed to %s", phone)
         return False
 
 
@@ -364,8 +364,23 @@ async def verify_otp(body: OTPVerify, request: Request):
     }
 
 
+CHECK_PHONE_IP_LIMIT = 10
+CHECK_PHONE_IP_WINDOW = 300
+_check_phone_ip_rate: dict[str, list[float]] = {}
+
+
 @router.post("/check-phone")
-async def check_phone(body: CheckPhone):
+async def check_phone(body: CheckPhone, request: Request):
+    from middleware import get_client_ip
+    ip = get_client_ip(request)
+    now = time.time()
+    hits = [t for t in _check_phone_ip_rate.get(ip, []) if now - t < CHECK_PHONE_IP_WINDOW]
+    if len(hits) >= CHECK_PHONE_IP_LIMIT:
+        raise HTTPException(429, "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
+    hits.append(now)
+    _check_phone_ip_rate[ip] = hits
+    _gc_rate_dict(_check_phone_ip_rate, CHECK_PHONE_IP_WINDOW)
+
     phone = _normalize_phone(body.phone)
     user = db.get_user_by_phone(phone)
     return {"has_password": bool(user and user.get("password_hash"))}
@@ -672,7 +687,7 @@ def _log_consent(user_id: str, version: str, ip: str):
                 VALUES ({ph}::uuid, {ph}, {ph})
             """, (user_id, version, ip))
     except Exception:
-        pass
+        logger.warning("Failed to log consent for user %s", user_id)
 
 
 @router.get("/consent-history")
@@ -706,7 +721,7 @@ def _log_login(phone: str, method: str, success: bool, request: Request, user_id
                 VALUES ({ph}::uuid, {ph}, {ph}, {ph}, {ph}, {ph})
             """, (user_id, phone, method, success, ip, ua))
     except Exception:
-        pass
+        logger.warning("Failed to log login for %s", phone)
 
 
 @router.get("/login-history")
