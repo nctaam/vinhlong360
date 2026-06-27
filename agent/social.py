@@ -44,6 +44,14 @@ from auth_middleware import require_pg as _require_pg
 
 router = APIRouter(prefix="/api", tags=["social"], dependencies=[Depends(_require_pg)])
 
+
+def _block_sql(user: dict | None, column: str = "u.id") -> tuple[str, list]:
+    """Return (AND … NOT IN …, [user_id]) to exclude blocked users, or ("", [])."""
+    if not user:
+        return "", []
+    ph = db._ph
+    return f"AND {column} NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = {ph}::uuid)", [str(user["id"])]
+
 # ── Models ──
 
 POST_TYPES = ("review", "share", "recommend", "question")
@@ -472,13 +480,10 @@ async def get_feed(
         """)
         params.extend([area, area])
 
-    if user:
-        conditions.append(f"""
-            p.user_id NOT IN (
-                SELECT blocked_id FROM blocks WHERE blocker_id = {ph}::uuid
-            )
-        """)
-        params.append(str(user["id"]))
+    bc, bc_p = _block_sql(user, "p.user_id")
+    if bc:
+        conditions.append(bc.removeprefix("AND "))
+        params.extend(bc_p)
 
     where = " AND ".join(conditions)
     where_params = list(params)
@@ -638,12 +643,8 @@ async def search_users(
     limit = 20
     offset = (page - 1) * limit
     pattern = "%" + stripped.lower() + "%"
-    block_clause = ""
-    params: list = [pattern]
-    if user:
-        block_clause = f"AND u.id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = {ph}::uuid)"
-        params.append(str(user["id"]))
-    params.extend([limit, offset])
+    bc, bc_p = _block_sql(user)
+    params: list = [pattern] + bc_p + [limit, offset]
 
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
@@ -653,7 +654,7 @@ async def search_users(
             FROM users u
             WHERE u.is_active = TRUE
               AND f_unaccent(lower(u.display_name)) LIKE f_unaccent({ph})
-              {block_clause}
+              {bc}
             ORDER BY post_count DESC, u.display_name
             LIMIT {ph} OFFSET {ph}
         """, tuple(params))
@@ -716,11 +717,7 @@ async def trending_tags(limit: int = Query(10, ge=1, le=20)):
 async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depends(get_current_user)):
     """Bảng xếp hạng: thành viên tích cực theo điểm danh-tiếng (1 query gộp)."""
     ph = db._ph
-    block_clause = ""
-    params: list = []
-    if user:
-        block_clause = f"AND u.id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = {ph}::uuid)"
-        params.append(str(user["id"]))
+    bc, bc_p = _block_sql(user)
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
             SELECT u.id, u.display_name, u.avatar_url, u.username,
@@ -739,10 +736,10 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
                          WHERE target_type='user' GROUP BY target_id) fc
                    ON fc.target_id = u.id::text
             WHERE u.is_active = TRUE AND u.display_name IS NOT NULL
-            {block_clause}
+            {bc}
             GROUP BY u.id, u.display_name, u.avatar_url, u.username, fc.c
             HAVING COUNT(p.id) > 0
-        """, tuple(params))
+        """, tuple(bc_p))
 
     leaders = []
     for r in rows:
@@ -814,6 +811,7 @@ async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge
     """Gợi ý người để theo dõi: top contributor mình CHƯA theo dõi (loại chính mình)."""
     ph = db._ph
     me = str(user["id"])
+    bc, bc_p = _block_sql(user)
     with db._conn() as conn:
         rows = db._fetchall(conn, f"""
             SELECT u.id, u.display_name, u.avatar_url, u.username,
@@ -834,9 +832,9 @@ async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge
               AND u.id::text <> {ph}
               AND u.id::text NOT IN (SELECT target_id FROM follows
                                        WHERE follower_id = {ph}::uuid AND target_type='user')
-              AND u.id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = {ph}::uuid)
+              {bc}
             GROUP BY u.id, u.display_name, u.avatar_url, u.username, fc.c
-        """, (me, me, me))
+        """, (me, me) + tuple(bc_p))
     cands = []
     for r in rows:
         d = db._row_to_dict(r)
@@ -867,20 +865,15 @@ async def get_entity_feed(
 
     ph = db._ph
     offset = (page - 1) * limit
-
-    block_clause = ""
-    params: list = [entity_id]
-    if user:
-        block_clause = f"AND u.id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = {ph}::uuid)"
-        params.append(str(user["id"]))
-    params.extend([limit, offset])
+    bc, bc_p = _block_sql(user)
+    params: list = [entity_id] + bc_p + [limit, offset]
 
     feed_sql = f"""
         SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username
         FROM posts p
         JOIN users u ON u.id = p.user_id
         WHERE p.entity_id = {ph} AND p.moderation_status = 'approved'
-        {block_clause}
+        {bc}
         ORDER BY (CASE WHEN jsonb_typeof(p.images)='array' AND jsonb_array_length(p.images) > 0
                        THEN 1 ELSE 0 END) DESC,
                  p.like_count DESC,
@@ -976,18 +969,14 @@ async def get_comments(
     user=Depends(get_current_user),
 ):
     ph = db._ph
-    block_clause = ""
-    params: list = [post_id]
-    if user:
-        block_clause = f"AND c.user_id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = {ph}::uuid)"
-        params.append(str(user["id"]))
-    params.append(min(limit, 200))
+    bc, bc_p = _block_sql(user, "c.user_id")
+    params: list = [post_id] + bc_p + [min(limit, 200)]
     comment_sql = f"""
         SELECT c.*, u.display_name, u.avatar_url, u.phone
         FROM comments c
         JOIN users u ON u.id = c.user_id
         WHERE c.post_id::text = {ph} AND c.moderation_status = 'approved'
-        {block_clause}
+        {bc}
         ORDER BY c.created_at ASC
         LIMIT {ph}
     """

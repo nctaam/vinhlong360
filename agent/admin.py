@@ -38,7 +38,7 @@ try:
     _HAS_COST = True
 except Exception:  # noqa: BLE001
     _HAS_COST = False
-from auth_middleware import get_current_user
+from auth_middleware import get_current_user, validate_path_id
 from middleware import admin_limiter, verify_admin_key, get_client_ip
 
 
@@ -320,6 +320,7 @@ async def check_duplicate(name: str = Query(..., min_length=2)):
 @router.get("/entities/{entity_id}")
 async def get_entity(entity_id: str):
     """Chi tiết 1 entity."""
+    entity_id = validate_path_id(entity_id, "entity_id")
     entity = db.get_entity(entity_id)
     if not entity:
         raise HTTPException(404, f"Entity '{entity_id}' not found")
@@ -330,6 +331,7 @@ async def get_entity(entity_id: str):
 @router.put("/entities/{entity_id}")
 async def update_entity(entity_id: str, update: EntityUpdate):
     """Cập nhật entity."""
+    entity_id = validate_path_id(entity_id, "entity_id")
     existing = db.get_entity(entity_id)
     if not existing:
         raise HTTPException(404, f"Entity '{entity_id}' not found")
@@ -349,6 +351,7 @@ async def update_entity(entity_id: str, update: EntityUpdate):
 @router.get("/entities/{entity_id}/history")
 async def get_entity_history(entity_id: str, limit: int = Query(50, ge=1, le=200)):
     """Lịch sử thay đổi entity."""
+    entity_id = validate_path_id(entity_id, "entity_id")
     history = db.get_entity_history(entity_id, limit)
     return {"history": history}
 
@@ -374,6 +377,7 @@ async def create_entity(entity: EntityCreate):
 @router.delete("/entities/{entity_id}")
 async def delete_entity(entity_id: str):
     """Xóa entity."""
+    entity_id = validate_path_id(entity_id, "entity_id")
     if not db.delete_entity(entity_id):
         raise HTTPException(404, f"Entity '{entity_id}' not found")
     _sync_kb()
@@ -1285,6 +1289,7 @@ async def moderation_queue(
 
 @router.post("/moderation/{post_id}/approve")
 async def approve_post(post_id: str):
+    post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
     with db._conn() as conn:
         db._execute(conn, f"""
@@ -1300,6 +1305,7 @@ class RejectBody(BaseModel):
 
 @router.post("/moderation/{post_id}/reject")
 async def reject_post(post_id: str, body: RejectBody = RejectBody()):
+    post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
     with db._conn() as conn:
         db._execute(conn, f"""
@@ -1339,6 +1345,7 @@ class ModNoteBody(BaseModel):
 @router.post("/moderation/{post_id}/note")
 async def add_moderation_note(post_id: str, body: ModNoteBody):
     """B3d: Add internal admin note (not visible to poster)."""
+    post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
     with db._conn() as conn:
         post = db._fetchone(conn, f"SELECT id FROM posts WHERE id::text = {ph}", (post_id,))
@@ -1664,6 +1671,7 @@ async def list_users(
 
 @router.post("/users/{user_id}/ban")
 async def ban_user(user_id: str):
+    user_id = validate_path_id(user_id, "user_id")
     ph = db._ph
     with db._conn() as conn:
         db._execute(conn, f"""
@@ -1674,6 +1682,7 @@ async def ban_user(user_id: str):
 
 @router.post("/users/{user_id}/unban")
 async def unban_user(user_id: str):
+    user_id = validate_path_id(user_id, "user_id")
     ph = db._ph
     with db._conn() as conn:
         db._execute(conn, f"""
@@ -1684,6 +1693,7 @@ async def unban_user(user_id: str):
 
 @router.post("/users/{user_id}/role")
 async def set_user_role(user_id: str, role: str = Query(..., pattern="^(user|moderator|admin)$")):
+    user_id = validate_path_id(user_id, "user_id")
     ph = db._ph
     with db._conn() as conn:
         db._execute(conn, f"""

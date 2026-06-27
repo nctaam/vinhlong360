@@ -78,7 +78,7 @@ from middleware import (
     verify_admin_key,
 )
 from itinerary_gen import generate_itinerary
-from scheduler import start_scheduler, scheduler_status, sync_data_json_to_js
+from scheduler import start_scheduler, stop_scheduler, scheduler_status, sync_data_json_to_js
 from memory import memory_manager
 from reflexion import reflexion_engine, quality_tracker
 from proactive import get_proactive_context, generate_welcome_message
@@ -834,7 +834,16 @@ async def lifespan(app):
     start_scheduler()
     logger.info("Server started", model=MODEL, entities=len(knowledge._entities))
     yield
-    logger.info("Server shutting down")
+    logger.info("Server shutting down — stopping scheduler")
+    stop_scheduler()
+    from database import db as _db
+    if _db._pg_pool:
+        try:
+            _db._pg_pool.closeall()
+            logger.info("PG connection pool closed")
+        except Exception:
+            pass
+    logger.info("Shutdown complete")
     logger.flush()
 
 
@@ -2423,15 +2432,26 @@ async def health():
         "coverage_pct": round((total_entities - missing_summary) / total_entities * 100, 1) if total_entities else 0,
     }
 
+    # DB probe (lightweight SELECT 1)
+    db_ok = False
+    try:
+        from database import db as _db
+        with _db._conn() as conn:
+            _db._fetchone(conn, "SELECT 1", ())
+        db_ok = True
+    except Exception:
+        pass
+
     # Overall status
     errors_healthy = error_tracker.is_healthy()
-    overall = "ok" if errors_healthy else "degraded"
+    overall = "ok" if (errors_healthy and db_ok) else "degraded"
 
     return {
         "status": overall,
         "version": "8.2",
         "uptime_seconds": round(time.time() - _server_start_time, 0),
         "memory_mb": memory_mb,
+        "database": {"ok": db_ok, "backend": "postgres" if _db._use_pg else "sqlite"},
         "llm_api": llm_status,
         "llm_api_checked_at": datetime.fromtimestamp(_health_llm_cache["checked_at"]).isoformat() if _health_llm_cache["checked_at"] else None,
         "deep_checks": False,

@@ -457,3 +457,68 @@ def test_transparency_endpoint_returns_nd147():
 def test_shared_require_pg_exists():
     from auth_middleware import require_pg
     assert callable(require_pg)
+
+
+# ── DRY block clause helper ───────────────────────────────────────────
+
+def test_block_sql_helper_no_user():
+    from social import _block_sql
+    clause, params = _block_sql(None)
+    assert clause == ""
+    assert params == []
+
+
+def test_block_sql_helper_with_user():
+    from social import _block_sql
+    clause, params = _block_sql({"id": "abc-123"})
+    assert "NOT IN" in clause
+    assert "blocked_id" in clause
+    assert params == ["abc-123"]
+
+
+def test_block_sql_helper_custom_column():
+    from social import _block_sql
+    clause, _ = _block_sql({"id": "x"}, "c.user_id")
+    assert "c.user_id NOT IN" in clause
+
+
+# ── Health check DB probe ─────────────────────────────────────────────
+
+def test_health_db_probe_select1():
+    """Verify the DB probe pattern (SELECT 1) works."""
+    with db._conn() as conn:
+        row = db._fetchone(conn, "SELECT 1", ())
+    assert row is not None
+
+
+# ── Southern dialect spam patterns ────────────────────────────────────
+
+def test_southern_spam_patterns():
+    from moderation import _check_spam_patterns_v2
+    result = _check_spam_patterns_v2("dzô link kiếm tiền dễ ợt")
+    assert result["score"] > 0
+    assert any("spam_v2" in r for r in result["reasons"])
+
+
+def test_southern_spam_gambling():
+    from moderation import _check_spam_patterns_v2
+    result = _check_spam_patterns_v2("đá gà online uy tín")
+    assert result["score"] > 0
+
+
+def test_southern_spam_clean():
+    from moderation import _check_spam_patterns_v2
+    result = _check_spam_patterns_v2("Cảnh đẹp Vĩnh Long quá trời!")
+    assert result["score"] == 0.0
+
+
+# ── Admin path ID validation ─────────────────────────────────────────
+
+def test_admin_entity_validates_path_id():
+    import admin
+    app = FastAPI()
+    app.include_router(admin.router)
+    app.dependency_overrides[admin.require_admin] = lambda: "test"
+    client = TestClient(app)
+    resp = client.get("/admin/entities/'; DROP TABLE--")
+    assert resp.status_code == 400

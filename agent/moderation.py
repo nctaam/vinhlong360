@@ -427,8 +427,36 @@ _SPAM_PATTERNS_V2 = [
 ]
 
 
+_SPAM_PATTERNS_SOUTHERN = [
+    # Southern Vietnamese dialect spam variants (miền Tây)
+    # "dzô" = "vô", "dui" = "vui", "dìa" = "về"
+    re.compile(
+        r'\b(ki[eế]m\s*l[ờợ]i\s*kh[uủ]ng|'
+        r'nh[aậ]n\s*ti[eề]n\s*li[eề]n|'
+        r'dzô\s*(link|web|trang)|'
+        r'b[aấ]m\s*dzô\s*[dđ][aâ]y)',
+        re.IGNORECASE,
+    ),
+    # Southern gambling slang: "đá gà", "lô đề", "bầu cua"
+    re.compile(
+        r'\b([dđ][aá]\s*g[aà]\s*online|'
+        r'l[oô]\s*[dđ][eề]\s*online|'
+        r'b[aầ]u\s*cua\s*online|'
+        r'c[aá]\s*[dđ][oộ]\s*b[oó]ng)',
+        re.IGNORECASE,
+    ),
+    # Southern slang for scam hooks: "dễ ợt", "ngon lành"
+    re.compile(
+        r'\b(ki[eế]m\s*ti[eề]n\s*d[eễ]\s*[oợ]t|'
+        r'l[aà]m\s*gi[aà]u\s*d[eễ]\s*[oợ]t|'
+        r'thu\s*nh[aậ]p\s*kh[uủ]ng\s*m[oỗ]i\s*ng[aà]y)',
+        re.IGNORECASE,
+    ),
+]
+
+
 def _check_spam_patterns_v2(content: str) -> dict:
-    """Extended spam patterns: MLM, loan sharks, fake medicine, phishing."""
+    """Extended spam patterns: MLM, loan sharks, fake medicine, phishing, Southern dialect."""
     if not content or not content.strip():
         return {"score": 0.0, "reasons": []}
 
@@ -436,7 +464,7 @@ def _check_spam_patterns_v2(content: str) -> dict:
     text = normalize_homoglyphs(content)
     reasons = []
     score = 0.0
-    for pattern in _SPAM_PATTERNS_V2:
+    for pattern in _SPAM_PATTERNS_V2 + _SPAM_PATTERNS_SOUTHERN:
         match = pattern.search(text)
         if match:
             score = max(score, 0.6)
