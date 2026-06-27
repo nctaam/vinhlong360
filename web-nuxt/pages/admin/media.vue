@@ -49,7 +49,7 @@
 
     <!-- Image grid -->
     <div class="media-grid">
-      <div v-for="item in items" :key="item.url + item.entity_id" class="media-card" role="button" tabindex="0" :aria-label="`Xem ảnh ${item.entity_name || item.entity_id}`" @click="previewItem = item" @keydown.enter="previewItem = item" @keydown.space.prevent="previewItem = item">
+      <button v-for="item in items" :key="item.url + item.entity_id" type="button" class="media-card" :aria-label="`Xem ảnh ${item.entity_name || item.entity_id}`" @click="previewItem = item">
         <div class="media-img-wrap">
           <img :src="item.url" :alt="item.entity_name" loading="lazy" decoding="async" @error="onImgError" />
           <span v-if="item.usage_count > 1" class="media-dup-badge" title="Dùng bởi nhiều entity">{{ item.usage_count }}x</span>
@@ -60,7 +60,7 @@
           <span v-if="item.credit" class="media-credit">{{ item.credit }}</span>
           <span v-else class="media-no-credit">Thiếu credit</span>
         </div>
-      </div>
+      </button>
     </div>
 
     <!-- Load more -->
@@ -212,6 +212,7 @@ onMounted(fetchMedia)
 .media-card {
   background: var(--card, var(--bg)); border: 1px solid var(--line); border-radius: 12px;
   overflow: hidden; cursor: pointer; transition: box-shadow .2s, transform .15s;
+  padding: 0; font: inherit; text-align: left; color: inherit;
 }
 .media-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
 .media-img-wrap { position: relative; aspect-ratio: 4/3; background: var(--bg-alt); overflow: hidden; }

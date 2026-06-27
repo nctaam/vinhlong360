@@ -31,11 +31,11 @@
       <h2>Hồ sơ cá nhân</h2>
       <form class="settings-form" @submit.prevent="save">
         <div class="sf-avatar-section">
-          <div class="sf-avatar-preview" role="button" tabindex="0" aria-label="Thay đổi ảnh đại diện" @click="($refs.avatarInput as HTMLInputElement)?.click()" @keydown.enter="($refs.avatarInput as HTMLInputElement)?.click()">
+          <button type="button" class="sf-avatar-preview" aria-label="Thay đổi ảnh đại diện" @click="($refs.avatarInput as HTMLInputElement)?.click()">
             <img v-if="avatarPreview || user?.avatar_url" :src="avatarPreview || user?.avatar_url!" alt="Avatar" class="sf-avatar-img" />
             <AvatarPlaceholder v-else :initial="user?.display_name?.[0]?.toUpperCase()" />
             <span class="sf-avatar-overlay">&#128247;</span>
-          </div>
+          </button>
           <div class="sf-avatar-info">
             <span class="sf-label">Ảnh đại diện</span>
             <span class="sf-hint">JPEG, PNG hoặc WebP. Tối đa 12MB.</span>
@@ -47,13 +47,13 @@
         </div>
 
         <div class="sf-cover-section">
-          <div class="sf-cover-preview" role="button" tabindex="0" aria-label="Thay đổi ảnh bìa" @click="($refs.coverInput as HTMLInputElement)?.click()" @keydown.enter="($refs.coverInput as HTMLInputElement)?.click()">
+          <button type="button" class="sf-cover-preview" aria-label="Thay đổi ảnh bìa" @click="($refs.coverInput as HTMLInputElement)?.click()">
             <img v-if="coverPreview || user?.cover_url" :src="coverPreview || user?.cover_url!" alt="Ảnh bìa" class="sf-cover-img" />
             <div v-else class="sf-cover-placeholder">
               <span>Thêm ảnh bìa</span>
             </div>
             <span class="sf-avatar-overlay">&#128247;</span>
-          </div>
+          </button>
           <div class="sf-avatar-info">
             <span class="sf-label">Ảnh bìa</span>
             <span class="sf-hint">Ảnh ngang, tỉ lệ 3:1. Tối đa 12MB.</span>
@@ -753,6 +753,7 @@ onUnmounted(() => {
 .sf-avatar-preview {
   width: 80px; height: 80px; border-radius: 50%; overflow: hidden; cursor: pointer;
   position: relative; flex-shrink: 0; border: 2px solid var(--border-input);
+  padding: 0; background: none; font: inherit; text-align: left;
 }
 .sf-avatar-preview:hover .sf-avatar-overlay { opacity: 1; }
 .sf-avatar-img { width: 100%; height: 100%; object-fit: cover; }
@@ -796,6 +797,7 @@ onUnmounted(() => {
 .sf-cover-preview {
   width: 200px; height: 68px; border-radius: var(--radius-md); overflow: hidden; cursor: pointer;
   position: relative; flex-shrink: 0; border: 2px solid var(--border-input);
+  padding: 0; background: none; font: inherit; text-align: left;
 }
 .sf-cover-preview:hover .sf-avatar-overlay { opacity: 1; }
 .sf-cover-img { width: 100%; height: 100%; object-fit: cover; }

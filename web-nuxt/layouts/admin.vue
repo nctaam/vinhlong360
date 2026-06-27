@@ -121,7 +121,7 @@
       </div>
       <slot />
     </main>
-    <ClientOnly><CommandPalette /></ClientOnly>
+    <ClientOnly><LazyCommandPalette /></ClientOnly>
     <ClientOnly><ToastContainer /></ClientOnly>
     <ClientOnly><ConfirmDialog /></ClientOnly>
   </div>

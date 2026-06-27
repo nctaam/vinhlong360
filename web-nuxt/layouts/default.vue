@@ -58,16 +58,16 @@
       <slot />
     </main>
 
-    <AuthModal :visible="showAuth" @close="showAuth = false" />
+    <LazyAuthModal :visible="showAuth" @close="showAuth = false" />
     <ConfirmDialog />
     <ClientOnly>
       <ScrollToTop />
     </ClientOnly>
-    <ChatWidget />
+    <LazyChatWidget />
     <ClientOnly>
-      <OnboardingSheet />
-      <JourneyBar />
-      <ReportModal />
+      <LazyOnboardingSheet />
+      <LazyJourneyBar />
+      <LazyReportModal />
       <ToastContainer />
     </ClientOnly>
 
