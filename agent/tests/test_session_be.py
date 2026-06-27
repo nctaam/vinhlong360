@@ -408,6 +408,29 @@ def test_place_cache_lru_eviction():
     assert _PLACE_CACHE_MAX == 500
 
 
+# ── ND 147 transparency ──────────────────────────────────────────────
+
+def test_transparency_endpoint_mounted():
+    from public_api import router as pub_router
+    app = FastAPI()
+    app.include_router(pub_router)
+    pairs = _route_pairs(app)
+    assert ("GET", "/api/transparency") in pairs
+
+
+def test_transparency_endpoint_returns_nd147():
+    from public_api import router as pub_router
+    app = FastAPI()
+    app.include_router(pub_router)
+    client = TestClient(app)
+    resp = client.get("/api/transparency")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["nd147_compliance"]["content_removal_within_24h"] is True
+    assert data["content_policy"]["takedown_sla_hours"] == 24
+    assert "147" in data["nd147_compliance"]["regulation"]
+
+
 # ── Shared require_pg ──────────────────────────────────────────────────
 
 def test_shared_require_pg_exists():

@@ -735,3 +735,38 @@ async def submit_report(payload: ReportIn, request: Request):
     except OSError:
         return JSONResponse(status_code=500, content={"error": "store_failed"})
     return {"ok": True, "message": "Đã ghi nhận. Cảm ơn bạn đã góp ý — chúng tôi sẽ kiểm tra."}
+
+
+# ── ND 147/2024 Compliance & Transparency ──────────────────────────────
+
+@router.get("/transparency")
+async def transparency_report():
+    """ND 147/2024 transparency: moderation policy, contact, takedown SLA."""
+    return {
+        "platform": "VinhLong360",
+        "legal_entity": "Cá nhân vận hành — vinhlong360.vn",
+        "contact_email": "lienhe@vinhlong360.vn",
+        "content_policy": {
+            "moderation": "Tất cả nội dung người dùng được kiểm duyệt tự động trước khi hiển thị.",
+            "takedown_sla_hours": 24,
+            "appeal_process": "Gửi email đến lienhe@vinhlong360.vn trong 7 ngày.",
+            "prohibited_content": [
+                "Vi phạm pháp luật Việt Nam",
+                "Thông tin sai sự thật gây hoang mang",
+                "Xúc phạm, phân biệt đối xử",
+                "Spam, quảng cáo trái phép",
+                "Nội dung khiêu dâm, bạo lực",
+            ],
+        },
+        "data_practices": {
+            "storage_location": "Việt Nam",
+            "data_retention": "Dữ liệu cá nhân được lưu khi tài khoản hoạt động. Xóa khi deactivate.",
+            "third_party_sharing": "Không chia sẻ dữ liệu với bên thứ ba ngoài mục đích vận hành.",
+        },
+        "nd147_compliance": {
+            "regulation": "Nghị định 147/2024/NĐ-CP",
+            "content_removal_within_24h": True,
+            "user_data_on_request": True,
+            "cooperation_with_authorities": True,
+        },
+    }
