@@ -1,5 +1,6 @@
 <template>
   <div class="admin-shell">
+    <a href="#admin-main" class="skip-link">Chuyển đến nội dung chính</a>
     <aside class="admin-sidebar" :class="{ collapsed: sidebarCollapsed }">
       <div class="admin-sidebar-head">
         <NuxtLink class="admin-brand" to="/admin">
@@ -109,7 +110,7 @@
         <NuxtLink to="/" class="back-link">&#8592; Về trang chủ</NuxtLink>
       </div>
     </aside>
-    <main class="admin-main">
+    <main id="admin-main" class="admin-main">
       <div class="admin-topbar">
         <nav class="admin-crumbs" aria-label="Đường dẫn">
           <NuxtLink to="/admin" class="admin-crumb-root">AdminCP</NuxtLink>

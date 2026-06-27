@@ -118,7 +118,7 @@
       <EmptyState v-else-if="facilitiesError" icon="⚠️" title="Không thể tải danh bạ" message="Có lỗi khi tải dữ liệu. Vui lòng thử lại.">
         <button type="button" class="btn btn-outline btn-sm" @click="loadFacilities">Thử lại</button>
       </EmptyState>
-      <EmptyState v-else message="Chưa có dữ liệu danh bạ cho xã/phường này. Dữ liệu đang được bổ sung từ nguồn chính thống." />
+      <EmptyState v-else icon="📋" title="Chưa có danh bạ" message="Chưa có dữ liệu danh bạ cho xã/phường này. Dữ liệu đang được bổ sung từ nguồn chính thống." />
     </template>
 
     <!-- Cross-links -->
