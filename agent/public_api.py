@@ -7,6 +7,7 @@ and search results from the database instead of static data.json.
 Mount: app.include_router(public_router)
 """
 
+import asyncio
 import json
 import logging
 from datetime import datetime, timezone
@@ -219,16 +220,18 @@ async def get_entity(
 async def list_places(response: Response, area: Optional[str] = None):
     response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=7200"
     db.initialize()
-    ph = db._ph
-    with db._conn() as conn:
-        if area:
-            rows = db._fetchall(conn,
-                f"SELECT id, name, area, level FROM entities WHERE type = 'place' AND area = {ph} ORDER BY name",
-                (area,))
-        else:
-            rows = db._fetchall(conn,
-                "SELECT id, name, area, level FROM entities WHERE type = 'place' ORDER BY name")
-    return [db._row_to_dict(r) for r in rows]
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            if area:
+                rows = db._fetchall(conn,
+                    f"SELECT id, name, area, level FROM entities WHERE type = 'place' AND area = {ph} ORDER BY name",
+                    (area,))
+            else:
+                rows = db._fetchall(conn,
+                    "SELECT id, name, area, level FROM entities WHERE type = 'place' ORDER BY name")
+        return [db._row_to_dict(r) for r in rows]
+    return await asyncio.to_thread(_query)
 
 
 @router.get("/facilities")
