@@ -15,7 +15,7 @@ Sau 13 giai đoạn phát triển, hệ thống có:
 **Bottleneck chính: nội dung, không phải code.** Hệ thống over-engineered so với lượng data — 5+ module dormant, 0% ảnh, nhiều entity thiếu attributes.
 
 **Ngoài scope plan này:** Pháp lý (NĐ147, pháp nhân) — owner tự thực hiện.
-**Nguồn ảnh:** Pexels/Unsplash/UGC/AI-generated (cx/gpt-5.5-image). KHÔNG dùng Wikimedia.
+**Nguồn ảnh:** CHỈ AI-generated (cx/gpt-5.5-image). KHÔNG dùng Wikimedia/Pexels/Unsplash/UGC (không chính xác cho địa phương cụ thể).
 
 ---
 
@@ -27,12 +27,11 @@ Mục tiêu: từ "code xong nhưng rỗng data" → "data đủ dùng cho launc
 
 | Task | Chi tiết | Estimate |
 |------|----------|----------|
-| Batch ảnh Pexels/Unsplash cho top entity types | attraction (320), dish (120), accommodation (164) — keyword search, review manual | 2-3 ngày |
-| AI-generated placeholder (cx/gpt-5.5-image) | Cho entity thiếu ảnh stock phù hợp (craft_village, experience) | 1 ngày |
-| UGC photo campaign | Kích hoạt badge Photographer (≥5 ảnh), promote trên homepage | Ongoing |
+| AI-generated ảnh (cx/gpt-5.5-image) | Batch generate cho top types: attraction (320), dish (120), accommodation (164), craft_village (85) | 2-3 ngày |
 | R2 upload pipeline | Storage.py đã sẵn (S3/R2 + WebP convert), chỉ cần config env | 0.5 ngày |
+| Owner review + approve | Admin duyệt ảnh AI qua `/admin/duyet-anh` (human-in-the-loop) | Ongoing |
 
-**Image review queue:** `/admin/duyet-anh` đã có, human-in-the-loop.
+**Lưu ý:** Ảnh stock (Pexels/Unsplash) và UGC không chính xác cho địa phương cụ thể → chỉ dùng AI-generated, owner duyệt từng ảnh.
 
 ### 1.2 Danh bạ hành chính 124 xã/phường (GĐ13.6)
 
@@ -159,13 +158,13 @@ Mục tiêu: từ "code xong nhưng rỗng data" → "data đủ dùng cho launc
 | OCOP product cards enrichment | ocop stars, price, specialty |
 | Seasonal OCOP highlights | /theo-mua integration |
 
-### 4.4 UGC growth
+### 4.4 Community engagement
 
 | Action | Chi tiết |
 |--------|----------|
-| Photo campaign (badge Photographer) | ≥5 ảnh → badge, leaderboard |
-| Review campaign | Kích hoạt aggregateRating sau khi có reviews |
+| Review campaign | Kích hoạt aggregateRating sau khi có text reviews |
 | Local ambassador program | Badge Đại-sứ (reputation level 4) |
+| Gamification badges | Traveler, Explorer, Expert — tăng engagement |
 
 ---
 
