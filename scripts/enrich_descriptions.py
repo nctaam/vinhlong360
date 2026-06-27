@@ -30,7 +30,10 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 from dotenv import load_dotenv
-load_dotenv(PROJECT_DIR / ".env")
+for _envp in [PROJECT_DIR / ".env", PROJECT_DIR.parent / ".env"]:
+    if _envp.exists():
+        load_dotenv(_envp)
+        break
 
 from openai import OpenAI
 from database import Database
@@ -55,10 +58,17 @@ TYPE_LABELS = {
     "event": "sự kiện/lễ hội",
     "person": "nhân vật lịch sử",
     "organization": "tổ chức",
+    "cafe": "quán cà phê",
+    "restaurant": "nhà hàng",
+    "drink": "thức uống",
+    "facility": "tiện ích công cộng",
+    "economy": "kinh tế địa phương",
 }
 
 PRIORITY_TYPES = ["attraction", "experience", "nature", "history", "craft_village",
-                  "dish", "product", "event", "accommodation"]
+                  "dish", "product", "event", "accommodation",
+                  "cafe", "restaurant", "drink", "facility", "organization",
+                  "person", "economy"]
 
 db = Database()
 stats = {"success": 0, "skip": 0, "fail": 0, "tokens": 0}

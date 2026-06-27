@@ -25,8 +25,15 @@ import json
 import os
 import sys
 import time
-import urllib.request
 from pathlib import Path
+
+try:
+    import requests as _requests
+except ImportError:
+    sys.exit("ERROR: pip install requests")
+
+if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
 
 ROOT = Path(__file__).resolve().parent.parent
 AGENT_DIR = ROOT / "agent"
@@ -75,24 +82,24 @@ def call_llm(prompt: str, system: str = "", max_tokens: int = 500) -> str:
         messages.append({"role": "system", "content": system})
     messages.append({"role": "user", "content": prompt})
 
-    body = json.dumps({
-        "model": MODEL,
-        "messages": messages,
-        "max_tokens": max_tokens,
-        "temperature": 0.3,
-    }).encode()
-
-    req = urllib.request.Request(
-        f"{API_BASE}/v1/chat/completions",
-        data=body, method="POST",
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {API_KEY}",
-        })
+    base = API_BASE.rstrip("/")
+    if base.endswith("/v1"):
+        url = f"{base}/chat/completions"
+    else:
+        url = f"{base}/v1/chat/completions"
 
     try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
+        resp = _requests.post(url, json={
+            "model": MODEL,
+            "messages": messages,
+            "max_tokens": max_tokens,
+            "temperature": 0.3,
+        }, headers={
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json",
+        }, timeout=60)
+        resp.raise_for_status()
+        data = resp.json()
         return data["choices"][0]["message"]["content"].strip()
     except Exception as e:
         return f"[ERROR] {e}"
