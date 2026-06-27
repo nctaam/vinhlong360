@@ -12,6 +12,7 @@ Post types:
   - question  : Hỏi đáp du lịch, kinh nghiệm
 """
 
+import asyncio
 import json
 import logging
 import re
@@ -332,33 +333,37 @@ async def create_post(body: CreatePost, user=Depends(require_user)):
 @router.get("/posts/{post_id}")
 async def get_post(post_id: str, user=Depends(get_current_user)):
     ph = db._ph
-    with db._conn() as conn:
-        row = db._fetchone(conn, f"""
-            SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
-                   e.name as entity_name, e.type as entity_type
-            FROM posts p
-            JOIN users u ON u.id = p.user_id
-            LEFT JOIN entities e ON e.id = p.entity_id
-            WHERE p.id::text = {ph} AND p.moderation_status = 'approved'
-        """, (post_id,))
+    uid = str(user["id"]) if user else None
 
-    if not row:
-        raise HTTPException(404, "Bài viết không tồn tại")
-
-    post = db._row_to_dict(row)
-    post["is_liked"] = False
-    post["is_bookmarked"] = False
-
-    if user:
+    def _get_post():
         with db._conn() as conn:
-            liked = db._fetchone(conn, f"""
-                SELECT 1 FROM likes WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
-            """, (str(user["id"]), post_id))
-            bookmarked = db._fetchone(conn, f"""
-                SELECT 1 FROM bookmarks WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
-            """, (str(user["id"]), post_id))
-            post["is_liked"] = liked is not None
-            post["is_bookmarked"] = bookmarked is not None
+            row = db._fetchone(conn, f"""
+                SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
+                       e.name as entity_name, e.type as entity_type
+                FROM posts p
+                JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE p.id::text = {ph} AND p.moderation_status = 'approved'
+            """, (post_id,))
+            if not row:
+                return None
+            post = db._row_to_dict(row)
+            post["is_liked"] = False
+            post["is_bookmarked"] = False
+            if uid:
+                liked = db._fetchone(conn, f"""
+                    SELECT 1 FROM likes WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
+                """, (uid, post_id))
+                bookmarked = db._fetchone(conn, f"""
+                    SELECT 1 FROM bookmarks WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
+                """, (uid, post_id))
+                post["is_liked"] = liked is not None
+                post["is_bookmarked"] = bookmarked is not None
+            return post
+
+    post = await asyncio.to_thread(_get_post)
+    if not post:
+        raise HTTPException(404, "Bài viết không tồn tại")
 
     return {"post": _format_post(post)}
 
@@ -483,29 +488,35 @@ async def get_feed(
 
     query_params = where_params + [month_str, month_str, limit, offset]
 
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
-                   e.name as entity_name, e.type as entity_type, e.season as entity_season
-            FROM posts p
-            JOIN users u ON u.id = p.user_id
-            LEFT JOIN entities e ON e.id = p.entity_id
-            WHERE {where}
-            ORDER BY
-                CASE WHEN e.season IS NOT NULL
-                     AND (e.season->'peak' ? {ph} OR e.season->'months' ? {ph})
-                     THEN 1.5 ELSE 1.0 END
-                * (1.0 + LN(2 + p.like_count))
-                DESC,
-                p.created_at DESC
-            LIMIT {ph} OFFSET {ph}
-        """, query_params)
+    feed_sql = f"""
+        SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
+               e.name as entity_name, e.type as entity_type, e.season as entity_season
+        FROM posts p
+        JOIN users u ON u.id = p.user_id
+        LEFT JOIN entities e ON e.id = p.entity_id
+        WHERE {where}
+        ORDER BY
+            CASE WHEN e.season IS NOT NULL
+                 AND (e.season->'peak' ? {ph} OR e.season->'months' ? {ph})
+                 THEN 1.5 ELSE 1.0 END
+            * (1.0 + LN(2 + p.like_count))
+            DESC,
+            p.created_at DESC
+        LIMIT {ph} OFFSET {ph}
+    """
+    count_sql = f"""
+        SELECT COUNT(*) as c FROM posts p
+        LEFT JOIN entities e ON e.id = p.entity_id
+        WHERE {where}
+    """
 
-        total = db._fetchone(conn, f"""
-            SELECT COUNT(*) as c FROM posts p
-            LEFT JOIN entities e ON e.id = p.entity_id
-            WHERE {where}
-        """, where_params)
+    def _feed_query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, feed_sql, query_params)
+            total = db._fetchone(conn, count_sql, where_params)
+        return rows, total
+
+    rows, total = await asyncio.to_thread(_feed_query)
 
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
 
@@ -536,22 +547,28 @@ async def get_following_feed(
          OR p.entity_id IN (SELECT target_id FROM follows
                               WHERE follower_id = {ph}::uuid AND target_type='entity'))
     """
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
-                   e.name as entity_name, e.type as entity_type
-            FROM posts p
-            JOIN users u ON u.id = p.user_id
-            LEFT JOIN entities e ON e.id = p.entity_id
-            WHERE p.moderation_status = 'approved' AND {follow_cond}
-            ORDER BY p.created_at DESC
-            LIMIT {ph} OFFSET {ph}
-        """, (uid, uid, limit, offset))
+    feed_sql = f"""
+        SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
+               e.name as entity_name, e.type as entity_type
+        FROM posts p
+        JOIN users u ON u.id = p.user_id
+        LEFT JOIN entities e ON e.id = p.entity_id
+        WHERE p.moderation_status = 'approved' AND {follow_cond}
+        ORDER BY p.created_at DESC
+        LIMIT {ph} OFFSET {ph}
+    """
+    count_sql = f"""
+        SELECT COUNT(*) as c FROM posts p
+        WHERE p.moderation_status = 'approved' AND {follow_cond}
+    """
 
-        total = db._fetchone(conn, f"""
-            SELECT COUNT(*) as c FROM posts p
-            WHERE p.moderation_status = 'approved' AND {follow_cond}
-        """, (uid, uid))
+    def _following_query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, feed_sql, (uid, uid, limit, offset))
+            total = db._fetchone(conn, count_sql, (uid, uid))
+        return rows, total
+
+    rows, total = await asyncio.to_thread(_following_query)
 
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
     _enrich_user_status(posts, user)
@@ -858,29 +875,34 @@ async def get_entity_feed(
         params.append(str(user["id"]))
     params.extend([limit, offset])
 
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username
-            FROM posts p
-            JOIN users u ON u.id = p.user_id
-            WHERE p.entity_id = {ph} AND p.moderation_status = 'approved'
-            {block_clause}
-            ORDER BY (CASE WHEN jsonb_typeof(p.images)='array' AND jsonb_array_length(p.images) > 0
-                           THEN 1 ELSE 0 END) DESC,
-                     p.like_count DESC,
-                     p.created_at DESC
-            LIMIT {ph} OFFSET {ph}
-        """, tuple(params))
+    feed_sql = f"""
+        SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username
+        FROM posts p
+        JOIN users u ON u.id = p.user_id
+        WHERE p.entity_id = {ph} AND p.moderation_status = 'approved'
+        {block_clause}
+        ORDER BY (CASE WHEN jsonb_typeof(p.images)='array' AND jsonb_array_length(p.images) > 0
+                       THEN 1 ELSE 0 END) DESC,
+                 p.like_count DESC,
+                 p.created_at DESC
+        LIMIT {ph} OFFSET {ph}
+    """
+    feed_params = tuple(params)
 
-        total = db._fetchone(conn, f"""
-            SELECT COUNT(*) as c FROM posts
-            WHERE entity_id = {ph} AND moderation_status = 'approved'
-        """, (entity_id,))
+    def _entity_feed_query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, feed_sql, feed_params)
+            total = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts
+                WHERE entity_id = {ph} AND moderation_status = 'approved'
+            """, (entity_id,))
+            rating_row = db._fetchone(conn, f"""
+                SELECT avg_rating, rating_count FROM entity_ratings
+                WHERE entity_id = {ph}
+            """, (entity_id,))
+        return rows, total, rating_row
 
-        rating_row = db._fetchone(conn, f"""
-            SELECT avg_rating, rating_count FROM entity_ratings
-            WHERE entity_id = {ph}
-        """, (entity_id,))
+    rows, total, rating_row = await asyncio.to_thread(_entity_feed_query)
 
     return {
         "entity": {
@@ -960,16 +982,22 @@ async def get_comments(
         block_clause = f"AND c.user_id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = {ph}::uuid)"
         params.append(str(user["id"]))
     params.append(min(limit, 200))
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT c.*, u.display_name, u.avatar_url, u.phone
-            FROM comments c
-            JOIN users u ON u.id = c.user_id
-            WHERE c.post_id::text = {ph} AND c.moderation_status = 'approved'
-            {block_clause}
-            ORDER BY c.created_at ASC
-            LIMIT {ph}
-        """, tuple(params))
+    comment_sql = f"""
+        SELECT c.*, u.display_name, u.avatar_url, u.phone
+        FROM comments c
+        JOIN users u ON u.id = c.user_id
+        WHERE c.post_id::text = {ph} AND c.moderation_status = 'approved'
+        {block_clause}
+        ORDER BY c.created_at ASC
+        LIMIT {ph}
+    """
+    comment_params = tuple(params)
+
+    def _get_comments():
+        with db._conn() as conn:
+            return db._fetchall(conn, comment_sql, comment_params)
+
+    rows = await asyncio.to_thread(_get_comments)
 
     comments = [_format_comment(db._row_to_dict(r)) for r in rows]
 
