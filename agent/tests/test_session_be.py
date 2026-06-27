@@ -603,3 +603,71 @@ def test_body_limits_defined():
     assert "_BODY_LIMITS" in src
     assert "/api/comments" in src
     assert "/api/posts" in src
+
+
+# ── Map pins ───────────────────────────────────────────────────────────
+
+def _public_client():
+    import public_api
+    app = FastAPI()
+    app.include_router(public_api.router)
+    return TestClient(app)
+
+
+def test_map_pins_endpoint_mounted():
+    pairs = _route_pairs(_public_client().app)
+    assert ("GET", "/api/map-pins") in pairs
+
+
+def test_map_pins_type_meta():
+    import public_api
+    assert "dish" in public_api._TYPE_META
+    assert "emoji" in public_api._TYPE_META["dish"]
+    assert "color" in public_api._TYPE_META["dish"]
+
+
+def test_map_pins_filters_no_coords():
+    """_is_public entities without coordinates should be excluded."""
+    import public_api
+    entities = [
+        {"id": "a", "name": "A", "type": "dish", "coordinates": [10.25, 106.01],
+         "attributes": {"rating": 4.5}, "placeId": None},
+        {"id": "b", "name": "B", "type": "dish", "coordinates": None,
+         "attributes": {}, "placeId": None},
+        {"id": "c", "name": "C", "type": "dish", "coordinates": [],
+         "attributes": {}, "placeId": None},
+    ]
+    from unittest.mock import patch
+    with patch.object(public_api.db, "list_entities", return_value=entities):
+        public_api._map_pins_cache.update(data=None, filters=None, ts=0.0)
+        client = _public_client()
+        resp = client.get("/api/map-pins")
+    assert resp.status_code == 200
+    pins = resp.json()
+    assert len(pins) == 1
+    assert pins[0]["id"] == "a"
+    assert pins[0]["lat"] == 10.25
+    assert pins[0]["emoji"] == public_api._TYPE_META["dish"]["emoji"]
+
+
+def test_map_pins_type_filter():
+    """Comma-separated type filter should work."""
+    import public_api
+    entities = [
+        {"id": "a", "name": "A", "type": "dish", "coordinates": [10.25, 106.01],
+         "attributes": {}, "placeId": None},
+        {"id": "b", "name": "B", "type": "attraction", "coordinates": [10.26, 106.02],
+         "attributes": {}, "placeId": None},
+        {"id": "c", "name": "C", "type": "product", "coordinates": [10.27, 106.03],
+         "attributes": {}, "placeId": None},
+    ]
+    from unittest.mock import patch
+    with patch.object(public_api.db, "list_entities", return_value=entities):
+        public_api._map_pins_cache.update(data=None, filters=None, ts=0.0)
+        client = _public_client()
+        resp = client.get("/api/map-pins?type=dish,attraction")
+    assert resp.status_code == 200
+    pins = resp.json()
+    assert len(pins) == 2
+    ids = {p["id"] for p in pins}
+    assert ids == {"a", "b"}

@@ -653,6 +653,89 @@ async def homepage_curated(response: Response):
     return result
 
 
+# ── Map pins (lightweight endpoint for MapListView) ──────────────────
+
+_TYPE_META = {
+    "attraction": {"emoji": "\U0001f3de️", "color": "#2E86AB"},
+    "nature": {"emoji": "\U0001f333", "color": "#4CAF50"},
+    "experience": {"emoji": "\U0001f3ad", "color": "#FF6B35"},
+    "dish": {"emoji": "\U0001f35c", "color": "#D94F3D"},
+    "drink": {"emoji": "\U0001f964", "color": "#E57373"},
+    "product": {"emoji": "\U0001f381", "color": "#FF9800"},
+    "craft_village": {"emoji": "\U0001f3e1", "color": "#8D6E63"},
+    "accommodation": {"emoji": "\U0001f3e8", "color": "#7E57C2"},
+    "event": {"emoji": "\U0001f389", "color": "#EC407A"},
+    "history": {"emoji": "\U0001f3db️", "color": "#795548"},
+    "person": {"emoji": "\U0001f9d1", "color": "#607D8B"},
+    "economy": {"emoji": "\U0001f4b0", "color": "#43A047"},
+    "organization": {"emoji": "\U0001f3e2", "color": "#546E7A"},
+    "facility": {"emoji": "\U0001f3e5", "color": "#1976D2"},
+}
+
+_map_pins_cache: dict = {"data": None, "filters": None, "ts": 0.0}
+_MAP_PINS_TTL = 120
+
+
+@router.get("/map-pins")
+async def get_map_pins(
+    response: Response,
+    type: Optional[str] = Query(None),
+    area: Optional[str] = Query(None),
+):
+    response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
+    cache_key = f"{type}:{area}"
+    _now = _time.time()
+    if (_map_pins_cache["data"] is not None
+            and _map_pins_cache["filters"] == cache_key
+            and _now - _map_pins_cache["ts"] < _MAP_PINS_TTL):
+        return _map_pins_cache["data"]
+
+    type_filters: list[str] | None = None
+    if type:
+        type_filters = [t.strip() for t in type.split(",") if t.strip()]
+
+    def _query():
+        all_ents = db.list_entities(limit=100000, offset=0, area=area)
+        pins = []
+        for e in all_ents:
+            if not _is_public(e):
+                continue
+            coords = e.get("coordinates")
+            if not coords or not isinstance(coords, (list, tuple)) or len(coords) < 2:
+                continue
+            try:
+                lat, lng = float(coords[0]), float(coords[1])
+            except (TypeError, ValueError, IndexError):
+                continue
+            etype = e.get("type", "")
+            if type_filters and etype not in type_filters:
+                continue
+            meta = _TYPE_META.get(etype, {"emoji": "\U0001f4cd", "color": "#9E9E9E"})
+            attrs = e.get("attributes") or {}
+            pin = {
+                "id": e["id"],
+                "name": e["name"],
+                "type": etype,
+                "lat": lat,
+                "lng": lng,
+                "emoji": meta["emoji"],
+                "category_color": meta["color"],
+                "rating": attrs.get("rating"),
+                "review_count": attrs.get("review_count", 0),
+            }
+            pid = e.get("placeId")
+            if pid:
+                p = _get_place(pid)
+                if p:
+                    pin["place_name"] = p["name"]
+            pins.append(pin)
+        return pins
+
+    result = await asyncio.to_thread(_query)
+    _map_pins_cache.update(data=result, filters=cache_key, ts=_now)
+    return result
+
+
 @router.get("/events")
 async def list_events(
     response: Response,
