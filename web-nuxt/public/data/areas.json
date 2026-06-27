@@ -7,16 +7,11 @@
   {
     "id": "ben-tre",
     "name": "Bến Tre",
-    "entity_count": 502
+    "entity_count": 508
   },
   {
     "id": "tra-vinh",
     "name": "Trà Vinh",
     "entity_count": 440
-  },
-  {
-    "id": "unknown",
-    "name": "unknown",
-    "entity_count": 6
   }
 ]

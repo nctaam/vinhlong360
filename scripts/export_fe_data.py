@@ -37,6 +37,9 @@ TYPE_META = {
     "person":        {"label": "Nhân vật",      "emoji": "👤"},
     "cafe":          {"label": "Cà phê",        "emoji": "☕"},
     "restaurant":    {"label": "Nhà hàng",      "emoji": "🍽️"},
+    "drink":         {"label": "Thức uống",     "emoji": "🥤"},
+    "itinerary":     {"label": "Lộ trình",      "emoji": "🗺️"},
+    "economy":       {"label": "Kinh tế",       "emoji": "💰"},
 }
 
 AREA_LABELS = {

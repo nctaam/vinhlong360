@@ -79,8 +79,8 @@
   },
   {
     "type": "itinerary",
-    "label": "itinerary",
-    "emoji": "📍",
+    "label": "Lộ trình",
+    "emoji": "🗺️",
     "count": 16
   },
   {
@@ -91,14 +91,14 @@
   },
   {
     "type": "drink",
-    "label": "drink",
-    "emoji": "📍",
+    "label": "Thức uống",
+    "emoji": "🥤",
     "count": 1
   },
   {
     "type": "economy",
-    "label": "economy",
-    "emoji": "📍",
+    "label": "Kinh tế",
+    "emoji": "💰",
     "count": 1
   }
 ]
