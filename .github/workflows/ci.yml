@@ -234,7 +234,45 @@ jobs:
       - name: Run nuxt typecheck
         run: npm run typecheck
 
-  # ── 8. Dependency CVE scan (informational, non-blocking) ────
+  # ── 8. Infrastructure validation ────────────────────────────
+  infra:
+    name: Infrastructure checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate docker-compose.yml syntax
+        run: docker compose config -q
+
+      - name: Validate docker-compose.prod.yml syntax
+        run: docker compose -f docker-compose.yml -f docker-compose.prod.yml config -q
+
+      - name: Check for hardcoded secrets in scripts (informational)
+        continue-on-error: true
+        run: |
+          echo "::notice::Scanning scripts/ for potential hardcoded secrets..."
+          grep -rn "password\|secret\|api_key" scripts/ --include="*.py" -i || echo "No matches found."
+
+  # ── 9. Lighthouse CI (placeholder) ─────────────────────────
+  # TODO: Enable when a staging URL is available.
+  # Lighthouse needs a running server to audit; until CI can spin up
+  # the full stack (or we point at a staging URL), this is a placeholder.
+  #
+  # lighthouse:
+  #   name: Lighthouse audit
+  #   runs-on: ubuntu-latest
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #   needs: [frontend]
+  #   continue-on-error: true
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: treosh/lighthouse-ci-action@v12
+  #       with:
+  #         urls: https://vinhlong360.vn
+  #         uploadArtifacts: true
+
+  # ── 10. Dependency CVE scan (informational, non-blocking) ───
   # Scans Python (pip-audit) and Node (npm audit) deps for known CVEs.
   # NON-BLOCKING: upstream advisories can land on unrelated PRs, so this
   # reports rather than gates. Complements the verified-secret scan above.
