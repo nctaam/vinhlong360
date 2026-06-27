@@ -41,6 +41,13 @@ BOILERPLATE_SUMMARY = re.compile(
     re.IGNORECASE,
 )
 
+VALID_ENTITY_TYPES = {
+    "attraction", "place", "dish", "drink", "product", "itinerary",
+    "facility", "organization", "accommodation", "experience",
+    "craft_village", "event", "person", "history", "nature", "economy",
+    "cafe", "restaurant",
+}
+
 
 @dataclass
 class Issue:
@@ -291,6 +298,10 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     invalid_entity_ids = 0
     coords_without_address = 0
     summary_truncated = 0
+    unknown_type_count = 0
+    unknown_types_seen: set[str] = set()
+    short_summary_examples: list[str] = []
+    dangling_rel_targets: set[str] = set()
     source_url_reuse: Counter[str] = Counter()
 
     for index, entity in enumerate(entities):
@@ -310,6 +321,9 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         if not entity.get("type"):
             missing_type += 1
         entity_type = entity.get("type")
+        if entity_type and entity_type not in VALID_ENTITY_TYPES:
+            unknown_type_count += 1
+            unknown_types_seen.add(str(entity_type))
         is_place = entity_type == "place"
         summary_val = entity.get("summary")
         if not summary_val:
@@ -373,6 +387,8 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
             slen = len(stripped)
             if slen < 50:
                 summary_short += 1
+                if len(short_summary_examples) < 10:
+                    short_summary_examples.append(f"{entity.get('id')} ({slen} chars)")
             elif slen > 500:
                 summary_long += 1
             # DI-029: truncated summaries (end with "..." or "…")
@@ -487,6 +503,9 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         issues.append(Issue("error", "missing_entity_name", f"{missing_name} entities are missing name"))
     if missing_type:
         issues.append(Issue("error", "missing_entity_type", f"{missing_type} entities are missing type"))
+    if unknown_type_count:
+        examples = ", ".join(sorted(unknown_types_seen)[:10])
+        issues.append(Issue("warning", "unknown_entity_type", f"{unknown_type_count} entities have unknown type: {examples}"))
     if invalid_coordinates:
         issues.append(Issue("error", "invalid_coordinates", f"{invalid_coordinates} entities have invalid coordinates/coords"))
     if out_of_bounds_coordinates:
@@ -593,6 +612,10 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
             relationship_fanout[dst] += 1
         if src not in id_set or dst not in id_set:
             broken_relationships += 1
+            if src not in id_set:
+                dangling_rel_targets.add(src)
+            if dst not in id_set:
+                dangling_rel_targets.add(dst)
             continue
         if kind == "near":
             src_coords = normalized_coordinates(entity_by_id[src].get("coordinates"))
@@ -625,7 +648,8 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     if missing_relationship_fields:
         issues.append(Issue("error", "missing_relationship_fields", f"{missing_relationship_fields} relationships miss source/target/type"))
     if broken_relationships:
-        issues.append(Issue("error", "broken_relationships", f"{broken_relationships} relationships reference missing entities"))
+        examples = ", ".join(sorted(dangling_rel_targets)[:5])
+        issues.append(Issue("error", "broken_relationships", f"{broken_relationships} relationships reference {len(dangling_rel_targets)} missing entities: {examples}"))
     if area_place_conflicts:
         issues.append(Issue("error", "area_place_conflicts", f"{area_place_conflicts} non-place entities have area conflicting with their placeId area"))
     if near_missing_location:
@@ -954,6 +978,9 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         and str(e["id"]) not in referenced_ids
     )
     stats["orphan_entities"] = orphan_count
+    stats["unknown_entity_types"] = unknown_type_count
+    stats["short_summary_examples"] = short_summary_examples
+    stats["dangling_rel_entity_ids"] = sorted(dangling_rel_targets)[:20]
     if orphan_count:
         issues.append(Issue("warning", "orphan_entities",
             f"{orphan_count} non-place entities have no relationships or itinerary references"))
@@ -1016,6 +1043,7 @@ def print_report(issues: list[Issue], stats: dict[str, Any]) -> None:
         "invalid_website_urls",
         "unknown_rel_types",
         "orphan_entities",
+        "unknown_entity_types",
         "invalid_entity_ids",
         "produced_in_source_type_errors",
         "coords_without_address",
@@ -1023,6 +1051,17 @@ def print_report(issues: list[Issue], stats: dict[str, Any]) -> None:
         "duplicate_source_urls",
     ]:
         print(f"  {key}: {stats.get(key)}")
+
+    ss_examples = stats.get("short_summary_examples", [])
+    if ss_examples:
+        print(f"\nShort summary examples (top {len(ss_examples)}):")
+        for ex in ss_examples:
+            print(f"  {ex}")
+    dangling_ids = stats.get("dangling_rel_entity_ids", [])
+    if dangling_ids:
+        print(f"\nDangling relationship entity IDs (top {len(dangling_ids)}):")
+        for eid in dangling_ids:
+            print(f"  {eid}")
 
     seo_cov = stats.get("seo_attr_coverage", {})
     if seo_cov:
