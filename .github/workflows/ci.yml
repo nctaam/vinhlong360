@@ -37,11 +37,11 @@ jobs:
 
       # Check for style violations (non-zero exit = failure)
       - name: Run ruff check
-        run: ruff check agent/ tests/ --output-format=github
+        run: ruff check agent/ scripts/ tests/ --output-format=github
 
       # Verify import sorting
       - name: Run ruff format check
-        run: ruff format --check agent/ tests/
+        run: ruff format --check agent/ scripts/ tests/
 
   # ── 2. Test ────────────────────────────────────────────────
   test:
@@ -91,6 +91,9 @@ jobs:
             --cov=agent \
             --cov-report=term-missing \
             --cov-report=xml:coverage.xml
+
+      - name: Validate data.json
+        run: python scripts/validate_data.py
 
       # Upload the coverage report as a build artifact
       - name: Upload coverage report
