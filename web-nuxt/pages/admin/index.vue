@@ -33,7 +33,7 @@
     <!-- Primary stats -->
     <div class="dash-stats" role="group" aria-label="Thống kê tổng quan">
       <div class="dash-stat-card" role="group" aria-label="Entities">
-        <div class="dash-stat-icon" aria-hidden="true" style="background: rgba(33,150,83,.1); color: #219653;">&#127759;</div>
+        <div class="dash-stat-icon" aria-hidden="true" style="background: rgba(var(--primary-rgb),.1); color: #219653;">&#127759;</div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ stats.total_entities || 0 }}<span v-if="stats.entities_week" class="dash-delta">+{{ stats.entities_week }}</span></div>
           <div class="dash-stat-label">Entities</div>
@@ -54,7 +54,7 @@
         </div>
       </div>
       <div class="dash-stat-card">
-        <div class="dash-stat-icon" aria-hidden="true" style="background: rgba(255,159,10,.1); color: #FF9F0A;">&#128506;</div>
+        <div class="dash-stat-icon" aria-hidden="true" style="background: rgba(var(--warning-rgb),.1); color: #FF9F0A;">&#128506;</div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ stats.total_itineraries || 0 }}</div>
           <div class="dash-stat-label">Lịch trình</div>
@@ -383,11 +383,11 @@ onMounted(fetchDashboard)
   display: flex; align-items: center; gap: var(--space-2);
   padding: var(--space-3) var(--space-4); border-radius: 10px;
   margin-bottom: var(--space-5); font-size: .85rem; font-weight: 500;
-  background: rgba(255,159,10,.1); color: #c67a00;
-  border: .5px solid rgba(255,159,10,.2);
+  background: rgba(var(--warning-rgb),.1); color: #c67a00;
+  border: .5px solid rgba(var(--warning-rgb),.2);
 }
 .dash-degraded-icon { font-size: 1rem; flex-shrink: 0; }
-.dark .dash-degraded { background: rgba(255,159,10,.08); color: #ffb340; border-color: rgba(255,159,10,.15); }
+.dark .dash-degraded { background: rgba(var(--warning-rgb),.08); color: #ffb340; border-color: rgba(var(--warning-rgb),.15); }
 
 /* ── Alert banners ── */
 .dash-alerts { display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-8); }
@@ -399,7 +399,7 @@ onMounted(fetchDashboard)
 }
 .dash-alert:hover { transform: translateX(4px); }
 .dash-alert:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
-.dash-alert.warn { background: rgba(255,159,10,.1); color: #c67a00; border: .5px solid rgba(255,159,10,.2); }
+.dash-alert.warn { background: rgba(var(--warning-rgb),.1); color: #c67a00; border: .5px solid rgba(var(--warning-rgb),.2); }
 .dash-alert.error { background: rgba(217,79,61,.1); color: #b33a2a; border: .5px solid rgba(217,79,61,.2); }
 .dash-alert.info { background: rgba(52,120,246,.08); color: #2563EB; border: .5px solid rgba(52,120,246,.15); }
 .dash-alert-icon { font-size: 1.1rem; flex-shrink: 0; }
@@ -408,7 +408,7 @@ onMounted(fetchDashboard)
 .dash-all-clear {
   display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4);
   border-radius: 10px; margin-bottom: var(--space-8); font-size: .88rem; font-weight: 500;
-  background: rgba(33,150,83,.08); color: var(--primary, #219653); border: .5px solid rgba(33,150,83,.15);
+  background: rgba(var(--primary-rgb),.08); color: var(--primary, #219653); border: .5px solid rgba(var(--primary-rgb),.15);
 }
 
 /* ── System health ── */
@@ -432,7 +432,7 @@ onMounted(fetchDashboard)
   border: .5px solid var(--line); background: var(--bg); color: var(--primary-fg, #219653);
   font-size: .72rem; font-weight: 600; cursor: pointer; transition: background .2s;
 }
-.dash-backup-btn:hover:not(:disabled) { background: rgba(33,150,83,.08); }
+.dash-backup-btn:hover:not(:disabled) { background: rgba(var(--primary-rgb),.08); }
 .dash-backup-btn:disabled { opacity: .5; cursor: wait; }
 .dark .dash-health { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 
@@ -529,7 +529,7 @@ onMounted(fetchDashboard)
 /* ── Dark mode ── */
 .dark .dash-stat-card { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 .dark .dash-stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.3); }
-.dark .dash-alert.warn { background: rgba(255,159,10,.08); color: #ffb340; border-color: rgba(255,159,10,.15); }
+.dark .dash-alert.warn { background: rgba(var(--warning-rgb),.08); color: #ffb340; border-color: rgba(var(--warning-rgb),.15); }
 .dark .dash-alert.error { background: rgba(217,79,61,.08); color: #ff6b5a; border-color: rgba(217,79,61,.15); }
 .dark .dash-action { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 .dark .dash-action:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,.3); background: color-mix(in oklab, var(--primary, #219653) 12%, var(--card, #2c2c2e)); }
@@ -576,7 +576,7 @@ onMounted(fetchDashboard)
 .activity-row:nth-child(odd) { background: var(--bg-alt); }
 .activity-method { font-weight: 700; font-size: .7rem; padding: 1px 6px; border-radius: var(--radius-sm); text-transform: uppercase; }
 .activity-method.post { background: rgba(52,199,89,.15); color: #219653; }
-.activity-method.put, .activity-method.patch { background: rgba(255,159,10,.15); color: #FF9F0A; }
+.activity-method.put, .activity-method.patch { background: rgba(var(--warning-rgb),.15); color: #FF9F0A; }
 .activity-method.delete { background: rgba(255,69,58,.15); color: #FF453A; }
 .activity-path { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
 .activity-time { color: var(--muted); font-size: .72rem; white-space: nowrap; }

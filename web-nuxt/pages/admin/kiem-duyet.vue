@@ -25,7 +25,7 @@
     <!-- Stats row -->
     <div class="stat-grid">
       <div class="stat-card" :class="{ 'status-warn': (modStats.pending || 0) > 0 }">
-        <div class="mod-icon" style="background: rgba(255,159,10,.1); color: #FF9F0A;">&#9203;</div>
+        <div class="mod-icon" style="background: rgba(var(--warning-rgb),.1); color: #FF9F0A;">&#9203;</div>
         <div><div class="stat-value">{{ modStats.pending || 0 }}</div><div class="stat-label">Chờ duyệt</div></div>
       </div>
       <div class="stat-card" :class="{ 'status-error': (modStats.flagged || 0) > 0 }">
@@ -33,7 +33,7 @@
         <div><div class="stat-value">{{ modStats.flagged || 0 }}</div><div class="stat-label">Gắn cờ</div></div>
       </div>
       <div class="stat-card status-ok">
-        <div class="mod-icon" style="background: rgba(33,150,83,.1); color: #219653;">&#9989;</div>
+        <div class="mod-icon" style="background: rgba(var(--primary-rgb),.1); color: #219653;">&#9989;</div>
         <div><div class="stat-value">{{ modStats.approved || 0 }}</div><div class="stat-label">Đã duyệt</div></div>
       </div>
       <div class="stat-card">
@@ -450,7 +450,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-session-stats { margin-left: auto; font-size: .72rem; }
 .mod-session-ok { color: #219653; }
 .mod-session-rej { color: #D94F3D; }
-.mod-focused td { background: rgba(33,150,83,.06) !important; }
+.mod-focused td { background: rgba(var(--primary-rgb),.06) !important; }
 .mod-focused td:first-child { box-shadow: inset 3px 0 0 var(--primary, #219653); }
 
 /* ── Status tabs ── */
@@ -497,9 +497,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 /* ── Type + status badges ── */
 .mod-type-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .72rem; font-weight: 600; background: rgba(142,142,147,.08); color: var(--muted); }
 .mod-badge { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: .72rem; font-weight: 700; white-space: nowrap; }
-.mb-pending { background: rgba(255,159,10,.12); color: #C98A1A; }
+.mb-pending { background: rgba(var(--warning-rgb),.12); color: #C98A1A; }
 .mb-flagged { background: rgba(217,79,61,.13); color: #D94F3D; }
-.mb-approved { background: rgba(33,150,83,.12); color: #219653; }
+.mb-approved { background: rgba(var(--primary-rgb),.12); color: #219653; }
 .mb-rejected { background: rgba(142,142,147,.15); color: var(--muted); }
 
 /* ── Reject reason inline ── */
@@ -530,7 +530,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   cursor: pointer; min-height: 44px;
   transition: border-color .25s, background .25s, transform .15s cubic-bezier(.2,1,.4,1);
 }
-.mod-empty-action:hover { border-color: var(--primary, #219653); background: rgba(33,150,83,.04); }
+.mod-empty-action:hover { border-color: var(--primary, #219653); background: rgba(var(--primary-rgb),.04); }
 .mod-empty-action:active { transform: scale(.96); }
 .mod-empty-action:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .mod-empty-action:active { transform: none; } }
@@ -558,5 +558,5 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-notes-empty { font-size: .78rem; color: var(--muted); font-style: italic; margin-bottom: var(--space-2); }
 .mod-note-add { display: flex; gap: var(--space-2); }
 .mod-note-input { flex: 1; padding: 7px 12px; border: .5px solid var(--line); border-radius: 8px; font-size: .82rem; background: var(--bg); color: var(--ink); }
-.mod-note-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(33,150,83,.1); }
+.mod-note-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.1); }
 </style>

@@ -383,7 +383,7 @@ onMounted(() => fetchAll())
 .rpt-open-badge {
   display: inline-flex; align-items: center; padding: 2px 10px;
   border-radius: 100px; font-size: .72rem; font-weight: 600;
-  background: rgba(255,159,10,.1); color: #c67a00;
+  background: rgba(var(--warning-rgb),.1); color: #c67a00;
 }
 
 /* ── Status badges ── */
@@ -396,9 +396,9 @@ onMounted(() => fetchAll())
 .status-pending::before, .status-resolved::before, .status-dismissed::before {
   content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
 }
-.status-pending { background: rgba(255,159,10,.08); color: #c67a00; }
+.status-pending { background: rgba(var(--warning-rgb),.08); color: #c67a00; }
 .status-pending::before { background: #FF9F0A; animation: rpt-pulse 2s ease-in-out infinite; }
-.status-resolved { background: rgba(33,150,83,.08); color: #219653; }
+.status-resolved { background: rgba(var(--primary-rgb),.08); color: #219653; }
 .status-resolved::before { background: #219653; }
 .status-dismissed { background: rgba(142,142,147,.08); color: var(--muted); }
 .status-dismissed::before { background: var(--muted); opacity: .4; }
@@ -457,7 +457,7 @@ onMounted(() => fetchAll())
 .rpt-bulk-hint { font-size: .74rem; color: var(--muted); }
 .rpt-bulk-actions { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
 /* make the primary bulk action more prominent than the secondary ones */
-.rpt-bulk-primary { font-weight: 600; box-shadow: 0 2px 8px rgba(33,150,83,.18); }
+.rpt-bulk-primary { font-weight: 600; box-shadow: 0 2px 8px rgba(var(--primary-rgb),.18); }
 .rpt-bulk-clear {
   min-height: 44px; padding: 6px 12px; border: none; border-radius: 8px;
   background: transparent; color: var(--muted); font-size: .78rem; cursor: pointer;
@@ -510,10 +510,10 @@ onMounted(() => fetchAll())
 }
 
 /* ── Dark ── */
-.dark .status-pending { background: rgba(255,159,10,.12); color: #ffb340; }
-.dark .status-resolved { background: rgba(33,150,83,.12); }
+.dark .status-pending { background: rgba(var(--warning-rgb),.12); color: #ffb340; }
+.dark .status-resolved { background: rgba(var(--primary-rgb),.12); }
 .dark .status-dismissed { background: rgba(255,255,255,.06); }
-.dark .rpt-open-badge { background: rgba(255,159,10,.12); color: #ffb340; }
+.dark .rpt-open-badge { background: rgba(var(--warning-rgb),.12); color: #ffb340; }
 .dark .rpt-chip { background: rgba(255,255,255,.04); }
 .dark .rpt-chip-count { background: rgba(255,255,255,.1); }
 .dark .rpt-chip.active .rpt-chip-count { background: rgba(255,255,255,.25); }

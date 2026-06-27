@@ -395,7 +395,7 @@ onUnmounted(() => {
 .admin-actions .btn-danger { color: var(--error, #D94F3D); border-color: var(--error, #D94F3D); }
 .admin-actions .btn-danger:hover { background: var(--error, #D94F3D); color: #fff; box-shadow: 0 2px 8px rgba(217,79,61,.2); }
 .admin-actions .btn-success { color: var(--primary, #219653); border-color: var(--primary); }
-.admin-actions .btn-success:hover { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(33,150,83,.2); }
+.admin-actions .btn-success:hover { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(var(--primary-rgb),.2); }
 
 /* ── Pagination ── */
 .admin-pagination { display: flex; gap: var(--space-2); justify-content: center; margin-top: var(--space-4); }
@@ -409,7 +409,7 @@ onUnmounted(() => {
 .admin-pagination button:active:not(:disabled) { transform: scale(.95); transition-duration: .08s; }
 .admin-pagination button:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .admin-pagination button:disabled { opacity: .35; cursor: default; }
-.admin-pagination button.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 2px 8px rgba(33,150,83,.2); }
+.admin-pagination button.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 2px 8px rgba(var(--primary-rgb),.2); }
 
 /* ── Shared utilities ── */
 .admin-loading { display: flex; align-items: center; justify-content: center; padding: var(--space-10); }
@@ -426,7 +426,7 @@ onUnmounted(() => {
   color: var(--muted); font-weight: 500; min-height: 36px;
   transition: border-color .25s, color .25s, background .25s, transform .35s cubic-bezier(.2,1,.4,1);
 }
-.admin-refresh:hover { border-color: var(--primary, #219653); color: var(--primary); background: rgba(33,150,83,.04); }
+.admin-refresh:hover { border-color: var(--primary, #219653); color: var(--primary); background: rgba(var(--primary-rgb),.04); }
 .admin-refresh:active { transform: scale(.95); transition-duration: .08s; }
 .admin-refresh:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .admin-refresh:disabled { opacity: .35; cursor: default; }

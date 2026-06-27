@@ -88,7 +88,7 @@ onMounted(reload)
 
 .cs-help {
   max-width: 680px; margin-bottom: var(--space-5); padding: var(--space-4);
-  background: rgba(33,150,83,.04); border: .5px solid var(--line); border-radius: 12px;
+  background: rgba(var(--primary-rgb),.04); border: .5px solid var(--line); border-radius: 12px;
   font-size: .82rem; color: var(--muted); line-height: 1.5;
 }
 .cs-help p { margin: 0 0 var(--space-2); }
@@ -108,7 +108,7 @@ onMounted(reload)
 @keyframes cs-pulse { 0%, 100% { opacity: .3; } 50% { opacity: .6; } }
 .cs-fade-enter-active { transition: opacity .3s cubic-bezier(.2,1,.4,1), transform .3s cubic-bezier(.2,1,.4,1); }
 .cs-fade-enter-from { opacity: 0; transform: translateY(6px); }
-.dark .cs-help { background: rgba(33,150,83,.08); }
+.dark .cs-help { background: rgba(var(--primary-rgb),.08); }
 .dark .cs-help pre { background: var(--card, #2c2c2e); }
 @media (prefers-reduced-motion: reduce) {
   .cs-skel-item { animation: none; }

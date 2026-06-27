@@ -162,7 +162,7 @@ function addChild(parentIdx: number) {
   transition: box-shadow .3s cubic-bezier(.2,1,.4,1), border-color .3s;
 }
 .sl-item:hover { box-shadow: 0 2px 12px rgba(0,0,0,.05); }
-.sl-item-editing { border-color: var(--primary, #219653); box-shadow: 0 0 0 3px rgba(33,150,83,.08); }
+.sl-item-editing { border-color: var(--primary, #219653); box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.08); }
 
 .sl-item-head {
   display: flex; align-items: center; gap: var(--space-3);
@@ -211,7 +211,7 @@ function addChild(parentIdx: number) {
 }
 .sl-edit-input:focus {
   outline: none; border-color: var(--primary, #219653);
-  box-shadow: 0 0 0 3px rgba(33,150,83,.1);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.1);
 }
 
 .sl-children {
@@ -227,7 +227,7 @@ function addChild(parentIdx: number) {
 .sl-add-child {
   align-self: flex-start; padding: 8px 14px; border-radius: 10px;
   font-size: .8rem; font-weight: 500; color: var(--primary, #219653);
-  background: rgba(33,150,83,.06); border: none; cursor: pointer;
+  background: rgba(var(--primary-rgb),.06); border: none; cursor: pointer;
   min-height: 44px;
   transition: background .2s, transform .15s cubic-bezier(.2,1,.4,1);
 }
@@ -241,7 +241,7 @@ function addChild(parentIdx: number) {
   cursor: pointer; min-height: 44px;
   transition: background .2s cubic-bezier(.2,1,.4,1), border-color .2s, transform .15s;
 }
-.sl-add:hover { background: rgba(33,150,83,.04); border-color: var(--primary, #219653); }
+.sl-add:hover { background: rgba(var(--primary-rgb),.04); border-color: var(--primary, #219653); }
 .sl-add:active { transform: scale(.98); }
 .sl-add:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 
@@ -260,7 +260,7 @@ function addChild(parentIdx: number) {
 
 /* ── Dark ── */
 .dark .sl-item { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
-.dark .sl-item-editing { border-color: var(--primary, #219653); box-shadow: 0 0 0 3px rgba(33,150,83,.15); }
+.dark .sl-item-editing { border-color: var(--primary, #219653); box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.15); }
 .dark .sl-btn { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 .dark .sl-edit-input { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.08); }
 .dark .sl-add { border-color: rgba(255,255,255,.1); }

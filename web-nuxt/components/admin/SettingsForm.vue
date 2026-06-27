@@ -437,7 +437,7 @@ async function onReset() {
 .dark .sf-color-clear { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
 .dark .sf-toggle-track { background: rgba(255,255,255,.15); }
 .dark .sf-toggle-thumb { box-shadow: 0 1px 4px rgba(0,0,0,.35); }
-.dark .sf-dirty-badge { color: #5fcf8a; background: rgba(33,150,83,.18); border-color: rgba(95,207,138,.3); }
+.dark .sf-dirty-badge { color: #5fcf8a; background: rgba(var(--primary-rgb),.18); border-color: rgba(95,207,138,.3); }
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {

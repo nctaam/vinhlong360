@@ -134,7 +134,7 @@ async function submit() {
   border-radius: 12px; font: inherit; font-size: .9rem; background: var(--bg); color: var(--ink);
   resize: vertical; min-height: 72px; transition: border-color .2s, box-shadow .2s;
 }
-.rm-textarea:focus { outline: none; border-color: var(--primary, #219653); box-shadow: 0 0 0 3px rgba(33,150,83,.1); }
+.rm-textarea:focus { outline: none; border-color: var(--primary, #219653); box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.1); }
 
 .rm-actions { display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-4); flex-shrink: 0; }
 .rm-actions .btn { min-height: 44px; }

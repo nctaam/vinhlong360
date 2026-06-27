@@ -180,7 +180,7 @@ onMounted(loadProvisional)
   min-width: 24px; height: 24px; padding: 0 8px;
   border-radius: 100px; font-size: .72rem; font-weight: 700;
 }
-.dth-count-warn { background: rgba(255,159,10,.1); color: #c67a00; }
+.dth-count-warn { background: rgba(var(--warning-rgb),.1); color: #c67a00; }
 
 .dth-summary { display: block; color: var(--muted); margin-top: 2px; font-size: .8rem; }
 .dth-type-badge {
@@ -195,8 +195,8 @@ onMounted(loadProvisional)
   min-width: 40px; padding: 2px 8px; border-radius: 100px;
   font-size: .72rem; font-weight: 700; font-variant-numeric: tabular-nums;
 }
-.dth-conf-high { background: rgba(33,150,83,.1); color: #1a7a43; }
-.dth-conf-low { background: rgba(255,159,10,.12); color: #c67a00; }
+.dth-conf-high { background: rgba(var(--primary-rgb),.1); color: #1a7a43; }
+.dth-conf-low { background: rgba(var(--warning-rgb),.12); color: #c67a00; }
 
 /* ── Empty state ── */
 .dth-empty {
@@ -227,7 +227,7 @@ onMounted(loadProvisional)
 .dth-tool-icon { font-size: 1.6rem; }
 .dth-tool-spinner {
   width: 22px; height: 22px; border-radius: 50%;
-  border: 2px solid rgba(33,150,83,.2); border-top-color: var(--primary, #219653);
+  border: 2px solid rgba(var(--primary-rgb),.2); border-top-color: var(--primary, #219653);
   animation: dth-spin .7s linear infinite;
 }
 @keyframes dth-spin { to { transform: rotate(360deg); } }
@@ -248,9 +248,9 @@ onMounted(loadProvisional)
 .dark .dth-empty { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 .dark .dth-tool-card { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 .dark .dth-tool-card:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(0,0,0,.4); }
-.dark .dth-conf-high { background: rgba(33,150,83,.18); color: #4ade80; }
-.dark .dth-conf-low { background: rgba(255,159,10,.14); color: #ffb340; }
+.dark .dth-conf-high { background: rgba(var(--primary-rgb),.18); color: #4ade80; }
+.dark .dth-conf-low { background: rgba(var(--warning-rgb),.14); color: #ffb340; }
 .dark .dth-tool-label { color: var(--ink); }
-.dark .dth-count-warn { background: rgba(255,159,10,.12); color: #ffb340; }
+.dark .dth-count-warn { background: rgba(var(--warning-rgb),.12); color: #ffb340; }
 .dark .dth-type-badge { background: rgba(255,255,255,.06); }
 </style>

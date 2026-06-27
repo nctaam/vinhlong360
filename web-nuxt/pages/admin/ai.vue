@@ -39,14 +39,14 @@
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon" style="background: rgba(255,159,10,.1); color: #FF9F0A;">&#128338;</div>
+        <div class="ai-icon" style="background: rgba(var(--warning-rgb),.1); color: #FF9F0A;">&#128338;</div>
         <div>
           <div class="stat-value">{{ uptime }}</div>
           <div class="stat-label">Uptime</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon" style="background: rgba(33,150,83,.1); color: #219653;">&#127760;</div>
+        <div class="ai-icon" style="background: rgba(var(--primary-rgb),.1); color: #219653;">&#127760;</div>
         <div>
           <div class="stat-value">{{ health?.entities || '—' }}</div>
           <div class="stat-label">Entities (KB)</div>
@@ -245,8 +245,8 @@ const statusColor = computed(() => {
 })
 const statusBg = computed(() => {
   if (!health.value) return 'rgba(142,142,147,.1)'
-  if (health.value.status === 'ok') return 'rgba(33,150,83,.1)'
-  if (health.value.status === 'degraded') return 'rgba(255,159,10,.1)'
+  if (health.value.status === 'ok') return 'rgba(var(--primary-rgb),.1)'
+  if (health.value.status === 'degraded') return 'rgba(var(--warning-rgb),.1)'
   return 'rgba(217,79,61,.1)'
 })
 
@@ -442,7 +442,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
   margin-right: 6px; vertical-align: middle;
 }
 .ai-near-cap {
-  border-color: var(--warning, #e67e22); background: rgba(255,159,10,.04);
+  border-color: var(--warning, #e67e22); background: rgba(var(--warning-rgb),.04);
   border-left-width: 4px; border-left-style: dashed;
   animation: ai-near-cap-pulse 2s ease-in-out infinite;
 }
@@ -463,7 +463,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-subsys-dot {
   width: 6px; height: 6px; border-radius: 50%;
 }
-.ai-subsys-on { background: rgba(33,150,83,.06); color: #219653; }
+.ai-subsys-on { background: rgba(var(--primary-rgb),.06); color: #219653; }
 .ai-subsys-on .ai-subsys-dot { background: #219653; animation: ai-sub-pulse 2.5s ease-in-out infinite; }
 .ai-subsys-off { background: rgba(217,79,61,.06); color: #D94F3D; }
 .ai-subsys-off .ai-subsys-dot { background: #D94F3D; opacity: .5; }
@@ -494,7 +494,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
   color: #fff; font-weight: 600;
 }
 .ai-action-primary:hover:not(:disabled) {
-  transform: translateY(-3px); box-shadow: 0 6px 20px rgba(33,150,83,.28);
+  transform: translateY(-3px); box-shadow: 0 6px 20px rgba(var(--primary-rgb),.28);
   border-color: var(--primary, #219653);
 }
 /* Secondary action — outline style */
@@ -513,7 +513,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-trigger-result {
   margin-top: var(--space-3); padding: var(--space-3) var(--space-4);
   border-radius: 10px; font-size: .85rem;
-  background: rgba(33,150,83,.06); border: .5px solid rgba(33,150,83,.15);
+  background: rgba(var(--primary-rgb),.06); border: .5px solid rgba(var(--primary-rgb),.15);
   color: #219653;
 }
 .ai-trigger-result.ai-result-error {
@@ -522,9 +522,9 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-triage-box {
   display: flex; align-items: flex-start; gap: var(--space-2);
   margin-top: var(--space-3); padding: var(--space-4);
-  border: .5px solid rgba(33,150,83,.2); border-left: 3px solid #219653; border-radius: 12px;
+  border: .5px solid rgba(var(--primary-rgb),.2); border-left: 3px solid #219653; border-radius: 12px;
   font-size: .85rem; line-height: 1.6;
-  background: rgba(33,150,83,.05);
+  background: rgba(var(--primary-rgb),.05);
 }
 .ai-triage-box .ai-triage-text { white-space: pre-wrap; flex: 1; min-width: 0; }
 .ai-triage-icon { font-weight: 800; color: #219653; flex-shrink: 0; line-height: 1.6; }
@@ -538,7 +538,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
   display: flex; align-items: flex-start; gap: var(--space-2);
   font-size: .78rem; color: var(--muted); margin-top: var(--space-3);
   padding: var(--space-3) var(--space-4); border-radius: 10px;
-  background: rgba(255,159,10,.04); border: 1px solid rgba(255,159,10,.2);
+  background: rgba(var(--warning-rgb),.04); border: 1px solid rgba(var(--warning-rgb),.2);
 }
 .ai-cost-note-icon { color: #e67e22; flex-shrink: 0; font-weight: 700; line-height: 1.4; }
 .ai-cost-note strong { color: var(--ink); }
@@ -547,16 +547,16 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .dark .ai-section { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); border-left-color: var(--primary, #219653); box-shadow: 0 1px 3px rgba(0,0,0,.3); }
 .dark .ai-dq-track { background: rgba(255,255,255,.06); }
 .dark .ai-metric { background: var(--bg, #1c1c1e); border-color: rgba(255,255,255,.08); }
-.dark .ai-subsys-on { background: rgba(33,150,83,.1); }
+.dark .ai-subsys-on { background: rgba(var(--primary-rgb),.1); }
 .dark .ai-subsys-off { background: rgba(217,79,61,.1); }
 .dark .ai-action-secondary { background: var(--bg, #1c1c1e); border-color: rgba(255,255,255,.08); color: var(--ink); }
 .dark .ai-action-btn:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(0,0,0,.3); }
 .dark .ai-action-primary { color: #fff; }
-.dark .ai-triage-box { background: rgba(33,150,83,.1); border-color: rgba(33,150,83,.3); }
+.dark .ai-triage-box { background: rgba(var(--primary-rgb),.1); border-color: rgba(var(--primary-rgb),.3); }
 .dark .ai-triage-box.ai-triage-error { background: rgba(217,79,61,.12); border-color: #D94F3D; border-left-color: #D94F3D; }
-.dark .ai-trigger-result { background: rgba(33,150,83,.1); border-color: rgba(33,150,83,.2); }
+.dark .ai-trigger-result { background: rgba(var(--primary-rgb),.1); border-color: rgba(var(--primary-rgb),.2); }
 .dark .ai-trigger-result.ai-result-error { background: rgba(217,79,61,.12); border-color: #D94F3D; }
-.dark .ai-cost-note { background: rgba(255,159,10,.06); border-color: rgba(255,159,10,.25); }
+.dark .ai-cost-note { background: rgba(var(--warning-rgb),.06); border-color: rgba(var(--warning-rgb),.25); }
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {

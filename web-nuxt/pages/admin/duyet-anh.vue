@@ -306,7 +306,7 @@ onMounted(() => fetchQueue())
   position: absolute; top: 8px; right: 8px; font-size: .68rem; font-weight: 700;
   padding: 2px 8px; border-radius: 100px; color: #fff; backdrop-filter: blur(4px);
 }
-.conf-high { background: rgba(33,150,83,.9); }
+.conf-high { background: rgba(var(--primary-rgb),.9); }
 .conf-mid { background: rgba(201,138,26,.9); }
 .conf-low { background: rgba(217,79,61,.9); }
 
@@ -314,7 +314,7 @@ onMounted(() => fetchQueue())
 .img-entity { font-weight: 600; font-size: .9rem; color: var(--ink); line-height: 1.3; }
 .img-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .img-type-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .7rem; font-weight: 600; background: rgba(142,142,147,.1); color: var(--muted); }
-.img-lic-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .7rem; font-weight: 700; background: rgba(33,150,83,.12); color: #219653; }
+.img-lic-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .7rem; font-weight: 700; background: rgba(var(--primary-rgb),.12); color: #219653; }
 .img-lic-badge.lic-warn { background: rgba(217,79,61,.13); color: #D94F3D; }
 .img-detail { font-size: .76rem; color: var(--muted); line-height: 1.4; }
 .img-detail-k { font-weight: 600; color: var(--ink); }
@@ -326,8 +326,8 @@ onMounted(() => fetchQueue())
 .img-actions .btn-success, .img-actions .btn-danger { flex: 1; }
 .img-status-final { padding: var(--space-3); margin-top: auto; }
 .img-badge { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: .72rem; font-weight: 700; }
-.ib-pending { background: rgba(255,159,10,.12); color: #C98A1A; }
-.ib-approved { background: rgba(33,150,83,.12); color: #219653; }
+.ib-pending { background: rgba(var(--warning-rgb),.12); color: #C98A1A; }
+.ib-approved { background: rgba(var(--primary-rgb),.12); color: #219653; }
 .ib-rejected { background: rgba(142,142,147,.15); color: var(--muted); }
 
 .img-reject { padding: 0 var(--space-3) var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); }

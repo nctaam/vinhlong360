@@ -461,7 +461,7 @@ onMounted(() => fetchUsers())
   background: var(--bg); color: var(--ink);
   cursor: pointer; transition: border-color .2s cubic-bezier(.2,1,.4,1), box-shadow .2s;
 }
-.usr-filter-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(33,150,83,.1); }
+.usr-filter-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(var(--primary-rgb),.1); }
 .usr-filter-select:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; box-shadow: none; }
 
 /* ── Sortable column headers ── */
@@ -473,7 +473,7 @@ onMounted(() => fetchUsers())
   cursor: pointer; white-space: nowrap;
   transition: background .2s cubic-bezier(.2,1,.4,1), color .2s;
 }
-.usr-sort-th:hover { background: var(--primary-light, rgba(33,150,83,.08)); color: var(--primary, #219653); }
+.usr-sort-th:hover { background: var(--primary-light, rgba(var(--primary-rgb),.08)); color: var(--primary, #219653); }
 .usr-sort-th:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .usr-sort-th.usr-sort-active { color: var(--primary, #219653); }
 .usr-sort-arrow {
@@ -482,19 +482,19 @@ onMounted(() => fetchUsers())
 }
 
 .dark .usr-filter-select { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
-.dark .usr-sort-th:hover { background: rgba(33,150,83,.16); }
+.dark .usr-sort-th:hover { background: rgba(var(--primary-rgb),.16); }
 
 /* ── User cell with avatar ── */
 .usr-cell { display: flex; align-items: center; gap: var(--space-3); }
 .usr-avatar {
   width: 32px; height: 32px; border-radius: 50%;
-  background: var(--primary-light, rgba(33,150,83,.12)); color: var(--primary, #219653);
+  background: var(--primary-light, rgba(var(--primary-rgb),.12)); color: var(--primary, #219653);
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: .78rem; flex-shrink: 0;
   text-transform: uppercase;
   transition: transform .25s cubic-bezier(.2,1,.4,1), box-shadow .25s;
 }
-.usr-cell:hover .usr-avatar { transform: scale(1.08); box-shadow: 0 2px 8px rgba(33,150,83,.15); }
+.usr-cell:hover .usr-avatar { transform: scale(1.08); box-shadow: 0 2px 8px rgba(var(--primary-rgb),.15); }
 
 /* ── Role select ── */
 .usr-role-select {
@@ -503,7 +503,7 @@ onMounted(() => fetchUsers())
   background: var(--bg); color: var(--ink);
   cursor: pointer; transition: border-color .2s cubic-bezier(.2,1,.4,1), box-shadow .2s;
 }
-.usr-role-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(33,150,83,.1); }
+.usr-role-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(var(--primary-rgb),.1); }
 .usr-role-select:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; box-shadow: none; }
 
 /* ── Status badges with dot ── */
@@ -516,7 +516,7 @@ onMounted(() => fetchUsers())
 .usr-status-dot {
   width: 6px; height: 6px; border-radius: 50%;
 }
-.usr-active { background: rgba(33,150,83,.08); color: #219653; }
+.usr-active { background: rgba(var(--primary-rgb),.08); color: #219653; }
 .usr-active .usr-status-dot { background: #219653; animation: usr-pulse 2s ease-in-out infinite; }
 .usr-banned { background: rgba(217,79,61,.08); color: #D94F3D; }
 .usr-banned .usr-status-dot { background: #D94F3D; }
@@ -537,7 +537,7 @@ onMounted(() => fetchUsers())
 }
 .usr-rolecount:hover { border-color: var(--primary, #219653); color: var(--primary, #219653); }
 .usr-rolecount:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
-.usr-rolecount.active { border-color: var(--primary, #219653); color: var(--primary, #219653); background: var(--primary-light, rgba(33,150,83,.08)); }
+.usr-rolecount.active { border-color: var(--primary, #219653); color: var(--primary, #219653); background: var(--primary-light, rgba(var(--primary-rgb),.08)); }
 .usr-rolecount-n {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 18px; padding: 0 5px; height: 18px;
@@ -567,7 +567,7 @@ onMounted(() => fetchUsers())
 .usr-confirm-actions .btn-danger { color: var(--error, #D94F3D); border-color: var(--error, #D94F3D); }
 .usr-confirm-actions .btn-danger:hover { background: var(--error, #D94F3D); color: #fff; box-shadow: 0 2px 8px rgba(217,79,61,.2); }
 .usr-confirm-actions .btn-success { color: var(--primary, #219653); border-color: var(--primary, #219653); }
-.usr-confirm-actions .btn-success:hover { background: var(--primary, #219653); color: #fff; box-shadow: 0 2px 8px rgba(33,150,83,.2); }
+.usr-confirm-actions .btn-success:hover { background: var(--primary, #219653); color: #fff; box-shadow: 0 2px 8px rgba(var(--primary-rgb),.2); }
 .usr-confirm-cancel:hover { background: var(--bg-alt); }
 
 /* ── Loading skeleton rows ── */
@@ -588,14 +588,14 @@ onMounted(() => fetchUsers())
 }
 
 /* ── Dark ── */
-.dark .usr-avatar { background: rgba(33,150,83,.2); }
-.dark .usr-cell:hover .usr-avatar { box-shadow: 0 2px 8px rgba(33,150,83,.25); }
+.dark .usr-avatar { background: rgba(var(--primary-rgb),.2); }
+.dark .usr-cell:hover .usr-avatar { box-shadow: 0 2px 8px rgba(var(--primary-rgb),.25); }
 .dark .usr-role-select { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
-.dark .usr-active { background: rgba(33,150,83,.12); }
+.dark .usr-active { background: rgba(var(--primary-rgb),.12); }
 .dark .usr-banned { background: rgba(217,79,61,.12); }
 .dark .usr-rolecount { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
 .dark .usr-rolecount-n { background: rgba(255,255,255,.12); color: var(--ink); }
-.dark .usr-rolecount.active { background: rgba(33,150,83,.18); }
+.dark .usr-rolecount.active { background: rgba(var(--primary-rgb),.18); }
 .dark .usr-skeleton-line { background: linear-gradient(90deg, rgba(255,255,255,.06) 25%, rgba(255,255,255,.12) 50%, rgba(255,255,255,.06) 75%); background-size: 200% 100%; }
 .dark .usr-confirm-actions button { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
 .dark .usr-confirm-cancel:hover { background: rgba(255,255,255,.06); }

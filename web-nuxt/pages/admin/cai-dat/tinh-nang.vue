@@ -161,7 +161,7 @@ onMounted(reload)
   background: var(--primary, #219653); color: #fff; border: none; cursor: pointer; min-height: 44px;
   transition: transform .2s cubic-bezier(.2,1,.4,1), box-shadow .2s;
 }
-.sf-save:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 4px 12px rgba(33,150,83,.2); }
+.sf-save:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 4px 12px rgba(var(--primary-rgb),.2); }
 .sf-save:active:not(:disabled) { transform: scale(.97); }
 .sf-save:disabled { opacity: .45; cursor: not-allowed; }
 .sf-reset {

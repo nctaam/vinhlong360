@@ -53,14 +53,14 @@
         </div>
       </div>
       <div class="stat-card" :class="{ 'status-warn': (data.gaps || []).length > 5 }">
-        <div class="tk-icon" style="background: rgba(255,159,10,.1); color: #FF9F0A;">&#128371;</div>
+        <div class="tk-icon" style="background: rgba(var(--warning-rgb),.1); color: #FF9F0A;">&#128371;</div>
         <div class="tk-stat-body">
           <div class="stat-value">{{ (data.gaps || []).length }}</div>
           <div class="stat-label">Knowledge gaps</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="tk-icon" style="background: rgba(33,150,83,.1); color: #219653;">&#128176;</div>
+        <div class="tk-icon" style="background: rgba(var(--primary-rgb),.1); color: #219653;">&#128176;</div>
         <div class="tk-stat-body">
           <div class="stat-value">
             {{ costTotal }}
@@ -260,7 +260,7 @@ onMounted(fetchData)
   font-size: .62rem; font-weight: 700; line-height: 1;
   text-transform: uppercase; letter-spacing: .4px;
   padding: 2px 6px; border-radius: 100px;
-  background: rgba(33,150,83,.12); color: #219653;
+  background: rgba(var(--primary-rgb),.12); color: #219653;
   align-self: center;
 }
 
@@ -270,7 +270,7 @@ onMounted(fetchData)
   background: rgba(230,126,34,.04);
 }
 .stat-card.status-warn .tk-icon {
-  background: rgba(255,159,10,.18) !important;
+  background: rgba(var(--warning-rgb),.18) !important;
   color: var(--warning, #e67e22) !important;
 }
 
@@ -310,10 +310,10 @@ onMounted(fetchData)
   font-variant-numeric: tabular-nums;
   transition: background .2s, color .2s;
 }
-.tk-count-warn { background: rgba(255,159,10,.1); color: #c67a00; }
+.tk-count-warn { background: rgba(var(--warning-rgb),.1); color: #c67a00; }
 /* Brighten badge when scanning the panel */
 .tk-panel:hover .tk-count-badge { background: rgba(52,120,246,.22); }
-.tk-panel:hover .tk-count-warn { background: rgba(255,159,10,.22); }
+.tk-panel:hover .tk-count-warn { background: rgba(var(--warning-rgb),.22); }
 
 /* ── List items ── */
 .tk-list { list-style: none; padding: 0; margin: 0; }
@@ -337,7 +337,7 @@ onMounted(fetchData)
 /* Semantic ranking: top-3 solid, 4-10 muted outline, rest plain */
 .tk-list li:nth-child(-n+3) .tk-rank { background: var(--primary, #219653); color: #fff; }
 .tk-list li:nth-child(n+4):nth-child(-n+10) .tk-rank {
-  background: transparent; border: 1px solid rgba(33,150,83,.3); color: #219653;
+  background: transparent; border: 1px solid rgba(var(--primary-rgb),.3); color: #219653;
 }
 .tk-query { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tk-hits {
@@ -386,14 +386,14 @@ onMounted(fetchData)
 .dark .tk-panel:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 4px 16px rgba(0,0,0,.3); border-color: rgba(52,120,246,.3); }
 .dark .tk-list li:hover { background: rgba(255,255,255,.03); }
 .dark .tk-rank { background: rgba(255,255,255,.06); }
-.dark .tk-list li:nth-child(n+4):nth-child(-n+10) .tk-rank { border-color: rgba(33,150,83,.5); color: #4fb87a; }
+.dark .tk-list li:nth-child(n+4):nth-child(-n+10) .tk-rank { border-color: rgba(var(--primary-rgb),.5); color: #4fb87a; }
 .dark .tk-count-badge { background: rgba(52,120,246,.15); }
-.dark .tk-count-warn { background: rgba(255,159,10,.15); color: #ffb340; }
+.dark .tk-count-warn { background: rgba(var(--warning-rgb),.15); color: #ffb340; }
 .dark .tk-panel:hover .tk-count-badge { background: rgba(52,120,246,.3); }
-.dark .tk-panel:hover .tk-count-warn { background: rgba(255,159,10,.28); }
+.dark .tk-panel:hover .tk-count-warn { background: rgba(var(--warning-rgb),.28); }
 /* stat-value (primary green) — keep high contrast in dark */
 .dark .stat-card .stat-value { color: #4fb87a; }
-.dark .tk-cost-scope { background: rgba(33,150,83,.22); color: #6fce96; }
+.dark .tk-cost-scope { background: rgba(var(--primary-rgb),.22); color: #6fce96; }
 .dark .stat-card.status-warn { background: rgba(240,160,80,.08); border-color: var(--warning, #f0a050); }
 .dark .tk-sk-card, .dark .tk-sk-panel { background: rgba(255,255,255,.06); }
 
