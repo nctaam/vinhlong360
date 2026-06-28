@@ -1,5 +1,6 @@
 <template>
   <section v-if="entity" class="entity-detail-page">
+    <div class="scroll-progress" :style="{ transform: `scaleX(${progress})` }" aria-hidden="true" />
     <!-- Breadcrumb -->
     <nav class="breadcrumb" aria-label="Breadcrumb">
       <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
@@ -436,6 +437,7 @@ import { TYPE_META, AREA_META, REL_FWD, REL_BWD } from '~/composables/useConstan
 import { seasonText } from '~/composables/useSeason'
 
 useReveal()
+const { progress } = useScrollProgress()
 const { enabled: ff } = useFeature()
 const { get: ss } = useSiteSettings()
 
