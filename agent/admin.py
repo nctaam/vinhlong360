@@ -18,6 +18,7 @@ import os
 import re
 import subprocess
 import sys
+import threading
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
@@ -63,6 +64,7 @@ def _safe(fn, default):
 # ── Auth dependency ──
 
 _AUDIT_FILE = Path(__file__).resolve().parent / "data" / "admin_audit.jsonl"
+_audit_lock = threading.Lock()
 
 
 from config import settings as _cfg
@@ -72,12 +74,13 @@ _AUDIT_MAX_LINES = _cfg.AUDIT_MAX_LINES
 def _log_admin_audit(actor: str, method: str, path: str, ip: str) -> None:
     """P2-7: ghi nhật ký thao tác admin (ai/làm-gì/khi-nào) — JSONL nhẹ, không chặn request."""
     try:
-        _AUDIT_FILE.parent.mkdir(parents=True, exist_ok=True)
-        rec = {"ts": datetime.now(timezone.utc).isoformat(timespec="seconds"), "actor": actor,
-               "method": method, "path": path, "ip": ip}
-        with open(_AUDIT_FILE, "a", encoding="utf-8") as f:
-            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
-        _maybe_rotate_audit()
+        with _audit_lock:
+            _AUDIT_FILE.parent.mkdir(parents=True, exist_ok=True)
+            rec = {"ts": datetime.now(timezone.utc).isoformat(timespec="seconds"), "actor": actor,
+                   "method": method, "path": path, "ip": ip}
+            with open(_AUDIT_FILE, "a", encoding="utf-8") as f:
+                f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+            _maybe_rotate_audit()
     except Exception:
         logger.exception("Failed to write admin audit log")
 

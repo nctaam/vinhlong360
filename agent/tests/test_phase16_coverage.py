@@ -1174,3 +1174,33 @@ class TestMediumFixesBatch2:
         task.run()
         assert task._consecutive_failures == 0
         assert task.last_error is None
+
+    def test_create_comment_block_check(self):
+        """create_comment must check blocks between commenter and post author."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        idx = src.find("async def create_comment(")
+        assert idx > 0
+        block = src[idx:idx+1500]
+        assert "blocks" in block.lower(), "create_comment must check blocks table"
+        assert "403" in block, "create_comment must return 403 if blocked"
+
+    def test_audit_log_thread_lock(self):
+        """Audit log write+rotate must be protected by threading.Lock."""
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        assert "_audit_lock" in src, "admin.py must define _audit_lock"
+        assert "threading.Lock()" in src, "Must use threading.Lock for audit log"
+        idx = src.find("def _log_admin_audit(")
+        assert idx > 0
+        block = src[idx:idx+400]
+        assert "_audit_lock" in block, "_log_admin_audit must use _audit_lock"
+
+    def test_update_post_optional_content(self):
+        """update_post must handle None content (rating-only update)."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        idx = src.find("async def update_post(")
+        assert idx > 0
+        block = src[idx:idx+2500]
+        assert "new_content is None" in block, \
+            "update_post must handle None content for rating-only updates"
+        assert "elif set_rating" in block, \
+            "update_post must have separate SQL branch for rating-only update"

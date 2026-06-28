@@ -448,29 +448,39 @@ async def update_post(post_id: str, body: UpdatePost, user=Depends(require_user)
             return d
     d = await asyncio.to_thread(_check_owner)
 
-    new_content = (body.content or "").strip()
-    if len(new_content) < 10:
-        raise HTTPException(400, "Nội dung cần ít nhất 10 ký tự")
-    if len(new_content) > 5000:
-        raise HTTPException(400, "Nội dung tối đa 5000 ký tự")
+    new_content = body.content.strip() if body.content is not None else None
+    if new_content is not None:
+        if len(new_content) < 10:
+            raise HTTPException(400, "Nội dung cần ít nhất 10 ký tự")
+        if len(new_content) > 5000:
+            raise HTTPException(400, "Nội dung tối đa 5000 ký tự")
 
-    mod_result = await moderate_content_enhanced(new_content, user_id=str(user["id"]))
-    status = mod_result["status"]
-    hashtags = _extract_hashtags(new_content)
     set_rating = body.rating is not None and d["post_type"] == "review"
     if set_rating and (body.rating < 1 or body.rating > 5):
         raise HTTPException(400, "Đánh giá từ 1 đến 5 sao")
+    if new_content is None and not set_rating:
+        raise HTTPException(400, "Cần cung cấp nội dung hoặc đánh giá để cập nhật")
+
+    status = None
+    hashtags = []
+    if new_content is not None:
+        mod_result = await moderate_content_enhanced(new_content, user_id=str(user["id"]))
+        status = mod_result["status"]
+        hashtags = _extract_hashtags(new_content)
 
     def _update():
         with db._conn() as conn:
-            if set_rating:
+            if new_content is not None and set_rating:
                 db._execute(conn, f"""UPDATE posts SET content={ph}, hashtags={ph}::jsonb,
                               rating={ph}, moderation_status={ph} WHERE id::text={ph}""",
                             (new_content, json.dumps(hashtags, ensure_ascii=False), body.rating, status, post_id))
-            else:
+            elif new_content is not None:
                 db._execute(conn, f"""UPDATE posts SET content={ph}, hashtags={ph}::jsonb,
                               moderation_status={ph} WHERE id::text={ph}""",
                             (new_content, json.dumps(hashtags, ensure_ascii=False), status, post_id))
+            elif set_rating:
+                db._execute(conn, f"""UPDATE posts SET rating={ph} WHERE id::text={ph}""",
+                            (body.rating, post_id))
             return db._fetchone(conn, f"""
                 SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
                        e.name as entity_name, e.type as entity_type
@@ -1115,9 +1125,19 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
     ph = db._ph
     def _query():
         with db._conn() as conn:
-            post = db._fetchone(conn, f"SELECT id FROM posts WHERE id::text = {ph}", (post_id,))
+            post = db._fetchone(conn, f"SELECT id, user_id FROM posts WHERE id::text = {ph}", (post_id,))
             if not post:
                 raise HTTPException(404, "Bài viết không tồn tại")
+            post_author = str(db._row_to_dict(post)["user_id"])
+            me = str(user["id"])
+            if post_author != me:
+                is_blocked = db._fetchone(conn, f"""
+                    SELECT 1 FROM blocks
+                    WHERE (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+                       OR (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+                """, (post_author, me, me, post_author))
+                if is_blocked:
+                    raise HTTPException(403, "Không thể bình luận bài viết này")
             cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM comments WHERE post_id::text = {ph}", (post_id,))
             if cnt and int(db._row_to_dict(cnt)["c"]) >= MAX_COMMENTS_PER_POST:
                 raise HTTPException(400, "Bài viết đã đạt giới hạn bình luận")
