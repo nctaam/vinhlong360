@@ -13,11 +13,11 @@
       </div>
       <div v-if="itineraries?.length" class="catalog-stats">
         <div class="stat-item">
-          <span class="stat-num">{{ itineraries.length }}</span>
+          <CountUp :value="itineraries.length" class="stat-num" />
           <span class="stat-label">lịch trình</span>
         </div>
         <div v-for="a in areaCounts" :key="a.key" class="stat-item">
-          <span class="stat-num">{{ a.count }}</span>
+          <CountUp :value="a.count" class="stat-num" />
           <span class="stat-label">{{ a.name }}</span>
         </div>
       </div>
@@ -57,7 +57,7 @@
     </ClientOnly>
 
     <!-- Region quick-picks -->
-    <section class="block">
+    <section class="block band">
       <div class="section-head">
         <h2>Chọn theo khu vực</h2>
       </div>
@@ -80,6 +80,17 @@
       <p>Mỗi lịch trình được thiết kế dựa trên kinh nghiệm thực tế, sắp xếp các điểm đến theo thứ tự hợp lý về khoảng cách và thời gian. Bạn chỉ cần chọn lịch trình phù hợp với số ngày đi, sở thích (văn hoá, ẩm thực, thiên nhiên) và phương tiện (xe máy, ô tô, xuồng). Mỗi điểm dừng đều có thông tin thực tế: giờ mở cửa, giá tham khảo, mẹo di chuyển.</p>
       <p>Có thể kết hợp nhiều lịch trình hoặc tuỳ chỉnh — bỏ bớt điểm dừng, thêm điểm mới, thay đổi thứ tự. Tất cả lịch trình đều miễn phí và có thể lưu vào tài khoản để xem lại khi đi.</p>
     </section>
+
+    <!-- Interstitial -->
+    <CatalogInterstitial
+      v-if="itineraries?.length"
+      fact="Mỗi lịch trình được thiết kế dựa trên kinh nghiệm thực tế — lưu vào tài khoản để xem lại khi đi."
+      icon="💡"
+      :links="[
+        { to: '/tao-lich-trinh', label: 'Tự tạo lịch trình' },
+        { to: '/du-lich', label: 'Khám phá du lịch' },
+      ]"
+    />
 
     <!-- Divider -->
     <div class="catalog-divider">

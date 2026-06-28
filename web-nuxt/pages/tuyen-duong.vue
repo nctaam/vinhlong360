@@ -13,11 +13,11 @@
       </div>
       <div class="catalog-stats">
         <div class="stat-item">
-          <span class="stat-num">{{ ROUTES.length }}</span>
+          <CountUp :value="ROUTES.length" class="stat-num" />
           <span class="stat-label">tuyến đường</span>
         </div>
         <div class="stat-item">
-          <span class="stat-num">3</span>
+          <CountUp :value="3" class="stat-num" />
           <span class="stat-label">khu vực</span>
         </div>
       </div>
