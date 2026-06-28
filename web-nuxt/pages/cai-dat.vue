@@ -742,9 +742,10 @@ onUnmounted(() => {
 .sf-input {
   width: 100%; padding: .65rem .8rem; border: 1px solid var(--border-input);
   border-radius: var(--radius-md); background: var(--bg); color: var(--ink-900);
-  font: inherit;
+  font: inherit; transition: border-color .25s var(--ease-out), box-shadow .25s var(--ease-out), background .25s var(--ease-out);
 }
-.sf-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.sf-input:hover:not(:focus) { border-color: var(--ink-700); }
+.sf-input:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 33,150,83), .15); background: var(--card); }
 .sf-textarea { resize: vertical; min-height: 90px; }
 .sf-error { color: var(--danger, #c0392b); font-size: .85rem; }
 .sf-success { color: var(--accent, #219653); font-size: .85rem; }
@@ -770,7 +771,7 @@ onUnmounted(() => {
 .sf-avatar-info { display: flex; flex-direction: column; gap: .25rem; }
 .sf-avatar-info .sf-hint { font-size: .8rem; }
 .btn-sm { padding: .3rem .7rem; font-size: .85rem; }
-.settings-card h2 { margin: 0 0 1rem; font-size: 1.2rem; }
+.settings-card h2 { margin: 0 0 1rem; font-size: 1.2rem; padding-bottom: var(--space-3); border-bottom: 1px solid var(--line); }
 .settings-card + .settings-card { margin-top: 1.25rem; }
 .sessions-list { display: flex; flex-direction: column; gap: .5rem; }
 .session-item { display: flex; align-items: center; gap: .75rem; padding: .6rem .8rem; border: 1px solid var(--border-input); border-radius: var(--radius-md); }

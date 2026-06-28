@@ -11,8 +11,8 @@
 .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .btn:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; filter: grayscale(.3); }
 
-.btn-primary { background: var(--primary); color: var(--text-on-dark, #fff); }
-.btn-primary:hover:not(:disabled) { opacity: .9; box-shadow: var(--shadow-sm); }
+.btn-primary { background: linear-gradient(135deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 85%, #000) 100%); color: var(--text-on-dark, #fff); }
+.btn-primary:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(var(--primary-rgb), .35); }
 
 .btn-accent { background: var(--accent); color: var(--ink); }
 .btn-accent:hover:not(:disabled) { opacity: .9; box-shadow: var(--shadow-sm); }
@@ -50,6 +50,8 @@
 .input.error, .textarea.error { border-color: var(--error); box-shadow: 0 0 0 3px var(--error-bg); animation: inputShake .4s var(--ease-out); }
 .input.success, .textarea.success { border-color: var(--secondary); box-shadow: 0 0 0 3px rgba(var(--secondary-rgb), .12); }
 @keyframes inputShake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-4px); } 40%, 80% { transform: translateX(4px); } }
+.input:required:not(:placeholder-shown):valid { border-color: var(--secondary); }
+.input:required:not(:placeholder-shown):invalid { border-color: var(--error); }
 .textarea { resize: vertical; min-height: 80px; }
 .input:disabled, .textarea:disabled, .select:disabled {
   background: var(--bg-warm); border-color: var(--line); color: var(--muted);
@@ -573,7 +575,9 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 }
 
 /* ── Empty State ── */
-.empty-state { text-align: center; padding: var(--space-12) var(--space-5); }
+.empty-state { text-align: center; padding: var(--space-12) var(--space-5); position: relative; }
+.empty-state::before { content: ""; position: absolute; top: 50%; left: 50%; width: 280px; height: 280px; transform: translate(-50%, -55%); border-radius: 50%; background: radial-gradient(circle, rgba(var(--primary-rgb), .06) 0%, transparent 70%); pointer-events: none; z-index: 0; }
+.empty-state > * { position: relative; z-index: 1; }
 .empty-icon { font-size: 3rem; display: block; margin-bottom: var(--space-4); line-height: 1; }
 .empty-illust { width: 160px; height: auto; margin: 0 auto var(--space-4); display: block; animation: emptyFloat 4s var(--ease-out) infinite; }
 @keyframes emptyFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
