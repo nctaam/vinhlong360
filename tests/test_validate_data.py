@@ -2091,3 +2091,30 @@ def test_seo_required_attraction_has_expanded_keys() -> None:
     attr_keys = validate_data.SEO_REQUIRED["attraction"]
     for key in ("admission", "hours", "specialty", "price_range"):
         assert key in attr_keys
+
+
+def test_quality_score_itinerary_not_penalized_for_coords_area() -> None:
+    """Itinerary entities should NOT be penalized for missing coords/area/placeId."""
+    entity = {
+        "id": "it-test", "type": "itinerary", "name": "Lộ trình test",
+        "summary": "Mô tả đủ dài cho SEO và nội dung hữu ích cho người đọc.",
+        "placeId": "xa-1",
+        "source": [{"url": "https://example.com"}],
+        "images": ["https://example.com/img.jpg"],
+        "confidence": 1.0,
+    }
+    score = validate_data.entity_quality_score(entity)
+    assert score == 100
+
+
+def test_quality_score_itinerary_without_placeId_or_area() -> None:
+    """Itinerary without placeId and area should NOT lose points for those."""
+    entity = {
+        "id": "it-min", "type": "itinerary", "name": "Lộ trình",
+        "summary": "Mô tả đủ dài cho SEO và nội dung hữu ích cho người đọc.",
+        "source": [{"url": "https://example.com"}],
+        "images": ["https://example.com/img.jpg"],
+        "confidence": 1.0,
+    }
+    score = validate_data.entity_quality_score(entity)
+    assert score == 100

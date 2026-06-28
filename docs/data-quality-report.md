@@ -8,11 +8,11 @@ Tool: `python scripts/validate_data.py`
 
 | Metric | Value | Previous (06-27) | Delta |
 |--------|-------|-------------------|-------|
-| Entity quality score (avg) | **89.1/100** | 81.7 | +7.4 |
+| Entity quality score (avg) | **89.2/100** | 81.7 | +7.5 |
 | Critical entities (0-29) | 0 | 0 | — |
 | Needs work (30-59) | 0 | 5 | -5 |
-| OK (60-79) | 8 | 955 | -947 |
-| Good (80-100) | **1613** | 668 | +945 |
+| OK (60-79) | 3 | 955 | -952 |
+| Good (80-100) | **1618** | 668 | +950 |
 | Errors | 0 | 1 | -1 |
 | Warnings | 8 | 13 | -5 |
 | Graph components | 1 (fully connected) | 1 | — |
@@ -65,7 +65,7 @@ None.
 
 Images should be generated via `scripts/gen_image.py` using the `cx/gpt-5.5-image` API. No stock photos (Pexels/Unsplash), UGC, or Wikimedia images per project policy.
 
-**Impact on quality score:** -10 points per entity. Fixing images would raise avg score from 89.1 to ~99.
+**Impact on quality score:** -10 points per entity. Fixing images would raise avg score from 89.2 to ~99.
 
 ## Entities with Approximate Coordinates (QA-19)
 
@@ -119,11 +119,10 @@ Images should be generated via `scripts/gen_image.py` using the `cx/gpt-5.5-imag
 |-----------|----------|-------------|------------|-------------|
 | No images | 1746 | -10 | -10.77 | Needs IMAGE_API_KEY |
 | No SEO attrs | 134 | -10 | -0.83 | Needs real business data |
-| No coordinates | 8 | -15 | -0.07 | Nominatim diminishing returns |
-| No area | 6 | -5 | -0.02 | 5 itineraries + 1 HCM entity |
+| No coordinates | 3 | -15 | -0.03 | 1 HCM facility + 2 landmarks (Nominatim can't find) |
 | No placeId | 1 | -10 | -0.01 | HCM entity, outside scope |
 
-**Theoretical max without images: ~90.0.** Current: 89.1. Gap of 0.9 requires real business data for 134 entities.
+**Theoretical max without images: ~90.0.** Current: 89.2. Gap of 0.8 requires real business data for 134 entities.
 
 ## Next Steps (Priority Order)
 

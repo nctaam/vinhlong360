@@ -153,7 +153,9 @@ SEO_REQUIRED: dict[str, list[str]] = {
 def entity_quality_score(entity: dict[str, Any]) -> int:
     """Compute a 0-100 quality score for a single entity."""
     score = 100
-    is_place = entity.get("type") == "place"
+    etype_raw = entity.get("type")
+    is_place = etype_raw == "place"
+    is_itinerary = etype_raw == "itinerary"
 
     summary_val = entity.get("summary")
     if not summary_val:
@@ -167,17 +169,17 @@ def entity_quality_score(entity: dict[str, Any]) -> int:
         elif len(s) > 500:
             score -= 3
 
-    if not entity.get("coordinates") and not entity.get("coords"):
+    if not is_itinerary and not entity.get("coordinates") and not entity.get("coords"):
         score -= 15
 
     source = entity.get("source")
     if not source or (isinstance(source, list) and len(source) == 0):
         score -= 10
 
-    if not is_place and not entity.get("placeId"):
+    if not is_place and not is_itinerary and not entity.get("placeId"):
         score -= 10
 
-    if not is_place and not entity.get("area"):
+    if not is_place and not is_itinerary and not entity.get("area"):
         score -= 5
 
     imgs = entity.get("images")
