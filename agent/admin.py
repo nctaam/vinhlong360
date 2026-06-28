@@ -1809,7 +1809,7 @@ async def list_users(
                 d = db._row_to_dict(rc)
                 role_counts[d["role"]] = d["c"]
         except Exception:
-            pass
+            logger.debug("Role counts query failed", exc_info=True)
         return {
             "users": [{
                 "id": str(r["id"]),
@@ -1919,7 +1919,7 @@ def _log_mod_action(target_type, target_id, action, reason=None):
         from moderation import log_moderation
         log_moderation(target_type, target_id, action, {"reason": reason} if reason else {}, auto=False)
     except Exception:
-        pass
+        logger.debug("Moderation log write failed", exc_info=True)
 
 
 # ══════════════════════════════════════════════════
