@@ -651,7 +651,8 @@ async def add_relationships_bulk(body: RelationshipBulkCreate):
                 db.add_relationship(body.from_id, to_id, rel_type)
                 added += 1
             except Exception as e:
-                errors.append({"to_id": to_id, "error": str(e)})
+                logger.warning("Bulk relationship add failed for %s→%s: %s", body.from_id, to_id, e)
+                errors.append({"to_id": to_id, "error": "Không thể thêm quan hệ"})
         return {"added": added, "errors": errors}
     return await asyncio.to_thread(_query)
 
@@ -852,7 +853,8 @@ async def approve_image_suggestion(suggestion_id: str):
         resp.raise_for_status()
         data = resp.content
     except Exception as e:  # noqa: BLE001 — network/404 → 502 with retry note
-        raise HTTPException(502, f"Không tải được ảnh nguồn (thử lại sau): {str(e)[:120]}")
+        logger.warning("Suggestion image fetch failed for %s: %s", candidate_url, e)
+        raise HTTPException(502, "Không tải được ảnh nguồn, vui lòng thử lại sau")
 
     if not data or len(data) > MAX_IMAGE_SIZE:
         raise HTTPException(400, f"Ảnh nguồn rỗng hoặc quá lớn (tối đa {MAX_IMAGE_SIZE // 1024 // 1024}MB)")
@@ -1027,7 +1029,8 @@ async def trigger_backup():
                 capture_output=True, text=True, timeout=30,
             )
             if result.returncode != 0:
-                raise HTTPException(500, result.stderr or "Backup failed")
+                logger.error("Backup script failed: %s", result.stderr)
+                raise HTTPException(500, "Backup thất bại. Kiểm tra log server.")
             backup_dir = Path(__file__).resolve().parent.parent / "scratch" / "backups"
             dirs = sorted(backup_dir.iterdir(), key=lambda p: p.name, reverse=True)
             latest = dirs[0] if dirs else None
@@ -1364,7 +1367,7 @@ async def moderation_queue(
     def _query():
         with db._conn() as conn:
             rows = db._fetchall(conn, f"""
-                SELECT p.*, u.display_name, u.phone,
+                SELECT p.*, u.display_name,
                        e.name as entity_name
                 FROM posts p
                 JOIN users u ON u.id = p.user_id
@@ -1730,7 +1733,7 @@ async def ai_triage():
                     if ln.strip():
                         reports.append(json.loads(ln))
         except Exception:
-            pass
+            logger.warning("Failed to parse info reports file: %s", _INFO_REPORTS_FILE)
         ctx.append(f"- Báo cáo sai thông tin: {len(reports)}")
         for r in reports[-5:]:
             ctx.append(f"    · [{r.get('target_type')}] {r.get('target_id')}: {str(r.get('reason', ''))[:60]}")

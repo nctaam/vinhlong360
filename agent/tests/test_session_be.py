@@ -1362,3 +1362,106 @@ class TestPhase8BanHardening:
         import social as _soc
         src = Path(_soc.__file__).read_text(encoding="utf-8")
         assert "u.phone" not in src
+
+
+class TestPhase9ErrorInfoLeaks:
+    """Phase 9: error messages must not leak internal details to clients."""
+
+    _admin_src = None
+    _server_src = None
+
+    @classmethod
+    def _get_admin_src(cls):
+        if cls._admin_src is None:
+            cls._admin_src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        return cls._admin_src
+
+    @classmethod
+    def _get_server_src(cls):
+        if cls._server_src is None:
+            cls._server_src = (Path(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
+        return cls._server_src
+
+    def test_backup_error_no_stderr(self):
+        """Backup endpoint does not expose result.stderr in HTTP response."""
+        src = self._get_admin_src()
+        idx = src.find("def trigger_backup")
+        block = src[idx:idx + 800]
+        assert "result.stderr" not in block or "logger" in block
+        assert "Kiểm tra log server" in block
+
+    def test_image_upload_error_generic(self):
+        """Image upload error returns generic message, not str(e)."""
+        import inspect
+        import social
+        src = inspect.getsource(social.upload_image)
+        assert "str(e)" not in src
+
+    def test_suggestion_image_error_generic(self):
+        """Suggestion image download error returns generic message."""
+        src = self._get_admin_src()
+        idx = src.find("def approve_image_suggestion")
+        block = src[idx:idx + 1200]
+        assert "str(e)[:120]" not in block
+
+    def test_bulk_relationship_error_generic(self):
+        """Bulk relationship error does not leak str(e) to response."""
+        src = self._get_admin_src()
+        idx = src.find("def add_relationships_bulk")
+        block = src[idx:idx + 600]
+        for line in block.split("\n"):
+            if "errors.append" in line:
+                assert "str(e)" not in line
+
+    def test_moderation_queue_no_phone(self):
+        """Moderation queue does not fetch u.phone (admin data minimization)."""
+        src = self._get_admin_src()
+        idx = src.find("def moderation_queue")
+        block = src[idx:idx + 800]
+        assert "u.phone" not in block
+
+    def test_tool_errors_no_str_e(self):
+        """Public chat tool error handlers use generic messages, not str(e)."""
+        src = self._get_server_src()
+        for tool_name in ["community_reviews", "trending_posts"]:
+            idx = src.find(f'"{tool_name}"')
+            if idx == -1:
+                continue
+            block = src[idx:idx + 600]
+            if "str(e)" in block:
+                assert False, f"{tool_name} tool handler leaks str(e)"
+
+    def test_cache_health_no_str_e(self):
+        """Cache health check does not leak Redis exception details."""
+        import inspect
+        import cache
+        src = inspect.getsource(cache.redis_stats)
+        assert "str(e)" not in src
+
+    def test_silent_except_has_logging(self):
+        """Info reports parsing exception in admin triage is logged, not silently swallowed."""
+        src = self._get_admin_src()
+        idx = src.find("def ai_triage")
+        block = src[idx:idx + 1500]
+        assert "logger.warning" in block or "logger.error" in block
+
+
+class TestPhase9TimingAndRace:
+    """Phase 9: timing-safe token comparison + OTP race condition fix."""
+
+    def test_session_current_uses_hmac(self):
+        """Session list uses hmac.compare_digest for is_current, not == ."""
+        auth_src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        idx = auth_src.find("is_current")
+        block = auth_src[max(0, idx - 20):idx + 100]
+        assert "hmac.compare_digest" in block
+        assert '== cur_hash' not in block
+
+    def test_otp_select_for_update(self):
+        """OTP verification uses SELECT ... FOR UPDATE to prevent race conditions."""
+        auth_src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        idx = auth_src.find("def _verify():")
+        if idx == -1:
+            idx = auth_src.find("def _verify(")
+        block = auth_src[idx:idx + 400]
+        assert "FOR UPDATE" in block

@@ -259,7 +259,8 @@ def redis_stats() -> dict:
             "used_memory_bytes": info.get("used_memory", 0),
         }
     except Exception as e:
-        return {"connected": False, "error": str(e)}
+        logger.warning("Redis health check failed: %s", e)
+        return {"connected": False, "error": "Redis unavailable"}
 
 
 def cache_health_check() -> dict:

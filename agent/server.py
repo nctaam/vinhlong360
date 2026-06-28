@@ -695,7 +695,8 @@ def _call_tool_impl(name: str, args: dict) -> str:
                 return json.dumps({"reviews": [], "note": f"Chưa có đánh giá cộng đồng cho '{entity_id}'"}, ensure_ascii=False)
             return json.dumps({"reviews": reviews, "count": len(reviews)}, ensure_ascii=False, default=str)
         except Exception as e:
-            return json.dumps({"reviews": [], "error": str(e)})
+            logger.warning("community_reviews tool error: %s", e)
+            return json.dumps({"reviews": [], "error": "Không thể tải đánh giá"})
 
     elif name == "trending_posts":
         try:
@@ -707,7 +708,8 @@ def _call_tool_impl(name: str, args: dict) -> str:
                 return json.dumps({"posts": [], "note": "Chưa có bài viết nổi bật"}, ensure_ascii=False)
             return json.dumps({"posts": posts, "count": len(posts)}, ensure_ascii=False, default=str)
         except Exception as e:
-            return json.dumps({"posts": [], "error": str(e)})
+            logger.warning("trending_posts tool error: %s", e)
+            return json.dumps({"posts": [], "error": "Không thể tải bài viết"})
 
     elif name == "weather":
         if HAS_REALTIME:

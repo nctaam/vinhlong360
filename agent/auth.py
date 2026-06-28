@@ -330,6 +330,7 @@ async def verify_otp(body: OTPVerify, request: Request):
                 SELECT * FROM otp_sessions
                 WHERE phone = {db._ph} AND verified = FALSE
                 ORDER BY created_at DESC LIMIT 1
+                FOR UPDATE SKIP LOCKED
             """, (phone,))
             if not row:
                 raise HTTPException(400, "Không tìm thấy OTP. Vui lòng yêu cầu mã mới")
@@ -555,7 +556,7 @@ async def list_sessions(request: Request):
             "ip_address": rd.get("ip_address", ""),
             "created_at": str(rd.get("created_at", "")),
             "expires_at": str(rd.get("expires_at", "")),
-            "is_current": rd.get("token") == cur_hash,
+            "is_current": hmac.compare_digest(rd.get("token") or "", cur_hash or ""),
         })
     return {"sessions": sessions}
 

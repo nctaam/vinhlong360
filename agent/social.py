@@ -1311,7 +1311,8 @@ async def upload_image(file: UploadFile = File(...), user=Depends(require_user))
     try:
         url = await storage.upload_image(data, folder="posts", content_type=sniffed)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        logger.warning("Image upload rejected: %s", e)
+        raise HTTPException(400, "File ảnh không hợp lệ hoặc quá lớn")
     return {"url": url}
 
 
