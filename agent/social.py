@@ -1040,7 +1040,7 @@ async def get_entity_feed(
             "summary": entity.get("summary", ""),
         },
         "rating": {
-            "avg": round(rating_d["avg_rating"], 1) if rating_d else 0,
+            "avg": round(float(rating_d.get("avg_rating") or 0), 1) if rating_d else 0,
             "count": rating_d.get("rating_count", 0),
         },
         "posts": posts,
