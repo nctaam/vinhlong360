@@ -758,3 +758,33 @@ class TestSecurityPosture:
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
         assert "candidate_ids: list[str] | None = Field(None, max_length=" in src
         assert 'images: list[str] = Field(default=[], max_length=' in src
+
+    def test_login_timing_oracle_protection(self):
+        """Login must run PBKDF2 even when user not found (constant-time rejection)."""
+        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        assert "_DUMMY_HASH" in src, "Missing dummy hash for timing oracle protection"
+        idx = src.find("def login_password")
+        assert idx > 0
+        block = src[idx:idx + 1200]
+        assert "_verify_password(body.password, _DUMMY_HASH)" in block, \
+            "login_password must call _verify_password with dummy hash for non-existent users"
+
+    def test_idempotency_key_scoped_to_user(self):
+        """Idempotency keys must be scoped per-user to prevent cross-user collisions."""
+        src = (Path(__file__).resolve().parent.parent / "auth_middleware.py").read_text(encoding="utf-8")
+        idx = src.find("async def require_idempotency")
+        assert idx > 0
+        block = src[idx:idx + 500]
+        assert "_get_current_user_or_none" in block, \
+            "require_idempotency must scope key to user"
+        assert 'f"{user[\'id\']}:{key}"' in block or "user['id']" in block, \
+            "require_idempotency must prefix key with user id"
+
+    def test_auth_mutations_rate_limited(self):
+        """All auth mutation endpoints must have rate limiting."""
+        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        for endpoint in ("set_password", "deactivate_account", "delete_account", "update_profile"):
+            idx = src.find(f"def {endpoint}")
+            assert idx > 0, f"Missing endpoint {endpoint}"
+            block = src[idx:idx + 500]
+            assert "check_rate(" in block, f"{endpoint} missing rate limiting"

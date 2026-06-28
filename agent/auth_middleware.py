@@ -1230,6 +1230,9 @@ async def require_idempotency(request: Request) -> None:
     key = request.headers.get("Idempotency-Key", "").strip()
     if not key:
         return
+    user = await _get_current_user_or_none(request)
+    if user:
+        key = f"{user['id']}:{key}"
     result = check_idempotency(key)
     if result["is_duplicate"]:
         raise HTTPException(409, "Yêu cầu trùng lặp (idempotency key đã được xử lý)")

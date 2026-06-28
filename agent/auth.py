@@ -242,6 +242,9 @@ def _hash_password(password: str) -> str:
     return base64.b64encode(salt + key).decode()
 
 
+_DUMMY_HASH = _hash_password("timing_safety_dummy")
+
+
 def _verify_password(password: str, stored: str) -> bool:
     decoded = base64.b64decode(stored)
     salt, stored_key = decoded[:16], decoded[16:]
@@ -466,6 +469,8 @@ async def login_password(body: PasswordLogin, request: Request):
     user = await asyncio.to_thread(db.get_user_by_phone, phone)
 
     if not user or not user.get("password_hash"):
+        # Constant-time: always run PBKDF2 to prevent timing oracle
+        _verify_password(body.password, _DUMMY_HASH)
         phone_hits.append(now)
         _login_phone_fails[phone] = phone_hits
         _gc_rate_dict(_login_phone_fails, LOGIN_PHONE_WINDOW)
@@ -508,6 +513,8 @@ async def set_password(body: SetPassword, request: Request, _csrf=Depends(_requi
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
+    from ratelimit import check_rate
+    check_rate(f"set-password:{user['id']}", 5, 600, "Đổi mật khẩu quá nhanh. Vui lòng thử lại sau.")
     if not await _check_session_binding_safe(request, user):
         logger.warning("Session binding mismatch on set-password for user %s", user.get("id"))
 
@@ -604,6 +611,8 @@ async def deactivate_account(request: Request, _csrf=Depends(_require_csrf_lazy)
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
+    from ratelimit import check_rate
+    check_rate(f"deactivate:{user['id']}", 3, 3600, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     if not await _check_session_binding_safe(request, user):
         logger.warning("Session binding mismatch on deactivate for user %s", user.get("id"))
     uid = str(user["id"])
@@ -620,6 +629,8 @@ async def delete_account(request: Request, _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
+    from ratelimit import check_rate
+    check_rate(f"delete-account:{user['id']}", 3, 3600, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     if not await _check_session_binding_safe(request, user):
         logger.warning("Session binding mismatch on delete-account for user %s", user.get("id"))
     uid = str(user["id"])
@@ -644,6 +655,8 @@ async def update_profile(body: ProfileUpdate, request: Request, _csrf=Depends(_r
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
+    from ratelimit import check_rate
+    check_rate(f"profile:{user['id']}", 20, 600, "Cập nhật hồ sơ quá nhanh. Vui lòng thử lại sau.")
 
     fields = {}
     if body.display_name is not None:
