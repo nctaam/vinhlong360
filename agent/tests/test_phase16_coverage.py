@@ -1095,3 +1095,82 @@ class TestSecurityPosture:
         assert idx > 0
         block = src[idx:idx+600]
         assert "invalidate_entity_cache" in block, "delete_entity must call invalidate_entity_cache"
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  MEDIUM-priority deep-scan fixes — batch 2
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestMediumFixesBatch2:
+
+    def test_plan_delete_returns_404_if_not_found(self):
+        """DELETE /my-plans/{id} must check existence before deleting."""
+        src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
+        idx = src.find("async def remove_plan(")
+        assert idx > 0
+        block = src[idx:idx+800]
+        assert "404" in block, "remove_plan must return 404 for non-existent plan"
+        assert "SELECT 1" in block or "fetchone" in block.lower(), \
+            "remove_plan must check existence before deleting"
+
+    def test_homepage_cache_has_lock(self):
+        """Homepage cache rebuild must use asyncio.Lock to prevent stampede."""
+        src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
+        assert "_homepage_lock" in src, "public_api must define _homepage_lock"
+        assert "asyncio.Lock()" in src, "Must use asyncio.Lock for homepage cache"
+
+    def test_sitemap_50k_limit(self):
+        """Sitemap must truncate URLs to Google's 50,000 limit."""
+        src = (Path(__file__).resolve().parent.parent / "seo.py").read_text(encoding="utf-8")
+        assert "50000" in src, "Sitemap must enforce 50,000 URL limit"
+        assert "urls[:50000]" in src or "urls = urls[:50000]" in src, \
+            "Sitemap must truncate to 50k"
+
+    def test_bot_gateway_rejects_without_secret(self):
+        """Zalo webhook must reject requests when ZALO_OA_SECRET is not configured."""
+        src = (Path(__file__).resolve().parent.parent / "bot_gateway.py").read_text(encoding="utf-8")
+        idx = src.find("async def zalo_webhook(")
+        assert idx > 0
+        block = src[idx:idx+600]
+        assert "not ZALO_OA_SECRET" in block, \
+            "Webhook must check for missing ZALO_OA_SECRET"
+        assert "503" in block, "Must return 503 when secret not configured"
+
+    def test_scheduler_has_retry_with_backoff(self):
+        """Scheduler tasks must retry on failure with exponential backoff."""
+        src = (Path(__file__).resolve().parent.parent / "scheduler.py").read_text(encoding="utf-8")
+        assert "_MAX_RETRIES" in src, "Scheduler must define _MAX_RETRIES"
+        assert "_RETRY_BACKOFF_BASE" in src, "Scheduler must define _RETRY_BACKOFF_BASE"
+        assert "_consecutive_failures" in src, "Tasks must track consecutive failures"
+
+    def test_scheduler_retry_logic(self):
+        """Scheduler retry: success resets counter, failure increments with backoff."""
+        import time as _time
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+        from scheduler import ScheduledTask, _MAX_RETRIES, _RETRY_BACKOFF_BASE
+
+        call_count = 0
+        def _failing_task():
+            nonlocal call_count
+            call_count += 1
+            raise RuntimeError("test failure")
+
+        task = ScheduledTask("test_retry", _failing_task, 3600, timeout=5)
+        assert task._consecutive_failures == 0
+
+        task.run()
+        assert task._consecutive_failures == 1
+        assert task.next_run_after > _time.time()
+        assert task.last_error == "test failure"
+
+        task.next_run_after = 0
+        task.run()
+        assert task._consecutive_failures == 2
+
+        def _ok_task():
+            return "ok"
+        task.func = _ok_task
+        task.next_run_after = 0
+        task.run()
+        assert task._consecutive_failures == 0
+        assert task.last_error is None

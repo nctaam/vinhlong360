@@ -40,6 +40,7 @@ import time as _time
 _homepage_cache: dict = {"month": None, "data": None, "ts": 0.0}
 _HOMEPAGE_TTL = 120  # giây
 _homepage_rebuilding = False
+_homepage_lock = asyncio.Lock()
 
 _ENTITY_CACHE_MAX = 1000
 _entity_cache: OrderedDict[str, tuple[float, dict]] = OrderedDict()
@@ -484,9 +485,14 @@ async def homepage_curated(response: Response):
                    and _now - _homepage_cache["ts"] < _HOMEPAGE_TTL)
     if cache_fresh:
         return _homepage_cache["data"]
-    if _homepage_rebuilding and _homepage_cache["data"] is not None:
+    if _homepage_lock.locked() and _homepage_cache["data"] is not None:
         return _homepage_cache["data"]
-    _homepage_rebuilding = True
+    async with _homepage_lock:
+        cache_fresh = (_homepage_cache["data"] is not None and _homepage_cache["month"] == month
+                       and _time.time() - _homepage_cache["ts"] < _HOMEPAGE_TTL)
+        if cache_fresh:
+            return _homepage_cache["data"]
+        _homepage_rebuilding = True
 
     all_ents = await asyncio.to_thread(db.list_entities, limit=100000, offset=0, public_only=True)
     public = [e for e in all_ents if not _event_is_past(e)]

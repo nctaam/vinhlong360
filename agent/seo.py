@@ -1064,6 +1064,9 @@ def sitemap():
             lastmod=_safe_date(itinerary.get("updatedAt"), None),
         ))
 
+    if len(urls) > 50000:
+        logger.warning("Sitemap has %d URLs, truncating to 50000 (Google limit)", len(urls))
+        urls = urls[:50000]
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
     xml += "\n".join(urls)

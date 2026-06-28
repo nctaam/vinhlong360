@@ -943,12 +943,14 @@ def create_bot_app() -> FastAPI:
         # Read raw body for signature verification
         raw_body = await request.body()
 
-        # Verify signature
-        if ZALO_OA_SECRET:
-            signature = request.headers.get("X-ZEvent-Signature", "")
-            if not gw.verify_zalo_signature(raw_body, signature):
-                _bot_logger.warning("Zalo webhook: invalid signature")
-                raise HTTPException(401, detail="Invalid webhook signature")
+        # Verify signature — reject if secret not configured (no unauthenticated webhooks)
+        if not ZALO_OA_SECRET:
+            _bot_logger.warning("Zalo webhook rejected: ZALO_OA_SECRET not configured")
+            raise HTTPException(503, detail="Webhook signature verification not configured")
+        signature = request.headers.get("X-ZEvent-Signature", "")
+        if not gw.verify_zalo_signature(raw_body, signature):
+            _bot_logger.warning("Zalo webhook: invalid signature")
+            raise HTTPException(401, detail="Invalid webhook signature")
 
         try:
             body = json.loads(raw_body)

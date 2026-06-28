@@ -132,6 +132,10 @@ def sync_data_json_to_js():
 _TASK_TIMEOUT = int(os.environ.get("SCHEDULER_TASK_TIMEOUT", "600"))
 
 
+_MAX_RETRIES = 2
+_RETRY_BACKOFF_BASE = 30
+
+
 class ScheduledTask:
     def __init__(self, name: str, func, interval_seconds: int, enabled: bool = True,
                  run_immediately: bool = True, timeout: int | None = None):
@@ -144,6 +148,7 @@ class ScheduledTask:
         self.last_error = None
         self.timeout = timeout or _TASK_TIMEOUT
         self.next_run_after = 0 if run_immediately else time.time() + interval_seconds
+        self._consecutive_failures = 0
 
     def should_run(self) -> bool:
         if not self.enabled:
@@ -170,8 +175,17 @@ class ScheduledTask:
             worker.join(timeout=self.timeout)
 
             if worker.is_alive():
+                self._consecutive_failures += 1
                 self.last_error = f"Task timed out after {self.timeout}s"
-                _sched_logger.error("Task timed out: %s (%ds)", self.name, self.timeout)
+                if self._consecutive_failures <= _MAX_RETRIES:
+                    backoff = _RETRY_BACKOFF_BASE * (2 ** (self._consecutive_failures - 1))
+                    self.next_run_after = time.time() + backoff
+                    _sched_logger.warning("Task timed out: %s (%ds), retry in %ds (attempt %d/%d)",
+                                          self.name, self.timeout, backoff,
+                                          self._consecutive_failures, _MAX_RETRIES + 1)
+                else:
+                    _sched_logger.error("Task timed out: %s (%ds) — %d consecutive failures",
+                                        self.name, self.timeout, self._consecutive_failures)
                 return
 
             if error_holder[0] is not None:
@@ -181,10 +195,19 @@ class ScheduledTask:
             self.last_run = time.time()
             self.run_count += 1
             self.last_error = None
+            self._consecutive_failures = 0
             _sched_logger.info("Task done: %s (%.1fs)", self.name, elapsed)
         except Exception as e:
+            self._consecutive_failures += 1
             self.last_error = str(e)
-            _sched_logger.error("Task failed: %s — %s\n%s", self.name, e, traceback.format_exc())
+            if self._consecutive_failures <= _MAX_RETRIES:
+                backoff = _RETRY_BACKOFF_BASE * (2 ** (self._consecutive_failures - 1))
+                self.next_run_after = time.time() + backoff
+                _sched_logger.warning("Task failed: %s (attempt %d/%d), retry in %ds — %s",
+                                      self.name, self._consecutive_failures, _MAX_RETRIES + 1, backoff, e)
+            else:
+                _sched_logger.error("Task failed: %s — %d consecutive failures, waiting normal interval — %s\n%s",
+                                    self.name, self._consecutive_failures, e, traceback.format_exc())
 
 
 def task_auto_learn():

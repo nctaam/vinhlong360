@@ -107,6 +107,11 @@ async def remove_plan(plan_id: str, user=Depends(require_user), _csrf=Depends(re
     def _query():
         ph = db._ph
         with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT 1 FROM user_plans WHERE id::text = {ph} AND user_id = {ph}::uuid
+            """, (plan_id, str(user["id"])))
+            if not row:
+                raise HTTPException(404, "Lịch trình không tồn tại hoặc không thuộc về bạn")
             db._execute(conn, f"""
                 DELETE FROM user_plans WHERE id::text = {ph} AND user_id = {ph}::uuid
             """, (plan_id, str(user["id"])))
