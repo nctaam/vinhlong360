@@ -930,3 +930,38 @@ class TestSecurityPosture:
         PrivacyUpdate(profile_visibility="followers")
         with pt.raises(Exception):
             PrivacyUpdate(profile_visibility="invalid_value")
+
+    def test_admin_router_has_csrf_dependency(self):
+        """Admin router must enforce CSRF on all mutation endpoints."""
+        from admin import router as admin_router
+        dep_names = []
+        for dep in admin_router.dependencies:
+            if hasattr(dep, "dependency"):
+                dep_names.append(dep.dependency.__name__)
+        assert "require_csrf" in dep_names, "Admin router missing require_csrf dependency"
+
+    def test_all_mutation_routers_have_csrf(self):
+        """All routers with POST/PUT/DELETE must have CSRF on individual endpoints or router-level."""
+        from pathlib import Path
+        import re
+        for module_name in ("social", "auth", "notifications"):
+            src = (Path(__file__).resolve().parent.parent / f"{module_name}.py").read_text(encoding="utf-8")
+            lines = src.split("\n")
+            for i, line in enumerate(lines):
+                if re.search(r'@router\.(post|put|delete|patch)\(', line):
+                    func_block = "\n".join(lines[i:i+5])
+                    if "csrf" not in func_block.lower() and "require_admin" not in func_block:
+                        if "request_otp" in func_block or "verify_otp" in func_block or "login" in func_block or "check_phone" in func_block or "check_username" in func_block:
+                            continue
+                        assert False, f"{module_name}.py:{i+1} mutation endpoint without CSRF: {line.strip()}"
+
+    def test_timezone_aware_datetime(self):
+        """Production modules must use datetime.now(timezone.utc), not naive datetime.now()."""
+        import re
+        from pathlib import Path
+        critical_modules = ["admin", "auth", "middleware", "server", "database", "analytics", "cost_tracker"]
+        for mod in critical_modules:
+            src = (Path(__file__).resolve().parent.parent / f"{mod}.py").read_text(encoding="utf-8")
+            for line_no, line in enumerate(src.split("\n"), 1):
+                if "datetime.now()" in line and "#" not in line.split("datetime.now()")[0]:
+                    assert False, f"{mod}.py:{line_no} uses naive datetime.now() — use datetime.now(timezone.utc)"

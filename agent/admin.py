@@ -39,7 +39,7 @@ try:
     _HAS_COST = True
 except Exception:  # noqa: BLE001
     _HAS_COST = False
-from auth_middleware import get_current_user, validate_path_id
+from auth_middleware import get_current_user, validate_path_id, require_csrf
 from middleware import admin_limiter, verify_admin_key, get_client_ip
 
 
@@ -119,7 +119,7 @@ async def require_admin(request: Request):
 
 ROOT = Path(__file__).resolve().parent.parent
 
-router = APIRouter(prefix="/admin", tags=["admin"], dependencies=[Depends(require_admin)])
+router = APIRouter(prefix="/admin", tags=["admin"], dependencies=[Depends(require_admin), Depends(require_csrf)])
 
 
 # ── Models ──
