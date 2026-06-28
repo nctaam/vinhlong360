@@ -1500,7 +1500,7 @@ class TestPhase10LikeEscape:
         """Admin unclassified search escapes LIKE wildcards."""
         admin_src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
         idx = admin_src.find("def list_unclassified")
-        block = admin_src[idx:idx + 500]
+        block = admin_src[idx:idx + 800]
         assert "escape_like" in block
         assert "ESCAPE" in block
 

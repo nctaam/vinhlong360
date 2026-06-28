@@ -103,6 +103,12 @@ def _gc_rate_dict(d: dict, window: float) -> None:
         del d[k]
 
 
+def _mask_phone(phone: str) -> str:
+    if len(phone) <= 6:
+        return phone[:2] + "***"
+    return phone[:3] + "***" + phone[-3:]
+
+
 def _create_session_atomic(uid: str, token_hash: str, ua: str, ip: str, expires_iso: str):
     from auth_middleware import MAX_CONCURRENT_SESSIONS
     with db._conn() as conn:
@@ -269,7 +275,7 @@ async def _send_sms(phone: str, message: str) -> bool:
             data = resp.json()
             return data.get("CodeResult") == "100"
     except Exception:
-        logger.exception("SMS send failed to %s", phone)
+        logger.exception("SMS send failed to %s", _mask_phone(phone))
         return False
 
 
@@ -317,7 +323,7 @@ async def request_otp(body: OTPRequest, request: Request):
     # SEC-001: KHÔNG BAO GIỜ trả OTP trong HTTP response (auth-bypass nếu prod thiếu
     # ESMS_API_KEY). Khi chưa cấu hình SMS provider (dev), in ra log server để dev đọc.
     if not ESMS_API_KEY:
-        logger.warning("[DEV] OTP cho %s: %s (chưa cấu hình ESMS_API_KEY)", phone, code)
+        logger.warning("[DEV] OTP cho %s (chưa cấu hình ESMS_API_KEY)", _mask_phone(phone))
 
     return {
         "success": True,
@@ -803,7 +809,7 @@ def _log_login(phone: str, method: str, success: bool, request: Request, user_id
                 VALUES ({ph}::uuid, {ph}, {ph}, {ph}, {ph}, {ph})
             """, (user_id, phone, method, success, ip, ua))
     except Exception as e:
-        logger.warning("Failed to log login for %s: %s", phone, e)
+        logger.warning("Failed to log login for %s: %s", _mask_phone(phone), e)
 
 
 @router.get("/login-history")

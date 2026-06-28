@@ -166,7 +166,7 @@ async def list_entities(
     sort: Optional[str] = Query(None, pattern="^(rating|newest|name)$"),
     fields: Optional[str] = Query(None, pattern="^(minimal|full)$"),
     limit: int = Query(50, le=1000),
-    offset: int = Query(0, ge=0),
+    offset: int = Query(0, ge=0, le=10000),
 ):
     entity_types: list[str] | None = None
     single_type = type
@@ -193,7 +193,7 @@ async def list_entities(
 async def get_entity_relationships(
     entity_id: str,
     limit: int = Query(20, ge=1, le=100),
-    offset: int = Query(0, ge=0),
+    offset: int = Query(0, ge=0, le=10000),
     type: Optional[str] = None,
     include_near: bool = True,
 ):

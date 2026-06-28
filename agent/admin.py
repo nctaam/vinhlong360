@@ -144,7 +144,7 @@ class EntityUpdate(BaseModel):
     placeId: str | None = Field(None, max_length=100)
     season: dict | None = None
     attributes: dict | None = None
-    images: list[str] | None = None
+    images: list[str] | None = Field(None, max_length=50)
 
     @field_validator("name", mode="before")
     @classmethod
@@ -199,7 +199,7 @@ class EntityCreate(BaseModel):
     summary: str = Field("", max_length=2000)
     season: dict | None = None
     attributes: dict = {}
-    images: list[str] = []
+    images: list[str] = Field(default=[], max_length=50)
     source: dict | None = None  # GĐ13: cho phép khai nguồn chính thống (vd danh bạ facility — KHÔNG bịa)
 
     @field_validator("name", mode="before")
@@ -248,7 +248,7 @@ class EntityCreate(BaseModel):
 # ── Entity CRUD ──
 
 class DataQualityApplyRequest(BaseModel):
-    candidate_ids: list[str] | None = None
+    candidate_ids: list[str] | None = Field(None, max_length=500)
     dry_run: bool = True
 
 @router.get("/entities")
@@ -259,7 +259,7 @@ async def list_entities(
     include_places: bool = False,
     orphans_only: bool = False,
     limit: int = Query(50, le=500),
-    offset: int = 0,
+    offset: int = Query(0, ge=0, le=10000),
 ):
     """Danh sách entities với filter — đọc từ database."""
     def _query():
@@ -495,7 +495,7 @@ async def remove_entity_image(entity_id: str, idx: int):
 
 
 @router.get("/unclassified")
-async def list_unclassified(limit: int = Query(50, ge=1, le=500), offset: int = Query(0, ge=0),
+async def list_unclassified(limit: int = Query(50, ge=1, le=500), offset: int = Query(0, ge=0, le=10000),
                             q: Optional[str] = None):
     """Entity nội dung CHƯA gán xã/phường (placeId rỗng) — để admin gán đúng (lấp nợ placeId)."""
     ql = (q or "").lower().strip()
@@ -565,16 +565,16 @@ class ItineraryCreate(BaseModel):
     id: str = Field(..., min_length=1, max_length=100)
     title: str = Field(..., min_length=1, max_length=300)
     description: str | None = Field(None, max_length=2000)
-    days: list | None = None
+    days: list | None = Field(None, max_length=30)
     area: str | None = Field(None, max_length=100)
-    tags: list[str] | None = None
+    tags: list[str] | None = Field(None, max_length=50)
 
 class ItineraryUpdate(BaseModel):
     title: str | None = Field(None, min_length=1, max_length=300)
     description: str | None = Field(None, max_length=2000)
-    days: list | None = None
+    days: list | None = Field(None, max_length=30)
     area: str | None = Field(None, max_length=100)
-    tags: list[str] | None = None
+    tags: list[str] | None = Field(None, max_length=50)
 
 class RelationshipCreate(BaseModel):
     from_id: str = Field(..., min_length=1, max_length=100)
@@ -691,7 +691,7 @@ async def data_quality_review(
     bucket: Optional[str] = Query(None, pattern="^(auto_apply|needs_review|reject)$"),
     refresh: bool = Query(False),
     limit: int = Query(100, ge=1, le=500),
-    offset: int = Query(0, ge=0),
+    offset: int = Query(0, ge=0, le=10000),
 ):
     def _query():
         queue = data_quality.load_candidate_queue(refresh=refresh)
@@ -727,12 +727,15 @@ async def data_quality_rollback(batch_id: str):
         return result
     return await asyncio.to_thread(_query)
 
+class BulkDeleteRequest(BaseModel):
+    entity_ids: list[str] = Field(..., min_length=1, max_length=200)
+
 @router.post("/entities/bulk-delete")
-async def bulk_delete(entity_ids: list[str]):
+async def bulk_delete(body: BulkDeleteRequest):
     """Xóa nhiều entities cùng lúc."""
     def _query():
         deleted = 0
-        for eid in entity_ids:
+        for eid in body.entity_ids:
             if db.delete_entity(eid):
                 deleted += 1
         return deleted
@@ -773,7 +776,7 @@ async def list_image_suggestions(
     status: Optional[str] = Query(None, pattern="^(pending|approved|rejected)$"),
     entity_id: Optional[str] = Query(None, max_length=100),
     limit: int = Query(50, ge=1, le=200),
-    offset: int = Query(0, ge=0),
+    offset: int = Query(0, ge=0, le=10000),
 ):
     """Liệt kê ứng viên ảnh chờ duyệt (mặc định: tất cả; lọc theo status/entity)."""
     def _query():

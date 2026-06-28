@@ -62,7 +62,7 @@ class ReportRequest(BaseModel):
 @router.get("/notifications")
 async def get_notifications(
     limit: int = Query(20, ge=1, le=50),
-    offset: int = Query(0, ge=0),
+    offset: int = Query(0, ge=0, le=10000),
     user=Depends(require_user),
 ):
     ph = db._ph
@@ -360,7 +360,7 @@ async def check_follow(target_type: str, target_id: str, user=Depends(require_us
 async def get_following(
     target_type: Optional[str] = None,
     limit: int = Query(50, ge=1, le=100),
-    offset: int = Query(0, ge=0),
+    offset: int = Query(0, ge=0, le=10000),
     user=Depends(require_user),
 ):
     ph = db._ph

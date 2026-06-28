@@ -828,7 +828,7 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
 
 
 @router.get("/users/{user_id}/following")
-async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0)):
+async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0, le=10000)):
     """Danh sách NGƯỜI mà user này đang theo dõi (hồ-sơ công-khai)."""
     validate_path_id(user_id, "user_id")
     ph = db._ph
@@ -853,7 +853,7 @@ async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100
 
 
 @router.get("/users/{user_id}/followers")
-async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0)):
+async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0, le=10000)):
     """Danh sách NGƯỜI đang theo dõi user này (hồ-sơ công-khai)."""
     validate_path_id(user_id, "user_id")
     ph = db._ph
