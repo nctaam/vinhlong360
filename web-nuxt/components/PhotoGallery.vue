@@ -307,4 +307,12 @@ function goToSlide(idx: number) {
     font-weight: var(--weight-semibold, 600);
   }
 }
+@media (prefers-reduced-motion: reduce) {
+  .pg-main .pg-main-img,
+  .pg-thumb-img { transition: none; }
+  .pg-main:hover .pg-main-img,
+  .pg-thumb:hover .pg-thumb-img { transform: none; }
+  .pg-show-all:hover { transform: none; }
+  .pg-dot { transition: none; }
+}
 </style>

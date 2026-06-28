@@ -1042,7 +1042,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .cm-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .cm-img { aspect-ratio: 16 / 9; overflow: hidden; background: var(--bg-alt); }
 .cm-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s var(--ease-out); }
-.cm-card:hover .cm-img img { transform: scale(1.04); }
+.cm-card:hover .cm-img img { transform: scale(var(--img-hover-scale)); }
 .cm-body { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) var(--space-4) var(--space-4); }
 .cm-author { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
 .cm-avatar { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--text-on-dark, #fff); font-size: var(--text-xs); font-weight: var(--weight-semibold); flex-shrink: 0; }
@@ -1156,6 +1156,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   .hero-pill:hover, .hero-pill:active { transform: none; }
   .event-hero:hover, .event-mini:hover { transform: none; }
   .cm-card:hover, .cm-card:active { transform: none; }
+  .cm-card:hover .cm-img img { transform: none; }
   .chatbot-cta:hover { transform: none; }
   .chatbot-cta-btn:hover, .chatbot-cta-btn:active { transform: none; }
   .ec-live-dot { animation: none; }

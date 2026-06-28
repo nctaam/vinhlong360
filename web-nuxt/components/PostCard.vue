@@ -112,6 +112,8 @@
           :src="allImages[lbIdx]"
           class="lb-img"
           :alt="`Ảnh ${lbIdx + 1} / ${allImages.length}`"
+          loading="eager"
+          decoding="async"
           :style="lbDragStyle"
           @touchstart.passive="onLbTouchStart"
           @touchmove.passive="onLbTouchMove"

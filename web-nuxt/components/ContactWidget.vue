@@ -184,7 +184,7 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
-.cw-btn:active { transform: scale(0.97); }
+.cw-btn:active:not(:disabled) { transform: scale(0.97); }
 
 .cw-btn-primary {
   background: var(--primary);
@@ -246,5 +246,10 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
     height: 48px;
     font-size: var(--text-sm);
   }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cw-btn { transition: none; }
+  .cw-btn:active:not(:disabled) { transform: none; }
+  .cw-check { transition: none; }
 }
 </style>
