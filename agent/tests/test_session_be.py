@@ -1263,3 +1263,64 @@ class TestPhase8BlockEnforcement:
         import public_api
         src = inspect.getsource(public_api.list_entities)
         assert "[:10]" in src
+
+    def test_repost_notification_has_actor_id(self):
+        """Repost notification passes actor_id for block check."""
+        import inspect
+        import social
+        src = inspect.getsource(social.create_post)
+        assert src.count("actor_id=") >= 1
+
+
+class TestPhase8SessionCleanup:
+    """Phase 8: session cleanup and soft-delete enforcement."""
+
+    def test_session_cleanup_task_exists(self):
+        """Scheduler has session-cleanup task."""
+        import scheduler
+        names = [t.name for t in scheduler.TASKS]
+        assert "session-cleanup" in names
+
+    def test_session_cleanup_purges_expired(self):
+        """task_session_cleanup purges expired sessions."""
+        import inspect
+        import scheduler
+        src = inspect.getsource(scheduler.task_session_cleanup)
+        assert "expires_at < NOW()" in src
+
+    def test_session_cleanup_purges_deleted_users(self):
+        """task_session_cleanup purges sessions for soft-deleted users past grace period."""
+        import inspect
+        import scheduler
+        src = inspect.getsource(scheduler.task_session_cleanup)
+        assert "deleted_at IS NOT NULL" in src
+        assert "30 days" in src
+
+    def test_leaderboard_excludes_deleted(self):
+        """Leaderboard query excludes soft-deleted users."""
+        import inspect
+        import social
+        src = inspect.getsource(social.community_leaderboard)
+        assert "deleted_at IS NULL" in src
+
+    def test_user_search_excludes_deleted(self):
+        """User search query excludes soft-deleted users."""
+        import inspect
+        import social
+        src = inspect.getsource(social.search_users)
+        assert "deleted_at IS NULL" in src
+
+    def test_suggested_follows_excludes_deleted(self):
+        """Suggested follows excludes soft-deleted users."""
+        import inspect
+        import social
+        src = inspect.getsource(social.suggested_follows)
+        assert "deleted_at IS NULL" in src
+
+    def test_admin_report_path_validation(self):
+        """Admin report endpoints validate path IDs."""
+        import inspect
+        import admin
+        assert "validate_path_id" in inspect.getsource(admin.resolve_report)
+        assert "validate_path_id" in inspect.getsource(admin.dismiss_report)
+        assert "validate_path_id" in inspect.getsource(admin.get_moderation_notes)

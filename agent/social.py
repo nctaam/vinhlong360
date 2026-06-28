@@ -673,7 +673,7 @@ async def search_users(
                        COUNT(p.id) AS post_count
                 FROM users u
                 LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved'
-                WHERE u.is_active = TRUE
+                WHERE u.is_active = TRUE AND u.deleted_at IS NULL
                   AND f_unaccent(lower(u.display_name)) LIKE f_unaccent({ph})
                   {bc}
                 GROUP BY u.id, u.display_name, u.avatar_url, u.username
@@ -763,7 +763,7 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
                 LEFT JOIN (SELECT target_id, COUNT(*) c FROM follows
                              WHERE target_type='user' GROUP BY target_id) fc
                        ON fc.target_id = u.id::text
-                WHERE u.is_active = TRUE AND u.display_name IS NOT NULL
+                WHERE u.is_active = TRUE AND u.deleted_at IS NULL AND u.display_name IS NOT NULL
                 {bc}
                 GROUP BY u.id, u.display_name, u.avatar_url, u.username, fc.c
                 HAVING COUNT(p.id) > 0
@@ -864,7 +864,7 @@ async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge
                 LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved'
                 LEFT JOIN (SELECT target_id, COUNT(*) c FROM follows
                              WHERE target_type='user' GROUP BY target_id) fc ON fc.target_id = u.id::text
-                WHERE u.is_active = TRUE AND u.display_name IS NOT NULL
+                WHERE u.is_active = TRUE AND u.deleted_at IS NULL AND u.display_name IS NOT NULL
                   AND u.id::text <> {ph}
                   AND u.id::text NOT IN (SELECT target_id FROM follows
                                            WHERE follower_id = {ph}::uuid AND target_type='user')

@@ -570,6 +570,26 @@ def task_kb_promotion():
         _sched_logger.error("KB promotion error: %s\n%s", e, traceback.format_exc())
 
 
+def task_session_cleanup():
+    """Purge expired user_sessions, otp_sessions, and sessions of deleted users."""
+    try:
+        import database as db
+        if not db._use_pg:
+            return
+        with db._conn() as conn:
+            db._execute(conn, "DELETE FROM user_sessions WHERE expires_at < NOW()", ())
+            db._execute(conn, "DELETE FROM otp_sessions WHERE expires_at < NOW()", ())
+            db._execute(conn, """
+                DELETE FROM user_sessions WHERE user_id IN (
+                    SELECT id FROM users WHERE deleted_at IS NOT NULL
+                    AND deleted_at < NOW() - INTERVAL '30 days'
+                )
+            """, ())
+        _sched_logger.info("Session cleanup: purged expired sessions and OTPs")
+    except Exception as e:
+        _sched_logger.error("Session cleanup error: %s", e)
+
+
 TASKS = [
     ScheduledTask("auto-learn",     task_auto_learn,            interval_seconds=AUTO_LEARN_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 3h (env)
     ScheduledTask("relationships",  task_relationship_discovery, interval_seconds=12 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
@@ -585,6 +605,7 @@ TASKS = [
     ScheduledTask("agent-evolution",   task_agent_evolution,      interval_seconds=12 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
     ScheduledTask("optimizer-check",   task_optimizer_check,      interval_seconds=6 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 6h
     ScheduledTask("guardrails-cleanup",task_guardrails_cleanup,   interval_seconds=12 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
+    ScheduledTask("session-cleanup", task_session_cleanup,       interval_seconds=6 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 6h
     ScheduledTask("learning-loop",    task_learning_loop,         interval_seconds=LEARNING_LOOP_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 1h (env)
     ScheduledTask("kb-promotion",     task_kb_promotion,          interval_seconds=PROMOTION_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 6h (env)
     ScheduledTask("continuous-discovery", task_continuous_discovery, interval_seconds=DISCOVERY_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 1h adaptive 30m–6h (env)
