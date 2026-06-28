@@ -330,7 +330,7 @@ onMounted(() => fetchReviews())
 .review-count { color: var(--muted); }
 
 .review-form {
-  background: linear-gradient(135deg, rgba(185, 219, 198, .04) 0%, rgba(232, 163, 61, .03) 100%);
+  background: var(--season-tint, rgba(185, 219, 198, .04));
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: var(--space-5);
@@ -372,7 +372,7 @@ onMounted(() => fetchReviews())
   .ri-date { margin-inline-start: 0; }
 }
 .dark .review-form {
-  background: linear-gradient(135deg, rgba(75, 169, 125, .04) 0%, rgba(240, 160, 80, .03) 100%);
+  background: var(--season-tint, rgba(75, 169, 125, .04));
   border-color: rgba(255, 255, 255, .06);
 }
 .dark .review-form:focus-within { box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .15); }

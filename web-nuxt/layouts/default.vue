@@ -122,6 +122,7 @@ function toggleColorMode() {
   colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
 }
 const { open: showAuth } = useAuthModal()
+useSeasonTheme()
 const mobileNav = ref(false)
 const bannerEnabled = computed(() => ss('announcements.enabled', true))
 const showBeta = ref(false)

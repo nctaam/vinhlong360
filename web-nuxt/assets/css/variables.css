@@ -598,4 +598,39 @@
   /* Detail page */
   --detail-section-gap: var(--space-8);
   --detail-divider: 1px solid var(--line);
+
+  /* ── Seasonal theming ── */
+  --season-accent: var(--secondary);
+  --season-tint: rgba(185, 219, 198, .06);
+  --season-hero-gradient: linear-gradient(135deg, rgba(46,125,91,.08), rgba(232,163,61,.04));
+  --season-emoji: '🌿';
+}
+
+/* Tết/Xuân (Jan-Feb): warm gold + red, festive */
+.season-tet {
+  --season-accent: #c9362c;
+  --season-tint: rgba(201, 54, 44, .05);
+  --season-hero-gradient: linear-gradient(135deg, rgba(201,54,44,.08), rgba(232,163,61,.06));
+  --season-emoji: '🎋';
+}
+/* Hè (Mar-Jun): bright green, sunny */
+.season-he {
+  --season-accent: #2e7d5b;
+  --season-tint: rgba(46,125,91,.06);
+  --season-hero-gradient: linear-gradient(135deg, rgba(46,125,91,.08), rgba(232,163,61,.04));
+  --season-emoji: '☀️';
+}
+/* Mùa nước (Jul-Nov): deep teal, water tones */
+.season-nuoc {
+  --season-accent: #2a6b7a;
+  --season-tint: rgba(42,107,122,.06);
+  --season-hero-gradient: linear-gradient(135deg, rgba(42,107,122,.08), rgba(75,169,125,.04));
+  --season-emoji: '🌊';
+}
+/* Cuối năm (Dec): harvest earth, warm */
+.season-thu {
+  --season-accent: #b5651d;
+  --season-tint: rgba(181,101,29,.05);
+  --season-hero-gradient: linear-gradient(135deg, rgba(181,101,29,.06), rgba(232,163,61,.06));
+  --season-emoji: '🍂';
 }

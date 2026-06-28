@@ -603,6 +603,7 @@
 /* ── Band rhythm — warm-toned section strip (shared with homepage) ── */
 .block.band {
   background: var(--bg-warm);
+  background-image: var(--season-hero-gradient);
   border-radius: var(--radius-xl);
   padding-inline: var(--space-6);
 }
@@ -611,7 +612,7 @@
   display: none;
 }
 .dark .block.band {
-  background: var(--bg-alt);
+  background-color: var(--bg-alt);
 }
 
 /* ── Reduced motion (catalog shared) ── */

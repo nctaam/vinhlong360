@@ -831,9 +831,9 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 }
 .home .block { padding-top: var(--space-16); padding-bottom: var(--space-8); content-visibility: auto; contain-intrinsic-size: auto 480px; }
 .home .block-compact { padding-top: var(--space-8); padding-bottom: var(--space-8); }
-.home .block.band { background: var(--bg-warm); border-radius: var(--radius-xl); padding-inline: var(--space-6); }
+.home .block.band { background: var(--bg-warm); background-image: var(--season-hero-gradient); border-radius: var(--radius-xl); padding-inline: var(--space-6); }
 .home .block.band + .block::before, .home .block + .block.band::before { display: none; }
-.dark .home .block.band { background: var(--bg-alt); }
+.dark .home .block.band { background-color: var(--bg-alt); }
 .block-cta { text-align: center; margin-top: var(--space-4); }
 
 /* ═══════════════════════════════════════════════════
