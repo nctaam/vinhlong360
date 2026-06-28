@@ -203,6 +203,7 @@ const ratingDisplay = computed(() => {
   transform: scale(1.3);
 }
 .card-amenities { display: none; }
+.card-type { display: none; }
 .ca-icon { font-size: .7rem; opacity: .7; cursor: default; }
 .ca-more { font-size: .65rem; color: var(--muted); font-weight: 600; margin-left: 1px; }
 .card-rating { display: flex; align-items: center; gap: .25rem; font-size: .8rem; margin-top: .25rem; }

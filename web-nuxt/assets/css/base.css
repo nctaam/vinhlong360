@@ -504,8 +504,8 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
 @keyframes backdropFadeOut { from { opacity: 1; } to { opacity: 0; } }
 
 /* ── Chat Widget ── */
-.chat-fab { position: fixed; bottom: calc(var(--space-6) + env(safe-area-inset-bottom)); right: calc(var(--space-6) + env(safe-area-inset-right)); z-index: var(--z-overlay); width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: var(--text-on-dark, #fff); border: none; cursor: pointer; box-shadow: 0 4px 16px rgba(var(--primary-rgb), .35); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: transform .35s var(--ease-spring-gentle), box-shadow .3s; }
-.chat-fab:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(var(--primary-rgb), .45); }
+.chat-fab { position: fixed; bottom: calc(var(--space-6) + env(safe-area-inset-bottom)); right: calc(var(--space-6) + env(safe-area-inset-right)); z-index: var(--z-overlay); width: 48px; height: 48px; border-radius: 50%; background: var(--primary); color: var(--text-on-dark, #fff); border: none; cursor: pointer; box-shadow: 0 2px 10px rgba(var(--primary-rgb), .25); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: transform .35s var(--ease-spring-gentle), box-shadow .3s, opacity .4s var(--ease-out); opacity: .85; }
+.chat-fab:hover { transform: scale(1.08); box-shadow: 0 4px 18px rgba(var(--primary-rgb), .35); opacity: 1; }
 .chat-fab:active { transform: scale(.94); }
 .chat-fab:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 3px; }
 .chat-fab.open { background: var(--muted); }
@@ -883,7 +883,7 @@ a.thread-author:hover { color: var(--primary-fg); }
 .dark .ptb-recommend { background: rgba(51,100,110,.18); }
 .dark .ptb-question { background: rgba(var(--primary-rgb),.16); }
 .dark .ptb-discussion { background: var(--glass-light); }
-.dark .chat-fab { box-shadow: 0 4px 16px rgba(0,0,0,.4); }
+.dark .chat-fab { box-shadow: 0 2px 10px rgba(0,0,0,.3); }
 .dark .chat-panel { background: var(--surface-2); border-color: var(--line); box-shadow: 0 8px 40px rgba(0,0,0,.5); }
 .dark .chat-panel-head { border-bottom-color: var(--line); }
 .dark .cmsg.user { background: rgba(var(--primary-rgb), .22); color: var(--text-on-dark, #f5f5f7); }
