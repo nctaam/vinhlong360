@@ -1300,3 +1300,43 @@ class TestMediumFixesBatch2:
         assert idx > 0
         block = src[idx:idx+200]
         assert "by_id.get(" in block, "Must use by_id.get() not by_id[] to avoid KeyError"
+
+
+class TestDeepScanBatch3:
+    """Tests for deep scan round 3: ratelimit + analytics hardening."""
+
+    def test_penalty_box_race_safe(self):
+        """is_in_penalty_box must use .get() to avoid KeyError on concurrent access."""
+        src = (Path(__file__).resolve().parent.parent / "ratelimit.py").read_text(encoding="utf-8")
+        idx = src.find("def is_in_penalty_box(")
+        assert idx > 0
+        block = src[idx:idx+250]
+        assert "_penalty_box.get(" in block, "Must use .get() not [] to avoid race condition KeyError"
+        assert "_penalty_box.pop(" in block, "Must use .pop() not del for thread-safe removal"
+        assert "del _penalty_box[" not in block, "del _penalty_box[] is not thread-safe"
+
+    def test_penalty_violations_gc_cleanup(self):
+        """gc_all must clean up _penalty_violations for IPs no longer in penalty box."""
+        src = (Path(__file__).resolve().parent.parent / "ratelimit.py").read_text(encoding="utf-8")
+        idx = src.find("_penalty_violations.items()")
+        assert idx > 0
+        block = src[max(0, idx - 50):idx + 120]
+        assert "_penalty_box" in block, "gc_all must check _penalty_box membership when cleaning violations"
+
+    def test_entity_hits_capped(self):
+        """entity_hits must be capped to prevent unbounded growth."""
+        src = (Path(__file__).resolve().parent.parent / "analytics.py").read_text(encoding="utf-8")
+        assert "_MAX_ENTITY_HITS" in src, "analytics must define _MAX_ENTITY_HITS"
+        idx = src.find("def track_entity_hit(")
+        assert idx > 0
+        block = src[idx:idx+400]
+        assert "_MAX_ENTITY_HITS" in block, "track_entity_hit must enforce cap"
+
+    def test_save_conversation_error_handling(self):
+        """save_conversation must catch OSError to prevent crashes."""
+        src = (Path(__file__).resolve().parent.parent / "analytics.py").read_text(encoding="utf-8")
+        idx = src.find("def save_conversation(")
+        assert idx > 0
+        block = src[idx:idx+600]
+        assert "except OSError" in block or "except (OSError" in block, \
+            "save_conversation must handle OSError"

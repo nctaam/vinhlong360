@@ -109,11 +109,17 @@ def track_query(message: str, tools_used: list[str], reply: str, session_id: str
         _save(data)
 
 
+_MAX_ENTITY_HITS = 10_000
+
+
 def track_entity_hit(entity_id: str):
     """Ghi nhận entity được truy cập."""
     with _lock:
         data = _load()
         data["entity_hits"][entity_id] = data["entity_hits"].get(entity_id, 0) + 1
+        if len(data["entity_hits"]) > _MAX_ENTITY_HITS:
+            top = sorted(data["entity_hits"].items(), key=lambda x: x[1], reverse=True)[:_MAX_ENTITY_HITS]
+            data["entity_hits"] = dict(top)
         _save(data)
 
 
@@ -131,15 +137,18 @@ def track_session():
 
 def save_conversation(session_id: str, messages: list[dict]):
     """Lưu lịch sử hội thoại."""
-    filepath = CONVERSATIONS_DIR / f"{session_id}.json"
-    tmp = filepath.with_suffix(".tmp")
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump({
-            "session_id": session_id,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "messages": messages[-50:],
-        }, f, ensure_ascii=False, indent=2)
-    tmp.replace(filepath)
+    try:
+        filepath = CONVERSATIONS_DIR / f"{session_id}.json"
+        tmp = filepath.with_suffix(".tmp")
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump({
+                "session_id": session_id,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "messages": messages[-50:],
+            }, f, ensure_ascii=False, indent=2)
+        tmp.replace(filepath)
+    except OSError as exc:
+        logger.warning("Failed to save conversation %s: %s", session_id, exc)
 
 
 # ── Report functions ──

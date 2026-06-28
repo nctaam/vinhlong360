@@ -398,7 +398,8 @@ def gc_all() -> dict:
         _token_buckets.pop(k, None)
     for ip in [ip for ip, t in _penalty_box.items() if now >= t]:
         _penalty_box.pop(ip, None)
-    for ip in [ip for ip, cnt in _penalty_violations.items() if cnt <= 0]:
+    for ip in [ip for ip, cnt in _penalty_violations.items()
+               if cnt <= 0 or ip not in _penalty_box]:
         _penalty_violations.pop(ip, None)
     for k in [k for k, v in _sliding_counters.items() if not v or v[-1][0] < now - 3600]:
         _sliding_counters.pop(k, None)
@@ -440,10 +441,11 @@ def add_to_penalty_box(ip: str, duration: int = 0):
 
 def is_in_penalty_box(ip: str) -> bool:
     """Check if an IP is currently in the penalty box."""
-    if ip not in _penalty_box:
+    expiry = _penalty_box.get(ip)
+    if expiry is None:
         return False
-    if _now() >= _penalty_box[ip]:
-        del _penalty_box[ip]
+    if _now() >= expiry:
+        _penalty_box.pop(ip, None)
         return False
     return True
 
