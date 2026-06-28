@@ -129,7 +129,7 @@ def _create_session_atomic(uid: str, token_hash: str, ua: str, ip: str, expires_
 # ── Models ──
 
 class OTPRequest(BaseModel):
-    phone: str
+    phone: str = Field(..., max_length=20)
 
     @field_validator("phone")
     @classmethod
@@ -146,8 +146,8 @@ CONSENT_VERSION = "1.0"
 
 
 class OTPVerify(BaseModel):
-    phone: str
-    code: str
+    phone: str = Field(..., max_length=20)
+    code: str = Field(..., max_length=10)
     consent: bool = False
 
     @field_validator("phone")
@@ -160,8 +160,8 @@ class OTPVerify(BaseModel):
 
 
 class PasswordLogin(BaseModel):
-    phone: str
-    password: str
+    phone: str = Field(..., max_length=20)
+    password: str = Field(..., max_length=128)
 
     @field_validator("phone")
     @classmethod
@@ -189,7 +189,7 @@ class SetPassword(BaseModel):
 
 
 class CheckPhone(BaseModel):
-    phone: str
+    phone: str = Field(..., max_length=20)
 
     @field_validator("phone")
     @classmethod
@@ -201,9 +201,9 @@ class CheckPhone(BaseModel):
 
 
 class ProfileUpdate(BaseModel):
-    display_name: str | None = None
-    bio: str | None = None
-    username: str | None = None
+    display_name: str | None = Field(None, max_length=50)
+    bio: str | None = Field(None, max_length=300)
+    username: str | None = Field(None, max_length=30)
 
 
 # ── Helpers ──
@@ -847,7 +847,7 @@ async def get_login_history(request: Request, limit: int = Query(20, ge=1, le=10
 # ── Privacy settings ──
 
 class PrivacyUpdate(BaseModel):
-    profile_visibility: str | None = None
+    profile_visibility: str | None = Field(None, max_length=20)
     show_activity: bool | None = None
     show_saved: bool | None = None
 

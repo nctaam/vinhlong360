@@ -20,7 +20,7 @@ from datetime import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, File
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 from auth_middleware import get_current_user, require_user, validate_path_id, require_csrf, require_idempotency
 from database import db
@@ -168,12 +168,12 @@ def _notify_entity_followers(entity_id, author_id, author_name, post_id: str) ->
 
 class CreatePost(BaseModel):
     content: str = ""
-    entity_id: Optional[str] = None
-    post_type: str = "share"
+    entity_id: Optional[str] = Field(None, max_length=128)
+    post_type: str = Field("share", max_length=20)
     rating: Optional[int] = None
-    images: list[str] = []
-    mentions: list[dict] = []
-    repost_of: Optional[str] = None  # Threads-style repost/quote
+    images: list[str] = Field(default=[], max_length=20)
+    mentions: list[dict] = Field(default=[], max_length=50)
+    repost_of: Optional[str] = Field(None, max_length=128)
 
     @field_validator("content")
     @classmethod
@@ -210,8 +210,8 @@ class CreatePost(BaseModel):
 
 class CreateComment(BaseModel):
     content: str
-    parent_id: Optional[str] = None
-    mentions: list[dict] = []
+    parent_id: Optional[str] = Field(None, max_length=128)
+    mentions: list[dict] = Field(default=[], max_length=50)
 
     @field_validator("content")
     @classmethod
@@ -1227,7 +1227,7 @@ async def delete_comment(comment_id: str, user=Depends(require_user), _csrf=Depe
 # ── Q&A: câu trả lời hay nhất (chủ bài hỏi chọn 1 bình luận) ──
 
 class BestAnswerBody(BaseModel):
-    comment_id: Optional[str] = None  # None = bỏ chọn
+    comment_id: Optional[str] = Field(None, max_length=128)  # None = bỏ chọn
 
 
 @router.post("/posts/{post_id}/best-answer")

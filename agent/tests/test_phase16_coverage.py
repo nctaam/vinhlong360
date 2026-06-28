@@ -848,3 +848,44 @@ class TestSecurityPosture:
                 if next_line == "pass":
                     bare_passes += 1
         assert bare_passes <= 15, f"admin.py has {bare_passes} silent except:pass blocks (expected <=15 after adding logging)"
+
+    def test_pydantic_field_constraints_on_string_inputs(self):
+        """All user-facing Pydantic str fields should have Field(max_length=...) to prevent oversized payloads."""
+        from pydantic import Field as PydanticField
+        import inspect
+
+        # Models that accept user/admin string input
+        from auth import OTPRequest, OTPVerify, PasswordLogin, SetPassword, CheckPhone, ProfileUpdate, PrivacyUpdate
+        from social import CreatePost, CreateComment, BestAnswerBody
+        from notifications import ReportRequest
+        from admin import _EntityImageURL, RejectBody, BatchModerationBody
+
+        models = [
+            OTPRequest, OTPVerify, PasswordLogin, SetPassword, CheckPhone,
+            ProfileUpdate, PrivacyUpdate,
+            CreatePost, CreateComment, BestAnswerBody,
+            ReportRequest,
+            _EntityImageURL, RejectBody, BatchModerationBody,
+        ]
+
+        # Fields with field_validator enforcing length (skip — validator handles it)
+        has_validator = {
+            "CreatePost.content", "CreateComment.content",
+        }
+
+        unconstrained = []
+        for model in models:
+            for name, field_info in model.model_fields.items():
+                if field_info.annotation is bool or field_info.annotation == bool:
+                    continue
+                anno = str(field_info.annotation or "")
+                if "str" not in anno:
+                    continue
+                key = f"{model.__name__}.{name}"
+                if key in has_validator:
+                    continue
+                has_max = any(hasattr(m, "max_length") for m in (field_info.metadata or []))
+                if has_max:
+                    continue
+                unconstrained.append(key)
+        assert not unconstrained, f"String fields without max_length: {unconstrained}"

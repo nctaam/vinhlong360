@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from starlette.responses import StreamingResponse
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 from auth_middleware import get_current_user, require_user, validate_path_id, require_csrf
 from database import db
@@ -35,9 +35,9 @@ router = APIRouter(prefix="/api", tags=["community"], dependencies=[Depends(_req
 # ── Models ──
 
 class ReportRequest(BaseModel):
-    target_type: str
-    target_id: str
-    reason: str
+    target_type: str = Field(..., max_length=20)
+    target_id: str = Field(..., max_length=128)
+    reason: str = Field(..., max_length=500)
 
     @field_validator("target_type")
     @classmethod

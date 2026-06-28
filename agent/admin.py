@@ -410,7 +410,7 @@ async def delete_entity(entity_id: str):
 
 
 class _EntityImageURL(BaseModel):
-    url: str
+    url: str = Field(..., max_length=600)
 
 
 @router.post("/entities/{entity_id}/images")
@@ -1422,7 +1422,7 @@ async def approve_post(post_id: str):
 
 
 class RejectBody(BaseModel):
-    reason: str | None = None
+    reason: str | None = Field(None, max_length=500)
 
 
 @router.post("/moderation/{post_id}/reject")
@@ -1441,7 +1441,7 @@ async def reject_post(post_id: str, body: RejectBody = RejectBody()):
 
 class BatchModerationBody(BaseModel):
     post_ids: list[str] = Field(..., min_length=1, max_length=100)
-    action: str  # 'approve' or 'reject'
+    action: str = Field(..., max_length=20)  # 'approve' or 'reject'
     reason: str = Field("", max_length=500)
 
 
