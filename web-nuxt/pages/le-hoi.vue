@@ -595,6 +595,8 @@ useHead({
   border-left: 3px solid rgba(var(--accent-rgb), .35);
 }
 
+.dark .lehoi-offseason { background: rgba(var(--accent-rgb), .12); border-left-color: rgba(var(--accent-rgb), .5); }
+
 /* Thumbnail placeholder colour if image fails / while loading */
 .event-thumb { background: var(--bg-alt); }
 
