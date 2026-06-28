@@ -1284,6 +1284,13 @@ async def moderate_content_enhanced(
         extra_score = max(extra_score, 0.4)
         extra_reasons.append(f"high_entropy:{ent['encoding_likely']}")
 
+    # Text obfuscation (zero-width, leetspeak, fullwidth, visual tricks)
+    obf = detect_text_obfuscation(content)
+    if obf.get("is_obfuscated"):
+        extra_score = max(extra_score, obf["score"])
+        for tech in obf.get("techniques", []):
+            extra_reasons.append(f"obfuscation:{tech}")
+
     # Merge scores
     final_score = max(base_result["score"], extra_score)
     all_reasons = base_result["reasons"] + extra_reasons

@@ -588,6 +588,13 @@ class TestTextObfuscation:
         assert deobfuscate_text("") == ""
         assert deobfuscate_text(None) == ""
 
+    def test_obfuscation_wired_into_enhanced_pipeline(self):
+        """detect_text_obfuscation must be called inside moderate_content_enhanced."""
+        import inspect
+        from moderation import moderate_content_enhanced
+        src = inspect.getsource(moderate_content_enhanced)
+        assert "detect_text_obfuscation" in src, "Obfuscation detection must be wired into enhanced pipeline"
+
 
 # ============================================================================
 #  Layer 20: Targeted Harassment Detection
