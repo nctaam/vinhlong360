@@ -1581,22 +1581,23 @@ class TestPhase11SessionLimit:
     """Phase 11: max concurrent session enforcement."""
 
     def test_verify_otp_enforces_session_limit(self):
-        """verify_otp evicts oldest session when limit reached."""
+        """verify_otp calls _create_session_atomic which enforces session limit."""
         src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        assert "def _create_session_atomic" in src
+        assert "MAX_CONCURRENT_SESSIONS" in src
         idx = src.find("def verify_otp")
         end = src.find("\nasync def ", idx + 1)
         block = src[idx:end] if end != -1 else src[idx:idx + 5000]
-        assert "MAX_CONCURRENT_SESSIONS" in block
-        assert "ORDER BY created_at ASC LIMIT 1" in block
+        assert "_create_session_atomic" in block
 
     def test_login_password_enforces_session_limit(self):
-        """login_password evicts oldest session when limit reached."""
+        """login_password calls _create_session_atomic which enforces session limit."""
         src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        assert "def _create_session_atomic" in src
         idx = src.find("def login_password")
         end = src.find("\nasync def ", idx + 1)
         block = src[idx:end] if end != -1 else src[idx:idx + 5000]
-        assert "MAX_CONCURRENT_SESSIONS" in block
-        assert "ORDER BY created_at ASC LIMIT 1" in block
+        assert "_create_session_atomic" in block
 
 
 class TestPhase11BlockFollow:
