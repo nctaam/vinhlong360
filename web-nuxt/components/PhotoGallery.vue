@@ -166,7 +166,7 @@ function goToSlide(idx: number) {
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 300ms var(--ease-out, ease);
+  transition: transform .3s var(--ease-out, ease);
 }
 .pg-main:hover .pg-main-img { transform: scale(1.03); }
 
@@ -191,7 +191,7 @@ function goToSlide(idx: number) {
   aspect-ratio: var(--gallery-thumb-ratio);
   object-fit: cover;
   display: block;
-  transition: transform 300ms var(--ease-out, ease);
+  transition: transform .3s var(--ease-out, ease);
 }
 .pg-thumb:hover .pg-thumb-img { transform: scale(1.05); }
 
