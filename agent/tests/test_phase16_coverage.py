@@ -1726,26 +1726,31 @@ class TestLLMConfig:
 
 
 class TestCacheInvalidationOnEntityCRUD:
-    """B2: LLM cache must be invalidated when entities are modified."""
+    """B2: LLM cache must be invalidated when entities are modified via _sync_kb."""
 
-    def test_update_entity_invalidates_cache(self):
+    def test_sync_kb_invalidates_cache(self):
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        # update_entity handler must call cache.invalidate_all()
+        sync_fn = src[src.index("def _sync_kb():"):]
+        sync_fn = sync_fn[:sync_fn.index("\ndef _safe(")]
+        assert "cache.invalidate_all()" in sync_fn
+
+    def test_update_entity_calls_sync_kb(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
         update_fn = src[src.index("async def update_entity("):]
         update_fn = update_fn[:update_fn.index("\n@router.")]
-        assert "cache.invalidate_all()" in update_fn
+        assert "_sync_kb()" in update_fn
 
-    def test_delete_entity_invalidates_cache(self):
+    def test_delete_entity_calls_sync_kb(self):
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
         delete_fn = src[src.index("async def delete_entity("):]
         delete_fn = delete_fn[:delete_fn.index("\n\n\nclass")]
-        assert "cache.invalidate_all()" in delete_fn
+        assert "_sync_kb()" in delete_fn
 
-    def test_bulk_delete_invalidates_cache(self):
+    def test_bulk_delete_calls_sync_kb(self):
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
         bulk_fn = src[src.index("async def bulk_delete("):]
         bulk_fn = bulk_fn[:bulk_fn.index("\n@router.")]
-        assert "cache.invalidate_all()" in bulk_fn
+        assert "_sync_kb()" in bulk_fn
 
 
 class TestImageURLLengthValidation:
