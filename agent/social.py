@@ -421,6 +421,7 @@ async def delete_post(post_id: str, user=Depends(require_user), _csrf=Depends(re
                 raise HTTPException(404, "Bài viết không tồn tại")
             if str(row["user_id"]) != str(user["id"]) and user.get("role") not in ("admin", "moderator"):
                 raise HTTPException(403, "Không có quyền xóa bài viết này")
+            db._execute(conn, f"DELETE FROM notifications WHERE ref_type = 'post' AND ref_id = {ph}", (post_id,))
             db._execute(conn, f"DELETE FROM posts WHERE id::text = {ph}", (post_id,))
     await asyncio.to_thread(_query)
     _invalidate_social_caches()
@@ -1224,6 +1225,7 @@ async def delete_comment(comment_id: str, user=Depends(require_user), _csrf=Depe
                 raise HTTPException(404, "Bình luận không tồn tại")
             if str(row["user_id"]) != uid:
                 raise HTTPException(403, "Bạn chỉ có thể xóa bình luận của mình")
+            db._execute(conn, f"DELETE FROM notifications WHERE ref_type = 'comment' AND ref_id = {ph}", (comment_id,))
             db._execute(conn, f"DELETE FROM comments WHERE id::text = {ph}", (comment_id,))
     await asyncio.to_thread(_query)
     return {"success": True}
