@@ -1044,7 +1044,8 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .cm-card:active { transform: scale(.98); transition-duration: .1s; }
 .cm-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .cm-img { aspect-ratio: 16 / 9; overflow: hidden; background: var(--bg-alt); }
-.cm-img img { width: 100%; height: 100%; object-fit: cover; }
+.cm-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s var(--ease-out); }
+.cm-card:hover .cm-img img { transform: scale(1.04); }
 .cm-body { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) var(--space-4) var(--space-4); }
 .cm-author { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
 .cm-avatar { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--text-on-dark, #fff); font-size: var(--text-xs); font-weight: var(--weight-semibold); flex-shrink: 0; }
@@ -1137,6 +1138,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dark .chatbot-cta:hover { border-color: rgba(255,255,255,.1); }
 .dark .hero-pill { background: var(--glass-medium); border-color: var(--border); }
 .dark .hero-stat-num { color: #fff; }
+.dark .spot-visual::before { background: radial-gradient(46% 46% at 34% 30%, rgba(255,255,255,.1) 0%, transparent 68%); }
 
 /* ═══════════════════════════════════════════════════
    REDUCED TRANSPARENCY / MOTION

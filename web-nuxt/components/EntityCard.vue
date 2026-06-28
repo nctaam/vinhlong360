@@ -195,7 +195,7 @@ const ratingDisplay = computed(() => {
   height: 6px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.6);
-  transition: background 200ms, transform 200ms;
+  transition: background 200ms var(--ease-out), transform 200ms var(--ease-spring-gentle);
 }
 .card-dot.active {
   background: var(--text-on-dark, #fff);
