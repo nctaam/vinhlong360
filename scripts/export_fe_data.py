@@ -57,6 +57,9 @@ def load_all():
     except Exception as e:
         print(f"[WARN] DB import failed ({e}), using data.json")
         data_path = ROOT / "web" / "data.json"
+        if not data_path.exists():
+            print(f"[ERROR] {data_path} not found and DB unavailable")
+            sys.exit(1)
         with open(data_path, encoding="utf-8") as f:
             data = json.load(f)
         entities = data.get("entities", [])
