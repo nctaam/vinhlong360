@@ -327,7 +327,6 @@ a:focus:not(:focus-visible), button:focus:not(:focus-visible) { outline: none; }
 /* ── Shared utility modifiers ── */
 .fetch-error { color: var(--error); text-align: center; padding: var(--space-8) var(--space-5); font-size: var(--text-sm); background: var(--bg-alt); border: .5px solid var(--line); border-radius: var(--radius-lg); }
 .map-fallback { display: flex; align-items: center; justify-content: center; background: linear-gradient(110deg, var(--bg-alt) 30%, var(--card) 50%, var(--bg-alt) 70%); background-size: 200% 100%; animation: shimmer 1.6s infinite linear; border-radius: var(--radius-lg, 16px); }
-@keyframes shimmer { to { background-position: -200% 0; } }
 @media (prefers-reduced-motion: reduce) { .map-fallback { animation: none; background: var(--bg-alt); } }
 
 /* ── MapLibre popup overrides ── */
