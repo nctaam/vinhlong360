@@ -20,7 +20,7 @@ import time
 import threading
 import uuid
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 from threading import Lock
 from pathlib import Path
 
@@ -54,7 +54,7 @@ class StructuredLogger:
 
     def log(self, level: str, message: str, **extra):
         entry = {
-            "ts": datetime.now().isoformat(),
+            "ts": datetime.now(timezone.utc).isoformat(),
             "level": level,
             "msg": message,
             **extra,
@@ -239,7 +239,7 @@ class ResponseTimeTracker:
             "endpoint": endpoint,
             "duration_ms": round(duration_ms, 1),
             "status": status,
-            "ts": datetime.now().isoformat(),
+            "ts": datetime.now(timezone.utc).isoformat(),
         }
         with self._lock:
             self._samples.append(entry)
@@ -478,7 +478,7 @@ class SecurityEventLogger:
         entry = {
             "event": event_type,
             "ip": ip,
-            "ts": datetime.now().isoformat(),
+            "ts": datetime.now(timezone.utc).isoformat(),
             **details,
         }
         self._log.log("security", f"[SEC] {event_type}", **self._mask_pii(entry))
@@ -816,7 +816,7 @@ class SecurityEventCorrelator:
                     "ip": ip,
                     "patterns": matched,
                     "severity": severity,
-                    "ts": datetime.now().isoformat(),
+                    "ts": datetime.now(timezone.utc).isoformat(),
                 }
                 self._alerts.append(alert)
                 if len(self._alerts) > self._max_alerts:
@@ -1398,7 +1398,7 @@ class SecurityMetricsAggregator:
         Returns a flat dict suitable for JSON export to monitoring dashboards.
         """
         metrics = {
-            "ts": datetime.now().isoformat(),
+            "ts": datetime.now(timezone.utc).isoformat(),
         }
 
         # IP reputation stats

@@ -19,7 +19,7 @@ import os
 import sqlite3
 import time
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock
 
@@ -392,7 +392,7 @@ class Database:
         # khớp nhầm tên → pin sai tỉnh). Thà null còn hơn sai (xem fix data 2026-06-14).
         if coords_val and not _coords_in_region(coords_val):
             coords_val = None
-        updated = entity.get("updatedAt", datetime.now().strftime("%Y-%m-%d"))
+        updated = entity.get("updatedAt", datetime.now(timezone.utc).strftime("%Y-%m-%d"))
 
         with self._conn() as conn:
             if self._use_pg:
@@ -1012,7 +1012,7 @@ class Database:
                     WHERE score IS NOT NULL AND created_at >= NOW() - INTERVAL '{days} days'
                 """)["a"]
             else:
-                cutoff = datetime.now().strftime("%Y-%m-%d")
+                cutoff = datetime.now(timezone.utc).strftime("%Y-%m-%d")
                 total = conn.execute(
                     "SELECT COUNT(*) as c FROM query_log WHERE created_at >= date(?, ?)",
                     (cutoff, f"-{days} days")).fetchone()["c"]
@@ -1112,7 +1112,7 @@ class Database:
         """Nạp entities+relationships+itineraries vào DB trên CONNECTION đã cho (không tự
         commit) — để replace_from_json gói DELETE+INSERT trong 1 transaction (F1 atomic).
         SQLite + PostgreSQL dùng chung cấu trúc; SQL theo từng backend (copy từ upsert_*)."""
-        now = datetime.now().strftime("%Y-%m-%d")
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         entity_rows, fts_rows = [], []
         for entity in data.get("entities", []):
             season_val = entity.get("season")
@@ -1196,7 +1196,7 @@ class Database:
             raise NotImplementedError("Use pg_dump for PostgreSQL backups")
         self.initialize()
         if not backup_path:
-            ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+            ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
             backup_path = str(DB_DIR / f"vinhlong360_backup_{ts}.db")
         with self._conn() as conn:
             backup_conn = sqlite3.connect(backup_path)
@@ -1347,7 +1347,7 @@ class Database:
 def _coerce_iso_date(value) -> str | None:
     """Trả ISO-8601 UTC (…Z) từ một giá trị ngày đã có sẵn trong DB/data.
     KHÔNG bịa ngày: chỉ chuẩn hoá định dạng. Trả None nếu không phân giải được.
-    Track-H: không bao giờ thay bằng datetime.now()."""
+    Track-H: không bao giờ thay bằng datetime.now(timezone.utc)."""
     if not value or not isinstance(value, str):
         return None
     s = value.strip()

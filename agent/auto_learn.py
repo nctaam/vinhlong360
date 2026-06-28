@@ -26,7 +26,7 @@ import re
 import sys
 import time
 import hashlib
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -357,7 +357,7 @@ def to_entity(raw: dict, source_url: str) -> dict:
         "attributes": {},
         "source": {"title": source_url.split("/")[2] if "/" in source_url else source_url, "url": source_url},
         "confidence": min(0.9, max(0.3, raw.get("confidence", 0.6))),
-        "updatedAt": datetime.now().strftime("%Y-%m-%d"),
+        "updatedAt": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
     }
 
     # Geocode via OSM (precise map coords — NOT from the LLM, which hallucinates).
@@ -562,7 +562,7 @@ def learn_from_query(query: str, known: set) -> list[dict]:
 
 def learn_round(category: str = None, num_topics: int = 5) -> list[dict]:
     """1 vòng học: tìm gaps → search → extract → deduplicate."""
-    logger.info("Auto-Learn Round started at %s", datetime.now().strftime('%Y-%m-%d %H:%M'))
+    logger.info("Auto-Learn Round started at %s", datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M'))
 
     known = existing_names()
     logger.info("Knowledge base: %d entities", len(known))
@@ -620,7 +620,7 @@ def learn_round(category: str = None, num_topics: int = 5) -> list[dict]:
                 logger.debug("  - %s -> %s (conf: %s)", e['name'], place, e['confidence'])
 
         # Save
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         out_file = LEARN_DIR / f"learned_{timestamp}.json"
         with open(out_file, "w", encoding="utf-8") as f:
             json.dump(unique, f, ensure_ascii=False, indent=2)
@@ -628,7 +628,7 @@ def learn_round(category: str = None, num_topics: int = 5) -> list[dict]:
 
         # Log
         log_entry = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "category": category,
             "queries": queries,
             "found": len(unique),

@@ -20,7 +20,7 @@ import logging
 import os
 import re
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock
 
@@ -180,7 +180,7 @@ class ReflexionEngine:
             "score": evaluation["score"],
             "issues": evaluation["issues"],
             "lesson": self._generate_lesson(query, evaluation),
-            "created": datetime.now().isoformat(),
+            "created": datetime.now(timezone.utc).isoformat(),
             "category": self._categorize_query(query),
         }
 
@@ -343,7 +343,7 @@ class QualityTracker:
                 "query": query[:100],
                 "score": score,
                 "tools": len(tools_used),
-                "ts": datetime.now().isoformat(),
+                "ts": datetime.now(timezone.utc).isoformat(),
             })
             # Keep last 1000
             if len(self._scores) > 1000:

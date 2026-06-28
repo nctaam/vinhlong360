@@ -21,7 +21,7 @@ import logging
 import re
 import time
 from threading import Lock
-from datetime import datetime
+from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
@@ -249,7 +249,7 @@ class PromptCache:
 
     def _build_static_content(self, system_prompt: str) -> str:
         """Build the static part of the system prompt (base + date)."""
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         return (
             system_prompt
             + f"\nHôm nay: {now.strftime('%d/%m/%Y')}. Tháng hiện tại: {now.month}."

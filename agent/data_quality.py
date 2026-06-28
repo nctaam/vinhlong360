@@ -8,7 +8,7 @@ import json
 import logging
 import shutil
 from collections import Counter
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -200,7 +200,7 @@ def filter_candidates(queue: dict[str, Any], *, kind: str | None = None, bucket:
 
 def _write_data_files(data: dict[str, Any]) -> str:
     BACKUP_DIR.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     backup = BACKUP_DIR / f"data_quality_apply_{stamp}.json"
     shutil.copy2(DATA_PATH, backup)
     _write_data_without_backup(data)
@@ -290,9 +290,9 @@ def is_evidence_auto_apply(record: dict[str, Any]) -> bool:
 def apply_candidates(candidate_ids: list[str] | None = None, *, dry_run: bool = True) -> dict[str, Any]:
     queue = load_candidate_queue(refresh=True)
     wanted = set(candidate_ids or [])
-    applied_at = datetime.now().isoformat(timespec="seconds")
+    applied_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     batch_payload = f"{applied_at}:{','.join(sorted(wanted)) or 'all'}"
-    batch_id = f"dq_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{hashlib.sha1(batch_payload.encode('utf-8')).hexdigest()[:8]}"
+    batch_id = f"dq_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}_{hashlib.sha1(batch_payload.encode('utf-8')).hexdigest()[:8]}"
     selected = []
     for record in queue.get("auto_apply", []):
         cid = record.get("candidate_id") or candidate_id(record)
@@ -392,7 +392,7 @@ def rollback_apply(batch_id: str, output_dir: Path | None = None) -> dict[str, A
     if not target:
         raise FileNotFoundError(f"apply batch '{batch_id}' not found")
     # GĐ3.8: rollback DB-native — đặt lại từng field về `before` đã lưu trong history.
-    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     reverted = 0
     for change in target.get("changes") or []:
         eid = str(change.get("entity_id") or "")
@@ -403,7 +403,7 @@ def rollback_apply(batch_id: str, output_dir: Path | None = None) -> dict[str, A
         db.upsert_entity(entity)
         reverted += 1
 
-    rolled_back_at = datetime.now().isoformat(timespec="seconds")
+    rolled_back_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     _append_apply_history({
         "record_type": "rollback",
         "batch_id": f"rollback_{batch_id}_{stamp}",

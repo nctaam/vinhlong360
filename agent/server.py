@@ -25,7 +25,7 @@ import traceback
 import uuid
 import asyncio
 import threading
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
@@ -481,7 +481,7 @@ def _call_tool_impl(name: str, args: dict) -> str:
         try:
             raw_month = max(1, min(12, int(raw_month)))
         except (TypeError, ValueError):
-            raw_month = datetime.now().month
+            raw_month = datetime.now(timezone.utc).month
         result = knowledge.seasonal_now(raw_month)
         def _seasonal_card(e):
             attrs = e.get("attributes") or {}
@@ -804,7 +804,7 @@ def start_search_index_build(background: bool = True):
     def _run():
         with _index_build_lock:
             _index_build_state.update({
-                "started_at": datetime.now().isoformat(),
+                "started_at": datetime.now(timezone.utc).isoformat(),
                 "finished_at": None,
                 "last_error": None,
             })
@@ -819,7 +819,7 @@ def start_search_index_build(background: bool = True):
         finally:
             with _index_build_lock:
                 _index_build_state["running"] = False
-                _index_build_state["finished_at"] = datetime.now().isoformat()
+                _index_build_state["finished_at"] = datetime.now(timezone.utc).isoformat()
 
     if background:
         thread = threading.Thread(target=_run, daemon=True, name="search-index-build")
@@ -1272,7 +1272,7 @@ def _build_messages(
 
     Returns: (messages, build_info) where build_info includes cache/AB stats
     """
-    current_month = datetime.now().month
+    current_month = datetime.now(timezone.utc).month
 
     # Resolve anaphoric references (e.g. "bảo tàng" → specific museum from history)
     # before RAG so entity detection picks up the correct entity.
@@ -1379,7 +1379,7 @@ def _build_messages(
     # Fallback: manual assembly (original logic)
     system_parts = [
         base_prompt,
-        f"\nHôm nay: {datetime.now().strftime('%d/%m/%Y')}. Tháng hiện tại: {current_month}.",
+        f"\nHôm nay: {datetime.now(timezone.utc).strftime('%d/%m/%Y')}. Tháng hiện tại: {current_month}.",
     ]
 
     if proactive_ctx:
@@ -2538,7 +2538,7 @@ async def health():
         # Level 7
         "llm_judge": {"available": HAS_LLM_JUDGE},
         "dynamic_agents": {"available": HAS_DYNAMIC_AGENTS, "active_agents": len(agent_factory.get_active_agents()) if HAS_DYNAMIC_AGENTS else 0},
-        "time": datetime.now().isoformat(),
+        "time": datetime.now(timezone.utc).isoformat(),
     }
 
 
@@ -3070,7 +3070,7 @@ async def recommend_endpoint(
     if month:
         ctx["month"] = month
     else:
-        ctx["month"] = datetime.now().month
+        ctx["month"] = datetime.now(timezone.utc).month
     if weather:
         ctx["weather"] = weather
     if time_of_day:

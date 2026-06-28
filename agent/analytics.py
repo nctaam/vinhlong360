@@ -17,7 +17,7 @@ import os
 import sys
 import time
 from collections import Counter
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from threading import Lock
 
@@ -74,7 +74,7 @@ def track_query(message: str, tools_used: list[str], reply: str, session_id: str
     """Ghi nhận 1 query từ user."""
     with _lock:
         data = _load()
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         today = now.strftime("%Y-%m-%d")
 
         # Query log (giữ 1000 gần nhất)
@@ -122,7 +122,7 @@ def track_session():
     with _lock:
         data = _load()
         data["sessions"] += 1
-        today = datetime.now().strftime("%Y-%m-%d")
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         if today not in data["daily_stats"]:
             data["daily_stats"][today] = {"queries": 0, "sessions": 0}
         data["daily_stats"][today]["sessions"] += 1
@@ -136,7 +136,7 @@ def save_conversation(session_id: str, messages: list[dict]):
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump({
             "session_id": session_id,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "messages": messages[-50:],
         }, f, ensure_ascii=False, indent=2)
     tmp.replace(filepath)
@@ -182,7 +182,7 @@ def get_daily_stats(days: int = 30) -> list[dict]:
     data = _load()
     result = []
     for i in range(days):
-        date = (datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d")
+        date = (datetime.now(timezone.utc) - timedelta(days=i)).strftime("%Y-%m-%d")
         stats = data["daily_stats"].get(date, {"queries": 0, "sessions": 0})
         result.append({"date": date, **stats})
     return result
@@ -197,7 +197,7 @@ def get_tool_usage() -> dict:
 def get_summary(since: str | None = None) -> dict:
     """Tổng quan analytics."""
     data = _load()
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     today_stats = data["daily_stats"].get(today, {"queries": 0, "sessions": 0})
     queries = data["queries"]
     unanswered = data.get("unanswered", [])

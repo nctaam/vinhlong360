@@ -18,7 +18,7 @@ import os
 import re
 import subprocess
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -73,7 +73,7 @@ def _log_admin_audit(actor: str, method: str, path: str, ip: str) -> None:
     """P2-7: ghi nhật ký thao tác admin (ai/làm-gì/khi-nào) — JSONL nhẹ, không chặn request."""
     try:
         _AUDIT_FILE.parent.mkdir(parents=True, exist_ok=True)
-        rec = {"ts": datetime.now().isoformat(timespec="seconds"), "actor": actor,
+        rec = {"ts": datetime.now(timezone.utc).isoformat(timespec="seconds"), "actor": actor,
                "method": method, "path": path, "ip": ip}
         with open(_AUDIT_FILE, "a", encoding="utf-8") as f:
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
@@ -89,7 +89,7 @@ def _maybe_rotate_audit() -> None:
         lines = _AUDIT_FILE.read_text(encoding="utf-8").splitlines()
         if len(lines) <= _AUDIT_MAX_LINES:
             return
-        archive = _AUDIT_FILE.with_suffix(f".{datetime.now().strftime('%Y%m%d%H%M%S')}.jsonl")
+        archive = _AUDIT_FILE.with_suffix(f".{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}.jsonl")
         archive.write_text("\n".join(lines[:-_AUDIT_MAX_LINES]) + "\n", encoding="utf-8")
         _AUDIT_FILE.write_text("\n".join(lines[-_AUDIT_MAX_LINES:]) + "\n", encoding="utf-8")
     except Exception:
@@ -352,7 +352,7 @@ async def update_entity(entity_id: str, update: EntityUpdate):
         old_snapshot = {k: v for k, v in existing.items()}
         updates = update.model_dump(exclude_none=True)
         existing.update(updates)
-        existing["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
+        existing["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         db.upsert_entity(existing)
         db.log_entity_changes(entity_id, old_snapshot, existing)
         _sync_kb()
@@ -384,7 +384,7 @@ async def create_entity(entity: EntityCreate):
         new_entity = {
             **payload,
             "source": src,
-            "updatedAt": datetime.now().strftime("%Y-%m-%d"),
+            "updatedAt": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         }
         db.upsert_entity(new_entity)
         _sync_kb()
@@ -432,7 +432,7 @@ async def add_entity_image_url(entity_id: str, body: _EntityImageURL):
         if url not in images:
             images.append(url)
         entity["images"] = images
-        entity["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
+        entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         db.upsert_entity(entity)
         _sync_kb()
         return {"status": "added", "images": images}
@@ -471,7 +471,7 @@ async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
     if cover and cover not in images:
         images.append(cover)
     entity["images"] = images
-    entity["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
+    entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     db.upsert_entity(entity)
     _sync_kb()
     return {"status": "uploaded", "url": cover, "sizes": urls, "images": images, "backend": storage.backend}
@@ -489,7 +489,7 @@ async def remove_entity_image(entity_id: str, idx: int):
         if 0 <= idx < len(images):
             images.pop(idx)
         entity["images"] = images
-        entity["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
+        entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         db.upsert_entity(entity)
         _sync_kb()
         return {"status": "removed", "images": images}
@@ -540,7 +540,7 @@ async def assign_place(entity_id: str, body: AssignPlaceRequest):
                 raise HTTPException(400, "place_id không phải xã/phường hợp lệ")
             e["area"] = p.get("area") or e.get("area")
         e["placeId"] = pid
-        e["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
+        e["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         db.upsert_entity(e)
         _sync_kb()
         return {"success": True, "id": entity_id, "placeId": pid}
@@ -894,11 +894,11 @@ async def approve_image_suggestion(suggestion_id: str):
         "source": s.get("source") or "",
         "source_url": candidate_url,
         "wp_title": s.get("wp_title") or "",
-        "added_at": datetime.now().strftime("%Y-%m-%d"),
+        "added_at": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
     })
     attrs["image_credits"] = credits
     entity["attributes"] = attrs
-    entity["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
+    entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     db.upsert_entity(entity)
 
     # require_admin already authenticated; record a generic approver marker for audit.
@@ -1481,7 +1481,7 @@ async def add_moderation_note(post_id: str, body: ModNoteBody):
             db._execute(conn, f"""
                 UPDATE posts SET moderation_notes = COALESCE(moderation_notes, '[]'::jsonb) || {ph}::jsonb
                 WHERE id::text = {ph}
-            """, (json.dumps({"text": body.note, "at": datetime.now().isoformat()}), post_id))
+            """, (json.dumps({"text": body.note, "at": datetime.now(timezone.utc).isoformat()}), post_id))
     await asyncio.to_thread(_query)
     return {"success": True}
 
@@ -1520,7 +1520,7 @@ async def analytics_overview(days: int = Query(0, ge=0, le=365)):
     """
     since = None
     if days > 0:
-        since = (datetime.now() - timedelta(days=days)).isoformat()
+        since = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
     def _query():
         return {
             "summary": _safe(lambda: analytics.get_summary(since=since), {}),

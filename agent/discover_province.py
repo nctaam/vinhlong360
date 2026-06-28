@@ -36,7 +36,7 @@ import sys
 import time
 import unicodedata
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -261,8 +261,8 @@ def run_discovery(topics, regions, workers, model, apply, label="manual"):
              "placeId": _place_for(s["area"], s.get("location", ""), places),
              "confidence": 0.45 if s.get("coords") else 0.35,
              "status": "provisional", "verified": False,
-             "learned_at": datetime.now().strftime("%Y-%m-%d"),
-             "updatedAt": datetime.now().strftime("%Y-%m-%d"),
+             "learned_at": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+             "updatedAt": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
              "attributes": {}, "season": None, "images": [],
              "source": {"title": f"agent discovery ({model}) + OSM geocode", "method": "llm+nominatim"}}
         if s.get("coords"):
