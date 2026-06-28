@@ -14,7 +14,9 @@ import json
 import logging
 import os
 import time
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+
+_VN_TZ = timezone(timedelta(hours=7))
 from pathlib import Path
 from threading import Lock
 
@@ -128,7 +130,7 @@ def _weather_suggestion(data: dict) -> str:
 
 def _fallback_weather(area: str) -> dict:
     """Thời tiết mặc định khi API không khả dụng."""
-    month = datetime.now().month
+    month = datetime.now(_VN_TZ).month
     # Mùa mưa: 5-11, mùa khô: 12-4
     is_rainy = 5 <= month <= 11
     coords = AREA_COORDS.get(area, AREA_COORDS["vinh-long"])
@@ -184,7 +186,7 @@ def get_upcoming_events(days_ahead: int = 30, area: str = None) -> list[dict]:
 
     Returns: [{title, date_start, date_end, area, type, days_until}]
     """
-    now = datetime.now()
+    now = datetime.now(_VN_TZ)
     current_month = now.month
     current_day = now.day
     results = []

@@ -17,7 +17,9 @@ Output: danh sách proactive suggestions inject vào responses.
 import json
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+
+_VN_TZ = timezone(timedelta(hours=7))
 from pathlib import Path
 
 import knowledge
@@ -128,7 +130,7 @@ TIME_SUGGESTIONS = {
 
 
 def get_time_period() -> str:
-    hour = datetime.now().hour
+    hour = datetime.now(_VN_TZ).hour
     if 5 <= hour < 8:
         return "early_morning"
     elif 8 <= hour < 11:
@@ -148,7 +150,7 @@ def get_time_period() -> str:
 def get_seasonal_suggestions(month: int = None) -> list[dict]:
     """Lấy gợi ý theo mùa."""
     if not month:
-        month = datetime.now().month
+        month = datetime.now(_VN_TZ).month
     return SEASONAL_EVENTS.get(month, [])
 
 
@@ -216,7 +218,7 @@ def generate_welcome_message(user_preferences: dict = None) -> dict:
     Tạo welcome message cá nhân hóa.
     Dùng cho lần đầu user mở chat hoặc quay lại.
     """
-    month = datetime.now().month
+    month = datetime.now(_VN_TZ).month
     time_info = get_time_suggestions()
     seasonal = get_seasonal_suggestions(month)
 
@@ -291,7 +293,7 @@ def get_followup_suggestions(
 
     # Ensure 3 suggestions
     defaults = [
-        f"Tháng {datetime.now().month} nên trải nghiệm gì?",
+        f"Tháng {datetime.now(_VN_TZ).month} nên trải nghiệm gì?",
         "So sánh 3 khu vực",
         "Sản phẩm OCOP nổi bật",
     ]

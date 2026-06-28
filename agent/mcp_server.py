@@ -39,7 +39,9 @@ import json
 import logging
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+
+_VN_TZ = timezone(timedelta(hours=7))
 from pathlib import Path
 from typing import Optional
 
@@ -565,13 +567,13 @@ def resource_stats() -> str:
 )
 def prompt_travel_advisor() -> list[dict]:
     """System prompt that turns an LLM into a Vinh Long tourism advisor."""
-    current_month = datetime.now().month
+    current_month = datetime.now(_VN_TZ).month
     return [
         {
             "role": "user",
             "content": (
                 f"{SYSTEM_PROMPT}\n\n"
-                f"Hom nay: {datetime.now().strftime('%d/%m/%Y')}. "
+                f"Hom nay: {datetime.now(_VN_TZ).strftime('%d/%m/%Y')}. "
                 f"Thang hien tai: {current_month}.\n\n"
                 f"Hay tra loi cau hoi cua du khach."
             ),
@@ -598,7 +600,7 @@ def prompt_itinerary_planner(
         interests: Comma-separated interests (am_thuc, lich_su, thien_nhien, van_hoa, mua_sam, tham_quan)
         areas: Comma-separated areas (vinh-long, ben-tre, tra-vinh)
     """
-    current_month = datetime.now().month
+    current_month = datetime.now(_VN_TZ).month
     return [
         {
             "role": "user",

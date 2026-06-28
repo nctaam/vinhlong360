@@ -762,6 +762,8 @@ async def community_stats():
 
 _trending_cache: dict = {"ts": 0.0, "data": {}}
 _TRENDING_TTL = _cfg.TRENDING_CACHE_TTL
+_trending_lock = asyncio.Lock()
+_leaderboard_lock = asyncio.Lock()
 
 
 def _invalidate_social_caches():
@@ -777,24 +779,30 @@ async def trending_tags(limit: int = Query(10, ge=1, le=20)):
     if now - _trending_cache["ts"] < _TRENDING_TTL and cache_key in _trending_cache.get("data", {}):
         return _trending_cache["data"][cache_key]
 
-    ph = db._ph
-    def _query():
-        with db._conn() as conn:
-            return db._fetchall(conn, f"""
-                SELECT tag, COUNT(*) AS c
-                FROM posts p, jsonb_array_elements_text(p.hashtags) AS tag
-                WHERE p.moderation_status = 'approved'
-                  AND p.created_at > NOW() - INTERVAL '30 days'
-                GROUP BY tag
-                ORDER BY c DESC, tag
-                LIMIT {ph}
-            """, (limit,))
-    rows = await asyncio.to_thread(_query)
-    tags = [{"tag": (d := db._row_to_dict(r))["tag"], "count": int(d["c"])} for r in rows]
-    result = {"tags": tags}
-    _trending_cache["ts"] = now
-    _trending_cache["data"] = {cache_key: result}
-    return result
+    async with _trending_lock:
+        # Re-check after acquiring lock (another coroutine may have refreshed)
+        now = _t.time()
+        if now - _trending_cache["ts"] < _TRENDING_TTL and cache_key in _trending_cache.get("data", {}):
+            return _trending_cache["data"][cache_key]
+
+        ph = db._ph
+        def _query():
+            with db._conn() as conn:
+                return db._fetchall(conn, f"""
+                    SELECT tag, COUNT(*) AS c
+                    FROM posts p, jsonb_array_elements_text(p.hashtags) AS tag
+                    WHERE p.moderation_status = 'approved'
+                      AND p.created_at > NOW() - INTERVAL '30 days'
+                    GROUP BY tag
+                    ORDER BY c DESC, tag
+                    LIMIT {ph}
+                """, (limit,))
+        rows = await asyncio.to_thread(_query)
+        tags = [{"tag": (d := db._row_to_dict(r))["tag"], "count": int(d["c"])} for r in rows]
+        result = {"tags": tags}
+        _trending_cache["ts"] = now
+        _trending_cache["data"] = {cache_key: result}
+        return result
 
 
 _leaderboard_cache: dict = {"ts": 0.0, "data": None}
@@ -808,56 +816,63 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
     bc, bc_p = _block_sql(user)
     if not bc and _leaderboard_cache["data"] is not None and now - _leaderboard_cache["ts"] < _cfg.TRENDING_CACHE_TTL:
         return {"leaders": _leaderboard_cache["data"][:limit]}
-    def _query():
-        with db._conn() as conn:
-            return db._fetchall(conn, f"""
-                SELECT u.id, u.display_name, u.avatar_url, u.username,
-                       COUNT(p.id) FILTER (WHERE p.post_type='review') AS reviews,
-                       COUNT(p.id) AS posts,
-                       COUNT(p.id) FILTER (WHERE jsonb_typeof(p.images)='array'
-                                             AND jsonb_array_length(p.images) > 0) AS photos,
-                       COALESCE(fc.c, 0) AS followers,
-                       COUNT(DISTINCT p.entity_id) FILTER (WHERE p.entity_id IS NOT NULL) AS places,
-                       COALESCE(SUM(CASE WHEN jsonb_typeof(p.likes)='number' THEN p.likes::int
-                                         WHEN jsonb_typeof(p.likes)='array' THEN jsonb_array_length(p.likes)
-                                         ELSE 0 END), 0) AS likes
-                FROM users u
-                LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved'
-                LEFT JOIN (SELECT target_id, COUNT(*) c FROM follows
-                             WHERE target_type='user' GROUP BY target_id) fc
-                       ON fc.target_id = u.id::text
-                WHERE u.is_active = TRUE AND u.deleted_at IS NULL AND u.display_name IS NOT NULL
-                {bc}
-                GROUP BY u.id, u.display_name, u.avatar_url, u.username, fc.c
-                HAVING COUNT(p.id) > 0
-                LIMIT 500
-            """, tuple(bc_p))
-    rows = await asyncio.to_thread(_query)
 
-    leaders = []
-    for r in rows:
-        d = db._row_to_dict(r)
-        reviews = int(d["reviews"] or 0)
-        posts = int(d["posts"] or 0)
-        photos = int(d["photos"] or 0)
-        followers = int(d["followers"] or 0)
-        places = int(d["places"] or 0)
-        likes = int(d["likes"] or 0)
-        points = _calc_points(reviews, posts, photos, followers, places, likes)
-        if points <= 0:
-            continue
-        level, label = _level_for(points)
-        leaders.append({
-            "id": str(d["id"]), "display_name": d["display_name"], "avatar_url": d.get("avatar_url"),
-            "username": d.get("username"),
-            "points": points, "level": level, "level_label": label,
-            "posts": posts, "reviews": reviews,
-        })
-    leaders.sort(key=lambda x: x["points"], reverse=True)
-    if not bc:
-        _leaderboard_cache["ts"] = _t.time()
-        _leaderboard_cache["data"] = leaders
-    return {"leaders": leaders[:limit]}
+    async with _leaderboard_lock:
+        # Re-check after acquiring lock
+        now = _t.time()
+        if not bc and _leaderboard_cache["data"] is not None and now - _leaderboard_cache["ts"] < _cfg.TRENDING_CACHE_TTL:
+            return {"leaders": _leaderboard_cache["data"][:limit]}
+
+        def _query():
+            with db._conn() as conn:
+                return db._fetchall(conn, f"""
+                    SELECT u.id, u.display_name, u.avatar_url, u.username,
+                           COUNT(p.id) FILTER (WHERE p.post_type='review') AS reviews,
+                           COUNT(p.id) AS posts,
+                           COUNT(p.id) FILTER (WHERE jsonb_typeof(p.images)='array'
+                                                 AND jsonb_array_length(p.images) > 0) AS photos,
+                           COALESCE(fc.c, 0) AS followers,
+                           COUNT(DISTINCT p.entity_id) FILTER (WHERE p.entity_id IS NOT NULL) AS places,
+                           COALESCE(SUM(CASE WHEN jsonb_typeof(p.likes)='number' THEN p.likes::int
+                                             WHEN jsonb_typeof(p.likes)='array' THEN jsonb_array_length(p.likes)
+                                             ELSE 0 END), 0) AS likes
+                    FROM users u
+                    LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved'
+                    LEFT JOIN (SELECT target_id, COUNT(*) c FROM follows
+                                 WHERE target_type='user' GROUP BY target_id) fc
+                           ON fc.target_id = u.id::text
+                    WHERE u.is_active = TRUE AND u.deleted_at IS NULL AND u.display_name IS NOT NULL
+                    {bc}
+                    GROUP BY u.id, u.display_name, u.avatar_url, u.username, fc.c
+                    HAVING COUNT(p.id) > 0
+                    LIMIT 500
+                """, tuple(bc_p))
+        rows = await asyncio.to_thread(_query)
+
+        leaders = []
+        for r in rows:
+            d = db._row_to_dict(r)
+            reviews = int(d["reviews"] or 0)
+            posts = int(d["posts"] or 0)
+            photos = int(d["photos"] or 0)
+            followers = int(d["followers"] or 0)
+            places = int(d["places"] or 0)
+            likes = int(d["likes"] or 0)
+            points = _calc_points(reviews, posts, photos, followers, places, likes)
+            if points <= 0:
+                continue
+            level, label = _level_for(points)
+            leaders.append({
+                "id": str(d["id"]), "display_name": d["display_name"], "avatar_url": d.get("avatar_url"),
+                "username": d.get("username"),
+                "points": points, "level": level, "level_label": label,
+                "posts": posts, "reviews": reviews,
+            })
+        leaders.sort(key=lambda x: x["points"], reverse=True)
+        if not bc:
+            _leaderboard_cache["ts"] = _t.time()
+            _leaderboard_cache["data"] = leaders
+        return {"leaders": leaders[:limit]}
 
 
 @router.get("/users/{user_id}/following")

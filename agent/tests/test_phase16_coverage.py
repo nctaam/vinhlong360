@@ -958,7 +958,7 @@ class TestSecurityPosture:
         """Production modules must use datetime.now(timezone.utc), not naive datetime.now()."""
         import re
         from pathlib import Path
-        critical_modules = ["admin", "auth", "middleware", "server", "database", "analytics", "cost_tracker", "social", "public_api"]
+        critical_modules = ["admin", "auth", "middleware", "server", "database", "analytics", "cost_tracker", "social", "public_api", "proactive", "realtime", "mcp_server", "scheduler"]
         for mod in critical_modules:
             src = (Path(__file__).resolve().parent.parent / f"{mod}.py").read_text(encoding="utf-8")
             for line_no, line in enumerate(src.split("\n"), 1):
@@ -1500,7 +1500,7 @@ class TestDeepScanBatch5:
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
         idx = src.find("community_leaderboard")
         assert idx > 0
-        block = src[idx:idx+2000]
+        block = src[idx:idx+2500]
         assert "LIMIT 500" in block or "LIMIT 200" in block or "LIMIT 100" in block, \
             "Leaderboard query must have LIMIT to prevent unbounded results"
 

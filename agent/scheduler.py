@@ -21,7 +21,9 @@ import sys
 import time
 import threading
 import traceback
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+
+_VN_TZ = timezone(timedelta(hours=7))
 from pathlib import Path
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
@@ -444,7 +446,7 @@ def task_cache_warmup():
     """Warm semantic cache with popular and seasonal queries."""
     try:
         from semantic_cache import cache_warmer, multi_tier_cache
-        month = datetime.now().month
+        month = datetime.now(_VN_TZ).month
         seasonal = cache_warmer.get_seasonal_queries(month)
         _sched_logger.info("Cache warmup: %d seasonal queries for month %d", len(seasonal), month)
     except Exception as e:
