@@ -581,7 +581,7 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
 .chat-fab:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 3px; }
 .chat-fab.open { background: var(--muted); }
 
-.chat-panel { position: fixed; bottom: calc(92px + env(safe-area-inset-bottom)); right: calc(24px + env(safe-area-inset-right)); z-index: var(--z-overlay); width: 400px; max-width: calc(100vw - 32px); height: 520px; max-height: 85vh; max-height: min(85vh, calc(100dvh - 140px)); background: var(--glass-bg-heavy); backdrop-filter: var(--glass-heavy); -webkit-backdrop-filter: var(--glass-heavy); border: .5px solid rgba(var(--ink-rgb, 0,0,0),.06); border-radius: var(--radius); box-shadow: var(--shadow-xl); display: flex; flex-direction: column; overflow: hidden; opacity: 0; transform: translateY(16px) scale(.95); transform-origin: bottom right; pointer-events: none; transition: opacity .25s var(--ease-out), transform .35s var(--ease-spring-gentle); }
+.chat-panel { position: fixed; bottom: calc(92px + env(safe-area-inset-bottom)); right: calc(24px + env(safe-area-inset-right)); z-index: var(--z-overlay); width: 400px; max-width: calc(100% - 32px); height: 520px; max-height: 85vh; max-height: min(85vh, calc(100dvh - 140px)); background: var(--glass-bg-heavy); backdrop-filter: var(--glass-heavy); -webkit-backdrop-filter: var(--glass-heavy); border: .5px solid rgba(var(--ink-rgb, 0,0,0),.06); border-radius: var(--radius); box-shadow: var(--shadow-xl); display: flex; flex-direction: column; overflow: hidden; opacity: 0; transform: translateY(16px) scale(.95); transform-origin: bottom right; pointer-events: none; transition: opacity .25s var(--ease-out), transform .35s var(--ease-spring-gentle); }
 .chat-panel:not(.show) { visibility: hidden; }
 .chat-panel.show { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
 .chat-panel-head { background: var(--primary); color: var(--text-on-dark, #fff); padding: var(--space-3) var(--space-4); display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0; }
@@ -732,7 +732,7 @@ a.thread-author:hover { color: var(--primary-fg); }
 
 /* ── Itinerary Planner ── */
 .planner-layout { display: grid; grid-template-columns: 360px 1fr; gap: var(--space-6); align-items: start; }
-.planner-picker { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg, 16px); padding: var(--space-4); box-shadow: var(--shadow-sm); position: sticky; top: 78px; max-height: calc(100vh - 100px); display: flex; flex-direction: column; }
+.planner-picker { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg, 16px); padding: var(--space-4); box-shadow: var(--shadow-sm); position: sticky; top: 78px; max-height: calc(100vh - 100px); max-height: calc(100dvh - 100px); display: flex; flex-direction: column; }
 .picker-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
 .picker-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); border-radius: var(--radius-sm); cursor: pointer; min-height: 44px; transition: background .3s var(--ease-out), transform .3s; }
 .picker-item:hover { background: var(--bg-warm); }
@@ -984,7 +984,7 @@ a.thread-author:hover { color: var(--primary-fg); }
 .dark .profile-cover { border-color: var(--line); }
 .dark .js-item { background: var(--card); border-color: var(--line); }
 @media (max-width: 480px) {
-  .chat-panel { bottom: 0; right: 0; width: 100vw; height: 100vh; height: 100dvh; max-height: 100vh; max-height: 100dvh; border-radius: 0; padding-bottom: env(safe-area-inset-bottom); }
+  .chat-panel { bottom: 0; left: 0; right: 0; width: auto; height: 100vh; height: 100dvh; max-height: 100vh; max-height: 100dvh; border-radius: 0; padding-bottom: env(safe-area-inset-bottom); }
   /* Lift FAB above the bottom z-stack (journey bar ~bottom:16px + sticky CTA ~60px)
      so it never overlaps the journey bar / sticky CTA touch targets on narrow viewports.
      Right edge unchanged → stays in thumb reach. */

@@ -202,7 +202,7 @@ onUnmounted(() => {
   display: flex; flex-direction: column; flex-shrink: 0;
   transition: width .35s cubic-bezier(.2,1,.4,1);
   border-right: .5px solid rgba(255,255,255,.06);
-  position: sticky; top: 0; height: 100vh;
+  position: sticky; top: 0; height: 100vh; height: 100dvh;
   overflow: hidden;
 }
 .admin-sidebar.collapsed { width: 64px; }
