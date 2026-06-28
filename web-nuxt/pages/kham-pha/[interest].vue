@@ -89,19 +89,19 @@
       <p class="int-cross-sub">Khám phá theo hình thức khác</p>
       <div class="cross-links int-cross">
         <NuxtLink v-if="interestMeta.relatedRoutes?.length" to="/tuyen-duong" class="cross-card">
-          <span class="cross-icon">🛤️</span>
+          <span class="cross-icon" aria-hidden="true">🛤️</span>
           <div><strong>Tuyến đường</strong><p>Vòng khám phá gợi ý</p></div>
         </NuxtLink>
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon">🗺️</span>
+          <span class="cross-icon" aria-hidden="true">🗺️</span>
           <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
         </NuxtLink>
         <NuxtLink to="/lich-trinh" class="cross-card">
-          <span class="cross-icon">🗓️</span>
+          <span class="cross-icon" aria-hidden="true">🗓️</span>
           <div><strong>Lịch trình</strong><p>Tuyến đi sẵn</p></div>
         </NuxtLink>
         <NuxtLink to="/ocop" class="cross-card">
-          <span class="cross-icon">⭐</span>
+          <span class="cross-icon" aria-hidden="true">⭐</span>
           <div><strong>OCOP</strong><p>Sản phẩm sao</p></div>
         </NuxtLink>
       </div>

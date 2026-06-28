@@ -125,7 +125,7 @@
             <strong>{{ r.display_name || 'Ẩn danh' }}</strong>
           </NuxtLink>
           <span v-if="r.rating" class="star-rating-inline">
-            <span v-for="s in 5" :key="s" class="star" :class="{ active: s <= r.rating }">★</span>
+            <span v-for="s in 5" :key="s" class="star" :class="{ active: s <= r.rating }" aria-hidden="true">★</span>
           </span>
           <time class="ri-date" :datetime="r.created_at">{{ timeAgo(r.created_at) }}</time>
           <div v-if="isOwner(r)" class="ri-actions">

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sản phẩm', to: '/san-pham' }, { label: 'OCOP' }]" />
 
@@ -185,19 +185,19 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/san-pham" class="cross-card">
-          <span class="cross-icon">🍊</span>
+          <span class="cross-icon" aria-hidden="true">🍊</span>
           <div><strong>Đặc sản</strong><p>Tất cả sản phẩm</p></div>
         </NuxtLink>
         <NuxtLink to="/theo-mua" class="cross-card">
-          <span class="cross-icon">📅</span>
+          <span class="cross-icon" aria-hidden="true">📅</span>
           <div><strong>Theo mùa</strong><p>Lịch mùa vụ</p></div>
         </NuxtLink>
         <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon">🌿</span>
+          <span class="cross-icon" aria-hidden="true">🌿</span>
           <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/kham-pha/am-thuc" class="cross-card">
-          <span class="cross-icon">🍲</span>
+          <span class="cross-icon" aria-hidden="true">🍲</span>
           <div><strong>Ẩm thực</strong><p>Món ngon miền Tây</p></div>
         </NuxtLink>
       </div>

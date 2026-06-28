@@ -33,7 +33,7 @@
         <span class="cr-count">({{ ratingDisplay.count }})</span>
       </div>
       <div v-if="amenityIcons.length" class="card-amenities" :aria-label="amenityIcons.map(a => a.label).join(', ') + (amenityExtra > 0 ? ` và ${amenityExtra} tiện ích khác` : '')">
-        <span v-for="a in amenityIcons" :key="a.key" class="ca-icon" :title="a.label">{{ a.icon }}</span>
+        <span v-for="a in amenityIcons" :key="a.key" class="ca-icon" :title="a.label" aria-hidden="true">{{ a.icon }}</span>
         <span v-if="amenityExtra > 0" class="ca-more" :title="`${amenityExtra} tiện ích khác`">+{{ amenityExtra }}</span>
       </div>
       <div class="badges">

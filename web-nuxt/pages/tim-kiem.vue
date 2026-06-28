@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <section class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tìm kiếm' }]" />
 
@@ -185,19 +185,19 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon">🗺️</span>
+          <span class="cross-icon" aria-hidden="true">🗺️</span>
           <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
         </NuxtLink>
         <NuxtLink to="/theo-mua" class="cross-card">
-          <span class="cross-icon">🌸</span>
+          <span class="cross-icon" aria-hidden="true">🌸</span>
           <div><strong>Theo mùa</strong><p>Đúng mùa thưởng thức</p></div>
         </NuxtLink>
         <NuxtLink to="/cong-dong" class="cross-card">
-          <span class="cross-icon">💬</span>
+          <span class="cross-icon" aria-hidden="true">💬</span>
           <div><strong>Cộng đồng</strong><p>Hỏi đáp & chia sẻ</p></div>
         </NuxtLink>
         <NuxtLink to="/danh-ba" class="cross-card">
-          <span class="cross-icon">🏛️</span>
+          <span class="cross-icon" aria-hidden="true">🏛️</span>
           <div><strong>Danh bạ</strong><p>Hành chính xã/phường</p></div>
         </NuxtLink>
       </div>

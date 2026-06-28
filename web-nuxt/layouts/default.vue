@@ -28,8 +28,8 @@
         <div class="auth-area">
           <ClientOnly>
             <button type="button" class="theme-toggle" :aria-label="colorMode.value === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'" :title="colorMode.value === 'dark' ? 'Giao diện sáng' : 'Giao diện tối'" @click="toggleColorMode">
-              <span v-if="colorMode.value === 'dark'">☀️</span>
-              <span v-else>🌙</span>
+              <span v-if="colorMode.value === 'dark'" aria-hidden="true">☀️</span>
+              <span v-else aria-hidden="true">🌙</span>
             </button>
             <template #fallback>
               <button type="button" class="theme-toggle" aria-label="Đổi giao diện sáng/tối">🌙</button>

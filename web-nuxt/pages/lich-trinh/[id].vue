@@ -23,6 +23,7 @@
       <ClientOnly>
         <SaveButton :entity="itinerarySaveShape" :show-label="true" />
         <ShareButton :title="itinerary.title || itinerary.name" :text="itinerary.summary || itinerary.description" />
+        <button type="button" class="btn btn-ghost btn-sm" aria-label="Báo cáo lịch trình" @click="openReport('entity', id)">🚩 Báo cáo</button>
       </ClientOnly>
         <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-outline btn-sm">+ Tự tạo lịch trình</NuxtLink>
     </div>
@@ -47,7 +48,7 @@
         <li class="step">
           <span class="step-time">{{ stop.time || '' }}</span>
           <div :class="['step-card', stop.type ? `cat-${catClass(stop.type)}` : '']">
-            <span class="step-emoji">{{ typeEmoji(stop.type) }}</span>
+            <span class="step-emoji" aria-hidden="true">{{ typeEmoji(stop.type) }}</span>
             <div class="step-content">
               <h3>
                 <NuxtLink v-if="stop.id" :to="`/dia-diem/${stop.id}`" class="stop-link">{{ stop.name || stop.id }}</NuxtLink>
@@ -120,6 +121,8 @@ function goBack() {
     navigateTo('/lich-trinh')
   }
 }
+
+const { openReport } = useReport()
 
 const { data: itinerary, error: fetchError, status } = await useAsyncData(`itinerary-${id}`, () =>
   apiFetch<Itinerary>(`/api/itineraries/${id}`)

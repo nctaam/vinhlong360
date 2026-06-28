@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Du lịch' }]" />
 
@@ -137,19 +137,19 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/san-pham" class="cross-card">
-          <span class="cross-icon">🍊</span>
+          <span class="cross-icon" aria-hidden="true">🍊</span>
           <div><strong>Đặc sản</strong><p>Sản phẩm theo mùa</p></div>
         </NuxtLink>
         <NuxtLink to="/lich-trinh" class="cross-card">
-          <span class="cross-icon">🗓️</span>
+          <span class="cross-icon" aria-hidden="true">🗓️</span>
           <div><strong>Lịch trình</strong><p>Tuyến đi sẵn</p></div>
         </NuxtLink>
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon">🗺️</span>
+          <span class="cross-icon" aria-hidden="true">🗺️</span>
           <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
         </NuxtLink>
         <NuxtLink to="/luu-tru" class="cross-card">
-          <span class="cross-icon">🏡</span>
+          <span class="cross-icon" aria-hidden="true">🏡</span>
           <div><strong>Lưu trú</strong><p>Homestay, nhà vườn</p></div>
         </NuxtLink>
       </div>

@@ -48,7 +48,7 @@
         class="cs-card"
         :style="{ '--stagger': `${i * 40}ms` }"
       >
-        <span class="cs-icon">{{ cat.icon }}</span>
+        <span class="cs-icon" aria-hidden="true">{{ cat.icon }}</span>
         <div>
           <h3>{{ cat.title }}</h3>
           <p>{{ cat.desc }}</p>
@@ -73,7 +73,7 @@
             class="cs-card"
             :style="{ '--stagger': `${i * 40}ms` }"
           >
-            <span class="cs-icon">{{ cat.icon }}</span>
+            <span class="cs-icon" aria-hidden="true">{{ cat.icon }}</span>
             <div>
               <h3>{{ cat.title }}</h3>
               <p>{{ cat.desc }}</p>

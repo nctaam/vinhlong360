@@ -128,19 +128,19 @@
       <h2>Khám phá thêm {{ areaMeta.name }}</h2>
       <div class="cross-links">
         <NuxtLink :to="`/du-lich?type=experience&mua=all`" class="cross-card">
-          <span class="cross-icon">🌾</span>
+          <span class="cross-icon" aria-hidden="true">🌾</span>
           <div><strong>Trải nghiệm</strong><p>Miệt vườn sông nước</p></div>
         </NuxtLink>
         <NuxtLink to="/san-pham" class="cross-card">
-          <span class="cross-icon">🍊</span>
+          <span class="cross-icon" aria-hidden="true">🍊</span>
           <div><strong>Sản phẩm</strong><p>Đặc sản địa phương</p></div>
         </NuxtLink>
         <NuxtLink to="/luu-tru" class="cross-card">
-          <span class="cross-icon">🏡</span>
+          <span class="cross-icon" aria-hidden="true">🏡</span>
           <div><strong>Lưu trú</strong><p>Homestay, nhà vườn</p></div>
         </NuxtLink>
         <NuxtLink :to="`/danh-ba?area=${areaKey}`" class="cross-card">
-          <span class="cross-icon">🏛️</span>
+          <span class="cross-icon" aria-hidden="true">🏛️</span>
           <div><strong>Danh bạ</strong><p>Hành chính xã/phường</p></div>
         </NuxtLink>
       </div>
