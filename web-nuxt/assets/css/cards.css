@@ -229,7 +229,7 @@
 .card:hover::before { opacity: .9; }
 
 /* 3 ── Stronger cover image zoom for clear "alive" feel on hover */
-.card:hover .cover-img img.loaded { transform: scale(1.07); }
+.card:hover .cover-img img.loaded { transform: scale(var(--img-hover-scale)); }
 
 /* 4 ── Refined badges: clearer hierarchy + the peak badge becomes
    a warm gradient pill with a calm breathing glow (not flashy). */

@@ -1,5 +1,5 @@
 <template>
-  <div class="review-item">
+  <div :class="['review-item', { 'review-featured': featured }]">
     <div class="ri-head">
       <NuxtLink :to="`/nguoi-dung/${review.username || review.user_id}`" class="ri-author">
         <img v-if="review.avatar_url" :src="review.avatar_url" class="ri-avatar" :alt="review.display_name" loading="lazy" decoding="async" width="32" height="32" @error="(e) => ((e.target as HTMLImageElement).style.display = 'none')" />
@@ -42,6 +42,7 @@ defineProps<{
   owned: boolean
   deleting: boolean
   deleteError: string
+  featured?: boolean
 }>()
 
 defineEmits<{
@@ -68,4 +69,6 @@ const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
 .ri-action-btn:focus-visible { outline: 2px solid var(--error, currentColor); outline-offset: 1px; }
 .ri-action-btn:disabled { opacity: .55; cursor: not-allowed; }
 .rf-error { font-size: var(--text-sm); color: var(--error, #D94F3D); margin-top: var(--space-1); }
+.review-featured { border-left: 3px solid var(--accent); background: rgba(var(--accent-rgb), .04); border-radius: var(--radius-md); }
+:global(.dark) .review-featured { background: rgba(var(--accent-rgb), .06); }
 </style>

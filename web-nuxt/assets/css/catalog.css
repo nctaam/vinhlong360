@@ -599,6 +599,21 @@
   background-color: var(--bg-alt);
 }
 
+/* ── Stat card variant (profile / community stats) ── */
+.stat-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: var(--space-3); }
+.stat-card {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-1);
+  padding: var(--space-4) var(--space-3); border-radius: var(--radius-lg);
+  background: var(--card); border: .5px solid var(--line);
+  text-align: center;
+  transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out-expo), border-color .3s var(--ease-out);
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); }
+.stat-card-value { font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--ink); }
+.stat-card-label { font-size: var(--text-xs); color: var(--muted); }
+.dark .stat-card { background: var(--bg-alt); }
+@media (prefers-reduced-motion: reduce) { .stat-card:hover { transform: none; } }
+
 /* ── Reduced motion (catalog shared) ── */
 @media (prefers-reduced-motion: reduce) {
   .cross-card:hover { transform: none; }

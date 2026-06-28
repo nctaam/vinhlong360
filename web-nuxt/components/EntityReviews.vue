@@ -86,6 +86,7 @@
         :key="r.id"
         :review="r"
         :owned="isOwner(r)"
+        :featured="r.id === featuredId"
         :deleting="deletingId === r.id"
         :delete-error="deleteErrorId === r.id ? deleteError : ''"
         @delete="deleteReview"
@@ -137,6 +138,12 @@ const fileInput = ref<HTMLInputElement | null>(null)
 const deletingId = ref<string | number | null>(null)
 
 const hasMore = computed(() => reviews.value.length < total.value)
+
+const featuredId = computed(() => {
+  if (reviews.value.length < 3) return null
+  const best = reviews.value.reduce((a, b) => ((b.likes || 0) > (a.likes || 0) ? b : a), reviews.value[0])
+  return (best.likes || 0) >= 2 ? best.id : null
+})
 
 const filteredReviews = computed(() => {
   if (!selectedMentions.value.length) return reviews.value
