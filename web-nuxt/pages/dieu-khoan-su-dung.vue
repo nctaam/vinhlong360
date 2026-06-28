@@ -1,5 +1,6 @@
 <template>
   <section class="legal-page about-page">
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Điều khoản sử dụng' }]" />
     <!-- Hero -->
     <section class="catalog-hero cat-org legal-hero">
       <div class="catalog-hero-inner">

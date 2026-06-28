@@ -323,6 +323,9 @@ function onSubmit() {
   navigateTo(`/tim-kiem?q=${encodeURIComponent(q)}`)
 }
 
+function focusInput() { inputEl.value?.focus() }
+defineExpose({ focusInput })
+
 if (import.meta.client) {
   const onClick = (e: Event) => {
     const el = inputEl.value
@@ -330,9 +333,16 @@ if (import.meta.client) {
       close()
     }
   }
-  onMounted(() => { document.addEventListener('click', onClick); loadRecents() })
+  const onGlobalKey = (e: KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault()
+      focusInput()
+    }
+  }
+  onMounted(() => { document.addEventListener('click', onClick); document.addEventListener('keydown', onGlobalKey); loadRecents() })
   onUnmounted(() => {
     document.removeEventListener('click', onClick)
+    document.removeEventListener('keydown', onGlobalKey)
     if (debounceTimer) clearTimeout(debounceTimer)
     if (loadingTimer) clearTimeout(loadingTimer)
     fetchAbort?.abort()

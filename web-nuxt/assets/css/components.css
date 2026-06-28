@@ -51,6 +51,15 @@
 .input.success, .textarea.success { border-color: var(--secondary); box-shadow: 0 0 0 3px rgba(var(--secondary-rgb), .12); }
 @keyframes inputShake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-4px); } 40%, 80% { transform: translateX(4px); } }
 .textarea { resize: vertical; min-height: 80px; }
+.input:disabled, .textarea:disabled, .select:disabled {
+  background: var(--bg-warm); border-color: var(--line); color: var(--muted);
+  cursor: not-allowed; opacity: var(--opacity-disabled-content);
+}
+.input:read-only, .textarea:read-only {
+  background: var(--bg-warm); border-color: var(--line);
+  cursor: default; opacity: .72;
+}
+.input:read-only:focus, .textarea:read-only:focus { box-shadow: none; border-color: var(--line); }
 
 .form-group { display: flex; flex-direction: column; gap: var(--space-3); }
 .form-label { font-size: .85rem; font-weight: 700; color: var(--ink); }
