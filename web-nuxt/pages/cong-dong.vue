@@ -1,7 +1,31 @@
 <template>
   <section class="page threads-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng' }]" />
-    <h1 class="sr-only">{{ pc('hero_title') }}</h1>
+
+    <!-- Social proof hero -->
+    <section class="catalog-hero cat-community" aria-label="Cộng đồng vinhlong360">
+      <div class="catalog-hero-inner">
+        <span class="catalog-hero-icon" aria-hidden="true">💬</span>
+        <div>
+          <h1>{{ pc('hero_title') }}</h1>
+          <p>Chia sẻ trải nghiệm, đánh giá đặc sản và kết nối với cộng đồng yêu miền Tây.</p>
+        </div>
+      </div>
+      <div v-if="communityStats" class="catalog-stats">
+        <div class="stat-item">
+          <CountUp :value="communityStats.posts" class="stat-num" />
+          <span class="stat-label">bài viết</span>
+        </div>
+        <div class="stat-item">
+          <CountUp :value="communityStats.reviews" class="stat-num" />
+          <span class="stat-label">đánh giá</span>
+        </div>
+        <div class="stat-item">
+          <CountUp :value="communityStats.members" class="stat-num" />
+          <span class="stat-label">thành viên</span>
+        </div>
+      </div>
+    </section>
 
     <div class="threads-layout">
       <div class="threads-feed">
