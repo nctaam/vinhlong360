@@ -1,15 +1,21 @@
 [
   {
-    "type": "attraction",
-    "label": "Tham quan",
-    "emoji": "📸",
-    "count": 318
-  },
-  {
     "type": "product",
     "label": "Đặc sản",
     "emoji": "🎁",
     "count": 218
+  },
+  {
+    "type": "attraction",
+    "label": "Tham quan",
+    "emoji": "📸",
+    "count": 205
+  },
+  {
+    "type": "restaurant",
+    "label": "Nhà hàng",
+    "emoji": "🍽️",
+    "count": 190
   },
   {
     "type": "history",
@@ -33,13 +39,7 @@
     "type": "dish",
     "label": "Ẩm thực",
     "emoji": "🍜",
-    "count": 121
-  },
-  {
-    "type": "restaurant",
-    "label": "Nhà hàng",
-    "emoji": "🍽️",
-    "count": 94
+    "count": 120
   },
   {
     "type": "experience",
@@ -69,7 +69,7 @@
     "type": "cafe",
     "label": "Cà phê",
     "emoji": "☕",
-    "count": 38
+    "count": 55
   },
   {
     "type": "person",
