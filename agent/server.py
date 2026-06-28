@@ -2262,16 +2262,17 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                         loop.call_soon_threadsafe(chunk_q.put_nowait, None)  # sentinel hết stream
 
                 producer = asyncio.create_task(asyncio.to_thread(_produce_stream))
-                full_text = ""
+                _chunks: list[str] = []
                 while True:
                     item = await chunk_q.get()
                     if item is None:
                         break
                     if isinstance(item, Exception):
                         raise item
-                    full_text += item
+                    _chunks.append(item)
                     yield f"data: {json.dumps({'type': 'text', 'content': item}, ensure_ascii=False)}\n\n"
                 await producer
+                full_text = "".join(_chunks)
 
                 # Record in memory
                 memory_manager.on_message(sid, "assistant", full_text)
@@ -2504,7 +2505,8 @@ async def health():
 
     # Overall status
     errors_healthy = error_tracker.is_healthy()
-    overall = "ok" if (errors_healthy and db_ok) else "degraded"
+    llm_ok = llm_status != "error"
+    overall = "ok" if (errors_healthy and db_ok and llm_ok) else "degraded"
 
     return {
         "status": overall,

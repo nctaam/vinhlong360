@@ -377,6 +377,7 @@ async def get_post(post_id: str, user=Depends(get_current_user)):
 
     def _get_post():
         with db._conn() as conn:
+            bc, bc_params = _block_sql(user, "p.user_id")
             row = db._fetchone(conn, f"""
                 SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
                        e.name as entity_name, e.type as entity_type
@@ -384,7 +385,8 @@ async def get_post(post_id: str, user=Depends(get_current_user)):
                 JOIN users u ON u.id = p.user_id
                 LEFT JOIN entities e ON e.id = p.entity_id
                 WHERE p.id::text = {ph} AND p.moderation_status = 'approved'
-            """, (post_id,))
+                {bc}
+            """, (post_id, *bc_params))
             if not row:
                 return None
             post = db._row_to_dict(row)
@@ -422,6 +424,7 @@ async def delete_post(post_id: str, user=Depends(require_user), _csrf=Depends(re
             if str(row["user_id"]) != str(user["id"]) and user.get("role") not in ("admin", "moderator"):
                 raise HTTPException(403, "Không có quyền xóa bài viết này")
             db._execute(conn, f"DELETE FROM notifications WHERE ref_type = 'post' AND ref_id = {ph}", (post_id,))
+            db._execute(conn, f"UPDATE posts SET repost_of = NULL WHERE repost_of::text = {ph}", (post_id,))
             db._execute(conn, f"DELETE FROM posts WHERE id::text = {ph}", (post_id,))
     await asyncio.to_thread(_query)
     _invalidate_social_caches()

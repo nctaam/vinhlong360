@@ -268,6 +268,14 @@ def create_notification(user_id: str, notif_type: str, title: str,
                 return
         if not _user_wants_notif(conn, user_id, notif_type):
             return
+        if ref_id:
+            dup = db._fetchone(conn, f"""
+                SELECT 1 FROM notifications
+                WHERE user_id = {ph}::uuid AND type = {ph} AND ref_id = {ph}
+                AND created_at > NOW() - INTERVAL '5 minutes'
+            """, (user_id, notif_type, ref_id))
+            if dup:
+                return
         db._execute(conn, f"""
             INSERT INTO notifications (user_id, type, title, body, ref_type, ref_id)
             VALUES ({ph}::uuid, {ph}, {ph}, {ph}, {ph}, {ph})

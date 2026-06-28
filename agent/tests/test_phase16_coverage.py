@@ -1037,3 +1037,61 @@ class TestSecurityPosture:
         assert "_sse_lock" in src, "notifications.py must define _sse_lock for SSE subscribers"
         assert "async with _sse_lock" in src, "SSE subscriber mutations must use async with _sse_lock"
         assert src.count("async with _sse_lock") >= 2, "Both subscribe and unsubscribe must use lock"
+
+    def test_get_post_has_block_check(self):
+        """get_post must filter blocked users when viewing by direct URL."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        idx = src.find("async def get_post(")
+        assert idx > 0
+        block = src[idx:idx+800]
+        assert "_block_sql" in block, "get_post must call _block_sql to enforce block rules"
+
+    def test_delete_post_cleans_reposts(self):
+        """delete_post must nullify repost_of references to prevent orphan data."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        idx = src.find("async def delete_post(")
+        assert idx > 0
+        block = src[idx:idx+1000]
+        assert "repost_of" in block, "delete_post must handle repost_of references"
+
+    def test_notification_dedup(self):
+        """create_notification must deduplicate within 5-minute window."""
+        src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
+        idx = src.find("def create_notification(")
+        assert idx > 0
+        block = src[idx:idx+1000]
+        assert "INTERVAL '5 minutes'" in block or "5 minutes" in block, \
+            "create_notification must deduplicate recent notifications"
+
+    def test_otp_verify_per_phone_rate_limit(self):
+        """OTP verification must have per-phone rate limiting (not just per-IP)."""
+        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        assert "OTP_VERIFY_PHONE_LIMIT" in src, "Missing per-phone OTP rate limit"
+        idx = src.find("async def verify_otp(")
+        assert idx > 0
+        block = src[idx:idx+800]
+        assert "_otp_verify_phone_rate" in block, "verify_otp must check per-phone rate limit"
+
+    def test_health_check_includes_llm_status(self):
+        """Health check must include LLM status in overall assessment."""
+        src = (Path(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
+        idx = src.find("async def health(")
+        assert idx > 0
+        block = src[idx:idx+2000]
+        assert "llm_ok" in block or "llm_status" in block.split("overall")[1][:200] if "overall" in block else False, \
+            "Health check must factor LLM status into overall assessment"
+
+    def test_streaming_uses_list_join(self):
+        """Chat streaming must use list+join, not string concatenation."""
+        src = (Path(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
+        assert '_chunks: list[str]' in src or '_chunks = []' in src, \
+            "Streaming must use list to collect chunks (not string concatenation)"
+        assert '"".join(_chunks)' in src, "Streaming must join chunks at end"
+
+    def test_entity_delete_invalidates_cache(self):
+        """Entity delete must invalidate entity cache, not just place cache."""
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("async def delete_entity(")
+        assert idx > 0
+        block = src[idx:idx+600]
+        assert "invalidate_entity_cache" in block, "delete_entity must call invalidate_entity_cache"

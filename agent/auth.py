@@ -88,6 +88,9 @@ _login_phone_fails: dict[str, list[float]] = {}
 OTP_VERIFY_IP_LIMIT = 15
 OTP_VERIFY_IP_WINDOW = 300
 _otp_verify_ip_rate: dict[str, list[float]] = {}
+OTP_VERIFY_PHONE_LIMIT = 5
+OTP_VERIFY_PHONE_WINDOW = 300
+_otp_verify_phone_rate: dict[str, list[float]] = {}
 
 ACCOUNT_DELETE_GRACE_DAYS = _cfg.ACCOUNT_DELETE_GRACE_DAYS
 
@@ -352,6 +355,12 @@ async def verify_otp(body: OTPVerify, request: Request):
     _gc_rate_dict(_otp_verify_ip_rate, OTP_VERIFY_IP_WINDOW)
 
     phone = _normalize_phone(body.phone)
+    phone_hits = [t for t in _otp_verify_phone_rate.get(phone, []) if now - t < OTP_VERIFY_PHONE_WINDOW]
+    if len(phone_hits) >= OTP_VERIFY_PHONE_LIMIT:
+        raise HTTPException(429, "Quá nhiều lần nhập OTP cho số này. Vui lòng yêu cầu mã mới sau 5 phút.")
+    phone_hits.append(now)
+    _otp_verify_phone_rate[phone] = phone_hits
+    _gc_rate_dict(_otp_verify_phone_rate, OTP_VERIFY_PHONE_WINDOW)
     hashed = _hash_otp(body.code.strip())
 
     def _verify():

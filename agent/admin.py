@@ -402,8 +402,9 @@ async def delete_entity(entity_id: str):
             raise HTTPException(404, "Entity not found")
         db.delete_entity(entity_id)
         _sync_kb()
+        from public_api import invalidate_entity_cache, invalidate_place_cache
+        invalidate_entity_cache(entity_id)
         if entity.get("type") == "place":
-            from public_api import invalidate_place_cache
             invalidate_place_cache()
     await asyncio.to_thread(_query)
     return {"success": True, "entity_id": entity_id}
@@ -736,10 +737,14 @@ class BulkDeleteRequest(BaseModel):
 async def bulk_delete(body: BulkDeleteRequest):
     """Xóa nhiều entities cùng lúc."""
     def _query():
+        from public_api import invalidate_entity_cache
         deleted = 0
         for eid in body.entity_ids:
             if db.delete_entity(eid):
+                invalidate_entity_cache(eid)
                 deleted += 1
+        if deleted:
+            _sync_kb()
         return deleted
     deleted = await asyncio.to_thread(_query)
     return {"success": True, "count": deleted}
