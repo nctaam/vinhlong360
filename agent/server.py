@@ -915,6 +915,17 @@ async def security_headers(request, call_next):
     return response
 
 
+@app.exception_handler(Exception)
+async def _global_exception_handler(request: Request, exc: Exception):
+    exc_name = type(exc).__name__
+    if exc_name in ("OperationalError", "InterfaceError", "DatabaseError", "PoolTimeout"):
+        logger.error("Database connection error on %s %s: %s", request.method, request.url.path, exc_name)
+        return JSONResponse(status_code=503, content={"detail": "Dịch vụ tạm gián đoạn, vui lòng thử lại sau."})
+    if isinstance(exc, HTTPException):
+        raise exc
+    logger.exception("Unhandled error on %s %s", request.method, request.url.path)
+    return JSONResponse(status_code=500, content={"detail": "Lỗi hệ thống."})
+
 app.include_router(admin_router)
 app.include_router(auth_router)
 app.include_router(public_router)
