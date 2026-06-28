@@ -22,7 +22,7 @@
             @input="localValues[field.key] = ($event.target as HTMLInputElement).value" class="sf-color-picker" />
           <input type="text" :value="localValues[field.key]" class="sf-color-hex"
             placeholder="#000000" @input="localValues[field.key] = ($event.target as HTMLInputElement).value" />
-          <button v-if="localValues[field.key]" type="button" class="sf-color-clear" @click="localValues[field.key] = ''" title="Xoá (dùng mặc định)">✕</button>
+          <button v-if="localValues[field.key]" type="button" class="sf-color-clear" @click="localValues[field.key] = ''" title="Xoá (dùng mặc định)" aria-label="Xoá màu (dùng mặc định)">✕</button>
         </div>
       </template>
 

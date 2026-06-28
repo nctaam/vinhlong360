@@ -76,9 +76,9 @@
           <strong>{{ previewItem.entity_name }}</strong>
           <button type="button" class="btn btn-ghost btn-sm" @click="previewItem = null">Đóng</button>
         </div>
-        <img :src="previewItem.url" :alt="previewItem.entity_name" class="media-preview-img" />
+        <img :src="previewItem.url" :alt="previewItem.entity_name" class="media-preview-img" loading="lazy" />
         <div class="media-preview-meta">
-          <div><strong>Entity:</strong> <NuxtLink :to="`/dia-diem/${previewItem.entity_id}`" target="_blank">{{ previewItem.entity_name }}</NuxtLink> ({{ previewItem.entity_type }})</div>
+          <div><strong>Entity:</strong> <NuxtLink :to="`/dia-diem/${previewItem.entity_id}`" target="_blank" rel="noopener">{{ previewItem.entity_name }}</NuxtLink> ({{ previewItem.entity_type }})</div>
           <div><strong>Credit:</strong> {{ previewItem.credit || 'Không có' }}</div>
           <div><strong>License:</strong> {{ previewItem.license || 'Không rõ' }}</div>
           <div v-if="previewItem.usage_count > 1"><strong>Dùng bởi:</strong> {{ previewItem.usage_count }} entities</div>
