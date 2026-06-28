@@ -465,8 +465,8 @@ onMounted(() => { fetchHealth(); fetchCost() })
 }
 .ai-subsys-on { background: rgba(var(--primary-rgb),.06); color: var(--secondary); }
 .ai-subsys-on .ai-subsys-dot { background: var(--secondary); animation: ai-sub-pulse 2.5s ease-in-out infinite; }
-.ai-subsys-off { background: rgba(var(--danger-rgb),.06); color: #D94F3D; }
-.ai-subsys-off .ai-subsys-dot { background: #D94F3D; opacity: .5; }
+.ai-subsys-off { background: rgba(var(--danger-rgb),.06); color: var(--error); }
+.ai-subsys-off .ai-subsys-dot { background: var(--error); opacity: .5; }
 @keyframes ai-sub-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 
 /* ── Actions grid ── */
@@ -553,9 +553,9 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .dark .ai-action-btn:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(0,0,0,.3); }
 .dark .ai-action-primary { color: #fff; }
 .dark .ai-triage-box { background: rgba(var(--primary-rgb),.1); border-color: rgba(var(--primary-rgb),.3); }
-.dark .ai-triage-box.ai-triage-error { background: rgba(var(--danger-rgb),.12); border-color: #D94F3D; border-left-color: #D94F3D; }
+.dark .ai-triage-box.ai-triage-error { background: rgba(var(--danger-rgb),.12); border-color: var(--error); border-left-color: var(--error); }
 .dark .ai-trigger-result { background: rgba(var(--primary-rgb),.1); border-color: rgba(var(--primary-rgb),.2); }
-.dark .ai-trigger-result.ai-result-error { background: rgba(var(--danger-rgb),.12); border-color: #D94F3D; }
+.dark .ai-trigger-result.ai-result-error { background: rgba(var(--danger-rgb),.12); border-color: var(--error); }
 .dark .ai-cost-note { background: rgba(var(--warning-rgb),.06); border-color: rgba(var(--warning-rgb),.25); }
 
 /* ── Reduced motion ── */
@@ -568,7 +568,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
   .ai-action-btn:active:not(:disabled) { transform: none; }
   .ai-action-primary:hover:not(:disabled) { transform: none; }
   .ai-metric:hover { transform: none; }
-  .ai-near-cap { animation: none; border-left-color: #e67e22; }
+  .ai-near-cap { animation: none; border-left-color: var(--warning); }
 }
 
 @media (max-width: 768px) {

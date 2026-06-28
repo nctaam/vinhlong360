@@ -516,10 +516,10 @@ onMounted(() => fetchUsers())
 .usr-status-dot {
   width: 6px; height: 6px; border-radius: 50%;
 }
-.usr-active { background: rgba(var(--primary-rgb),.08); color: #219653; }
-.usr-active .usr-status-dot { background: #219653; animation: usr-pulse 2s ease-in-out infinite; }
-.usr-banned { background: rgba(var(--danger-rgb),.08); color: #D94F3D; }
-.usr-banned .usr-status-dot { background: #D94F3D; }
+.usr-active { background: rgba(var(--primary-rgb),.08); color: var(--secondary); }
+.usr-active .usr-status-dot { background: var(--secondary); animation: usr-pulse 2s ease-in-out infinite; }
+.usr-banned { background: rgba(var(--danger-rgb),.08); color: var(--error); }
+.usr-banned .usr-status-dot { background: var(--error); }
 @keyframes usr-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
 
 /* ── Head actions (refresh + export) ── */

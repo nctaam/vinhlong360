@@ -121,7 +121,7 @@
                 </div>
                 <input
                   v-model="rejectReason" type="text" class="mod-reason-input"
-                  placeholder="Hoặc nhập lý do khác…"
+                  placeholder="Hoặc nhập lý do khác…" autocomplete="off"
                   @keyup.enter="confirmReject(p.id)" @keyup.esc="cancelReject"
                 />
                 <button type="button" class="btn-danger" :disabled="acting === p.id" @click="confirmReject(p.id)">
@@ -183,7 +183,7 @@
           </div>
           <div v-else class="mod-notes-empty">Chưa có ghi chú</div>
           <div class="mod-note-add">
-            <input v-model="newNote" type="text" class="mod-note-input" placeholder="Thêm ghi chú…" @keyup.enter="addNote(previewPost.id)" />
+            <input v-model="newNote" type="text" class="mod-note-input" placeholder="Thêm ghi chú…" autocomplete="off" @keyup.enter="addNote(previewPost.id)" />
             <button type="button" class="btn btn-sm btn-outline" :disabled="!newNote.trim() || noteSaving" @click="addNote(previewPost.id)">Thêm</button>
           </div>
         </div>

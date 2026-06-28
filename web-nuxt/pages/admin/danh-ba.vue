@@ -279,7 +279,7 @@ onMounted(loadFacilities)
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 24px; height: 24px; padding: 0 8px;
   border-radius: 100px; font-size: .72rem; font-weight: 700;
-  background: rgba(var(--blue-rgb),.08); color: #3478F6;
+  background: rgba(var(--blue-rgb),.08); color: rgb(var(--blue-rgb));
 }
 .db-meta { display: block; color: var(--muted); margin-top: 2px; font-size: .78rem; }
 
@@ -295,7 +295,7 @@ onMounted(loadFacilities)
 .dark .db-form { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 .dark .db-form:focus-within { box-shadow: 0 4px 20px rgba(0,0,0,.3); border-color: rgba(var(--primary-rgb),.3); }
 .dark .db-count-badge { background: rgba(var(--blue-rgb),.12); }
-.dark .sf-dirty-badge { color: #5fcf8a; background: rgba(var(--primary-rgb),.18); border-color: rgba(var(--success-rgb),.3); }
+.dark .sf-dirty-badge { color: rgb(var(--success-rgb)); background: rgba(var(--primary-rgb),.18); border-color: rgba(var(--success-rgb),.3); }
 .dark .db-input-ok { border-color: rgba(var(--success-rgb),.45); }
 
 @media (max-width: 640px) {
