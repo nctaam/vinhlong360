@@ -326,7 +326,7 @@ async def verify_otp(body: OTPVerify, request: Request):
     def _verify():
         with db._conn() as conn:
             row = db._fetchone(conn, f"""
-                SELECT * FROM otp_sessions
+                SELECT id, code, expires_at, attempts, phone FROM otp_sessions
                 WHERE phone = {db._ph} AND verified = FALSE
                 ORDER BY created_at DESC LIMIT 1
                 FOR UPDATE SKIP LOCKED
@@ -851,7 +851,7 @@ async def get_privacy(request: Request):
     def _query():
         ph = db._ph
         with db._conn() as conn:
-            row = db._fetchone(conn, f"SELECT * FROM user_privacy WHERE user_id = {ph}::uuid", (str(user["id"]),))
+            row = db._fetchone(conn, f"SELECT user_id, profile_visibility, show_activity, show_saved FROM user_privacy WHERE user_id = {ph}::uuid", (str(user["id"]),))
         if row:
             row = db._row_to_dict(row)
             return {"profile_visibility": row["profile_visibility"], "show_activity": row["show_activity"], "show_saved": row["show_saved"]}

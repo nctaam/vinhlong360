@@ -69,7 +69,8 @@ async def get_notifications(
     def _query():
         with db._conn() as conn:
             rows = db._fetchall(conn, f"""
-                SELECT * FROM notifications
+                SELECT id, type, title, body, ref_type, ref_id, is_read, created_at
+                FROM notifications
                 WHERE user_id = {ph}::uuid
                 ORDER BY created_at DESC
                 LIMIT {ph} OFFSET {ph}

@@ -449,3 +449,27 @@ class TestPathValidationPlans:
         src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
         import_section = src[:src.find("\nrouter")]
         assert "validate_path_id" in import_section
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  SELECT * removal — explicit column lists in UGC/auth queries
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestSelectStarRemoval:
+    """Verify SELECT * is not used in UGC/auth Postgres queries."""
+
+    def test_auth_no_select_star_otp(self):
+        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        assert "SELECT * FROM otp_sessions" not in src
+
+    def test_auth_no_select_star_privacy(self):
+        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        assert "SELECT * FROM user_privacy" not in src
+
+    def test_notifications_no_select_star(self):
+        src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
+        assert "SELECT * FROM notifications" not in src
+
+    def test_notifications_explicit_columns(self):
+        src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
+        assert "SELECT id, type, title, body, ref_type, ref_id, is_read, created_at" in src
