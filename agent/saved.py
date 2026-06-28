@@ -12,7 +12,7 @@ import json
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from auth_middleware import require_user, require_csrf, validate_path_id
 from database import db
@@ -25,13 +25,13 @@ router = APIRouter(prefix="/api/saved", tags=["saved"], dependencies=[Depends(_r
 
 
 class SavedItem(BaseModel):
-    id: str
-    name: Optional[str] = None
-    type: Optional[str] = None
-    place_name: Optional[str] = None
-    place_area: Optional[str] = None
-    summary: Optional[str] = None
-    image: Optional[str] = None
+    id: str = Field(max_length=200)
+    name: Optional[str] = Field(None, max_length=300)
+    type: Optional[str] = Field(None, max_length=50)
+    place_name: Optional[str] = Field(None, max_length=300)
+    place_area: Optional[str] = Field(None, max_length=100)
+    summary: Optional[str] = Field(None, max_length=1000)
+    image: Optional[str] = Field(None, max_length=500)
 
 
 class MergeBody(BaseModel):

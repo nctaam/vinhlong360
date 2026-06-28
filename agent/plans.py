@@ -9,7 +9,7 @@ import json
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from auth_middleware import require_user, require_csrf, validate_path_id
 from database import db
@@ -27,6 +27,13 @@ MAX_STOPS = 50
 class PlanBody(BaseModel):
     title: str = Field("Lịch trình", max_length=120)
     stops: list[dict] = Field(default_factory=list)
+
+    @field_validator("stops")
+    @classmethod
+    def _limit_stops(cls, v):
+        if len(v) > MAX_STOPS:
+            raise ValueError(f"Tối đa {MAX_STOPS} điểm dừng")
+        return v
 
 
 class MergeBody(BaseModel):

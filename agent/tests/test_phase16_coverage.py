@@ -556,3 +556,36 @@ class TestBareExceptFixes:
         src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
         idx = src.find("SSE subscriber cleanup")
         assert idx != -1
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  Input validation — Pydantic model field constraints
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestPydanticFieldValidation:
+    """Body models must have field length constraints."""
+
+    def test_saved_item_id_max_length(self):
+        from saved import SavedItem
+        with pytest.raises(Exception):
+            SavedItem(id="x" * 201)
+
+    def test_saved_item_accepts_valid(self):
+        from saved import SavedItem
+        item = SavedItem(id="ben-tre-coconut")
+        assert item.id == "ben-tre-coconut"
+
+    def test_visit_body_entity_id_max_length(self):
+        from visits import VisitBody
+        with pytest.raises(Exception):
+            VisitBody(entity_id="x" * 201, status="want")
+
+    def test_visit_body_valid(self):
+        from visits import VisitBody
+        v = VisitBody(entity_id="chua-vinh-trang", status="visited")
+        assert v.status == "visited"
+
+    def test_plan_stops_limit(self):
+        from plans import PlanBody
+        with pytest.raises(Exception):
+            PlanBody(title="Test", stops=[{"id": str(i)} for i in range(51)])

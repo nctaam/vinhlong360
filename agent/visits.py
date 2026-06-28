@@ -5,7 +5,7 @@ Postgres-only (UGC parity); 503 ở SQLite dev. status ∈ {want, visited}, 1 st
 import asyncio
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 from auth_middleware import require_user, require_csrf, validate_path_id
 from database import db
@@ -18,7 +18,7 @@ router = APIRouter(prefix="/api/me/visits", tags=["visits"], dependencies=[Depen
 
 
 class VisitBody(BaseModel):
-    entity_id: str
+    entity_id: str = Field(max_length=200)
     status: str
 
     @field_validator("status")
