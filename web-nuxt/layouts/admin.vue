@@ -356,10 +356,17 @@ onUnmounted(() => {
   background: var(--bg); border-radius: 14px; padding: var(--space-5);
   box-shadow: 0 1px 3px rgba(0,0,0,.04); border: .5px solid var(--line);
   transition: transform .35s cubic-bezier(.2,1,.4,1), box-shadow .35s cubic-bezier(.4,0,.2,1), border-color .25s;
+  position: relative; overflow: hidden;
 }
+.stat-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--accent, var(--primary)) 100%);
+  opacity: 0; transition: opacity .3s var(--ease-out);
+}
+.stat-card:hover::before { opacity: 1; }
 .stat-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,.08); border-color: var(--border, rgba(0,0,0,.08)); }
 .stat-card:active { transform: translateY(-1px) scale(.98); transition-duration: .08s; }
-.stat-card .stat-value { font-size: var(--text-2xl); font-weight: 800; color: var(--primary, #219653); transition: color .3s; }
+.stat-card .stat-value { font-size: var(--text-2xl); font-weight: 800; color: var(--primary, #219653); transition: color .3s; font-variant-numeric: tabular-nums; }
 .stat-card .stat-label { font-size: .75rem; color: var(--muted); margin-top: var(--space-1); text-transform: uppercase; letter-spacing: .5px; }
 
 /* ── Tables ── */
@@ -370,12 +377,13 @@ onUnmounted(() => {
   background: var(--bg-alt); font-size: .75rem; font-weight: 600;
   color: var(--muted); border-bottom: .5px solid var(--line);
   text-transform: uppercase; letter-spacing: .5px;
-  position: sticky; top: 0; z-index: 1;
+  position: sticky; top: 0; z-index: 2;
   box-shadow: 0 2px 4px rgba(0,0,0,.02);
 }
 .admin-table td { padding: var(--space-3) var(--space-4); border-bottom: .5px solid var(--line); font-size: .88rem; }
 .admin-table tbody tr { transition: background .25s cubic-bezier(.4,0,.2,1); }
 .admin-table tbody tr:hover td { background: rgba(0,0,0,.02); }
+.admin-table tbody tr.row-selected td { background: rgba(var(--primary-rgb), .06); }
 .admin-table tbody tr:last-child td { border-bottom: none; }
 
 /* ── Toolbar ── */
@@ -498,6 +506,7 @@ onUnmounted(() => {
 .dark .admin-table { background: var(--card, #2c2c2e); }
 .dark .admin-table th { background: rgba(255,255,255,.03); }
 .dark .admin-table tbody tr:hover td { background: rgba(255,255,255,.03); }
+.dark .admin-table tbody tr.row-selected td { background: rgba(var(--primary-rgb), .1); }
 .dark .admin-table-wrap { border-color: rgba(255,255,255,.06); }
 .dark .admin-actions button { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); color: var(--ink, #e5e5e7); }
 .dark .admin-actions button:hover { background: rgba(255,255,255,.06); }
