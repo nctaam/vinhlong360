@@ -579,7 +579,8 @@ useSeoMeta({
 .fm-dialog { background: var(--card); border-radius: var(--radius-lg); width: 100%; max-width: 420px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); overflow: hidden; }
 .fm-head { display: flex; align-items: center; justify-content: space-between; border-bottom: .5px solid var(--line); padding-right: var(--space-2); }
 .fm-tabs { display: flex; }
-.fm-tab { flex: 1; padding: var(--space-3) var(--space-4); border: none; background: none; cursor: pointer; font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--muted); border-bottom: 2px solid transparent; }
+.fm-tab { flex: 1; padding: var(--space-3) var(--space-4); border: none; background: none; cursor: pointer; font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--muted); border-bottom: 2px solid transparent; transition: color .2s var(--ease-out), border-bottom-color .25s var(--ease-out); }
+.fm-tab:hover { color: var(--ink-secondary); }
 .fm-tab.active { color: var(--ink); border-bottom-color: var(--primary); }
 .fm-close { border: none; background: none; font-size: 1.5rem; line-height: 1; cursor: pointer; color: var(--muted); padding: var(--space-2); }
 .fm-body { overflow-y: auto; padding: var(--space-2); }
@@ -647,13 +648,15 @@ useSeoMeta({
   .stat-item:hover { transform: none; }
   .profile-tabs .chip:active { transform: none; }
   .saved-cta .btn:active { transform: none; }
+  .pc-fill { animation: none; }
 }
 .profile-completion { padding: 0 var(--space-4); margin-bottom: var(--space-3); }
 .pc-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-1); }
 .pc-label { font-size: var(--text-sm); font-weight: 600; color: var(--muted); }
 .pc-link { font-size: var(--text-sm); color: var(--primary); text-decoration: none; }
 .pc-bar { height: 6px; background: var(--bg-alt); border-radius: var(--radius-full); overflow: hidden; }
-.pc-fill { height: 100%; background: var(--accent); border-radius: var(--radius-full); transition: width .4s var(--ease-out); }
+.pc-fill { height: 100%; background: var(--accent); border-radius: var(--radius-full); transition: width .4s var(--ease-out); transform-origin: left; animation: pc-grow .6s var(--ease-out) .3s backwards; }
+@keyframes pc-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .pc-hints { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: var(--space-2); }
 .pc-hint { font-size: .72rem; color: var(--muted); padding: 2px 8px; border: 1px solid var(--border-input); border-radius: var(--radius-full); }
 </style>

@@ -510,7 +510,7 @@ useHead(() => ({
   cursor: pointer;
   font-size: var(--text-sm);
   opacity: 0;
-  transition: opacity .15s;
+  transition: opacity .2s var(--ease-out), box-shadow .2s var(--ease-out);
   z-index: 1;
 }
 .event-row:hover .ical-btn,
