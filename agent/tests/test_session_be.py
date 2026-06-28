@@ -895,7 +895,7 @@ def test_view_contact_writes_log(tmp_path, monkeypatch):
     assert record["entity_id"] == "test-entity"
     assert record["action"] == "zalo"
     assert "ts" in record
-    assert "ip" in record
+    assert "ip_hash" in record
 
 
 def test_view_contact_invalid_action():

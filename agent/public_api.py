@@ -8,6 +8,7 @@ Mount: app.include_router(public_router)
 """
 
 import asyncio
+import hashlib
 import json
 import logging
 import re
@@ -865,7 +866,7 @@ async def submit_report(payload: ReportIn, request: Request):
         "reason": payload.reason.strip(),
         "detail": payload.detail.strip(),
         "contact": payload.contact.strip(),
-        "ip": ip,
+        "ip_hash": hashlib.sha256(ip.encode()).hexdigest()[:16],
         "status": "open",
     }
     def _write():
@@ -1067,7 +1068,7 @@ async def track_contact_view(
         "ts": datetime.now(timezone.utc).isoformat(),
         "entity_id": entity_id,
         "action": action,
-        "ip": ip,
+        "ip_hash": hashlib.sha256(ip.encode()).hexdigest()[:16],
     }
 
     def _write():

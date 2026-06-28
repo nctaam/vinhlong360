@@ -604,7 +604,7 @@ class BotGateway:
         """Handle incoming text messages."""
         user_id = str(update.effective_user.id)
         user_key = _session_key("telegram", user_id)
-        text = update.message.text
+        text = (update.message.text or "")[:5000]
 
         # Rate limit check
         if not self.rate_limiter.is_allowed(user_key):
@@ -763,7 +763,7 @@ class BotGateway:
 
         if event_name == "user_send_text":
             message_data = body.get("message", {})
-            text = message_data.get("text", "")
+            text = (message_data.get("text") or "")[:5000]
             user_id = body.get("sender", {}).get("id", "")
 
             if not text or not user_id:
