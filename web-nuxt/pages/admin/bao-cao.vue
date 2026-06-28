@@ -383,7 +383,7 @@ onMounted(() => fetchAll())
 .rpt-open-badge {
   display: inline-flex; align-items: center; padding: 2px 10px;
   border-radius: 100px; font-size: .72rem; font-weight: 600;
-  background: rgba(var(--warning-rgb),.1); color: #c67a00;
+  background: rgba(var(--warning-rgb),.1); color: var(--warning);
 }
 
 /* ── Status badges ── */
@@ -396,7 +396,7 @@ onMounted(() => fetchAll())
 .status-pending::before, .status-resolved::before, .status-dismissed::before {
   content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
 }
-.status-pending { background: rgba(var(--warning-rgb),.08); color: #c67a00; }
+.status-pending { background: rgba(var(--warning-rgb),.08); color: var(--warning); }
 .status-pending::before { background: var(--warning); animation: rpt-pulse 2s ease-in-out infinite; }
 .status-resolved { background: rgba(var(--primary-rgb),.08); color: var(--secondary-fg); }
 .status-resolved::before { background: var(--secondary-fg); }

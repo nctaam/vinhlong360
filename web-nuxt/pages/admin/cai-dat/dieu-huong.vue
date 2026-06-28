@@ -132,9 +132,9 @@ onMounted(reload)
   min-height: 44px;
   transition: border-color .2s, color .2s, transform .15s cubic-bezier(.2,1,.4,1);
 }
-.sf-reset:hover:not(:disabled) { border-color: #D94F3D; color: #D94F3D; }
+.sf-reset:hover:not(:disabled) { border-color: var(--error); color: var(--error); }
 .sf-reset:active:not(:disabled) { transform: scale(.97); }
-.sf-reset:focus-visible { outline: 2px solid #D94F3D; outline-offset: 2px; }
+.sf-reset:focus-visible { outline: 2px solid var(--error); outline-offset: 2px; }
 
 @media (prefers-reduced-motion: reduce) {
   .cs-skel-item { animation: none; }

@@ -492,7 +492,7 @@ onMounted(() => refreshAll())
 /* Severity / status badges (derived from existing bucket / record_type data) */
 .dq-sev-badge, .dq-status-badge { display: inline-flex; align-items: center; justify-content: center; font-size: .68rem; font-weight: 700; letter-spacing: .02em; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
 .dq-sev-success { background: rgba(var(--primary-rgb),.12); color: var(--primary, #219653); }
-.dq-sev-warning { background: rgba(var(--warning-rgb),.14); color: #C77700; }
+.dq-sev-warning { background: rgba(var(--warning-rgb),.14); color: var(--warning); }
 .dq-sev-error { background: rgba(var(--danger-rgb),.12); color: var(--error, #D94F3D); }
 .dq-sev-neutral { background: rgba(142,142,147,.14); color: var(--muted); }
 

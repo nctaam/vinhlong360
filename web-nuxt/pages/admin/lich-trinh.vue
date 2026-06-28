@@ -451,7 +451,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   border-radius: 50%; font-size: .68rem; font-weight: 700; line-height: 1;
 }
 .lt-stop-status-ok { background: rgba(var(--primary-rgb),.12); color: var(--secondary-fg); }
-.lt-stop-status-warn { background: rgba(230,126,34,.14); color: #c46b13; }
+.lt-stop-status-warn { background: rgba(var(--warning-rgb),.14); color: var(--warning); }
 .lt-move {
   appearance: none; border: none; background: transparent; cursor: pointer;
   color: var(--muted); font-size: .7rem; line-height: 1;
@@ -474,8 +474,8 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   display: inline-flex; align-items: center; justify-content: center;
   transition: background .2s, color .2s, transform .2s cubic-bezier(.2,1,.4,1);
 }
-.lt-stop-del:hover { background: rgba(235,87,87,.12); color: #EB5757; transform: scale(1.1); }
-.lt-stop-del:focus-visible { outline: 2px solid #EB5757; outline-offset: 1px; }
+.lt-stop-del:hover { background: rgba(var(--danger-rgb),.12); color: var(--error); transform: scale(1.1); }
+.lt-stop-del:focus-visible { outline: 2px solid var(--error); outline-offset: 1px; }
 
 .lt-add-stop {
   appearance: none; cursor: pointer; margin-top: var(--space-2);

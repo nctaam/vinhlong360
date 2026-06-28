@@ -326,7 +326,7 @@ onMounted(() => fetchQueue())
 .img-actions .btn-success, .img-actions .btn-danger { flex: 1; }
 .img-status-final { padding: var(--space-3); margin-top: auto; }
 .img-badge { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: .72rem; font-weight: 700; }
-.ib-pending { background: rgba(var(--warning-rgb),.12); color: #C98A1A; }
+.ib-pending { background: rgba(var(--warning-rgb),.12); color: var(--warning); }
 .ib-approved { background: rgba(var(--primary-rgb),.12); color: var(--secondary-fg); }
 .ib-rejected { background: rgba(142,142,147,.15); color: var(--muted); }
 
@@ -351,7 +351,7 @@ onMounted(() => fetchQueue())
 .img-conf-bar { height: 4px; border-radius: 100px; background: rgba(142,142,147,.18); overflow: hidden; }
 .img-conf-fill { display: block; height: 100%; border-radius: 100px; background: var(--muted); transition: width .3s cubic-bezier(.2,1,.4,1); }
 .img-conf-bar.conf-high .img-conf-fill { background: var(--secondary-fg); }
-.img-conf-bar.conf-mid .img-conf-fill { background: #C98A1A; }
+.img-conf-bar.conf-mid .img-conf-fill { background: var(--warning); }
 .img-conf-bar.conf-low .img-conf-fill { background: var(--error); }
 
 /* ── Meta links row ── */

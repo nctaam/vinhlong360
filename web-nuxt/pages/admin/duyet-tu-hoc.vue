@@ -180,7 +180,7 @@ onMounted(loadProvisional)
   min-width: 24px; height: 24px; padding: 0 8px;
   border-radius: 100px; font-size: .72rem; font-weight: 700;
 }
-.dth-count-warn { background: rgba(var(--warning-rgb),.1); color: #c67a00; }
+.dth-count-warn { background: rgba(var(--warning-rgb),.1); color: var(--warning); }
 
 .dth-summary { display: block; color: var(--muted); margin-top: 2px; font-size: .8rem; }
 .dth-type-badge {
@@ -195,8 +195,8 @@ onMounted(loadProvisional)
   min-width: 40px; padding: 2px 8px; border-radius: 100px;
   font-size: .72rem; font-weight: 700; font-variant-numeric: tabular-nums;
 }
-.dth-conf-high { background: rgba(var(--primary-rgb),.1); color: #1a7a43; }
-.dth-conf-low { background: rgba(var(--warning-rgb),.12); color: #c67a00; }
+.dth-conf-high { background: rgba(var(--primary-rgb),.1); color: var(--success); }
+.dth-conf-low { background: rgba(var(--warning-rgb),.12); color: var(--warning); }
 
 /* ── Empty state ── */
 .dth-empty {
@@ -205,7 +205,7 @@ onMounted(loadProvisional)
   background: var(--bg); border: .5px solid var(--line); border-radius: 14px;
 }
 .dth-empty-icon { font-size: 2rem; }
-.dth-empty p { margin: 0; font-weight: 500; color: #219653; }
+.dth-empty p { margin: 0; font-weight: 500; color: var(--success); }
 .dth-empty small { max-width: 500px; line-height: 1.5; }
 
 /* ── Tools grid ── */
