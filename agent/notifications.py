@@ -183,7 +183,7 @@ def _notify_sse(user_id: str, data: dict):
 
 
 @router.get("/notifications/stream")
-async def notification_stream(request: Request, token: str = Query(None)):
+async def notification_stream(request: Request, token: str = Query(None, max_length=200)):
     from auth import _hash_token
     if not token:
         raise HTTPException(401, "Token required")

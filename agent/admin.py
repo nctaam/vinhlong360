@@ -1539,7 +1539,8 @@ async def get_reports(
     def _query():
         with db._conn() as conn:
             rows = db._fetchall(conn, f"""
-                SELECT r.*, u.display_name as reporter_name
+                SELECT r.id, r.target_type, r.target_id, r.reason, r.details,
+                       r.status, r.created_at, u.display_name as reporter_name
                 FROM reports r
                 JOIN users u ON u.id = r.reporter_id
                 WHERE r.status = {ph}

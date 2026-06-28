@@ -159,9 +159,9 @@ def _to_minimal(entity: dict) -> dict:
 
 @router.get("/entities")
 async def list_entities(
-    type: Optional[str] = None,
-    area: Optional[str] = None,
-    q: Optional[str] = None,
+    type: Optional[str] = Query(None, max_length=100),
+    area: Optional[str] = Query(None, max_length=50),
+    q: Optional[str] = Query(None, max_length=200),
     month: Optional[int] = Query(None, ge=1, le=12),
     sort: Optional[str] = Query(None, pattern="^(rating|newest|name)$"),
     fields: Optional[str] = Query(None, pattern="^(minimal|full)$"),
@@ -714,8 +714,8 @@ _MAP_PINS_TTL = 120
 @router.get("/map-pins")
 async def get_map_pins(
     response: Response,
-    type: Optional[str] = Query(None),
-    area: Optional[str] = Query(None),
+    type: Optional[str] = Query(None, max_length=50),
+    area: Optional[str] = Query(None, max_length=50),
 ):
     response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
     cache_key = f"{type}:{area}"

@@ -589,3 +589,39 @@ class TestPydanticFieldValidation:
         from plans import PlanBody
         with pytest.raises(Exception):
             PlanBody(title="Test", stops=[{"id": str(i)} for i in range(51)])
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  Query parameter length constraints
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestQueryParamConstraints:
+    """Query parameters must have max_length to prevent abuse."""
+
+    def test_entities_list_params_constrained(self):
+        src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
+        idx = src.find("def list_entities")
+        block = src[idx:idx+400]
+        assert "max_length" in block
+
+    def test_map_pins_params_constrained(self):
+        src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
+        idx = src.find("def get_map_pins")
+        block = src[idx:idx+300]
+        assert "max_length" in block
+
+    def test_feed_params_constrained(self):
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        idx = src.find("def get_feed")
+        block = src[idx:idx+400]
+        assert "max_length" in block
+
+    def test_sse_token_constrained(self):
+        src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
+        idx = src.find("def notification_stream")
+        block = src[idx:idx+200]
+        assert "max_length" in block
+
+    def test_admin_reports_explicit_columns(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        assert "SELECT r.*" not in src

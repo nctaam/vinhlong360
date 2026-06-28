@@ -474,10 +474,10 @@ async def update_post(post_id: str, body: UpdatePost, user=Depends(require_user)
 async def get_feed(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=50),
-    post_type: Optional[str] = None,
-    entity_type: Optional[str] = None,
-    area: Optional[str] = None,
-    tag: Optional[str] = None,
+    post_type: Optional[str] = Query(None, max_length=50),
+    entity_type: Optional[str] = Query(None, max_length=50),
+    area: Optional[str] = Query(None, max_length=50),
+    tag: Optional[str] = Query(None, max_length=100),
     user=Depends(get_current_user),
 ):
     """
