@@ -1,6 +1,6 @@
 # Data Quality Report
 
-Generated: 2026-06-28 (updated — pass 6 complete)
+Generated: 2026-06-28 (updated — pass 7 complete)
 Source: `web/data.json` (1745 entities, 12441 relationships, 33 itineraries)
 Tool: `python scripts/validate_data.py`
 
@@ -121,6 +121,19 @@ Tool: `python scripts/validate_data.py`
 | "Là " summary prefix | 161 (grammatically incomplete) | **0** (all fixed to complete sentences) |
 | Broken abbreviation summaries | 95 (truncated at P./TP./Q.) | **0** (all extended to full sentence) |
 | Corrupted entity descriptions | 1 (rừng tràm — news fragment) | **0** (rewritten) |
+| Place template boilerplate | 120 ("khu vực X. Được thành lập trên cơ sở...") | **0** (5-variant natural rewrite) |
+| Accommodation copy-paste tail | 87 ("Thuận tiện khám phá cù lao sông nước...") | **0** (stripped) |
+| Accommodation template phrase | 30 ("Phòng nghỉ tiện nghi cơ bản, phù hợp...") | **0** (stripped) |
+| Structured amenity lists | 46 ("Tiện ích: Điều hòa, wifi...") | **0** (naturalized to prose) |
+| Duplicate province names | 33 ("Bến Tre, Bến Tre" → "Bến Tre") | **0** (deduplicated) |
+| Copy-paste filler sentences | 29 (cuộc sống đồng quê/ĐBSCL/mọi lứa tuổi) | **0** (stripped) |
+| Brochure tone | 17 ("du khách có thể/không thể bỏ qua") | **0** (rephrased) |
+| "đông đảo" filler intensifier | 8 ("thu hút đông đảo du khách") | **0** (simplified) |
+| Northern tone | 2 (thưởng ngoạn→ngắm nhìn, du ngoạn→dạo chơi) | **0** |
+| Cliché metaphors | 2 (trái tim→trung tâm, điểm đến lý tưởng) | **0** |
+| Minimal descriptions enriched | 49 (type+address only → +specialty/price from attrs) | **49 enriched** |
+| Bare "Resort." start | 1 | **0** (rewritten) |
+| Lowercase after period | 7 (artifacts from automated stripping) | **0** |
 
 ## Errors
 
@@ -285,11 +298,11 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 
 ### Description Quality
 
-- Min length: **52 chars**
-- Median: **220 chars**
-- Average: **227 chars**
+- Min length: **57 chars**
+- Median: **215 chars**
+- Average: **214 chars**
 - Max: **660 chars**
-- Descriptions <80 chars: **1** (79 chars — address-only, acceptable)
+- Descriptions <80 chars: **66** (mostly food/café/accommodation — minimal factual info)
 - Descriptions >500 chars: 32
 - Double periods: **0** (1053 fixed)
 - Unbalanced parentheses: **0** (15 fixed)
@@ -332,6 +345,26 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 
 **Theoretical max without images: ~100.** Current: 90.0. Only images remain as a significant gap.
 
+## S+ Quality Analysis (pass 7)
+
+Audit against viet-content-optimizer S+ criteria. Results below represent
+remaining quality concerns that require **per-entity manual review** or
+**external research** to fix (not auto-fixable).
+
+| Dimension | Finding | Status |
+|-----------|---------|--------|
+| Empty adjectives | nổi tiếng=172, thu hút=49, hấp dẫn=15, độc đáo=59 | Context-dependent — many are valid (e.g. "nổi tiếng với dừa sáp") |
+| First sentence >155 chars | 215 entities | SEO concern — truncated in Google snippet |
+| Starts with entity name | 569 entities | Violates S+ "never open with entity name" |
+| desc==summary | 453 (single-sentence entities) | Structural — can't differentiate without adding content |
+| Descriptions <80 chars | 66 (food/café/accommodation) | Minimal factual info available |
+
+**Eliminated (pass 7):**
+- Place template boilerplate (120), accommodation copy-paste (87), structured amenity lists (46)
+- Brochure tone (17), northern tone (2), cliché metaphors (2)
+- Copy-paste filler sentences (29), "đông đảo" filler (8)
+- Duplicate province names (33), bare type starts (1)
+
 ## Next Steps (Priority Order)
 
 1. **Image generation** — 0% coverage, the ONLY remaining significant gap (-10.00 avg pts). Use `scripts/gen_image.py` + `cx/gpt-5.5-image` API.
@@ -356,6 +389,11 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 | Phone in summaries (ĐT:) | **0** |
 | Liên hệ: in descriptions | **0** |
 | Template-format descriptions | **0** |
+| Place template ("khu vực X. Được thành lập...") | **0** (120 rewritten) |
+| Accommodation boilerplate | **0** (87+30+46 stripped/naturalized) |
+| Copy-paste filler sentences | **0** (29 stripped) |
+| Brochure tone ("du khách có thể") | **0** (17 rephrased) |
+| Northern tone (thưởng ngoạn/du ngoạn) | **0** (2 fixed) |
 | Duplicate summaries | **0** |
 | Duplicate names | **0** |
 | Summary == Name (redundant) | **0** |
