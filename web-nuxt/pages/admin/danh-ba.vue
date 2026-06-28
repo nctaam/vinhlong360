@@ -110,6 +110,7 @@
 import type { Entity, Place } from '~/types'
 import { AREA_META, OFFICE_KIND } from '~/composables/useConstants'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Danh bạ — Admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
@@ -225,7 +226,7 @@ onMounted(loadFacilities)
   padding: var(--space-5); margin-bottom: var(--space-6);
   transition: box-shadow .3s cubic-bezier(.2,1,.4,1), border-color .3s;
 }
-.db-form:focus-within { box-shadow: 0 4px 20px rgba(0,0,0,.06); border-color: rgba(33,150,83,.2); }
+.db-form:focus-within { box-shadow: 0 4px 20px rgba(0,0,0,.06); border-color: rgba(var(--primary-rgb),.2); }
 .db-form-title { font-size: .95rem; font-weight: 600; margin: 0 0 var(--space-4); }
 .db-form-grid {
   display: grid; grid-template-columns: 1fr 1fr;
@@ -247,8 +248,8 @@ onMounted(loadFacilities)
 .db-field-error::before { content: "\26A0"; font-size: .8em; }
 .db-field-hint { font-size: .74rem; color: var(--muted); }
 .db-input-error { border-color: var(--error, #D94F3D) !important; }
-.db-input-error:focus { box-shadow: 0 0 0 3px rgba(217,79,61,.12); }
-.db-input-ok { border-color: rgba(33,150,83,.5); }
+.db-input-error:focus { box-shadow: 0 0 0 3px rgba(var(--danger-rgb),.12); }
+.db-input-ok { border-color: rgba(var(--primary-rgb),.5); }
 
 /* ── Form actions ── */
 .db-form-actions { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
@@ -278,7 +279,7 @@ onMounted(loadFacilities)
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 24px; height: 24px; padding: 0 8px;
   border-radius: 100px; font-size: .72rem; font-weight: 700;
-  background: rgba(52,120,246,.08); color: #3478F6;
+  background: rgba(var(--blue-rgb),.08); color: rgb(var(--blue-rgb));
 }
 .db-meta { display: block; color: var(--muted); margin-top: 2px; font-size: .78rem; }
 
@@ -287,15 +288,15 @@ onMounted(loadFacilities)
   display: inline-flex; align-items: center;
   padding: 4px 10px; border-radius: 999px;
   font-size: .72rem; font-weight: 600; color: var(--primary, #219653);
-  background: rgba(33,150,83,.1); border: .5px solid rgba(33,150,83,.25);
+  background: rgba(var(--primary-rgb),.1); border: .5px solid rgba(var(--primary-rgb),.25);
 }
 
 /* ── Dark ── */
 .dark .db-form { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
-.dark .db-form:focus-within { box-shadow: 0 4px 20px rgba(0,0,0,.3); border-color: rgba(33,150,83,.3); }
-.dark .db-count-badge { background: rgba(52,120,246,.12); }
-.dark .sf-dirty-badge { color: #5fcf8a; background: rgba(33,150,83,.18); border-color: rgba(95,207,138,.3); }
-.dark .db-input-ok { border-color: rgba(95,207,138,.45); }
+.dark .db-form:focus-within { box-shadow: 0 4px 20px rgba(0,0,0,.3); border-color: rgba(var(--primary-rgb),.3); }
+.dark .db-count-badge { background: rgba(var(--blue-rgb),.12); }
+.dark .sf-dirty-badge { color: rgb(var(--success-rgb)); background: rgba(var(--primary-rgb),.18); border-color: rgba(var(--success-rgb),.3); }
+.dark .db-input-ok { border-color: rgba(var(--success-rgb),.45); }
 
 @media (max-width: 640px) {
   .db-form-grid { grid-template-columns: 1fr; }

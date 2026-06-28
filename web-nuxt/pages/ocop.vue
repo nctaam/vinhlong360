@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sản phẩm', to: '/san-pham' }, { label: 'OCOP' }]" />
 
@@ -18,15 +18,18 @@
       </div>
       <div v-if="allOcop.length" class="catalog-stats">
         <div class="stat-item">
-          <span class="stat-num">{{ allOcop.length }}</span>
+          <CountUp :value="allOcop.length" class="stat-num" />
           <span class="stat-label">sản phẩm OCOP</span>
         </div>
         <div v-for="s in starStats" :key="s.stars" class="stat-item">
-          <span class="stat-num">{{ s.count }}</span>
+          <CountUp :value="s.count" class="stat-num" />
           <span class="stat-label">{{ s.stars }} sao</span>
         </div>
       </div>
     </section>
+
+    <!-- Spotlight nổi bật -->
+    <CatalogSpotlight :items="allOcop" />
 
     <!-- Star breakdown quick-picks -->
     <section v-if="starStats.length" class="block">
@@ -64,7 +67,7 @@
     </section>
 
     <!-- Region quick-picks -->
-    <section class="block reveal">
+    <section class="block band reveal">
       <div class="section-head">
         <h2>Chọn theo khu vực</h2>
       </div>
@@ -83,6 +86,14 @@
         </button>
       </div>
     </section>
+
+    <!-- Interstitial -->
+    <CatalogInterstitial
+      fact="Chương trình OCOP đã chứng nhận hàng trăm sản phẩm từ 3 tỉnh — mỗi sản phẩm đều qua đánh giá nghiêm ngặt về chất lượng và nguồn gốc."
+      icon="🏅"
+      variant="warm"
+      :links="[{ to: '/san-pham', label: 'Tất cả sản phẩm' }, { to: '/theo-mua', label: 'Theo mùa vụ' }]"
+    />
 
     <!-- Editorial -->
     <section v-once class="page-article reveal">
@@ -115,29 +126,29 @@
           </select>
         </div>
         <p class="control-label">Hạng sao</p>
-        <div class="chip-row" role="group" aria-label="Lọc theo hạng sao">
-          <button type="button" :class="['chip', { active: starFilter === 0 }]" :aria-pressed="starFilter === 0" @click="starFilter = 0">Tất cả</button>
-          <button type="button" :class="['chip', { active: starFilter === 5 }]" :aria-pressed="starFilter === 5" @click="starFilter = 5">⭐⭐⭐⭐⭐ 5 sao</button>
-          <button type="button" :class="['chip', { active: starFilter === 4 }]" :aria-pressed="starFilter === 4" @click="starFilter = 4">⭐⭐⭐⭐ 4 sao</button>
-          <button type="button" :class="['chip', { active: starFilter === 3 }]" :aria-pressed="starFilter === 3" @click="starFilter = 3">⭐⭐⭐ 3 sao</button>
-        </div>
+        <FilterChips
+          :filters="starFilterOptions"
+          :model-value="[starFilterStr]"
+          single-select
+          aria-label="Lọc theo hạng sao"
+          @update:model-value="v => starFilterStr = v.length ? v[0] : '0'"
+        />
         <p class="control-label">Khu vực</p>
-        <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
-          <button type="button" :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả</button>
-          <button type="button"
-            v-for="(meta, key) in AREA_META" :key="key"
-            :class="['chip', { active: areaFilter === key }]"
-            :aria-pressed="areaFilter === key"
-            @click="areaFilter = key as string"
-          >{{ meta.emoji }} {{ meta.name }}</button>
-        </div>
+        <FilterChips
+          :filters="areaFilterOptions"
+          :model-value="[areaFilter]"
+          single-select
+          aria-label="Lọc theo khu vực"
+          @update:model-value="v => areaFilter = v.length ? v[0] : 'all'"
+        />
         <p class="control-label">Theo tháng</p>
-        <div class="chip-row" role="group" aria-label="Lọc theo tháng">
-          <button type="button" :class="['chip', 'season', { active: seasonFilter === 'all' }]" :aria-pressed="seasonFilter === 'all'" @click="seasonFilter = 'all'">Tất cả</button>
-          <button type="button" v-for="m in 12" :key="m" :class="['chip', 'season', { active: seasonFilter === String(m) }]" :aria-pressed="seasonFilter === String(m)" @click="seasonFilter = String(m)">
-            T{{ m }}
-          </button>
-        </div>
+        <FilterChips
+          :filters="seasonFilterOptions"
+          :model-value="[seasonFilter]"
+          single-select
+          aria-label="Lọc theo tháng"
+          @update:model-value="v => seasonFilter = v.length ? v[0] : 'all'"
+        />
         <div v-if="activeFilterCount > 0" class="filter-status">
           <span class="filter-count">{{ activeFilterCount }} bộ lọc</span>
           <button type="button" class="filter-clear" @click="clearFilters">Xóa tất cả</button>
@@ -147,8 +158,8 @@
       <div class="result-bar">
         <p class="result-meta" aria-live="polite">{{ filtered.length }} sản phẩm OCOP{{ sortBy !== 'relevant' ? ` · ${sortLabels[sortBy]}` : '' }}</p>
         <div class="view-toggle" role="group" aria-label="Chế độ hiển thị">
-          <button type="button" :class="['vt-btn', { active: viewMode === 'grid' }]" :aria-pressed="viewMode === 'grid'" @click="viewMode = 'grid'" title="Dạng lưới">⊞</button>
-          <button type="button" :class="['vt-btn', { active: viewMode === 'list' }]" :aria-pressed="viewMode === 'list'" @click="viewMode = 'list'" title="Dạng danh sách">☰</button>
+          <button type="button" :class="['vt-btn', { active: viewMode === 'grid' }]" :aria-pressed="viewMode === 'grid'" @click="viewMode = 'grid'" title="Dạng lưới" aria-label="Dạng lưới">⊞</button>
+          <button type="button" :class="['vt-btn', { active: viewMode === 'list' }]" :aria-pressed="viewMode === 'list'" @click="viewMode = 'list'" title="Dạng danh sách" aria-label="Dạng danh sách">☰</button>
         </div>
       </div>
       <EmptyState v-if="fetchError" icon="⚠️" title="Không thể tải sản phẩm OCOP" message="Mạng có thể đang chập chờn. Thử lại giúp mình nhé.">
@@ -174,19 +185,19 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/san-pham" class="cross-card">
-          <span class="cross-icon">🍊</span>
+          <span class="cross-icon" aria-hidden="true">🍊</span>
           <div><strong>Đặc sản</strong><p>Tất cả sản phẩm</p></div>
         </NuxtLink>
         <NuxtLink to="/theo-mua" class="cross-card">
-          <span class="cross-icon">📅</span>
+          <span class="cross-icon" aria-hidden="true">📅</span>
           <div><strong>Theo mùa</strong><p>Lịch mùa vụ</p></div>
         </NuxtLink>
         <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon">🌿</span>
+          <span class="cross-icon" aria-hidden="true">🌿</span>
           <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/kham-pha/am-thuc" class="cross-card">
-          <span class="cross-icon">🍲</span>
+          <span class="cross-icon" aria-hidden="true">🍲</span>
           <div><strong>Ẩm thực</strong><p>Món ngon miền Tây</p></div>
         </NuxtLink>
       </div>
@@ -229,6 +240,21 @@ const starFilterStr = computed({
   set: (v: string) => { starFilter.value = parseInt(v) || 0 },
 })
 useFilterUrl({ sao: starFilterStr, vung: areaFilter, mua: seasonFilter, sort: sortBy }, { sao: '0', vung: 'all', mua: 'all', sort: 'relevant' })
+
+const starFilterOptions = [
+  { key: '0', label: 'Tất cả' },
+  { key: '5', label: '5 sao', icon: '⭐⭐⭐⭐⭐' },
+  { key: '4', label: '4 sao', icon: '⭐⭐⭐⭐' },
+  { key: '3', label: '3 sao', icon: '⭐⭐⭐' },
+]
+const areaFilterOptions = computed(() => [
+  { key: 'all', label: 'Tất cả' },
+  ...Object.entries(AREA_META).map(([slug, m]) => ({ key: slug, label: m.name, icon: m.emoji })),
+])
+const seasonFilterOptions = computed(() => [
+  { key: 'all', label: 'Tất cả' },
+  ...Array.from({ length: 12 }, (_, i) => ({ key: String(i + 1), label: `T${i + 1}` })),
+])
 const { sortByRegion } = useRegionPref()
 
 onMounted(() => {

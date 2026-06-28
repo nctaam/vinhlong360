@@ -65,6 +65,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Nhật ký — Admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
@@ -147,7 +148,7 @@ onUnmounted(() => { if (searchTimer) clearTimeout(searchTimer) })
 .audit-summary { font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-2); }
 .audit-method { font-weight: 700; font-size: .7rem; padding: 1px 6px; border-radius: var(--radius-sm); text-transform: uppercase; }
 .audit-method.post { background: rgba(52,199,89,.15); color: #219653; }
-.audit-method.put, .audit-method.patch { background: rgba(255,159,10,.15); color: #FF9F0A; }
+.audit-method.put, .audit-method.patch { background: rgba(var(--warning-rgb),.15); color: #FF9F0A; }
 .audit-method.delete { background: rgba(255,69,58,.15); color: #FF453A; }
 .audit-ts { white-space: nowrap; font-size: .8rem; }
 .audit-path { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -155,7 +156,7 @@ onUnmounted(() => { if (searchTimer) clearTimeout(searchTimer) })
 .audit-ip { font-size: .8rem; }
 
 .dark .audit-method.post { background: rgba(52,199,89,.2); color: #34c759; }
-.dark .audit-method.put, .dark .audit-method.patch { background: rgba(255,159,10,.2); color: #ffb340; }
+.dark .audit-method.put, .dark .audit-method.patch { background: rgba(var(--warning-rgb),.2); color: #ffb340; }
 .dark .audit-method.delete { background: rgba(255,69,58,.2); color: #ff6961; }
 
 @media (max-width: 600px) {

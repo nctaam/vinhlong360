@@ -1,5 +1,6 @@
 <template>
   <div class="admin-shell">
+    <a href="#admin-main" class="skip-link">Chuyển đến nội dung chính</a>
     <aside class="admin-sidebar" :class="{ collapsed: sidebarCollapsed }">
       <div class="admin-sidebar-head">
         <NuxtLink class="admin-brand" to="/admin">
@@ -109,7 +110,7 @@
         <NuxtLink to="/" class="back-link">&#8592; Về trang chủ</NuxtLink>
       </div>
     </aside>
-    <main class="admin-main">
+    <main id="admin-main" class="admin-main">
       <div class="admin-topbar">
         <nav class="admin-crumbs" aria-label="Đường dẫn">
           <NuxtLink to="/admin" class="admin-crumb-root">AdminCP</NuxtLink>
@@ -121,7 +122,7 @@
       </div>
       <slot />
     </main>
-    <ClientOnly><CommandPalette /></ClientOnly>
+    <ClientOnly><LazyCommandPalette /></ClientOnly>
     <ClientOnly><ToastContainer /></ClientOnly>
     <ClientOnly><ConfirmDialog /></ClientOnly>
   </div>
@@ -201,7 +202,7 @@ onUnmounted(() => {
   display: flex; flex-direction: column; flex-shrink: 0;
   transition: width .35s cubic-bezier(.2,1,.4,1);
   border-right: .5px solid rgba(255,255,255,.06);
-  position: sticky; top: 0; height: 100vh;
+  position: sticky; top: 0; height: 100vh; height: 100dvh;
   overflow: hidden;
 }
 .admin-sidebar.collapsed { width: 64px; }
@@ -292,7 +293,7 @@ onUnmounted(() => {
   content: attr(title); position: absolute; left: calc(100% + 8px); top: 50%;
   transform: translateY(-50%); background: rgba(0,0,0,.85); color: #fff;
   padding: 4px 10px; border-radius: 6px; font-size: .75rem; font-weight: 600;
-  white-space: nowrap; z-index: 200; pointer-events: none;
+  white-space: nowrap; z-index: var(--z-overlay); pointer-events: none;
   animation: tooltipIn .15s ease-out;
 }
 @keyframes tooltipIn { from { opacity: 0; transform: translateY(-50%) translateX(-4px); } to { opacity: 1; transform: translateY(-50%) translateX(0); } }
@@ -355,10 +356,17 @@ onUnmounted(() => {
   background: var(--bg); border-radius: 14px; padding: var(--space-5);
   box-shadow: 0 1px 3px rgba(0,0,0,.04); border: .5px solid var(--line);
   transition: transform .35s cubic-bezier(.2,1,.4,1), box-shadow .35s cubic-bezier(.4,0,.2,1), border-color .25s;
+  position: relative; overflow: hidden;
 }
+.stat-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--accent, var(--primary)) 100%);
+  opacity: 0; transition: opacity .3s var(--ease-out);
+}
+.stat-card:hover::before { opacity: 1; }
 .stat-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,.08); border-color: var(--border, rgba(0,0,0,.08)); }
 .stat-card:active { transform: translateY(-1px) scale(.98); transition-duration: .08s; }
-.stat-card .stat-value { font-size: var(--text-2xl); font-weight: 800; color: var(--primary, #219653); transition: color .3s; }
+.stat-card .stat-value { font-size: var(--text-2xl); font-weight: 800; color: var(--primary, #219653); transition: color .3s; font-variant-numeric: tabular-nums; }
 .stat-card .stat-label { font-size: .75rem; color: var(--muted); margin-top: var(--space-1); text-transform: uppercase; letter-spacing: .5px; }
 
 /* ── Tables ── */
@@ -369,12 +377,13 @@ onUnmounted(() => {
   background: var(--bg-alt); font-size: .75rem; font-weight: 600;
   color: var(--muted); border-bottom: .5px solid var(--line);
   text-transform: uppercase; letter-spacing: .5px;
-  position: sticky; top: 0; z-index: 1;
+  position: sticky; top: 0; z-index: 2;
   box-shadow: 0 2px 4px rgba(0,0,0,.02);
 }
 .admin-table td { padding: var(--space-3) var(--space-4); border-bottom: .5px solid var(--line); font-size: .88rem; }
 .admin-table tbody tr { transition: background .25s cubic-bezier(.4,0,.2,1); }
 .admin-table tbody tr:hover td { background: rgba(0,0,0,.02); }
+.admin-table tbody tr.row-selected td { background: rgba(var(--primary-rgb), .06); }
 .admin-table tbody tr:last-child td { border-bottom: none; }
 
 /* ── Toolbar ── */
@@ -393,9 +402,9 @@ onUnmounted(() => {
 .admin-actions button:active { transform: scale(.95); transition-duration: .08s; }
 .admin-actions button:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .admin-actions .btn-danger { color: var(--error, #D94F3D); border-color: var(--error, #D94F3D); }
-.admin-actions .btn-danger:hover { background: var(--error, #D94F3D); color: #fff; box-shadow: 0 2px 8px rgba(217,79,61,.2); }
+.admin-actions .btn-danger:hover { background: var(--error, #D94F3D); color: #fff; box-shadow: 0 2px 8px rgba(var(--danger-rgb),.2); }
 .admin-actions .btn-success { color: var(--primary, #219653); border-color: var(--primary); }
-.admin-actions .btn-success:hover { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(33,150,83,.2); }
+.admin-actions .btn-success:hover { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(var(--primary-rgb),.2); }
 
 /* ── Pagination ── */
 .admin-pagination { display: flex; gap: var(--space-2); justify-content: center; margin-top: var(--space-4); }
@@ -409,7 +418,7 @@ onUnmounted(() => {
 .admin-pagination button:active:not(:disabled) { transform: scale(.95); transition-duration: .08s; }
 .admin-pagination button:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .admin-pagination button:disabled { opacity: .35; cursor: default; }
-.admin-pagination button.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 2px 8px rgba(33,150,83,.2); }
+.admin-pagination button.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 2px 8px rgba(var(--primary-rgb),.2); }
 
 /* ── Shared utilities ── */
 .admin-loading { display: flex; align-items: center; justify-content: center; padding: var(--space-10); }
@@ -426,14 +435,16 @@ onUnmounted(() => {
   color: var(--muted); font-weight: 500; min-height: 36px;
   transition: border-color .25s, color .25s, background .25s, transform .35s cubic-bezier(.2,1,.4,1);
 }
-.admin-refresh:hover { border-color: var(--primary, #219653); color: var(--primary); background: rgba(33,150,83,.04); }
+.admin-refresh:hover { border-color: var(--primary, #219653); color: var(--primary); background: rgba(var(--primary-rgb),.04); }
 .admin-refresh:active { transform: scale(.95); transition-duration: .08s; }
 .admin-refresh:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .admin-refresh:disabled { opacity: .35; cursor: default; }
 .refresh-spin { display: inline-block; animation: admin-spin .6s linear infinite; }
 
-.admin-head-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-5); }
-.admin-head-row h1 { margin: 0; }
+.admin-head-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-5); padding: var(--space-4) var(--space-5); background: linear-gradient(135deg, rgba(var(--primary-rgb), .04) 0%, rgba(var(--secondary-rgb), .04) 100%); border: .5px solid var(--line); border-radius: var(--radius-lg); }
+.admin-head-row h1 { margin: 0; font-size: var(--text-xl); }
+.admin-head-row p { margin: var(--space-1) 0 0; color: var(--muted); font-size: var(--text-sm); }
+.dark .admin-head-row { background: linear-gradient(135deg, rgba(var(--primary-rgb), .06) 0%, rgba(255,255,255,.02) 100%); }
 .admin-muted { color: var(--muted); }
 .admin-td-muted { font-size: .82rem; color: var(--muted); }
 .admin-td-id { font-size: .75rem; color: var(--muted); max-width: 120px; overflow: hidden; text-overflow: ellipsis; font-family: var(--font-mono, monospace); }
@@ -481,7 +492,7 @@ onUnmounted(() => {
 .status-error .stat-value { color: var(--error, #D94F3D); }
 
 /* ── Dark mode ── */
-.dark .admin-sidebar { background: #0a0a0a; border-right-color: rgba(255,255,255,.08); }
+.dark .admin-sidebar { background: var(--bg); border-right-color: rgba(255,255,255,.08); }
 .dark .nav-group-label { color: rgba(255,255,255,.35); }
 .dark .admin-nav a { color: rgba(255,255,255,.65); }
 .dark .admin-nav a:hover { color: #fff; background: rgba(255,255,255,.12); }
@@ -495,6 +506,7 @@ onUnmounted(() => {
 .dark .admin-table { background: var(--card, #2c2c2e); }
 .dark .admin-table th { background: rgba(255,255,255,.03); }
 .dark .admin-table tbody tr:hover td { background: rgba(255,255,255,.03); }
+.dark .admin-table tbody tr.row-selected td { background: rgba(var(--primary-rgb), .1); }
 .dark .admin-table-wrap { border-color: rgba(255,255,255,.06); }
 .dark .admin-actions button { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); color: var(--ink, #e5e5e7); }
 .dark .admin-actions button:hover { background: rgba(255,255,255,.06); }
@@ -528,7 +540,7 @@ onUnmounted(() => {
   .admin-shell { flex-direction: column; }
   .admin-sidebar {
     width: 100% !important; height: auto; flex-direction: row; padding: 0;
-    align-items: center; flex-wrap: wrap; position: sticky; top: 0; z-index: 100;
+    align-items: center; flex-wrap: wrap; position: sticky; top: 0; z-index: var(--z-sticky);
   }
   .admin-sidebar-head { border-bottom: none; padding: var(--space-3) var(--space-4); }
   .admin-brand small { display: none; }
@@ -587,7 +599,7 @@ onUnmounted(() => {
   transform: translateX(-50%); padding: 6px 10px; border-radius: 8px;
   background: var(--ink, #1a1a2e); color: #fff; font-size: .72rem; font-weight: 400;
   white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .15s;
-  z-index: 100; max-width: 260px; white-space: normal; line-height: 1.4;
+  z-index: var(--z-sticky); max-width: 260px; white-space: normal; line-height: 1.4;
 }
 .admin-help:hover::after, .admin-help:focus::after { opacity: 1; }
 </style>

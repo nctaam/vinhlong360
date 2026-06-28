@@ -12,42 +12,42 @@
 
     <div v-if="summary" class="stat-grid dq-stats">
       <div class="stat-card">
-        <div class="dq-icon" style="background: rgba(52,120,246,.1); color: #3478F6;">&#127760;</div>
+        <div class="dq-icon si-blue">&#127760;</div>
         <div>
           <div class="stat-value">{{ summary.data?.public_entities || 0 }}</div>
           <div class="stat-label">Entity public</div>
         </div>
       </div>
       <div class="stat-card warn">
-        <div class="dq-icon" style="background: rgba(255,159,10,.1); color: #FF9F0A;">&#128218;</div>
+        <div class="dq-icon si-orange">&#128218;</div>
         <div>
           <div class="stat-value">{{ summary.data?.missing_source || 0 }}</div>
           <div class="stat-label">Thiếu nguồn</div>
         </div>
       </div>
       <div class="stat-card warn">
-        <div class="dq-icon" style="background: rgba(255,159,10,.1); color: #FF9F0A;">&#128205;</div>
+        <div class="dq-icon si-orange">&#128205;</div>
         <div>
           <div class="stat-value">{{ summary.data?.missing_location || 0 }}</div>
           <div class="stat-label">Thiếu tọa độ</div>
         </div>
       </div>
       <div class="stat-card warn">
-        <div class="dq-icon" style="background: rgba(255,159,10,.1); color: #FF9F0A;">&#127963;</div>
+        <div class="dq-icon si-orange">&#127963;</div>
         <div>
           <div class="stat-value">{{ summary.data?.missing_place_id_non_place || 0 }}</div>
           <div class="stat-label">Thiếu placeId</div>
         </div>
       </div>
       <div class="stat-card ok">
-        <div class="dq-icon" style="background: rgba(33,150,83,.1); color: #219653;">&#9989;</div>
+        <div class="dq-icon si-green">&#9989;</div>
         <div>
           <div class="stat-value">{{ summary.candidates?.auto_apply || 0 }}</div>
           <div class="stat-label">Có thể auto-apply</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="dq-icon" style="background: rgba(175,82,222,.1); color: #AF52DE;">&#128065;</div>
+        <div class="dq-icon si-purple">&#128065;</div>
         <div>
           <div class="stat-value">{{ summary.candidates?.needs_review || 0 }}</div>
           <div class="stat-label">Cần duyệt</div>
@@ -242,6 +242,7 @@
 <script setup lang="ts">
 import type { Entity } from '~/types'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Chất lượng dữ liệu — Admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
@@ -485,14 +486,14 @@ onMounted(() => refreshAll())
 .dq-toolbar .input { flex: 0 0 170px; }
 .dq-select-all { display: inline-flex; align-items: center; gap: var(--space-2); font-size: .85rem; color: var(--ink, #1c1c1e); cursor: pointer; min-height: 44px; }
 .dq-select-all input { width: 18px; height: 18px; }
-.dq-ready-hint { font-size: .78rem; font-weight: 600; color: var(--primary, #219653); background: rgba(33,150,83,.1); padding: 2px 8px; border-radius: 999px; }
+.dq-ready-hint { font-size: .78rem; font-weight: 600; color: var(--primary, #219653); background: rgba(var(--primary-rgb),.1); padding: 2px 8px; border-radius: 999px; }
 .dq-btn-count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 6px; border-radius: 999px; background: rgba(255,255,255,.25); font-size: .72rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 
 /* Severity / status badges (derived from existing bucket / record_type data) */
 .dq-sev-badge, .dq-status-badge { display: inline-flex; align-items: center; justify-content: center; font-size: .68rem; font-weight: 700; letter-spacing: .02em; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
-.dq-sev-success { background: rgba(33,150,83,.12); color: var(--primary, #219653); }
-.dq-sev-warning { background: rgba(255,159,10,.14); color: #C77700; }
-.dq-sev-error { background: rgba(217,79,61,.12); color: var(--error, #D94F3D); }
+.dq-sev-success { background: rgba(var(--primary-rgb),.12); color: var(--primary, #219653); }
+.dq-sev-warning { background: rgba(var(--warning-rgb),.14); color: #C77700; }
+.dq-sev-error { background: rgba(var(--danger-rgb),.12); color: var(--error, #D94F3D); }
 .dq-sev-neutral { background: rgba(142,142,147,.14); color: var(--muted); }
 
 .dq-evidence-more { display: inline-block; font-size: .72rem; font-weight: 600; color: var(--muted); cursor: help; }
@@ -501,7 +502,7 @@ onMounted(() => refreshAll())
 .dq-apply-result { background: var(--bg-alt, #f3fbf5); border: .5px solid var(--primary, #219653); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm, 10px); color: var(--ink, #1c1c1e); display: grid; gap: var(--space-2); }
 .dq-apply-result--warn { border-color: var(--warning, #e67e22); background: var(--warning-bg, rgba(230,126,34,.08)); }
 .dq-apply-result-head { display: flex; align-items: center; gap: var(--space-2); }
-.dq-apply-result-icon { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 999px; background: rgba(33,150,83,.14); color: var(--primary, #219653); font-size: .8rem; }
+.dq-apply-result-icon { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 999px; background: rgba(var(--primary-rgb),.14); color: var(--primary, #219653); font-size: .8rem; }
 .dq-apply-result--warn .dq-apply-result-icon { background: rgba(230,126,34,.16); color: var(--warning, #e67e22); }
 .dq-apply-result-head strong { font-size: .95rem; }
 .dq-apply-result-stats { display: flex; gap: var(--space-4); font-size: .85rem; color: var(--muted); }
@@ -540,7 +541,7 @@ onMounted(() => refreshAll())
 .dq-history-meta { margin: var(--space-2) 0; color: var(--muted); font-size: .86rem; word-break: break-word; }
 .dq-diff-list { display: grid; gap: var(--space-2); margin-top: var(--space-3); }
 .dq-diff-item { display: grid; grid-template-columns: minmax(160px, 240px) 1fr; gap: var(--space-3); align-items: start; padding: var(--space-2); background: var(--bg-alt, #f8faf9); border-radius: 8px; transition: background .15s; }
-.dq-diff-item:hover { background: rgba(52,120,246,.04); }
+.dq-diff-item:hover { background: rgba(var(--blue-rgb),.04); }
 .dq-diff-item code { white-space: pre-wrap; word-break: break-word; font-size: .76rem; }
 .dq-skipped-list { display: grid; gap: var(--space-2); margin-top: var(--space-3); padding: var(--space-3); border: .5px solid var(--warning, #e67e22); border-radius: var(--radius-sm); background: var(--warning-bg, rgba(230, 126, 34, .08)); }
 .dq-skipped-list > strong { font-size: .86rem; color: var(--warning, #e67e22); }
@@ -556,9 +557,9 @@ onMounted(() => refreshAll())
 
 .dark .dq-history-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.3); }
 .dark .dq-diff-item { background: rgba(255,255,255,.03); }
-.dark .dq-diff-item:hover { background: rgba(52,120,246,.08); }
+.dark .dq-diff-item:hover { background: rgba(var(--blue-rgb),.08); }
 .dark .dq-select-all { color: var(--ink, #e5e5e7); }
-.dark .dq-apply-result { background: rgba(33,150,83,.1); color: var(--ink, #e5e5e7); }
+.dark .dq-apply-result { background: rgba(var(--primary-rgb),.1); color: var(--ink, #e5e5e7); }
 .dark .dq-apply-result--warn { background: rgba(230,126,34,.12); }
 .dark .dq-apply-result-stat b { color: var(--ink, #e5e5e7); }
 .dark .dq-page-info { color: var(--ink, #e5e5e7); }

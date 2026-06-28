@@ -4,7 +4,7 @@
     <aside class="guide-sidebar" aria-label="Điều hướng hướng dẫn">
       <div class="sidebar-inner">
         <div class="sidebar-search">
-          <input v-model="search" type="search" placeholder="Tìm trong hướng dẫn..." aria-label="Tìm trong hướng dẫn" class="search-input" />
+          <input v-model="search" type="search" enterkeyhint="search" placeholder="Tìm trong hướng dẫn..." aria-label="Tìm trong hướng dẫn" class="search-input" />
         </div>
         <nav class="sidebar-nav">
           <a href="#bat-dau" class="snav-link" :class="{ active: activeId === 'bat-dau' }" @click.prevent="scrollTo('bat-dau')">🚀 Bắt đầu nhanh</a>
@@ -21,7 +21,7 @@
     </aside>
 
     <!-- Main content -->
-    <main class="guide-main">
+    <section class="guide-main">
       <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Hướng dẫn sử dụng' }]" />
 
       <header class="guide-hero">
@@ -242,7 +242,7 @@
       </section>
 
       <p class="guide-updated">Cập nhật: {{ updatedDate }}</p>
-    </main>
+    </section>
   </div>
 </template>
 
@@ -1012,7 +1012,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 .qs-num {
   width: 2.2rem; height: 2.2rem; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  background: var(--primary-fg); color: #fff; font-weight: var(--weight-bold);
+  background: var(--primary-fg); color: var(--text-on-dark, #fff); font-weight: var(--weight-bold);
   font-size: var(--text-base); border-radius: 50%;
 }
 .qs-step strong { display: block; margin-bottom: var(--space-1); font-size: var(--text-sm); }
@@ -1060,7 +1060,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
   content: counter(step);
   position: absolute; left: 0; top: var(--space-2);
   width: 1.5rem; height: 1.5rem; border-radius: 50%;
-  background: var(--primary-fg); color: #fff;
+  background: var(--primary-fg); color: var(--text-on-dark, #fff);
   font-size: var(--text-xs); font-weight: var(--weight-bold);
   display: flex; align-items: center; justify-content: center;
 }

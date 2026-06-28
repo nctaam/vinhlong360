@@ -1,5 +1,5 @@
 <template>
-  <main class="guide-page">
+  <section class="guide-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng', to: '/cong-dong' }, { label: 'Hướng dẫn thành viên' }]" />
 
     <header class="guide-hero">
@@ -100,7 +100,7 @@
         <NuxtLink to="/bang-xep-hang" class="btn btn-ghost">Xem bảng xếp hạng</NuxtLink>
       </div>
     </section>
-  </main>
+  </section>
 </template>
 
 <script lang="ts">
@@ -247,7 +247,7 @@ useHead({
 .tip-num {
   flex-shrink: 0; width: 28px; height: 28px;
   display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; background: var(--primary-fg); color: #fff;
+  border-radius: 50%; background: var(--primary-fg); color: var(--text-on-dark, #fff);
   font-size: var(--text-xs); font-weight: var(--weight-bold);
 }
 .tip-item strong { display: block; margin-bottom: var(--space-1); }

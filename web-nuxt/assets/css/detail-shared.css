@@ -21,17 +21,17 @@
 .breadcrumb ol { flex: 1; min-width: 0; list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: nowrap; gap: var(--space-1); font-size: var(--text-xs); color: var(--muted); overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; mask-image: linear-gradient(to right, #000 85%, transparent); -webkit-mask-image: linear-gradient(to right, #000 85%, transparent); }
 .breadcrumb ol::-webkit-scrollbar { display: none; }
 .breadcrumb li { white-space: nowrap; flex-shrink: 0; }
-.breadcrumb li::after { content: '/'; margin-inline-start: var(--space-2); opacity: .5; }
+.breadcrumb li::after { content: '/'; margin-inline-start: var(--space-2); opacity: .4; font-weight: 300; }
 .breadcrumb li:last-child::after { display: none; }
 .breadcrumb li:last-child { color: var(--ink); font-weight: var(--weight-semibold); }
-.breadcrumb a { color: var(--primary-fg); transition: color .3s var(--ease-out); min-height: 44px; display: inline-flex; align-items: center; padding: var(--space-2) var(--space-1); }
-.breadcrumb a:hover { text-decoration: underline; }
+.breadcrumb a { color: var(--primary-fg); transition: color .3s var(--ease-out), text-decoration-color .25s var(--ease-out); min-height: 44px; display: inline-flex; align-items: center; padding: var(--space-2) var(--space-1); text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.breadcrumb a:hover { text-decoration-color: var(--primary-fg); }
 .breadcrumb a:active { opacity: .7; }
 .breadcrumb a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* Highlights quét nhanh (giờ/giá/liên hệ/map) */
 .highlights { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0 0 var(--space-5); }
-.hl { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: var(--weight-semibold); min-height: 44px; line-height: 1.2; flex-shrink: 0; }
+.hl { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: var(--weight-semibold); min-height: 44px; line-height: 1.2; flex-shrink: 0; max-width: 100%; overflow-wrap: break-word; word-break: break-word; }
 .hl:not(a) { background: var(--bg-warm); color: var(--ink); border: .5px solid var(--line); transition: transform .3s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), background .3s var(--ease-out), border-color .3s var(--ease-out); }
 .hl:not(a):hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); background: var(--card); border-color: var(--border); }
 a.hl { background: var(--primary); color: var(--text-on-dark, #fff); min-height: 44px; box-shadow: 0 2px 8px rgba(var(--primary-rgb), .28), inset 0 1px 0 rgba(255,255,255,.16); transition: background .3s var(--ease-out), transform .3s var(--ease-spring-gentle), box-shadow .3s var(--ease-out-expo); }
@@ -47,7 +47,7 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
 .detail-gallery .detail-img:active { transform: scale(.97); transition-duration: .08s; }
 
 /* Lightbox (dùng bởi ImageGallery + PostCard) */
-.lightbox { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,.94); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); display: flex; align-items: center; justify-content: center; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+.lightbox { position: fixed; inset: 0; z-index: var(--z-lightbox); background: rgba(0,0,0,.94); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); display: flex; align-items: center; justify-content: center; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
 .lb-fade-enter-active { transition: opacity .3s var(--ease-out-expo); }
 .lb-fade-enter-active .lb-img { transition: transform .4s var(--ease-spring-gentle), opacity .3s var(--ease-out); }
 .lb-fade-leave-active { transition: opacity .25s var(--ease-out); }

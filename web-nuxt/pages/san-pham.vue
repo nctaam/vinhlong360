@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sản phẩm' }]" />
 
@@ -13,15 +13,15 @@
       </div>
       <div v-if="allEntities.length" class="catalog-stats">
         <div class="stat-item">
-          <span class="stat-num">{{ allEntities.length }}</span>
+          <CountUp :value="allEntities.length" class="stat-num" />
           <span class="stat-label">sản phẩm</span>
         </div>
         <div class="stat-item">
-          <span class="stat-num">{{ ocopCount }}</span>
+          <CountUp :value="ocopCount" class="stat-num" />
           <span class="stat-label">OCOP</span>
         </div>
         <div class="stat-item">
-          <span class="stat-num">{{ inSeasonCount }}</span>
+          <CountUp :value="inSeasonCount" class="stat-num" />
           <span class="stat-label">đang mùa</span>
         </div>
       </div>
@@ -31,7 +31,7 @@
     <CatalogSpotlight :items="allEntities" />
 
     <!-- Đang vào mùa -->
-    <section v-if="seasonalHighlights.length" class="block reveal">
+    <section v-if="seasonalHighlights.length" class="block band reveal">
       <div class="seasonal-banner seasonal-banner-live">
         <span class="seasonal-banner-icon" aria-hidden="true">🔥</span>
         <div>
@@ -56,6 +56,14 @@
         <EntityCard v-for="e in ocopHighlights" :key="e.id" :entity="e" />
       </div>
     </section>
+
+    <!-- Interstitial -->
+    <CatalogInterstitial
+      fact="Ba tỉnh Vĩnh Long, Bến Tre, Trà Vinh là vựa trái cây lớn nhất ĐBSCL — mỗi mùa mang đến hương vị đặc trưng riêng."
+      icon="🍊"
+      variant="accent"
+      :links="[{ to: '/theo-mua', label: 'Xem theo mùa' }, { to: '/ocop', label: 'Sản phẩm OCOP' }]"
+    />
 
     <!-- Editorial -->
     <section v-once class="page-article reveal">
@@ -88,16 +96,19 @@
           </select>
         </div>
         <p class="control-label">Theo tháng</p>
-        <div class="chip-row" role="group" aria-label="Lọc theo tháng">
-          <button type="button" :class="['chip', 'season', { active: seasonFilter === 'all' }]" :aria-pressed="seasonFilter === 'all'" @click="seasonFilter = 'all'">Tất cả</button>
-          <button type="button" v-for="m in 12" :key="m" :class="['chip', 'season', { active: seasonFilter === String(m) }]" :aria-pressed="seasonFilter === String(m)" :aria-label="`Tháng ${m}`" @click="seasonFilter = String(m)">
-            T{{ m }}
-          </button>
-          <button type="button" :class="['chip', 'season', { active: seasonFilter === 'flood' }]" :aria-pressed="seasonFilter === 'flood'" @click="seasonFilter = 'flood'">🌊 Mùa nước nổi</button>
-        </div>
-        <div class="chip-row chip-row-extra" role="group" aria-label="Lọc nâng cao">
-          <button type="button" :class="['chip', { active: ocopOnly }]" :aria-pressed="ocopOnly" aria-label="Chỉ sản phẩm OCOP" @click="ocopOnly = !ocopOnly">⭐ Chỉ sản phẩm OCOP</button>
-        </div>
+        <FilterChips
+          :filters="seasonFilterOptions"
+          :model-value="[seasonFilter]"
+          single-select
+          aria-label="Lọc theo tháng"
+          @update:model-value="v => seasonFilter = v.length ? v[0] : 'all'"
+        />
+        <FilterChips
+          :filters="[{ key: 'ocop', label: 'Chỉ sản phẩm OCOP', icon: '⭐' }]"
+          :model-value="ocopOnly ? ['ocop'] : []"
+          aria-label="Lọc nâng cao"
+          @update:model-value="v => ocopOnly = v.includes('ocop')"
+        />
         <div v-if="activeFilterCount > 0" class="filter-status">
           <span class="filter-count">{{ activeFilterCount }} bộ lọc</span>
           <button type="button" class="filter-clear" @click="clearFilters">Xóa tất cả</button>
@@ -106,8 +117,8 @@
       <div class="result-bar">
         <p class="result-meta" aria-live="polite">{{ filtered.length }} kết quả{{ sortBy !== 'relevant' ? ` · ${sortLabels[sortBy]}` : '' }}</p>
         <div class="view-toggle" role="group" aria-label="Chế độ hiển thị">
-          <button type="button" :class="['vt-btn', { active: viewMode === 'grid' }]" :aria-pressed="viewMode === 'grid'" @click="viewMode = 'grid'" title="Dạng lưới">⊞</button>
-          <button type="button" :class="['vt-btn', { active: viewMode === 'list' }]" :aria-pressed="viewMode === 'list'" @click="viewMode = 'list'" title="Dạng danh sách">☰</button>
+          <button type="button" :class="['vt-btn', { active: viewMode === 'grid' }]" :aria-pressed="viewMode === 'grid'" @click="viewMode = 'grid'" title="Dạng lưới" aria-label="Dạng lưới">⊞</button>
+          <button type="button" :class="['vt-btn', { active: viewMode === 'list' }]" :aria-pressed="viewMode === 'list'" @click="viewMode = 'list'" title="Dạng danh sách" aria-label="Dạng danh sách">☰</button>
         </div>
       </div>
       <EmptyState v-if="fetchError" icon="⚠️" title="Không thể tải dữ liệu" message="Lỗi kết nối. Thử tải lại nhé.">
@@ -134,19 +145,19 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/ocop" class="cross-card">
-          <span class="cross-icon">⭐</span>
+          <span class="cross-icon" aria-hidden="true">⭐</span>
           <div><strong>OCOP</strong><p>Sản phẩm đạt chuẩn</p></div>
         </NuxtLink>
         <NuxtLink to="/theo-mua" class="cross-card">
-          <span class="cross-icon">📅</span>
+          <span class="cross-icon" aria-hidden="true">📅</span>
           <div><strong>Theo mùa</strong><p>Lịch mùa vụ</p></div>
         </NuxtLink>
         <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon">🌿</span>
+          <span class="cross-icon" aria-hidden="true">🌿</span>
           <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/kham-pha/am-thuc" class="cross-card">
-          <span class="cross-icon">🍲</span>
+          <span class="cross-icon" aria-hidden="true">🍲</span>
           <div><strong>Ẩm thực</strong><p>Món ngon miền Tây</p></div>
         </NuxtLink>
       </div>
@@ -165,6 +176,12 @@ const currentMonth = new Date().getMonth() + 1
 const q = ref('')
 const seasonFilter = ref(String(currentMonth))
 const ocopOnly = ref(false)
+
+const seasonFilterOptions = computed(() => [
+  { key: 'all', label: 'Tất cả' },
+  ...Array.from({ length: 12 }, (_, i) => ({ key: String(i + 1), label: `T${i + 1}` })),
+  { key: 'flood', label: 'Mùa nước nổi', icon: '🌊' },
+])
 const sortBy = ref('relevant')
 const sortLabels: Record<string, string> = { popular: 'Phổ biến', newest: 'Mới nhất', name: 'Tên A-Z' }
 const viewMode = ref('grid')

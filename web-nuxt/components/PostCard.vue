@@ -298,7 +298,7 @@ function onLbTouchMove(e: TouchEvent) {
   lbTouchDX.value = e.touches[0].clientX - lbTouchX.value
 }
 function onLbTouchEnd() {
-  if (Math.abs(lbTouchDX.value) > 60) {
+  if (Math.abs(lbTouchDX.value) > 80) {
     if (lbTouchDX.value < 0) lbNext()
     else lbPrev()
   }

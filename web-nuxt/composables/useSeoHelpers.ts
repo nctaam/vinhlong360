@@ -1,4 +1,13 @@
 export const SITE_URL = 'https://vinhlong360.vn'
+const DEFAULT_OG = `${SITE_URL}/img/og-default.jpg`
+
+export function entityOgImage(images?: string[] | null, fallback = DEFAULT_OG): string {
+  if (Array.isArray(images) && images.length && images[0]) {
+    const src = images[0]
+    return src.startsWith('http') ? src : `${SITE_URL}${src.startsWith('/') ? '' : '/'}${src}`
+  }
+  return fallback
+}
 
 export function safeJsonLd(obj: unknown): string {
   return JSON.stringify(obj).replace(/<\//g, '<\\/')

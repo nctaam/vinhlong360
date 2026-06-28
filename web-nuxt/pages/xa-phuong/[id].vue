@@ -1,22 +1,25 @@
 <template>
-  <main v-if="fetchFailed" class="page">
+  <section v-if="fetchFailed" class="page">
     <EmptyState icon="⚠️" title="Không thể tải trang" message="Lỗi kết nối. Vui lòng thử lại.">
       <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData(`ward-${id}`)">Thử lại</button>
     </EmptyState>
-  </main>
+  </section>
 
-  <main v-else-if="!data?.place" class="page">
+  <section v-else-if="!data?.place" class="page">
     <EmptyState icon="🔍" title="Không tìm thấy xã/phường" message="Có thể đơn vị hành chính đã được sắp xếp lại hoặc đường dẫn chưa đúng.">
       <template #actions>
         <NuxtLink to="/danh-ba" class="btn btn-primary">Danh bạ hành chính</NuxtLink>
         <NuxtLink to="/" class="btn btn-ghost">Về trang chủ</NuxtLink>
       </template>
     </EmptyState>
-  </main>
+  </section>
 
-  <main v-else class="wp">
+  <section v-else class="wp">
     <!-- Breadcrumb -->
     <nav class="breadcrumb" aria-label="Breadcrumb">
+      <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
+        <span aria-hidden="true">←</span>
+      </button>
       <ol>
         <li><NuxtLink to="/">Trang chủ</NuxtLink></li>
         <li v-if="data.place.area"><NuxtLink :to="`/khu-vuc/${data.place.area}`">{{ areaMeta.name }}</NuxtLink></li>
@@ -137,7 +140,7 @@
         </NuxtLink>
       </aside>
     </div>
-  </main>
+  </section>
 </template>
 
 <script setup lang="ts">
@@ -147,7 +150,16 @@ import { AREA_META, OFFICE_KIND, TYPE_META } from '~/composables/useConstants'
 useReveal()
 
 const route = useRoute()
+const router = useRouter()
 const id = computed(() => route.params.id as string)
+
+function goBack() {
+  if (import.meta.client && window.history.length > 1) {
+    router.back()
+  } else {
+    navigateTo('/danh-ba')
+  }
+}
 
 const fetchFailed = ref(false)
 const { data } = await useAsyncData(() => `ward-${id.value}`, async () => {
@@ -205,10 +217,7 @@ useSeoMeta({
   description: () => data.value?.place?.summary || `Tổng hợp địa điểm du lịch, cơ sở lưu trú, sản phẩm đặc sản và danh bạ hành chính của ${placeName.value}.`,
   ogTitle: () => `${placeName.value} — vinhlong360`,
   ogDescription: () => data.value?.place?.summary || `Du lịch, đặc sản & danh bạ ${placeName.value}.`,
-  ogImage: () => {
-    const first = allWardEntities.value.find(e => e.images?.length)
-    return first?.images?.[0] || '/icons/icon-512.png'
-  },
+  ogImage: () => entityOgImage(allWardEntities.value.find(e => e.images?.length)?.images),
 })
 useHead(() => {
   const place = data.value?.place

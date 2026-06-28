@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình' }]" />
 
@@ -13,11 +13,11 @@
       </div>
       <div v-if="itineraries?.length" class="catalog-stats">
         <div class="stat-item">
-          <span class="stat-num">{{ itineraries.length }}</span>
+          <CountUp :value="itineraries.length" class="stat-num" />
           <span class="stat-label">lịch trình</span>
         </div>
         <div v-for="a in areaCounts" :key="a.key" class="stat-item">
-          <span class="stat-num">{{ a.count }}</span>
+          <CountUp :value="a.count" class="stat-num" />
           <span class="stat-label">{{ a.name }}</span>
         </div>
       </div>
@@ -57,7 +57,7 @@
     </ClientOnly>
 
     <!-- Region quick-picks -->
-    <section class="block">
+    <section class="block band">
       <div class="section-head">
         <h2>Chọn theo khu vực</h2>
       </div>
@@ -81,13 +81,24 @@
       <p>Có thể kết hợp nhiều lịch trình hoặc tuỳ chỉnh — bỏ bớt điểm dừng, thêm điểm mới, thay đổi thứ tự. Tất cả lịch trình đều miễn phí và có thể lưu vào tài khoản để xem lại khi đi.</p>
     </section>
 
+    <!-- Interstitial -->
+    <CatalogInterstitial
+      v-if="itineraries?.length"
+      fact="Mỗi lịch trình được thiết kế dựa trên kinh nghiệm thực tế — lưu vào tài khoản để xem lại khi đi."
+      icon="💡"
+      :links="[
+        { to: '/tao-lich-trinh', label: 'Tự tạo lịch trình' },
+        { to: '/du-lich', label: 'Khám phá du lịch' },
+      ]"
+    />
+
     <!-- Divider -->
     <div class="catalog-divider">
       <span class="catalog-divider-text">Lịch trình gợi ý</span>
     </div>
 
     <!-- Suggested itineraries -->
-    <section class="block reveal">
+    <section ref="gridSection" class="block reveal">
       <div class="controls">
         <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
           <button type="button" :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả</button>
@@ -102,10 +113,11 @@
 
       <p class="result-meta" aria-live="polite">{{ filtered.length }} lịch trình</p>
 
-      <div v-if="fetchError" class="fetch-error" role="alert">
-        <p>Không tải được lịch trình. Có thể mạng đang chập chờn.</p>
-        <button type="button" class="btn btn-outline" @click="refreshNuxtData('itineraries')">Thử lại</button>
-      </div>
+      <EmptyState v-if="fetchError" icon="⚠️" title="Không tải được lịch trình" message="Có thể mạng đang chập chờn. Thử lại nhé.">
+        <template #actions>
+          <button type="button" class="btn btn-outline" @click="refreshNuxtData('itineraries')">Thử lại</button>
+        </template>
+      </EmptyState>
       <SkeletonGrid v-else-if="!itineraries" :count="4" />
       <div v-else-if="filtered.length" class="grid itin">
         <ItineraryCard v-for="it in filtered" :key="it.id" :itinerary="it" />
@@ -129,19 +141,19 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon">🌿</span>
+          <span class="cross-icon" aria-hidden="true">🌿</span>
           <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/luu-tru" class="cross-card">
-          <span class="cross-icon">🏡</span>
+          <span class="cross-icon" aria-hidden="true">🏡</span>
           <div><strong>Lưu trú</strong><p>Homestay, nhà vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon">🗺️</span>
+          <span class="cross-icon" aria-hidden="true">🗺️</span>
           <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
         </NuxtLink>
         <NuxtLink to="/san-pham" class="cross-card">
-          <span class="cross-icon">🍊</span>
+          <span class="cross-icon" aria-hidden="true">🍊</span>
           <div><strong>Đặc sản</strong><p>Mua quà miền Tây</p></div>
         </NuxtLink>
       </div>
@@ -169,6 +181,12 @@ async function clearAll() {
 }
 
 const areaFilter = ref('all')
+const gridSection = ref<HTMLElement | null>(null)
+
+watch(areaFilter, () => {
+  nextTick(() => gridSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+})
+
 useFilterUrl({ vung: areaFilter }, { vung: 'all' })
 
 const { data: itineraries, error: fetchError } = await useAsyncData('itineraries', () =>
@@ -283,7 +301,6 @@ useHead(() => ({
 /* Itinerary empty-state wrapper rhythm */
 .itin-empty { margin-top: var(--space-2); }
 
-.fetch-error { color: var(--error); text-align: center; padding: var(--space-5); display: flex; flex-direction: column; align-items: center; gap: var(--space-3); }
 .block-cta { margin-top: var(--space-6); text-align: center; }
 .block-cta .btn:active { transform: scale(.97); transition-duration: .08s; }
 .danger { color: var(--error); }

@@ -193,7 +193,7 @@
               <div v-if="detailPostsLoading" class="ud-loading"><div class="spinner spinner-sm"></div></div>
               <div v-else-if="!detailPosts.length" class="ud-empty">Chưa có bài viết.</div>
               <div v-else class="ud-post-list">
-                <NuxtLink v-for="p in detailPosts" :key="p.id" :to="`/bai-viet/${p.id}`" class="ud-post" target="_blank">
+                <NuxtLink v-for="p in detailPosts" :key="p.id" :to="`/bai-viet/${p.id}`" class="ud-post" target="_blank" rel="noopener" title="Mở trong tab mới">
                   <span class="ud-post-type" v-if="p.post_type">{{ p.post_type }}</span>
                   <span class="ud-post-content">{{ (p.content || '').slice(0, 120) }}</span>
                   <time class="ud-post-time">{{ formatDate(p.created_at) }}</time>
@@ -210,6 +210,7 @@
 <script setup lang="ts">
 import type { Entity } from '~/types'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Người dùng — Admin' })
 
 const { authHeaders, user: currentUser } = useAuth()
 const { show: showToast } = useToast()
@@ -460,7 +461,7 @@ onMounted(() => fetchUsers())
   background: var(--bg); color: var(--ink);
   cursor: pointer; transition: border-color .2s cubic-bezier(.2,1,.4,1), box-shadow .2s;
 }
-.usr-filter-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(33,150,83,.1); }
+.usr-filter-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(var(--primary-rgb),.1); }
 .usr-filter-select:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; box-shadow: none; }
 
 /* ── Sortable column headers ── */
@@ -472,7 +473,7 @@ onMounted(() => fetchUsers())
   cursor: pointer; white-space: nowrap;
   transition: background .2s cubic-bezier(.2,1,.4,1), color .2s;
 }
-.usr-sort-th:hover { background: var(--primary-light, rgba(33,150,83,.08)); color: var(--primary, #219653); }
+.usr-sort-th:hover { background: var(--primary-light, rgba(var(--primary-rgb),.08)); color: var(--primary, #219653); }
 .usr-sort-th:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .usr-sort-th.usr-sort-active { color: var(--primary, #219653); }
 .usr-sort-arrow {
@@ -481,28 +482,28 @@ onMounted(() => fetchUsers())
 }
 
 .dark .usr-filter-select { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
-.dark .usr-sort-th:hover { background: rgba(33,150,83,.16); }
+.dark .usr-sort-th:hover { background: rgba(var(--primary-rgb),.16); }
 
 /* ── User cell with avatar ── */
 .usr-cell { display: flex; align-items: center; gap: var(--space-3); }
 .usr-avatar {
   width: 32px; height: 32px; border-radius: 50%;
-  background: var(--primary-light, rgba(33,150,83,.12)); color: var(--primary, #219653);
+  background: var(--primary-light, rgba(var(--primary-rgb),.12)); color: var(--primary, #219653);
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: .78rem; flex-shrink: 0;
   text-transform: uppercase;
   transition: transform .25s cubic-bezier(.2,1,.4,1), box-shadow .25s;
 }
-.usr-cell:hover .usr-avatar { transform: scale(1.08); box-shadow: 0 2px 8px rgba(33,150,83,.15); }
+.usr-cell:hover .usr-avatar { transform: scale(1.08); box-shadow: 0 2px 8px rgba(var(--primary-rgb),.15); }
 
 /* ── Role select ── */
 .usr-role-select {
-  padding: 4px 8px; min-height: 32px; font-size: .78rem;
+  padding: 4px 8px; min-height: 44px; font-size: .78rem;
   border: .5px solid var(--line); border-radius: 8px;
   background: var(--bg); color: var(--ink);
   cursor: pointer; transition: border-color .2s cubic-bezier(.2,1,.4,1), box-shadow .2s;
 }
-.usr-role-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(33,150,83,.1); }
+.usr-role-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(var(--primary-rgb),.1); }
 .usr-role-select:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; box-shadow: none; }
 
 /* ── Status badges with dot ── */
@@ -515,10 +516,10 @@ onMounted(() => fetchUsers())
 .usr-status-dot {
   width: 6px; height: 6px; border-radius: 50%;
 }
-.usr-active { background: rgba(33,150,83,.08); color: #219653; }
-.usr-active .usr-status-dot { background: #219653; animation: usr-pulse 2s ease-in-out infinite; }
-.usr-banned { background: rgba(217,79,61,.08); color: #D94F3D; }
-.usr-banned .usr-status-dot { background: #D94F3D; }
+.usr-active { background: rgba(var(--primary-rgb),.08); color: var(--secondary); }
+.usr-active .usr-status-dot { background: var(--secondary); animation: usr-pulse 2s ease-in-out infinite; }
+.usr-banned { background: rgba(var(--danger-rgb),.08); color: var(--error); }
+.usr-banned .usr-status-dot { background: var(--error); }
 @keyframes usr-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
 
 /* ── Head actions (refresh + export) ── */
@@ -536,7 +537,7 @@ onMounted(() => fetchUsers())
 }
 .usr-rolecount:hover { border-color: var(--primary, #219653); color: var(--primary, #219653); }
 .usr-rolecount:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
-.usr-rolecount.active { border-color: var(--primary, #219653); color: var(--primary, #219653); background: var(--primary-light, rgba(33,150,83,.08)); }
+.usr-rolecount.active { border-color: var(--primary, #219653); color: var(--primary, #219653); background: var(--primary-light, rgba(var(--primary-rgb),.08)); }
 .usr-rolecount-n {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 18px; padding: 0 5px; height: 18px;
@@ -557,16 +558,16 @@ onMounted(() => fetchUsers())
 .usr-confirm-actions button {
   padding: 6px var(--space-3); font-size: .8rem; border-radius: 8px;
   border: .5px solid var(--line); background: var(--bg); cursor: pointer;
-  font-weight: 500; min-height: 36px;
+  font-weight: 500; min-height: 44px;
   transition: background .25s, color .25s, border-color .25s, transform .35s cubic-bezier(.2,1,.4,1), box-shadow .25s;
 }
 .usr-confirm-actions button:active { transform: scale(.95); transition-duration: .08s; }
 .usr-confirm-actions button:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .usr-confirm-actions button:disabled { opacity: .5; cursor: default; }
 .usr-confirm-actions .btn-danger { color: var(--error, #D94F3D); border-color: var(--error, #D94F3D); }
-.usr-confirm-actions .btn-danger:hover { background: var(--error, #D94F3D); color: #fff; box-shadow: 0 2px 8px rgba(217,79,61,.2); }
+.usr-confirm-actions .btn-danger:hover { background: var(--error, #D94F3D); color: #fff; box-shadow: 0 2px 8px rgba(var(--danger-rgb),.2); }
 .usr-confirm-actions .btn-success { color: var(--primary, #219653); border-color: var(--primary, #219653); }
-.usr-confirm-actions .btn-success:hover { background: var(--primary, #219653); color: #fff; box-shadow: 0 2px 8px rgba(33,150,83,.2); }
+.usr-confirm-actions .btn-success:hover { background: var(--primary, #219653); color: #fff; box-shadow: 0 2px 8px rgba(var(--primary-rgb),.2); }
 .usr-confirm-cancel:hover { background: var(--bg-alt); }
 
 /* ── Loading skeleton rows ── */
@@ -587,20 +588,20 @@ onMounted(() => fetchUsers())
 }
 
 /* ── Dark ── */
-.dark .usr-avatar { background: rgba(33,150,83,.2); }
-.dark .usr-cell:hover .usr-avatar { box-shadow: 0 2px 8px rgba(33,150,83,.25); }
+.dark .usr-avatar { background: rgba(var(--primary-rgb),.2); }
+.dark .usr-cell:hover .usr-avatar { box-shadow: 0 2px 8px rgba(var(--primary-rgb),.25); }
 .dark .usr-role-select { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
-.dark .usr-active { background: rgba(33,150,83,.12); }
-.dark .usr-banned { background: rgba(217,79,61,.12); }
+.dark .usr-active { background: rgba(var(--primary-rgb),.12); }
+.dark .usr-banned { background: rgba(var(--danger-rgb),.12); }
 .dark .usr-rolecount { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
 .dark .usr-rolecount-n { background: rgba(255,255,255,.12); color: var(--ink); }
-.dark .usr-rolecount.active { background: rgba(33,150,83,.18); }
+.dark .usr-rolecount.active { background: rgba(var(--primary-rgb),.18); }
 .dark .usr-skeleton-line { background: linear-gradient(90deg, rgba(255,255,255,.06) 25%, rgba(255,255,255,.12) 50%, rgba(255,255,255,.06) 75%); background-size: 200% 100%; }
 .dark .usr-confirm-actions button { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
 .dark .usr-confirm-cancel:hover { background: rgba(255,255,255,.06); }
 
 /* ── User detail drawer ── */
-.ud-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.45); display: flex; justify-content: flex-end; }
+.ud-overlay { position: fixed; inset: 0; z-index: var(--z-modal-high); background: rgba(0,0,0,.45); display: flex; justify-content: flex-end; }
 .ud-drawer { width: 100%; max-width: 440px; background: var(--card); height: 100%; display: flex; flex-direction: column; box-shadow: -4px 0 24px rgba(0,0,0,.15); animation: udSlideIn .25s var(--ease-out, cubic-bezier(.2,1,.4,1)); overflow: hidden; }
 @keyframes udSlideIn { from { transform: translateX(100%); } }
 .ud-head { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4); border-bottom: .5px solid var(--line); }

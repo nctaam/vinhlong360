@@ -11,7 +11,7 @@
         @load="($event.target as HTMLElement)?.classList.add('loaded')"
         @error="imgErr = true"
       />
-      <span class="cover-tag cat-itinerary">🗺️ Lịch trình</span>
+      <span class="cover-tag cat-itinerary" aria-hidden="true">🗺️ Lịch trình</span>
     </div>
     <div
       v-else
@@ -19,7 +19,7 @@
       :style="{ backgroundImage: placeholderBg }"
     >
       <span class="cover-svg-icon" v-html="placeholderSvg" />
-      <span class="cover-tag cat-itinerary">🗺️ Lịch trình</span>
+      <span class="cover-tag cat-itinerary" aria-hidden="true">🗺️ Lịch trình</span>
     </div>
     <div class="card-b">
       <span class="card-type">{{ areaEmoji }} {{ areaName }}</span>

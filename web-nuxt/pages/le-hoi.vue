@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page events-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lễ hội' }]" />
 
@@ -13,15 +13,18 @@
       </div>
       <div v-if="allEvents.length" class="catalog-stats">
         <div class="stat-item">
-          <span class="stat-num">{{ allEvents.length }}</span>
+          <CountUp :value="allEvents.length" class="stat-num" />
           <span class="stat-label">lễ hội</span>
         </div>
         <div v-for="a in areaCounts" :key="a.key" class="stat-item">
-          <span class="stat-num">{{ a.count }}</span>
+          <CountUp :value="a.count" class="stat-num" />
           <span class="stat-label">{{ a.name }}</span>
         </div>
       </div>
     </section>
+
+    <!-- Spotlight nổi bật -->
+    <CatalogSpotlight :items="allEvents" />
 
     <!-- Upcoming / Featured -->
     <section v-if="upcoming.length" class="block">
@@ -56,7 +59,7 @@
     </section>
 
     <!-- Region quick-picks -->
-    <section class="block reveal">
+    <section class="block band reveal">
       <div class="section-head">
         <h2>Chọn theo khu vực</h2>
       </div>
@@ -73,6 +76,14 @@
         </button>
       </div>
     </section>
+
+    <!-- Interstitial -->
+    <CatalogInterstitial
+      fact="Vùng đất ba tỉnh là nơi giao thoa văn hoá Kinh – Khmer – Hoa, tạo nên hệ thống lễ hội đa dạng hiếm có trong cả nước."
+      icon="🎋"
+      variant="warm"
+      :links="[{ to: '/du-lich', label: 'Trải nghiệm du lịch' }, { to: '/ban-do', label: 'Xem trên bản đồ' }]"
+    />
 
     <!-- Editorial -->
     <section v-once class="page-article reveal">
@@ -93,21 +104,24 @@
     </div>
 
     <!-- Controls -->
-    <div class="controls">
+    <div ref="controlsSection" class="controls">
       <div class="search-row">
         <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm lễ hội…" aria-label="Tìm lễ hội" />
       </div>
-      <div class="chip-row" role="group" aria-label="Lọc theo trạng thái">
-        <button type="button" :class="['chip', { active: statusFilter === 'all' }]" :aria-pressed="statusFilter === 'all'" @click="statusFilter = 'all'">Tất cả</button>
-        <button type="button" :class="['chip', { active: statusFilter === 'now' }]" :aria-pressed="statusFilter === 'now'" @click="statusFilter = statusFilter === 'now' ? 'all' : 'now'">🔴 Đang diễn ra</button>
-        <button type="button" :class="['chip', { active: statusFilter === 'soon' }]" :aria-pressed="statusFilter === 'soon'" @click="statusFilter = statusFilter === 'soon' ? 'all' : 'soon'">🟡 Sắp khai mạc</button>
-      </div>
-      <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
-        <button type="button" :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả vùng</button>
-        <button type="button" v-for="(meta, slug) in AREA_META" :key="slug" :class="['chip', { active: areaFilter === slug }]" :aria-pressed="areaFilter === slug" @click="areaFilter = slug">
-          {{ meta.emoji }} {{ meta.name }}
-        </button>
-      </div>
+      <FilterChips
+        :filters="statusFilterOptions"
+        :model-value="[statusFilter]"
+        single-select
+        aria-label="Lọc theo trạng thái"
+        @update:model-value="v => statusFilter = v.length ? v[0] : 'all'"
+      />
+      <FilterChips
+        :filters="areaFilterOptions"
+        :model-value="[areaFilter]"
+        single-select
+        aria-label="Lọc theo khu vực"
+        @update:model-value="v => areaFilter = v.length ? v[0] : 'all'"
+      />
     </div>
 
     <div class="view-toggle" role="group" aria-label="Chế độ hiển thị">
@@ -201,19 +215,19 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/su-kien" class="cross-card">
-          <span class="cross-icon">🎪</span>
+          <span class="cross-icon" aria-hidden="true">🎪</span>
           <div><strong>Sự kiện</strong><p>Festival, hội chợ</p></div>
         </NuxtLink>
         <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon">🌿</span>
+          <span class="cross-icon" aria-hidden="true">🌿</span>
           <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/lich-trinh" class="cross-card">
-          <span class="cross-icon">🗓️</span>
+          <span class="cross-icon" aria-hidden="true">🗓️</span>
           <div><strong>Lịch trình</strong><p>Tuyến đi sẵn</p></div>
         </NuxtLink>
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon">🗺️</span>
+          <span class="cross-icon" aria-hidden="true">🗺️</span>
           <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
         </NuxtLink>
       </div>
@@ -234,8 +248,25 @@ const q = ref('')
 const areaFilter = ref('all')
 const statusFilter = ref('all')
 const view = ref('list')
+const controlsSection = ref<HTMLElement | null>(null)
+
+function scrollToControls() {
+  nextTick(() => controlsSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+}
+
+watch([areaFilter, statusFilter], scrollToControls)
 
 useFilterUrl({ vung: areaFilter, trang_thai: statusFilter }, { vung: 'all', trang_thai: 'all' })
+
+const statusFilterOptions = [
+  { key: 'all', label: 'Tất cả' },
+  { key: 'now', label: 'Đang diễn ra', icon: '🔴' },
+  { key: 'soon', label: 'Sắp khai mạc', icon: '🟡' },
+]
+const areaFilterOptions = computed(() => [
+  { key: 'all', label: 'Tất cả vùng' },
+  ...Object.entries(AREA_META).map(([slug, m]) => ({ key: slug, label: m.name, icon: m.emoji })),
+])
 
 const { data, error: fetchError } = await useAsyncData('festivals', () =>
   apiFetch<{ events: Entity[] }>('/api/events?limit=200&include_past=true')
@@ -563,6 +594,8 @@ useHead({
   border-radius: var(--radius-md);
   border-left: 3px solid rgba(var(--accent-rgb), .35);
 }
+
+.dark .lehoi-offseason { background: rgba(var(--accent-rgb), .12); border-left-color: rgba(var(--accent-rgb), .5); }
 
 /* Thumbnail placeholder colour if image fails / while loading */
 .event-thumb { background: var(--bg-alt); }

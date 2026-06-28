@@ -30,6 +30,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Danh mục — Admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const fields = ref<any[]>([])
@@ -54,7 +55,7 @@ onMounted(reload)
 
 .cs-help {
   max-width: 640px; margin-bottom: var(--space-5); padding: var(--space-4);
-  background: rgba(33,150,83,.04); border: .5px solid var(--line); border-radius: 12px;
+  background: rgba(var(--primary-rgb),.04); border: .5px solid var(--line); border-radius: 12px;
   font-size: .82rem; color: var(--muted); line-height: 1.5;
 }
 .cs-help p { margin: 0 0 var(--space-2); }
@@ -79,6 +80,6 @@ onMounted(reload)
   .cs-skel-label, .cs-skel-input { animation: none; }
   .cs-fade-enter-active { transition: none; }
 }
-.dark .cs-help { background: rgba(33,150,83,.08); }
+.dark .cs-help { background: rgba(var(--primary-rgb),.08); }
 .dark .cs-help pre { background: var(--card, #2c2c2e); }
 </style>

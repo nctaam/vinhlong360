@@ -25,15 +25,15 @@
     <!-- Stats row -->
     <div class="stat-grid">
       <div class="stat-card" :class="{ 'status-warn': (modStats.pending || 0) > 0 }">
-        <div class="mod-icon" style="background: rgba(255,159,10,.1); color: #FF9F0A;">&#9203;</div>
+        <div class="mod-icon si-orange">&#9203;</div>
         <div><div class="stat-value">{{ modStats.pending || 0 }}</div><div class="stat-label">Chờ duyệt</div></div>
       </div>
       <div class="stat-card" :class="{ 'status-error': (modStats.flagged || 0) > 0 }">
-        <div class="mod-icon" style="background: rgba(217,79,61,.1); color: #D94F3D;">&#9873;</div>
+        <div class="mod-icon si-danger">&#9873;</div>
         <div><div class="stat-value">{{ modStats.flagged || 0 }}</div><div class="stat-label">Gắn cờ</div></div>
       </div>
       <div class="stat-card status-ok">
-        <div class="mod-icon" style="background: rgba(33,150,83,.1); color: #219653;">&#9989;</div>
+        <div class="mod-icon si-green">&#9989;</div>
         <div><div class="stat-value">{{ modStats.approved || 0 }}</div><div class="stat-label">Đã duyệt</div></div>
       </div>
       <div class="stat-card">
@@ -121,7 +121,7 @@
                 </div>
                 <input
                   v-model="rejectReason" type="text" class="mod-reason-input"
-                  placeholder="Hoặc nhập lý do khác…"
+                  placeholder="Hoặc nhập lý do khác…" autocomplete="off"
                   @keyup.enter="confirmReject(p.id)" @keyup.esc="cancelReject"
                 />
                 <button type="button" class="btn-danger" :disabled="acting === p.id" @click="confirmReject(p.id)">
@@ -150,9 +150,7 @@
     </div>
 
     <!-- Load more -->
-    <button type="button" v-if="hasMore" class="btn btn-outline mod-load-more" :disabled="loading" @click="loadMore">
-      Xem thêm
-    </button>
+    <LoadMoreButton v-if="hasMore" :loading="loading" @load="loadMore" />
 
     <!-- Content preview modal -->
     <Transition name="modal-fade">
@@ -170,7 +168,7 @@
         </div>
         <div class="mod-preview-body">{{ previewPost.content }}</div>
         <div v-if="previewPost.images?.length" class="mod-preview-images">
-          <img v-for="(img, i) in previewPost.images" :key="i" :src="img" :alt="`Ảnh ${i+1}`" loading="lazy" />
+          <img v-for="(img, i) in previewPost.images" :key="i" :src="img" :alt="`Ảnh ${i+1}`" loading="lazy" width="200" height="150" />
         </div>
         <!-- Moderation notes -->
         <div class="mod-notes-section">
@@ -183,7 +181,7 @@
           </div>
           <div v-else class="mod-notes-empty">Chưa có ghi chú</div>
           <div class="mod-note-add">
-            <input v-model="newNote" type="text" class="mod-note-input" placeholder="Thêm ghi chú…" @keyup.enter="addNote(previewPost.id)" />
+            <input v-model="newNote" type="text" class="mod-note-input" placeholder="Thêm ghi chú…" autocomplete="off" @keyup.enter="addNote(previewPost.id)" />
             <button type="button" class="btn btn-sm btn-outline" :disabled="!newNote.trim() || noteSaving" @click="addNote(previewPost.id)">Thêm</button>
           </div>
         </div>
@@ -202,6 +200,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Kiểm duyệt — Admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
@@ -447,25 +446,25 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   font-family: var(--font-mono, monospace); font-weight: 600;
 }
 .mod-session-stats { margin-left: auto; font-size: .72rem; }
-.mod-session-ok { color: #219653; }
-.mod-session-rej { color: #D94F3D; }
-.mod-focused td { background: rgba(33,150,83,.06) !important; }
+.mod-session-ok { color: var(--secondary-fg); }
+.mod-session-rej { color: var(--error); }
+.mod-focused td { background: rgba(var(--primary-rgb),.06) !important; }
 .mod-focused td:first-child { box-shadow: inset 3px 0 0 var(--primary, #219653); }
 
 /* ── Status tabs ── */
 .mod-tabs { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-5); }
 .mod-tab {
-  display: inline-flex; align-items: center; gap: 6px; min-height: 38px;
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px;
   padding: 7px 14px; border-radius: 100px; border: .5px solid var(--line);
   background: var(--bg); color: var(--muted); font-size: .82rem; font-weight: 500; cursor: pointer;
   transition: background .2s, color .2s, border-color .2s, transform .15s cubic-bezier(.2,1,.4,1);
 }
 .mod-tab:hover { border-color: var(--primary, #219653); color: var(--ink); }
 .mod-tab:active { transform: scale(.97); }
-.mod-tab.active { background: var(--primary, #219653); color: #fff; border-color: var(--primary, #219653); }
+.mod-tab.active { background: var(--primary, #219653); color: var(--text-on-dark); border-color: var(--primary, #219653); }
 .mod-tab:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .mod-tab-count { font-size: .72rem; font-weight: 700; padding: 0 6px; border-radius: 100px; background: var(--line); color: var(--muted); }
-.mod-tab.active .mod-tab-count { background: rgba(255,255,255,.2); color: #fff; }
+.mod-tab.active .mod-tab-count { background: rgba(255,255,255,.2); color: var(--text-on-dark); }
 
 /* ── Stat card icon ── */
 .stat-card { display: flex; align-items: center; gap: var(--space-4); }
@@ -479,7 +478,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
 /* ── Author cell ── */
 .mod-author { display: flex; align-items: center; gap: var(--space-3); }
-.mod-author-avatar { width: 32px; height: 32px; border-radius: 50%; background: rgba(52,120,246,.1); color: #3478F6; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .76rem; flex-shrink: 0; text-transform: uppercase; }
+.mod-author-avatar { width: 32px; height: 32px; border-radius: 50%; background: rgba(var(--blue-rgb),.1); color: var(--info); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .76rem; flex-shrink: 0; text-transform: uppercase; }
 .mod-author > span { font-weight: 600; color: var(--ink); }
 
 /* ── Content cell ── */
@@ -496,15 +495,15 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 /* ── Type + status badges ── */
 .mod-type-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .72rem; font-weight: 600; background: rgba(142,142,147,.08); color: var(--muted); }
 .mod-badge { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: .72rem; font-weight: 700; white-space: nowrap; }
-.mb-pending { background: rgba(255,159,10,.12); color: #C98A1A; }
-.mb-flagged { background: rgba(217,79,61,.13); color: #D94F3D; }
-.mb-approved { background: rgba(33,150,83,.12); color: #219653; }
+.mb-pending { background: rgba(var(--warning-rgb),.12); color: #C98A1A; }
+.mb-flagged { background: rgba(var(--danger-rgb),.13); color: var(--error); }
+.mb-approved { background: rgba(var(--primary-rgb),.12); color: var(--secondary-fg); }
 .mb-rejected { background: rgba(142,142,147,.15); color: var(--muted); }
 
 /* ── Reject reason inline ── */
-.mod-reject-row td { background: rgba(217,79,61,.04); }
-.mod-reject-container { background: var(--bg); border: 1px solid rgba(217,79,61,.2); border-radius: 10px; padding: var(--space-3); margin: var(--space-2) 0; }
-.mod-reject-label { font-size: .8rem; font-weight: 600; color: #D94F3D; white-space: nowrap; flex-shrink: 0; }
+.mod-reject-row td { background: rgba(var(--danger-rgb),.04); }
+.mod-reject-container { background: var(--bg); border: 1px solid rgba(var(--danger-rgb),.2); border-radius: 10px; padding: var(--space-3); margin: var(--space-2) 0; }
+.mod-reject-label { font-size: .8rem; font-weight: 600; color: var(--error); white-space: nowrap; flex-shrink: 0; }
 .mod-reject { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
 
 /* Inline action spinner (reuses global admin-spin keyframe) */
@@ -515,21 +514,20 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   background: var(--bg); font-size: .76rem; font-weight: 500; color: var(--muted);
   cursor: pointer; transition: all .15s;
 }
-.mod-reason-chip:hover { border-color: #D94F3D; color: #D94F3D; }
-.mod-reason-chip.active { background: rgba(217,79,61,.12); border-color: #D94F3D; color: #D94F3D; font-weight: 600; }
+.mod-reason-chip:hover { border-color: var(--error); color: var(--error); }
+.mod-reason-chip.active { background: rgba(var(--danger-rgb),.12); border-color: var(--error); color: var(--error); font-weight: 600; }
 .mod-reason-input { flex: 1; min-width: 200px; padding: 9px 12px; border: .5px solid var(--line); border-radius: 10px; font-size: .85rem; background: var(--bg); color: var(--ink); min-height: 40px; }
-.mod-reason-input:focus { outline: none; border-color: #D94F3D; box-shadow: 0 0 0 3px rgba(217,79,61,.1); }
+.mod-reason-input:focus { outline: none; border-color: var(--error); box-shadow: 0 0 0 3px rgba(var(--danger-rgb),.1); }
 .btn-ghost-sm { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; padding: 8px 12px; border-radius: 8px; }
 .btn-ghost-sm:hover { background: var(--bg-alt); color: var(--ink); }
 
-.mod-load-more { margin-top: var(--space-4); }
 .mod-empty-action {
   background: none; border: .5px solid var(--line); border-radius: 8px;
   padding: 7px 14px; font-size: .82rem; font-weight: 500; color: var(--primary, #219653);
-  cursor: pointer; min-height: 36px;
+  cursor: pointer; min-height: 44px;
   transition: border-color .25s, background .25s, transform .15s cubic-bezier(.2,1,.4,1);
 }
-.mod-empty-action:hover { border-color: var(--primary, #219653); background: rgba(33,150,83,.04); }
+.mod-empty-action:hover { border-color: var(--primary, #219653); background: rgba(var(--primary-rgb),.04); }
 .mod-empty-action:active { transform: scale(.96); }
 .mod-empty-action:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .mod-empty-action:active { transform: none; } }
@@ -539,9 +537,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   .mod-tab:active { transform: none; }
   .mod-btn-spin { animation: none; }
 }
-.dark .mod-author-avatar { background: rgba(52,120,246,.15); }
+.dark .mod-author-avatar { background: rgba(var(--blue-rgb),.15); }
 .dark .mod-type-badge { background: rgba(255,255,255,.06); }
-.dark .mod-tab.active .mod-tab-count { background: rgba(255,255,255,.2); color: #fff; }
+.dark .mod-tab.active .mod-tab-count { background: rgba(255,255,255,.2); color: var(--text-on-dark); }
 .mod-preview-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); }
 .mod-preview-meta { font-size: .78rem; color: var(--muted); }
 .mod-preview-body { white-space: pre-wrap; line-height: 1.7; margin-bottom: var(--space-4); }
@@ -557,5 +555,5 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-notes-empty { font-size: .78rem; color: var(--muted); font-style: italic; margin-bottom: var(--space-2); }
 .mod-note-add { display: flex; gap: var(--space-2); }
 .mod-note-input { flex: 1; padding: 7px 12px; border: .5px solid var(--line); border-radius: 8px; font-size: .82rem; background: var(--bg); color: var(--ink); }
-.mod-note-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(33,150,83,.1); }
+.mod-note-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.1); }
 </style>

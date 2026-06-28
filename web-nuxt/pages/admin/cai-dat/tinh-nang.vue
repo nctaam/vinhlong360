@@ -46,6 +46,7 @@
 <script setup lang="ts">
 import { FEATURE_FLAGS, featureFlagDefault } from '~/utils/featureFlags'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Tính năng — Admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const { confirmDialog } = useConfirm()
@@ -97,7 +98,7 @@ async function onSave() {
       method: 'PUT', headers: authHeaders(), body: { value: full },
     })
     showToast('Đã lưu tính năng', 'success')
-  } catch (e: any) { showToast(e?.data?.detail || 'Lỗi khi lưu', 'error') }
+  } catch (e: unknown) { showToast(extractErrorMessage(e, 'Lỗi khi lưu'), 'error') }
   saving.value = false
 }
 
@@ -111,7 +112,7 @@ async function onReset() {
     })
     showToast('Đã bật lại tất cả', 'success')
     await reload()
-  } catch (e: any) { showToast(e?.data?.detail || 'Lỗi', 'error') }
+  } catch (e: unknown) { showToast(extractErrorMessage(e, 'Lỗi'), 'error') }
   saving.value = false
 }
 
@@ -160,7 +161,7 @@ onMounted(reload)
   background: var(--primary, #219653); color: #fff; border: none; cursor: pointer; min-height: 44px;
   transition: transform .2s cubic-bezier(.2,1,.4,1), box-shadow .2s;
 }
-.sf-save:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 4px 12px rgba(33,150,83,.2); }
+.sf-save:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 4px 12px rgba(var(--primary-rgb),.2); }
 .sf-save:active:not(:disabled) { transform: scale(.97); }
 .sf-save:disabled { opacity: .45; cursor: not-allowed; }
 .sf-reset {

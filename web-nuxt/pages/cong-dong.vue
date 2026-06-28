@@ -1,7 +1,31 @@
 <template>
   <section class="page threads-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng' }]" />
-    <h1 class="sr-only">{{ pc('hero_title') }}</h1>
+
+    <!-- Social proof hero -->
+    <section class="catalog-hero cat-community" aria-label="Cộng đồng vinhlong360">
+      <div class="catalog-hero-inner">
+        <span class="catalog-hero-icon" aria-hidden="true">💬</span>
+        <div>
+          <h1>{{ pc('hero_title') }}</h1>
+          <p>Chia sẻ trải nghiệm, đánh giá đặc sản và kết nối với cộng đồng yêu miền Tây.</p>
+        </div>
+      </div>
+      <div v-if="communityStats" class="catalog-stats">
+        <div class="stat-item">
+          <CountUp :value="communityStats.posts" class="stat-num" />
+          <span class="stat-label">bài viết</span>
+        </div>
+        <div class="stat-item">
+          <CountUp :value="communityStats.reviews" class="stat-num" />
+          <span class="stat-label">đánh giá</span>
+        </div>
+        <div class="stat-item">
+          <CountUp :value="communityStats.members" class="stat-num" />
+          <span class="stat-label">thành viên</span>
+        </div>
+      </div>
+    </section>
 
     <div class="threads-layout">
       <div class="threads-feed">
@@ -90,7 +114,7 @@
 
             <div v-if="previewImages.length" class="img-preview-row">
               <div v-for="(src, i) in previewImages" :key="i" class="img-preview-item">
-                <img :src="src" :alt="`Ảnh đính kèm ${i + 1}`" width="120" height="120" loading="lazy" />
+                <img :src="src" :alt="`Ảnh đính kèm ${i + 1}`" width="120" height="120" loading="lazy" decoding="async" />
                 <button type="button" class="remove" aria-label="Xóa ảnh" @click="removeImage(i)">&times;</button>
               </div>
             </div>
@@ -136,6 +160,7 @@
             v-model="searchInput"
             class="cs-input"
             type="search"
+            enterkeyhint="search"
             maxlength="100"
             placeholder="Tìm bài viết trong cộng đồng…"
             aria-label="Tìm bài viết trong cộng đồng"
@@ -696,8 +721,8 @@ async function fetchFeed(reset = false) {
       posts.value.push(...newPosts.filter(p => !existing.has(p.id)))
     }
     hasMore.value = newPosts.length === 20
-  } catch (e: any) {
-    if (e?.name === 'AbortError') return
+  } catch (e: unknown) {
+    if (e instanceof DOMException && e.name === 'AbortError') return
     if (reset && !posts.value.length) feedError.value = true
     showToast(reset ? 'Không thể tải bảng tin' : 'Không thể tải thêm', 'error')
   }
@@ -813,10 +838,9 @@ async function submitPost() {
     showToast(wasQuote ? 'Đã đăng trích dẫn 🔁' : 'Đã đăng bài viết', 'success')
     activeTab.value = 'latest'
     await fetchFeed(true)
-  } catch (e: any) {
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
-    const detail = e?.data?.detail
-    showToast(detail || 'Gửi bài thất bại — vui lòng thử lại', 'error')
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    showToast(extractErrorMessage(e, 'Gửi bài thất bại — vui lòng thử lại'), 'error')
   }
   posting.value = false
 }
@@ -852,10 +876,9 @@ async function submitEntityReport() {
     const nextQuery = { ...route.query }
     delete nextQuery.report
     router.replace({ query: nextQuery })
-  } catch (e: any) {
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
-    const detail = e?.data?.detail
-    showToast(detail || 'Không thể gửi báo cáo', 'error')
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    showToast(extractErrorMessage(e, 'Không thể gửi báo cáo'), 'error')
   }
   reportSubmitting.value = false
 }
@@ -884,9 +907,9 @@ async function toggleLike(postId: string) {
   flip()
   try {
     await $fetch(`/api/posts/${postId}/like`, { method: 'POST', headers: authHeaders() })
-  } catch (e: any) {
+  } catch (e: unknown) {
     flip()
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể thích bài viết', 'error')
   } finally { pendingActions.delete(`like:${postId}`) }
 }
@@ -907,9 +930,9 @@ async function toggleBookmark(postId: string) {
       showToast('Đã lưu bài viết', 'success')
       if (!sessionBookmarked.value) sessionBookmarked.value = true
     }
-  } catch (e: any) {
+  } catch (e: unknown) {
     copies.forEach(p => { p.user_bookmarked = !p.user_bookmarked })
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể lưu bài viết', 'error')
   } finally { pendingActions.delete(`bm:${postId}`) }
 }
@@ -923,8 +946,8 @@ async function deletePost(postId: string) {
     bookmarks.value = bookmarks.value.filter(p => p.id !== postId)
     searchResults.value = searchResults.value.filter(p => p.id !== postId)
     showToast('Đã xoá bài viết', 'success')
-  } catch (e: any) {
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể xoá bài viết', 'error')
   }
 }
@@ -1250,7 +1273,7 @@ useHead({
 
 /* ── Bookmark momentum cue (bottom-center, clears the right-side FAB) ── */
 .bookmark-momentum {
-  position: fixed; z-index: 50;
+  position: fixed; z-index: var(--z-dropdown);
   bottom: calc(var(--space-6) + env(safe-area-inset-bottom));
   left: 50%; transform: translateX(-50%);
   display: flex; align-items: center; gap: var(--space-2);
@@ -1314,7 +1337,7 @@ useHead({
   .md-scroll { display: flex; gap: var(--space-2); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-block: 2px; }
   .md-scroll::-webkit-scrollbar { display: none; }
   .md-tag { font-size: .8rem; padding: 4px 10px; border-radius: var(--radius-full); background: var(--surface-2); color: var(--accent); white-space: nowrap; text-decoration: none; font-weight: 500; }
-  .md-tag:hover { background: var(--accent); color: #fff; }
+  .md-tag:hover { background: var(--accent); color: var(--text-on-dark, #fff); }
   .md-member { display: flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: var(--radius-full); background: var(--surface-2); text-decoration: none; white-space: nowrap; }
   .md-name { font-size: .78rem; color: var(--ink-800); }
   .dark .md-tag { background: var(--surface-3); }

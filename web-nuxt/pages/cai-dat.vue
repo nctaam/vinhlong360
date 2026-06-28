@@ -31,11 +31,11 @@
       <h2>Hồ sơ cá nhân</h2>
       <form class="settings-form" @submit.prevent="save">
         <div class="sf-avatar-section">
-          <div class="sf-avatar-preview" role="button" tabindex="0" aria-label="Thay đổi ảnh đại diện" @click="($refs.avatarInput as HTMLInputElement)?.click()" @keydown.enter="($refs.avatarInput as HTMLInputElement)?.click()">
-            <img v-if="avatarPreview || user?.avatar_url" :src="avatarPreview || user?.avatar_url!" alt="Avatar" class="sf-avatar-img" />
+          <button type="button" class="sf-avatar-preview" aria-label="Thay đổi ảnh đại diện" @click="($refs.avatarInput as HTMLInputElement)?.click()">
+            <img v-if="avatarPreview || user?.avatar_url" :src="avatarPreview || user?.avatar_url!" alt="Avatar" class="sf-avatar-img" width="96" height="96" decoding="async" />
             <AvatarPlaceholder v-else :initial="user?.display_name?.[0]?.toUpperCase()" />
             <span class="sf-avatar-overlay">&#128247;</span>
-          </div>
+          </button>
           <div class="sf-avatar-info">
             <span class="sf-label">Ảnh đại diện</span>
             <span class="sf-hint">JPEG, PNG hoặc WebP. Tối đa 12MB.</span>
@@ -47,13 +47,13 @@
         </div>
 
         <div class="sf-cover-section">
-          <div class="sf-cover-preview" role="button" tabindex="0" aria-label="Thay đổi ảnh bìa" @click="($refs.coverInput as HTMLInputElement)?.click()" @keydown.enter="($refs.coverInput as HTMLInputElement)?.click()">
-            <img v-if="coverPreview || user?.cover_url" :src="coverPreview || user?.cover_url!" alt="Ảnh bìa" class="sf-cover-img" />
+          <button type="button" class="sf-cover-preview" aria-label="Thay đổi ảnh bìa" @click="($refs.coverInput as HTMLInputElement)?.click()">
+            <img v-if="coverPreview || user?.cover_url" :src="coverPreview || user?.cover_url!" alt="Ảnh bìa" class="sf-cover-img" width="640" height="160" decoding="async" />
             <div v-else class="sf-cover-placeholder">
               <span>Thêm ảnh bìa</span>
             </div>
             <span class="sf-avatar-overlay">&#128247;</span>
-          </div>
+          </button>
           <div class="sf-avatar-info">
             <span class="sf-label">Ảnh bìa</span>
             <span class="sf-hint">Ảnh ngang, tỉ lệ 3:1. Tối đa 12MB.</span>
@@ -70,6 +70,7 @@
             v-model="displayName"
             type="text"
             class="sf-input"
+            enterkeyhint="done"
             maxlength="50"
             required
             :aria-invalid="!!nameError"
@@ -87,6 +88,8 @@
               type="text"
               class="sf-input sf-username-input"
               maxlength="30"
+              minlength="3"
+              pattern="[a-z][a-z0-9._-]*"
               placeholder="ten-cua-ban"
               autocomplete="username"
               @input="onUsernameInput"
@@ -147,7 +150,7 @@
 
       <div class="settings-card card">
         <h2>Phiên đăng nhập</h2>
-        <div v-if="sessionsLoading" class="sf-hint">Đang tải...</div>
+        <div v-if="sessionsLoading" class="sf-loading"><div class="spinner spinner-sm"></div> Đang tải...</div>
         <div v-else-if="sessions.length" class="sessions-list">
           <div v-for="s in sessions" :key="s.id" :class="['session-item', { current: s.is_current }]">
             <div class="session-info">
@@ -163,7 +166,7 @@
 
       <div class="settings-card card">
         <h2>Lịch sử đăng nhập</h2>
-        <div v-if="loginHistoryLoading" class="sf-hint">Đang tải...</div>
+        <div v-if="loginHistoryLoading" class="sf-loading"><div class="spinner spinner-sm"></div> Đang tải...</div>
         <div v-else-if="loginHistory.length" class="sessions-list">
           <div v-for="h in loginHistory" :key="h.id" :class="['session-item', { 'login-fail': !h.success }]">
             <div class="session-info">
@@ -180,8 +183,8 @@
     <!-- Tab: Thông báo -->
     <div v-if="activeTab === 'thong-bao'" id="panel-thong-bao" class="settings-card card" role="tabpanel" aria-labelledby="tab-thong-bao">
       <h2>Tùy chọn thông báo</h2>
-      <p class="sf-hint" style="margin-bottom: 1rem;">Chọn loại thông báo bạn muốn nhận.</p>
-      <div v-if="notifPrefsLoading" class="sf-hint">Đang tải...</div>
+      <p class="sf-hint sf-hint-spaced">Chọn loại thông báo bạn muốn nhận.</p>
+      <div v-if="notifPrefsLoading" class="sf-loading"><div class="spinner spinner-sm"></div> Đang tải...</div>
       <div v-else class="notif-prefs">
         <label v-for="np in NOTIF_TYPES" :key="np.key" class="notif-pref-item">
           <div class="notif-pref-info">
@@ -219,7 +222,7 @@
     <!-- Tab: Quyền riêng tư -->
     <div v-if="activeTab === 'rieng-tu'" id="panel-rieng-tu" class="settings-card card" role="tabpanel" aria-labelledby="tab-rieng-tu">
       <h2>Quyền riêng tư</h2>
-      <div v-if="privacyLoading" class="sf-hint">Đang tải...</div>
+      <div v-if="privacyLoading" class="sf-loading"><div class="spinner spinner-sm"></div> Đang tải...</div>
       <div v-else class="settings-form">
         <div class="sf-field">
           <span class="sf-label">Ai xem được hồ sơ?</span>
@@ -402,10 +405,10 @@ async function onAvatarChange(e: Event) {
       await fetchMe()
       showToast('Đã cập nhật ảnh đại diện', 'success')
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     avatarPreview.value = ''
-    if (err?.response?.status === 401) { handleSessionExpired(); return }
-    showToast(err?.data?.detail || 'Không thể tải ảnh lên', 'error')
+    if (getStatusCode(err) === 401) { handleSessionExpired(); return }
+    showToast(extractErrorMessage(err, 'Không thể tải ảnh lên'), 'error')
   } finally {
     uploadingAvatar.value = false
   }
@@ -452,9 +455,9 @@ async function savePassword() {
     newPw.value = ''
     confirmPw.value = ''
     await fetchMe()
-  } catch (e: any) {
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
-    showToast(e?.data?.detail || 'Không thể đổi mật khẩu', 'error')
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    showToast(extractErrorMessage(e, 'Không thể đổi mật khẩu'), 'error')
   } finally { savingPw.value = false }
 }
 
@@ -484,8 +487,8 @@ async function revokeSession(id: string) {
     await $fetch(`/auth/sessions/${id}`, { method: 'DELETE', headers: authHeaders() })
     sessions.value = sessions.value.filter(s => s.id !== id)
     showToast('Đã thu hồi phiên', 'success')
-  } catch (e: any) {
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể thu hồi phiên', 'error')
   }
 }
@@ -513,10 +516,10 @@ async function onCoverChange(e: Event) {
       await fetchMe()
       showToast('Đã cập nhật ảnh bìa', 'success')
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     coverPreview.value = ''
-    if (err?.response?.status === 401) { handleSessionExpired(); return }
-    showToast(err?.data?.detail || 'Không thể tải ảnh bìa lên', 'error')
+    if (getStatusCode(err) === 401) { handleSessionExpired(); return }
+    showToast(extractErrorMessage(err, 'Không thể tải ảnh bìa lên'), 'error')
   } finally {
     uploadingCover.value = false
   }
@@ -552,9 +555,9 @@ async function setPrivacy(key: string, value: any) {
   try {
     await $fetch('/auth/privacy', { method: 'PUT', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: { [key]: value } })
     showToast('Đã cập nhật quyền riêng tư', 'success')
-  } catch (e: any) {
+  } catch (e: unknown) {
     privacy.value = prev
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể cập nhật', 'error')
   }
 }
@@ -576,8 +579,8 @@ async function unblockUser(id: string, name: string) {
     await $fetch(`/api/notifications/block/${id}`, { method: 'POST', headers: authHeaders() })
     blockedUsers.value = blockedUsers.value.filter(u => u.id !== id)
     showToast(`${name || 'Người dùng'} đã được bỏ chặn`, 'success')
-  } catch (e: any) {
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể bỏ chặn', 'error')
   }
 }
@@ -608,9 +611,9 @@ async function toggleNotifPref(prefKey: string) {
   try {
     await $fetch('/api/notification-preferences', { method: 'PUT', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: { [prefKey]: !prev } })
     showToast('Đã lưu tùy chọn thông báo', 'success')
-  } catch (e: any) {
+  } catch (e: unknown) {
     notifPrefs.value[prefKey] = prev
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể cập nhật tùy chọn', 'error')
   }
 }
@@ -625,9 +628,9 @@ async function deactivate() {
     await fetchMe()
     showToast('Tài khoản đã bị vô hiệu hóa', 'success')
     navigateTo('/')
-  } catch (e: any) {
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
-    showToast(e?.data?.detail || 'Lỗi', 'error')
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    showToast(extractErrorMessage(e, 'Lỗi'), 'error')
   }
 }
 
@@ -639,9 +642,9 @@ async function deleteAccount() {
     await fetchMe()
     showToast('Đã xóa tài khoản', 'success')
     navigateTo('/')
-  } catch (e: any) {
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
-    showToast(e?.data?.detail || 'Lỗi', 'error')
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    showToast(extractErrorMessage(e, 'Lỗi'), 'error')
   }
 }
 
@@ -674,10 +677,10 @@ async function save() {
     savedUsername.value = username.value.trim().toLowerCase()
     usernameStatus.value = ''
     showToast('Đã lưu hồ sơ', 'success')
-  } catch (e: any) {
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
-    if (e?.response?.status === 409) { usernameStatus.value = 'taken'; showToast('Username đã được sử dụng', 'error'); return }
-    showToast(e?.data?.detail || 'Không thể lưu hồ sơ', 'error')
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 409) { usernameStatus.value = 'taken'; showToast('Username đã được sử dụng', 'error'); return }
+    showToast(extractErrorMessage(e, 'Không thể lưu hồ sơ'), 'error')
   } finally {
     saving.value = false
   }
@@ -730,8 +733,9 @@ onUnmounted(() => {
 }
 .settings-tab:hover { color: var(--ink); }
 .settings-tab.active { color: var(--accent, var(--primary, #219653)); border-bottom-color: var(--accent, var(--primary, #219653)); font-weight: 600; }
+.settings-tab.active .settings-tab-icon { transform: scale(1.15); }
 .settings-tab:focus-visible { outline: 2px solid var(--accent, var(--primary)); outline-offset: -2px; border-radius: 4px; }
-.settings-tab-icon { font-size: 1rem; }
+.settings-tab-icon { font-size: 1rem; transition: transform .25s var(--ease-spring-gentle, cubic-bezier(.2,1,.4,1)); }
 .settings-form { display: flex; flex-direction: column; gap: 1.25rem; }
 .sf-field { display: flex; flex-direction: column; gap: .4rem; }
 .sf-label { font-weight: 600; font-size: .95rem; }
@@ -739,12 +743,15 @@ onUnmounted(() => {
 .sf-input {
   width: 100%; padding: .65rem .8rem; border: 1px solid var(--border-input);
   border-radius: var(--radius-md); background: var(--bg); color: var(--ink-900);
-  font: inherit;
+  font: inherit; transition: border-color .25s var(--ease-out), box-shadow .25s var(--ease-out), background .25s var(--ease-out);
 }
-.sf-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.sf-input:hover:not(:focus) { border-color: var(--ink-700); }
+.sf-input:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 33,150,83), .15); background: var(--card); }
 .sf-textarea { resize: vertical; min-height: 90px; }
 .sf-error { color: var(--danger, #c0392b); font-size: .85rem; }
 .sf-success { color: var(--accent, #219653); font-size: .85rem; }
+.sf-loading { display: flex; align-items: center; gap: var(--space-2); color: var(--ink-700); font-size: .85rem; padding: var(--space-4) 0; }
+.sf-hint-spaced { margin-bottom: var(--space-4); }
 .sf-username-row { display: flex; align-items: center; gap: 0; border: 1px solid var(--border-input); border-radius: var(--radius-md); overflow: hidden; }
 .sf-username-prefix { padding: .65rem .6rem; background: var(--bg-warm, #f5f5f5); color: var(--ink-700); font-size: .85rem; white-space: nowrap; border-right: 1px solid var(--border-input); flex-shrink: 0; }
 .sf-username-input { border: none !important; border-radius: 0 !important; flex: 1; min-width: 0; }
@@ -753,18 +760,19 @@ onUnmounted(() => {
 .sf-avatar-preview {
   width: 80px; height: 80px; border-radius: 50%; overflow: hidden; cursor: pointer;
   position: relative; flex-shrink: 0; border: 2px solid var(--border-input);
+  padding: 0; background: none; font: inherit; text-align: left;
 }
 .sf-avatar-preview:hover .sf-avatar-overlay { opacity: 1; }
 .sf-avatar-img { width: 100%; height: 100%; object-fit: cover; }
 .sf-avatar-overlay {
-  position: absolute; inset: 0; background: rgba(0,0,0,.45); color: #fff;
+  position: absolute; inset: 0; background: rgba(0,0,0,.45); color: var(--text-on-dark, #fff);
   display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
   opacity: 0; transition: opacity .2s;
 }
 .sf-avatar-info { display: flex; flex-direction: column; gap: .25rem; }
 .sf-avatar-info .sf-hint { font-size: .8rem; }
 .btn-sm { padding: .3rem .7rem; font-size: .85rem; }
-.settings-card h2 { margin: 0 0 1rem; font-size: 1.2rem; }
+.settings-card h2 { margin: 0 0 1rem; font-size: 1.2rem; padding-bottom: var(--space-3); border-bottom: 1px solid var(--line); }
 .settings-card + .settings-card { margin-top: 1.25rem; }
 .sessions-list { display: flex; flex-direction: column; gap: .5rem; }
 .session-item { display: flex; align-items: center; gap: .75rem; padding: .6rem .8rem; border: 1px solid var(--border-input); border-radius: var(--radius-md); }
@@ -772,7 +780,7 @@ onUnmounted(() => {
 .session-info { flex: 1; display: flex; flex-direction: column; gap: .15rem; }
 .session-ua { font-weight: 600; font-size: .9rem; }
 .session-badge { font-size: .75rem; font-weight: 600; color: var(--accent); background: color-mix(in oklab, var(--accent) 12%, transparent); padding: .15rem .5rem; border-radius: var(--radius-full); }
-.settings-danger { border-color: rgba(192,57,43,.2); }
+.settings-danger { border-color: rgba(192,57,43,.2); border-left: 3px solid var(--error, #c0392b); }
 .danger-actions { display: flex; flex-direction: column; gap: .75rem; }
 .danger-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .danger-item p { margin: 0; }
@@ -785,17 +793,19 @@ onUnmounted(() => {
 .notif-pref-icon { font-size: 1.25rem; flex-shrink: 0; }
 .notif-pref-info strong { display: block; font-size: .9rem; }
 .notif-pref-info .sf-hint { display: block; margin-top: .1rem; }
-.toggle { appearance: none; width: 40px; height: 22px; background: var(--muted); border-radius: 11px; position: relative; cursor: pointer; transition: background .2s; flex-shrink: 0; min-height: 44px; padding: 11px 0; box-sizing: content-box; }
-.toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: transform .2s; }
+.toggle { appearance: none; width: 40px; height: 22px; background: var(--muted); border-radius: 11px; position: relative; cursor: pointer; transition: background .25s var(--ease-out, ease); flex-shrink: 0; min-height: 44px; padding: 11px 0; box-sizing: content-box; }
+.toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: var(--white, #fff); border-radius: 50%; transition: transform .3s var(--ease-spring-gentle, cubic-bezier(.2,1,.4,1)); box-shadow: 0 1px 3px rgba(0,0,0,.15); }
 .toggle:checked { background: var(--accent, var(--primary)); }
 .toggle:checked::after { transform: translateX(18px); }
 .toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.toggle:active::after { width: 22px; }
 
 /* ── Cover photo ── */
 .sf-cover-section { display: flex; align-items: flex-start; gap: 1rem; overflow: hidden; }
 .sf-cover-preview {
   width: 200px; height: 68px; border-radius: var(--radius-md); overflow: hidden; cursor: pointer;
   position: relative; flex-shrink: 0; border: 2px solid var(--border-input);
+  padding: 0; background: none; font: inherit; text-align: left;
 }
 .sf-cover-preview:hover .sf-avatar-overlay { opacity: 1; }
 .sf-cover-img { width: 100%; height: 100%; object-fit: cover; }

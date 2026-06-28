@@ -28,8 +28,8 @@
         <div class="auth-area">
           <ClientOnly>
             <button type="button" class="theme-toggle" :aria-label="colorMode.value === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'" :title="colorMode.value === 'dark' ? 'Giao diện sáng' : 'Giao diện tối'" @click="toggleColorMode">
-              <span v-if="colorMode.value === 'dark'">☀️</span>
-              <span v-else>🌙</span>
+              <span v-if="colorMode.value === 'dark'" aria-hidden="true">☀️</span>
+              <span v-else aria-hidden="true">🌙</span>
             </button>
             <template #fallback>
               <button type="button" class="theme-toggle" aria-label="Đổi giao diện sáng/tối">🌙</button>
@@ -54,20 +54,24 @@
       </div>
     </Transition>
 
+    <noscript>
+      <div class="noscript-banner">Trang web này cần JavaScript để hoạt động. Vui lòng bật JavaScript trong trình duyệt.</div>
+    </noscript>
+
     <main id="main-content" role="main" tabindex="-1">
       <slot />
     </main>
 
-    <AuthModal :visible="showAuth" @close="showAuth = false" />
+    <LazyAuthModal :visible="showAuth" @close="showAuth = false" />
     <ConfirmDialog />
     <ClientOnly>
       <ScrollToTop />
     </ClientOnly>
-    <ChatWidget />
+    <LazyChatWidget />
     <ClientOnly>
-      <OnboardingSheet />
-      <JourneyBar />
-      <ReportModal />
+      <LazyOnboardingSheet />
+      <LazyJourneyBar />
+      <LazyReportModal />
       <ToastContainer />
     </ClientOnly>
 
@@ -118,13 +122,15 @@ function toggleColorMode() {
   colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
 }
 const { open: showAuth } = useAuthModal()
+useSeasonTheme()
 const mobileNav = ref(false)
 const bannerEnabled = computed(() => ss('announcements.enabled', true))
 const showBeta = ref(false)
+const LS_BETA = 'vl360_beta_dismissed'
 onMounted(() => {
-  if (bannerEnabled.value && localStorage.getItem('vl360_beta_dismissed') !== '1') showBeta.value = true
+  if (bannerEnabled.value && localStorage.getItem(LS_BETA) !== '1') showBeta.value = true
 })
-function dismissBeta() { showBeta.value = false; localStorage.setItem('vl360_beta_dismissed', '1') }
+function dismissBeta() { showBeta.value = false; localStorage.setItem(LS_BETA, '1') }
 
 const DEFAULT_NAV_GROUPS: Array<{ label: string; to?: string; children?: { to: string; label: string }[] }> = [
   { label: 'Khám phá', children: [

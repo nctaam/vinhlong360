@@ -52,8 +52,8 @@
       <SkeletonGrid :count="3" />
     </section>
 
-    <!-- 1b. Khám phá nhanh — compact category grid -->
-    <section v-if="hasHomeContent" class="block block-compact reveal">
+    <!-- 1b. Khám phá nhanh — compact category grid (always visible for navigation) -->
+    <section v-if="!homePending" class="block block-compact reveal">
       <nav class="cat-grid" aria-label="Khám phá theo chủ đề">
         <NuxtLink v-for="cat in categoryLinks" :key="cat.to" :to="cat.to" class="cat-tile" :class="`cat-tile-${cat.accent}`">
           <span class="cat-emoji" aria-hidden="true">{{ cat.emoji }}</span>
@@ -292,7 +292,7 @@
         </div>
       </section>
       <NuxtErrorBoundary>
-        <AIRecommendations title="Có thể bạn quan tâm" :limit="4" />
+        <LazyAIRecommendations title="Có thể bạn quan tâm" :limit="4" />
       </NuxtErrorBoundary>
     </ClientOnly>
 
@@ -444,7 +444,7 @@ const statsItems = computed(() => {
   return items
 })
 
-const hasHomeContent = computed(() => !!(upcomingEvents.value.length || seasonal.value.length || itineraries.value.length || spotlight.value || topDishes.value.length))
+const hasHomeContent = computed(() => !!(upcomingEvents.value.length || seasonal.value.length || itineraries.value.length || spotlight.value || topDishes.value.length || trending.value.length || communityPosts.value.length))
 const homeFailed = computed(() => !homePending.value && (!!homeError.value || (!!homeData.value && !hasHomeContent.value)))
 const homeLoadingSkeleton = computed(() => !hasHomeContent.value && !homeFailed.value)
 onMounted(() => { if (homeError.value || !hasHomeContent.value) refreshHome() })
@@ -488,7 +488,7 @@ useSeoMeta({
   title: ss('seo.default_title', 'vinhlong360 — Du lịch & Sản phẩm địa phương'),
   description: ss('seo.default_description', 'Cổng du lịch và sản phẩm địa phương Vĩnh Long: trải nghiệm miệt vườn, đặc sản theo mùa, OCOP, làng nghề và lịch trình gợi ý.'),
   ogTitle: ss('seo.default_title', 'vinhlong360 — Du lịch & Sản phẩm địa phương'),
-  ogDescription: ss('branding.tagline', 'Khám phá Vĩnh Long theo cách của người bản địa.'),
+  ogDescription: ss('seo.default_description', 'Cổng du lịch và sản phẩm địa phương Vĩnh Long: trải nghiệm miệt vườn, đặc sản theo mùa, OCOP, làng nghề và lịch trình gợi ý.'),
   ogImage: ss('branding.og_image', 'https://vinhlong360.vn/img/og-default.jpg'),
 })
 
@@ -831,9 +831,9 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 }
 .home .block { padding-top: var(--space-16); padding-bottom: var(--space-8); content-visibility: auto; contain-intrinsic-size: auto 480px; }
 .home .block-compact { padding-top: var(--space-8); padding-bottom: var(--space-8); }
-.home .block.band { background: var(--bg-warm); border-radius: var(--radius-xl); padding-inline: var(--space-6); }
+.home .block.band { background: var(--bg-warm); background-image: var(--season-hero-gradient); border-radius: var(--radius-xl); padding-inline: var(--space-6); }
 .home .block.band + .block::before, .home .block + .block.band::before { display: none; }
-.dark .home .block.band { background: var(--bg-alt); }
+.dark .home .block.band { background-color: var(--bg-alt); }
 .block-cta { text-align: center; margin-top: var(--space-4); }
 
 /* ═══════════════════════════════════════════════════
@@ -869,7 +869,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   display: flex; align-items: center; gap: var(--space-5);
   padding: var(--space-6); border-radius: var(--radius-lg);
   background: linear-gradient(135deg, rgba(var(--primary-rgb), .96) 0%, rgba(var(--accent-rgb), .88) 100%);
-  color: #fff; text-decoration: none; box-shadow: var(--shadow-md);
+  color: var(--text-on-dark, #fff); text-decoration: none; box-shadow: var(--shadow-md);
   transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo);
   position: relative; overflow: hidden; isolation: isolate;
 }
@@ -887,7 +887,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 }
 .event-hero:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
 .event-hero:active { transform: scale(.99); transition-duration: .1s; }
-.event-hero:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.event-hero:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 3px; }
 .eh-date { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 88px; padding: var(--space-4); background: rgba(255,255,255,.2); border-radius: var(--radius-md); flex-shrink: 0; }
 .eh-day { font-size: var(--text-4xl); font-weight: var(--weight-extrabold); line-height: 1; font-variant-numeric: tabular-nums; }
 .eh-month { font-size: var(--text-sm); font-weight: var(--weight-semibold); opacity: .92; }
@@ -913,7 +913,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--amber-700);
   background: rgba(154, 109, 30, .08); padding: var(--space-1) var(--space-2); border-radius: var(--radius-full);
 }
-.ec-today { color: #b93a2a; }
+.ec-today { color: var(--error); }
 .ec-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--error); animation: pulse-dot 1.5s ease-in-out infinite; }
 @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(.7); } }
 .happening-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--primary-fg); margin: var(--space-4) 0 var(--space-2); }
@@ -961,7 +961,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .spot-region {
   position: absolute; top: var(--space-4); left: var(--space-4);
   padding: var(--space-1) var(--space-3); background: rgba(0,0,0,.5);
-  color: #fff; border-radius: var(--radius-full);
+  color: var(--text-on-dark, #fff); border-radius: var(--radius-full);
   font-size: var(--text-xs); font-weight: var(--weight-semibold);
   backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
 }
@@ -1002,8 +1002,8 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dish-arrow { color: var(--muted); font-size: var(--text-sm); flex-shrink: 0; transition: color .2s; }
 .dish-item:hover .dish-arrow { color: var(--primary-fg); }
 .dark .dish-rating-badge { background: linear-gradient(135deg, rgba(217,119,6,.2) 0%, rgba(217,119,6,.1) 100%); }
-.dark .dish-star { color: #fbbf24; }
-.dark .dish-score { color: #fcd34d; }
+.dark .dish-star { color: var(--accent, #fbbf24); }
+.dark .dish-score { color: var(--accent-text, #fcd34d); }
 .dark .dish-item { background: var(--card); border-color: var(--line); }
 .dark .dish-item:hover { border-color: rgba(255,255,255,.1); }
 
@@ -1044,7 +1044,8 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .cm-card:active { transform: scale(.98); transition-duration: .1s; }
 .cm-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .cm-img { aspect-ratio: 16 / 9; overflow: hidden; background: var(--bg-alt); }
-.cm-img img { width: 100%; height: 100%; object-fit: cover; }
+.cm-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s var(--ease-out); }
+.cm-card:hover .cm-img img { transform: scale(1.04); }
 .cm-body { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) var(--space-4) var(--space-4); }
 .cm-author { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
 .cm-avatar { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--text-on-dark, #fff); font-size: var(--text-xs); font-weight: var(--weight-semibold); flex-shrink: 0; }
@@ -1130,13 +1131,14 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dark .home .section-head h2::before { background: linear-gradient(180deg, var(--accent) 0%, var(--primary-fg) 100%); }
 .dark .home .block + .block::before { background: linear-gradient(90deg, transparent, var(--line) 22%, var(--line) 78%, transparent); opacity: .6; }
 .dark .event-card { background: var(--card); border-color: var(--line); }
-.dark .ec-countdown { color: #e0b366; }
-.dark .ec-today { color: #f0846f; }
+.dark .ec-countdown { color: var(--accent-text, #e0b366); }
+.dark .ec-today { color: var(--secondary-fg, #f0846f); }
 .dark .event-card:hover { border-color: rgba(255,255,255,.1); }
 .dark .chatbot-cta { background: linear-gradient(135deg, var(--card) 0%, rgba(255,255,255,.03) 100%); border-color: var(--line); }
 .dark .chatbot-cta:hover { border-color: rgba(255,255,255,.1); }
 .dark .hero-pill { background: var(--glass-medium); border-color: var(--border); }
 .dark .hero-stat-num { color: #fff; }
+.dark .spot-visual::before { background: radial-gradient(46% 46% at 34% 30%, rgba(255,255,255,.1) 0%, transparent 68%); }
 
 /* ═══════════════════════════════════════════════════
    REDUCED TRANSPARENCY / MOTION

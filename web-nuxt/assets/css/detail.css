@@ -3,7 +3,7 @@
 /* Breadcrumb + Highlights → assets/css/detail-shared.css (global, dùng cả ngoài trang chi tiết) */
 
 .detail-cover { color: var(--text-on-dark, #fff); background: var(--cat-place); padding: var(--space-8) var(--space-5) var(--space-8); position: relative; overflow: hidden; }
-.detail-cover.has-cover-img { padding: 0; min-height: 380px; display: flex; align-items: flex-end; aspect-ratio: 16/9; max-height: 500px; }
+.detail-cover.has-cover-img { padding: 0; min-height: 380px; display: flex; align-items: flex-end; aspect-ratio: 16/9; max-height: 500px; width: 100%; }
 .detail-cover.cat-experience { background: var(--cat-experience); }
 .detail-cover.cat-product { background: var(--cat-product); }
 .detail-cover.cat-attraction { background: var(--cat-attraction); }
@@ -39,11 +39,11 @@
 .trip-btn:hover { background: var(--bg-alt); }
 .trip-btn.active { background: color-mix(in srgb, var(--primary) 14%, var(--bg)); border-color: var(--primary); color: var(--primary-fg); font-weight: var(--weight-medium); }
 .trip-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
-.trip-count { margin-left: .35rem; font-weight: var(--weight-semibold); }
+.trip-count { margin-inline-start: .35rem; font-weight: var(--weight-semibold); }
 @keyframes dcRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 
 .dc-type-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
-.dc-emoji { font-size: 1.05rem; line-height: 1; }
+.dc-emoji { font-size: var(--icon-sm); line-height: 1; }
 /* Glassy type chip — replaces the floating 3rem emoji + plain caps label */
 .dc-type-chip { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); background: rgba(255,255,255,.22); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); border: .5px solid rgba(255,255,255,.28); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: var(--tracking-caps); font-weight: var(--weight-bold); color: var(--text-on-dark, #fff); text-shadow: var(--shadow-text); min-height: 30px; box-shadow: 0 2px 10px rgba(0,0,0,.18); }
 .dc-ocop-chip { display: inline-flex; align-items: center; gap: var(--space-1); padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); background: linear-gradient(135deg, rgba(232,163,61,.96), rgba(196,135,42,.96)); border: .5px solid rgba(255,255,255,.4); font-size: var(--text-xs); font-weight: var(--weight-extrabold); letter-spacing: .02em; color: #3a2606; min-height: 30px; box-shadow: 0 2px 12px rgba(196,135,42,.4); text-shadow: 0 1px 0 rgba(255,255,255,.25); }
@@ -61,7 +61,7 @@
 .dc-photo-btn:hover { background: rgba(0,0,0,.65); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.3); }
 .dc-photo-btn:active { transform: scale(.95); transition-duration: .08s; }
 .dc-photo-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
-.dc-photo-icon { font-size: 1.1rem; }
+.dc-photo-icon { font-size: var(--icon-md); }
 
 /* Thumbnail strip (multi-image) */
 .dc-thumbs { position: absolute; bottom: var(--space-5); right: 160px; z-index: 3; display: flex; gap: var(--space-1); }
@@ -79,6 +79,7 @@
 .detail-body { max-width: var(--maxw); margin: 0 auto; padding: var(--space-6) var(--space-5) var(--space-8); display: grid; grid-template-columns: 1fr 320px; gap: var(--space-8); align-items: start; }
 .detail-main .lead { font-size: var(--text-lg); margin-top: 0; line-height: var(--leading-relaxed); }
 
+.entity-description, .detail-main > :nth-child(n+4) { content-visibility: auto; contain-intrinsic-size: auto 300px; }
 .entity-description { margin: var(--space-5) 0 var(--space-6); padding-top: var(--space-5); border-top: .5px solid var(--line); }
 .entity-description p { margin: 0 0 var(--space-4); font-size: var(--text-base); line-height: var(--leading-relaxed); color: var(--ink); }
 .entity-description p:last-of-type { margin-bottom: 0; }
@@ -110,8 +111,8 @@
 .rel-more:disabled { opacity: .6; cursor: wait; }
 .rel-more:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
-.detail-aside { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); padding: var(--space-5) var(--space-5) var(--space-4); box-shadow: var(--shadow-sm); position: sticky; top: 78px; max-height: calc(100vh - 78px); overflow-y: auto; overscroll-behavior: contain; transition: box-shadow .35s var(--ease-out-expo); }
-.detail-aside:hover { box-shadow: var(--shadow-md); }
+.detail-aside { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); padding: var(--space-5) var(--space-5) var(--space-4); box-shadow: var(--shadow-sm); position: sticky; top: 78px; max-height: calc(100vh - 78px); max-height: calc(100dvh - 78px); overflow-y: auto; overscroll-behavior: contain; transition: box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
+.detail-aside:hover { box-shadow: var(--shadow-md); border-color: rgba(var(--primary-rgb), .2); }
 .detail-aside h2 { font-size: var(--text-base); font-weight: var(--weight-semibold); margin: 0 0 var(--space-2); }
 
 /* OCOP highlight badge */
@@ -265,7 +266,7 @@
 .rating-display { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--bg-warm); border-radius: var(--radius-md); }
 .rd-stars { display: flex; gap: 1px; }
 .rd-star { color: var(--line); font-size: var(--text-base); }
-.rd-star.filled { color: #f59e0b; }
+.rd-star.filled { color: var(--accent); }
 .rd-score { font-size: var(--text-base); font-weight: var(--weight-bold); color: var(--ink); }
 .rd-count { font-size: var(--text-xs); color: var(--muted); }
 
@@ -353,7 +354,7 @@
   height: 22px;
   border-radius: var(--radius-full);
   background: var(--secondary);
-  color: #fff;
+  color: var(--text-on-dark, #fff);
   flex: 0 0 auto;
   box-shadow: 0 1px 4px rgba(var(--secondary-rgb), .4);
 }
@@ -613,6 +614,12 @@
   .desc-content { max-height: none !important; overflow: visible; }
   .desc-content::after { display: none; }
   .desc-toggle { display: none; }
+  .contact-row, .contact-cta, .claim-cta { display: none; }
+  .next-steps, .quality-report { display: none; }
+  .fact-copy { display: none; }
+  .detail-cover { break-after: avoid; }
+  .facts-grid { break-inside: avoid; }
+  .detail-cover .dc-inner { color: #000; text-shadow: none; }
 }
 
 /* ── Map (trang ban-do) → assets/css/detail-shared.css (global) ── */

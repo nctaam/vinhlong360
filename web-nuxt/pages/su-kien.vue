@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page events-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sự kiện' }]" :json-ld="true" />
 
@@ -13,15 +13,18 @@
       </div>
       <div v-if="allEvents.length" class="catalog-stats">
         <div class="stat-item">
-          <span class="stat-num">{{ allEvents.length }}</span>
+          <CountUp :value="allEvents.length" class="stat-num" />
           <span class="stat-label">sự kiện</span>
         </div>
         <div v-for="a in areaCounts" :key="a.key" class="stat-item">
-          <span class="stat-num">{{ a.count }}</span>
+          <CountUp :value="a.count" class="stat-num" />
           <span class="stat-label">{{ a.name }}</span>
         </div>
       </div>
     </section>
+
+    <!-- Spotlight -->
+    <CatalogSpotlight :items="allEvents" />
 
     <p class="result-link">Tìm lễ hội truyền thống? <NuxtLink to="/le-hoi">Xem trang Lễ hội →</NuxtLink></p>
 
@@ -52,8 +55,20 @@
       </div>
     </section>
 
+    <!-- Interstitial -->
+    <CatalogInterstitial
+      v-if="allEvents.length"
+      fact="Mỗi sự kiện đều có nút tải .ics — thêm vào Google Calendar hoặc Apple Calendar chỉ một chạm."
+      icon="📅"
+      variant="accent"
+      :links="[
+        { to: '/le-hoi', label: 'Lễ hội truyền thống' },
+        { to: '/lich-trinh', label: 'Lịch trình gợi ý' },
+      ]"
+    />
+
     <!-- Region quick-picks -->
-    <section class="block reveal">
+    <section class="block band reveal">
       <div class="section-head">
         <h2>Chọn theo khu vực</h2>
       </div>
@@ -137,7 +152,7 @@
             </div>
           </div>
           <div v-if="e.images?.length" class="event-thumb">
-            <NuxtImg v-if="isRemoteUrl(e.images[0])" :src="e.images[0]" :alt="e.name" loading="lazy" decoding="async" width="160" height="120" />
+            <NuxtImg v-if="isRemoteUrl(e.images[0])" :src="e.images[0]" :alt="e.name" loading="lazy" decoding="async" width="160" height="120" sizes="160px" />
             <img v-else :src="e.images[0]" :alt="e.name" loading="lazy" decoding="async" width="160" height="120" />
           </div>
           <button v-if="e.attributes?.date_start" type="button" class="ical-btn" title="Thêm vào lịch" @click.stop.prevent="downloadIcal(e)">📅</button>
@@ -192,19 +207,19 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/le-hoi" class="cross-card">
-          <span class="cross-icon">🎋</span>
+          <span class="cross-icon" aria-hidden="true">🎋</span>
           <div><strong>Lễ hội</strong><p>Truyền thống văn hóa</p></div>
         </NuxtLink>
         <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon">🌿</span>
+          <span class="cross-icon" aria-hidden="true">🌿</span>
           <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/lich-trinh" class="cross-card">
-          <span class="cross-icon">🗓️</span>
+          <span class="cross-icon" aria-hidden="true">🗓️</span>
           <div><strong>Lịch trình</strong><p>Tuyến đi sẵn</p></div>
         </NuxtLink>
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon">🗺️</span>
+          <span class="cross-icon" aria-hidden="true">🗺️</span>
           <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
         </NuxtLink>
       </div>
@@ -495,10 +510,13 @@ useHead(() => ({
   cursor: pointer;
   font-size: var(--text-sm);
   opacity: 0;
-  transition: opacity .15s;
+  transition: opacity .2s var(--ease-out), box-shadow .2s var(--ease-out);
   z-index: 1;
 }
 .event-row:hover .ical-btn,
 .event-row:focus-within .ical-btn { opacity: 1; }
 .ical-btn:hover { background: var(--surface); box-shadow: var(--shadow-xs); }
+.ical-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; opacity: 1; }
+:global(.dark) .ical-btn { background: var(--card); border-color: var(--line); color: var(--ink); }
+:global(.dark) .ical-btn:hover { background: rgba(255,255,255,.08); }
 </style>

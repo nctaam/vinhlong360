@@ -38,29 +38,29 @@
     <!-- Summary cards -->
     <div class="stat-grid">
       <div class="stat-card">
-        <div class="tk-icon" style="background: rgba(52,120,246,.1); color: #3478F6;">&#128172;</div>
+        <div class="tk-icon si-blue">&#128172;</div>
         <div class="tk-stat-body">
           <div class="stat-value">{{ data.summary?.total_queries ?? '—' }}</div>
           <div class="stat-label">Tổng truy vấn</div>
         </div>
-        <svg v-if="sparkPoints.length > 1" class="tk-spark" viewBox="0 0 80 24" preserveAspectRatio="none" role="img" aria-label="Xu hướng entity 30 ngày"><title>Trend</title><polyline :points="sparkPoints" fill="none" stroke="#3478F6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        <svg v-if="sparkPoints.length > 1" class="tk-spark" viewBox="0 0 80 24" preserveAspectRatio="none" role="img" aria-label="Xu hướng entity 30 ngày"><title>Trend</title><polyline :points="sparkPoints" fill="none" stroke="rgb(52,120,246)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
       </div>
       <div class="stat-card">
-        <div class="tk-icon" style="background: rgba(175,82,222,.1); color: #AF52DE;">&#128161;</div>
+        <div class="tk-icon si-purple">&#128161;</div>
         <div class="tk-stat-body">
           <div class="stat-value">{{ data.summary?.unique_queries ?? '—' }}</div>
           <div class="stat-label">Truy vấn khác nhau</div>
         </div>
       </div>
       <div class="stat-card" :class="{ 'status-warn': (data.gaps || []).length > 5 }">
-        <div class="tk-icon" style="background: rgba(255,159,10,.1); color: #FF9F0A;">&#128371;</div>
+        <div class="tk-icon si-orange">&#128371;</div>
         <div class="tk-stat-body">
           <div class="stat-value">{{ (data.gaps || []).length }}</div>
           <div class="stat-label">Knowledge gaps</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="tk-icon" style="background: rgba(33,150,83,.1); color: #219653;">&#128176;</div>
+        <div class="tk-icon si-green">&#128176;</div>
         <div class="tk-stat-body">
           <div class="stat-value">
             {{ costTotal }}
@@ -143,6 +143,7 @@
 <script setup lang="ts">
 import type { Entity } from '~/types'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Thống kê — Admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
@@ -259,17 +260,17 @@ onMounted(fetchData)
   font-size: .62rem; font-weight: 700; line-height: 1;
   text-transform: uppercase; letter-spacing: .4px;
   padding: 2px 6px; border-radius: 100px;
-  background: rgba(33,150,83,.12); color: #219653;
+  background: rgba(var(--primary-rgb),.12); color: var(--secondary-fg);
   align-self: center;
 }
 
 /* ── Warn-state card: tint + border/icon only, neutral text ── */
 .stat-card.status-warn {
   border-color: var(--warning, #e67e22);
-  background: rgba(230,126,34,.04);
+  background: var(--warning-bg);
 }
 .stat-card.status-warn .tk-icon {
-  background: rgba(255,159,10,.18) !important;
+  background: rgba(var(--warning-rgb),.18) !important;
   color: var(--warning, #e67e22) !important;
 }
 
@@ -292,7 +293,7 @@ onMounted(fetchData)
   padding: var(--space-5); overflow: hidden;
   transition: transform .3s cubic-bezier(.2,1,.4,1), box-shadow .3s, border-color .3s;
 }
-.tk-panel:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,.06); border-color: rgba(52,120,246,.15); }
+.tk-panel:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,.06); border-color: rgba(var(--blue-rgb),.15); }
 
 .tk-panel-head {
   display: flex; align-items: center; justify-content: space-between;
@@ -304,15 +305,15 @@ onMounted(fetchData)
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 24px; height: 24px; padding: 0 8px;
   border-radius: 100px; font-size: .72rem; font-weight: 700;
-  background: rgba(52,120,246,.1); color: #3478F6;
+  background: rgba(var(--blue-rgb),.1); color: var(--info);
   font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
   font-variant-numeric: tabular-nums;
   transition: background .2s, color .2s;
 }
-.tk-count-warn { background: rgba(255,159,10,.1); color: #c67a00; }
+.tk-count-warn { background: rgba(var(--warning-rgb),.1); color: var(--warning); }
 /* Brighten badge when scanning the panel */
-.tk-panel:hover .tk-count-badge { background: rgba(52,120,246,.22); }
-.tk-panel:hover .tk-count-warn { background: rgba(255,159,10,.22); }
+.tk-panel:hover .tk-count-badge { background: rgba(var(--blue-rgb),.22); }
+.tk-panel:hover .tk-count-warn { background: rgba(var(--warning-rgb),.22); }
 
 /* ── List items ── */
 .tk-list { list-style: none; padding: 0; margin: 0; }
@@ -334,9 +335,9 @@ onMounted(fetchData)
   font-variant-numeric: tabular-nums;
 }
 /* Semantic ranking: top-3 solid, 4-10 muted outline, rest plain */
-.tk-list li:nth-child(-n+3) .tk-rank { background: var(--primary, #219653); color: #fff; }
+.tk-list li:nth-child(-n+3) .tk-rank { background: var(--primary, #219653); color: var(--text-on-dark); }
 .tk-list li:nth-child(n+4):nth-child(-n+10) .tk-rank {
-  background: transparent; border: 1px solid rgba(33,150,83,.3); color: #219653;
+  background: transparent; border: 1px solid rgba(var(--primary-rgb),.3); color: var(--secondary-fg);
 }
 .tk-query { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tk-hits {
@@ -351,12 +352,12 @@ onMounted(fetchData)
 .tk-bar-bg {
   position: absolute; left: 0; top: 0; bottom: 0;
   border-radius: 6px; opacity: .07;
-  background: #3478F6;
+  background: var(--info);
   animation: tk-bar-grow .5s cubic-bezier(.4,0,.2,1) both;
   pointer-events: none;
 }
-.tk-bar-warn { background: #FF9F0A; }
-.tk-bar-green { background: #219653; }
+.tk-bar-warn { background: var(--warning); }
+.tk-bar-green { background: var(--secondary-fg); }
 @keyframes tk-bar-grow { from { width: 0 !important; } }
 
 .tk-rank { position: relative; }
@@ -382,17 +383,16 @@ onMounted(fetchData)
   border-color: rgba(255,255,255,.1);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
 }
-.dark .tk-panel:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 4px 16px rgba(0,0,0,.3); border-color: rgba(52,120,246,.3); }
+.dark .tk-panel:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 4px 16px rgba(0,0,0,.3); border-color: rgba(var(--blue-rgb),.3); }
 .dark .tk-list li:hover { background: rgba(255,255,255,.03); }
 .dark .tk-rank { background: rgba(255,255,255,.06); }
-.dark .tk-list li:nth-child(n+4):nth-child(-n+10) .tk-rank { border-color: rgba(33,150,83,.5); color: #4fb87a; }
-.dark .tk-count-badge { background: rgba(52,120,246,.15); }
-.dark .tk-count-warn { background: rgba(255,159,10,.15); color: #ffb340; }
-.dark .tk-panel:hover .tk-count-badge { background: rgba(52,120,246,.3); }
-.dark .tk-panel:hover .tk-count-warn { background: rgba(255,159,10,.28); }
-/* stat-value (primary green) — keep high contrast in dark */
-.dark .stat-card .stat-value { color: #4fb87a; }
-.dark .tk-cost-scope { background: rgba(33,150,83,.22); color: #6fce96; }
+.dark .tk-list li:nth-child(n+4):nth-child(-n+10) .tk-rank { border-color: rgba(var(--primary-rgb),.5); color: var(--primary-light); }
+.dark .tk-count-badge { background: rgba(var(--blue-rgb),.15); }
+.dark .tk-count-warn { background: rgba(var(--warning-rgb),.15); color: var(--accent); }
+.dark .tk-panel:hover .tk-count-badge { background: rgba(var(--blue-rgb),.3); }
+.dark .tk-panel:hover .tk-count-warn { background: rgba(var(--warning-rgb),.28); }
+.dark .stat-card .stat-value { color: var(--primary-light); }
+.dark .tk-cost-scope { background: rgba(var(--primary-rgb),.22); color: var(--primary-light); }
 .dark .stat-card.status-warn { background: rgba(240,160,80,.08); border-color: var(--warning, #f0a050); }
 .dark .tk-sk-card, .dark .tk-sk-panel { background: rgba(255,255,255,.06); }
 
@@ -444,7 +444,7 @@ onMounted(fetchData)
   cursor: pointer; transition: all .2s;
 }
 .tk-chip:hover { border-color: var(--primary, #219653); color: var(--ink); }
-.tk-chip.active { background: var(--primary, #219653); color: #fff; border-color: var(--primary, #219653); }
+.tk-chip.active { background: var(--primary, #219653); color: var(--text-on-dark); border-color: var(--primary, #219653); }
 .tk-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .dark .tk-chip.active { background: var(--primary, #219653); }
 

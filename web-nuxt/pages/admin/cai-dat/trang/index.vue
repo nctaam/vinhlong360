@@ -24,6 +24,7 @@
 <script setup lang="ts">
 import { PAGE_MANIFEST_LIST } from '~/utils/pageManifest'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Quản lý trang — Admin' })
 const pages = PAGE_MANIFEST_LIST
 </script>
 

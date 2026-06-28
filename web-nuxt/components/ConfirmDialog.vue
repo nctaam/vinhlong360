@@ -48,7 +48,7 @@ watch(() => state.value.open, async (open) => {
 
 <style scoped>
 .confirm-overlay {
-  position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center;
+  position: fixed; inset: 0; z-index: var(--z-modal-high); display: flex; align-items: center; justify-content: center;
   background: rgba(var(--ink-rgb, 0,0,0), .45); padding: var(--space-4);
 }
 .confirm-box {
@@ -58,7 +58,7 @@ watch(() => state.value.open, async (open) => {
 .confirm-title { margin: 0 0 .5rem; font-size: 1.15rem; }
 .confirm-message { margin: 0 0 1.25rem; color: var(--ink-700); line-height: 1.5; }
 .confirm-actions { display: flex; gap: .75rem; justify-content: flex-end; }
-.btn-danger { background: var(--danger, #c0392b); color: #fff; }
+.btn-danger { background: var(--danger, #c0392b); color: var(--text-on-dark, #fff); }
 .confirm-fade-enter-active, .confirm-fade-leave-active { transition: opacity .2s var(--ease-out); }
 .confirm-fade-enter-from, .confirm-fade-leave-to { opacity: 0; }
 @media (prefers-reduced-motion: reduce) { .confirm-fade-enter-active, .confirm-fade-leave-active { transition: none; } }

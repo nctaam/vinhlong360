@@ -1,5 +1,6 @@
 <template>
-  <main class="legal-page about-page">
+  <section class="legal-page about-page">
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Chính sách bảo mật' }]" />
     <!-- Hero -->
     <section class="catalog-hero cat-org legal-hero">
       <div class="catalog-hero-inner">
@@ -25,7 +26,7 @@
         <div class="legal-body" v-html="mdLite(s.body)"></div>
       </div>
     </section>
-  </main>
+  </section>
 </template>
 
 <script setup lang="ts">

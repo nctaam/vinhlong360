@@ -138,9 +138,6 @@ withDefaults(defineProps<{ placeholder?: string }>(), {
   placeholder: 'Tìm đặc sản, trải nghiệm…',
 })
 
-const RECENT_KEY = 'vl360_recent_searches'
-const MAX_RECENTS = 5
-
 const router = useRouter()
 const query = ref('')
 const suggestions = ref<Entity[]>([])
@@ -151,11 +148,11 @@ const fetchFailed = ref(false)
 const showLoading = ref(false)
 let loadingTimer: ReturnType<typeof setTimeout> | null = null
 const inputEl = ref<HTMLInputElement | null>(null)
-const recentSearches = ref<string[]>([])
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 let fetchAbort: AbortController | null = null
 
-// Initial-state discovery chips (frictionless category jump when no query).
+const { recentSearches, loadRecents, saveRecent, removeRecent, clearRecents } = useSearchRecents()
+
 const quickCategories = [
   { to: '/du-lich', emoji: '🌿', label: 'Du lịch' },
   { to: '/san-pham', emoji: '🍊', label: 'Đặc sản' },
@@ -174,33 +171,6 @@ const totalItems = computed(() => {
   if (!query.value.trim()) return recentSearches.value.length
   return suggestions.value.length + (query.value.trim() ? 1 : 0)
 })
-
-function loadRecents() {
-  try {
-    const raw = localStorage.getItem(RECENT_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      recentSearches.value = Array.isArray(parsed) ? parsed.filter((s: unknown) => typeof s === 'string') : []
-    }
-  } catch { recentSearches.value = [] }
-}
-
-function saveRecent(term: string) {
-  const clean = term.trim()
-  if (!clean || clean.length < 2) return
-  recentSearches.value = [clean, ...recentSearches.value.filter(r => r !== clean)].slice(0, MAX_RECENTS)
-  try { localStorage.setItem(RECENT_KEY, JSON.stringify(recentSearches.value)) } catch {}
-}
-
-function removeRecent(idx: number) {
-  recentSearches.value.splice(idx, 1)
-  try { localStorage.setItem(RECENT_KEY, JSON.stringify(recentSearches.value)) } catch {}
-}
-
-function clearRecents() {
-  recentSearches.value = []
-  try { localStorage.removeItem(RECENT_KEY) } catch {}
-}
 
 function useRecent(term: string) {
   query.value = term
@@ -323,6 +293,9 @@ function onSubmit() {
   navigateTo(`/tim-kiem?q=${encodeURIComponent(q)}`)
 }
 
+function focusInput() { inputEl.value?.focus() }
+defineExpose({ focusInput })
+
 if (import.meta.client) {
   const onClick = (e: Event) => {
     const el = inputEl.value
@@ -330,9 +303,16 @@ if (import.meta.client) {
       close()
     }
   }
-  onMounted(() => { document.addEventListener('click', onClick); loadRecents() })
+  const onGlobalKey = (e: KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault()
+      focusInput()
+    }
+  }
+  onMounted(() => { document.addEventListener('click', onClick); document.addEventListener('keydown', onGlobalKey); loadRecents() })
   onUnmounted(() => {
     document.removeEventListener('click', onClick)
+    document.removeEventListener('keydown', onGlobalKey)
     if (debounceTimer) clearTimeout(debounceTimer)
     if (loadingTimer) clearTimeout(loadingTimer)
     fetchAbort?.abort()
@@ -375,7 +355,7 @@ if (import.meta.client) {
 .ac-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .ac-chip {
   display: inline-flex; align-items: center; gap: var(--space-1);
-  min-height: 36px; padding: var(--space-2) var(--space-3);
+  min-height: 44px; padding: var(--space-2) var(--space-3);
   background: var(--bg-alt); border: .5px solid var(--line);
   border-radius: var(--radius-full); color: var(--ink);
   font-size: var(--text-sm); font-weight: var(--weight-medium);
@@ -395,7 +375,7 @@ if (import.meta.client) {
 .ac-empty-all {
   margin-top: var(--space-2); font-size: var(--text-sm);
   font-weight: var(--weight-semibold); color: var(--primary-fg);
-  text-decoration: none; min-height: 36px; display: inline-flex; align-items: center;
+  text-decoration: none; min-height: 44px; display: inline-flex; align-items: center;
 }
 .ac-empty-all:hover { text-decoration: underline; }
 .ac-empty-all:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-sm); }

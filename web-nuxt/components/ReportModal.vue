@@ -93,7 +93,7 @@ async function submit() {
 
 <style scoped>
 .rm-overlay {
-  position: fixed; inset: 0; z-index: 9000;
+  position: fixed; inset: 0; z-index: var(--z-lightbox);
   background: rgba(0,0,0,.45); backdrop-filter: blur(2px);
   display: flex; align-items: flex-end; justify-content: center;
   padding: 0;
@@ -134,7 +134,7 @@ async function submit() {
   border-radius: 12px; font: inherit; font-size: .9rem; background: var(--bg); color: var(--ink);
   resize: vertical; min-height: 72px; transition: border-color .2s, box-shadow .2s;
 }
-.rm-textarea:focus { outline: none; border-color: var(--primary, #219653); box-shadow: 0 0 0 3px rgba(33,150,83,.1); }
+.rm-textarea:focus { outline: none; border-color: var(--primary, #219653); box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.1); }
 
 .rm-actions { display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-4); flex-shrink: 0; }
 .rm-actions .btn { min-height: 44px; }

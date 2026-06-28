@@ -49,7 +49,7 @@
 
     <!-- Image grid -->
     <div class="media-grid">
-      <div v-for="item in items" :key="item.url + item.entity_id" class="media-card" role="button" tabindex="0" :aria-label="`Xem ảnh ${item.entity_name || item.entity_id}`" @click="previewItem = item" @keydown.enter="previewItem = item" @keydown.space.prevent="previewItem = item">
+      <button v-for="item in items" :key="item.url + item.entity_id" type="button" class="media-card" :aria-label="`Xem ảnh ${item.entity_name || item.entity_id}`" @click="previewItem = item">
         <div class="media-img-wrap">
           <img :src="item.url" :alt="item.entity_name" loading="lazy" decoding="async" @error="onImgError" />
           <span v-if="item.usage_count > 1" class="media-dup-badge" title="Dùng bởi nhiều entity">{{ item.usage_count }}x</span>
@@ -60,11 +60,11 @@
           <span v-if="item.credit" class="media-credit">{{ item.credit }}</span>
           <span v-else class="media-no-credit">Thiếu credit</span>
         </div>
-      </div>
+      </button>
     </div>
 
     <!-- Load more -->
-    <button v-if="hasMore" type="button" class="btn btn-outline media-load-more" :disabled="loading || loadingMore" @click="loadMore">{{ loadingMore ? 'Đang tải...' : 'Xem thêm' }} ({{ total - items.length }} còn lại)</button>
+    <LoadMoreButton v-if="hasMore" :loading="loadingMore" :remaining="total - items.length" @load="loadMore" />
 
     </template>
 
@@ -76,9 +76,9 @@
           <strong>{{ previewItem.entity_name }}</strong>
           <button type="button" class="btn btn-ghost btn-sm" @click="previewItem = null">Đóng</button>
         </div>
-        <img :src="previewItem.url" :alt="previewItem.entity_name" class="media-preview-img" />
+        <img :src="previewItem.url" :alt="previewItem.entity_name" class="media-preview-img" loading="lazy" />
         <div class="media-preview-meta">
-          <div><strong>Entity:</strong> <NuxtLink :to="`/dia-diem/${previewItem.entity_id}`" target="_blank">{{ previewItem.entity_name }}</NuxtLink> ({{ previewItem.entity_type }})</div>
+          <div><strong>Entity:</strong> <NuxtLink :to="`/dia-diem/${previewItem.entity_id}`" target="_blank" rel="noopener">{{ previewItem.entity_name }}</NuxtLink> ({{ previewItem.entity_type }})</div>
           <div><strong>Credit:</strong> {{ previewItem.credit || 'Không có' }}</div>
           <div><strong>License:</strong> {{ previewItem.license || 'Không rõ' }}</div>
           <div v-if="previewItem.usage_count > 1"><strong>Dùng bởi:</strong> {{ previewItem.usage_count }} entities</div>
@@ -96,6 +96,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Thư viện ảnh — Admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
@@ -212,21 +213,21 @@ onMounted(fetchMedia)
 .media-card {
   background: var(--card, var(--bg)); border: 1px solid var(--line); border-radius: 12px;
   overflow: hidden; cursor: pointer; transition: box-shadow .2s, transform .15s;
+  padding: 0; font: inherit; text-align: left; color: inherit;
 }
 .media-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
 .media-img-wrap { position: relative; aspect-ratio: 4/3; background: var(--bg-alt); overflow: hidden; }
 .media-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
 .media-dup-badge {
   position: absolute; top: 6px; right: 6px; padding: 2px 8px; border-radius: 100px;
-  background: rgba(255,159,10,.9); color: #fff; font-size: .7rem; font-weight: 700;
+  background: rgba(var(--warning-rgb, 255,159,10),.9); color: var(--text-on-dark, #fff); font-size: .7rem; font-weight: 700;
 }
 .media-card-info { padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; }
 .media-entity-name { font-weight: 600; font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .media-entity-type { font-size: .72rem; color: var(--muted); text-transform: uppercase; }
-.media-credit { font-size: .72rem; color: var(--primary-fg, #219653); }
-.media-no-credit { font-size: .72rem; color: #FF9F0A; font-style: italic; }
+.media-credit { font-size: .72rem; color: var(--primary-fg); }
+.media-no-credit { font-size: .72rem; color: var(--warning, #FF9F0A); font-style: italic; }
 
-.media-load-more { margin-top: var(--space-4); }
 
 .media-preview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3); }
 .media-preview-img { width: 100%; max-height: 60vh; object-fit: contain; border-radius: 8px; background: var(--bg-alt); margin-bottom: var(--space-3); }
@@ -235,7 +236,7 @@ onMounted(fetchMedia)
 .media-preview-url code { font-size: .75rem; background: var(--bg-alt); padding: 2px 6px; border-radius: 4px; }
 .media-preview-actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); padding-top: var(--space-3); border-top: .5px solid var(--line); }
 
-.stat-card.status-warn { border-left: 4px solid #FF9F0A; }
+.stat-card.status-warn { border-left: 4px solid var(--warning, #FF9F0A); }
 @media (max-width: 640px) { .media-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }
 @media (prefers-reduced-motion: reduce) { .media-card:hover { transform: none; } }
 </style>

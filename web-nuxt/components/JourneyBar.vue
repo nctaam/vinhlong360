@@ -4,10 +4,10 @@
       <div v-if="count > 0" class="journey-bar">
         <NuxtLink to="/lich-trinh" class="jb-summary">
           <svg class="jb-heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="var(--save-red)" stroke="var(--save-red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <strong :class="{ 'jb-count-pop': countPop }">{{ count }}</strong> đã lưu
+          <span aria-live="polite" aria-atomic="true"><strong :class="{ 'jb-count-pop': countPop }">{{ count }}</strong> đã lưu</span>
         </NuxtLink>
         <div class="jb-actions">
-          <NuxtLink to="/lich-trinh" class="btn btn-sm btn-ghost jb-link">Xem tất cả</NuxtLink>
+          <NuxtLink to="/lich-trinh" class="btn btn-sm btn-ghost jb-link" aria-label="Xem tất cả lịch trình">Xem tất cả</NuxtLink>
           <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-sm btn-primary jb-link">Tạo lịch trình</NuxtLink>
         </div>
       </div>
@@ -35,7 +35,7 @@ onUnmounted(() => { if (popTimer) clearTimeout(popTimer) })
 
 <style scoped>
 .journey-bar {
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 900;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: var(--z-modal-high);
   display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
   padding: var(--space-3) var(--space-5);
   background: var(--card); border-top: .5px solid var(--line);

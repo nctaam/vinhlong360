@@ -1,5 +1,5 @@
-<template>
-  <main class="page">
+﻿<template>
+  <section class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tuyến đường gợi ý' }]" />
 
     <!-- Hero -->
@@ -13,11 +13,11 @@
       </div>
       <div class="catalog-stats">
         <div class="stat-item">
-          <span class="stat-num">{{ ROUTES.length }}</span>
+          <CountUp :value="ROUTES.length" class="stat-num" />
           <span class="stat-label">tuyến đường</span>
         </div>
         <div class="stat-item">
-          <span class="stat-num">3</span>
+          <CountUp :value="3" class="stat-num" />
           <span class="stat-label">khu vực</span>
         </div>
       </div>
@@ -43,6 +43,15 @@
       <p>Các tuyến đường dưới đây được thiết kế cho người muốn <strong>tự đi</strong> — không cần tour, không cần hướng dẫn viên. Mỗi tuyến ghi rõ khoảng cách, thời gian di chuyển và các điểm dừng theo thứ tự hợp lý. Đường liên tỉnh giữa Vĩnh Long, Bến Tre và Trà Vinh phần lớn là đường nhựa tốt, phù hợp cả xe máy lẫn ô tô 4-7 chỗ.</p>
       <p>Nếu đi xe máy, ưu tiên khởi hành sáng sớm (trước 7h) để tránh nắng và tận dụng ánh sáng đẹp. Mang theo áo mưa — miền Tây hay có mưa rào chiều, đặc biệt từ tháng 6 đến tháng 11. Đường vào các làng nghề đôi khi hẹp và dốc cầu, chạy chậm khi qua khu dân cư.</p>
     </section>
+
+    <CatalogInterstitial
+      fact="Mỗi tuyến ghi rõ khoảng cách, thời gian và điểm dừng — tải về hoặc lưu vào tài khoản để xem offline khi đi."
+      icon="🛤️"
+      :links="[
+        { to: '/lich-trinh', label: 'Lịch trình gợi ý' },
+        { to: '/ban-do', label: 'Xem bản đồ' },
+      ]"
+    />
 
     <p class="result-meta" aria-live="polite">{{ filtered.length }} tuyến đường</p>
 
@@ -91,29 +100,29 @@
     </section>
 
     <!-- Cross-links -->
-    <section class="block catalog-cross reveal">
+    <section class="block band catalog-cross reveal">
       <h2>Khám phá thêm</h2>
       <p class="cross-sub">Tiếp tục hành trình miền Tây của bạn</p>
       <div class="cross-links">
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon">🗺️</span>
+          <span class="cross-icon" aria-hidden="true">🗺️</span>
           <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
         </NuxtLink>
         <NuxtLink to="/lich-trinh" class="cross-card">
-          <span class="cross-icon">🗓️</span>
+          <span class="cross-icon" aria-hidden="true">🗓️</span>
           <div><strong>Lịch trình</strong><p>Tuyến đi sẵn</p></div>
         </NuxtLink>
         <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon">🌿</span>
+          <span class="cross-icon" aria-hidden="true">🌿</span>
           <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/luu-tru" class="cross-card">
-          <span class="cross-icon">🏡</span>
+          <span class="cross-icon" aria-hidden="true">🏡</span>
           <div><strong>Lưu trú</strong><p>Homestay, nhà vườn</p></div>
         </NuxtLink>
       </div>
     </section>
-  </main>
+  </section>
 </template>
 
 <script setup lang="ts">

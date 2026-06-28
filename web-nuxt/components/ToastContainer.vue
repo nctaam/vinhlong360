@@ -36,7 +36,7 @@ function iconFor(type?: string) {
 .toast-container {
   position: fixed; top: var(--space-4); right: var(--space-4); z-index: var(--z-toast);
   display: flex; flex-direction: column; gap: var(--space-2);
-  max-width: 380px; width: calc(100vw - var(--space-8));
+  max-width: 380px; width: calc(100% - var(--space-8));
   pointer-events: none;
 }
 

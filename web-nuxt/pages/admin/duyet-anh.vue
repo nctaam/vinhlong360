@@ -44,7 +44,7 @@
             <!-- Candidate is an external licensed URL (not yet re-hosted) -->
             <img
               :src="s.candidate_url" :alt="`Ứng viên ảnh cho ${s.entity_name || s.entity_id}`"
-              class="img-thumb" loading="lazy" referrerpolicy="no-referrer"
+              class="img-thumb" loading="lazy" referrerpolicy="no-referrer" width="200" height="150"
               @error="onImgError"
             />
             <span class="img-conf" :class="confClass(s.match_confidence)">
@@ -142,6 +142,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Duyệt ảnh — Admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
@@ -287,7 +288,7 @@ onMounted(() => fetchQueue())
 }
 .img-tab:hover { border-color: var(--primary, #219653); color: var(--ink); }
 .img-tab:active { transform: scale(.97); }
-.img-tab.active { background: var(--primary, #219653); color: #fff; border-color: var(--primary, #219653); }
+.img-tab.active { background: var(--primary, #219653); color: var(--text-on-dark); border-color: var(--primary, #219653); }
 .img-tab:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .img-tab-count { font-size: .72rem; font-weight: 700; padding: 0 6px; border-radius: 10px; background: rgba(0,0,0,.08); }
 .img-tab.active .img-tab-count { background: rgba(255,255,255,.25); }
@@ -303,21 +304,21 @@ onMounted(() => fetchQueue())
 .img-thumb.img-broken { object-fit: contain; opacity: .35; }
 .img-conf {
   position: absolute; top: 8px; right: 8px; font-size: .68rem; font-weight: 700;
-  padding: 2px 8px; border-radius: 100px; color: #fff; backdrop-filter: blur(4px);
+  padding: 2px 8px; border-radius: 100px; color: var(--text-on-dark); backdrop-filter: blur(4px);
 }
-.conf-high { background: rgba(33,150,83,.9); }
+.conf-high { background: rgba(var(--primary-rgb),.9); }
 .conf-mid { background: rgba(201,138,26,.9); }
-.conf-low { background: rgba(217,79,61,.9); }
+.conf-low { background: rgba(var(--danger-rgb),.9); }
 
 .img-meta { padding: var(--space-3) var(--space-3) 0; display: flex; flex-direction: column; gap: 6px; }
 .img-entity { font-weight: 600; font-size: .9rem; color: var(--ink); line-height: 1.3; }
 .img-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .img-type-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .7rem; font-weight: 600; background: rgba(142,142,147,.1); color: var(--muted); }
-.img-lic-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .7rem; font-weight: 700; background: rgba(33,150,83,.12); color: #219653; }
-.img-lic-badge.lic-warn { background: rgba(217,79,61,.13); color: #D94F3D; }
+.img-lic-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .7rem; font-weight: 700; background: rgba(var(--primary-rgb),.12); color: var(--secondary-fg); }
+.img-lic-badge.lic-warn { background: rgba(var(--danger-rgb),.13); color: var(--error); }
 .img-detail { font-size: .76rem; color: var(--muted); line-height: 1.4; }
 .img-detail-k { font-weight: 600; color: var(--ink); }
-.img-reject-note { color: #D94F3D; }
+.img-reject-note { color: var(--error); }
 .img-src-link { font-size: .76rem; font-weight: 600; color: var(--primary-fg, #219653); text-decoration: none; }
 .img-src-link:hover { text-decoration: underline; }
 
@@ -325,13 +326,13 @@ onMounted(() => fetchQueue())
 .img-actions .btn-success, .img-actions .btn-danger { flex: 1; }
 .img-status-final { padding: var(--space-3); margin-top: auto; }
 .img-badge { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: .72rem; font-weight: 700; }
-.ib-pending { background: rgba(255,159,10,.12); color: #C98A1A; }
-.ib-approved { background: rgba(33,150,83,.12); color: #219653; }
+.ib-pending { background: rgba(var(--warning-rgb),.12); color: #C98A1A; }
+.ib-approved { background: rgba(var(--primary-rgb),.12); color: var(--secondary-fg); }
 .ib-rejected { background: rgba(142,142,147,.15); color: var(--muted); }
 
 .img-reject { padding: 0 var(--space-3) var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); }
 .img-reason-input { padding: 9px 12px; border: .5px solid var(--line); border-radius: 10px; font-size: .85rem; background: var(--bg); color: var(--ink); min-height: 40px; }
-.img-reason-input:focus { outline: none; border-color: #D94F3D; box-shadow: 0 0 0 3px rgba(217,79,61,.1); }
+.img-reason-input:focus { outline: none; border-color: var(--error); box-shadow: 0 0 0 3px rgba(var(--danger-rgb),.1); }
 .img-reject-btns { display: flex; gap: var(--space-2); }
 .img-reject-btns .btn-danger { flex: 1; }
 .btn-ghost-sm { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; padding: 8px 12px; border-radius: 8px; }
@@ -343,15 +344,15 @@ onMounted(() => fetchQueue())
 .img-legend { display: flex; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-4); font-size: .76rem; color: var(--muted); }
 .img-legend-item { display: inline-flex; align-items: center; gap: 6px; }
 .img-legend-dot { display: inline-block; width: 9px; height: 9px; border-radius: 3px; }
-.img-legend-ok { background: #219653; }
-.img-legend-warn { background: #D94F3D; }
+.img-legend-ok { background: var(--secondary-fg); }
+.img-legend-warn { background: var(--error); }
 
 /* ── Confidence bar (additive visual of match_confidence) ── */
 .img-conf-bar { height: 4px; border-radius: 100px; background: rgba(142,142,147,.18); overflow: hidden; }
 .img-conf-fill { display: block; height: 100%; border-radius: 100px; background: var(--muted); transition: width .3s cubic-bezier(.2,1,.4,1); }
-.img-conf-bar.conf-high .img-conf-fill { background: #219653; }
+.img-conf-bar.conf-high .img-conf-fill { background: var(--secondary-fg); }
 .img-conf-bar.conf-mid .img-conf-fill { background: #C98A1A; }
-.img-conf-bar.conf-low .img-conf-fill { background: #D94F3D; }
+.img-conf-bar.conf-low .img-conf-fill { background: var(--error); }
 
 /* ── Meta links row ── */
 .img-links { display: flex; flex-wrap: wrap; gap: var(--space-3); }
@@ -362,8 +363,8 @@ onMounted(() => fetchQueue())
 .img-thumb-wrap::after {
   content: "Ảnh không tải được"; position: absolute; inset: 0;
   display: none; align-items: center; justify-content: center; text-align: center;
-  font-size: .76rem; font-weight: 600; color: #D94F3D; padding: var(--space-3);
-  background: rgba(217,79,61,.08);
+  font-size: .76rem; font-weight: 600; color: var(--error); padding: var(--space-3);
+  background: rgba(var(--danger-rgb),.08);
 }
 .img-thumb-wrap:has(.img-broken)::after { display: flex; }
 

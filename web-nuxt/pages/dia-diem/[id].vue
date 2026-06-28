@@ -1,5 +1,5 @@
 <template>
-  <main v-if="entity" class="entity-detail-page">
+  <section v-if="entity" class="entity-detail-page">
     <!-- Breadcrumb -->
     <nav class="breadcrumb" aria-label="Breadcrumb">
       <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
@@ -15,8 +15,8 @@
 
     <!-- Cover + Hero Image -->
     <div :class="['detail-cover', `cat-${typeMeta.cat}`, { 'has-cover-img': coverImage }]">
-      <NuxtImg v-if="coverImage && isRemoteUrl(coverImage)" :src="coverImage" :alt="entity.name" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" sizes="sm:100vw md:100vw lg:960px xl:1200px" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="hasEntityImages && openCoverLightbox(0)" />
-      <img v-else-if="coverImage" :src="coverImage" :alt="entity.name" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="hasEntityImages && openCoverLightbox(0)" />
+      <NuxtImg v-if="coverImage && isRemoteUrl(coverImage)" :src="coverImage" :alt="entity.name" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" sizes="sm:100vw md:100vw lg:960px xl:1200px" :role="hasEntityImages ? 'button' : undefined" :tabindex="hasEntityImages ? 0 : undefined" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="hasEntityImages && openCoverLightbox(0)" @keydown.enter="hasEntityImages && openCoverLightbox(0)" />
+      <img v-else-if="coverImage" :src="coverImage" :alt="entity.name" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" :role="hasEntityImages ? 'button' : undefined" :tabindex="hasEntityImages ? 0 : undefined" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="hasEntityImages && openCoverLightbox(0)" @keydown.enter="hasEntityImages && openCoverLightbox(0)" />
       <div v-if="coverImage" class="dc-overlay"></div>
       <div v-if="coverImage" class="dc-vignette" aria-hidden="true"></div>
       <div class="dc-inner">
@@ -55,7 +55,7 @@
       </button>
       <div v-if="hasEntityImages && entity.images.length > 1" class="dc-thumbs">
         <template v-for="(src, i) in entity.images.slice(0, 4)" :key="src">
-          <NuxtImg v-if="isRemoteUrl(src)" :src="src" :alt="`${entity.name} - ${i + 1}`" :class="['dc-thumb', { active: i === 0 }]" loading="lazy" width="56" height="40" decoding="async" role="button" tabindex="0" @click="openCoverLightbox(i)" @keydown.enter="openCoverLightbox(i)" @keydown.space.prevent="openCoverLightbox(i)" />
+          <NuxtImg v-if="isRemoteUrl(src)" :src="src" :alt="`${entity.name} - ${i + 1}`" :class="['dc-thumb', { active: i === 0 }]" loading="lazy" width="56" height="40" sizes="56px" decoding="async" role="button" tabindex="0" @click="openCoverLightbox(i)" @keydown.enter="openCoverLightbox(i)" @keydown.space.prevent="openCoverLightbox(i)" />
           <img v-else :src="src" :alt="`${entity.name} - ${i + 1}`" :class="['dc-thumb', { active: i === 0 }]" loading="lazy" width="56" height="40" decoding="async" role="button" tabindex="0" @click="openCoverLightbox(i)" @keydown.enter="openCoverLightbox(i)" @keydown.space.prevent="openCoverLightbox(i)" />
         </template>
         <button type="button" v-if="entity.images.length > 4" class="dc-thumb-more" :aria-label="`Xem thêm ${entity.images.length - 4} ảnh`" @click="openCoverLightbox(4)">
@@ -64,6 +64,15 @@
       </div>
       <small v-if="imageCredit" class="dc-credit">{{ imageCredit }}</small>
     </div>
+
+    <!-- Photo Gallery (asymmetric grid for 2+ images) -->
+    <PhotoGallery
+      v-if="hasEntityImages && entity.images.length >= 2"
+      :images="entity.images"
+      :alt="entity.name"
+      class="detail-gallery"
+      @open-lightbox="openCoverLightbox"
+    />
 
     <!-- Lightbox (replaces old ImageGallery) -->
     <Teleport to="body">
@@ -202,7 +211,7 @@
         <!-- Community Reviews -->
         <NuxtErrorBoundary>
           <ClientOnly>
-            <EntityReviews v-if="ff('reviews')" :entity-id="id" :entity-name="entity.name" />
+            <LazyEntityReviews v-if="ff('reviews')" :entity-id="id" :entity-name="entity.name" />
             <template #fallback><div class="detail-skeleton"><div class="sk-title"></div><div class="sk-line w80"></div><div class="sk-line w60"></div></div></template>
           </ClientOnly>
         </NuxtErrorBoundary>
@@ -210,7 +219,7 @@
         <!-- Community Feed -->
         <NuxtErrorBoundary>
           <ClientOnly>
-            <EntityFeed :entity-id="id" :entity-name="entity.name" />
+            <LazyEntityFeed :entity-id="id" :entity-name="entity.name" />
             <template #fallback><div class="detail-skeleton"><div class="sk-title"></div><div class="sk-line w90"></div><div class="sk-line w70"></div></div></template>
           </ClientOnly>
         </NuxtErrorBoundary>
@@ -218,7 +227,7 @@
         <!-- AI Travel Tips -->
         <NuxtErrorBoundary>
           <ClientOnly>
-            <AITravelTips v-if="entity && ff('ai_tips')" :entity-id="id" :entity-name="entity.name" />
+            <LazyAITravelTips v-if="entity && ff('ai_tips')" :entity-id="id" :entity-name="entity.name" />
             <template #fallback><div class="detail-skeleton"><div class="sk-title"></div><div class="sk-line w80"></div></div></template>
           </ClientOnly>
         </NuxtErrorBoundary>
@@ -226,7 +235,7 @@
         <!-- AI Recommendations -->
         <NuxtErrorBoundary>
           <ClientOnly>
-            <AIRecommendations :entity-id="id" :title="ss('labels.detail.recommendations_title', 'Bạn cũng có thể thích')" :limit="4" />
+            <LazyAIRecommendations :entity-id="id" :title="ss('labels.detail.recommendations_title', 'Bạn cũng có thể thích')" :limit="4" />
             <template #fallback><div class="detail-skeleton"><div class="sk-grid"><div class="sk-card"></div><div class="sk-card"></div><div class="sk-card"></div><div class="sk-card"></div></div></div></template>
           </ClientOnly>
         </NuxtErrorBoundary>
@@ -234,6 +243,9 @@
 
       <!-- Sidebar -->
       <aside class="detail-aside" aria-label="Thông tin bổ sung">
+        <!-- Contact Widget (sticky, replaces old contact-row on desktop) -->
+        <ContactWidget :entity="entity" class="detail-contact-widget" />
+
         <!-- OCOP highlight -->
         <div v-if="entity.attributes?.ocop" class="ocop-highlight">
           <div class="ocop-stars">
@@ -294,12 +306,12 @@
           <div v-if="entity.attributes?.phone" class="fact">
             <span class="fact-ic" aria-hidden="true">📞</span>
             <span class="k">{{ ss('labels.detail.fact_phone', 'Liên hệ') }}</span>
-            <span class="v"><a :href="telHref(entity.attributes.phone)" class="fact-link">{{ entity.attributes.phone }}</a></span>
+            <span class="v"><a :href="telHref(entity.attributes.phone)" class="fact-link">{{ entity.attributes.phone }}</a><button type="button" class="fact-copy" @click="copyText(entity.attributes.phone!, 'số điện thoại')" aria-label="Sao chép số điện thoại" title="Sao chép"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></span>
           </div>
           <div v-if="entity.attributes?.address" class="fact">
             <span class="fact-ic" aria-hidden="true">🏠</span>
             <span class="k">{{ ss('labels.detail.fact_address', 'Địa chỉ') }}</span>
-            <span class="v">{{ entity.attributes.address }}</span>
+            <span class="v">{{ entity.attributes.address }}<button type="button" class="fact-copy" @click="copyText(entity.attributes.address!, 'địa chỉ')" aria-label="Sao chép địa chỉ" title="Sao chép"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></span>
           </div>
           <div v-if="entity.attributes?.coords_approximate && hasCoords" class="fact fact-approx">
             <span class="fact-ic" aria-hidden="true">📍</span>
@@ -365,7 +377,7 @@
 
         <NuxtErrorBoundary>
           <ClientOnly>
-            <AIBestTime v-if="ff('ai_best_time')" :entity-id="id" :entity-name="entity.name" />
+            <LazyAIBestTime v-if="ff('ai_best_time')" :entity-id="id" :entity-name="entity.name" />
           </ClientOnly>
         </NuxtErrorBoundary>
 
@@ -391,8 +403,8 @@
       <NuxtLink v-if="hasCoords" class="scta-map" :to="mapUrl" aria-label="Xem trên bản đồ">🗺️ Bản đồ</NuxtLink>
       <NuxtLink v-if="!hasStickyContact" to="/tao-lich-trinh" no-prefetch class="scta-plan" aria-label="Thêm vào lịch trình">📋 {{ ss('labels.detail.next_add_itinerary', 'Thêm vào lịch trình') }}</NuxtLink>
     </div>
-  </main>
-  <main v-else-if="fetchError" class="page">
+  </section>
+  <section v-else-if="fetchError" class="page">
     <EmptyState
       :icon="fetchError.statusCode === 404 ? '🔍' : '⚠️'"
       :title="fetchError.statusCode === 404 ? 'Không tìm thấy địa điểm này' : 'Không thể tải dữ liệu'"
@@ -407,15 +419,15 @@
         <NuxtLink to="/" class="btn btn-ghost">Về trang chủ</NuxtLink>
       </template>
     </EmptyState>
-  </main>
-  <main v-else class="page">
+  </section>
+  <section v-else class="page">
     <EmptyState icon="🔍" title="Không tìm thấy địa điểm này" message="Có thể nội dung đã được di chuyển hoặc đường dẫn chưa đúng. Bạn thử khám phá các điểm đến khác nhé.">
       <template #actions>
         <NuxtLink to="/du-lich" class="btn btn-primary">Khám phá điểm đến</NuxtLink>
         <NuxtLink to="/" class="btn btn-ghost">Về trang chủ</NuxtLink>
       </template>
     </EmptyState>
-  </main>
+  </section>
 </template>
 
 <script setup lang="ts">
@@ -435,6 +447,16 @@ const id = computed(() => String(route.params.id || ''))
 const { isLoggedIn, authHeaders } = useAuth()
 const { openAuth } = useAuthModal()
 const { show: _showToast } = useToast()
+
+async function copyText(text: string, label: string) {
+  try {
+    await navigator.clipboard.writeText(text)
+    _showToast(`Đã sao chép ${label}`, 'success')
+  } catch {
+    _showToast('Không thể sao chép', 'error')
+  }
+}
+
 const visitStatus = ref<string | null>(null)
 const isFollowingPlace = ref(false)
 const rsvpGoing = ref(false)
@@ -445,12 +467,16 @@ async function toggleRsvp() {
   if (!isLoggedIn.value) { openAuth(() => toggleRsvp()); return }
   if (actionPending.value) return
   actionPending.value = true
+  const prevGoing = rsvpGoing.value
+  const prevCount = rsvpCount.value
+  rsvpGoing.value = !prevGoing
+  rsvpCount.value += prevGoing ? -1 : 1
   try {
     const r = await $fetch<{ going: boolean; count: number }>(`/api/events/${encodeURIComponent(id.value)}/rsvp`, { method: 'POST', headers: authHeaders() })
     rsvpGoing.value = r.going
     rsvpCount.value = r.count
     if (r.going) _showToast('Đã đăng ký đi sự kiện này 🎉', 'success')
-  } catch { _showToast('Không thể đăng ký, thử lại', 'error') }
+  } catch { rsvpGoing.value = prevGoing; rsvpCount.value = prevCount; _showToast('Không thể đăng ký, thử lại', 'error') }
   finally { actionPending.value = false }
 }
 
@@ -844,8 +870,7 @@ async function loadMoreRelationships() {
 }
 
 // ── Reactive SEO meta: updates when entity changes (client-side navigation) ──
-const SITE = 'https://vinhlong360.vn'
-const absUrl = (u: string) => (u.startsWith('http') ? u : `${SITE}${u}`)
+const absUrl = (u: string) => (u.startsWith('http') ? u : `${SITE_URL}${u}`)
 
 const TYPE_TO_SCHEMA: Record<string, string> = {
   product: 'Product',
@@ -873,12 +898,7 @@ useSeoMeta({
   description: () => seoDesc.value,
   ogTitle: () => entity.value ? `${entity.value.name} — vinhlong360` : 'Địa điểm — vinhlong360',
   ogDescription: () => seoDesc.value,
-  ogImage: () => {
-    const e = entity.value
-    if (!e) return `${SITE}/img/og-default.jpg`
-    const hasRealPhoto = Array.isArray(e.images) && e.images.length > 0
-    return hasRealPhoto ? absUrl(e.images[0]) : `${SITE}/img/og-default.jpg`
-  },
+  ogImage: () => entityOgImage(entity.value?.images),
 })
 
 // JSON-LD + canonical: rebuilt reactively via computed
@@ -889,7 +909,7 @@ const jsonLdScripts = computed(() => {
   const ldType = TYPE_TO_SCHEMA[e.type] || 'TouristAttraction'
   const hasRealPhoto = Array.isArray(e.images) && e.images.length > 0
 
-  const entityUrl = `${SITE}/dia-diem/${e.id}`
+  const entityUrl = `${SITE_URL}/dia-diem/${e.id}`
   const ld: Record<string, any> = {
     '@context': 'https://schema.org',
     '@type': ldType,
@@ -990,11 +1010,11 @@ const jsonLdScripts = computed(() => {
   }
 
   const bcItems: any[] = [
-    { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE}/` },
+    { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
     { '@type': 'ListItem', position: 2, name: typeMeta.value.label, item: `${SITE}${typeBreadcrumbUrl.value}` },
   ]
   if (e.place_area) {
-    bcItems.push({ '@type': 'ListItem', position: 3, name: areaName.value, item: `${SITE}/khu-vuc/${e.place_area}` })
+    bcItems.push({ '@type': 'ListItem', position: 3, name: areaName.value, item: `${SITE_URL}/khu-vuc/${e.place_area}` })
   }
   bcItems.push({ '@type': 'ListItem', position: bcItems.length + 1, name: e.name, item: entityUrl })
   const breadcrumb = {
@@ -1047,3 +1067,40 @@ useHead({
 
 <!-- detail.css nạp theo route (bỏ khỏi global entry.css; phần dùng-chung ở detail-shared.css) -->
 <style src="~/assets/css/detail.css"></style>
+
+<style scoped>
+/* PhotoGallery placement below hero */
+.detail-gallery {
+  max-width: var(--maxw, 1200px);
+  margin: var(--space-4) auto;
+  padding: 0 var(--space-5);
+}
+
+/* ContactWidget: let the component handle its own sticky/positioning,
+   but override width inside the sidebar context */
+.detail-contact-widget {
+  width: 100%;
+  position: static;
+  margin-bottom: var(--space-5);
+}
+
+.fact-copy {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; margin-left: var(--space-1); vertical-align: middle;
+  border: none; border-radius: var(--radius-sm); background: transparent;
+  color: var(--muted); cursor: pointer; transition: color .2s, background .2s;
+}
+.fact-copy:hover { color: var(--primary-fg); background: rgba(var(--primary-rgb), .08); }
+.fact-copy:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+
+/* Hide old contact-row on desktop when ContactWidget is present */
+@media (min-width: 768px) {
+  .contact-row { display: none; }
+}
+
+/* On mobile, hide the desktop ContactWidget (it renders its own fixed bottom bar) */
+@media (max-width: 767px) {
+  /* Hide existing sticky-cta-bar since ContactWidget provides mobile bottom bar */
+  .sticky-cta-bar { display: none; }
+}
+</style>

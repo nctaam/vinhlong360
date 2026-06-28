@@ -163,6 +163,7 @@
 <script setup lang="ts">
 import type { Entity } from '~/types'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Báo cáo — Admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
@@ -382,7 +383,7 @@ onMounted(() => fetchAll())
 .rpt-open-badge {
   display: inline-flex; align-items: center; padding: 2px 10px;
   border-radius: 100px; font-size: .72rem; font-weight: 600;
-  background: rgba(255,159,10,.1); color: #c67a00;
+  background: rgba(var(--warning-rgb),.1); color: #c67a00;
 }
 
 /* ── Status badges ── */
@@ -395,10 +396,10 @@ onMounted(() => fetchAll())
 .status-pending::before, .status-resolved::before, .status-dismissed::before {
   content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
 }
-.status-pending { background: rgba(255,159,10,.08); color: #c67a00; }
-.status-pending::before { background: #FF9F0A; animation: rpt-pulse 2s ease-in-out infinite; }
-.status-resolved { background: rgba(33,150,83,.08); color: #219653; }
-.status-resolved::before { background: #219653; }
+.status-pending { background: rgba(var(--warning-rgb),.08); color: #c67a00; }
+.status-pending::before { background: var(--warning); animation: rpt-pulse 2s ease-in-out infinite; }
+.status-resolved { background: rgba(var(--primary-rgb),.08); color: var(--secondary-fg); }
+.status-resolved::before { background: var(--secondary-fg); }
 .status-dismissed { background: rgba(142,142,147,.08); color: var(--muted); }
 .status-dismissed::before { background: var(--muted); opacity: .4; }
 @keyframes rpt-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
@@ -412,7 +413,7 @@ onMounted(() => fetchAll())
 .rpt-filter-label { font-size: .72rem; font-weight: 600; color: var(--muted); margin-right: 2px; }
 .rpt-chip {
   display: inline-flex; align-items: center; gap: 6px;
-  min-height: 32px; padding: 4px 12px;
+  min-height: 44px; padding: 4px 12px;
   border: 1px solid var(--border); border-radius: 100px;
   background: var(--surface, #fff); color: var(--text, #1d1d1f);
   font-size: .78rem; font-weight: 500; cursor: pointer;
@@ -421,7 +422,7 @@ onMounted(() => fetchAll())
 .rpt-chip:hover { border-color: var(--primary, #0071e3); }
 .rpt-chip:active { transform: scale(.96); }
 .rpt-chip.active {
-  background: var(--primary, #0071e3); border-color: var(--primary, #0071e3); color: #fff;
+  background: var(--primary, #0071e3); border-color: var(--primary, #0071e3); color: var(--text-on-dark);
   position: relative; box-shadow: 0 2px 8px rgba(0,113,227,.22);
 }
 /* subtle affordance dot under the active chip */
@@ -439,7 +440,7 @@ onMounted(() => fetchAll())
   border-radius: 100px; font-size: .68rem; font-weight: 600;
   background: rgba(0,0,0,.06); color: var(--muted);
 }
-.rpt-chip.active .rpt-chip-count { background: rgba(255,255,255,.25); color: #fff; }
+.rpt-chip.active .rpt-chip-count { background: rgba(255,255,255,.25); color: var(--text-on-dark); }
 
 /* ── Bulk action bar ── */
 .rpt-bulkbar {
@@ -456,7 +457,7 @@ onMounted(() => fetchAll())
 .rpt-bulk-hint { font-size: .74rem; color: var(--muted); }
 .rpt-bulk-actions { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
 /* make the primary bulk action more prominent than the secondary ones */
-.rpt-bulk-primary { font-weight: 600; box-shadow: 0 2px 8px rgba(33,150,83,.18); }
+.rpt-bulk-primary { font-weight: 600; box-shadow: 0 2px 8px rgba(var(--primary-rgb),.18); }
 .rpt-bulk-clear {
   min-height: 44px; padding: 6px 12px; border: none; border-radius: 8px;
   background: transparent; color: var(--muted); font-size: .78rem; cursor: pointer;
@@ -489,7 +490,7 @@ onMounted(() => fetchAll())
 }
 .rpt-pager-info { font-size: .76rem; color: var(--muted); }
 .rpt-loadmore {
-  min-height: 36px; padding: 6px 18px;
+  min-height: 44px; padding: 6px 18px;
   border: 1px solid var(--border); border-radius: 100px;
   background: var(--surface, #fff); color: var(--text, #1d1d1f);
   font-size: .82rem; font-weight: 600; cursor: pointer;
@@ -509,10 +510,10 @@ onMounted(() => fetchAll())
 }
 
 /* ── Dark ── */
-.dark .status-pending { background: rgba(255,159,10,.12); color: #ffb340; }
-.dark .status-resolved { background: rgba(33,150,83,.12); }
+.dark .status-pending { background: rgba(var(--warning-rgb),.12); color: #ffb340; }
+.dark .status-resolved { background: rgba(var(--primary-rgb),.12); }
 .dark .status-dismissed { background: rgba(255,255,255,.06); }
-.dark .rpt-open-badge { background: rgba(255,159,10,.12); color: #ffb340; }
+.dark .rpt-open-badge { background: rgba(var(--warning-rgb),.12); color: #ffb340; }
 .dark .rpt-chip { background: rgba(255,255,255,.04); }
 .dark .rpt-chip-count { background: rgba(255,255,255,.1); }
 .dark .rpt-chip.active .rpt-chip-count { background: rgba(255,255,255,.25); }

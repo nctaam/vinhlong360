@@ -20,6 +20,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Liên hệ — Admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const fields = ref<any[]>([])

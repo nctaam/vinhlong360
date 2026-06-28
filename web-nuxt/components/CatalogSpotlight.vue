@@ -82,7 +82,7 @@ const relCount = computed(() => pick.value?.relationship_total || 0)
 .cspot-icon :deep(svg) { width: 100%; height: 100%; display: block; }
 .cspot-region {
   position: absolute; top: var(--space-4); left: var(--space-4);
-  padding: var(--space-1) var(--space-3); background: rgba(0,0,0,.5); color: #fff;
+  padding: var(--space-1) var(--space-3); background: rgba(0,0,0,.5); color: var(--text-on-dark, #fff);
   border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: var(--weight-semibold);
   backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
 }
@@ -96,12 +96,12 @@ const relCount = computed(() => pick.value?.relationship_total || 0)
 .cspot-sum { margin: 0; color: var(--text-muted); line-height: var(--leading-relaxed); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 .cspot-badges { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 .cspot-badge { font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: var(--space-1) var(--space-2); border-radius: var(--radius-full); }
-.cspot-badge-peak { background: rgba(239,68,68,.12); color: #dc2626; }
-.cspot-badge-year { background: rgba(16,185,129,.12); color: #059669; }
-.cspot-badge-pop { background: rgba(59,130,246,.1); color: #2563eb; }
-.dark .cspot-badge-peak { background: rgba(239,68,68,.2); color: #fca5a5; }
-.dark .cspot-badge-year { background: rgba(16,185,129,.2); color: #6ee7b7; }
-.dark .cspot-badge-pop { background: rgba(59,130,246,.2); color: #93c5fd; }
+.cspot-badge-peak { background: var(--error-bg, rgba(239,68,68,.12)); color: var(--error, #dc2626); }
+.cspot-badge-year { background: var(--success-bg, rgba(16,185,129,.12)); color: var(--success, #059669); }
+.cspot-badge-pop { background: var(--info-bg, rgba(59,130,246,.1)); color: var(--info, #2563eb); }
+.dark .cspot-badge-peak { background: rgba(var(--danger-rgb), .2); color: var(--error); }
+.dark .cspot-badge-year { background: rgba(var(--success-rgb), .2); color: var(--success); }
+.dark .cspot-badge-pop { background: rgba(100,181,246, .2); color: var(--info); }
 .cspot-cta { align-self: flex-start; margin-top: var(--space-2); }
 @media (prefers-reduced-motion: reduce) { .cspot-visual::before { animation: none; } }
 </style>

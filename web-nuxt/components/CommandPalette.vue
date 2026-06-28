@@ -6,6 +6,7 @@
         ref="inputEl"
         v-model="query"
         class="cmd-input"
+        enterkeyhint="search"
         placeholder="Tìm trang, entity, thao tác…"
         @keydown.escape="open = false"
         @keydown.down.prevent="move(1)"
@@ -72,6 +73,11 @@ const results = computed(() => {
 
 watch(query, () => { active.value = 0 })
 
+watch(active, () => {
+  const items = paletteRef.value?.querySelectorAll('.cmd-item')
+  items?.[active.value]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+})
+
 function move(d: number) {
   active.value = Math.max(0, Math.min(results.value.length - 1, active.value + d))
 }
@@ -101,24 +107,25 @@ defineExpose({ open })
 </script>
 
 <style scoped>
-.cmd-overlay { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,.4); display: flex; align-items: flex-start; justify-content: center; padding-top: 15vh; }
+.cmd-overlay { position: fixed; inset: 0; z-index: var(--z-lightbox); background: rgba(0,0,0,.4); display: flex; align-items: flex-start; justify-content: center; padding-top: 15vh; }
 .cmd-palette { width: min(540px, 90vw); background: var(--bg, #fff); border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.2); overflow: hidden; }
 .cmd-input { width: 100%; padding: 14px 20px; border: none; outline: none; font-size: 1rem; background: transparent; color: var(--ink); }
 .cmd-input::placeholder { color: var(--muted); }
 .cmd-results { max-height: 360px; overflow-y: auto; border-top: .5px solid var(--line); }
-.cmd-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 20px; border: none; background: none; cursor: pointer; text-align: left; font: inherit; color: var(--ink); }
-.cmd-item.active { background: rgba(52,120,246,.08); }
+.cmd-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 20px; border: none; background: none; cursor: pointer; text-align: left; font: inherit; color: var(--ink); transition: background .15s var(--ease-out); }
+.cmd-item.active { background: rgba(var(--blue-rgb),.08); }
+.cmd-item:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
 .cmd-icon { font-size: 1.1rem; flex-shrink: 0; width: 24px; text-align: center; }
 .cmd-label { font-weight: 500; flex: 1; }
 .cmd-hint { font-size: .78rem; color: var(--muted); }
 .cmd-empty { padding: 20px; text-align: center; color: var(--muted); font-size: .9rem; display: flex; flex-direction: column; gap: 6px; }
 .cmd-empty-hint { font-size: .75rem; opacity: .6; }
-.cmd-footer { padding: 8px 20px; border-top: .5px solid var(--line); font-size: .72rem; color: var(--muted); }
-.cmd-footer kbd { background: rgba(0,0,0,.06); padding: 1px 5px; border-radius: 3px; font-family: inherit; }
+.cmd-footer { padding: 8px 20px; border-top: .5px solid var(--line); font-size: .8rem; color: var(--muted); }
+.cmd-footer kbd { background: rgba(0,0,0,.06); padding: 2px 6px; border-radius: 4px; font-family: inherit; font-size: .75rem; }
 .cmd-fade-enter-active, .cmd-fade-leave-active { transition: opacity .15s; }
 .cmd-fade-enter-from, .cmd-fade-leave-to { opacity: 0; }
 :global(.dark) .cmd-palette { background: var(--card, #2c2c2e); }
-:global(.dark) .cmd-item.active { background: rgba(52,120,246,.15); }
+:global(.dark) .cmd-item.active { background: rgba(var(--blue-rgb),.15); }
 :global(.dark) .cmd-footer kbd { background: rgba(255,255,255,.12); color: rgba(255,255,255,.7); }
 @media (max-width: 600px) {
   .cmd-overlay { padding-top: 0; align-items: flex-end; }

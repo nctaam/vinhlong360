@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <section class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tìm kiếm' }]" />
 
@@ -35,7 +35,7 @@
 
     <NuxtErrorBoundary>
       <ClientOnly>
-        <AISearchAssist v-if="q" :query="q" />
+        <LazyAISearchAssist v-if="q" :query="q" />
         <template #fallback>
           <div v-if="q" class="ai-loading ai-loading-padded" aria-hidden="true"><div class="spinner spinner-center"></div></div>
         </template>
@@ -103,7 +103,7 @@
         </EmptyState>
         <NuxtErrorBoundary>
           <ClientOnly>
-            <AIRecommendations title="Gợi ý cho bạn" :limit="6" />
+            <LazyAIRecommendations title="Gợi ý cho bạn" :limit="6" />
           </ClientOnly>
         </NuxtErrorBoundary>
       </template>
@@ -118,7 +118,7 @@
           </div>
           <div class="recent-grid">
             <NuxtLink v-for="r in recentItems" :key="r.id" :to="`/dia-diem/${r.id}`" class="recent-card">
-              <img v-if="r.image" :src="r.image" :alt="r.name" class="recent-img" loading="lazy" />
+              <img v-if="r.image" :src="r.image" :alt="r.name" class="recent-img" loading="lazy" decoding="async" />
               <span v-else class="recent-img recent-placeholder" aria-hidden="true">{{ TYPE_META[r.type]?.emoji || '📍' }}</span>
               <span class="recent-name">{{ r.name }}</span>
               <span class="recent-type">{{ TYPE_META[r.type]?.label || r.type }}</span>
@@ -185,19 +185,19 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon">🗺️</span>
+          <span class="cross-icon" aria-hidden="true">🗺️</span>
           <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
         </NuxtLink>
         <NuxtLink to="/theo-mua" class="cross-card">
-          <span class="cross-icon">🌸</span>
+          <span class="cross-icon" aria-hidden="true">🌸</span>
           <div><strong>Theo mùa</strong><p>Đúng mùa thưởng thức</p></div>
         </NuxtLink>
         <NuxtLink to="/cong-dong" class="cross-card">
-          <span class="cross-icon">💬</span>
+          <span class="cross-icon" aria-hidden="true">💬</span>
           <div><strong>Cộng đồng</strong><p>Hỏi đáp & chia sẻ</p></div>
         </NuxtLink>
         <NuxtLink to="/danh-ba" class="cross-card">
-          <span class="cross-icon">🏛️</span>
+          <span class="cross-icon" aria-hidden="true">🏛️</span>
           <div><strong>Danh bạ</strong><p>Hành chính xã/phường</p></div>
         </NuxtLink>
       </div>

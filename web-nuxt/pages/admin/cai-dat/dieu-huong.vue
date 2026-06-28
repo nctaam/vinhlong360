@@ -39,6 +39,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Điều hướng — Admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const { confirmDialog } = useConfirm()
@@ -73,7 +74,7 @@ async function onSave() {
       body: { value: navGroups.value },
     })
     showToast('Đã lưu điều hướng', 'success')
-  } catch (e: any) { showToast(e?.data?.detail || 'Lỗi khi lưu', 'error') }
+  } catch (e: unknown) { showToast(extractErrorMessage(e, 'Lỗi khi lưu'), 'error') }
   saving.value = false
 }
 
@@ -85,7 +86,7 @@ async function onReset() {
     await $fetch('/admin-api/site-settings/reset/navigation', { method: 'POST', headers: authHeaders() })
     showToast('Đã đặt lại', 'success')
     await reload()
-  } catch (e: any) { showToast(e?.data?.detail || 'Lỗi', 'error') }
+  } catch (e: unknown) { showToast(extractErrorMessage(e, 'Lỗi'), 'error') }
   saving.value = false
 }
 
@@ -121,7 +122,7 @@ onMounted(reload)
   min-height: 44px;
   transition: transform .2s cubic-bezier(.2,1,.4,1), box-shadow .2s;
 }
-.sf-save:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 4px 12px rgba(33,150,83,.2); }
+.sf-save:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 4px 12px rgba(var(--primary-rgb),.2); }
 .sf-save:active:not(:disabled) { transform: scale(.97); }
 .sf-save:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .sf-save:disabled { opacity: .45; cursor: not-allowed; }

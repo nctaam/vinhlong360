@@ -32,21 +32,26 @@
       <!-- Left: Entity picker -->
       <div class="planner-picker">
         <!-- Source tabs: All vs Favorites -->
-        <div class="chip-row chip-row-spaced">
-          <button type="button" :class="['chip', { active: sourceTab === 'all' }]" :aria-pressed="sourceTab === 'all'" @click="sourceTab = 'all'">Tất cả</button>
-          <button type="button" :class="['chip', { active: sourceTab === 'saved' }]" :aria-pressed="sourceTab === 'saved'" @click="sourceTab = 'saved'">
-            ❤️ Đã lưu ({{ favCount }})
-          </button>
-        </div>
+        <FilterChips
+          :filters="sourceTabOptions"
+          :model-value="[sourceTab]"
+          single-select
+          class="chip-row-spaced"
+          aria-label="Nguồn"
+          @update:model-value="v => sourceTab = v.length ? v[0] : 'all'"
+        />
         <div class="search-row search-row-spaced">
           <input v-model="searchQ" type="search" enterkeyhint="search" aria-label="Tìm điểm đến" placeholder="Tìm điểm đến, đặc sản, lưu trú…" />
         </div>
-        <div v-if="sourceTab === 'all'" class="chip-row chip-row-spaced">
-          <button type="button" :class="['chip', { active: typeFilter === 'all' }]" :aria-pressed="typeFilter === 'all'" @click="typeFilter = 'all'">Tất cả</button>
-          <button type="button" v-for="t in typeChips" :key="t.value" :class="['chip', { active: typeFilter === t.value }]" :aria-pressed="typeFilter === t.value" @click="typeFilter = t.value">
-            {{ t.label }}
-          </button>
-        </div>
+        <FilterChips
+          v-if="sourceTab === 'all'"
+          :filters="typeFilterOptions"
+          :model-value="[typeFilter]"
+          single-select
+          class="chip-row-spaced"
+          aria-label="Lọc theo loại"
+          @update:model-value="v => typeFilter = v.length ? v[0] : 'all'"
+        />
         <div class="picker-list">
           <div
             v-for="e in pickerResults"
@@ -170,11 +175,11 @@
               <small>{{ plan.stops.length }} điểm · Lưu {{ formatDate(plan.savedAt) }}</small>
             </button>
             <div class="saved-plan-actions">
-              <button v-if="plan.id" type="button" :class="['btn btn-sm', plan.is_public ? 'btn-primary' : 'btn-ghost']" @click="publishPlan(pi)">
-                {{ plan.is_public ? '🌐 Công khai' : '🔒 Riêng tư' }}
+              <button v-if="plan.id" type="button" :class="['btn btn-sm', plan.is_public ? 'btn-primary' : 'btn-ghost']" :disabled="planBusy === pi" @click="publishPlan(pi)">
+                {{ planBusy === pi ? '…' : plan.is_public ? '🌐 Công khai' : '🔒 Riêng tư' }}
               </button>
-              <button type="button" class="btn btn-sm btn-ghost" @click="sharePlan(pi)">Chia sẻ</button>
-              <button type="button" class="btn btn-sm btn-ghost danger" @click="deletePlan(pi)">Xóa</button>
+              <button type="button" class="btn btn-sm btn-ghost" :disabled="planBusy === pi" @click="sharePlan(pi)">Chia sẻ</button>
+              <button type="button" class="btn btn-sm btn-ghost danger" :disabled="planBusy === pi" @click="deletePlan(pi)">Xóa</button>
             </div>
           </div>
         </div>
@@ -188,6 +193,8 @@ import type { Itinerary, Entity} from '~/types'
 useReveal()
 import { TYPE_META, CARD_TYPES } from '~/composables/useConstants'
 import { fetchRoute, formatDistance, formatDuration, type TransportMode, type RouteResult } from '~/composables/useRouting'
+
+const LS_PLANS = 'vl360_plans'
 
 interface PlanStop {
   id: string
@@ -210,6 +217,7 @@ const { favorites: favList, count: favCount } = useFavorites()
 const { confirmDialog } = useConfirm()
 const { isLoggedIn, authHeaders } = useAuth()
 const routeError = ref(false)   // OSRM không tính được route (≥2 điểm có toạ độ)
+const planBusy = ref(-1)
 
 const TYPES = CARD_TYPES as readonly string[]
 const typeChips = TYPES.map(t => ({
@@ -226,6 +234,15 @@ const transportModes = [
 const sourceTab = ref('all')
 const searchQ = ref('')
 const typeFilter = ref('all')
+
+const sourceTabOptions = computed(() => [
+  { key: 'all', label: 'Tất cả' },
+  { key: 'saved', label: 'Đã lưu', icon: '❤️', count: favCount.value },
+])
+const typeFilterOptions = computed(() => [
+  { key: 'all', label: 'Tất cả' },
+  ...typeChips.map(t => ({ key: t.value, label: t.label })),
+])
 const planTitle = ref('')
 const stops = ref<PlanStop[]>([])
 const savedPlans = ref<SavedPlan[]>([])
@@ -364,8 +381,8 @@ async function _doSave() {
         body: { title: plan.title, stops: plan.stops },
       })
       plan.id = res.id
-    } catch (e: any) {
-      showToast(e?.data?.detail || 'Không thể lưu lên tài khoản', 'error')
+    } catch (e: unknown) {
+      showToast(extractErrorMessage(e, 'Không thể lưu lên tài khoản'), 'error')
       return
     }
   } else {
@@ -381,7 +398,7 @@ async function _doSave() {
 
 function persistLocal(plans: SavedPlan[]) {
   if (import.meta.client) {
-    try { localStorage.setItem('vl360_plans', JSON.stringify(plans.filter(p => !p.id))) } catch {}
+    try { localStorage.setItem(LS_PLANS, JSON.stringify(plans.filter(p => !p.id))) } catch {}
   }
 }
 
@@ -395,17 +412,17 @@ async function loadPlan(idx: number) {
 async function deletePlan(idx: number) {
   const plan = savedPlans.value[idx]
   if (!await confirmDialog(`Xóa lịch trình "${plan?.title || 'chưa đặt tên'}"?`, { danger: true, confirmText: 'Xóa' })) return
-  if (plan?.id && isLoggedIn.value) {
-    try {
+  planBusy.value = idx
+  try {
+    if (plan?.id && isLoggedIn.value) {
       await $fetch(`/api/my-plans/${plan.id}`, { method: 'DELETE', headers: authHeaders() })
-    } catch (e: any) {
-      showToast(e?.data?.detail || 'Không thể xoá trên tài khoản', 'error')
-      return
     }
-  }
-  savedPlans.value.splice(idx, 1)
-  persistLocal(savedPlans.value)
-  showToast('Đã xóa lịch trình', 'success')
+    savedPlans.value.splice(idx, 1)
+    persistLocal(savedPlans.value)
+    showToast('Đã xóa lịch trình', 'success')
+  } catch (e: unknown) {
+    showToast(extractErrorMessage(e, 'Không thể xoá trên tài khoản'), 'error')
+  } finally { planBusy.value = -1 }
 }
 
 const { show: showToast } = useToast()
@@ -413,6 +430,7 @@ const { show: showToast } = useToast()
 async function publishPlan(idx: number) {
   const plan = savedPlans.value[idx]
   if (!plan?.id) return
+  planBusy.value = idx
   const next = !plan.is_public
   try {
     await $fetch(`/api/my-plans/${plan.id}/publish`, { method: 'POST', headers: authHeaders(), body: { is_public: next } })
@@ -424,7 +442,8 @@ async function publishPlan(idx: number) {
     } else {
       showToast('Đã chuyển về riêng tư', 'success')
     }
-  } catch (e: any) { showToast(e?.data?.detail || 'Không thể đổi trạng thái', 'error') }
+  } catch (e: unknown) { showToast(extractErrorMessage(e, 'Không thể đổi trạng thái'), 'error') }
+  finally { planBusy.value = -1 }
 }
 
 function sharePlan(idx: number) {
@@ -572,7 +591,7 @@ watch(
 onMounted(async () => {
   let local: SavedPlan[] = []
   try {
-    const raw = localStorage.getItem('vl360_plans')
+    const raw = localStorage.getItem(LS_PLANS)
     if (raw) {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed)) local = parsed
@@ -587,7 +606,7 @@ onMounted(async () => {
           method: 'POST', headers: authHeaders(), body: { plans: local },
         })
         savedPlans.value = merged.plans || []
-        localStorage.removeItem('vl360_plans')
+        localStorage.removeItem(LS_PLANS)
       } else {
         const res = await $fetch<{ plans: SavedPlan[] }>('/api/my-plans', { headers: authHeaders() })
         savedPlans.value = res.plans || []
@@ -636,7 +655,7 @@ useHead({
 .title-counter { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: var(--text-xs); color: var(--muted); pointer-events: none; }
 .title-counter.warn { color: var(--error, #d32); font-weight: var(--weight-semibold); }
 .max-stops-warn { font-size: var(--text-sm); color: var(--warning, #c90); margin: var(--space-2) 0; }
-.stop-card-actions .btn-icon-sm { min-width: 36px; min-height: 36px; }
+.stop-card-actions .btn-icon-sm { min-width: 44px; min-height: 44px; }
 @media (pointer: coarse) { .stop-card-actions .btn-icon-sm { min-width: 44px; min-height: 44px; } }
 .picker-list { max-height: 50vh; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
 .picker-list::-webkit-scrollbar { width: 6px; }

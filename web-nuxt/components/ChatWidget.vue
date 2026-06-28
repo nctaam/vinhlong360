@@ -29,7 +29,7 @@
         </div>
 
         <div class="chat-panel-input">
-          <input v-model="inputText" :placeholder="chatPlaceholder" aria-label="Nhập câu hỏi" :disabled="streaming" maxlength="500" @keyup.enter="sendMessage(inputText)" />
+          <input v-model="inputText" :placeholder="chatPlaceholder" aria-label="Nhập câu hỏi" enterkeyhint="send" :disabled="streaming" maxlength="500" @keyup.enter="sendMessage(inputText)" />
           <button v-if="streaming" type="button" aria-label="Dừng trả lời" @click="stopStream">Dừng</button>
           <button v-else type="button" aria-label="Gửi tin nhắn" :disabled="!inputText.trim()" @click="sendMessage(inputText)">Gửi</button>
         </div>
@@ -232,9 +232,8 @@ onBeforeUnmount(() => {
   text-align: center;
 }
 .cmsg-failed { opacity: .7; border-left: 2px solid var(--error, #d32); }
-.cmsg-retry { display: inline-block; margin-top: 4px; font-size: 11px; color: var(--primary-fg); background: none; border: none; cursor: pointer; text-decoration: underline; padding: 2px 4px; min-height: 36px; border-radius: var(--radius-sm, 4px); }
+.cmsg-retry { display: inline-block; margin-top: 4px; font-size: 11px; color: var(--primary-fg); background: none; border: none; cursor: pointer; text-decoration: underline; padding: 2px 4px; min-height: 44px; border-radius: var(--radius-sm, 4px); }
 .cmsg-retry:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .csuggestions button { min-height: 44px; }
-.chat-panel-input button { min-height: 36px; }
-@media (pointer: coarse) { .chat-panel-input button { min-height: 44px; } }
+.chat-panel-input button { min-height: 44px; }
 </style>

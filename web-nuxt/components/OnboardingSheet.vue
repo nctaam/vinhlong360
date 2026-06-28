@@ -40,15 +40,15 @@ const ob = computed(() => mergeOnboarding(ss('onboarding', {})))
 // Body-scroll lock, focus trap, Escape-to-close + focus restore (SSR-safe).
 useModalA11y(visible, sheetEl, { onClose: dismiss })
 
+const LS_ONBOARDING = 'vl360_onboarding_seen'
 onMounted(() => {
-  const key = 'vl360_onboarding_seen'
-  if (!localStorage.getItem(key)) {
+  if (!localStorage.getItem(LS_ONBOARDING)) {
     setTimeout(() => { visible.value = true }, 1500)
   }
 })
 
 function dismiss() {
   visible.value = false
-  localStorage.setItem('vl360_onboarding_seen', '1')
+  localStorage.setItem(LS_ONBOARDING, '1')
 }
 </script>

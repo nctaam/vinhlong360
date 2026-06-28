@@ -1,5 +1,5 @@
-<template>
-  <main class="page dir-page">
+﻿<template>
+  <section class="page dir-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Danh bạ' }]" />
 
     <!-- Hero -->
@@ -13,11 +13,11 @@
       </div>
       <div v-if="totalWards" class="catalog-stats">
         <div class="stat-item">
-          <span class="stat-num">{{ totalWards }}</span>
+          <CountUp :value="totalWards" class="stat-num" />
           <span class="stat-label">xã/phường</span>
         </div>
         <div v-for="g in wardGroups" :key="g.area" class="stat-item">
-          <span class="stat-num">{{ g.wards.length }}</span>
+          <CountUp :value="g.wards.length" class="stat-num" />
           <span class="stat-label">{{ g.label }}</span>
         </div>
       </div>
@@ -29,7 +29,7 @@
     </EmptyState>
 
     <!-- Region quick-picks -->
-    <section v-if="!placesError" class="block">
+    <section v-if="!placesError" class="block band">
       <div class="section-head">
         <h2>Chọn khu vực</h2>
       </div>
@@ -55,7 +55,7 @@
     </section>
 
     <!-- Ward picker -->
-    <section class="block reveal">
+    <section ref="wardSection" class="block reveal">
       <label class="ward-pick">
         <span class="control-label">Chọn xã / phường:</span>
         <select v-model="wardId" aria-label="Chọn xã/phường">
@@ -118,7 +118,7 @@
       <EmptyState v-else-if="facilitiesError" icon="⚠️" title="Không thể tải danh bạ" message="Có lỗi khi tải dữ liệu. Vui lòng thử lại.">
         <button type="button" class="btn btn-outline btn-sm" @click="loadFacilities">Thử lại</button>
       </EmptyState>
-      <EmptyState v-else message="Chưa có dữ liệu danh bạ cho xã/phường này. Dữ liệu đang được bổ sung từ nguồn chính thống." />
+      <EmptyState v-else icon="📋" title="Chưa có danh bạ" message="Chưa có dữ liệu danh bạ cho xã/phường này. Dữ liệu đang được bổ sung từ nguồn chính thống." />
     </template>
 
     <!-- Cross-links -->
@@ -126,24 +126,24 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon">🌿</span>
+          <span class="cross-icon" aria-hidden="true">🌿</span>
           <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon">🗺️</span>
+          <span class="cross-icon" aria-hidden="true">🗺️</span>
           <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
         </NuxtLink>
         <NuxtLink to="/lich-trinh" class="cross-card">
-          <span class="cross-icon">🗓️</span>
+          <span class="cross-icon" aria-hidden="true">🗓️</span>
           <div><strong>Lịch trình</strong><p>Tuyến đi sẵn</p></div>
         </NuxtLink>
         <NuxtLink to="/lien-he" class="cross-card">
-          <span class="cross-icon">📩</span>
+          <span class="cross-icon" aria-hidden="true">📩</span>
           <div><strong>Liên hệ</strong><p>Góp ý & báo sai</p></div>
         </NuxtLink>
       </div>
     </section>
-  </main>
+  </section>
 </template>
 
 <script setup lang="ts">
@@ -165,6 +165,11 @@ const areaFromQuery = computed(() => {
 })
 
 const selectedArea = ref(areaFromQuery.value)
+const wardSection = ref<HTMLElement | null>(null)
+
+watch(selectedArea, () => {
+  nextTick(() => wardSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+})
 
 const wardGroups = computed(() => {
   const grouped: Record<string, Entity[]> = {}
@@ -244,6 +249,10 @@ async function submitReport(f: Entity) {
 
 let facilitiesAbort: AbortController | null = null
 
+onBeforeUnmount(() => {
+  facilitiesAbort?.abort()
+})
+
 async function loadFacilities() {
   if (facilitiesAbort) facilitiesAbort.abort()
   const id = wardId.value
@@ -257,7 +266,7 @@ async function loadFacilities() {
     const res = await $fetch<{ facilities: Entity[] }>(`/api/facilities?place=${encodeURIComponent(id)}`, { signal: ctrl.signal })
     if (ctrl.signal.aborted) return
     facilities.value = res.facilities || []
-  } catch (err: any) {
+  } catch (err: unknown) {
     if (ctrl.signal.aborted) return
     facilitiesError.value = true
     showToast('Không thể tải danh bạ cơ quan', 'error')

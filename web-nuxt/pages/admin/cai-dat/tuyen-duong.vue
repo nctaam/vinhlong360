@@ -29,6 +29,7 @@
 <script setup lang="ts">
 import { DEFAULT_ROUTES } from '~/utils/routesContent'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Tuyến đường — Admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 
@@ -65,7 +66,7 @@ onMounted(reload)
 .cs-form-wrap { max-width: 760px; }
 .cs-help {
   max-width: 760px; margin-bottom: var(--space-5); padding: var(--space-4);
-  background: rgba(33,150,83,.04); border: .5px solid var(--line); border-radius: 12px;
+  background: rgba(var(--primary-rgb),.04); border: .5px solid var(--line); border-radius: 12px;
   font-size: .82rem; color: var(--muted); line-height: 1.5;
 }
 .cs-help p { margin: 0; }
@@ -75,7 +76,7 @@ onMounted(reload)
 @keyframes cs-pulse { 0%, 100% { opacity: .3; } 50% { opacity: .6; } }
 .cs-fade-enter-active { transition: opacity .3s cubic-bezier(.2,1,.4,1), transform .3s cubic-bezier(.2,1,.4,1); }
 .cs-fade-enter-from { opacity: 0; transform: translateY(6px); }
-.dark .cs-help { background: rgba(33,150,83,.08); }
+.dark .cs-help { background: rgba(var(--primary-rgb),.08); }
 @media (prefers-reduced-motion: reduce) {
   .cs-skel-item { animation: none; }
   .cs-fade-enter-active { transition: none; }

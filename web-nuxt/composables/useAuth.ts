@@ -1,15 +1,6 @@
-export interface User {
-  id: string
-  phone: string
-  display_name: string | null
-  avatar_url: string | null
-  cover_url: string | null
-  username: string | null
-  bio: string
-  role: string
-  created_at: string
-  has_password?: boolean
-}
+import type { User } from '~/types'
+
+export type { User }
 
 export function useAuth() {
   const user = useState<User | null>('auth-user', () => null)
@@ -116,8 +107,8 @@ export function useAuth() {
         ...opts,
         headers: { ...authHeaders(), ...(opts.headers as Record<string, string> || {}) },
       })
-    } catch (e: any) {
-      if (e?.response?.status === 401 && token.value) {
+    } catch (e: unknown) {
+      if (getStatusCode(e) === 401 && token.value) {
         handleSessionExpired()
       }
       throw e

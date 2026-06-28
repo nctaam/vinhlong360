@@ -25,35 +25,35 @@
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon" style="background: rgba(52,120,246,.1); color: #3478F6;">&#128640;</div>
+        <div class="ai-icon si-blue">&#128640;</div>
         <div>
           <div class="stat-value">{{ health?.version || '—' }}</div>
           <div class="stat-label">Phiên bản</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon" style="background: rgba(175,82,222,.1); color: #AF52DE;">&#129302;</div>
+        <div class="ai-icon si-purple">&#129302;</div>
         <div>
           <div class="stat-value ai-model-val">{{ health?.model || health?.llm_api || '—' }}</div>
           <div class="stat-label">Model / API</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon" style="background: rgba(255,159,10,.1); color: #FF9F0A;">&#128338;</div>
+        <div class="ai-icon si-orange">&#128338;</div>
         <div>
           <div class="stat-value">{{ uptime }}</div>
           <div class="stat-label">Uptime</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon" style="background: rgba(33,150,83,.1); color: #219653;">&#127760;</div>
+        <div class="ai-icon si-green">&#127760;</div>
         <div>
           <div class="stat-value">{{ health?.entities || '—' }}</div>
           <div class="stat-label">Entities (KB)</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon" style="background: rgba(0,199,190,.1); color: #00C7BE;">&#128190;</div>
+        <div class="ai-icon si-teal">&#128190;</div>
         <div>
           <div class="stat-value">{{ health?.memory_mb || '—' }} MB</div>
           <div class="stat-label">Bộ nhớ</div>
@@ -77,7 +77,7 @@
             />
           </svg>
           <div class="ai-ring-center">
-            <span class="ai-ring-val" :style="{ color: hitRate >= 70 ? '#219653' : hitRate >= 40 ? '#e67e22' : '#D94F3D' }">{{ hitRate }}%</span>
+            <span class="ai-ring-val" :style="{ color: hitRate >= 70 ? 'var(--success)' : hitRate >= 40 ? 'var(--warning)' : 'var(--danger)' }">{{ hitRate }}%</span>
             <span class="ai-ring-lbl">hit rate</span>
           </div>
         </div>
@@ -87,11 +87,11 @@
             <span class="ai-metric-lbl">Entries</span>
           </div>
           <div class="ai-metric">
-            <span class="ai-metric-val" style="color: #219653">{{ health.cache.hits || 0 }}</span>
+            <span class="ai-metric-val" style="color: var(--success)">{{ health.cache.hits || 0 }}</span>
             <span class="ai-metric-lbl">Hits</span>
           </div>
           <div class="ai-metric">
-            <span class="ai-metric-val" style="color: #D94F3D">{{ health.cache.misses || 0 }}</span>
+            <span class="ai-metric-val" style="color: var(--danger)">{{ health.cache.misses || 0 }}</span>
             <span class="ai-metric-lbl">Misses</span>
           </div>
         </div>
@@ -105,10 +105,10 @@
         <div class="ai-dq-bar-wrap">
           <div class="ai-dq-bar-label">
             <span>Coverage</span>
-            <span class="ai-dq-bar-pct" :style="{ color: health.data_quality.coverage_pct >= 80 ? '#219653' : '#e67e22' }">{{ health.data_quality.coverage_pct }}%</span>
+            <span class="ai-dq-bar-pct" :style="{ color: health.data_quality.coverage_pct >= 80 ? 'var(--success)' : 'var(--warning)' }">{{ health.data_quality.coverage_pct }}%</span>
           </div>
           <div class="ai-dq-track">
-            <div class="ai-dq-fill" :style="{ width: health.data_quality.coverage_pct + '%', background: health.data_quality.coverage_pct >= 80 ? '#219653' : '#e67e22' }"></div>
+            <div class="ai-dq-fill" :style="{ width: health.data_quality.coverage_pct + '%', background: health.data_quality.coverage_pct >= 80 ? 'var(--success)' : 'var(--warning)' }"></div>
           </div>
         </div>
         <div class="ai-metric">
@@ -146,7 +146,7 @@
       <h2 class="admin-section-title">Errors</h2>
       <div class="ai-metrics">
         <div class="ai-metric">
-          <span class="ai-metric-val" :style="{ color: (health.errors.total || 0) > 0 ? '#D94F3D' : '#219653' }">{{ health.errors.total || 0 }}</span>
+          <span class="ai-metric-val" :style="{ color: (health.errors.total || 0) > 0 ? 'var(--danger)' : 'var(--success)' }">{{ health.errors.total || 0 }}</span>
           <span class="ai-metric-lbl">Tổng lỗi</span>
         </div>
         <div class="ai-metric">
@@ -220,6 +220,7 @@
 <script setup lang="ts">
 import type { Entity } from '~/types'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'AI Quản lý — Admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const { confirmDialog } = useConfirm()
@@ -244,9 +245,9 @@ const statusColor = computed(() => {
 })
 const statusBg = computed(() => {
   if (!health.value) return 'rgba(142,142,147,.1)'
-  if (health.value.status === 'ok') return 'rgba(33,150,83,.1)'
-  if (health.value.status === 'degraded') return 'rgba(255,159,10,.1)'
-  return 'rgba(217,79,61,.1)'
+  if (health.value.status === 'ok') return 'rgba(var(--primary-rgb),.1)'
+  if (health.value.status === 'degraded') return 'rgba(var(--warning-rgb),.1)'
+  return 'rgba(var(--danger-rgb),.1)'
 })
 
 const uptime = computed(() => {
@@ -331,9 +332,9 @@ async function reload() {
 function rtColor(ms: number | undefined): string {
   const v = Number(ms) || 0
   if (v <= 0) return 'var(--ink)'
-  if (v < 500) return '#219653'
-  if (v <= 1000) return '#e67e22'
-  return '#D94F3D'
+  if (v < 500) return 'var(--success)'
+  if (v <= 1000) return 'var(--warning)'
+  return 'var(--danger)'
 }
 const triggerResultIsError = computed(() => /error|failed|lỗi/i.test(triggerResult.value))
 const triageOutIsError = computed(() => /^lỗi|llm lỗi|error/i.test(triageOut.value.trim()))
@@ -441,12 +442,12 @@ onMounted(() => { fetchHealth(); fetchCost() })
   margin-right: 6px; vertical-align: middle;
 }
 .ai-near-cap {
-  border-color: var(--warning, #e67e22); background: rgba(255,159,10,.04);
+  border-color: var(--warning); background: rgba(var(--warning-rgb),.04);
   border-left-width: 4px; border-left-style: dashed;
   animation: ai-near-cap-pulse 2s ease-in-out infinite;
 }
 @keyframes ai-near-cap-pulse {
-  0%, 100% { border-left-color: #e67e22; }
+  0%, 100% { border-left-color: var(--warning); }
   50% { border-left-color: transparent; }
 }
 
@@ -462,10 +463,10 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-subsys-dot {
   width: 6px; height: 6px; border-radius: 50%;
 }
-.ai-subsys-on { background: rgba(33,150,83,.06); color: #219653; }
-.ai-subsys-on .ai-subsys-dot { background: #219653; animation: ai-sub-pulse 2.5s ease-in-out infinite; }
-.ai-subsys-off { background: rgba(217,79,61,.06); color: #D94F3D; }
-.ai-subsys-off .ai-subsys-dot { background: #D94F3D; opacity: .5; }
+.ai-subsys-on { background: rgba(var(--primary-rgb),.06); color: var(--secondary); }
+.ai-subsys-on .ai-subsys-dot { background: var(--secondary); animation: ai-sub-pulse 2.5s ease-in-out infinite; }
+.ai-subsys-off { background: rgba(var(--danger-rgb),.06); color: var(--error); }
+.ai-subsys-off .ai-subsys-dot { background: var(--error); opacity: .5; }
 @keyframes ai-sub-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 
 /* ── Actions grid ── */
@@ -493,7 +494,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
   color: #fff; font-weight: 600;
 }
 .ai-action-primary:hover:not(:disabled) {
-  transform: translateY(-3px); box-shadow: 0 6px 20px rgba(33,150,83,.28);
+  transform: translateY(-3px); box-shadow: 0 6px 20px rgba(var(--primary-rgb),.28);
   border-color: var(--primary, #219653);
 }
 /* Secondary action — outline style */
@@ -512,50 +513,50 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-trigger-result {
   margin-top: var(--space-3); padding: var(--space-3) var(--space-4);
   border-radius: 10px; font-size: .85rem;
-  background: rgba(33,150,83,.06); border: .5px solid rgba(33,150,83,.15);
-  color: #219653;
+  background: rgba(var(--primary-rgb),.06); border: .5px solid rgba(var(--primary-rgb),.15);
+  color: var(--secondary);
 }
 .ai-trigger-result.ai-result-error {
-  background: rgba(217,79,61,.08); border-color: #D94F3D; color: #D94F3D;
+  background: rgba(var(--danger-rgb),.08); border-color: var(--error); color: var(--error);
 }
 .ai-triage-box {
   display: flex; align-items: flex-start; gap: var(--space-2);
   margin-top: var(--space-3); padding: var(--space-4);
-  border: .5px solid rgba(33,150,83,.2); border-left: 3px solid #219653; border-radius: 12px;
+  border: .5px solid rgba(var(--primary-rgb),.2); border-left: 3px solid var(--secondary); border-radius: 12px;
   font-size: .85rem; line-height: 1.6;
-  background: rgba(33,150,83,.05);
+  background: rgba(var(--primary-rgb),.05);
 }
 .ai-triage-box .ai-triage-text { white-space: pre-wrap; flex: 1; min-width: 0; }
-.ai-triage-icon { font-weight: 800; color: #219653; flex-shrink: 0; line-height: 1.6; }
+.ai-triage-icon { font-weight: 800; color: var(--secondary); flex-shrink: 0; line-height: 1.6; }
 .ai-triage-box.ai-triage-error {
-  background: rgba(217,79,61,.08); border-color: #D94F3D; border-left-color: #D94F3D;
+  background: rgba(var(--danger-rgb),.08); border-color: var(--error); border-left-color: var(--error);
 }
-.ai-triage-box.ai-triage-error .ai-triage-icon { color: #D94F3D; }
+.ai-triage-box.ai-triage-error .ai-triage-icon { color: var(--error); }
 
 /* ── Cost note callout ── */
 .ai-cost-note {
   display: flex; align-items: flex-start; gap: var(--space-2);
   font-size: .78rem; color: var(--muted); margin-top: var(--space-3);
   padding: var(--space-3) var(--space-4); border-radius: 10px;
-  background: rgba(255,159,10,.04); border: 1px solid rgba(255,159,10,.2);
+  background: rgba(var(--warning-rgb),.04); border: 1px solid rgba(var(--warning-rgb),.2);
 }
-.ai-cost-note-icon { color: #e67e22; flex-shrink: 0; font-weight: 700; line-height: 1.4; }
+.ai-cost-note-icon { color: var(--warning); flex-shrink: 0; font-weight: 700; line-height: 1.4; }
 .ai-cost-note strong { color: var(--ink); }
 
 /* ── Dark mode ── */
 .dark .ai-section { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); border-left-color: var(--primary, #219653); box-shadow: 0 1px 3px rgba(0,0,0,.3); }
 .dark .ai-dq-track { background: rgba(255,255,255,.06); }
 .dark .ai-metric { background: var(--bg, #1c1c1e); border-color: rgba(255,255,255,.08); }
-.dark .ai-subsys-on { background: rgba(33,150,83,.1); }
-.dark .ai-subsys-off { background: rgba(217,79,61,.1); }
+.dark .ai-subsys-on { background: rgba(var(--primary-rgb),.1); }
+.dark .ai-subsys-off { background: rgba(var(--danger-rgb),.1); }
 .dark .ai-action-secondary { background: var(--bg, #1c1c1e); border-color: rgba(255,255,255,.08); color: var(--ink); }
 .dark .ai-action-btn:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(0,0,0,.3); }
 .dark .ai-action-primary { color: #fff; }
-.dark .ai-triage-box { background: rgba(33,150,83,.1); border-color: rgba(33,150,83,.3); }
-.dark .ai-triage-box.ai-triage-error { background: rgba(217,79,61,.12); border-color: #D94F3D; border-left-color: #D94F3D; }
-.dark .ai-trigger-result { background: rgba(33,150,83,.1); border-color: rgba(33,150,83,.2); }
-.dark .ai-trigger-result.ai-result-error { background: rgba(217,79,61,.12); border-color: #D94F3D; }
-.dark .ai-cost-note { background: rgba(255,159,10,.06); border-color: rgba(255,159,10,.25); }
+.dark .ai-triage-box { background: rgba(var(--primary-rgb),.1); border-color: rgba(var(--primary-rgb),.3); }
+.dark .ai-triage-box.ai-triage-error { background: rgba(var(--danger-rgb),.12); border-color: var(--error); border-left-color: var(--error); }
+.dark .ai-trigger-result { background: rgba(var(--primary-rgb),.1); border-color: rgba(var(--primary-rgb),.2); }
+.dark .ai-trigger-result.ai-result-error { background: rgba(var(--danger-rgb),.12); border-color: var(--error); }
+.dark .ai-cost-note { background: rgba(var(--warning-rgb),.06); border-color: rgba(var(--warning-rgb),.25); }
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
@@ -567,7 +568,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
   .ai-action-btn:active:not(:disabled) { transform: none; }
   .ai-action-primary:hover:not(:disabled) { transform: none; }
   .ai-metric:hover { transform: none; }
-  .ai-near-cap { animation: none; border-left-color: #e67e22; }
+  .ai-near-cap { animation: none; border-left-color: var(--warning); }
 }
 
 @media (max-width: 768px) {

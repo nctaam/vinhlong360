@@ -15,11 +15,12 @@
 
     <ClientOnly>
       <div class="controls map-filters reveal">
-        <div class="chip-row" role="group" aria-label="Lọc theo loại địa điểm">
-          <button type="button" v-for="f in typeFilters" :key="f.value" :class="['chip', { active: activeTypes.has(f.value) }]" :aria-pressed="activeTypes.has(f.value)" @click="toggleType(f.value)">
-            {{ f.label }}
-          </button>
-        </div>
+        <FilterChips
+          :filters="typeFilterOptions"
+          :model-value="activeTypeArray"
+          aria-label="Lọc theo loại địa điểm"
+          @update:model-value="onTypeFilterChange"
+        />
         <p class="result-meta" aria-live="polite">
           {{ visibleLabel }}
         </p>
@@ -99,6 +100,28 @@ const typeFilters = [
 
 const route = useRoute()
 const activeTypes = ref(new Set(['all']))
+
+const typeFilterOptions = typeFilters.map(f => {
+  const parts = f.label.match(/^(\S+)\s+(.+)$/)
+  return parts ? { key: f.value, label: parts[2], icon: parts[1] } : { key: f.value, label: f.label }
+})
+const activeTypeArray = computed(() => [...activeTypes.value])
+
+function onTypeFilterChange(v: string[]) {
+  if (v.length === 0) {
+    activeTypes.value = new Set(['all'])
+  } else {
+    const wasAll = activeTypes.value.has('all') && activeTypes.value.size === 1
+    if (v.includes('all') && !wasAll) {
+      activeTypes.value = new Set(['all'])
+    } else {
+      const filtered = v.filter(k => k !== 'all')
+      activeTypes.value = new Set(filtered.length ? filtered : ['all'])
+    }
+  }
+  if (updateRaf) cancelAnimationFrame(updateRaf)
+  updateRaf = requestAnimationFrame(() => { updateRaf = null; updateMarkers() })
+}
 
 let updateRaf: number | null = null
 function toggleType(type: string) {
@@ -300,7 +323,7 @@ useSeoMeta({
   title: 'Bản đồ du lịch Vĩnh Long — vinhlong360',
   description: 'Bản đồ tương tác hiển thị tất cả điểm du lịch, đặc sản, lưu trú, làng nghề tại Vĩnh Long, Bến Tre, Trà Vinh.',
   ogTitle: 'Bản đồ du lịch — vinhlong360',
-  ogDescription: 'Xem tất cả điểm đến trên bản đồ tương tác.',
+  ogDescription: 'Bản đồ tương tác hiển thị tất cả điểm du lịch, đặc sản, lưu trú, làng nghề tại Vĩnh Long, Bến Tre, Trà Vinh.',
 })
 
 useHead({

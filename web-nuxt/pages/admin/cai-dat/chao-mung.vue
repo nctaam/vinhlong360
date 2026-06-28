@@ -24,6 +24,7 @@
 <script setup lang="ts">
 import { DEFAULT_ONBOARDING } from '~/utils/onboardingContent'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Chào mừng — Admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 

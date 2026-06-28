@@ -1,5 +1,5 @@
-<template>
-  <main class="page">
+﻿<template>
+  <section class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lưu trú' }]" :json-ld="true" />
 
     <!-- Hero -->
@@ -13,11 +13,11 @@
       </div>
       <div v-if="allEntities.length" class="catalog-stats">
         <div class="stat-item">
-          <span class="stat-num">{{ allEntities.length }}</span>
+          <CountUp :value="allEntities.length" class="stat-num" />
           <span class="stat-label">nơi lưu trú</span>
         </div>
         <div v-for="a in areaCounts" :key="a.key" class="stat-item">
-          <span class="stat-num">{{ a.count }}</span>
+          <CountUp :value="a.count" class="stat-num" />
           <span class="stat-label">{{ a.name }}</span>
         </div>
       </div>
@@ -29,8 +29,11 @@
       </ul>
     </section>
 
+    <!-- Spotlight nổi bật -->
+    <CatalogSpotlight :items="allEntities" />
+
     <!-- Quick picks by region -->
-    <section class="block">
+    <section class="block band">
       <div class="section-head">
         <h2>Chọn theo khu vực</h2>
       </div>
@@ -50,14 +53,21 @@
     </section>
 
     <!-- Featured -->
-    <section v-if="featured.length" class="block reveal">
+    <section v-if="featured.length" class="block band reveal">
       <div class="section-head">
         <h2>✨ Nơi ở được yêu thích</h2>
       </div>
-      <div class="scroll-row" role="region" aria-label="Nơi ở được yêu thích">
+      <div class="scroll-row" role="region" tabindex="0" aria-label="Nơi ở được yêu thích">
         <EntityCard v-for="e in featured" :key="e.id" :entity="e" />
       </div>
     </section>
+
+    <!-- Interstitial -->
+    <CatalogInterstitial
+      fact="Homestay nhà vườn miền Tây là trải nghiệm đặc trưng — ngủ giữa vườn trái cây, thức dậy với tiếng chim và hương bưởi."
+      icon="🏡"
+      :links="[{ to: '/lich-trinh', label: 'Ghép lịch trình' }, { to: '/du-lich', label: 'Điểm du lịch gần' }]"
+    />
 
     <!-- Editorial -->
     <section class="page-article reveal">
@@ -119,24 +129,24 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/lich-trinh" class="cross-card">
-          <span class="cross-icon">🗓️</span>
+          <span class="cross-icon" aria-hidden="true">🗓️</span>
           <div><strong>Lịch trình</strong><p>Ghép lưu trú vào kế hoạch đi</p></div>
         </NuxtLink>
         <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon">🌿</span>
+          <span class="cross-icon" aria-hidden="true">🌿</span>
           <div><strong>Du lịch</strong><p>Trải nghiệm bản địa</p></div>
         </NuxtLink>
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon">🗺️</span>
+          <span class="cross-icon" aria-hidden="true">🗺️</span>
           <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
         </NuxtLink>
         <NuxtLink to="/san-pham" class="cross-card">
-          <span class="cross-icon">🍊</span>
+          <span class="cross-icon" aria-hidden="true">🍊</span>
           <div><strong>Đặc sản</strong><p>Mua quà miền Tây</p></div>
         </NuxtLink>
       </div>
     </section>
-  </main>
+  </section>
 </template>
 
 <script setup lang="ts">

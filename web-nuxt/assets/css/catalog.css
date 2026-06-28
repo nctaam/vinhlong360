@@ -1,5 +1,4 @@
 /* ── Controls (Apple HIG) ── */
-.controls { margin: var(--space-5) 0 var(--space-3); }
 .control-label { font-size: .75rem; font-weight: var(--weight-semibold); color: var(--ink-700); text-transform: uppercase; letter-spacing: var(--tracking-caps); margin: var(--space-4) 0 var(--space-2); }
 .dark .control-label { color: rgba(255,255,255,.55); }
 .search-row { display: flex; gap: var(--space-3); flex-wrap: wrap; padding: var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-lg); background: var(--bg-alt); transition: border-color .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), background .35s var(--ease-out-expo); }
@@ -20,9 +19,8 @@
 /* when a chip is both active (filled brand bg) AND focused, swap the focus
    ring to accent so it stays visible against the primary-coloured fill */
 .chip.active:focus-visible { outline-color: var(--accent); outline-offset: 4px; }
-.chip.active { background: var(--primary); color: var(--text-on-dark, #fff); border-color: var(--primary); }
-.chip.season.active { background: var(--primary); color: var(--text-on-dark, #fff); border-color: var(--primary); }
-.chip.season.active { background: rgba(var(--primary-rgb), .88); }
+.chip.active { background: var(--primary); color: var(--text-on-dark, #fff); border-color: var(--primary); box-shadow: 0 2px 8px rgba(var(--primary-rgb), .3); }
+.chip.season.active { background: rgba(var(--primary-rgb), .88); color: var(--text-on-dark, #fff); border-color: var(--primary); }
 .dark .chip.season.active { background: rgba(var(--primary-rgb), .75); }
 @media (max-width: 840px) {
   .chip-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 4px; scroll-snap-type: x proximity; overscroll-behavior-x: contain; mask-image: linear-gradient(to right, #000 85%, transparent); -webkit-mask-image: linear-gradient(to right, #000 85%, transparent); }
@@ -120,7 +118,7 @@
 /* Đường phân-cách mảnh giữa chỉ-số → "stat strip" gọn (đồng-nhất trang chủ) */
 .catalog-stats .stat-item + .stat-item::before { content: ""; position: absolute; left: calc(-1 * var(--space-3)); top: 50%; transform: translateY(-50%); width: 1px; height: 24px; background: var(--line); }
 .stat-item:hover { background: var(--overlay-subtle); }
-.stat-num { font-size: var(--text-2xl); font-weight: var(--weight-extrabold); color: var(--primary-fg); letter-spacing: var(--tracking-tight); transition: color .3s var(--ease-out); }
+.stat-num { font-size: var(--text-2xl); font-weight: var(--weight-extrabold); color: var(--primary-fg); letter-spacing: var(--tracking-tight); transition: color .3s var(--ease-out); font-variant-numeric: tabular-nums; }
 .stat-item:hover .stat-num { color: var(--primary-fg-strong, var(--primary-fg)); }
 .stat-label { font-size: var(--text-xs); color: var(--muted); text-transform: uppercase; letter-spacing: var(--tracking-caps); font-weight: var(--weight-semibold); }
 /* visual star glyphs inside a stat-item — turns a dry count into visible proof */
@@ -155,6 +153,23 @@
 .scroll-row.scroll-end {
   -webkit-mask-image: none;
   mask-image: none;
+}
+
+/* Staggered entrance — cards slide in from right when .reveal parent triggers */
+.reveal .scroll-row > * {
+  opacity: 0;
+  transform: translateX(16px);
+  animation: scrollRowIn .5s var(--ease-out-expo) forwards;
+}
+.reveal .scroll-row > *:nth-child(1) { animation-delay: 0s; }
+.reveal .scroll-row > *:nth-child(2) { animation-delay: .06s; }
+.reveal .scroll-row > *:nth-child(3) { animation-delay: .12s; }
+.reveal .scroll-row > *:nth-child(4) { animation-delay: .18s; }
+.reveal .scroll-row > *:nth-child(5) { animation-delay: .24s; }
+.reveal .scroll-row > *:nth-child(n+6) { animation-delay: .3s; }
+@keyframes scrollRowIn {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 /* ── Interest Nav (kham-pha page chips) ── */
@@ -202,19 +217,6 @@
 }
 /* dark mode: the cross-icon picks up a soft glow on hover */
 .dark .cross-card:hover .cross-icon { text-shadow: 0 0 12px rgba(var(--primary-rgb), .15); }
-
-/* ── Highlight card (larger featured card) ── */
-.highlight-scroll { display: flex; gap: var(--space-4); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: var(--space-2); scroll-snap-type: x proximity; overscroll-behavior-x: contain; mask-image: linear-gradient(to right, #000 90%, transparent); -webkit-mask-image: linear-gradient(to right, #000 90%, transparent); }
-.highlight-scroll::-webkit-scrollbar { display: none; }
-.highlight-scroll:hover, .highlight-scroll:focus-within { mask-image: none; -webkit-mask-image: none; }
-.highlight-card {
-  flex: 0 0 280px; background: var(--card); border: .5px solid var(--line);
-  border-radius: var(--radius-lg); overflow: hidden; scroll-snap-align: start;
-  box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .2s var(--ease-out);
-}
-.highlight-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--border); }
-.highlight-card:active { transform: scale(.98); transition-duration: .1s; }
-.highlight-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 
 /* ── Seasonal highlight (banner) ── */
 .seasonal-banner {
@@ -340,8 +342,6 @@
 .dark .search-row:focus-within { box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .18); }
 .dark .chip { background: var(--bg-alt); border-color: var(--line); }
 .dark .chip:hover { background: rgba(255,255,255,.06); }
-.dark .highlight-card { border-color: var(--line); }
-.dark .highlight-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,.35); border-color: rgba(255,255,255,.1); }
 .dark .step-card { border-color: var(--line); }
 .dark .step-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.25); }
 .dark .step-note { color: var(--accent); }
@@ -356,18 +356,18 @@
   .catalog-hero h1 { font-size: var(--text-xl); }
   .catalog-stats { flex-wrap: wrap; gap: var(--space-4); }
   .cross-links { grid-template-columns: repeat(2, 1fr); }
-  .quick-picks { grid-template-columns: repeat(3, 1fr); }
+  .quick-picks { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   /* safe-area aware hero padding on notched phones */
   .catalog-hero {
-    padding-right: max(var(--space-4), env(safe-area-inset-right));
-    padding-left: max(var(--space-4), env(safe-area-inset-left));
+    padding-inline-end: max(var(--space-4), env(safe-area-inset-right));
+    padding-inline-start: max(var(--space-4), env(safe-area-inset-left));
   }
   /* keep hero icon from crowding the title once stacked */
-  .catalog-hero-icon { margin-right: var(--space-2); }
+  .catalog-hero-icon { margin-inline-end: var(--space-2); }
 }
 /* very small phones: lock quick-picks to 2 columns so cells don't wrinkle */
 @media (max-width: 480px) {
-  .quick-picks { grid-template-columns: repeat(2, 1fr); }
+  .quick-picks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* ── Itinerary cards + timeline ── */
@@ -383,14 +383,10 @@
 .step-card:hover { transform: translateX(3px); box-shadow: var(--shadow-md); }
 .step-card:active { transform: translateX(1px) scale(.98); transition-duration: .1s; }
 .step-card.cat-product { border-left-color: var(--accent); }
-.step-card.cat-attraction { border-left-color: #2a9d8f; }
-.step-card.cat-dish { border-left-color: #d94f3d; }
-.step-card.cat-craft { border-left-color: #b5651d; }
-.step-card.cat-accommodation { border-left-color: #5b6cc4; }
-.dark .step-card.cat-attraction { border-left-color: #3dbfb0; }
-.dark .step-card.cat-dish { border-left-color: #ef6f5e; }
-.dark .step-card.cat-craft { border-left-color: #d4863e; }
-.dark .step-card.cat-accommodation { border-left-color: #7b8ce0; }
+.step-card.cat-attraction { border-left-color: var(--cat-attraction-accent); }
+.step-card.cat-dish { border-left-color: var(--cat-dish-accent); }
+.step-card.cat-craft { border-left-color: var(--cat-craft-accent); }
+.step-card.cat-accommodation { border-left-color: var(--cat-accommodation-accent); }
 .step-emoji { font-size: 1.8rem; }
 .step-card h3 { margin: 2px 0; font-size: 1.05rem; }
 .stop-link { color: inherit; }
@@ -410,6 +406,7 @@
 /* 1 ── Controls become one cohesive "panel" instead of loose rows.
    A soft surface card groups search + filters with calm rhythm. */
 .controls {
+  margin: var(--space-5) 0 var(--space-3);
   background: var(--card);
   border: .5px solid var(--line);
   border-radius: var(--radius-lg);
@@ -431,11 +428,11 @@
 
 /* 2 ── Leading search glyph (CSS-only) so the field reads as search
    at a glance — refined over a bare input. Pads the input to clear it. */
-.controls .search-row { padding-left: calc(var(--space-3) + 26px); }
+.controls .search-row { padding-inline-start: calc(var(--space-3) + 26px); }
 .controls .search-row::before {
   content: "";
   position: absolute;
-  left: var(--space-4);
+  inset-inline-start: var(--space-4);
   top: 50%;
   width: 18px; height: 18px;
   transform: translateY(-50%);
@@ -587,14 +584,27 @@
   .page-article h2 { font-size: var(--text-base); margin: var(--space-5) 0 var(--space-2); }
 }
 
+/* ── Band rhythm — warm-toned section strip (shared with homepage) ── */
+.block.band {
+  background: var(--bg-warm);
+  background-image: var(--season-hero-gradient);
+  border-radius: var(--radius-xl);
+  padding-inline: var(--space-6);
+}
+.block.band + .block::before,
+.block + .block.band::before {
+  display: none;
+}
+.dark .block.band {
+  background-color: var(--bg-alt);
+}
+
 /* ── Reduced motion (catalog shared) ── */
 @media (prefers-reduced-motion: reduce) {
   .cross-card:hover { transform: none; }
   .cross-card:active { transform: none; }
   .quick-pick:hover { transform: none; }
   .quick-pick:active { transform: none; }
-  .highlight-card:hover { transform: none; }
-  .highlight-card:active { transform: none; }
   .step-card:hover { transform: none; }
   .step-card:active { transform: none; }
   .chip:active { transform: none; }
@@ -608,4 +618,5 @@
   .region-quick-picks .quick-pick:hover { transform: none; }
   .result-meta { animation: none; }
   .result-meta::before { animation: none; }
+  .reveal .scroll-row > * { animation: none; opacity: 1; transform: none; }
 }

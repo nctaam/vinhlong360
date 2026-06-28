@@ -1,5 +1,5 @@
 <template>
-  <main class="page">
+  <section class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: areaMeta?.name || 'Khu vực' }]" />
 
     <!-- Hero -->
@@ -14,11 +14,11 @@
       </div>
       <div v-if="entities.length" class="catalog-stats area-stats">
         <div class="stat-item">
-          <span class="stat-num">{{ entities.length }}</span>
+          <CountUp :value="entities.length" class="stat-num" />
           <span class="stat-label">địa điểm</span>
         </div>
         <div v-for="s in typeStats" :key="s.type" class="stat-item">
-          <span class="stat-num">{{ s.count }}</span>
+          <CountUp :value="s.count" class="stat-num" />
           <span class="stat-label">{{ s.label }}</span>
         </div>
       </div>
@@ -29,6 +29,21 @@
       <h2>{{ areaEditorial.title }}</h2>
       <p v-for="(p, i) in areaEditorial.paragraphs" :key="i">{{ p }}</p>
     </section>
+
+    <!-- Spotlight -->
+    <CatalogSpotlight :items="entities" />
+
+    <!-- Interstitial -->
+    <CatalogInterstitial
+      v-if="typeStats.length"
+      :fact="`${areaMeta?.name} quy tụ ${typeStats.length} loại hình khác nhau — từ trải nghiệm miệt vườn đến ẩm thực, lưu trú và làng nghề.`"
+      icon="🌟"
+      variant="warm"
+      :links="[
+        { to: `/du-lich?vung=${areaKey}`, label: `Du lịch ${areaMeta?.name}` },
+        { to: `/san-pham?vung=${areaKey}`, label: 'Đặc sản vùng' },
+      ]"
+    />
 
     <!-- Error state -->
     <EmptyState v-if="fetchError && !entities.length" tone="error" icon="⚠️" title="Không thể tải dữ liệu" message="Lỗi kết nối. Vui lòng thử lại.">
@@ -51,7 +66,7 @@
         <h2>Nổi bật {{ areaMeta?.name }}</h2>
       </div>
       <p class="section-desc">Những địa điểm nổi bật nhất vùng — chọn lọc theo hình ảnh và mức độ quan tâm.</p>
-      <div class="scroll-row honor-roll" role="region" :aria-label="'Nổi bật ' + areaMeta?.name">
+      <div class="scroll-row honor-roll" role="region" tabindex="0" :aria-label="'Nổi bật ' + areaMeta?.name">
         <EntityCard v-for="e in featured" :key="e.id" :entity="e" />
       </div>
     </section>
@@ -71,13 +86,13 @@
         </button>
         <span v-else class="see-all-count">{{ cat.items.length }} mục</span>
       </div>
-      <div class="scroll-row" role="region" :aria-label="cat.label">
+      <div class="scroll-row" role="region" tabindex="0" :aria-label="cat.label">
         <EntityCard v-for="e in (expanded[cat.type] ? cat.items : cat.items.slice(0, 8))" :key="e.id" :entity="e" />
       </div>
     </section>
 
     <!-- Wards -->
-    <section v-if="wards.length" class="block reveal">
+    <section v-if="wards.length" class="block band reveal">
       <div class="section-head">
         <h2>Xã / phường ({{ wards.length }})</h2>
       </div>
@@ -98,7 +113,7 @@
         <EntityCard v-for="e in visibleEntities" :key="e.id" :entity="e" />
       </div>
       <div v-if="visibleEntities.length < entities.length" class="load-more-wrap">
-        <button type="button" class="btn btn-outline" @click="showMore">Xem thêm ({{ entities.length - visibleEntities.length }} còn lại)</button>
+        <LoadMoreButton :remaining="entities.length - visibleEntities.length" @load="showMore" />
       </div>
     </section>
     <EmptyState v-else-if="data && !fetchError" icon="📍" title="Chưa có dữ liệu" message="Chưa có dữ liệu cho khu vực này. Dữ liệu đang được cập nhật.">
@@ -113,24 +128,24 @@
       <h2>Khám phá thêm {{ areaMeta.name }}</h2>
       <div class="cross-links">
         <NuxtLink :to="`/du-lich?type=experience&mua=all`" class="cross-card">
-          <span class="cross-icon">🌾</span>
+          <span class="cross-icon" aria-hidden="true">🌾</span>
           <div><strong>Trải nghiệm</strong><p>Miệt vườn sông nước</p></div>
         </NuxtLink>
         <NuxtLink to="/san-pham" class="cross-card">
-          <span class="cross-icon">🍊</span>
+          <span class="cross-icon" aria-hidden="true">🍊</span>
           <div><strong>Sản phẩm</strong><p>Đặc sản địa phương</p></div>
         </NuxtLink>
         <NuxtLink to="/luu-tru" class="cross-card">
-          <span class="cross-icon">🏡</span>
+          <span class="cross-icon" aria-hidden="true">🏡</span>
           <div><strong>Lưu trú</strong><p>Homestay, nhà vườn</p></div>
         </NuxtLink>
         <NuxtLink :to="`/danh-ba?area=${areaKey}`" class="cross-card">
-          <span class="cross-icon">🏛️</span>
+          <span class="cross-icon" aria-hidden="true">🏛️</span>
           <div><strong>Danh bạ</strong><p>Hành chính xã/phường</p></div>
         </NuxtLink>
       </div>
     </section>
-  </main>
+  </section>
 </template>
 
 <script setup lang="ts">
@@ -247,10 +262,7 @@ if (areaMeta) {
     description: areaMeta.blurb,
     ogTitle: `${areaMeta.emoji} ${areaMeta.name} — vinhlong360`,
     ogDescription: areaMeta.blurb,
-    ogImage: () => {
-      const f = featured.value
-      return f.length && f[0].images?.length ? f[0].images[0] : '/icons/icon-512.png'
-    },
+    ogImage: () => entityOgImage(featured.value[0]?.images),
   })
 
   useHead(() => ({

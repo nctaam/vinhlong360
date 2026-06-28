@@ -14,8 +14,8 @@
 .card:active { transform: translateY(-1px) scale(.97); transition-duration: .1s; }
 .card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; transform: translateY(-6px); }
 .cover { height: 96px; display: flex; align-items: center; justify-content: center; position: relative; color: var(--text-on-dark, #fff); }
-.cover span:not(.cover-tag) { font-size: 2.6rem; filter: drop-shadow(var(--shadow-text)); }
-.cover-img { position: relative; height: 160px; overflow: hidden; background: linear-gradient(110deg, var(--bg-alt) 30%, var(--card) 50%, var(--bg-alt) 70%); background-size: 200% 100%; animation: shimmer 1.6s infinite linear; aspect-ratio: 5/2; }
+.cover span:not(.cover-tag) { font-size: var(--icon-xl); filter: drop-shadow(var(--shadow-text)); }
+.cover-img { position: relative; height: var(--card-cover-height, 160px); overflow: hidden; background: linear-gradient(110deg, var(--bg-alt) 30%, var(--card) 50%, var(--bg-alt) 70%); background-size: 200% 100%; animation: shimmer 1.6s infinite linear; aspect-ratio: 5/2; }
 .cover-img:has(img.loaded), .cover-img:has(img:not([loading="lazy"])) { animation: none; background: var(--bg-alt); }
 .cover-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s var(--ease-out-expo), opacity .5s var(--ease-out-expo), filter .5s var(--ease-out-expo); will-change: transform; }
 .cover-img img[loading="lazy"] { opacity: 0; transform: scale(1.02); filter: blur(2px); }
@@ -144,7 +144,7 @@
 .region-card .rc-count { color: var(--primary-fg); font-weight: var(--weight-bold); font-size: var(--text-sm); margin-top: var(--space-1); }
 
 .region-head { display: flex; gap: var(--space-4); align-items: center; color: var(--text-on-dark, #fff); border-radius: var(--radius); padding: var(--space-6); margin-bottom: var(--space-2); background: var(--cat-attraction); }
-.region-head .rc-emoji { font-size: 2.8rem; }
+.region-head .rc-emoji { font-size: var(--icon-2xl); }
 .region-head h1 { margin: 0; }
 .region-head p { margin: var(--space-1) 0 0; opacity: .92; }
 
@@ -303,9 +303,9 @@
    ============================================================ */
 
 /* product cards get a slightly taller cover for richer presence */
-.card.cat-product .cover-img { height: 180px; }
+.card.cat-product .cover-img { --card-cover-height: 180px; }
 @media (max-width: 480px) {
-  .card.cat-product .cover-img { height: 160px; }
+  .card.cat-product .cover-img { --card-cover-height: 160px; }
 }
 /* product card meta reads as an appetizing, scannable pill */
 .card.cat-product .card-meta {

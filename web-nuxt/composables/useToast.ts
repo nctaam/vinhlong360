@@ -1,9 +1,4 @@
-interface Toast {
-  id: number
-  message: string
-  type: 'success' | 'error' | 'warning' | 'info'
-  duration: number
-}
+import type { Toast } from '~/types'
 
 let nextId = 0
 

@@ -205,7 +205,7 @@ useSeoMeta({ title: `${props.error?.statusCode || 'Lỗi'} — vinhlong360` })
 .error-actions .btn:active { transform: scale(.95); transition-duration: .08s; }
 
 /* Dark mode: gradient text + SVG legibility */
-.dark .error-code { background: linear-gradient(135deg, #D98A6F 0%, #f0be6a 100%); -webkit-background-clip: text; background-clip: text; }
+.dark .error-code { background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent) 100%); -webkit-background-clip: text; background-clip: text; }
 .dark .illust-halo { opacity: .9; }
 .dark .illust-face { stroke-opacity: 1; }
 .dark .error-link-pill { background: var(--bg-alt, var(--bg-warm)); border-color: var(--border); }

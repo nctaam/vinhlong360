@@ -83,7 +83,6 @@
 .dark .quick-pick:hover { border-color: var(--primary-fg); box-shadow: var(--shadow-md); }
 
 /* ── Seasonal (theo-mua) ── */
-.dark .b2b-note { background: rgba(var(--secondary-rgb), .08); border-color: rgba(var(--secondary-rgb), .25); }
 .dark .season-badge { background: rgba(0,0,0,.7); }
 
 /* ── Community (cong-dong) ── */

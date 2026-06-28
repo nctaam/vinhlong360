@@ -1,6 +1,12 @@
 <template>
   <section v-if="itinerary" class="page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình', to: '/lich-trinh' }, { label: itinerary.title || itinerary.name }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình', to: '/lich-trinh' }, { label: itinerary.title || itinerary.name }]">
+      <template #before>
+        <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
+          <span aria-hidden="true">←</span>
+        </button>
+      </template>
+    </Breadcrumb>
 
     <section class="catalog-hero cat-itinerary">
       <div class="catalog-hero-inner">
@@ -17,6 +23,7 @@
       <ClientOnly>
         <SaveButton :entity="itinerarySaveShape" :show-label="true" />
         <ShareButton :title="itinerary.title || itinerary.name" :text="itinerary.summary || itinerary.description" />
+        <button type="button" class="btn btn-ghost btn-sm" aria-label="Báo cáo lịch trình" @click="openReport('entity', id)">🚩 Báo cáo</button>
       </ClientOnly>
         <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-outline btn-sm">+ Tự tạo lịch trình</NuxtLink>
     </div>
@@ -41,7 +48,7 @@
         <li class="step">
           <span class="step-time">{{ stop.time || '' }}</span>
           <div :class="['step-card', stop.type ? `cat-${catClass(stop.type)}` : '']">
-            <span class="step-emoji">{{ typeEmoji(stop.type) }}</span>
+            <span class="step-emoji" aria-hidden="true">{{ typeEmoji(stop.type) }}</span>
             <div class="step-content">
               <h3>
                 <NuxtLink v-if="stop.id" :to="`/dia-diem/${stop.id}`" class="stop-link">{{ stop.name || stop.id }}</NuxtLink>
@@ -78,7 +85,7 @@
     <div class="reveal">
       <NuxtErrorBoundary>
         <ClientOnly>
-          <AIRecommendations v-if="itinerary.area" title="Khám phá thêm" :limit="4" />
+          <LazyAIRecommendations v-if="itinerary.area" title="Khám phá thêm" :limit="4" />
         </ClientOnly>
       </NuxtErrorBoundary>
     </div>
@@ -104,7 +111,18 @@ import { fetchRoute, formatDistance, formatDuration, type TransportMode, type Ro
 useReveal()
 
 const route = useRoute()
+const router = useRouter()
 const id = route.params.id as string
+
+function goBack() {
+  if (import.meta.client && window.history.length > 1) {
+    router.back()
+  } else {
+    navigateTo('/lich-trinh')
+  }
+}
+
+const { openReport } = useReport()
 
 const { data: itinerary, error: fetchError, status } = await useAsyncData(`itinerary-${id}`, () =>
   apiFetch<Itinerary>(`/api/itineraries/${id}`)
@@ -505,5 +523,12 @@ if (itinerary.value && !itinerary.value.error) {
   .transport-mode .chip:active { transform: none; }
   .route-loading { animation: none; }
   .route-map-loading { animation: none; background: var(--bg-alt); }
+}
+@media print {
+  .itin-actions, .transport-mode-spaced, .route-map-section { display: none; }
+  .step-card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+  .step-card:hover { transform: none; }
+  .timeline { padding-left: 16px; }
+  .timeline::before { background: #999; }
 }
 </style>

@@ -129,6 +129,7 @@
 <script setup lang="ts">
 import type { Itinerary } from '~/types'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
+useHead({ title: 'Lịch trình — Admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
@@ -368,10 +369,10 @@ onUnmounted(() => { if (entitySearchTimer) clearTimeout(entitySearchTimer) })
 .lt-area-badge {
   display: inline-block; padding: 2px 10px; border-radius: 100px;
   font-size: .72rem; font-weight: 600; letter-spacing: .3px;
-  background: rgba(52,120,246,.08); color: #3478F6;
+  background: rgba(var(--blue-rgb),.08); color: var(--info);
   transition: background .2s, transform .2s cubic-bezier(.2,1,.4,1);
 }
-.lt-area-badge:hover { background: rgba(52,120,246,.14); transform: scale(1.04); }
+.lt-area-badge:hover { background: rgba(var(--blue-rgb),.14); transform: scale(1.04); }
 .lt-duration {
   font-size: .82rem; color: var(--muted);
   display: inline-flex; align-items: center; gap: 4px;
@@ -380,7 +381,7 @@ onUnmounted(() => { if (entitySearchTimer) clearTimeout(entitySearchTimer) })
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 24px; height: 24px; padding: 0 6px;
   border-radius: 8px; font-size: .78rem; font-weight: 700;
-  background: rgba(33,150,83,.08); color: #219653;
+  background: rgba(var(--primary-rgb),.08); color: var(--secondary-fg);
   transition: transform .2s cubic-bezier(.2,1,.4,1);
 }
 tr:hover .lt-stops-badge { transform: scale(1.1); }
@@ -392,9 +393,9 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   .lt-area-badge:hover, tr:hover .lt-stops-badge { transform: none; }
 }
 
-.dark .lt-area-badge { background: rgba(52,120,246,.12); }
-.dark .lt-area-badge:hover { background: rgba(52,120,246,.2); }
-.dark .lt-stops-badge { background: rgba(33,150,83,.15); }
+.dark .lt-area-badge { background: rgba(var(--blue-rgb),.12); }
+.dark .lt-area-badge:hover { background: rgba(var(--blue-rgb),.2); }
+.dark .lt-stops-badge { background: rgba(var(--primary-rgb),.15); }
 
 /* --- Visual stops editor --- */
 .lt-stops-head {
@@ -406,7 +407,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 22px; height: 22px; padding: 0 6px;
   border-radius: 7px; font-size: .74rem; font-weight: 700;
-  background: rgba(33,150,83,.08); color: #219653;
+  background: rgba(var(--primary-rgb),.08); color: var(--secondary-fg);
 }
 .lt-mode-toggle {
   appearance: none; border: 1px solid var(--border, rgba(0,0,0,.12));
@@ -414,8 +415,8 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   font-size: .76rem; font-weight: 600; padding: 6px 10px; border-radius: 8px;
   cursor: pointer; transition: background .2s, color .2s, border-color .2s;
 }
-.lt-mode-toggle:hover { background: rgba(52,120,246,.08); color: #3478F6; border-color: rgba(52,120,246,.3); }
-.lt-mode-toggle:focus-visible { outline: 2px solid #3478F6; outline-offset: 2px; }
+.lt-mode-toggle:hover { background: rgba(var(--blue-rgb),.08); color: var(--info); border-color: rgba(var(--blue-rgb),.3); }
+.lt-mode-toggle:focus-visible { outline: 2px solid var(--info); outline-offset: 2px; }
 
 .lt-stops-empty {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -433,10 +434,10 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   border-radius: 12px; background: rgba(0,0,0,.015);
   transition: border-color .2s, background .2s;
 }
-.lt-stop-row:hover { border-color: rgba(52,120,246,.28); background: rgba(52,120,246,.03); }
+.lt-stop-row:hover { border-color: rgba(var(--blue-rgb),.28); background: rgba(var(--blue-rgb),.03); }
 /* Status colour-coding: a left accent bar for quick scanning. */
 .lt-stop-row { border-left-width: 3px; }
-.lt-stop-ok { border-left-color: rgba(33,150,83,.5); }
+.lt-stop-ok { border-left-color: rgba(var(--primary-rgb),.5); }
 .lt-stop-warn { border-left-color: rgba(230,126,34,.55); }
 
 .lt-stop-order { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 0 0 auto; padding-top: 2px; }
@@ -449,7 +450,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   width: 20px; height: 20px; margin-top: 2px;
   border-radius: 50%; font-size: .68rem; font-weight: 700; line-height: 1;
 }
-.lt-stop-status-ok { background: rgba(33,150,83,.12); color: #219653; }
+.lt-stop-status-ok { background: rgba(var(--primary-rgb),.12); color: var(--secondary-fg); }
 .lt-stop-status-warn { background: rgba(230,126,34,.14); color: #c46b13; }
 .lt-move {
   appearance: none; border: none; background: transparent; cursor: pointer;
@@ -458,8 +459,8 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   display: inline-flex; align-items: center; justify-content: center;
   transition: background .2s, color .2s, transform .2s cubic-bezier(.2,1,.4,1);
 }
-.lt-move:hover:not(:disabled) { background: rgba(52,120,246,.1); color: #3478F6; transform: scale(1.12); }
-.lt-move:focus-visible { outline: 2px solid #3478F6; outline-offset: 1px; }
+.lt-move:hover:not(:disabled) { background: rgba(var(--blue-rgb),.1); color: var(--info); transform: scale(1.12); }
+.lt-move:focus-visible { outline: 2px solid var(--info); outline-offset: 1px; }
 .lt-move:disabled { opacity: .25; cursor: not-allowed; }
 
 .lt-stop-fields { flex: 1 1 auto; display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
@@ -478,13 +479,13 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 
 .lt-add-stop {
   appearance: none; cursor: pointer; margin-top: var(--space-2);
-  border: 1px dashed rgba(52,120,246,.4); background: rgba(52,120,246,.04);
-  color: #3478F6; font-size: .84rem; font-weight: 600;
+  border: 1px dashed rgba(var(--blue-rgb),.4); background: rgba(var(--blue-rgb),.04);
+  color: var(--info); font-size: .84rem; font-weight: 600;
   padding: 10px 14px; border-radius: 10px; width: 100%; min-height: 44px;
   transition: background .2s, border-color .2s, transform .2s cubic-bezier(.2,1,.4,1);
 }
-.lt-add-stop:hover { background: rgba(52,120,246,.1); border-color: rgba(52,120,246,.6); transform: translateY(-1px); }
-.lt-add-stop:focus-visible { outline: 2px solid #3478F6; outline-offset: 2px; }
+.lt-add-stop:hover { background: rgba(var(--blue-rgb),.1); border-color: rgba(var(--blue-rgb),.6); transform: translateY(-1px); }
+.lt-add-stop:focus-visible { outline: 2px solid var(--info); outline-offset: 2px; }
 
 @media (max-width: 540px) {
   .lt-stop-grid { grid-template-columns: 1fr; }
@@ -508,22 +509,22 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   display: inline-flex; align-items: center;
   padding: 4px 10px; border-radius: 999px;
   font-size: .72rem; font-weight: 600; color: var(--primary, #219653);
-  background: rgba(33,150,83,.1); border: .5px solid rgba(33,150,83,.25);
+  background: rgba(var(--primary-rgb),.1); border: .5px solid rgba(var(--primary-rgb),.25);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .lt-row-btn { transition: none; }
 }
 
-.dark .lt-stops-count { background: rgba(33,150,83,.15); }
+.dark .lt-stops-count { background: rgba(var(--primary-rgb),.15); }
 .dark .lt-stop-row { background: rgba(255,255,255,.02); border-color: rgba(255,255,255,.08); }
-.dark .lt-stop-row:hover { background: rgba(52,120,246,.08); }
-.dark .lt-stop-ok { border-left-color: rgba(33,150,83,.6); }
+.dark .lt-stop-row:hover { background: rgba(var(--blue-rgb),.08); }
+.dark .lt-stop-ok { border-left-color: rgba(var(--primary-rgb),.6); }
 .dark .lt-stop-warn { border-left-color: rgba(230,126,34,.65); }
 .dark .lt-stops-empty { border-color: rgba(255,255,255,.14); }
-.dark .lt-stop-status-ok { background: rgba(33,150,83,.2); color: #5fcf8a; }
+.dark .lt-stop-status-ok { background: rgba(var(--primary-rgb),.2); color: #5fcf8a; }
 .dark .lt-stop-status-warn { background: rgba(230,126,34,.22); color: #f0a35a; }
 .dark .lt-duration { color: rgba(255,255,255,.55); }
 .dark .lt-duration-icon { opacity: .8; }
-.dark .lt-dirty-badge { color: #5fcf8a; background: rgba(33,150,83,.18); border-color: rgba(95,207,138,.3); }
+.dark .lt-dirty-badge { color: #5fcf8a; background: rgba(var(--primary-rgb),.18); border-color: rgba(var(--success-rgb),.3); }
 </style>

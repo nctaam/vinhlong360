@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Theo mùa' }]" />
 
@@ -29,19 +29,22 @@
 
       <div v-if="inSeasonItems.length" class="catalog-stats">
         <div class="stat-item">
-          <span class="stat-num">{{ inSeasonItems.length }}</span>
+          <CountUp :value="inSeasonItems.length" class="stat-num" />
           <span class="stat-label">đang mùa</span>
         </div>
         <div v-if="peakCount" class="stat-item">
-          <span class="stat-num">{{ peakCount }}</span>
+          <CountUp :value="peakCount" class="stat-num" />
           <span class="stat-label">cao điểm</span>
         </div>
         <div v-for="t in typeStats" :key="t.type" class="stat-item">
-          <span class="stat-num">{{ t.count }}</span>
+          <CountUp :value="t.count" class="stat-num" />
           <span class="stat-label">{{ t.label }}</span>
         </div>
       </div>
     </section>
+
+    <!-- Spotlight nổi bật (entity đang mùa có summary dài nhất) -->
+    <CatalogSpotlight :items="inSeasonItems" />
 
     <!-- Month selector -->
     <section class="block">
@@ -75,7 +78,7 @@
     </ClientOnly>
 
     <!-- Peak highlights (honor row) -->
-    <section v-if="peakItems.length" class="block reveal">
+    <section ref="resultsSection" v-if="peakItems.length" class="block band reveal">
       <div class="seasonal-banner peak-banner">
         <span class="seasonal-banner-icon">🔥</span>
         <div>
@@ -130,6 +133,14 @@
         </div>
       </div>
     </section>
+
+    <!-- Interstitial -->
+    <CatalogInterstitial
+      fact="Mùa nước nổi (tháng 8–11) mang đến cá linh, bông điên điển, bông súng — những đặc sản chỉ có vài tháng mỗi năm."
+      icon="🌾"
+      variant="accent"
+      :links="[{ to: '/san-pham', label: 'Xem đặc sản' }, { to: '/kham-pha/am-thuc', label: 'Ẩm thực miền Tây' }]"
+    />
 
     <!-- B2B callout (§1.4: liên hệ/hỏi-giá only, no order form) -->
     <aside class="b2b-callout">
@@ -192,19 +203,19 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/san-pham" class="cross-card">
-          <span class="cross-icon">🍊</span>
+          <span class="cross-icon" aria-hidden="true">🍊</span>
           <div><strong>Đặc sản</strong><p>Tất cả sản phẩm</p></div>
         </NuxtLink>
         <NuxtLink to="/ocop" class="cross-card">
-          <span class="cross-icon">⭐</span>
+          <span class="cross-icon" aria-hidden="true">⭐</span>
           <div><strong>OCOP</strong><p>Sản phẩm đạt chuẩn</p></div>
         </NuxtLink>
         <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon">🌿</span>
+          <span class="cross-icon" aria-hidden="true">🌿</span>
           <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/kham-pha/am-thuc" class="cross-card">
-          <span class="cross-icon">🍲</span>
+          <span class="cross-icon" aria-hidden="true">🍲</span>
           <div><strong>Ẩm thực</strong><p>Món ngon miền Tây</p></div>
         </NuxtLink>
       </div>
@@ -236,6 +247,12 @@ const { f: pc } = usePageContent('theo_mua')
 const { relevanceScore, seasonText } = useSeason()
 
 const month = ref(new Date().getMonth() + 1)
+const resultsSection = ref<HTMLElement | null>(null)
+
+watch(month, () => {
+  nextTick(() => resultsSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+})
+
 const seasonEmoji = computed(() => SEASON_EMOJIS[month.value - 1] || '📅')
 
 /* Mekong quarters → mood label + note (evocative, not factual claims). */

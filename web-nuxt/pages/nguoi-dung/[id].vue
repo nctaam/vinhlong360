@@ -4,7 +4,7 @@
 
     <div v-if="profile" class="user-profile reveal">
       <div class="profile-cover">
-        <img v-if="profile.cover_url" :src="profile.cover_url" :alt="`Ảnh bìa ${profile.display_name}`" class="cover-img" loading="eager" decoding="async" width="960" height="200" />
+        <img v-if="profile.cover_url" :src="profile.cover_url" :alt="`Ảnh bìa ${profile.display_name}`" class="cover-img" loading="eager" fetchpriority="high" decoding="async" width="960" height="200" />
         <UserCoverPlaceholder v-else />
         <div class="cover-scrim" aria-hidden="true"></div>
         <div class="profile-avatar-wrap">
@@ -28,7 +28,7 @@
             <span v-if="!followLoading">{{ isFollowing ? 'Đang theo dõi' : 'Theo dõi' }}</span>
             <span v-else class="spinner spinner-sm" aria-label="Đang xử lý"></span>
           </button>
-          <div v-if="isLoggedIn && !isSelf" class="profile-more-wrap">
+          <div v-if="isLoggedIn && !isSelf" class="profile-more-wrap" @keydown.escape="showMoreMenu = false">
             <button type="button" class="btn btn-ghost btn-sm btn-icon" aria-label="Thêm" @click="showMoreMenu = !showMoreMenu">&#8226;&#8226;&#8226;</button>
             <div v-if="showMoreMenu" class="profile-more-menu" @click="showMoreMenu = false">
               <button type="button" class="pm-item" @click="toggleBlock">{{ isBlocked ? 'Bỏ chặn' : 'Chặn người này' }}</button>
@@ -332,10 +332,10 @@ async function toggleLike(postId: string) {
   post.likes = (post.likes || 0) + (post.user_liked ? 1 : -1)
   try {
     await $fetch(`/api/posts/${postId}/like`, { method: 'POST', headers: authHeaders() })
-  } catch (e: any) {
+  } catch (e: unknown) {
     post.user_liked = !post.user_liked
     post.likes = (post.likes || 0) + (post.user_liked ? 1 : -1)
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể thích bài viết', 'error')
   } finally { pendingActions.delete(`like:${postId}`) }
 }
@@ -359,9 +359,9 @@ async function toggleBookmark(postId: string) {
   post.user_bookmarked = !post.user_bookmarked
   try {
     await $fetch(`/api/posts/${postId}/bookmark`, { method: 'POST', headers: authHeaders() })
-  } catch (e: any) {
+  } catch (e: unknown) {
     post.user_bookmarked = !post.user_bookmarked
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể lưu bài viết', 'error')
   } finally { pendingActions.delete(`bm:${postId}`) }
 }
@@ -379,9 +379,9 @@ async function loadFollowList(which: 'followers' | 'following') {
   try {
     const res = await $fetch<any>(`/api/users/${userId.value}/${which}`, { headers: authHeaders() })
     followLists.value[which] = res.users || []
-  } catch (e: any) {
+  } catch (e: unknown) {
     followLists.value[which] = []
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể tải danh sách', 'error')
   }
   followLoadingList.value = false
@@ -420,10 +420,10 @@ async function toggleFollow() {
   try {
     await $fetch(`/api/follow/user/${userId.value}`, { method: 'POST', headers: authHeaders() })
     followLists.value = { followers: null, following: null }
-  } catch (e: any) {
+  } catch (e: unknown) {
     isFollowing.value = was
     followerCount.value += was ? 1 : -1
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể theo dõi', 'error')
   }
   followLoading.value = false
@@ -460,8 +460,8 @@ async function toggleBlock() {
       await $fetch(`/api/block/${userId.value}`, { method: 'POST', headers: authHeaders() })
       isBlocked.value = false
       showToast('Đã bỏ chặn', 'success')
-    } catch (e: any) {
-      if (e?.response?.status === 401) { handleSessionExpired(); return }
+    } catch (e: unknown) {
+      if (getStatusCode(e) === 401) { handleSessionExpired(); return }
       showToast('Không thể bỏ chặn', 'error')
     }
     return
@@ -480,8 +480,8 @@ async function toggleBlock() {
     isBlocked.value = true
     if (isFollowing.value) { isFollowing.value = false; followerCount.value-- }
     showToast('Đã chặn người dùng', 'success')
-  } catch (e: any) {
-    if (e?.response?.status === 401) { handleSessionExpired(); return }
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể chặn', 'error')
   }
 }
@@ -527,7 +527,7 @@ useSeoMeta({
   description: () => `Trang cá nhân của ${profile.value?.display_name || 'thành viên'} trên cộng đồng vinhlong360.`,
   ogTitle: () => `${profile.value?.display_name || 'Người dùng'} — vinhlong360`,
   ogDescription: () => `Trang cá nhân của ${profile.value?.display_name || 'thành viên'} trên cộng đồng vinhlong360.`,
-  ogImage: () => profile.value?.cover_url || profile.value?.avatar || '/icons/icon-512.png',
+  ogImage: () => entityOgImage([profile.value?.cover_url || profile.value?.avatar].filter(Boolean) as string[]),
   robots: 'noindex,follow',
 })
 </script>
@@ -542,7 +542,9 @@ useSeoMeta({
 .profile-loading .spinner { margin: 0 auto; }
 
 .profile-cover { position: relative; border-radius: var(--radius-xl, 20px); overflow: hidden; margin-bottom: calc(-1 * var(--space-8)); box-shadow: var(--shadow-lg, var(--shadow-md)); }
-.cover-img { width: 100%; height: 200px; object-fit: cover; display: block; }
+.cover-img { width: 100%; height: 200px; object-fit: cover; display: block; background: linear-gradient(90deg, var(--bg-alt) 25%, var(--line) 37%, var(--bg-alt) 63%); background-size: 400% 100%; animation: coverShimmer 1.4s ease infinite; }
+.cover-img[src] { animation: none; }
+@keyframes coverShimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
 .profile-private-notice { text-align: center; padding: var(--space-8) var(--space-4); color: var(--ink-700); font-size: .95rem; }
 .cover-scrim { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.18)); }
 .dark .cover-scrim { background: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,.45)); }
@@ -557,7 +559,7 @@ useSeoMeta({
 .profile-name-row h1 { flex: 1; min-width: 0; }
 .profile-more-wrap { position: relative; }
 .btn-icon { min-width: 32px; padding: .3rem .5rem; letter-spacing: 2px; font-weight: 700; }
-.profile-more-menu { position: absolute; right: 0; top: 100%; margin-top: 4px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-md); z-index: 50; min-width: 160px; overflow: hidden; }
+.profile-more-menu { position: absolute; right: 0; top: 100%; margin-top: 4px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-md); z-index: var(--z-dropdown); min-width: 160px; overflow: hidden; }
 .pm-item { display: block; width: 100%; text-align: left; padding: .6rem 1rem; border: none; background: none; font: inherit; font-size: var(--text-sm); color: var(--ink); cursor: pointer; transition: background .15s; }
 .pm-item:hover { background: var(--bg-alt); }
 .pm-danger { color: var(--danger, #c0392b); }
@@ -575,11 +577,12 @@ useSeoMeta({
 .stat-clickable { cursor: pointer; font: inherit; }
 
 /* Modal follower/following */
-.fm-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; padding: var(--space-4); }
+.fm-overlay { position: fixed; inset: 0; z-index: var(--z-modal-high); background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; padding: var(--space-4); }
 .fm-dialog { background: var(--card); border-radius: var(--radius-lg); width: 100%; max-width: 420px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); overflow: hidden; }
 .fm-head { display: flex; align-items: center; justify-content: space-between; border-bottom: .5px solid var(--line); padding-right: var(--space-2); }
 .fm-tabs { display: flex; }
-.fm-tab { flex: 1; padding: var(--space-3) var(--space-4); border: none; background: none; cursor: pointer; font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--muted); border-bottom: 2px solid transparent; }
+.fm-tab { flex: 1; padding: var(--space-3) var(--space-4); border: none; background: none; cursor: pointer; font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--muted); border-bottom: 2px solid transparent; transition: color .2s var(--ease-out), border-bottom-color .25s var(--ease-out); }
+.fm-tab:hover { color: var(--ink-secondary); }
 .fm-tab.active { color: var(--ink); border-bottom-color: var(--primary); }
 .fm-close { border: none; background: none; font-size: 1.5rem; line-height: 1; cursor: pointer; color: var(--muted); padding: var(--space-2); }
 .fm-body { overflow-y: auto; padding: var(--space-2); }
@@ -624,6 +627,14 @@ useSeoMeta({
   font-variant-numeric: tabular-nums; line-height: 1.6;
 }
 .saved-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-4); margin-top: var(--space-2); }
+.saved-grid > * { animation: savedEnter .4s var(--ease-out) backwards; }
+.saved-grid > *:nth-child(1) { animation-delay: 0s; }
+.saved-grid > *:nth-child(2) { animation-delay: .06s; }
+.saved-grid > *:nth-child(3) { animation-delay: .12s; }
+.saved-grid > *:nth-child(4) { animation-delay: .18s; }
+.saved-grid > *:nth-child(5) { animation-delay: .24s; }
+.saved-grid > *:nth-child(6) { animation-delay: .3s; }
+@keyframes savedEnter { from { opacity: 0; transform: translateY(8px); } }
 .saved-cta { text-align: center; margin-top: var(--space-5); }
 .saved-cta .btn:active { transform: scale(.97); transition-duration: .08s; }
 .dark .tab-count { background: rgba(232,163,61,.2); color: var(--accent); }
@@ -647,13 +658,17 @@ useSeoMeta({
   .stat-item:hover { transform: none; }
   .profile-tabs .chip:active { transform: none; }
   .saved-cta .btn:active { transform: none; }
+  .pc-fill { animation: none; }
+  .saved-grid > * { animation: none; }
+  .cover-img { animation: none; }
 }
 .profile-completion { padding: 0 var(--space-4); margin-bottom: var(--space-3); }
 .pc-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-1); }
 .pc-label { font-size: var(--text-sm); font-weight: 600; color: var(--muted); }
 .pc-link { font-size: var(--text-sm); color: var(--primary); text-decoration: none; }
 .pc-bar { height: 6px; background: var(--bg-alt); border-radius: var(--radius-full); overflow: hidden; }
-.pc-fill { height: 100%; background: var(--accent); border-radius: var(--radius-full); transition: width .4s var(--ease-out); }
+.pc-fill { height: 100%; background: var(--accent); border-radius: var(--radius-full); transition: width .4s var(--ease-out); transform-origin: left; animation: pc-grow .6s var(--ease-out) .3s backwards; }
+@keyframes pc-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .pc-hints { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: var(--space-2); }
 .pc-hint { font-size: .72rem; color: var(--muted); padding: 2px 8px; border: 1px solid var(--border-input); border-radius: var(--radius-full); }
 </style>

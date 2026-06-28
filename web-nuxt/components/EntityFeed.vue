@@ -17,8 +17,8 @@
               <time :datetime="p.created_at">{{ timeAgo(p.created_at) }}</time>
             </span>
           </div>
-          <NuxtImg v-if="firstImage(p) && isRemoteUrl(firstImage(p)!)" :src="firstImage(p)!" alt="" class="ef-thumb" loading="lazy" decoding="async" width="80" height="80" />
-          <img v-else-if="firstImage(p)" :src="firstImage(p)!" alt="" class="ef-thumb" loading="lazy" decoding="async" />
+          <NuxtImg v-if="firstImage(p) && isRemoteUrl(firstImage(p)!)" :src="firstImage(p)!" :alt="`Ảnh bài viết của ${p.display_name || 'người dùng'}`" class="ef-thumb" loading="lazy" decoding="async" width="80" height="80" sizes="80px" />
+          <img v-else-if="firstImage(p)" :src="firstImage(p)!" :alt="`Ảnh bài viết của ${p.display_name || 'người dùng'}`" class="ef-thumb" loading="lazy" decoding="async" width="80" height="80" />
         </NuxtLink>
       </li>
     </ul>
@@ -70,7 +70,7 @@ function firstImage(p: any): string | null {
 .ef-avatar {
   width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  background: var(--primary); color: #fff; font-weight: var(--weight-semibold); font-size: var(--text-sm);
+  background: var(--primary); color: var(--text-on-dark, #fff); font-weight: var(--weight-semibold); font-size: var(--text-sm);
 }
 .ef-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .2rem; }
 .ef-author { font-weight: var(--weight-semibold); font-size: var(--text-sm); }

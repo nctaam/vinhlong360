@@ -1,15 +1,6 @@
 <template>
   <div class="reviews-section">
-    <div class="reviews-header">
-      <h2>Đánh giá cộng đồng</h2>
-      <div v-if="rating.count" class="reviews-summary">
-        <span class="star-rating-inline" role="img" :aria-label="`${rating.avg} trên 5 sao`">
-          <span v-for="s in 5" :key="s" class="star" :class="{ active: s <= Math.round(rating.avg) }" aria-hidden="true">★</span>
-        </span>
-        <strong>{{ rating.avg }}</strong>
-        <span class="review-count">({{ rating.count }} đánh giá)</span>
-      </div>
-    </div>
+    <ReviewStats :rating="rating" :reviews="reviews" v-model:selected-mentions="selectedMentions" />
 
     <!-- Review Form -->
     <div v-if="user" class="review-form">
@@ -90,39 +81,16 @@
 
     <!-- Review List -->
     <div v-if="reviews.length" class="review-list">
-      <div v-for="r in reviews" :key="r.id" class="review-item">
-        <div class="ri-head">
-          <NuxtLink :to="`/nguoi-dung/${r.username || r.user_id}`" class="ri-author">
-            <img v-if="r.avatar_url" :src="r.avatar_url" class="ri-avatar" :alt="r.display_name" loading="lazy" decoding="async" width="32" height="32" @error="(e) => ((e.target as HTMLImageElement).style.display = 'none')" />
-            <span v-else class="ri-avatar-placeholder">{{ (r.display_name || '?')[0] }}</span>
-            <strong>{{ r.display_name || 'Ẩn danh' }}</strong>
-          </NuxtLink>
-          <span v-if="r.rating" class="star-rating-inline">
-            <span v-for="s in 5" :key="s" class="star" :class="{ active: s <= r.rating }">★</span>
-          </span>
-          <time class="ri-date" :datetime="r.created_at">{{ timeAgo(r.created_at) }}</time>
-          <div v-if="isOwner(r)" class="ri-actions">
-            <button
-              type="button"
-              class="ri-action-btn ri-delete"
-              :disabled="deletingId === r.id"
-              :aria-label="`Xóa đánh giá của bạn`"
-              @click="deleteReview(r)"
-            >{{ deletingId === r.id ? 'Đang xóa…' : 'Xóa' }}</button>
-            <span v-if="deleteErrorId === r.id" class="rf-error" role="alert">{{ deleteError }}</span>
-          </div>
-        </div>
-        <p class="ri-content">{{ r.content }}</p>
-        <div v-if="r.images?.length" class="ri-images">
-          <template v-for="(img, i) in r.images" :key="i">
-            <NuxtImg v-if="isRemoteUrl(img)" :src="img" :alt="`Ảnh đánh giá ${i + 1}`" loading="lazy" decoding="async" width="200" height="200" sizes="200px" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
-            <img v-else :src="img" :alt="`Ảnh đánh giá ${i + 1}`" loading="lazy" decoding="async" width="200" height="200" @error="(e) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
-          </template>
-        </div>
-        <button type="button" :class="['ri-helpful', { active: r.user_liked }]" :aria-pressed="!!r.user_liked" @click="toggleHelpful(r)">
-          👍 Hữu ích<span v-if="r.likes" class="ri-helpful-count">{{ r.likes }}</span>
-        </button>
-      </div>
+      <ReviewCard
+        v-for="r in filteredReviews"
+        :key="r.id"
+        :review="r"
+        :owned="isOwner(r)"
+        :deleting="deletingId === r.id"
+        :delete-error="deleteErrorId === r.id ? deleteError : ''"
+        @delete="deleteReview"
+        @toggle-helpful="toggleHelpful"
+      />
     </div>
     <p v-else-if="fetchFailed" class="empty review-error">Không thể tải đánh giá. <button type="button" class="btn btn-outline btn-sm review-retry-btn" @click="fetchFailed = false; fetchReviews()">Thử lại</button></p>
     <p v-else-if="!loading" class="empty review-empty">Chưa có đánh giá nào. Hãy là người đầu tiên!</p>
@@ -135,7 +103,8 @@
 </template>
 
 <script setup lang="ts">
-import type { Entity } from '~/types'
+import type { Review, ReviewFeedResponse } from '~/types'
+
 const props = defineProps<{
   entityId: string
   entityName?: string
@@ -143,17 +112,7 @@ const props = defineProps<{
 
 const { user, authHeaders } = useAuth()
 const { confirmDialog } = useConfirm()
-const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
 const { openAuth } = useAuthModal()
-
-async function toggleHelpful(r: any) {
-  if (!user.value) { openAuth(() => toggleHelpful(r)); return }
-  const flip = () => { r.user_liked = !r.user_liked; r.likes = (r.likes || 0) + (r.user_liked ? 1 : -1) }
-  flip()
-  try {
-    await $fetch(`/api/posts/${r.id}/like`, { method: 'POST', headers: authHeaders() })
-  } catch { flip() }
-}
 
 const reviews = ref<Review[]>([])
 const rating = ref({ avg: 0, count: 0 })
@@ -168,21 +127,37 @@ const submitting = ref(false)
 const submitError = ref('')
 const deleteError = ref('')
 const deleteErrorId = ref('')
+const selectedMentions = ref<string[]>([])
 
-// Image attach state
 const formImages = ref<string[]>([])
 const uploadingImage = ref(false)
 const uploadError = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
 
-// Own-review actions
 const deletingId = ref<string | number | null>(null)
 
 const hasMore = computed(() => reviews.value.length < total.value)
 
+const filteredReviews = computed(() => {
+  if (!selectedMentions.value.length) return reviews.value
+  return reviews.value.filter(r => {
+    const text = (r.content || '').toLowerCase()
+    return selectedMentions.value.every(m => text.includes(m))
+  })
+})
+
 function isOwner(r: Review) {
   const uid = (r as unknown as { user_id?: string | number }).user_id
   return !!user.value && uid != null && String(uid) === String(user.value.id)
+}
+
+async function toggleHelpful(r: Review) {
+  if (!user.value) { openAuth(() => toggleHelpful(r)); return }
+  const flip = () => { r.user_liked = !r.user_liked; r.likes = (r.likes || 0) + (r.user_liked ? 1 : -1) }
+  flip()
+  try {
+    await $fetch(`/api/posts/${r.id}/like`, { method: 'POST', headers: authHeaders() })
+  } catch { flip() }
 }
 
 async function onPickImage(e: Event) {
@@ -285,13 +260,11 @@ async function submitReview() {
     formImages.value = []
     page.value = 1
     await fetchReviews()
-  } catch (e: any) {
-    submitError.value = e.data?.detail || e.message || 'Gửi thất bại'
+  } catch (e: unknown) {
+    submitError.value = extractErrorMessage(e, 'Gửi thất bại')
   }
   submitting.value = false
 }
-
-const { timeAgo } = useTimeAgo()
 
 onMounted(() => fetchReviews())
 </script>
@@ -302,14 +275,9 @@ onMounted(() => fetchReviews())
 .review-error { font-size: var(--text-sm); color: var(--error, #D94F3D); }
 .review-retry-btn { margin-inline-start: var(--space-2); }
 .review-empty { font-size: var(--text-sm); }
-.review-load-more { margin-top: var(--space-3); }
 .review-sentinel { display: flex; justify-content: center; padding: var(--space-3) 0; min-height: 40px; }
 
-/* Image attach */
 .rf-photo-hint { margin: var(--space-2) 0 0; font-size: var(--text-sm); color: var(--ink-700); }
-.ri-helpful { margin-top: var(--space-2); display: inline-flex; align-items: center; gap: .3rem; font-size: var(--text-sm); padding: .3rem .7rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink-700); cursor: pointer; min-height: 36px; }
-.ri-helpful.active { background: color-mix(in srgb, var(--primary) 12%, var(--bg)); border-color: var(--primary); color: var(--primary-fg); }
-.ri-helpful-count { font-weight: var(--weight-medium); }
 .rf-images { display: flex; flex-direction: column; gap: var(--space-2); margin-block: var(--space-2); }
 .rf-image-grid { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .rf-image-thumb { position: relative; width: 64px; height: 64px; border-radius: var(--radius-md); overflow: hidden; border: .5px solid var(--line); }
@@ -319,7 +287,7 @@ onMounted(() => fetchReviews())
   width: 20px; height: 20px; line-height: 1;
   display: inline-flex; align-items: center; justify-content: center;
   border: none; border-radius: var(--radius-full);
-  background: rgba(0, 0, 0, .6); color: #fff; font-size: 14px;
+  background: rgba(0, 0, 0, .6); color: var(--text-on-dark, #fff); font-size: 14px;
   cursor: pointer; padding: 0;
   transition: background .15s cubic-bezier(.2, 1, .4, 1);
 }
@@ -327,10 +295,9 @@ onMounted(() => fetchReviews())
 .rf-image-remove:focus-visible { outline: 2px solid var(--brand, currentColor); outline-offset: 1px; }
 .rf-image-add {
   display: inline-flex; align-items: center; gap: var(--space-2);
-  min-height: 36px; padding-inline: var(--space-3);
+  min-height: 44px; padding-inline: var(--space-3);
   border: 1px dashed var(--line); border-radius: var(--radius-md);
-  font-size: var(--text-sm); color: var(--muted); cursor: pointer;
-  align-self: flex-start;
+  font-size: var(--text-sm); color: var(--muted); cursor: pointer; align-self: flex-start;
   transition: border-color .15s cubic-bezier(.2, 1, .4, 1), color .15s cubic-bezier(.2, 1, .4, 1);
 }
 .rf-image-add:hover { border-color: var(--brand, var(--muted)); color: var(--ink, var(--muted)); }
@@ -338,19 +305,6 @@ onMounted(() => fetchReviews())
 .rf-image-add.disabled { opacity: .55; cursor: not-allowed; }
 .rf-image-input { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .rf-error { font-size: var(--text-sm); color: var(--error, #D94F3D); margin-top: var(--space-1); }
-
-/* Own-review actions */
-.ri-actions { margin-inline-start: auto; display: inline-flex; gap: var(--space-2); }
-.ri-action-btn {
-  min-height: 28px; padding-inline: var(--space-2);
-  border: .5px solid var(--line); border-radius: var(--radius-sm);
-  background: transparent; font-size: var(--text-xs); color: var(--muted);
-  cursor: pointer;
-  transition: color .15s cubic-bezier(.2, 1, .4, 1), border-color .15s cubic-bezier(.2, 1, .4, 1);
-}
-.ri-action-btn:hover { color: var(--error, #D94F3D); border-color: var(--error, #D94F3D); }
-.ri-action-btn:focus-visible { outline: 2px solid var(--error, currentColor); outline-offset: 1px; }
-.ri-action-btn:disabled { opacity: .55; cursor: not-allowed; }
 
 .review-loading { display: flex; flex-direction: column; gap: var(--space-4); }
 .review-skeleton { padding: var(--space-4); border-radius: var(--radius-md); background: var(--card); border: .5px solid var(--line); }
@@ -368,9 +322,6 @@ onMounted(() => fetchReviews())
 }
 </style>
 
-<!-- Chuyển từ detail.css: chỉ EntityReviews dùng .reviews-*/.review-*/.ri-*/.rf-* → nạp
-     theo component (bỏ khỏi global entry.css). Non-scoped + giữ đúng thứ tự base→override
-     để cascade không đổi (không file nào khác style các class này). -->
 <style>
 .reviews-section { margin-top: var(--space-8); }
 .reviews-header { display: flex; align-items: baseline; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-4); }
@@ -379,7 +330,7 @@ onMounted(() => fetchReviews())
 .review-count { color: var(--muted); }
 
 .review-form {
-  background: linear-gradient(135deg, rgba(185, 219, 198, .04) 0%, rgba(232, 163, 61, .03) 100%);
+  background: var(--season-tint, rgba(185, 219, 198, .04));
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: var(--space-5);
@@ -388,7 +339,6 @@ onMounted(() => fetchReviews())
 }
 .rf-rating { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); }
 .rf-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--muted); }
-.rf-error { color: var(--error); font-size: var(--text-sm); margin-top: var(--space-2); }
 .review-form .btn { margin-top: var(--space-2); }
 .review-login-hint { font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-4); }
 .review-login-hint a { color: var(--primary-fg); font-weight: var(--weight-semibold); }
@@ -422,7 +372,7 @@ onMounted(() => fetchReviews())
   .ri-date { margin-inline-start: 0; }
 }
 .dark .review-form {
-  background: linear-gradient(135deg, rgba(75, 169, 125, .04) 0%, rgba(240, 160, 80, .03) 100%);
+  background: var(--season-tint, rgba(75, 169, 125, .04));
   border-color: rgba(255, 255, 255, .06);
 }
 .dark .review-form:focus-within { box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .15); }
