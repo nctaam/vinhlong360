@@ -933,6 +933,8 @@ async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge
                                            WHERE follower_id = {ph}::uuid AND target_type='user')
                   {bc}
                 GROUP BY u.id, u.display_name, u.avatar_url, u.username, fc.c
+                HAVING COUNT(p.id) > 0
+                LIMIT 200
             """, (me, me) + tuple(bc_p))
     rows = await asyncio.to_thread(_query)
     cands = []

@@ -1631,3 +1631,11 @@ class TestEndpointAuthGuards:
         block = src[idx:idx+1200]
         for path in ["/system", "/analytics", "/checkpoints", "/confirm/", "/reject/", "/freshness"]:
             assert path in block, f"Middleware must gate {path} in production"
+
+    def test_suggested_follows_has_limit(self):
+        """Suggested-follows SQL query must have LIMIT to prevent full table scan."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        idx = src.find("async def suggested_follows(")
+        assert idx > 0
+        block = src[idx:idx+2000]
+        assert "LIMIT" in block, "suggested_follows SQL must have LIMIT clause"
