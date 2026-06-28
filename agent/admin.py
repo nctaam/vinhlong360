@@ -320,8 +320,11 @@ async def check_duplicate(name: str = Query(..., min_length=2)):
             rows = db._fetchall(conn,
                 "SELECT id, name, type FROM entities WHERE type != 'place' AND LOWER(name) LIKE ? ESCAPE '\\' LIMIT 5",
                 (pattern,))
-        return {"duplicates": [{"id": db._row_to_dict(r)["id"], "name": db._row_to_dict(r)["name"],
-                                "type": db._row_to_dict(r).get("type", "")} for r in rows]}
+        dups = []
+        for r in rows:
+            d = db._row_to_dict(r)
+            dups.append({"id": d["id"], "name": d["name"], "type": d.get("type", "")})
+        return {"duplicates": dups}
     return await asyncio.to_thread(_query)
 
 
@@ -507,9 +510,11 @@ async def list_unclassified(limit: int = Query(50, ge=1, le=500), offset: int = 
             total = db._row_to_dict(cnt)["c"] if cnt else 0
             rows = db._fetchall(conn, f"SELECT id, name, type, area, summary {base} ORDER BY name LIMIT ? OFFSET ?",
                                 tuple(params) + (limit, offset))
-        out = [{"id": db._row_to_dict(r)["id"], "name": db._row_to_dict(r).get("name"),
-                "type": db._row_to_dict(r).get("type"), "area": db._row_to_dict(r).get("area"),
-                "summary": (db._row_to_dict(r).get("summary") or "")[:100]} for r in rows]
+        out = []
+        for r in rows:
+            d = db._row_to_dict(r)
+            out.append({"id": d["id"], "name": d.get("name"), "type": d.get("type"),
+                         "area": d.get("area"), "summary": (d.get("summary") or "")[:100]})
         return {"total": total, "entities": out}
     return await asyncio.to_thread(_query)
 

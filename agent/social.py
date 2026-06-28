@@ -139,8 +139,8 @@ def _notify_entity_followers(entity_id, author_id, author_name, post_id: str) ->
         with db._conn() as conn:
             rows = db._fetchall(conn,
                 f"SELECT follower_id FROM follows WHERE target_type='entity' AND target_id = {ph}", (entity_id,))
-            follower_ids = [str(db._row_to_dict(r)["follower_id"]) for r in rows
-                           if str(db._row_to_dict(r)["follower_id"]) != author_id]
+            follower_ids = [str(db._row_to_dict(r)["follower_id"]) for r in rows]
+            follower_ids = [fid for fid in follower_ids if fid != author_id]
             if not follower_ids:
                 return
             title = f"{author_name or 'Ai đó'} đã đăng về địa điểm bạn theo dõi"
@@ -812,10 +812,11 @@ async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100
                 ORDER BY f.created_at DESC LIMIT {ph} OFFSET {ph}
             """, (uid, limit, offset))
     rows = await asyncio.to_thread(_query)
-    users = [{"id": str(db._row_to_dict(r)["id"]),
-              "display_name": db._row_to_dict(r)["display_name"],
-              "username": db._row_to_dict(r).get("username"),
-              "avatar_url": db._row_to_dict(r).get("avatar_url")} for r in rows]
+    users = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        users.append({"id": str(d["id"]), "display_name": d["display_name"],
+                       "username": d.get("username"), "avatar_url": d.get("avatar_url")})
     return {"users": users, "offset": offset, "has_more": len(users) == limit}
 
 
@@ -836,10 +837,11 @@ async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), off
                 ORDER BY f.created_at DESC LIMIT {ph} OFFSET {ph}
             """, (uid, limit, offset))
     rows = await asyncio.to_thread(_query)
-    users = [{"id": str(db._row_to_dict(r)["id"]),
-              "display_name": db._row_to_dict(r)["display_name"],
-              "username": db._row_to_dict(r).get("username"),
-              "avatar_url": db._row_to_dict(r).get("avatar_url")} for r in rows]
+    users = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        users.append({"id": str(d["id"]), "display_name": d["display_name"],
+                       "username": d.get("username"), "avatar_url": d.get("avatar_url")})
     return {"users": users, "offset": offset, "has_more": len(users) == limit}
 
 
