@@ -40,7 +40,7 @@
             <p>Chưa có thông báo</p>
           </div>
         </div>
-        <NuxtLink to="/thong-bao" class="notif-see-all" @click="open = false">Xem tất cả</NuxtLink>
+        <NuxtLink to="/thong-bao" class="notif-see-all" aria-label="Xem tất cả thông báo" @click="open = false">Xem tất cả</NuxtLink>
       </div>
     </Transition>
   </div>

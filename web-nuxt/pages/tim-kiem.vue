@@ -118,7 +118,7 @@
           </div>
           <div class="recent-grid">
             <NuxtLink v-for="r in recentItems" :key="r.id" :to="`/dia-diem/${r.id}`" class="recent-card">
-              <img v-if="r.image" :src="r.image" :alt="r.name" class="recent-img" loading="lazy" />
+              <img v-if="r.image" :src="r.image" :alt="r.name" class="recent-img" loading="lazy" decoding="async" />
               <span v-else class="recent-img recent-placeholder" aria-hidden="true">{{ TYPE_META[r.type]?.emoji || '📍' }}</span>
               <span class="recent-name">{{ r.name }}</span>
               <span class="recent-type">{{ TYPE_META[r.type]?.label || r.type }}</span>

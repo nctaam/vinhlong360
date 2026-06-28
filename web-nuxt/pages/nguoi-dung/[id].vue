@@ -4,7 +4,7 @@
 
     <div v-if="profile" class="user-profile reveal">
       <div class="profile-cover">
-        <img v-if="profile.cover_url" :src="profile.cover_url" :alt="`Ảnh bìa ${profile.display_name}`" class="cover-img" loading="eager" decoding="async" width="960" height="200" />
+        <img v-if="profile.cover_url" :src="profile.cover_url" :alt="`Ảnh bìa ${profile.display_name}`" class="cover-img" loading="eager" fetchpriority="high" decoding="async" width="960" height="200" />
         <UserCoverPlaceholder v-else />
         <div class="cover-scrim" aria-hidden="true"></div>
         <div class="profile-avatar-wrap">

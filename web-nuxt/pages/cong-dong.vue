@@ -114,7 +114,7 @@
 
             <div v-if="previewImages.length" class="img-preview-row">
               <div v-for="(src, i) in previewImages" :key="i" class="img-preview-item">
-                <img :src="src" :alt="`Ảnh đính kèm ${i + 1}`" width="120" height="120" loading="lazy" />
+                <img :src="src" :alt="`Ảnh đính kèm ${i + 1}`" width="120" height="120" loading="lazy" decoding="async" />
                 <button type="button" class="remove" aria-label="Xóa ảnh" @click="removeImage(i)">&times;</button>
               </div>
             </div>

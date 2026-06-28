@@ -7,7 +7,7 @@
           <span aria-live="polite" aria-atomic="true"><strong :class="{ 'jb-count-pop': countPop }">{{ count }}</strong> đã lưu</span>
         </NuxtLink>
         <div class="jb-actions">
-          <NuxtLink to="/lich-trinh" class="btn btn-sm btn-ghost jb-link">Xem tất cả</NuxtLink>
+          <NuxtLink to="/lich-trinh" class="btn btn-sm btn-ghost jb-link" aria-label="Xem tất cả lịch trình">Xem tất cả</NuxtLink>
           <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-sm btn-primary jb-link">Tạo lịch trình</NuxtLink>
         </div>
       </div>

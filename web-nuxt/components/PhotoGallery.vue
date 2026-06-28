@@ -43,16 +43,16 @@ function goToSlide(idx: number) {
   <!-- Single image -->
   <div v-else-if="images.length === 1" class="pg-single">
     <button type="button" class="pg-img-btn" @click="emit('open-lightbox', 0)" :aria-label="`Xem ảnh ${alt}`">
-      <NuxtImg v-if="isRemote(images[0])" :src="images[0]" :alt="alt" class="pg-main-img" loading="eager" width="960" height="640" sizes="sm:100vw md:100vw lg:960px" decoding="async" />
-      <img v-else :src="images[0]" :alt="alt" class="pg-main-img" loading="eager" width="960" height="640" decoding="async" />
+      <NuxtImg v-if="isRemote(images[0])" :src="images[0]" :alt="alt" class="pg-main-img" loading="eager" fetchpriority="high" width="960" height="640" sizes="sm:100vw md:100vw lg:960px" decoding="async" />
+      <img v-else :src="images[0]" :alt="alt" class="pg-main-img" loading="eager" fetchpriority="high" width="960" height="640" decoding="async" />
     </button>
   </div>
 
   <!-- Desktop: asymmetric grid -->
   <div v-else class="pg-grid" role="group" :aria-label="`Bộ ảnh ${alt}`">
     <button type="button" class="pg-main" @click="emit('open-lightbox', 0)" :aria-label="`Ảnh chính — ${alt}`">
-      <NuxtImg v-if="isRemote(images[0])" :src="images[0]" :alt="alt" class="pg-main-img" loading="eager" width="640" height="427" sizes="sm:100vw md:60vw lg:640px" decoding="async" />
-      <img v-else :src="images[0]" :alt="alt" class="pg-main-img" loading="eager" width="640" height="427" decoding="async" />
+      <NuxtImg v-if="isRemote(images[0])" :src="images[0]" :alt="alt" class="pg-main-img" loading="eager" fetchpriority="high" width="640" height="427" sizes="sm:100vw md:60vw lg:640px" decoding="async" />
+      <img v-else :src="images[0]" :alt="alt" class="pg-main-img" loading="eager" fetchpriority="high" width="640" height="427" decoding="async" />
     </button>
     <div class="pg-thumbs">
       <button
