@@ -1324,3 +1324,41 @@ class TestPhase8SessionCleanup:
         assert "validate_path_id" in inspect.getsource(admin.resolve_report)
         assert "validate_path_id" in inspect.getsource(admin.dismiss_report)
         assert "validate_path_id" in inspect.getsource(admin.get_moderation_notes)
+
+
+class TestPhase8BanHardening:
+    """Phase 8: ban revokes sessions + audit logging."""
+
+    def test_ban_revokes_sessions(self):
+        """Ban must delete all user sessions for immediate effect."""
+        import inspect
+        import admin
+        src = inspect.getsource(admin.ban_user)
+        assert "DELETE FROM user_sessions" in src
+
+    def test_ban_audit_log(self):
+        """Ban action is logged to moderation audit trail."""
+        import inspect
+        import admin
+        src = inspect.getsource(admin.ban_user)
+        assert "_log_mod_action" in src
+
+    def test_unban_audit_log(self):
+        """Unban action is logged to moderation audit trail."""
+        import inspect
+        import admin
+        src = inspect.getsource(admin.unban_user)
+        assert "_log_mod_action" in src
+
+    def test_role_change_audit_log(self):
+        """Role change is logged to moderation audit trail."""
+        import inspect
+        import admin
+        src = inspect.getsource(admin.set_user_role)
+        assert "_log_mod_action" in src
+
+    def test_phone_removed_from_social_queries(self):
+        """No social.py query fetches u.phone (data minimization)."""
+        import social as _soc
+        src = Path(_soc.__file__).read_text(encoding="utf-8")
+        assert "u.phone" not in src

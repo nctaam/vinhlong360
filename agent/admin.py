@@ -1810,7 +1810,11 @@ async def ban_user(user_id: str):
             db._execute(conn, f"""
                 UPDATE users SET is_active = FALSE WHERE id::text = {ph}
             """, (user_id,))
+            db._execute(conn, f"""
+                DELETE FROM user_sessions WHERE user_id = {ph}::uuid
+            """, (user_id,))
     await asyncio.to_thread(_query)
+    _log_mod_action("user", user_id, "ban")
     return {"success": True}
 
 
@@ -1824,6 +1828,7 @@ async def unban_user(user_id: str):
                 UPDATE users SET is_active = TRUE WHERE id::text = {ph}
             """, (user_id,))
     await asyncio.to_thread(_query)
+    _log_mod_action("user", user_id, "unban")
     return {"success": True}
 
 
@@ -1837,6 +1842,7 @@ async def set_user_role(user_id: str, role: str = Query(..., pattern="^(user|mod
                 UPDATE users SET role = {ph} WHERE id::text = {ph}
             """, (role, user_id))
     await asyncio.to_thread(_query)
+    _log_mod_action("user", user_id, f"set_role:{role}")
     return {"success": True}
 
 
