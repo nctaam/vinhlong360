@@ -889,3 +889,44 @@ class TestSecurityPosture:
                     continue
                 unconstrained.append(key)
         assert not unconstrained, f"String fields without max_length: {unconstrained}"
+
+    def test_all_write_endpoints_have_rate_limits(self):
+        """Every POST/PUT/PATCH/DELETE endpoint in social.py and notifications.py should have check_rate."""
+        for module_name in ("social", "notifications"):
+            src = (Path(__file__).resolve().parent.parent / f"{module_name}.py").read_text(encoding="utf-8")
+            lines = src.split("\n")
+            for i, line in enumerate(lines):
+                if "@router.post(" in line or "@router.put(" in line or "@router.patch(" in line or "@router.delete(" in line:
+                    func_block = "\n".join(lines[i:i+8])
+                    if "check_rate(" not in func_block and "require_admin" not in func_block:
+                        assert False, f"{module_name}.py:{i+1} write endpoint without rate limit: {line.strip()}"
+
+    def test_query_params_have_max_length(self):
+        """All string Query() params should have max_length to prevent oversized queries."""
+        import re
+        for module_name in ("public_api", "admin", "notifications", "visits"):
+            src = (Path(__file__).resolve().parent.parent / f"{module_name}.py").read_text(encoding="utf-8")
+            for line_no, line in enumerate(src.split("\n"), 1):
+                if re.search(r'Query\(None\s*\)', line) and "str" in line:
+                    assert False, f"{module_name}.py:{line_no} Query(None) without max_length: {line.strip()}"
+
+    def test_creation_endpoints_return_201(self):
+        """POST endpoints that create resources should return 201."""
+        for module_name, fn_names in [("social", ["create_post", "create_comment"]), ("admin", ["create_entity", "create_itinerary"])]:
+            src = (Path(__file__).resolve().parent.parent / f"{module_name}.py").read_text(encoding="utf-8")
+            for fn in fn_names:
+                pattern = f"async def {fn}("
+                idx = src.find(pattern)
+                assert idx != -1, f"{fn} not found in {module_name}.py"
+                before = src[max(0, idx-100):idx]
+                assert "status_code=201" in before, f"{module_name}.py {fn} missing status_code=201"
+
+    def test_privacy_visibility_enum_validation(self):
+        """PrivacyUpdate model should validate profile_visibility enum at schema level."""
+        from auth import PrivacyUpdate
+        import pytest as pt
+        PrivacyUpdate(profile_visibility="public")
+        PrivacyUpdate(profile_visibility="private")
+        PrivacyUpdate(profile_visibility="followers")
+        with pt.raises(Exception):
+            PrivacyUpdate(profile_visibility="invalid_value")
