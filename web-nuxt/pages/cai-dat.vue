@@ -147,7 +147,7 @@
 
       <div class="settings-card card">
         <h2>Phiên đăng nhập</h2>
-        <div v-if="sessionsLoading" class="sf-hint">Đang tải...</div>
+        <div v-if="sessionsLoading" class="sf-loading"><div class="spinner spinner-sm"></div> Đang tải...</div>
         <div v-else-if="sessions.length" class="sessions-list">
           <div v-for="s in sessions" :key="s.id" :class="['session-item', { current: s.is_current }]">
             <div class="session-info">
@@ -163,7 +163,7 @@
 
       <div class="settings-card card">
         <h2>Lịch sử đăng nhập</h2>
-        <div v-if="loginHistoryLoading" class="sf-hint">Đang tải...</div>
+        <div v-if="loginHistoryLoading" class="sf-loading"><div class="spinner spinner-sm"></div> Đang tải...</div>
         <div v-else-if="loginHistory.length" class="sessions-list">
           <div v-for="h in loginHistory" :key="h.id" :class="['session-item', { 'login-fail': !h.success }]">
             <div class="session-info">
@@ -180,8 +180,8 @@
     <!-- Tab: Thông báo -->
     <div v-if="activeTab === 'thong-bao'" id="panel-thong-bao" class="settings-card card" role="tabpanel" aria-labelledby="tab-thong-bao">
       <h2>Tùy chọn thông báo</h2>
-      <p class="sf-hint" style="margin-bottom: 1rem;">Chọn loại thông báo bạn muốn nhận.</p>
-      <div v-if="notifPrefsLoading" class="sf-hint">Đang tải...</div>
+      <p class="sf-hint sf-hint-spaced">Chọn loại thông báo bạn muốn nhận.</p>
+      <div v-if="notifPrefsLoading" class="sf-loading"><div class="spinner spinner-sm"></div> Đang tải...</div>
       <div v-else class="notif-prefs">
         <label v-for="np in NOTIF_TYPES" :key="np.key" class="notif-pref-item">
           <div class="notif-pref-info">
@@ -219,7 +219,7 @@
     <!-- Tab: Quyền riêng tư -->
     <div v-if="activeTab === 'rieng-tu'" id="panel-rieng-tu" class="settings-card card" role="tabpanel" aria-labelledby="tab-rieng-tu">
       <h2>Quyền riêng tư</h2>
-      <div v-if="privacyLoading" class="sf-hint">Đang tải...</div>
+      <div v-if="privacyLoading" class="sf-loading"><div class="spinner spinner-sm"></div> Đang tải...</div>
       <div v-else class="settings-form">
         <div class="sf-field">
           <span class="sf-label">Ai xem được hồ sơ?</span>
@@ -745,6 +745,8 @@ onUnmounted(() => {
 .sf-textarea { resize: vertical; min-height: 90px; }
 .sf-error { color: var(--danger, #c0392b); font-size: .85rem; }
 .sf-success { color: var(--accent, #219653); font-size: .85rem; }
+.sf-loading { display: flex; align-items: center; gap: var(--space-2); color: var(--ink-700); font-size: .85rem; padding: var(--space-4) 0; }
+.sf-hint-spaced { margin-bottom: var(--space-4); }
 .sf-username-row { display: flex; align-items: center; gap: 0; border: 1px solid var(--border-input); border-radius: var(--radius-md); overflow: hidden; }
 .sf-username-prefix { padding: .65rem .6rem; background: var(--bg-warm, #f5f5f5); color: var(--ink-700); font-size: .85rem; white-space: nowrap; border-right: 1px solid var(--border-input); flex-shrink: 0; }
 .sf-username-input { border: none !important; border-radius: 0 !important; flex: 1; min-width: 0; }

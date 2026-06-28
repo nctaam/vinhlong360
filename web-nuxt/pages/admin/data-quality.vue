@@ -12,42 +12,42 @@
 
     <div v-if="summary" class="stat-grid dq-stats">
       <div class="stat-card">
-        <div class="dq-icon" style="background: rgba(var(--blue-rgb),.1); color: #3478F6;">&#127760;</div>
+        <div class="dq-icon si-blue">&#127760;</div>
         <div>
           <div class="stat-value">{{ summary.data?.public_entities || 0 }}</div>
           <div class="stat-label">Entity public</div>
         </div>
       </div>
       <div class="stat-card warn">
-        <div class="dq-icon" style="background: rgba(var(--warning-rgb),.1); color: #FF9F0A;">&#128218;</div>
+        <div class="dq-icon si-orange">&#128218;</div>
         <div>
           <div class="stat-value">{{ summary.data?.missing_source || 0 }}</div>
           <div class="stat-label">Thiếu nguồn</div>
         </div>
       </div>
       <div class="stat-card warn">
-        <div class="dq-icon" style="background: rgba(var(--warning-rgb),.1); color: #FF9F0A;">&#128205;</div>
+        <div class="dq-icon si-orange">&#128205;</div>
         <div>
           <div class="stat-value">{{ summary.data?.missing_location || 0 }}</div>
           <div class="stat-label">Thiếu tọa độ</div>
         </div>
       </div>
       <div class="stat-card warn">
-        <div class="dq-icon" style="background: rgba(var(--warning-rgb),.1); color: #FF9F0A;">&#127963;</div>
+        <div class="dq-icon si-orange">&#127963;</div>
         <div>
           <div class="stat-value">{{ summary.data?.missing_place_id_non_place || 0 }}</div>
           <div class="stat-label">Thiếu placeId</div>
         </div>
       </div>
       <div class="stat-card ok">
-        <div class="dq-icon" style="background: rgba(var(--primary-rgb),.1); color: #219653;">&#9989;</div>
+        <div class="dq-icon si-green">&#9989;</div>
         <div>
           <div class="stat-value">{{ summary.candidates?.auto_apply || 0 }}</div>
           <div class="stat-label">Có thể auto-apply</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="dq-icon" style="background: rgba(175,82,222,.1); color: #AF52DE;">&#128065;</div>
+        <div class="dq-icon si-purple">&#128065;</div>
         <div>
           <div class="stat-value">{{ summary.candidates?.needs_review || 0 }}</div>
           <div class="stat-label">Cần duyệt</div>

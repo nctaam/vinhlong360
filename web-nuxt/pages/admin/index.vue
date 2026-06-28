@@ -33,42 +33,42 @@
     <!-- Primary stats -->
     <div class="dash-stats" role="group" aria-label="Thống kê tổng quan">
       <div class="dash-stat-card" role="group" aria-label="Entities">
-        <div class="dash-stat-icon" aria-hidden="true" style="background: rgba(var(--primary-rgb),.1); color: #219653;">&#127759;</div>
+        <div class="dash-stat-icon si-green" aria-hidden="true">&#127759;</div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ stats.total_entities || 0 }}<span v-if="stats.entities_week" class="dash-delta">+{{ stats.entities_week }}</span></div>
           <div class="dash-stat-label">Entities</div>
         </div>
       </div>
       <div class="dash-stat-card">
-        <div class="dash-stat-icon" aria-hidden="true" style="background: rgba(var(--blue-rgb),.1); color: #3478F6;">&#127963;</div>
+        <div class="dash-stat-icon si-blue" aria-hidden="true">&#127963;</div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ stats.total_places || 0 }}</div>
           <div class="dash-stat-label">Địa điểm HC</div>
         </div>
       </div>
       <div class="dash-stat-card">
-        <div class="dash-stat-icon" aria-hidden="true" style="background: rgba(175,82,222,.1); color: #AF52DE;">&#128279;</div>
+        <div class="dash-stat-icon si-purple" aria-hidden="true">&#128279;</div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ formatNum(stats.total_relationships) }}</div>
           <div class="dash-stat-label">Quan hệ</div>
         </div>
       </div>
       <div class="dash-stat-card">
-        <div class="dash-stat-icon" aria-hidden="true" style="background: rgba(var(--warning-rgb),.1); color: #FF9F0A;">&#128506;</div>
+        <div class="dash-stat-icon si-orange" aria-hidden="true">&#128506;</div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ stats.total_itineraries || 0 }}</div>
           <div class="dash-stat-label">Lịch trình</div>
         </div>
       </div>
       <div v-if="stats.total_users" class="dash-stat-card">
-        <div class="dash-stat-icon" aria-hidden="true" style="background: rgba(88,86,214,.1); color: #5856D6;">&#128101;</div>
+        <div class="dash-stat-icon si-indigo" aria-hidden="true">&#128101;</div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ formatNum(stats.total_users) }}<span v-if="stats.users_week" class="dash-delta">+{{ stats.users_week }}</span></div>
           <div class="dash-stat-label">Users</div>
         </div>
       </div>
       <div v-if="stats.total_posts" class="dash-stat-card">
-        <div class="dash-stat-icon" aria-hidden="true" style="background: rgba(255,69,58,.1); color: #FF453A;">&#128172;</div>
+        <div class="dash-stat-icon si-red" aria-hidden="true">&#128172;</div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ formatNum(stats.total_posts) }}<span v-if="stats.posts_week" class="dash-delta">+{{ stats.posts_week }}</span></div>
           <div class="dash-stat-label">Bài viết</div>
@@ -118,7 +118,7 @@
         <span>Tóm tắt: {{ stats.completeness.has_summary }}/{{ stats.completeness.total }}</span>
         <span>Ảnh: {{ stats.completeness.has_images }}/{{ stats.completeness.total }}</span>
         <span>Phường/xã: {{ stats.completeness.has_place }}/{{ stats.completeness.total }}</span>
-        <NuxtLink v-if="stats.completeness.orphans" to="/admin/entities?orphans=1" class="dash-orphan-link">Mồ côi: <b style="color:#FF9F0A">{{ stats.completeness.orphans }}</b></NuxtLink>
+        <NuxtLink v-if="stats.completeness.orphans" to="/admin/entities?orphans=1" class="dash-orphan-link">Mồ côi: <b class="dash-orphan-count">{{ stats.completeness.orphans }}</b></NuxtLink>
       </div>
     </div>
 
@@ -376,18 +376,18 @@ onMounted(fetchDashboard)
 .dash-stat-card:hover .dash-stat-icon { transform: scale(1.08); }
 .dash-stat-value { font-size: 1.5rem; font-weight: 800; line-height: 1.2; }
 .dash-stat-label { font-size: .75rem; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: .5px; }
-.dash-delta { font-size: .7rem; font-weight: 600; color: #34C759; margin-left: 4px; }
+.dash-delta { font-size: .7rem; font-weight: 600; color: var(--secondary); margin-left: 4px; }
 
 /* ── Partial-degradation banner ── */
 .dash-degraded {
   display: flex; align-items: center; gap: var(--space-2);
   padding: var(--space-3) var(--space-4); border-radius: 10px;
   margin-bottom: var(--space-5); font-size: .85rem; font-weight: 500;
-  background: rgba(var(--warning-rgb),.1); color: #c67a00;
+  background: rgba(var(--warning-rgb),.1); color: var(--warning);
   border: .5px solid rgba(var(--warning-rgb),.2);
 }
 .dash-degraded-icon { font-size: 1rem; flex-shrink: 0; }
-.dark .dash-degraded { background: rgba(var(--warning-rgb),.08); color: #ffb340; border-color: rgba(var(--warning-rgb),.15); }
+.dark .dash-degraded { background: rgba(var(--warning-rgb),.08); color: var(--accent); border-color: rgba(var(--warning-rgb),.15); }
 
 /* ── Alert banners ── */
 .dash-alerts { display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-8); }
@@ -399,9 +399,9 @@ onMounted(fetchDashboard)
 }
 .dash-alert:hover { transform: translateX(4px); }
 .dash-alert:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
-.dash-alert.warn { background: rgba(var(--warning-rgb),.1); color: #c67a00; border: .5px solid rgba(var(--warning-rgb),.2); }
-.dash-alert.error { background: rgba(var(--danger-rgb),.1); color: #b33a2a; border: .5px solid rgba(var(--danger-rgb),.2); }
-.dash-alert.info { background: rgba(var(--blue-rgb),.08); color: #2563EB; border: .5px solid rgba(var(--blue-rgb),.15); }
+.dash-alert.warn { background: rgba(var(--warning-rgb),.1); color: var(--warning); border: .5px solid rgba(var(--warning-rgb),.2); }
+.dash-alert.error { background: rgba(var(--danger-rgb),.1); color: var(--error); border: .5px solid rgba(var(--danger-rgb),.2); }
+.dash-alert.info { background: rgba(var(--blue-rgb),.08); color: rgb(var(--blue-rgb)); border: .5px solid rgba(var(--blue-rgb),.15); }
 .dash-alert-icon { font-size: 1.1rem; flex-shrink: 0; }
 .dash-alert-num { font-size: 1.3rem; font-weight: 800; min-width: 32px; }
 .dash-alert-arrow { margin-left: auto; opacity: .5; }
@@ -418,15 +418,15 @@ onMounted(fetchDashboard)
 }
 .dash-health-header { display: flex; align-items: center; gap: var(--space-2); font-size: .88rem; }
 .dash-health-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.dash-health-dot.ok { background: #34C759; }
-.dash-health-dot.degraded { background: #FF9F0A; }
+.dash-health-dot.ok { background: var(--secondary); }
+.dash-health-dot.degraded { background: rgb(var(--warning-rgb)); }
 .dash-health-ver { margin-left: auto; font-size: .75rem; color: var(--muted); }
 .dash-health-metrics {
   display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5);
   margin-top: var(--space-3); font-size: .82rem; color: var(--muted);
 }
 .dash-health-metrics b { color: var(--ink); font-weight: 600; }
-.dash-health-warn { color: #FF9F0A !important; }
+.dash-health-warn { color: rgb(var(--warning-rgb)) !important; }
 .dash-backup-btn {
   display: inline-block; margin-left: 8px; padding: 2px 10px; border-radius: 6px;
   border: .5px solid var(--line); background: var(--bg); color: var(--primary-fg, #219653);
@@ -446,8 +446,9 @@ onMounted(fetchDashboard)
 .dash-comp-bar { height: 8px; background: rgba(142,142,147,.1); border-radius: 4px; overflow: hidden; }
 .dash-comp-fill { height: 100%; background: var(--primary, #219653); border-radius: 4px; transition: width .5s ease-out; }
 .dash-comp-details { display: flex; gap: var(--space-4); margin-top: var(--space-3); font-size: .78rem; color: var(--muted); }
-.dash-orphan-link { color: inherit; text-decoration: none; border-bottom: 1px dashed #FF9F0A; }
-.dash-orphan-link:hover { color: #FF9F0A; }
+.dash-orphan-link { color: inherit; text-decoration: none; border-bottom: 1px dashed rgb(var(--warning-rgb)); }
+.dash-orphan-link:hover { color: rgb(var(--warning-rgb)); }
+.dash-orphan-count { color: rgb(var(--warning-rgb)); }
 .dark .dash-completeness { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 
 /* ── Quick actions ── */
@@ -529,8 +530,8 @@ onMounted(fetchDashboard)
 /* ── Dark mode ── */
 .dark .dash-stat-card { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 .dark .dash-stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.3); }
-.dark .dash-alert.warn { background: rgba(var(--warning-rgb),.08); color: #ffb340; border-color: rgba(var(--warning-rgb),.15); }
-.dark .dash-alert.error { background: rgba(var(--danger-rgb),.08); color: #ff6b5a; border-color: rgba(var(--danger-rgb),.15); }
+.dark .dash-alert.warn { background: rgba(var(--warning-rgb),.08); color: var(--accent); border-color: rgba(var(--warning-rgb),.15); }
+.dark .dash-alert.error { background: rgba(var(--danger-rgb),.08); color: rgb(var(--red-rgb)); border-color: rgba(var(--danger-rgb),.15); }
 .dark .dash-action { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 .dark .dash-action:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,.3); background: color-mix(in oklab, var(--primary, #219653) 12%, var(--card, #2c2c2e)); }
 .dark .admin-refresh:disabled { border-color: rgba(255,255,255,.12); }
@@ -575,9 +576,9 @@ onMounted(fetchDashboard)
 .activity-row { display: flex; align-items: center; gap: .5rem; padding: .4rem .6rem; border-radius: var(--radius-sm); font-size: .8rem; }
 .activity-row:nth-child(odd) { background: var(--bg-alt); }
 .activity-method { font-weight: 700; font-size: .7rem; padding: 1px 6px; border-radius: var(--radius-sm); text-transform: uppercase; }
-.activity-method.post { background: rgba(52,199,89,.15); color: #219653; }
-.activity-method.put, .activity-method.patch { background: rgba(var(--warning-rgb),.15); color: #FF9F0A; }
-.activity-method.delete { background: rgba(255,69,58,.15); color: #FF453A; }
+.activity-method.post { background: rgba(var(--secondary-rgb),.15); color: var(--secondary); }
+.activity-method.put, .activity-method.patch { background: rgba(var(--warning-rgb),.15); color: rgb(var(--warning-rgb)); }
+.activity-method.delete { background: rgba(var(--red-rgb),.15); color: rgb(var(--red-rgb)); }
 .activity-path { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
 .activity-time { color: var(--muted); font-size: .72rem; white-space: nowrap; }
 </style>

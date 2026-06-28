@@ -25,35 +25,35 @@
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon" style="background: rgba(var(--blue-rgb),.1); color: #3478F6;">&#128640;</div>
+        <div class="ai-icon si-blue">&#128640;</div>
         <div>
           <div class="stat-value">{{ health?.version || '—' }}</div>
           <div class="stat-label">Phiên bản</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon" style="background: rgba(175,82,222,.1); color: #AF52DE;">&#129302;</div>
+        <div class="ai-icon si-purple">&#129302;</div>
         <div>
           <div class="stat-value ai-model-val">{{ health?.model || health?.llm_api || '—' }}</div>
           <div class="stat-label">Model / API</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon" style="background: rgba(var(--warning-rgb),.1); color: #FF9F0A;">&#128338;</div>
+        <div class="ai-icon si-orange">&#128338;</div>
         <div>
           <div class="stat-value">{{ uptime }}</div>
           <div class="stat-label">Uptime</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon" style="background: rgba(var(--primary-rgb),.1); color: #219653;">&#127760;</div>
+        <div class="ai-icon si-green">&#127760;</div>
         <div>
           <div class="stat-value">{{ health?.entities || '—' }}</div>
           <div class="stat-label">Entities (KB)</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon" style="background: rgba(0,199,190,.1); color: #00C7BE;">&#128190;</div>
+        <div class="ai-icon si-teal">&#128190;</div>
         <div>
           <div class="stat-value">{{ health?.memory_mb || '—' }} MB</div>
           <div class="stat-label">Bộ nhớ</div>
@@ -442,12 +442,12 @@ onMounted(() => { fetchHealth(); fetchCost() })
   margin-right: 6px; vertical-align: middle;
 }
 .ai-near-cap {
-  border-color: var(--warning, #e67e22); background: rgba(var(--warning-rgb),.04);
+  border-color: var(--warning); background: rgba(var(--warning-rgb),.04);
   border-left-width: 4px; border-left-style: dashed;
   animation: ai-near-cap-pulse 2s ease-in-out infinite;
 }
 @keyframes ai-near-cap-pulse {
-  0%, 100% { border-left-color: #e67e22; }
+  0%, 100% { border-left-color: var(--warning); }
   50% { border-left-color: transparent; }
 }
 
@@ -463,8 +463,8 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-subsys-dot {
   width: 6px; height: 6px; border-radius: 50%;
 }
-.ai-subsys-on { background: rgba(var(--primary-rgb),.06); color: #219653; }
-.ai-subsys-on .ai-subsys-dot { background: #219653; animation: ai-sub-pulse 2.5s ease-in-out infinite; }
+.ai-subsys-on { background: rgba(var(--primary-rgb),.06); color: var(--secondary); }
+.ai-subsys-on .ai-subsys-dot { background: var(--secondary); animation: ai-sub-pulse 2.5s ease-in-out infinite; }
 .ai-subsys-off { background: rgba(var(--danger-rgb),.06); color: #D94F3D; }
 .ai-subsys-off .ai-subsys-dot { background: #D94F3D; opacity: .5; }
 @keyframes ai-sub-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
@@ -514,24 +514,24 @@ onMounted(() => { fetchHealth(); fetchCost() })
   margin-top: var(--space-3); padding: var(--space-3) var(--space-4);
   border-radius: 10px; font-size: .85rem;
   background: rgba(var(--primary-rgb),.06); border: .5px solid rgba(var(--primary-rgb),.15);
-  color: #219653;
+  color: var(--secondary);
 }
 .ai-trigger-result.ai-result-error {
-  background: rgba(var(--danger-rgb),.08); border-color: #D94F3D; color: #D94F3D;
+  background: rgba(var(--danger-rgb),.08); border-color: var(--error); color: var(--error);
 }
 .ai-triage-box {
   display: flex; align-items: flex-start; gap: var(--space-2);
   margin-top: var(--space-3); padding: var(--space-4);
-  border: .5px solid rgba(var(--primary-rgb),.2); border-left: 3px solid #219653; border-radius: 12px;
+  border: .5px solid rgba(var(--primary-rgb),.2); border-left: 3px solid var(--secondary); border-radius: 12px;
   font-size: .85rem; line-height: 1.6;
   background: rgba(var(--primary-rgb),.05);
 }
 .ai-triage-box .ai-triage-text { white-space: pre-wrap; flex: 1; min-width: 0; }
-.ai-triage-icon { font-weight: 800; color: #219653; flex-shrink: 0; line-height: 1.6; }
+.ai-triage-icon { font-weight: 800; color: var(--secondary); flex-shrink: 0; line-height: 1.6; }
 .ai-triage-box.ai-triage-error {
-  background: rgba(var(--danger-rgb),.08); border-color: #D94F3D; border-left-color: #D94F3D;
+  background: rgba(var(--danger-rgb),.08); border-color: var(--error); border-left-color: var(--error);
 }
-.ai-triage-box.ai-triage-error .ai-triage-icon { color: #D94F3D; }
+.ai-triage-box.ai-triage-error .ai-triage-icon { color: var(--error); }
 
 /* ── Cost note callout ── */
 .ai-cost-note {
@@ -540,7 +540,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
   padding: var(--space-3) var(--space-4); border-radius: 10px;
   background: rgba(var(--warning-rgb),.04); border: 1px solid rgba(var(--warning-rgb),.2);
 }
-.ai-cost-note-icon { color: #e67e22; flex-shrink: 0; font-weight: 700; line-height: 1.4; }
+.ai-cost-note-icon { color: var(--warning); flex-shrink: 0; font-weight: 700; line-height: 1.4; }
 .ai-cost-note strong { color: var(--ink); }
 
 /* ── Dark mode ── */

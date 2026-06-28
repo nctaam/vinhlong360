@@ -328,6 +328,16 @@ a:focus:not(:focus-visible), button:focus:not(:focus-visible) { outline: none; }
 .map-fallback { display: flex; align-items: center; justify-content: center; background: linear-gradient(110deg, var(--bg-alt) 30%, var(--card) 50%, var(--bg-alt) 70%); background-size: 200% 100%; animation: shimmer 1.6s infinite linear; border-radius: var(--radius-lg, 16px); }
 @media (prefers-reduced-motion: reduce) { .map-fallback { animation: none; background: var(--bg-alt); } }
 
+/* ── Stat-icon color variants (admin dashboard + data pages) ── */
+.si-green  { background: rgba(var(--secondary-rgb), .1);  color: var(--secondary); }
+.si-blue   { background: rgba(var(--blue-rgb), .1);       color: rgb(var(--blue-rgb)); }
+.si-purple { background: rgba(var(--purple-rgb), .1);     color: rgb(var(--purple-rgb)); }
+.si-orange { background: rgba(var(--warning-rgb), .1);    color: rgb(var(--warning-rgb)); }
+.si-indigo { background: rgba(var(--indigo-rgb), .1);     color: rgb(var(--indigo-rgb)); }
+.si-red    { background: rgba(var(--red-rgb), .1);        color: rgb(var(--red-rgb)); }
+.si-danger { background: rgba(var(--danger-rgb), .1);     color: var(--error); }
+.si-teal   { background: rgba(var(--teal-rgb), .1);       color: rgb(var(--teal-rgb)); }
+
 /* ── MapLibre popup overrides ── */
 .maplibregl-popup-content { font-family: var(--font-body); font-size: var(--text-sm); line-height: var(--leading-normal); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); border: .5px solid var(--line); background: var(--card); color: var(--ink); }
 .maplibregl-popup-content strong { font-weight: var(--weight-semibold); }

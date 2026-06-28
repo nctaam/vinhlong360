@@ -138,6 +138,11 @@
   --ink-rgb: 43, 38, 34;
   --danger-rgb: 217, 79, 61;
   --blue-rgb: 52, 120, 246;
+  --warning-rgb: 230, 126, 34;
+  --purple-rgb: 175, 82, 222;
+  --indigo-rgb: 88, 86, 214;
+  --teal-rgb: 0, 199, 190;
+  --red-rgb: 255, 69, 58;
   --success-rgb: 95, 207, 138;
   --focus-ring: 0 0 0 4px rgba(var(--primary-rgb), .12);
   --shadow: 0 1px 3px rgba(0, 0, 0, .04), 0 6px 20px rgba(0, 0, 0, .06);

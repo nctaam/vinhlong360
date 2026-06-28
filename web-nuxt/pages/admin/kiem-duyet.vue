@@ -25,15 +25,15 @@
     <!-- Stats row -->
     <div class="stat-grid">
       <div class="stat-card" :class="{ 'status-warn': (modStats.pending || 0) > 0 }">
-        <div class="mod-icon" style="background: rgba(var(--warning-rgb),.1); color: #FF9F0A;">&#9203;</div>
+        <div class="mod-icon si-orange">&#9203;</div>
         <div><div class="stat-value">{{ modStats.pending || 0 }}</div><div class="stat-label">Chờ duyệt</div></div>
       </div>
       <div class="stat-card" :class="{ 'status-error': (modStats.flagged || 0) > 0 }">
-        <div class="mod-icon" style="background: rgba(var(--danger-rgb),.1); color: #D94F3D;">&#9873;</div>
+        <div class="mod-icon si-danger">&#9873;</div>
         <div><div class="stat-value">{{ modStats.flagged || 0 }}</div><div class="stat-label">Gắn cờ</div></div>
       </div>
       <div class="stat-card status-ok">
-        <div class="mod-icon" style="background: rgba(var(--primary-rgb),.1); color: #219653;">&#9989;</div>
+        <div class="mod-icon si-green">&#9989;</div>
         <div><div class="stat-value">{{ modStats.approved || 0 }}</div><div class="stat-label">Đã duyệt</div></div>
       </div>
       <div class="stat-card">
