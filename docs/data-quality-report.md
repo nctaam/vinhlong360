@@ -1,7 +1,7 @@
 # Data Quality Report
 
-Generated: 2026-06-28 (updated — geographic anomaly fix)
-Source: `web/data.json` (1746 entities, 11591 relationships, 33 itineraries)
+Generated: 2026-06-28 (updated — produced_in + phone + far_near fix)
+Source: `web/data.json` (1746 entities, 11545 relationships, 33 itineraries)
 Tool: `python scripts/validate_data.py`
 
 ## Summary
@@ -14,7 +14,7 @@ Tool: `python scripts/validate_data.py`
 | OK (60-79) | 2 | 955 | -953 |
 | Good (80-100) | **1619** | 668 | +951 |
 | Errors | 0 | 1 | -1 |
-| Warnings | 8 | 13 | -5 |
+| Warnings | 7 | 13 | -6 |
 | Graph components | 1 (fully connected) | 1 | — |
 | Isolated entities | 0 | 0 | — |
 | Broken relationships | 0 | 0 | — |
@@ -49,8 +49,11 @@ Tool: `python scripts/validate_data.py`
 | Type misclassification | 113 food as attraction | **96→restaurant, 17→cafe** |
 | Restaurant sub_category | 88 missing | **All 245 restaurants/cafes classified** |
 | Restaurant specialty | 19 missing (reclassified) | **All 190 restaurants have specialty** |
-| Test data removed | prov-1 placeholder | **Deleted** |
+| Test data removed | prov-1 placeholder | **Deleted (SQLite + JSON)** |
 | Geocoded from centroid | 0 | **34 entities** |
+| produced_in coverage | 137/218 products | **153/218 products** (+16 curated) |
+| Invalid phone numbers | 9 masked/incomplete | **0** (removed) |
+| Far near rels (>50km) | 62 centroid artifacts | **0** (removed) |
 
 ## Errors
 
@@ -60,12 +63,10 @@ None.
 
 | Code | Count | Notes |
 |------|-------|-------|
-| `near_asymmetric` | 4314 | By design — system handles bidirectionality automatically |
-| `far_near_relationships` | 62 | Near rels >50km — entities at centroids; improve with real geocoding |
+| `near_asymmetric` | 4252 | By design — system handles bidirectionality automatically |
 | `coordinate_clusters` | 189 clusters (1365 entities) | Ward/province centroids; needs real geocoding data |
 | `itinerary_area_mismatch` | 59 | Multi-province itineraries legitimately cross areas |
 | `rel_type_singletons` | 40 | Rare but valid relationship combos |
-| `invalid_phone_format` | 9 | Masked numbers (xxx) and extra text in phone field |
 | `missing_location` | 7 | 2 non-place + 5 itinerary entities without coordinates |
 | `missing_place_id` | 1 | ben-xe-mien-tay-hcm (HCM, outside VL+BT+TV scope) |
 | `data_js_unknown_shape` | 1 | web/data.js format — cosmetic |
@@ -141,12 +142,12 @@ Note: Confidence formula now correctly differentiates approximate coordinates (+
 
 | Type | Count |
 |------|-------|
-| near | 4346 |
+| near | 4284 |
 | related_to | 4157 |
 | located_in | 2216 |
 | associated_with | 670 |
-| produced_in | 202 |
-| **Total** | **11591** |
+| produced_in | 218 |
+| **Total** | **11545** |
 
 ## Deep Research Findings
 
@@ -169,7 +170,7 @@ Note: Confidence formula now correctly differentiates approximate coordinates (+
 - Dangling references: **0** (clean)
 - Self-references: **0** (clean)
 - Duplicate relationships: **0** (clean)
-- Far "near" relationships (>50km): **62** — all involve centroid entities (artifacts of approximate coordinates, will resolve with real geocoding)
+- Far "near" relationships (>50km): **0** (62 centroid artifacts removed)
 
 ### Itinerary Quality
 
@@ -224,4 +225,5 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 2. **Geocoding** — ~337 entities at province centroids (178 original + 159 from geographic fixes). Google Places API would improve coverage beyond Nominatim.
 3. **Experience coverage** — Trà Vinh has only 7 experiences vs 70 for Vĩnh Long (10x imbalance). Need curated TV experiences.
 4. **Merge duplicate** — "Nhà hàng Hàm Luông" / "Hàm Luông" at same address in Bến Tre.
-5. **Phone/hours real data** — Some restaurants/accommodations have specialty but still lack phone/hours. Needs Google Places or manual research.
+5. **produced_in coverage** — 153/218 products linked; remaining 65 are fresh produce without matching craft villages.
+6. **Phone/hours real data** — Some restaurants/accommodations have specialty but still lack phone/hours. Needs Google Places or manual research.
