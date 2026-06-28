@@ -358,6 +358,7 @@ async def create_post(body: CreatePost, user=Depends(require_user), _csrf=Depend
                     logger.exception("Failed to notify repost to user %s", orig_author_id)
         await asyncio.to_thread(_notify_post)
 
+    _invalidate_social_caches()
     result = _enrich_post(post, user)
     if status != "approved":
         result["moderation_notice"] = (
@@ -422,6 +423,7 @@ async def delete_post(post_id: str, user=Depends(require_user), _csrf=Depends(re
                 raise HTTPException(403, "Không có quyền xóa bài viết này")
             db._execute(conn, f"DELETE FROM posts WHERE id::text = {ph}", (post_id,))
     await asyncio.to_thread(_query)
+    _invalidate_social_caches()
     return {"success": True}
 
 
@@ -471,6 +473,7 @@ async def update_post(post_id: str, body: UpdatePost, user=Depends(require_user)
                 LEFT JOIN entities e ON e.id = p.entity_id WHERE p.id::text = {ph}
             """, (post_id,))
     post = await asyncio.to_thread(_update)
+    _invalidate_social_caches()
     return {"post": _format_post(db._row_to_dict(post)), "moderation_status": status}
 
 
@@ -735,6 +738,11 @@ async def community_stats():
 
 _trending_cache: dict = {"ts": 0.0, "data": {}}
 _TRENDING_TTL = _cfg.TRENDING_CACHE_TTL
+
+
+def _invalidate_social_caches():
+    _trending_cache["ts"] = 0.0
+    _leaderboard_cache["ts"] = 0.0
 
 @router.get("/community/trending-tags")
 async def trending_tags(limit: int = Query(10, ge=1, le=20)):
