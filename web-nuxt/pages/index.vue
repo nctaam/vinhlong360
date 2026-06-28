@@ -1117,9 +1117,9 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 }
 .dark .home .hero-scrim {
   background:
-    radial-gradient(120% 95% at 88% 6%, rgba(232,163,61,.22) 0%, rgba(232,163,61,.05) 34%, transparent 60%),
-    radial-gradient(90% 70% at 6% 100%, rgba(var(--primary-rgb),.28) 0%, transparent 58%),
-    linear-gradient(to top, rgba(0,0,0,.62) 0%, rgba(0,0,0,.10) 34%, transparent 58%);
+    radial-gradient(120% 95% at 88% 6%, rgba(232,163,61,.18) 0%, rgba(232,163,61,.04) 34%, transparent 60%),
+    radial-gradient(90% 70% at 6% 100%, rgba(var(--primary-rgb),.22) 0%, transparent 58%),
+    linear-gradient(to top, rgba(0,0,0,.48) 0%, rgba(0,0,0,.06) 34%, transparent 58%);
 }
 .dark .home .hero-kicker { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.16); }
 .dark .home .hero-search { background: rgba(28,28,30,.5); border-color: rgba(255,255,255,.12); }

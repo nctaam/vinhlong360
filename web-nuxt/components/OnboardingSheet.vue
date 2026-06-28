@@ -43,7 +43,7 @@ useModalA11y(visible, sheetEl, { onClose: dismiss })
 const LS_ONBOARDING = 'vl360_onboarding_seen'
 onMounted(() => {
   if (!localStorage.getItem(LS_ONBOARDING)) {
-    setTimeout(() => { visible.value = true }, 1500)
+    setTimeout(() => { visible.value = true }, 5000)
   }
 })
 
