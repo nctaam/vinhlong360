@@ -1521,3 +1521,57 @@ class TestPhase10LikeEscape:
         block = src[idx:idx + 1500]
         assert "escape_like" in block
         assert "ESCAPE" in block
+
+
+class TestPhase10PaginationConsistency:
+    """Phase 10: all paginated endpoints return consistent metadata."""
+
+    _src = None
+
+    @classmethod
+    def _social_src(cls):
+        if cls._src is None:
+            import social
+            cls._src = Path(social.__file__).read_text(encoding="utf-8")
+        return cls._src
+
+    @staticmethod
+    def _func_block(src, name, size=2500):
+        idx = src.find(f"def {name}")
+        return src[idx:idx + size] if idx != -1 else ""
+
+    def test_search_posts_has_page(self):
+        """search_posts response includes page field."""
+        block = self._func_block(self._social_src(), "search_posts")
+        assert '"page"' in block
+
+    def test_search_users_has_page(self):
+        """search_users response includes page field."""
+        block = self._func_block(self._social_src(), "search_users")
+        assert '"page"' in block
+
+    def test_bookmarks_has_pagination(self):
+        """Bookmarks response includes pagination metadata."""
+        block = self._func_block(self._social_src(), "get_my_bookmarks")
+        assert '"has_more"' in block
+
+    def test_user_posts_has_pagination(self):
+        """User posts response includes pagination metadata."""
+        block = self._func_block(self._social_src(), "get_user_posts")
+        assert '"has_more"' in block
+
+    def test_following_has_offset(self):
+        """Following list response includes offset."""
+        block = self._func_block(self._social_src(), "list_following_users")
+        assert '"offset"' in block
+
+    def test_followers_has_offset(self):
+        """Followers list response includes offset."""
+        block = self._func_block(self._social_src(), "list_followers")
+        assert '"offset"' in block
+
+    def test_delete_account_has_success(self):
+        """DELETE /account response includes success field for consistency."""
+        auth_src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        block = self._func_block(auth_src, "delete_account")
+        assert '"success"' in block

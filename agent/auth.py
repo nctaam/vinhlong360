@@ -617,6 +617,7 @@ async def delete_account(request: Request, _csrf=Depends(_require_csrf_lazy)):
             db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph}", (uid,))
     await asyncio.to_thread(_query)
     return {
+        "success": True,
         "status": "scheduled",
         "message": f"Tài khoản sẽ bị xoá vĩnh viễn sau {ACCOUNT_DELETE_GRACE_DAYS} ngày. Đăng nhập lại bằng OTP để huỷ.",
         "grace_days": ACCOUNT_DELETE_GRACE_DAYS,

@@ -644,7 +644,7 @@ async def search_posts(
     await asyncio.to_thread(_enrich_user_status, posts, user)
 
     total_c = total["c"] if total else 0
-    return {"posts": posts, "q": q, "total": total_c,
+    return {"posts": posts, "q": q, "page": page, "total": total_c,
             "has_more": offset + limit < total_c}
 
 
@@ -693,7 +693,7 @@ async def search_users(
                 "avatar_url": d.get("avatar_url"), "username": d.get("username"),
                 "post_count": int(d.get("post_count") or 0),
             })
-    return {"users": users, "q": q, "has_more": len(users) == limit}
+    return {"users": users, "q": q, "page": page, "total": len(users), "has_more": len(users) == limit}
 
 
 @router.get("/community/stats")
@@ -816,7 +816,7 @@ async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100
               "display_name": db._row_to_dict(r)["display_name"],
               "username": db._row_to_dict(r).get("username"),
               "avatar_url": db._row_to_dict(r).get("avatar_url")} for r in rows]
-    return {"users": users, "has_more": len(users) == limit}
+    return {"users": users, "offset": offset, "has_more": len(users) == limit}
 
 
 @router.get("/users/{user_id}/followers")
@@ -840,7 +840,7 @@ async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), off
               "display_name": db._row_to_dict(r)["display_name"],
               "username": db._row_to_dict(r).get("username"),
               "avatar_url": db._row_to_dict(r).get("avatar_url")} for r in rows]
-    return {"users": users, "has_more": len(users) == limit}
+    return {"users": users, "offset": offset, "has_more": len(users) == limit}
 
 
 @router.get("/community/suggested-follows")
@@ -1292,7 +1292,8 @@ async def get_my_bookmarks(
                 LIMIT {ph} OFFSET {ph}
             """, (str(user["id"]), limit, offset))
     rows = await asyncio.to_thread(_query)
-    return {"posts": [_format_post(db._row_to_dict(r)) for r in rows]}
+    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+    return {"posts": posts, "page": page, "has_more": len(posts) == limit}
 
 
 # ── Image upload ──
@@ -1558,7 +1559,8 @@ async def get_user_posts(
                 LIMIT {ph} OFFSET {ph}
             """, (uid, limit, offset))
     rows = await asyncio.to_thread(_query)
-    return {"posts": [_format_post(db._row_to_dict(r)) for r in rows]}
+    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+    return {"posts": posts, "page": page, "has_more": len(posts) == limit}
 
 
 # ── Helpers for AI integration (called by tools.py) ──
