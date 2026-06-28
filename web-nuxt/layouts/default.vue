@@ -54,6 +54,10 @@
       </div>
     </Transition>
 
+    <noscript>
+      <div class="noscript-banner">Trang web này cần JavaScript để hoạt động. Vui lòng bật JavaScript trong trình duyệt.</div>
+    </noscript>
+
     <main id="main-content" role="main" tabindex="-1">
       <slot />
     </main>

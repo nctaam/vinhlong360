@@ -17,6 +17,9 @@
   <section v-else class="wp">
     <!-- Breadcrumb -->
     <nav class="breadcrumb" aria-label="Breadcrumb">
+      <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
+        <span aria-hidden="true">←</span>
+      </button>
       <ol>
         <li><NuxtLink to="/">Trang chủ</NuxtLink></li>
         <li v-if="data.place.area"><NuxtLink :to="`/khu-vuc/${data.place.area}`">{{ areaMeta.name }}</NuxtLink></li>
@@ -147,7 +150,16 @@ import { AREA_META, OFFICE_KIND, TYPE_META } from '~/composables/useConstants'
 useReveal()
 
 const route = useRoute()
+const router = useRouter()
 const id = computed(() => route.params.id as string)
+
+function goBack() {
+  if (import.meta.client && window.history.length > 1) {
+    router.back()
+  } else {
+    navigateTo('/danh-ba')
+  }
+}
 
 const fetchFailed = ref(false)
 const { data } = await useAsyncData(() => `ward-${id.value}`, async () => {

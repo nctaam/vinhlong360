@@ -1,6 +1,12 @@
 <template>
   <section v-if="itinerary" class="page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình', to: '/lich-trinh' }, { label: itinerary.title || itinerary.name }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình', to: '/lich-trinh' }, { label: itinerary.title || itinerary.name }]">
+      <template #before>
+        <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
+          <span aria-hidden="true">←</span>
+        </button>
+      </template>
+    </Breadcrumb>
 
     <section class="catalog-hero cat-itinerary">
       <div class="catalog-hero-inner">
@@ -104,7 +110,16 @@ import { fetchRoute, formatDistance, formatDuration, type TransportMode, type Ro
 useReveal()
 
 const route = useRoute()
+const router = useRouter()
 const id = route.params.id as string
+
+function goBack() {
+  if (import.meta.client && window.history.length > 1) {
+    router.back()
+  } else {
+    navigateTo('/lich-trinh')
+  }
+}
 
 const { data: itinerary, error: fetchError, status } = await useAsyncData(`itinerary-${id}`, () =>
   apiFetch<Itinerary>(`/api/itineraries/${id}`)

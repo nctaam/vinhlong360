@@ -92,6 +92,7 @@ h4 { font-size: var(--text-lg);  line-height: var(--lh-lg);  letter-spacing: var
 .skip-link:focus { top: 0; }
 /* Programmatic focus on main-content (route change / skip-link) should not show outline */
 #main-content:focus { outline: none; }
+.noscript-banner { background: var(--warning, #f59e0b); color: #000; text-align: center; padding: var(--space-3) var(--space-4); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
 
 /* ── Topbar (Apple frosted glass) ── */
 .topbar { position: sticky; top: 0; z-index: var(--z-sticky); background: var(--glass-bg-heavy); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); border-bottom: .5px solid rgba(var(--ink-rgb, 0,0,0),.06); padding-inline: env(safe-area-inset-left) env(safe-area-inset-right); transition: background .3s var(--ease-out), border-color .3s var(--ease-out), box-shadow .4s var(--ease-out); }

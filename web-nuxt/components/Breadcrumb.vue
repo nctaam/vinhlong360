@@ -1,5 +1,6 @@
 <template>
   <nav class="breadcrumb" aria-label="Breadcrumb">
+    <slot name="before" />
     <ol>
       <li v-for="(item, i) in items" :key="i">
         <NuxtLink v-if="item.to" :to="item.to">{{ item.label }}</NuxtLink>
