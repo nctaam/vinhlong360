@@ -646,6 +646,7 @@ async def search_posts(
     offset = (page - 1) * limit
     from database import escape_like
     pattern = "%" + escape_like(stripped.lower()) + "%"
+    bc, bc_p = _block_sql(user, "p.user_id")
 
     def _query():
         with db._conn() as conn:
@@ -657,13 +658,15 @@ async def search_posts(
                 LEFT JOIN entities e ON e.id = p.entity_id
                 WHERE p.moderation_status = 'approved'
                   AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph}) ESCAPE '\\'
+                {bc}
                 ORDER BY p.created_at DESC
                 LIMIT {ph} OFFSET {ph}
-            """, (pattern, limit, offset))
+            """, (pattern, *bc_p, limit, offset))
             total = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts p
                 WHERE p.moderation_status = 'approved' AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph}) ESCAPE '\\'
-            """, (pattern,))
+                {bc}
+            """, (pattern, *bc_p))
         return rows, total
     rows, total = await asyncio.to_thread(_query)
 
@@ -1605,14 +1608,16 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
 
 @router.get("/users/{user_id}/posts")
 async def get_user_posts(
-    user_id: str,
+    user_id: str, request: Request,
     page: int = Query(1, ge=1, le=1000), limit: int = Query(20, ge=1, le=50),
 ):
     validate_path_id(user_id, "user_id")
+    user = await get_current_user(request)
     ph = db._ph
     uid = await asyncio.to_thread(_resolve_user_id, user_id)
     if not uid:
         raise HTTPException(404, "Người dùng không tồn tại")
+    bc, bc_p = _block_sql(user, "p.user_id")
     offset = (page - 1) * limit
     def _query():
         with db._conn() as conn:
@@ -1623,9 +1628,10 @@ async def get_user_posts(
                 JOIN users u ON u.id = p.user_id
                 LEFT JOIN entities e ON e.id = p.entity_id
                 WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved'
+                {bc}
                 ORDER BY p.created_at DESC
                 LIMIT {ph} OFFSET {ph}
-            """, (uid, limit, offset))
+            """, (uid, *bc_p, limit, offset))
     rows = await asyncio.to_thread(_query)
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
     return {"posts": posts, "page": page, "has_more": len(posts) == limit}
