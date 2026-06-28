@@ -205,9 +205,11 @@ class Storage:
             if not path.is_relative_to(LOCAL_MEDIA_DIR.resolve()):
                 logger.warning("Path traversal attempt in storage.delete: %s", key_or_url[:100])
                 return
-            if path.exists():
+            try:
                 path.unlink()
                 logger.debug("Deleted local file %s", path)
+            except FileNotFoundError:
+                pass
 
 
 storage = Storage()

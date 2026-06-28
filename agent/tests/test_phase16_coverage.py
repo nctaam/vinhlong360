@@ -1371,3 +1371,21 @@ class TestDeepScanBatch3:
         block = src[idx:idx+400]
         assert "500" in block or "_decay" in block, \
             "record() must cap per-IP entries or prune within decay window"
+
+    def test_moderation_history_gc(self):
+        """_user_moderation_history must have GC to prevent unbounded growth."""
+        src = (Path(__file__).resolve().parent.parent / "moderation.py").read_text(encoding="utf-8")
+        idx = src.find("def record_moderation_outcome(")
+        assert idx > 0
+        block = src[idx:idx+500]
+        assert "50_000" in block or "50000" in block, \
+            "record_moderation_outcome must have GC cap (50k)"
+
+    def test_storage_delete_toctou_safe(self):
+        """storage.delete must use try/except not exists() check."""
+        src = (Path(__file__).resolve().parent.parent / "storage.py").read_text(encoding="utf-8")
+        idx = src.find("def delete(")
+        assert idx > 0
+        block = src[idx:idx+900]
+        assert "FileNotFoundError" in block, \
+            "delete must catch FileNotFoundError instead of TOCTOU exists() check"

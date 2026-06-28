@@ -515,6 +515,12 @@ def record_moderation_outcome(user_id: str, action: str):
         if user_id not in _user_moderation_history:
             _user_moderation_history[user_id] = []
         _user_moderation_history[user_id].append((now, action))
+        if len(_user_moderation_history) > 50_000:
+            cutoff = now - _MOD_HISTORY_WINDOW
+            dead = [k for k, v in _user_moderation_history.items()
+                    if not v or v[-1][0] < cutoff]
+            for k in dead:
+                del _user_moderation_history[k]
 
 
 def adjust_thresholds_for_trust(trust_level: str) -> tuple[float, float]:
