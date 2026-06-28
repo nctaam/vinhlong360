@@ -14,7 +14,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
-from auth_middleware import require_user, require_csrf
+from auth_middleware import require_user, require_csrf, validate_path_id
 from database import db
 
 
@@ -88,6 +88,7 @@ async def add_saved(item: SavedItem, user=Depends(require_user), _csrf=Depends(r
 
 @router.delete("/{entity_id}")
 async def remove_saved(entity_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    entity_id = validate_path_id(entity_id, "entity_id")
     def _query():
         ph = db._ph
         with db._conn() as conn:

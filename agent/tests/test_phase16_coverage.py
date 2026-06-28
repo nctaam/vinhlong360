@@ -382,3 +382,43 @@ class TestCrossModuleConsistency:
         fn_names = re.findall(r'ScheduledTask\("[^"]+",\s*(\w+)', src)
         for fn in fn_names:
             assert f"def {fn}" in src, f"Task function {fn} not defined"
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  Path parameter validation — visits.py + saved.py
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestPathValidationVisits:
+    """visits.py path parameters must call validate_path_id."""
+
+    def test_check_visit_validates_entity_id(self):
+        src = (Path(__file__).resolve().parent.parent / "visits.py").read_text(encoding="utf-8")
+        idx = src.find("def check_visit")
+        block = src[idx:idx+300]
+        assert "validate_path_id" in block
+
+    def test_remove_visit_validates_entity_id(self):
+        src = (Path(__file__).resolve().parent.parent / "visits.py").read_text(encoding="utf-8")
+        idx = src.find("def remove_visit")
+        block = src[idx:idx+300]
+        assert "validate_path_id" in block
+
+    def test_visits_imports_validate_path_id(self):
+        src = (Path(__file__).resolve().parent.parent / "visits.py").read_text(encoding="utf-8")
+        import_section = src[:src.find("\nrouter")]
+        assert "validate_path_id" in import_section
+
+
+class TestPathValidationSaved:
+    """saved.py path parameters must call validate_path_id."""
+
+    def test_remove_saved_validates_entity_id(self):
+        src = (Path(__file__).resolve().parent.parent / "saved.py").read_text(encoding="utf-8")
+        idx = src.find("def remove_saved")
+        block = src[idx:idx+300]
+        assert "validate_path_id" in block
+
+    def test_saved_imports_validate_path_id(self):
+        src = (Path(__file__).resolve().parent.parent / "saved.py").read_text(encoding="utf-8")
+        import_section = src[:src.find("\nrouter")]
+        assert "validate_path_id" in import_section
