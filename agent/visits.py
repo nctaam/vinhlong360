@@ -30,7 +30,7 @@ class VisitBody(BaseModel):
 
 
 @router.get("")
-async def list_visits(status: str = Query(None), user=Depends(require_user)):
+async def list_visits(status: str = Query(None, max_length=20), user=Depends(require_user)):
     def _query():
         ph = db._ph
         sql = f"SELECT entity_id, status, created_at FROM user_visits WHERE user_id = {ph}::uuid"

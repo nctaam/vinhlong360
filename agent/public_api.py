@@ -194,7 +194,7 @@ async def get_entity_relationships(
     entity_id: str,
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0, le=10000),
-    type: Optional[str] = None,
+    type: Optional[str] = Query(None, max_length=50),
     include_near: bool = True,
 ):
     validate_path_id(entity_id, "entity_id")
@@ -250,7 +250,7 @@ async def get_entity(
 
 
 @router.get("/places")
-async def list_places(response: Response, area: Optional[str] = None):
+async def list_places(response: Response, area: Optional[str] = Query(None, max_length=100)):
     response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=7200"
     db.initialize()
     def _query():
@@ -268,7 +268,7 @@ async def list_places(response: Response, area: Optional[str] = None):
 
 
 @router.get("/facilities")
-async def list_facilities(place: Optional[str] = None):
+async def list_facilities(place: Optional[str] = Query(None, max_length=100)):
     """GĐ13.4: danh bạ hành chính — cơ quan công vụ (UBND/công an/...) theo xã/phường."""
     facilities = await asyncio.to_thread(db.facilities_by_place, place)
     return {"facilities": facilities}
@@ -324,7 +324,7 @@ async def place_overview(place_id: str):
 
 
 @router.get("/itineraries")
-async def list_itineraries(area: Optional[str] = None):
+async def list_itineraries(area: Optional[str] = Query(None, max_length=100)):
     return await asyncio.to_thread(db.list_itineraries, area=area)
 
 
@@ -357,8 +357,8 @@ async def get_itinerary(itin_id: str):
 async def search(
     request: Request,
     q: str = Query(..., min_length=1, max_length=200),
-    type: Optional[str] = None,
-    area: Optional[str] = None,
+    type: Optional[str] = Query(None, max_length=50),
+    area: Optional[str] = Query(None, max_length=100),
     limit: int = Query(20, le=100),
 ):
     from ratelimit import check_rate
@@ -770,7 +770,7 @@ async def get_map_pins(
 @router.get("/events")
 async def list_events(
     response: Response,
-    area: Optional[str] = None,
+    area: Optional[str] = Query(None, max_length=100),
     include_past: bool = False,
     limit: int = Query(50, le=200),
 ):

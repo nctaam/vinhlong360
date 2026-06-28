@@ -253,9 +253,9 @@ class DataQualityApplyRequest(BaseModel):
 
 @router.get("/entities")
 async def list_entities(
-    type: Optional[str] = None,
-    area: Optional[str] = None,
-    q: Optional[str] = None,
+    type: Optional[str] = Query(None, max_length=50),
+    area: Optional[str] = Query(None, max_length=100),
+    q: Optional[str] = Query(None, max_length=200),
     include_places: bool = False,
     orphans_only: bool = False,
     limit: int = Query(50, le=500),
@@ -498,7 +498,7 @@ async def remove_entity_image(entity_id: str, idx: int):
 
 @router.get("/unclassified")
 async def list_unclassified(limit: int = Query(50, ge=1, le=500), offset: int = Query(0, ge=0, le=10000),
-                            q: Optional[str] = None):
+                            q: Optional[str] = Query(None, max_length=200)):
     """Entity nội dung CHƯA gán xã/phường (placeId rỗng) — để admin gán đúng (lấp nợ placeId)."""
     ql = (q or "").lower().strip()
     base = "FROM entities WHERE type != 'place' AND (placeId IS NULL OR placeId = '')"
@@ -550,7 +550,7 @@ async def assign_place(entity_id: str, body: AssignPlaceRequest):
 # ── Itinerary CRUD ──
 
 @router.get("/itineraries")
-async def list_itineraries_admin(area: Optional[str] = None):
+async def list_itineraries_admin(area: Optional[str] = Query(None, max_length=100)):
     return await asyncio.to_thread(db.list_itineraries, area=area)
 
 @router.get("/itineraries/{itin_id}")
@@ -1241,7 +1241,7 @@ async def activity_feed(limit: int = Query(10, ge=1, le=50)):
 _learn_proc: Optional[subprocess.Popen] = None
 
 @router.post("/trigger-learn")
-async def trigger_learn(category: Optional[str] = None, topics: int = 3):
+async def trigger_learn(category: Optional[str] = Query(None, max_length=50), topics: int = 3):
     """Trigger 1 vòng auto-learn (chạy background)."""
     if topics < 1 or topics > 20:
         raise HTTPException(400, "topics must be between 1 and 20")
@@ -1639,10 +1639,10 @@ _audit_cache: dict = {"mtime": 0.0, "items": []}
 @router.get("/audit-log")
 async def get_audit_log(
     limit: int = Query(200, ge=1, le=5000),
-    method: Optional[str] = None,
-    q: Optional[str] = None,
-    date_from: Optional[str] = None,
-    date_to: Optional[str] = None,
+    method: Optional[str] = Query(None, max_length=10),
+    q: Optional[str] = Query(None, max_length=200),
+    date_from: Optional[str] = Query(None, max_length=20),
+    date_to: Optional[str] = Query(None, max_length=20),
 ):
     """P2-7: nhật ký thao tác admin (mutation), mới nhất trước. Hỗ trợ filter server-side."""
     def _query():
