@@ -1012,13 +1012,16 @@ async def get_entity_feed(
     """
     feed_params = tuple(params)
 
+    total_params: list = [entity_id] + bc_p
+
     def _entity_feed_query():
         with db._conn() as conn:
             rows = db._fetchall(conn, feed_sql, feed_params)
             total = db._fetchone(conn, f"""
-                SELECT COUNT(*) as c FROM posts
-                WHERE entity_id = {ph} AND moderation_status = 'approved'
-            """, (entity_id,))
+                SELECT COUNT(*) as c FROM posts p
+                WHERE p.entity_id = {ph} AND p.moderation_status = 'approved'
+                {bc}
+            """, tuple(total_params))
             rating_row = db._fetchone(conn, f"""
                 SELECT avg_rating, rating_count FROM entity_ratings
                 WHERE entity_id = {ph}
