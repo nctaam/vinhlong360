@@ -599,6 +599,13 @@ def task_session_cleanup():
                     AND deleted_at < NOW() - INTERVAL '30 days'
                 )
             """, ())
+            result = db._execute(conn, """
+                DELETE FROM users WHERE deleted_at IS NOT NULL
+                AND deleted_at < NOW() - INTERVAL '30 days'
+            """, ())
+            hard_deleted = getattr(result, 'rowcount', 0)
+            if hard_deleted and hard_deleted > 0:
+                _sched_logger.info("Session cleanup: hard-deleted %d accounts past grace period", hard_deleted)
         _sched_logger.info("Session cleanup: purged expired sessions and OTPs")
     except Exception as e:
         _sched_logger.error("Session cleanup error: %s", e)

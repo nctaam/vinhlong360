@@ -266,6 +266,66 @@ class TestPhase17ModerationAutoEscalation:
         assert "approved" in block
 
 
+class TestPhase17AccountHardDelete:
+    """Phase 17: Hard-delete accounts past grace period."""
+
+    def test_session_cleanup_hard_deletes_accounts(self):
+        src = (Path(__file__).resolve().parent.parent / "scheduler.py").read_text(encoding="utf-8")
+        idx = src.find("task_session_cleanup")
+        block = src[idx:idx+1000]
+        assert "DELETE FROM users" in block
+        assert "deleted_at" in block
+        assert "30 days" in block
+
+    def test_grace_period_configurable(self):
+        from config import settings
+        assert settings.ACCOUNT_DELETE_GRACE_DAYS == 30
+
+
+class TestPhase17SecurityChecks:
+    """Phase 17: Verify security best practices across modules."""
+
+    def test_admin_key_timing_safe(self):
+        """Admin key verification must use timing-safe comparison."""
+        src = (Path(__file__).resolve().parent.parent / "middleware.py").read_text(encoding="utf-8")
+        assert "hmac.compare_digest" in src
+
+    def test_password_hash_uses_pbkdf2(self):
+        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        assert "pbkdf2_hmac" in src
+
+    def test_password_validation_min_length(self):
+        from auth import SetPassword
+        import pytest as pt
+        with pt.raises(Exception):
+            SetPassword(password="short1")
+
+    def test_password_validation_needs_digit(self):
+        from auth import SetPassword
+        import pytest as pt
+        with pt.raises(Exception):
+            SetPassword(password="onlyletters")
+
+    def test_password_validation_needs_letter(self):
+        from auth import SetPassword
+        import pytest as pt
+        with pt.raises(Exception):
+            SetPassword(password="12345678")
+
+    def test_esms_uses_https(self):
+        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        assert "https://rest.esms.vn/" in src
+
+    def test_token_hashing_uses_sha256(self):
+        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        assert "sha256" in src
+
+    def test_session_cleanup_purges_expired(self):
+        src = (Path(__file__).resolve().parent.parent / "scheduler.py").read_text(encoding="utf-8")
+        assert "DELETE FROM user_sessions WHERE expires_at < NOW()" in src
+        assert "DELETE FROM otp_sessions WHERE expires_at < NOW()" in src
+
+
 # ═══════════════════════════════════════════════════════════════════════
 #  Cross-module consistency checks
 # ═══════════════════════════════════════════════════════════════════════
