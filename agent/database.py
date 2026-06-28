@@ -49,6 +49,11 @@ if USE_PG:
     import psycopg2.extras
 
 
+def escape_like(s: str) -> str:
+    """Escape SQL LIKE wildcards so user input is treated as literal text."""
+    return s.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 # Bbox vùng VL+Bến Tre+Trà Vinh — guard validate toạ độ geocode (chống khớp nhầm tỉnh khác)
 _REGION_BBOX = (9.2, 10.65, 105.6, 106.95)  # lat_min, lat_max, lng_min, lng_max
 
@@ -516,11 +521,13 @@ class Database:
         if q:
             if self._use_pg:
                 # không phân-biệt-dấu (f_unaccent + functional GIN trgm index, migration 015)
-                conditions.append(f"(f_unaccent(lower(e.name)) LIKE f_unaccent({ph}) OR f_unaccent(lower(e.summary)) LIKE f_unaccent({ph}))")
-                params.extend([f"%{q.lower()}%", f"%{q.lower()}%"])
+                conditions.append(f"(f_unaccent(lower(e.name)) LIKE f_unaccent({ph}) ESCAPE '\\' OR f_unaccent(lower(e.summary)) LIKE f_unaccent({ph}) ESCAPE '\\')")
+                q_esc = escape_like(q.lower())
+                params.extend([f"%{q_esc}%", f"%{q_esc}%"])
             else:
-                conditions.append(f"(e.name LIKE {ph} OR e.summary LIKE {ph})")
-                params.extend([f"%{q}%", f"%{q}%"])
+                conditions.append(f"(e.name LIKE {ph} ESCAPE '\\' OR e.summary LIKE {ph} ESCAPE '\\')")
+                q_esc = escape_like(q)
+                params.extend([f"%{q_esc}%", f"%{q_esc}%"])
 
         where = " AND ".join(conditions)
         params.append(limit)
@@ -635,11 +642,13 @@ class Database:
         if q:
             if self._use_pg:
                 # không phân-biệt-dấu (f_unaccent + functional GIN trgm index, migration 015)
-                conditions.append(f"(f_unaccent(lower(e.name)) LIKE f_unaccent({ph}) OR f_unaccent(lower(e.summary)) LIKE f_unaccent({ph}))")
-                params.extend([f"%{q.lower()}%", f"%{q.lower()}%"])
+                conditions.append(f"(f_unaccent(lower(e.name)) LIKE f_unaccent({ph}) ESCAPE '\\' OR f_unaccent(lower(e.summary)) LIKE f_unaccent({ph}) ESCAPE '\\')")
+                q_esc = escape_like(q.lower())
+                params.extend([f"%{q_esc}%", f"%{q_esc}%"])
             else:
-                conditions.append(f"(e.name LIKE {ph} OR e.summary LIKE {ph})")
-                params.extend([f"%{q}%", f"%{q}%"])
+                conditions.append(f"(e.name LIKE {ph} ESCAPE '\\' OR e.summary LIKE {ph} ESCAPE '\\')")
+                q_esc = escape_like(q)
+                params.extend([f"%{q_esc}%", f"%{q_esc}%"])
 
         where = " AND ".join(conditions)
         with self._conn() as conn:

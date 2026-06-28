@@ -617,7 +617,8 @@ async def search_posts(
     ph = db._ph
     limit = 20
     offset = (page - 1) * limit
-    pattern = "%" + stripped.lower() + "%"
+    from database import escape_like
+    pattern = "%" + escape_like(stripped.lower()) + "%"
 
     def _query():
         with db._conn() as conn:
@@ -628,13 +629,13 @@ async def search_posts(
                 JOIN users u ON u.id = p.user_id
                 LEFT JOIN entities e ON e.id = p.entity_id
                 WHERE p.moderation_status = 'approved'
-                  AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph})
+                  AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph}) ESCAPE '\\'
                 ORDER BY p.created_at DESC
                 LIMIT {ph} OFFSET {ph}
             """, (pattern, limit, offset))
             total = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts p
-                WHERE p.moderation_status = 'approved' AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph})
+                WHERE p.moderation_status = 'approved' AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph}) ESCAPE '\\'
             """, (pattern,))
         return rows, total
     rows, total = await asyncio.to_thread(_query)
@@ -662,7 +663,8 @@ async def search_users(
     ph = db._ph
     limit = 20
     offset = (page - 1) * limit
-    pattern = "%" + stripped.lower() + "%"
+    from database import escape_like
+    pattern = "%" + escape_like(stripped.lower()) + "%"
     bc, bc_p = _block_sql(user)
     params: list = [pattern] + bc_p + [limit, offset]
 
@@ -674,7 +676,7 @@ async def search_users(
                 FROM users u
                 LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved'
                 WHERE u.is_active = TRUE AND u.deleted_at IS NULL
-                  AND f_unaccent(lower(u.display_name)) LIKE f_unaccent({ph})
+                  AND f_unaccent(lower(u.display_name)) LIKE f_unaccent({ph}) ESCAPE '\\'
                   {bc}
                 GROUP BY u.id, u.display_name, u.avatar_url, u.username
                 ORDER BY post_count DESC, u.display_name

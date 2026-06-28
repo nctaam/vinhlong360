@@ -314,11 +314,11 @@ async def check_duplicate(name: str = Query(..., min_length=2)):
     name_lower = name.lower().strip()
     if len(name_lower) < 2:
         return {"duplicates": []}
-    pattern = f"%{name_lower}%"
+    pattern = f"%{db.escape_like(name_lower)}%"
     def _query():
         with db._conn() as conn:
             rows = db._fetchall(conn,
-                "SELECT id, name, type FROM entities WHERE type != 'place' AND LOWER(name) LIKE ? LIMIT 5",
+                "SELECT id, name, type FROM entities WHERE type != 'place' AND LOWER(name) LIKE ? ESCAPE '\\' LIMIT 5",
                 (pattern,))
         return {"duplicates": [{"id": db._row_to_dict(r)["id"], "name": db._row_to_dict(r)["name"],
                                 "type": db._row_to_dict(r).get("type", "")} for r in rows]}
@@ -499,8 +499,8 @@ async def list_unclassified(limit: int = Query(50, ge=1, le=500), offset: int = 
     base = "FROM entities WHERE type != 'place' AND (placeId IS NULL OR placeId = '')"
     params: list = []
     if ql:
-        base += " AND LOWER(name) LIKE ?"
-        params.append(f"%{ql}%")
+        base += " AND LOWER(name) LIKE ? ESCAPE '\\'"
+        params.append(f"%{db.escape_like(ql)}%")
     def _query():
         with db._conn() as conn:
             cnt = db._fetchone(conn, f"SELECT COUNT(*) as c {base}", tuple(params))

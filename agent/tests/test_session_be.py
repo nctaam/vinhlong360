@@ -1465,3 +1465,59 @@ class TestPhase9TimingAndRace:
             idx = auth_src.find("def _verify(")
         block = auth_src[idx:idx + 400]
         assert "FOR UPDATE" in block
+
+
+class TestPhase10LikeEscape:
+    """Phase 10: SQL LIKE wildcard escaping prevents wildcard injection."""
+
+    def test_escape_like_helper_exists(self):
+        """database.escape_like helper function exists and works."""
+        from database import escape_like
+        assert escape_like("hello") == "hello"
+        assert escape_like("100%") == "100\\%"
+        assert escape_like("test_name") == "test\\_name"
+        assert escape_like("a\\b") == "a\\\\b"
+        assert escape_like("50%_off") == "50\\%\\_off"
+
+    def test_search_entities_uses_escape(self):
+        """search_entities escapes LIKE wildcards in user query."""
+        import database
+        src = Path(database.__file__).read_text(encoding="utf-8")
+        idx = src.find("def search_entities")
+        block = src[idx:idx + 2000]
+        assert "escape_like" in block
+        assert "ESCAPE" in block
+
+    def test_admin_duplicate_check_uses_escape(self):
+        """Admin duplicate check escapes LIKE wildcards."""
+        admin_src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = admin_src.find("def check_duplicate")
+        block = admin_src[idx:idx + 500]
+        assert "escape_like" in block
+        assert "ESCAPE" in block
+
+    def test_admin_unclassified_uses_escape(self):
+        """Admin unclassified search escapes LIKE wildcards."""
+        admin_src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = admin_src.find("def list_unclassified")
+        block = admin_src[idx:idx + 500]
+        assert "escape_like" in block
+        assert "ESCAPE" in block
+
+    def test_social_search_posts_uses_escape(self):
+        """Social post search escapes LIKE wildcards."""
+        import social
+        src = Path(social.__file__).read_text(encoding="utf-8")
+        idx = src.find("def search_posts")
+        block = src[idx:idx + 1500]
+        assert "escape_like" in block
+        assert "ESCAPE" in block
+
+    def test_social_search_users_uses_escape(self):
+        """Social user search escapes LIKE wildcards."""
+        import social
+        src = Path(social.__file__).read_text(encoding="utf-8")
+        idx = src.find("def search_users")
+        block = src[idx:idx + 1500]
+        assert "escape_like" in block
+        assert "ESCAPE" in block
