@@ -335,7 +335,7 @@ async def get_entity(entity_id: str):
     def _query():
         entity = db.get_entity(entity_id)
         if not entity:
-            raise HTTPException(404, f"Entity '{entity_id}' not found")
+            raise HTTPException(404, "Entity not found")
         entity["relationships"] = db.get_relationships(entity_id)
         return entity
     return await asyncio.to_thread(_query)
@@ -348,7 +348,7 @@ async def update_entity(entity_id: str, update: EntityUpdate):
     def _query():
         existing = db.get_entity(entity_id)
         if not existing:
-            raise HTTPException(404, f"Entity '{entity_id}' not found")
+            raise HTTPException(404, "Entity not found")
         old_snapshot = {k: v for k, v in existing.items()}
         updates = update.model_dump(exclude_none=True)
         existing.update(updates)
@@ -378,7 +378,7 @@ async def create_entity(entity: EntityCreate):
     """Tạo entity mới."""
     def _query():
         if db.get_entity(entity.id):
-            raise HTTPException(409, f"Entity '{entity.id}' already exists")
+            raise HTTPException(409, "Entity đã tồn tại")
         payload = entity.model_dump()
         src = payload.pop("source", None) or {"title": "admin", "method": "manual"}
         new_entity = {
@@ -399,7 +399,7 @@ async def delete_entity(entity_id: str):
     def _query():
         entity = db.get_entity(entity_id)
         if not entity:
-            raise HTTPException(404, f"Entity '{entity_id}' not found")
+            raise HTTPException(404, "Entity not found")
         db.delete_entity(entity_id)
         _sync_kb()
         if entity.get("type") == "place":
@@ -423,7 +423,7 @@ async def add_entity_image_url(entity_id: str, body: _EntityImageURL):
     def _query():
         entity = db.get_entity(entity_id)
         if not entity:
-            raise HTTPException(404, f"Entity '{entity_id}' not found")
+            raise HTTPException(404, "Entity not found")
         images = list(entity.get("images") or [])
         if len(images) >= 10:
             raise HTTPException(400, "Tối đa 10 ảnh mỗi entity")
@@ -447,7 +447,7 @@ async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
 
     entity = db.get_entity(entity_id)
     if not entity:
-        raise HTTPException(404, f"Entity '{entity_id}' not found")
+        raise HTTPException(404, "Entity not found")
     data = await file.read()
     if len(data) > MAX_IMAGE_SIZE:
         raise HTTPException(400, f"Ảnh quá lớn (tối đa {MAX_IMAGE_SIZE // 1024 // 1024}MB)")
@@ -482,7 +482,7 @@ async def remove_entity_image(entity_id: str, idx: int):
     def _query():
         entity = db.get_entity(entity_id)
         if not entity:
-            raise HTTPException(404, f"Entity '{entity_id}' not found")
+            raise HTTPException(404, "Entity not found")
         images = list(entity.get("images") or [])
         if 0 <= idx < len(images):
             images.pop(idx)
@@ -530,12 +530,12 @@ async def assign_place(entity_id: str, body: AssignPlaceRequest):
     def _query():
         e = db.get_entity(entity_id)
         if not e:
-            raise HTTPException(404, f"Entity '{entity_id}' not found")
+            raise HTTPException(404, "Entity not found")
         pid = body.place_id or None
         if pid:
             p = db.get_entity(pid)
             if not p or p.get("type") != "place":
-                raise HTTPException(400, f"'{pid}' không phải xã/phường hợp lệ")
+                raise HTTPException(400, "place_id không phải xã/phường hợp lệ")
             e["area"] = p.get("area") or e.get("area")
         e["placeId"] = pid
         e["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
@@ -790,7 +790,7 @@ async def get_image_suggestion(suggestion_id: str):
     def _query():
         s = _imgq.get_suggestion(suggestion_id)
         if not s:
-            raise HTTPException(404, f"Suggestion '{suggestion_id}' not found")
+            raise HTTPException(404, "Suggestion not found")
         return s
     return await asyncio.to_thread(_query)
 
@@ -834,7 +834,7 @@ async def approve_image_suggestion(suggestion_id: str):
 
     s = _imgq.get_suggestion(suggestion_id)
     if not s:
-        raise HTTPException(404, f"Suggestion '{suggestion_id}' not found")
+        raise HTTPException(404, "Suggestion not found")
     if s.get("status") != "pending":
         raise HTTPException(400, f"Suggestion đã ở trạng thái '{s.get('status')}' — không thể duyệt lại")
 
@@ -910,7 +910,7 @@ async def reject_image_suggestion(suggestion_id: str, body: RejectSuggestionRequ
     def _query():
         s = _imgq.get_suggestion(suggestion_id)
         if not s:
-            raise HTTPException(404, f"Suggestion '{suggestion_id}' not found")
+            raise HTTPException(404, "Suggestion not found")
         if s.get("status") != "pending":
             raise HTTPException(400, f"Suggestion đã ở trạng thái '{s.get('status')}' — không thể từ chối lại")
         _imgq.mark_status(suggestion_id, "rejected", rejection_reason=(body.reason or "").strip())
