@@ -357,7 +357,7 @@ async def get_post(post_id: str, user=Depends(get_current_user)):
     def _get_post():
         with db._conn() as conn:
             row = db._fetchone(conn, f"""
-                SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
+                SELECT p.*, u.display_name, u.avatar_url, u.username,
                        e.name as entity_name, e.type as entity_type
                 FROM posts p
                 JOIN users u ON u.id = p.user_id
@@ -445,7 +445,7 @@ async def update_post(post_id: str, body: UpdatePost, user=Depends(require_user)
                               moderation_status={ph} WHERE id::text={ph}""",
                             (new_content, json.dumps(hashtags, ensure_ascii=False), status, post_id))
             return db._fetchone(conn, f"""
-                SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
+                SELECT p.*, u.display_name, u.avatar_url, u.username,
                        e.name as entity_name, e.type as entity_type
                 FROM posts p JOIN users u ON u.id = p.user_id
                 LEFT JOIN entities e ON e.id = p.entity_id WHERE p.id::text = {ph}
@@ -512,7 +512,7 @@ async def get_feed(
     query_params = where_params + [month_str, month_str, limit, offset]
 
     feed_sql = f"""
-        SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
+        SELECT p.*, u.display_name, u.avatar_url, u.username,
                e.name as entity_name, e.type as entity_type, e.season as entity_season
         FROM posts p
         JOIN users u ON u.id = p.user_id
@@ -571,7 +571,7 @@ async def get_following_feed(
                               WHERE follower_id = {ph}::uuid AND target_type='entity'))
     """
     feed_sql = f"""
-        SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
+        SELECT p.*, u.display_name, u.avatar_url, u.username,
                e.name as entity_name, e.type as entity_type
         FROM posts p
         JOIN users u ON u.id = p.user_id
@@ -622,7 +622,7 @@ async def search_posts(
     def _query():
         with db._conn() as conn:
             rows = db._fetchall(conn, f"""
-                SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
+                SELECT p.*, u.display_name, u.avatar_url, u.username,
                        e.name as entity_name, e.type as entity_type
                 FROM posts p
                 JOIN users u ON u.id = p.user_id
@@ -907,7 +907,7 @@ async def get_entity_feed(
     params: list = [entity_id] + bc_p + [limit, offset]
 
     feed_sql = f"""
-        SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username
+        SELECT p.*, u.display_name, u.avatar_url, u.username
         FROM posts p
         JOIN users u ON u.id = p.user_id
         WHERE p.entity_id = {ph} AND p.moderation_status = 'approved'
@@ -1017,7 +1017,7 @@ async def get_comments(
     bc, bc_p = _block_sql(user, "c.user_id")
     params: list = [post_id] + bc_p + [min(limit, 200)]
     comment_sql = f"""
-        SELECT c.*, u.display_name, u.avatar_url, u.phone
+        SELECT c.*, u.display_name, u.avatar_url
         FROM comments c
         JOIN users u ON u.id = c.user_id
         WHERE c.post_id::text = {ph} AND c.moderation_status = 'approved'
@@ -1140,7 +1140,7 @@ async def edit_comment(comment_id: str, body: EditComment, user=Depends(require_
                 WHERE id::text = {ph}
             """, (body.content, mod_result["status"], comment_id))
             return db._fetchone(conn, f"""
-                SELECT c.*, u.display_name, u.avatar_url, u.phone
+                SELECT c.*, u.display_name, u.avatar_url
                 FROM comments c JOIN users u ON u.id = c.user_id
                 WHERE c.id::text = {ph}
             """, (comment_id,))
@@ -1279,7 +1279,7 @@ async def get_my_bookmarks(
     def _query():
         with db._conn() as conn:
             return db._fetchall(conn, f"""
-                SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username,
+                SELECT p.*, u.display_name, u.avatar_url, u.username,
                        e.name as entity_name, e.type as entity_type
                 FROM bookmarks b
                 JOIN posts p ON p.id = b.post_id
@@ -1545,7 +1545,7 @@ async def get_user_posts(
     def _query():
         with db._conn() as conn:
             return db._fetchall(conn, f"""
-                SELECT p.*, u.display_name, u.avatar_url, u.phone, u.username, u.username,
+                SELECT p.*, u.display_name, u.avatar_url, u.username,
                        e.name as entity_name, e.type as entity_type
                 FROM posts p
                 JOIN users u ON u.id = p.user_id
