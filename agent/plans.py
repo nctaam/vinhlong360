@@ -11,7 +11,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 
-from auth_middleware import require_user, require_csrf
+from auth_middleware import require_user, require_csrf, validate_path_id
 from database import db
 
 
@@ -93,6 +93,7 @@ async def add_plan(body: PlanBody, user=Depends(require_user), _csrf=Depends(req
 
 @router.delete("/{plan_id}")
 async def remove_plan(plan_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    plan_id = validate_path_id(plan_id, "plan_id")
     def _query():
         ph = db._ph
         with db._conn() as conn:
@@ -122,6 +123,7 @@ class PublishBody(BaseModel):
 
 @router.post("/{plan_id}/publish")
 async def publish_plan(plan_id: str, body: PublishBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    plan_id = validate_path_id(plan_id, "plan_id")
     def _query():
         ph = db._ph
         with db._conn() as conn:
@@ -160,6 +162,7 @@ async def list_shared(limit: int = 30):
 
 @public_router.get("/{plan_id}")
 async def get_shared(plan_id: str):
+    plan_id = validate_path_id(plan_id, "plan_id")
     def _query():
         ph = db._ph
         with db._conn() as conn:

@@ -422,3 +422,30 @@ class TestPathValidationSaved:
         src = (Path(__file__).resolve().parent.parent / "saved.py").read_text(encoding="utf-8")
         import_section = src[:src.find("\nrouter")]
         assert "validate_path_id" in import_section
+
+
+class TestPathValidationPlans:
+    """plans.py path parameters must call validate_path_id."""
+
+    def test_remove_plan_validates_plan_id(self):
+        src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
+        idx = src.find("def remove_plan")
+        block = src[idx:idx+300]
+        assert "validate_path_id" in block
+
+    def test_publish_plan_validates_plan_id(self):
+        src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
+        idx = src.find("def publish_plan")
+        block = src[idx:idx+300]
+        assert "validate_path_id" in block
+
+    def test_get_shared_validates_plan_id(self):
+        src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
+        idx = src.find("def get_shared")
+        block = src[idx:idx+300]
+        assert "validate_path_id" in block
+
+    def test_plans_imports_validate_path_id(self):
+        src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
+        import_section = src[:src.find("\nrouter")]
+        assert "validate_path_id" in import_section
