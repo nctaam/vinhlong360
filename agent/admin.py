@@ -629,7 +629,9 @@ async def delete_itinerary(itin_id: str):
         db.initialize()
         ph = db._ph
         with db._conn() as conn:
-            db._execute(conn, f"DELETE FROM itineraries WHERE id = {ph}", (itin_id,))
+            cur = db._execute(conn, f"DELETE FROM itineraries WHERE id = {ph}", (itin_id,))
+            if cur.rowcount == 0:
+                raise HTTPException(404, "Lộ trình không tồn tại")
     await asyncio.to_thread(_query)
     return {"success": True, "id": itin_id}
 
@@ -649,8 +651,10 @@ async def delete_relationship(from_id: str, to_id: str, type: str):
         db.initialize()
         ph = db._ph
         with db._conn() as conn:
-            db._execute(conn, f"DELETE FROM relationships WHERE from_id={ph} AND to_id={ph} AND type={ph}",
-                        (from_id, to_id, type))
+            cur = db._execute(conn, f"DELETE FROM relationships WHERE from_id={ph} AND to_id={ph} AND type={ph}",
+                              (from_id, to_id, type))
+            if cur.rowcount == 0:
+                raise HTTPException(404, "Relationship not found")
     await asyncio.to_thread(_query)
     return {"success": True}
 
@@ -1429,12 +1433,20 @@ async def approve_post(post_id: str):
     def _query():
         ph = db._ph
         with db._conn() as conn:
-            cur = db._execute(conn, f"""
+            row = db._fetchone(conn, f"""
                 UPDATE posts SET moderation_status = 'approved' WHERE id::text = {ph}
+                RETURNING user_id
             """, (post_id,))
-            if cur.rowcount == 0:
+            if not row:
                 raise HTTPException(404, "Bài viết không tồn tại")
+            author_id = str(db._row_to_dict(row)["user_id"])
         _log_mod_action("post", post_id, "approved")
+        try:
+            create_notification(author_id, "moderation",
+                                "Bài viết của bạn đã được duyệt",
+                                ref_type="post", ref_id=post_id)
+        except Exception:
+            logger.exception("Failed to notify post approval %s", post_id)
     await asyncio.to_thread(_query)
     return {"success": True}
 
@@ -1446,15 +1458,26 @@ class RejectBody(BaseModel):
 @router.post("/moderation/{post_id}/reject")
 async def reject_post(post_id: str, body: RejectBody = RejectBody()):
     post_id = validate_path_id(post_id, "post_id")
+    reason = (body.reason or "").strip() or None
     def _query():
         ph = db._ph
         with db._conn() as conn:
-            cur = db._execute(conn, f"""
+            row = db._fetchone(conn, f"""
                 UPDATE posts SET moderation_status = 'rejected' WHERE id::text = {ph}
+                RETURNING user_id
             """, (post_id,))
-            if cur.rowcount == 0:
+            if not row:
                 raise HTTPException(404, "Bài viết không tồn tại")
-        _log_mod_action("post", post_id, "rejected", (body.reason or "").strip() or None)
+            author_id = str(db._row_to_dict(row)["user_id"])
+        _log_mod_action("post", post_id, "rejected", reason)
+        try:
+            notif_body = f"Lý do: {reason}" if reason else None
+            create_notification(author_id, "moderation",
+                                "Bài viết của bạn đã bị từ chối",
+                                body=notif_body,
+                                ref_type="post", ref_id=post_id)
+        except Exception:
+            logger.exception("Failed to notify post rejection %s", post_id)
     await asyncio.to_thread(_query)
     return {"success": True}
 
@@ -1472,15 +1495,34 @@ async def batch_moderation(body: BatchModerationBody):
     if not body.post_ids or len(body.post_ids) > 100:
         raise HTTPException(400, "post_ids: 1-100 items")
     status = "approved" if body.action == "approve" else "rejected"
+    reason = body.reason.strip() or None
     def _query():
         ph = db._ph
         placeholders = ", ".join(ph for _ in body.post_ids)
         params = [status] + list(body.post_ids)
         with db._conn() as conn:
-            cur = db._execute(conn, f"UPDATE posts SET moderation_status = {ph} WHERE id::text IN ({placeholders})", tuple(params))
-            updated = cur.rowcount
+            rows = db._fetchall(conn, f"""
+                UPDATE posts SET moderation_status = {ph}
+                WHERE id::text IN ({placeholders})
+                RETURNING id, user_id
+            """, tuple(params))
+            updated = len(rows)
         for pid in body.post_ids:
-            _log_mod_action("post", pid, status, body.reason.strip() or None)
+            _log_mod_action("post", pid, status, reason)
+        if status == "approved":
+            title = "Bài viết của bạn đã được duyệt"
+            notif_body = None
+        else:
+            title = "Bài viết của bạn đã bị từ chối"
+            notif_body = f"Lý do: {reason}" if reason else None
+        for r in rows:
+            rd = db._row_to_dict(r)
+            try:
+                create_notification(str(rd["user_id"]), "moderation", title,
+                                    body=notif_body,
+                                    ref_type="post", ref_id=str(rd["id"]))
+            except Exception:
+                logger.exception("Failed to notify batch moderation %s", rd["id"])
         return updated
     updated = await asyncio.to_thread(_query)
     return {"success": True, "updated": updated, "requested": len(body.post_ids)}
@@ -1636,6 +1678,7 @@ async def dismiss_report(report_id: str):
 # GĐ13.6f: báo-sai thông tin (facility/entity) & báo nội dung ẩn danh — kênh nhẹ JSONL
 # (KHÔNG cần đăng nhập, không DB), tách khỏi UGC `reports` (Postgres) ở trên.
 _INFO_REPORTS_FILE = Path(__file__).resolve().parent / "data" / "reports.jsonl"
+from notifications import create_notification
 from public_api import _jsonl_lock as _info_reports_lock
 
 

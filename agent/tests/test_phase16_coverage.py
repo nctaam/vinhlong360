@@ -1818,3 +1818,82 @@ class TestInfoReportsLockShared:
         idx2 = src.find("async def community_leaderboard(")
         block2 = src[idx2:idx2+800]
         assert "_leaderboard_lock" in block2
+
+
+class TestModerationNotifications:
+    """Admin moderation actions must notify the post author."""
+
+    def test_admin_imports_create_notification(self):
+        import admin as admin_mod
+        assert hasattr(admin_mod, "create_notification")
+
+    def test_approve_post_calls_notification(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("async def approve_post(")
+        assert idx > 0
+        block = src[idx:idx+800]
+        assert "create_notification(" in block, \
+            "approve_post must call create_notification to inform the author"
+        assert "RETURNING user_id" in block, \
+            "approve_post must fetch user_id via RETURNING to identify the author"
+
+    def test_reject_post_calls_notification(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("async def reject_post(")
+        assert idx > 0
+        block = src[idx:idx+800]
+        assert "create_notification(" in block, \
+            "reject_post must call create_notification to inform the author"
+        assert "RETURNING user_id" in block, \
+            "reject_post must fetch user_id via RETURNING to identify the author"
+
+    def test_reject_notification_includes_reason(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("async def reject_post(")
+        block = src[idx:idx+800]
+        assert "Lý do:" in block, \
+            "reject_post notification must include the rejection reason"
+
+    def test_batch_moderation_calls_notification(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("async def batch_moderation(")
+        assert idx > 0
+        block = src[idx:idx+1600]
+        assert "create_notification(" in block, \
+            "batch_moderation must call create_notification for each affected post"
+        assert "RETURNING id, user_id" in block, \
+            "batch_moderation must fetch user_ids via RETURNING"
+
+
+class TestDeleteRowcountChecks:
+    """DELETE endpoints must check rowcount to avoid silent 200 on missing resources."""
+
+    def test_delete_itinerary_checks_rowcount(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("async def delete_itinerary(")
+        assert idx > 0
+        block = src[idx:idx+400]
+        assert "rowcount" in block, \
+            "delete_itinerary must check rowcount to return 404 on missing itinerary"
+
+    def test_delete_relationship_checks_rowcount(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("async def delete_relationship(")
+        assert idx > 0
+        block = src[idx:idx+500]
+        assert "rowcount" in block, \
+            "delete_relationship must check rowcount to return 404 on missing relationship"
+
+    def test_approve_post_checks_existence(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("async def approve_post(")
+        block = src[idx:idx+600]
+        assert "if not row" in block or "rowcount" in block, \
+            "approve_post must verify the post exists"
+
+    def test_reject_post_checks_existence(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("async def reject_post(")
+        block = src[idx:idx+600]
+        assert "if not row" in block or "rowcount" in block, \
+            "reject_post must verify the post exists"
