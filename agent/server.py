@@ -36,7 +36,7 @@ if sys.stdout.encoding != "utf-8":
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
@@ -2609,14 +2609,14 @@ async def metrics_endpoint():
 async def ab_experiments():
     """List all A/B testing experiments."""
     if not HAS_AB_TESTING:
-        return {"error": "A/B testing not available"}
+        raise HTTPException(503, detail="A/B testing not available")
     return {"experiments": ab_manager.list_experiments()}
 
 @app.get("/ab-testing/results/{experiment_name}", tags=["System"])
 async def ab_results(experiment_name: str):
     """Get A/B test results with statistics."""
     if not HAS_AB_TESTING:
-        return {"error": "A/B testing not available"}
+        raise HTTPException(503, detail="A/B testing not available")
     results = ab_manager.get_results(experiment_name)
     significance = ab_manager.is_significant(experiment_name)
     return {"experiment": experiment_name, "results": results, "significance": significance}
@@ -2636,38 +2636,38 @@ async def analytics_summary():
     try:
         return analytics.get_summary()
     except Exception:
-        return {"error": "Analytics data unavailable", "total_queries": 0, "unique_queries": 0}
+        raise HTTPException(503, detail="Analytics data unavailable")
 
 
 @app.get("/analytics/popular")
-async def analytics_popular(limit: int = 20):
+async def analytics_popular(limit: int = Query(20, ge=1, le=200)):
     return {"popular_queries": analytics.get_popular_queries(limit)}
 
 
 @app.get("/analytics/gaps")
-async def analytics_gaps(limit: int = 20):
+async def analytics_gaps(limit: int = Query(20, ge=1, le=200)):
     return {"knowledge_gaps": analytics.get_knowledge_gaps(limit)}
 
 
 @app.get("/analytics/daily")
-async def analytics_daily(days: int = 30):
+async def analytics_daily(days: int = Query(30, ge=1, le=365)):
     return {"daily_stats": analytics.get_daily_stats(days)}
 
 
 @app.get("/analytics/top-entities")
-async def analytics_top_entities(limit: int = 20):
+async def analytics_top_entities(limit: int = Query(20, ge=1, le=200)):
     return {"top_entities": analytics.get_top_entities(limit)}
 
 
 # ── System monitoring endpoints ──
 
 @app.get("/system/logs")
-async def system_logs(limit: int = 50, level: str = None):
+async def system_logs(limit: int = Query(50, ge=1, le=500), level: str = None):
     return {"logs": logger.recent(limit, level)}
 
 
 @app.get("/system/errors")
-async def system_errors(limit: int = 20):
+async def system_errors(limit: int = Query(20, ge=1, le=200)):
     return {"errors": error_tracker.recent_errors(limit), **error_tracker.stats()}
 
 
@@ -2688,7 +2688,7 @@ async def system_learning():
         from learn_loop import learning_status
         return learning_status()
     except ImportError:
-        return {"error": "learn_loop module not available"}
+        raise HTTPException(503, detail="learn_loop module not available")
 
 
 @app.post("/system/learning/run", tags=["System"])
@@ -2745,7 +2745,7 @@ async def system_memory():
 
 
 @app.get("/system/traces", tags=["System"])
-async def system_traces(limit: int = 50):
+async def system_traces(limit: int = Query(50, ge=1, le=500)):
     """OpenTelemetry trace data."""
     if not HAS_TRACING:
         return {"available": False}
@@ -2757,7 +2757,7 @@ async def system_traces(limit: int = 50):
 
 
 @app.get("/system/handoffs", tags=["System"])
-async def system_handoffs(limit: int = 50):
+async def system_handoffs(limit: int = Query(50, ge=1, le=200)):
     """Multi-agent orchestrator handoff log."""
     if not HAS_ORCHESTRATOR:
         return {"available": False}
@@ -2856,10 +2856,10 @@ async def reject_action(confirmation_id: str, request: Request):
 # ── Contextual retrieval endpoint ──
 
 @app.get("/search/enhanced", tags=["Search"])
-async def enhanced_search(q: str, limit: int = 10, rerank: bool = False):
+async def enhanced_search(q: str = Query(..., max_length=200), limit: int = Query(10, ge=1, le=100), rerank: bool = False):
     """Enhanced hybrid search with BM25 + contextual embeddings."""
     if not HAS_CONTEXTUAL:
-        return {"error": "Contextual retrieval not available", "results": []}
+        raise HTTPException(503, detail="Contextual retrieval not available")
     knowledge._ensure()
     # Get initial keyword results
     keyword_results = knowledge.search_entities(q=q, limit=limit * 3)
@@ -2958,7 +2958,7 @@ async def client_error(req: ClientErrorRequest, request: Request):
 
 
 @app.get("/system/client-errors", tags=["System"])
-async def system_client_errors(request: Request, limit: int = 50):
+async def system_client_errors(request: Request, limit: int = Query(50, ge=1, le=500)):
     """Admin xem lỗi frontend gần đây (lọc source=client từ StructuredLogger).
     Gate bằng admin key (giống các /system/* khác ở production)."""
     if not verify_admin_key(request):
@@ -3005,9 +3005,9 @@ async def vector_stats():
     return {"available": True, **embedding_store.stats()}
 
 @app.get("/vectors/search")
-async def vector_search_endpoint(q: str, limit: int = 10):
+async def vector_search_endpoint(q: str = Query(..., max_length=200), limit: int = Query(10, ge=1, le=100)):
     if not HAS_VECTOR:
-        return {"error": "Vector search not available", "results": []}
+        raise HTTPException(503, detail="Vector search not available")
     results = embedding_store.search(q, top_k=limit)
     # Enrich with entity names
     enriched = []
@@ -3026,21 +3026,21 @@ async def vector_search_endpoint(q: str, limit: int = 10):
 # ── Realtime endpoints ──
 
 @app.get("/weather")
-async def weather_endpoint(area: str = "vinh-long"):
+async def weather_endpoint(area: str = Query("vinh-long", max_length=50)):
     if not HAS_REALTIME:
-        return {"error": "Realtime module not available"}
+        raise HTTPException(503, detail="Realtime module not available")
     return get_weather(area)
 
 @app.get("/weather/all")
 async def weather_all():
     if not HAS_REALTIME:
-        return {"error": "Realtime module not available"}
+        raise HTTPException(503, detail="Realtime module not available")
     return {"areas": get_all_weather()}
 
 @app.get("/events")
-async def events_endpoint(days: int = 30, area: str = None):
+async def events_endpoint(days: int = Query(30, ge=1, le=365), area: str = Query(None, max_length=50)):
     if not HAS_REALTIME:
-        return {"error": "Realtime module not available"}
+        raise HTTPException(503, detail="Realtime module not available")
     return {"events": get_upcoming_events(days, area)}
 
 
@@ -3048,12 +3048,12 @@ async def events_endpoint(days: int = 30, area: str = None):
 
 @app.get("/recommend")
 async def recommend_endpoint(
-    entity_id: str = None, month: int = None,
-    weather: str = None, time_of_day: str = None,
-    limit: int = 10,
+    entity_id: str = Query(None, max_length=200), month: int = Query(None, ge=1, le=12),
+    weather: str = Query(None, max_length=50), time_of_day: str = Query(None, max_length=50),
+    limit: int = Query(10, ge=1, le=100),
 ):
     if not HAS_RECOMMENDER:
-        return {"error": "Recommender not available"}
+        raise HTTPException(503, detail="Recommender not available")
     knowledge._ensure()
     ctx = {}
     if entity_id:
@@ -3078,21 +3078,21 @@ async def recommend_endpoint(
 @app.get("/freshness/check")
 async def freshness_check_endpoint():
     if not HAS_FRESHNESS:
-        return {"error": "Freshness module not available"}
+        raise HTTPException(503, detail="Freshness module not available")
     knowledge._ensure()
     return check_freshness(knowledge._entities)
 
 @app.get("/freshness/report")
 async def freshness_report_endpoint():
     if not HAS_FRESHNESS:
-        return {"error": "Freshness module not available"}
+        raise HTTPException(503, detail="Freshness module not available")
     knowledge._ensure()
     return {"report": freshness_report(knowledge._entities)}
 
 @app.get("/freshness/candidates")
-async def freshness_candidates_endpoint(limit: int = 20):
+async def freshness_candidates_endpoint(limit: int = Query(20, ge=1, le=200)):
     if not HAS_FRESHNESS:
-        return {"error": "Freshness module not available"}
+        raise HTTPException(503, detail="Freshness module not available")
     knowledge._ensure()
     return {"candidates": auto_refresh_candidates(knowledge._entities, limit)}
 
@@ -3179,7 +3179,7 @@ async def guardrails_status():
 @app.post("/system/guardrails/check-input", tags=["Level6"])
 async def guardrails_check_input(req: GuardrailCheckRequest):
     if not HAS_GUARDRAILS:
-        return {"error": "Guardrails not available"}
+        raise HTTPException(503, detail="Guardrails not available")
     return check_input(req.message, req.session_id)
 
 
@@ -3194,13 +3194,13 @@ async def cost_tracker_report():
 @app.get("/system/costs/session/{session_id}", tags=["Level6"])
 async def cost_tracker_session(session_id: str):
     if not HAS_COST_TRACKER:
-        return {"error": "Cost tracker not available"}
+        raise HTTPException(503, detail="Cost tracker not available")
     return cost_attribution.get_session_cost(session_id)
 
 @app.get("/system/costs/budget", tags=["Level6"])
 async def cost_budget_status():
     if not HAS_COST_TRACKER:
-        return {"error": "Cost tracker not available"}
+        raise HTTPException(503, detail="Cost tracker not available")
     return {
         "daily": cost_budget.check_budget("daily"),
         "monthly": cost_budget.check_budget("monthly"),
@@ -3217,7 +3217,7 @@ async def eval_latest():
     return {"available": True, "report": report}
 
 @app.get("/system/eval/history", tags=["Level6"])
-async def eval_history(limit: int = 10):
+async def eval_history(limit: int = Query(10, ge=1, le=100)):
     if not HAS_EVAL:
         return {"available": False}
     return {"available": True, "reports": get_report_history(limit)}
@@ -3243,14 +3243,14 @@ async def semantic_cache_status():
 @app.post("/system/semantic-cache/invalidate", tags=["Level6"])
 async def semantic_cache_invalidate(req: SemanticCacheInvalidateRequest):
     if not HAS_SEMANTIC_CACHE:
-        return {"error": "Semantic cache not available"}
+        raise HTTPException(503, detail="Semantic cache not available")
     if req.entity_id:
         multi_tier_cache.invalidate_entity(req.entity_id)
         return {"status": "ok", "invalidated": f"entity:{req.entity_id}"}
     elif req.query:
         multi_tier_cache.invalidate(req.query)
         return {"status": "ok", "invalidated": f"query:{req.query[:50]}"}
-    return {"error": "Provide entity_id or query"}
+    raise HTTPException(400, detail="Provide entity_id or query")
 
 
 # ════════════════════════════════════════════════════════════════
@@ -3268,7 +3268,7 @@ async def judge_report():
 @app.post("/system/judge/evaluate", tags=["Level7"])
 async def judge_evaluate(req: JudgeEvaluateRequest):
     if not HAS_LLM_JUDGE:
-        return {"error": "LLM Judge not available"}
+        raise HTTPException(503, detail="LLM Judge not available")
     result = judge(req.query, req.reply)
     return result
 
@@ -3289,7 +3289,7 @@ async def dynamic_agents_create(req: DynamicAgentCreateRequest, request: Request
     if not verify_admin_key(request):
         return JSONResponse(status_code=401, content={"error": "unauthorized", "detail": "Cần X-Admin-Key"})
     if not HAS_DYNAMIC_AGENTS:
-        return {"error": "Dynamic agents not available"}
+        raise HTTPException(503, detail="Dynamic agents not available")
     spec = agent_factory.create_agent(
         name=req.name,
         description=req.description,

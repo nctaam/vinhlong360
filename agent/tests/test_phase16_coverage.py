@@ -695,3 +695,42 @@ class TestSecurityPosture:
         for module in ("social", "auth", "notifications"):
             src = (Path(__file__).resolve().parent.parent / f"{module}.py").read_text(encoding="utf-8")
             assert "SELECT *" not in src, f"{module}.py still has SELECT *"
+
+    def test_no_error_dict_returns_in_server(self):
+        src = (Path(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
+        assert 'return {"error":' not in src, "server.py still returns error dicts instead of HTTPException"
+
+    def test_no_error_dict_returns_in_bot_gateway(self):
+        src = (Path(__file__).resolve().parent.parent / "bot_gateway.py").read_text(encoding="utf-8")
+        assert 'return {"error":' not in src, "bot_gateway.py still returns error dicts instead of HTTPException"
+
+    def test_httpexception_imported_in_server(self):
+        src = (Path(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
+        imports = src[:src.find("\napp =") if "\napp =" in src else 500]
+        assert "HTTPException" in imports, "server.py missing HTTPException import"
+
+    def test_httpexception_imported_in_bot_gateway(self):
+        src = (Path(__file__).resolve().parent.parent / "bot_gateway.py").read_text(encoding="utf-8")
+        imports = src[:2000]
+        assert "HTTPException" in imports, "bot_gateway.py missing HTTPException import"
+
+    def test_query_param_bounds_in_server(self):
+        src = (Path(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
+        unvalidated = []
+        for line_no, line in enumerate(src.split("\n"), 1):
+            if "limit: int = " in line and "Query(" not in line and "def " in line:
+                fn = line.strip().split("(")[0].replace("async def ", "").replace("def ", "")
+                unvalidated.append(f"{fn}:{line_no}")
+        assert not unvalidated, f"server.py has unvalidated limit params: {unvalidated}"
+
+    def test_query_param_bounds_in_auth(self):
+        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        for line in src.split("\n"):
+            if "limit: int = " in line and "def " in line:
+                assert "Query(" in line, f"auth.py unvalidated limit: {line.strip()}"
+
+    def test_query_param_bounds_in_plans(self):
+        src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
+        for line in src.split("\n"):
+            if "limit: int = " in line and "def " in line:
+                assert "Query(" in line, f"plans.py unvalidated limit: {line.strip()}"

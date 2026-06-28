@@ -28,7 +28,7 @@ from datetime import datetime, timedelta, timezone
 logger = logging.getLogger("auth")
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, File
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field, field_validator
 
@@ -818,7 +818,7 @@ def _log_login(phone: str, method: str, success: bool, request: Request, user_id
 
 
 @router.get("/login-history")
-async def get_login_history(request: Request, limit: int = 20):
+async def get_login_history(request: Request, limit: int = Query(20, ge=1, le=100)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")

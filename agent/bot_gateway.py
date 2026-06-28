@@ -45,7 +45,7 @@ if sys.stdout.encoding != "utf-8":
 
 import httpx
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, HTTPException, Request, Response
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
@@ -938,7 +938,7 @@ def create_bot_app() -> FastAPI:
         then delegates to ``BotGateway.handle_zalo_event()``.
         """
         if not ZALO_OA_ID:
-            return {"error": "ZALO_OA_ID chua cau hinh"}
+            raise HTTPException(503, detail="ZALO_OA_ID not configured")
 
         # Read raw body for signature verification
         raw_body = await request.body()
@@ -948,7 +948,7 @@ def create_bot_app() -> FastAPI:
             signature = request.headers.get("X-ZEvent-Signature", "")
             if not gw.verify_zalo_signature(raw_body, signature):
                 _bot_logger.warning("Zalo webhook: invalid signature")
-                return {"error": "Invalid signature"}
+                raise HTTPException(401, detail="Invalid webhook signature")
 
         body = json.loads(raw_body)
         return await gw.handle_zalo_event(body)

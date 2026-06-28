@@ -8,7 +8,7 @@ import asyncio
 import json
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, Field, field_validator
 
 from auth_middleware import require_user, require_csrf, validate_path_id
@@ -151,8 +151,7 @@ public_router = APIRouter(prefix="/api/shared-plans", tags=["plans"], dependenci
 
 
 @public_router.get("")
-async def list_shared(limit: int = 30):
-    limit = max(1, min(int(limit), 60))
+async def list_shared(limit: int = Query(30, ge=1, le=60)):
     def _query():
         ph = db._ph
         with db._conn() as conn:
