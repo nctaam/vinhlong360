@@ -2140,3 +2140,24 @@ class TestAdminBugFixes:
             block = src[idx:end_idx]
             assert "_strip_html_tags(q)" in block, \
                 f"{fn} must pass q through _strip_html_tags before returning"
+
+    def test_following_followers_block_enforcement(self):
+        """following/followers endpoints must apply _block_sql filter."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        for fn in ["async def list_following_users", "async def list_followers"]:
+            idx = src.find(fn)
+            assert idx != -1, f"{fn} not found"
+            end_idx = src.find("\n@router.", idx + 1)
+            block = src[idx:end_idx]
+            assert "_block_sql" in block, f"{fn} must use _block_sql for block enforcement"
+            assert "{bc}" in block, f"{fn} must include {{bc}} in SQL WHERE clause"
+
+    def test_related_posts_block_enforcement(self):
+        """related_posts endpoint must apply _block_sql filter."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        idx = src.find("async def related_posts")
+        assert idx != -1
+        end_idx = src.find("\n@router.", idx + 1)
+        block = src[idx:end_idx]
+        assert "_block_sql" in block, "related_posts must use _block_sql"
+        assert "get_current_user" in block, "related_posts must accept optional user for block filtering"

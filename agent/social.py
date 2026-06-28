@@ -878,21 +878,23 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
 
 
 @router.get("/users/{user_id}/following")
-async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0, le=10000)):
+async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0, le=10000), user=Depends(get_current_user)):
     """Danh sách NGƯỜI mà user này đang theo dõi (hồ-sơ công-khai)."""
     validate_path_id(user_id, "user_id")
     ph = db._ph
     uid = await asyncio.to_thread(_resolve_user_id, user_id)
     if not uid:
         raise HTTPException(404, "Người dùng không tồn tại")
+    bc, bc_p = _block_sql(user)
     def _query():
         with db._conn() as conn:
             return db._fetchall(conn, f"""
                 SELECT u.id, u.display_name, u.avatar_url, u.username
                 FROM follows f JOIN users u ON u.id::text = f.target_id
                 WHERE f.follower_id = {ph}::uuid AND f.target_type = 'user' AND u.is_active = TRUE
+                {bc}
                 ORDER BY f.created_at DESC LIMIT {ph} OFFSET {ph}
-            """, (uid, limit, offset))
+            """, (uid,) + tuple(bc_p) + (limit, offset))
     rows = await asyncio.to_thread(_query)
     users = []
     for r in rows:
@@ -903,21 +905,23 @@ async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100
 
 
 @router.get("/users/{user_id}/followers")
-async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0, le=10000)):
+async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0, le=10000), user=Depends(get_current_user)):
     """Danh sách NGƯỜI đang theo dõi user này (hồ-sơ công-khai)."""
     validate_path_id(user_id, "user_id")
     ph = db._ph
     uid = await asyncio.to_thread(_resolve_user_id, user_id)
     if not uid:
         raise HTTPException(404, "Người dùng không tồn tại")
+    bc, bc_p = _block_sql(user)
     def _query():
         with db._conn() as conn:
             return db._fetchall(conn, f"""
                 SELECT u.id, u.display_name, u.avatar_url, u.username
                 FROM follows f JOIN users u ON u.id = f.follower_id
                 WHERE f.target_type = 'user' AND f.target_id = {ph} AND u.is_active = TRUE
+                {bc}
                 ORDER BY f.created_at DESC LIMIT {ph} OFFSET {ph}
-            """, (uid, limit, offset))
+            """, (uid,) + tuple(bc_p) + (limit, offset))
     rows = await asyncio.to_thread(_query)
     users = []
     for r in rows:
@@ -1045,10 +1049,11 @@ async def get_entity_feed(
 
 
 @router.get("/posts/{post_id}/related")
-async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10)):
+async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10), user=Depends(get_current_user)):
     """Bài viết liên quan: cùng entity hoặc cùng hashtag."""
     post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
+    bc, bc_p = _block_sql(user, "p.user_id")
     def _query():
         with db._conn() as conn:
             src = db._fetchone(conn, f"""
@@ -1068,9 +1073,10 @@ async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10)):
                     FROM posts p JOIN users u ON u.id = p.user_id
                     WHERE p.entity_id = {ph} AND p.id::text <> {ph}
                       AND p.moderation_status = 'approved'
+                    {bc}
                     ORDER BY p.like_count DESC, p.created_at DESC
                     LIMIT {ph}
-                """, (entity_id, post_id, limit))
+                """, (entity_id, post_id) + tuple(bc_p) + (limit,))
                 candidates.extend(rows)
 
             if len(candidates) < limit and tags:
@@ -1080,9 +1086,10 @@ async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10)):
                     FROM posts p JOIN users u ON u.id = p.user_id
                     WHERE p.moderation_status = 'approved' AND p.id::text <> {ph}
                       AND p.hashtags && ARRAY[{','.join(ph for _ in tags)}]::text[]
+                    {bc}
                     ORDER BY p.like_count DESC
                     LIMIT {ph}
-                """, (post_id, *tags, limit))
+                """, (post_id, *tags) + tuple(bc_p) + (limit,))
                 for r in tag_rows:
                     d = db._row_to_dict(r)
                     rid = str(d["id"])
