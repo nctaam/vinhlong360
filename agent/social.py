@@ -430,6 +430,7 @@ async def delete_post(post_id: str, user=Depends(require_user), _csrf=Depends(re
 @router.patch("/posts/{post_id}")
 async def update_post(post_id: str, body: UpdatePost, user=Depends(require_user), _csrf=Depends(require_csrf)):
     """Sửa bài của CHÍNH MÌNH (nội dung; review đổi sao). Kiểm duyệt + hashtag lại."""
+    check_rate(f"edit:{user['id']}", 20, 300, "Bạn sửa bài quá nhanh. Vui lòng thử lại sau.")
     post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
     def _check_owner():
@@ -1169,6 +1170,7 @@ class EditComment(BaseModel):
 
 @router.put("/comments/{comment_id}")
 async def edit_comment(comment_id: str, body: EditComment, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    check_rate(f"edit:{user['id']}", 20, 300, "Bạn sửa bình luận quá nhanh. Vui lòng thử lại sau.")
     comment_id = validate_path_id(comment_id, "comment_id")
     ph = db._ph
     uid = str(user["id"])
@@ -1232,6 +1234,7 @@ class BestAnswerBody(BaseModel):
 
 @router.post("/posts/{post_id}/best-answer")
 async def set_best_answer(post_id: str, body: BestAnswerBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    check_rate(f"best-answer:{user['id']}", 20, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
     def _query():

@@ -92,6 +92,7 @@ async def get_notifications(
 
 @router.post("/notifications/read-all")
 async def mark_all_read(user=Depends(require_user), _csrf=Depends(require_csrf)):
+    check_rate(f"notif-read:{user['id']}", 30, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     def _query():
         ph = db._ph
         with db._conn() as conn:
@@ -105,6 +106,7 @@ async def mark_all_read(user=Depends(require_user), _csrf=Depends(require_csrf))
 
 @router.post("/notifications/{notif_id}/read")
 async def mark_notification_read(notif_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    check_rate(f"notif-read:{user['id']}", 60, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     notif_id = validate_path_id(notif_id, "notif_id")
     def _query():
         ph = db._ph
@@ -146,6 +148,7 @@ async def get_notification_preferences(user=Depends(require_user)):
 
 @router.put("/notification-preferences")
 async def update_notification_preferences(body: NotifPrefsUpdate, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    check_rate(f"notif-prefs:{user['id']}", 10, 600, "Cập nhật cài đặt quá nhanh. Vui lòng thử lại sau.")
     ph = db._ph
     uid = str(user["id"])
     updates = {k: v for k, v in body.model_dump().items() if v is not None}
