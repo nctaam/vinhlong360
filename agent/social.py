@@ -1370,7 +1370,7 @@ async def get_my_bookmarks(
 # ── Image upload ──
 
 @router.post("/upload/image")
-async def upload_image(file: UploadFile = File(...), user=Depends(require_user), _csrf=Depends(require_csrf)):
+async def upload_image(file: UploadFile = File(...), user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
     check_rate(f"upload:{user['id']}", RL_UPLOAD_LIMIT, RL_UPLOAD_WINDOW,
                "Bạn tải ảnh quá nhanh. Vui lòng đợi chút rồi thử lại.")
     data = await file.read()
