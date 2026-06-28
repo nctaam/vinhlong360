@@ -117,7 +117,7 @@
   object-fit: cover;
   transition: transform .5s var(--ease-out-expo);
 }
-.event-row:hover .event-thumb img { transform: scale(1.04); }
+.event-row:hover .event-thumb img { transform: scale(var(--img-hover-scale)); }
 /* Refined lazy-load reveal: gentle fade + de-blur on first paint. CSS-only (no .loaded hook
    needed) so images always resolve to full clarity even if no JS load handler fires. */
 .event-thumb img { animation: eventThumbReveal .5s var(--ease-out-expo) both; }

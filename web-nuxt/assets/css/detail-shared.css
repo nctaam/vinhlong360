@@ -43,7 +43,7 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
 
 /* Legacy gallery (kept for backward compat, hidden when cover has images) */
 .detail-gallery .detail-img { cursor: pointer; transition: opacity .3s var(--ease-out), transform .35s var(--ease-spring-gentle); }
-.detail-gallery .detail-img:hover { opacity: .85; transform: scale(1.02); }
+.detail-gallery .detail-img:hover { opacity: .85; transform: scale(var(--img-hover-scale)); }
 .detail-gallery .detail-img:active { transform: scale(.97); transition-duration: .08s; }
 
 /* Lightbox (dùng bởi ImageGallery + PostCard) */

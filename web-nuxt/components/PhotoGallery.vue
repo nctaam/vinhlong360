@@ -188,7 +188,7 @@ function goToSlide(idx: number) {
   display: block;
   transition: transform .3s var(--ease-out, ease);
 }
-.pg-main:hover .pg-main-img { transform: scale(1.03); }
+.pg-main:hover .pg-main-img { transform: scale(var(--img-hover-scale)); }
 
 .pg-thumbs {
   display: grid;
@@ -213,7 +213,7 @@ function goToSlide(idx: number) {
   display: block;
   transition: transform .3s var(--ease-out, ease);
 }
-.pg-thumb:hover .pg-thumb-img { transform: scale(1.05); }
+.pg-thumb:hover .pg-thumb-img { transform: scale(var(--img-hover-scale)); }
 
 /* "Xem X ảnh" pill */
 .pg-show-all {

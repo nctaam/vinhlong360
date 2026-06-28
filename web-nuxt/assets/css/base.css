@@ -621,7 +621,7 @@ a.thread-author:hover { color: var(--primary-fg); }
 .thread-images.img-grid-4 .thread-img-wrap { height: 130px; }
 .thread-img-wrap { position: relative; overflow: hidden; padding: 0; background: none; border: none; cursor: pointer; }
 .thread-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s var(--ease-out-expo); }
-.thread-img-wrap:hover img { transform: scale(1.02); }
+.thread-img-wrap:hover img { transform: scale(var(--img-hover-scale)); }
 .thread-img-wrap:active img { transform: scale(.98); transition-duration: .1s; }
 .thread-img-wrap:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .thread-img-more { position: absolute; inset: 0; background: rgba(0,0,0,.4); color: var(--text-on-dark, #fff); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 800; }

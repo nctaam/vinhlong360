@@ -20,7 +20,7 @@
 .cover-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s var(--ease-out-expo), opacity .5s var(--ease-out-expo), filter .5s var(--ease-out-expo); will-change: transform; }
 .cover-img img[loading="lazy"] { opacity: 0; transform: scale(1.02); filter: blur(2px); }
 .cover-img img.loaded, .cover-img img:not([loading="lazy"]) { opacity: 1; transform: scale(1); filter: blur(0); transition: opacity .6s var(--ease-out-expo), transform .6s var(--ease-out-expo), filter .6s var(--ease-out-expo); }
-.card:hover .cover-img img.loaded { transform: scale(1.04); }
+.card:hover .cover-img img.loaded { transform: scale(var(--img-hover-scale)); }
 /* Deterministic per-entity gradient placeholder (no real photos yet) */
 .cover-generated { background-size: cover; background-position: center; background-repeat: no-repeat; animation: none; }
 .cover-svg-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 78px; height: 78px; opacity: .72; color: var(--text-on-dark, #fff); pointer-events: none; filter: drop-shadow(0 2px 6px rgba(0,0,0,.18)); }
