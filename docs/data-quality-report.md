@@ -1,6 +1,6 @@
 # Data Quality Report
 
-Generated: 2026-06-28 (updated — deep research pass 4 complete)
+Generated: 2026-06-28 (updated — deep research pass 5 complete)
 Source: `web/data.json` (1745 entities, 12441 relationships, 33 itineraries)
 Tool: `python scripts/validate_data.py`
 
@@ -93,7 +93,7 @@ Tool: `python scripts/validate_data.py`
 | **Total sub_category** | **~100/1604** | **1604/1604 (100%)** |
 | Structured data in descriptions | 243 (addr/price/phone/hours) | **0** (all stripped) |
 | Summary name repetition | 492 summaries | **0** (name prefix stripped) |
-| Short summaries (<50 chars) | 63 | **0** (regenerated from descriptions) |
+| Short summaries (<50 chars) | 63 | **1** (46 chars — acceptable content) |
 | Trailing whitespace before period | 2 | **0** |
 | Missing summary punctuation | 10 | **0** |
 | Ghost entity prov-1 | Present | **Deleted** |
@@ -105,6 +105,13 @@ Tool: `python scripts/validate_data.py`
 | Total relationships | 11537 | **12441** (+904) |
 | Short descriptions (<80 chars) | 17 | **0** (all enriched to 80+ chars) |
 | Summary == Description | 581 identical pairs | **Differentiated** (121 single-sentence remain) |
+| Structured data pass 2 (desc) | 464 (Mở cửa/Nên mua/Đặc sản/Thời lượng/Chi phí/Giá phòng/etc.) | **0** |
+| Orphan price fragments | 207 (broken "000–X đ/unit" remnants) | **0** |
+| Structured data in summaries | 278 (same patterns as descriptions) | **0** |
+| Phí tham quan/Thời điểm lý tưởng | 43+23 structured segments | **0** |
+| Address-only descriptions | 20 entities (shop/market/supermarket) | **Rewritten** (proper prose) |
+| Wrong province in BT/TV | 159 desc + 143 summ saying "tỉnh Vĩnh Long" | **0** (corrected to actual province) |
+| Summary length inversions | 100 summaries > descriptions | **0** (regenerated) |
 
 ## Errors
 
@@ -118,7 +125,7 @@ None.
 | `coordinate_clusters` | 189 clusters (1366 entities) | Ward/province centroids; needs real geocoding data |
 | `itinerary_area_mismatch` | 59 | Multi-province itineraries legitimately cross areas |
 | `rel_type_singletons` | 30 | Rare but valid relationship combos |
-| `summary_short` | 0 | Was 63 after name-strip, all fixed |
+| `summary_short` | 1 | 1 remaining at 46 chars — acceptable content |
 | `missing_location` | 6 | 6 non-place entities without coordinates |
 | `missing_place_id` | 1 | ben-xe-mien-tay-hcm (HCM, outside VL+BT+TV scope) |
 | `data_js_unknown_shape` | 1 | web/data.js format — cosmetic |
@@ -133,7 +140,11 @@ Images should be generated via `scripts/gen_image.py` using the `cx/gpt-5.5-imag
 
 ## Geographic Anomaly Audit
 
-### Finding: 159 entities had coordinates in the wrong province
+### Finding: 159 entities had wrong province name in text
+
+Deep text analysis detected **159 descriptions** and **143 summaries** in Bến Tre and Trà Vinh entities that incorrectly stated "tỉnh Vĩnh Long". All corrected to the entity's actual province.
+
+### Finding (earlier): 159 entities had coordinates in the wrong province
 
 Deep geographic analysis detected **159 entities** whose coordinates fell clearly outside their declared province's bounding box — placing them in an entirely different province on the map. An additional **105 entities** were borderline (between tight and loose bounds).
 
