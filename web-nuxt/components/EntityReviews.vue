@@ -1,42 +1,6 @@
 <template>
   <div class="reviews-section">
-    <div class="reviews-header">
-      <h2>Đánh giá cộng đồng</h2>
-      <div v-if="rating.count" class="reviews-summary">
-        <span class="star-rating-inline" role="img" :aria-label="`${rating.avg} trên 5 sao`">
-          <span v-for="s in 5" :key="s" class="star" :class="{ active: s <= Math.round(rating.avg) }" aria-hidden="true">★</span>
-        </span>
-        <strong>{{ rating.avg }}</strong>
-        <span class="review-count">({{ rating.count }} đánh giá)</span>
-      </div>
-    </div>
-
-    <!-- Rating distribution -->
-    <div v-if="rating.count && reviews.length" class="er-distribution" aria-label="Phân bố đánh giá">
-      <div v-for="star in 5" :key="star" class="er-dist-row">
-        <span class="er-dist-label">{{ 6 - star }}★</span>
-        <div class="er-dist-track">
-          <div class="er-dist-fill" :style="{ width: distPercent(6 - star) + '%' }" />
-        </div>
-        <span class="er-dist-count">{{ distCount(6 - star) }}</span>
-      </div>
-    </div>
-
-    <!-- Category breakdown (placeholder — API not available yet) -->
-    <div v-if="rating.count" class="er-categories">
-      <div v-for="cat in REVIEW_CATEGORIES" :key="cat.key" class="er-cat-item">
-        <span class="er-cat-label">{{ cat.label }}</span>
-        <div class="er-cat-track"><div class="er-cat-fill er-cat-placeholder" /></div>
-        <span class="er-cat-score">—</span>
-      </div>
-      <p class="er-cat-hint">Sắp có đánh giá chi tiết theo từng chiều</p>
-    </div>
-
-    <!-- Popular mention chips -->
-    <div v-if="mentionChips.length" class="er-mentions">
-      <h3 class="er-mentions-title">Mọi người hay nhắc đến</h3>
-      <FilterChips :filters="mentionChips" v-model="selectedMentions" />
-    </div>
+    <ReviewStats :rating="rating" :reviews="reviews" v-model:selected-mentions="selectedMentions" />
 
     <!-- Review Form -->
     <div v-if="user" class="review-form">
@@ -117,39 +81,16 @@
 
     <!-- Review List -->
     <div v-if="reviews.length" class="review-list">
-      <div v-for="r in filteredReviews" :key="r.id" class="review-item">
-        <div class="ri-head">
-          <NuxtLink :to="`/nguoi-dung/${r.username || r.user_id}`" class="ri-author">
-            <img v-if="r.avatar_url" :src="r.avatar_url" class="ri-avatar" :alt="r.display_name" loading="lazy" decoding="async" width="32" height="32" @error="(e) => ((e.target as HTMLImageElement).style.display = 'none')" />
-            <span v-else class="ri-avatar-placeholder">{{ (r.display_name || '?')[0] }}</span>
-            <strong>{{ r.display_name || 'Ẩn danh' }}</strong>
-          </NuxtLink>
-          <span v-if="r.rating" class="star-rating-inline">
-            <span v-for="s in 5" :key="s" class="star" :class="{ active: s <= r.rating }" aria-hidden="true">★</span>
-          </span>
-          <time class="ri-date" :datetime="r.created_at">{{ timeAgo(r.created_at) }}</time>
-          <div v-if="isOwner(r)" class="ri-actions">
-            <button
-              type="button"
-              class="ri-action-btn ri-delete"
-              :disabled="deletingId === r.id"
-              :aria-label="`Xóa đánh giá của bạn`"
-              @click="deleteReview(r)"
-            >{{ deletingId === r.id ? 'Đang xóa…' : 'Xóa' }}</button>
-            <span v-if="deleteErrorId === r.id" class="rf-error" role="alert">{{ deleteError }}</span>
-          </div>
-        </div>
-        <p class="ri-content">{{ r.content }}</p>
-        <div v-if="r.images?.length" class="ri-images">
-          <template v-for="(img, i) in r.images" :key="i">
-            <NuxtImg v-if="isRemoteUrl(img)" :src="img" :alt="`Ảnh đánh giá ${i + 1}`" loading="lazy" decoding="async" width="200" height="200" sizes="200px" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
-            <img v-else :src="img" :alt="`Ảnh đánh giá ${i + 1}`" loading="lazy" decoding="async" width="200" height="200" @error="(e) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
-          </template>
-        </div>
-        <button type="button" :class="['ri-helpful', { active: r.user_liked }]" :aria-pressed="!!r.user_liked" @click="toggleHelpful(r)">
-          👍 Hữu ích<span v-if="r.likes" class="ri-helpful-count">{{ r.likes }}</span>
-        </button>
-      </div>
+      <ReviewCard
+        v-for="r in filteredReviews"
+        :key="r.id"
+        :review="r"
+        :owned="isOwner(r)"
+        :deleting="deletingId === r.id"
+        :delete-error="deleteErrorId === r.id ? deleteError : ''"
+        @delete="deleteReview"
+        @toggle-helpful="toggleHelpful"
+      />
     </div>
     <p v-else-if="fetchFailed" class="empty review-error">Không thể tải đánh giá. <button type="button" class="btn btn-outline btn-sm review-retry-btn" @click="fetchFailed = false; fetchReviews()">Thử lại</button></p>
     <p v-else-if="!loading" class="empty review-empty">Chưa có đánh giá nào. Hãy là người đầu tiên!</p>
@@ -162,14 +103,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Entity } from '~/types'
-
-const REVIEW_CATEGORIES = [
-  { key: 'atmosphere', label: 'Không khí' },
-  { key: 'quality', label: 'Chất lượng' },
-  { key: 'value', label: 'Giá trị' },
-  { key: 'service', label: 'Phục vụ' },
-]
+import type { Review, ReviewFeedResponse } from '~/types'
 
 const props = defineProps<{
   entityId: string
@@ -178,17 +112,7 @@ const props = defineProps<{
 
 const { user, authHeaders } = useAuth()
 const { confirmDialog } = useConfirm()
-const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
 const { openAuth } = useAuthModal()
-
-async function toggleHelpful(r: any) {
-  if (!user.value) { openAuth(() => toggleHelpful(r)); return }
-  const flip = () => { r.user_liked = !r.user_liked; r.likes = (r.likes || 0) + (r.user_liked ? 1 : -1) }
-  flip()
-  try {
-    await $fetch(`/api/posts/${r.id}/like`, { method: 'POST', headers: authHeaders() })
-  } catch { flip() }
-}
 
 const reviews = ref<Review[]>([])
 const rating = ref({ avg: 0, count: 0 })
@@ -203,48 +127,16 @@ const submitting = ref(false)
 const submitError = ref('')
 const deleteError = ref('')
 const deleteErrorId = ref('')
+const selectedMentions = ref<string[]>([])
 
-// Image attach state
 const formImages = ref<string[]>([])
 const uploadingImage = ref(false)
 const uploadError = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
 
-// Own-review actions
 const deletingId = ref<string | number | null>(null)
 
 const hasMore = computed(() => reviews.value.length < total.value)
-
-const ratingDistribution = computed(() => {
-  const counts = [0, 0, 0, 0, 0]
-  for (const r of reviews.value) {
-    const s = Math.round(r.rating || 0)
-    if (s >= 1 && s <= 5) counts[s - 1]++
-  }
-  return counts
-})
-const maxDistCount = computed(() => Math.max(1, ...ratingDistribution.value))
-function distCount(star: number) { return ratingDistribution.value[star - 1] || 0 }
-function distPercent(star: number) { return (distCount(star) / maxDistCount.value) * 100 }
-
-const selectedMentions = ref<string[]>([])
-const STOP_WORDS = new Set(['và', 'là', 'của', 'cho', 'với', 'được', 'này', 'đã', 'có', 'không', 'rất', 'các', 'một', 'những', 'trong', 'ở', 'tại', 'cũng', 'nhưng', 'nên', 'thì', 'mà'])
-const mentionChips = computed(() => {
-  const freq = new Map<string, number>()
-  for (const r of reviews.value) {
-    const text = (r.content || '').toLowerCase()
-    const words = text.split(/[\s,.!?;:()]+/).filter((w: string) => w.length >= 2 && !STOP_WORDS.has(w))
-    const seen = new Set<string>()
-    for (const w of words) {
-      if (!seen.has(w)) { seen.add(w); freq.set(w, (freq.get(w) || 0) + 1) }
-    }
-  }
-  return [...freq.entries()]
-    .filter(([, c]) => c >= 2)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
-    .map(([word, count]) => ({ key: word, label: word, count }))
-})
 
 const filteredReviews = computed(() => {
   if (!selectedMentions.value.length) return reviews.value
@@ -257,6 +149,15 @@ const filteredReviews = computed(() => {
 function isOwner(r: Review) {
   const uid = (r as unknown as { user_id?: string | number }).user_id
   return !!user.value && uid != null && String(uid) === String(user.value.id)
+}
+
+async function toggleHelpful(r: Review) {
+  if (!user.value) { openAuth(() => toggleHelpful(r)); return }
+  const flip = () => { r.user_liked = !r.user_liked; r.likes = (r.likes || 0) + (r.user_liked ? 1 : -1) }
+  flip()
+  try {
+    await $fetch(`/api/posts/${r.id}/like`, { method: 'POST', headers: authHeaders() })
+  } catch { flip() }
 }
 
 async function onPickImage(e: Event) {
@@ -365,8 +266,6 @@ async function submitReview() {
   submitting.value = false
 }
 
-const { timeAgo } = useTimeAgo()
-
 onMounted(() => fetchReviews())
 </script>
 
@@ -376,14 +275,9 @@ onMounted(() => fetchReviews())
 .review-error { font-size: var(--text-sm); color: var(--error, #D94F3D); }
 .review-retry-btn { margin-inline-start: var(--space-2); }
 .review-empty { font-size: var(--text-sm); }
-.review-load-more { margin-top: var(--space-3); }
 .review-sentinel { display: flex; justify-content: center; padding: var(--space-3) 0; min-height: 40px; }
 
-/* Image attach */
 .rf-photo-hint { margin: var(--space-2) 0 0; font-size: var(--text-sm); color: var(--ink-700); }
-.ri-helpful { margin-top: var(--space-2); display: inline-flex; align-items: center; gap: .3rem; font-size: var(--text-sm); padding: .3rem .7rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink-700); cursor: pointer; min-height: 44px; }
-.ri-helpful.active { background: color-mix(in srgb, var(--primary) 12%, var(--bg)); border-color: var(--primary); color: var(--primary-fg); }
-.ri-helpful-count { font-weight: var(--weight-medium); }
 .rf-images { display: flex; flex-direction: column; gap: var(--space-2); margin-block: var(--space-2); }
 .rf-image-grid { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .rf-image-thumb { position: relative; width: 64px; height: 64px; border-radius: var(--radius-md); overflow: hidden; border: .5px solid var(--line); }
@@ -403,8 +297,7 @@ onMounted(() => fetchReviews())
   display: inline-flex; align-items: center; gap: var(--space-2);
   min-height: 44px; padding-inline: var(--space-3);
   border: 1px dashed var(--line); border-radius: var(--radius-md);
-  font-size: var(--text-sm); color: var(--muted); cursor: pointer;
-  align-self: flex-start;
+  font-size: var(--text-sm); color: var(--muted); cursor: pointer; align-self: flex-start;
   transition: border-color .15s cubic-bezier(.2, 1, .4, 1), color .15s cubic-bezier(.2, 1, .4, 1);
 }
 .rf-image-add:hover { border-color: var(--brand, var(--muted)); color: var(--ink, var(--muted)); }
@@ -412,19 +305,6 @@ onMounted(() => fetchReviews())
 .rf-image-add.disabled { opacity: .55; cursor: not-allowed; }
 .rf-image-input { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .rf-error { font-size: var(--text-sm); color: var(--error, #D94F3D); margin-top: var(--space-1); }
-
-/* Own-review actions */
-.ri-actions { margin-inline-start: auto; display: inline-flex; gap: var(--space-2); }
-.ri-action-btn {
-  min-height: 44px; padding-inline: var(--space-2);
-  border: .5px solid var(--line); border-radius: var(--radius-sm);
-  background: transparent; font-size: var(--text-xs); color: var(--muted);
-  cursor: pointer;
-  transition: color .15s cubic-bezier(.2, 1, .4, 1), border-color .15s cubic-bezier(.2, 1, .4, 1);
-}
-.ri-action-btn:hover { color: var(--error, #D94F3D); border-color: var(--error, #D94F3D); }
-.ri-action-btn:focus-visible { outline: 2px solid var(--error, currentColor); outline-offset: 1px; }
-.ri-action-btn:disabled { opacity: .55; cursor: not-allowed; }
 
 .review-loading { display: flex; flex-direction: column; gap: var(--space-4); }
 .review-skeleton { padding: var(--space-4); border-radius: var(--radius-md); background: var(--card); border: .5px solid var(--line); }
@@ -440,103 +320,8 @@ onMounted(() => fetchReviews())
 @media (prefers-reduced-motion: reduce) {
   .rsk-avatar, .rsk-name, .rsk-line { animation: none; }
 }
-
-/* Rating distribution */
-.er-distribution {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1h, 6px);
-  margin-bottom: var(--space-5);
-  max-width: 320px;
-}
-.er-dist-row {
-  display: grid;
-  grid-template-columns: 28px 1fr 28px;
-  align-items: center;
-  gap: var(--space-2);
-}
-.er-dist-label {
-  font-size: var(--text-xs);
-  font-weight: var(--weight-medium, 500);
-  color: var(--muted);
-  text-align: right;
-}
-.er-dist-track {
-  height: 8px;
-  border-radius: 4px;
-  background: var(--bg-warm, var(--bg-alt));
-  overflow: hidden;
-}
-.er-dist-fill {
-  height: 100%;
-  border-radius: 4px;
-  background: var(--secondary);
-  transition: width 400ms var(--ease-out, ease);
-  min-width: 2px;
-}
-.er-dist-count {
-  font-size: var(--text-xs);
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
-
-/* Category breakdown */
-.er-categories {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
-  margin-bottom: var(--space-5);
-  max-width: 400px;
-}
-.er-cat-item {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-.er-cat-label {
-  font-size: var(--text-xs);
-  font-weight: var(--weight-medium, 500);
-  color: var(--ink);
-}
-.er-cat-track {
-  height: 6px;
-  border-radius: 3px;
-  background: var(--bg-warm, var(--bg-alt));
-  overflow: hidden;
-}
-.er-cat-fill {
-  height: 100%;
-  border-radius: 3px;
-  background: var(--secondary);
-}
-.er-cat-placeholder { width: 0%; }
-.er-cat-score {
-  font-size: var(--text-xs);
-  color: var(--muted);
-}
-.er-cat-hint {
-  grid-column: 1 / -1;
-  font-size: var(--text-xs);
-  color: var(--muted);
-  font-style: italic;
-  margin: 0;
-}
-
-/* Mention chips */
-.er-mentions {
-  margin-bottom: var(--space-5);
-}
-.er-mentions-title {
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold, 600);
-  color: var(--ink);
-  margin: 0 0 var(--space-2);
-}
 </style>
 
-<!-- Chuyển từ detail.css: chỉ EntityReviews dùng .reviews-*/.review-*/.ri-*/.rf-* → nạp
-     theo component (bỏ khỏi global entry.css). Non-scoped + giữ đúng thứ tự base→override
-     để cascade không đổi (không file nào khác style các class này). -->
 <style>
 .reviews-section { margin-top: var(--space-8); }
 .reviews-header { display: flex; align-items: baseline; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-4); }
@@ -554,7 +339,6 @@ onMounted(() => fetchReviews())
 }
 .rf-rating { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); }
 .rf-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--muted); }
-.rf-error { color: var(--error); font-size: var(--text-sm); margin-top: var(--space-2); }
 .review-form .btn { margin-top: var(--space-2); }
 .review-login-hint { font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-4); }
 .review-login-hint a { color: var(--primary-fg); font-weight: var(--weight-semibold); }
