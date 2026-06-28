@@ -1352,7 +1352,7 @@ async def export_data():
 
     def _generate():
         yield '{"entities":['
-        entities = db.list_entities(limit=10000)
+        entities = db.all_entities()
         for i, e in enumerate(entities):
             if i:
                 yield ","
