@@ -1899,6 +1899,28 @@ class TestDeleteRowcountChecks:
             "reject_post must verify the post exists"
 
 
+class TestCommentParentValidation:
+    """Comment parent_id must belong to the same post."""
+
+    def test_create_comment_validates_parent_post(self):
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        idx = src.find("async def create_comment(")
+        assert idx > 0
+        block = src[idx:idx+2500]
+        assert "post_id::text" in block and "parent_id" in block, \
+            "create_comment must validate parent_id belongs to the same post_id"
+
+    def test_parent_check_before_insert(self):
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        idx = src.find("async def create_comment(")
+        block = src[idx:idx+2500]
+        parent_check_idx = block.find("Bình luận gốc không thuộc bài viết này")
+        insert_idx = block.find("INSERT INTO comments")
+        assert parent_check_idx > 0, "Must have parent-post validation error message"
+        assert parent_check_idx < insert_idx, \
+            "Parent validation must happen BEFORE the INSERT"
+
+
 class TestSchedulerOverlapGuard:
     """Scheduler tasks must prevent overlapping execution."""
 

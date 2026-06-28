@@ -1165,6 +1165,12 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
             cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM comments WHERE post_id::text = {ph}", (post_id,))
             if cnt and int(db._row_to_dict(cnt)["c"]) >= MAX_COMMENTS_PER_POST:
                 raise HTTPException(400, "Bài viết đã đạt giới hạn bình luận")
+            if body.parent_id:
+                parent_ok = db._fetchone(conn, f"""
+                    SELECT 1 FROM comments WHERE id::text = {ph} AND post_id::text = {ph}
+                """, (body.parent_id, post_id))
+                if not parent_ok:
+                    raise HTTPException(400, "Bình luận gốc không thuộc bài viết này")
             row = db._fetchone(conn, f"""
                 INSERT INTO comments (post_id, user_id, parent_id, content, moderation_status, mentions)
                 VALUES ({ph}::uuid, {ph}::uuid, {ph}::uuid, {ph}, {ph}, {ph}::jsonb)
