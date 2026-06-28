@@ -1386,7 +1386,7 @@ class TestPhase9ErrorInfoLeaks:
         """Backup endpoint does not expose result.stderr in HTTP response."""
         src = self._get_admin_src()
         idx = src.find("def trigger_backup")
-        block = src[idx:idx + 800]
+        block = src[idx:idx + 1500]
         assert "result.stderr" not in block or "logger" in block
         assert "Kiểm tra log server" in block
 
@@ -1752,3 +1752,59 @@ class TestPhase11HtmlSanitization:
         p = social.UpdatePost(content="<div onclick='hack()'>Safe content here for testing</div>")
         assert "<div" not in p.content
         assert "Safe content" in p.content
+
+
+class TestPhase11AdminHardening:
+    """Phase 11: admin endpoint validation hardening."""
+
+    def test_ban_user_prevents_self_ban(self):
+        """ban_user checks admin user ID against target."""
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("def ban_user")
+        end = src.find("\nasync def ", idx + 1)
+        block = src[idx:end] if end != -1 else src[idx:idx + 2000]
+        assert "Không thể tự ban chính mình" in block
+        assert "get_current_user" in block
+
+    def test_ban_user_checks_target_exists(self):
+        """ban_user verifies target user exists."""
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("def ban_user")
+        end = src.find("\nasync def ", idx + 1)
+        block = src[idx:end] if end != -1 else src[idx:idx + 2000]
+        assert "404" in block
+        assert "Không tìm thấy người dùng" in block
+
+    def test_unban_checks_ban_status(self):
+        """unban_user rejects unbanning non-banned user."""
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("def unban_user")
+        end = src.find("\nasync def ", idx + 1)
+        block = src[idx:end] if end != -1 else src[idx:idx + 2000]
+        assert "Người dùng không bị ban" in block
+        assert "is_active" in block
+
+    def test_set_role_checks_user_exists(self):
+        """set_user_role verifies target user exists."""
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("def set_user_role")
+        end = src.find("\nasync def ", idx + 1)
+        block = src[idx:end] if end != -1 else src[idx:idx + 2000]
+        assert "404" in block
+        assert "Không tìm thấy người dùng" in block
+
+    def test_set_role_rejects_banned_user(self):
+        """set_user_role rejects assigning role to banned user."""
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("def set_user_role")
+        end = src.find("\nasync def ", idx + 1)
+        block = src[idx:end] if end != -1 else src[idx:idx + 2000]
+        assert "Không thể gán quyền cho tài khoản đã bị ban" in block
+
+    def test_backup_has_cooldown(self):
+        """trigger_backup has a 5-minute cooldown."""
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("def trigger_backup")
+        block = src[max(0, idx - 200):idx + 1500]
+        assert "_BACKUP_COOLDOWN" in block
+        assert "429" in block

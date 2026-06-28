@@ -1021,9 +1021,19 @@ async def admin_stats():
     return await asyncio.to_thread(_query)
 
 
+_last_backup_time: float = 0
+_BACKUP_COOLDOWN = 300  # 5 minutes
+
 @router.post("/backup-trigger")
 async def trigger_backup():
     """B5c: trigger manual backup from admin UI."""
+    import time as _time
+    global _last_backup_time
+    now = _time.monotonic()
+    if now - _last_backup_time < _BACKUP_COOLDOWN:
+        remaining = int(_BACKUP_COOLDOWN - (now - _last_backup_time))
+        raise HTTPException(429, f"Backup đã chạy gần đây. Thử lại sau {remaining} giây.")
+    _last_backup_time = now
     script = Path(__file__).resolve().parent.parent / "scripts" / "backup_data.py"
     if not script.exists():
         raise HTTPException(500, "backup_data.py not found")
@@ -1810,11 +1820,17 @@ async def list_users(
 
 
 @router.post("/users/{user_id}/ban")
-async def ban_user(user_id: str):
+async def ban_user(user_id: str, request: Request):
     user_id = validate_path_id(user_id, "user_id")
+    admin_user = await get_current_user(request)
+    if admin_user and str(admin_user["id"]) == user_id:
+        raise HTTPException(400, "Không thể tự ban chính mình")
     def _query():
         ph = db._ph
         with db._conn() as conn:
+            target = db._fetchone(conn, f"SELECT is_active FROM users WHERE id::text = {ph}", (user_id,))
+            if not target:
+                raise HTTPException(404, "Không tìm thấy người dùng")
             db._execute(conn, f"""
                 UPDATE users SET is_active = FALSE WHERE id::text = {ph}
             """, (user_id,))
@@ -1832,6 +1848,11 @@ async def unban_user(user_id: str):
     def _query():
         ph = db._ph
         with db._conn() as conn:
+            target = db._fetchone(conn, f"SELECT is_active FROM users WHERE id::text = {ph}", (user_id,))
+            if not target:
+                raise HTTPException(404, "Không tìm thấy người dùng")
+            if target["is_active"]:
+                raise HTTPException(400, "Người dùng không bị ban")
             db._execute(conn, f"""
                 UPDATE users SET is_active = TRUE WHERE id::text = {ph}
             """, (user_id,))
@@ -1846,6 +1867,11 @@ async def set_user_role(user_id: str, role: str = Query(..., pattern="^(user|mod
     def _query():
         ph = db._ph
         with db._conn() as conn:
+            target = db._fetchone(conn, f"SELECT is_active FROM users WHERE id::text = {ph}", (user_id,))
+            if not target:
+                raise HTTPException(404, "Không tìm thấy người dùng")
+            if not target["is_active"]:
+                raise HTTPException(400, "Không thể gán quyền cho tài khoản đã bị ban")
             db._execute(conn, f"""
                 UPDATE users SET role = {ph} WHERE id::text = {ph}
             """, (role, user_id))
