@@ -263,7 +263,7 @@ POST_TYPE_LABELS = {
 RL_POST_DAILY_LIMIT = _cfg.RL_POST_DAILY_LIMIT
 RL_POST_DAILY_WINDOW = _cfg.RL_POST_DAILY_WINDOW
 
-@router.post("/posts")
+@router.post("/posts", status_code=201)
 async def create_post(body: CreatePost, user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
     check_rate(f"post:{user['id']}", RL_POST_LIMIT, RL_POST_WINDOW,
                "Bạn đăng bài quá nhanh. Vui lòng đợi ít phút rồi thử lại.")
@@ -1093,7 +1093,7 @@ async def get_comments(
     return {"comments": top_level}
 
 
-@router.post("/posts/{post_id}/comments")
+@router.post("/posts/{post_id}/comments", status_code=201)
 async def create_comment(post_id: str, body: CreateComment, user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
     post_id = validate_path_id(post_id, "post_id")
     check_rate(f"comment:{user['id']}", RL_COMMENT_LIMIT, RL_COMMENT_WINDOW,

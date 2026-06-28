@@ -950,7 +950,10 @@ def create_bot_app() -> FastAPI:
                 _bot_logger.warning("Zalo webhook: invalid signature")
                 raise HTTPException(401, detail="Invalid webhook signature")
 
-        body = json.loads(raw_body)
+        try:
+            body = json.loads(raw_body)
+        except (json.JSONDecodeError, ValueError):
+            raise HTTPException(400, detail="Invalid JSON body")
         return await gw.handle_zalo_event(body)
 
     @bot_app.get("/stats")

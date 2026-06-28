@@ -373,7 +373,7 @@ async def get_entity_history(entity_id: str, limit: int = Query(50, ge=1, le=200
     return await asyncio.to_thread(_query)
 
 
-@router.post("/entities")
+@router.post("/entities", status_code=201)
 async def create_entity(entity: EntityCreate):
     """Tạo entity mới."""
     def _query():
@@ -592,7 +592,7 @@ class RelationshipBulkCreate(BaseModel):
     pairs: list[RelationshipBulkPair] = Field(..., max_length=50)
 
 
-@router.post("/itineraries")
+@router.post("/itineraries", status_code=201)
 async def create_itinerary(body: ItineraryCreate):
     def _query():
         data = body.model_dump(exclude_none=True)
