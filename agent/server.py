@@ -1019,7 +1019,16 @@ async def gate_internal_endpoints(request: Request, call_next):
     trực tiếp (đi qua /admin/*) nên không ảnh hưởng UI."""
     if _IS_PROD:
         path = request.url.path
-        if path == "/metrics" or path.startswith("/system") or path.startswith("/analytics"):
+        _gated = (path == "/metrics"
+                  or path.startswith("/system")
+                  or path.startswith("/analytics")
+                  or path.startswith("/checkpoints")
+                  or path.startswith("/confirmations")
+                  or path.startswith("/confirm/")
+                  or path.startswith("/reject/")
+                  or path.startswith("/ab-testing")
+                  or path.startswith("/prompt-cache"))
+        if _gated:
             from middleware import verify_admin_key
             if not verify_admin_key(request):
                 return JSONResponse(status_code=404, content={"detail": "Not Found"})
@@ -2478,31 +2487,10 @@ async def _check_llm_health() -> str:
     return status
 
 
-@app.get("/health")
-async def health():
+def _health_core() -> tuple:
+    """Shared health probes — returns (overall_status, db_ok, llm_status)."""
     knowledge._ensure()
-
-    # Fast health must not call external services. Use /health/deep for LLM/API checks.
     llm_status = _health_llm_cache["status"]
-
-    # Memory usage
-    try:
-        import psutil
-        proc = psutil.Process()
-        memory_mb = round(proc.memory_info().rss / 1024 / 1024, 1)
-    except Exception:
-        memory_mb = None
-
-    # Data quality quick check
-    total_entities = len([e for e in knowledge._entities.values() if e.get("type") != "place"])
-    missing_summary = len([e for e in knowledge._entities.values() if e.get("type") != "place" and not e.get("summary")])
-    data_quality = {
-        "total_entities": total_entities,
-        "missing_summary": missing_summary,
-        "coverage_pct": round((total_entities - missing_summary) / total_entities * 100, 1) if total_entities else 0,
-    }
-
-    # DB probe (lightweight SELECT 1)
     db_ok = False
     try:
         from database import db as _db
@@ -2511,12 +2499,38 @@ async def health():
         db_ok = True
     except Exception:
         pass
-
-    # Overall status
     errors_healthy = error_tracker.is_healthy()
     llm_ok = llm_status != "error"
     overall = "ok" if (errors_healthy and db_ok and llm_ok) else "degraded"
+    return overall, db_ok, llm_status
 
+
+@app.get("/health")
+async def health():
+    overall, db_ok, _ = _health_core()
+    return {
+        "status": overall,
+        "time": datetime.now(timezone.utc).isoformat(),
+        "entities": len(knowledge._entities),
+    }
+
+
+async def _health_detail() -> dict:
+    """Full health payload — internal use by admin-gated endpoints."""
+    overall, db_ok, llm_status = _health_core()
+    try:
+        import psutil
+        memory_mb = round(psutil.Process().memory_info().rss / 1024 / 1024, 1)
+    except Exception:
+        memory_mb = None
+    total_entities = len([e for e in knowledge._entities.values() if e.get("type") != "place"])
+    missing_summary = len([e for e in knowledge._entities.values() if e.get("type") != "place" and not e.get("summary")])
+    data_quality = {
+        "total_entities": total_entities,
+        "missing_summary": missing_summary,
+        "coverage_pct": round((total_entities - missing_summary) / total_entities * 100, 1) if total_entities else 0,
+    }
+    from database import db as _db
     return {
         "status": overall,
         "version": "8.2",
@@ -2554,13 +2568,11 @@ async def health():
         "tracing": {"available": HAS_TRACING},
         "contextual_retrieval": {"available": HAS_CONTEXTUAL},
         "checkpoints": {"available": HAS_CHECKPOINTS},
-        # Level 6
         "guardrails": {"available": HAS_GUARDRAILS},
         "cost_tracker": {"available": HAS_COST_TRACKER},
         "eval_framework": {"available": HAS_EVAL},
         "self_optimizer": {"available": HAS_OPTIMIZER},
         "semantic_cache": {"available": HAS_SEMANTIC_CACHE, **(semantic_cache_stats() if HAS_SEMANTIC_CACHE else {})},
-        # Level 7
         "llm_judge": {"available": HAS_LLM_JUDGE},
         "dynamic_agents": {"available": HAS_DYNAMIC_AGENTS, "active_agents": len(agent_factory.get_active_agents()) if HAS_DYNAMIC_AGENTS else 0},
         "time": datetime.now(timezone.utc).isoformat(),
@@ -2568,13 +2580,22 @@ async def health():
 
 
 @app.get("/health/deep")
-async def deep_health():
+async def deep_health(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     await _check_llm_health()
-    payload = await health()
+    payload = await _health_detail()
     payload["deep_checks"] = True
     if payload["llm_api"] != "ok" and payload["status"] == "ok":
         payload["status"] = "degraded"
     return payload
+
+
+@app.get("/health/details")
+async def health_details(request: Request):
+    from admin import require_admin
+    await require_admin(request)
+    return await _health_detail()
 
 
 @app.get("/health/ready")
@@ -2596,8 +2617,10 @@ async def readiness_probe():
 
 
 @app.get("/health/slo")
-async def slo_metrics():
-    """Basic SLO tracking: uptime, error rate, p95 latency."""
+async def slo_metrics(request: Request):
+    """Basic SLO tracking: uptime, error rate, p95 latency. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     uptime_s = time.time() - _server_start_time
     rt_stats = response_tracker.stats()
     err_stats = error_tracker.stats()
@@ -2625,11 +2648,12 @@ async def slo_metrics():
 # ── Prometheus metrics endpoint ──
 
 @app.get("/metrics", tags=["System"])
-async def metrics_endpoint():
-    """Prometheus-compatible metrics in text exposition format."""
+async def metrics_endpoint(request: Request):
+    """Prometheus-compatible metrics in text exposition format. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_METRICS:
         return JSONResponse(status_code=501, content={"error": "Metrics module not available"})
-    # Update gauges before export
     set_gauge("cache_size", len(cache._cache) if hasattr(cache, '_cache') else 0)
     set_gauge("entities_total", len(knowledge._entities))
     from fastapi.responses import Response
@@ -2639,15 +2663,19 @@ async def metrics_endpoint():
 # ── A/B Testing endpoints ──
 
 @app.get("/ab-testing/experiments", tags=["System"])
-async def ab_experiments():
-    """List all A/B testing experiments."""
+async def ab_experiments(request: Request):
+    """List all A/B testing experiments. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_AB_TESTING:
         raise HTTPException(503, detail="A/B testing not available")
     return {"experiments": ab_manager.list_experiments()}
 
 @app.get("/ab-testing/results/{experiment_name}", tags=["System"])
-async def ab_results(experiment_name: str):
-    """Get A/B test results with statistics."""
+async def ab_results(experiment_name: str, request: Request):
+    """Get A/B test results with statistics. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_AB_TESTING:
         raise HTTPException(503, detail="A/B testing not available")
     results = ab_manager.get_results(experiment_name)
@@ -2655,8 +2683,10 @@ async def ab_results(experiment_name: str):
     return {"experiment": experiment_name, "results": results, "significance": significance}
 
 @app.get("/prompt-cache/stats", tags=["System"])
-async def prompt_cache_stats():
-    """Get prompt cache statistics."""
+async def prompt_cache_stats(request: Request):
+    """Get prompt cache statistics. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_PROMPT_CACHE:
         return {"available": False}
     return {"available": True, **prompt_cache.stats()}
@@ -2665,7 +2695,9 @@ async def prompt_cache_stats():
 # ── Analytics endpoints ──
 
 @app.get("/analytics/summary")
-async def analytics_summary():
+async def analytics_summary(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     try:
         return await asyncio.to_thread(analytics.get_summary)
     except Exception:
@@ -2673,50 +2705,68 @@ async def analytics_summary():
 
 
 @app.get("/analytics/popular")
-async def analytics_popular(limit: int = Query(20, ge=1, le=200)):
+async def analytics_popular(request: Request, limit: int = Query(20, ge=1, le=200)):
+    from admin import require_admin
+    await require_admin(request)
     return {"popular_queries": await asyncio.to_thread(analytics.get_popular_queries, limit)}
 
 
 @app.get("/analytics/gaps")
-async def analytics_gaps(limit: int = Query(20, ge=1, le=200)):
+async def analytics_gaps(request: Request, limit: int = Query(20, ge=1, le=200)):
+    from admin import require_admin
+    await require_admin(request)
     return {"knowledge_gaps": await asyncio.to_thread(analytics.get_knowledge_gaps, limit)}
 
 
 @app.get("/analytics/daily")
-async def analytics_daily(days: int = Query(30, ge=1, le=365)):
+async def analytics_daily(request: Request, days: int = Query(30, ge=1, le=365)):
+    from admin import require_admin
+    await require_admin(request)
     return {"daily_stats": await asyncio.to_thread(analytics.get_daily_stats, days)}
 
 
 @app.get("/analytics/top-entities")
-async def analytics_top_entities(limit: int = Query(20, ge=1, le=200)):
+async def analytics_top_entities(request: Request, limit: int = Query(20, ge=1, le=200)):
+    from admin import require_admin
+    await require_admin(request)
     return {"top_entities": await asyncio.to_thread(analytics.get_top_entities, limit)}
 
 
 # ── System monitoring endpoints ──
 
 @app.get("/system/logs")
-async def system_logs(limit: int = Query(50, ge=1, le=500), level: str = None):
+async def system_logs(request: Request, limit: int = Query(50, ge=1, le=500), level: str = None):
+    from admin import require_admin
+    await require_admin(request)
     return {"logs": logger.recent(limit, level)}
 
 
 @app.get("/system/errors")
-async def system_errors(limit: int = Query(20, ge=1, le=200)):
+async def system_errors(request: Request, limit: int = Query(20, ge=1, le=200)):
+    from admin import require_admin
+    await require_admin(request)
     return {"errors": error_tracker.recent_errors(limit), **error_tracker.stats()}
 
 
 @app.get("/system/response-times")
-async def system_response_times():
+async def system_response_times(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     return response_tracker.stats()
 
 
 @app.get("/system/scheduler")
-async def system_scheduler():
+async def system_scheduler(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     return scheduler_status()
 
 
 @app.get("/system/learning", tags=["System"])
-async def system_learning():
-    """Trạng thái vòng lặp tự học."""
+async def system_learning(request: Request):
+    """Trạng thái vòng lặp tự học. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     try:
         from learn_loop import learning_status
         return learning_status()
@@ -2742,8 +2792,10 @@ async def trigger_learning(request: Request):
 
 
 @app.get("/system/self-evolution", tags=["System"])
-async def system_self_evolution():
-    """Trạng thái cơ chế tự tiến hoá có kiểm soát (fitness gate + rollback)."""
+async def system_self_evolution(request: Request):
+    """Trạng thái cơ chế tự tiến hoá. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     out = {}
     try:
         import self_evolve
@@ -2774,13 +2826,17 @@ async def system_self_evolution():
 
 
 @app.get("/system/memory")
-async def system_memory():
+async def system_memory(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     return memory_manager.stats()
 
 
 @app.get("/system/traces", tags=["System"])
-async def system_traces(limit: int = Query(50, ge=1, le=500)):
-    """OpenTelemetry trace data."""
+async def system_traces(request: Request, limit: int = Query(50, ge=1, le=500)):
+    """OpenTelemetry trace data. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_TRACING:
         return {"available": False}
     return {
@@ -2791,8 +2847,10 @@ async def system_traces(limit: int = Query(50, ge=1, le=500)):
 
 
 @app.get("/system/handoffs", tags=["System"])
-async def system_handoffs(limit: int = Query(50, ge=1, le=200)):
-    """Multi-agent orchestrator handoff log."""
+async def system_handoffs(request: Request, limit: int = Query(50, ge=1, le=200)):
+    """Multi-agent orchestrator handoff log. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_ORCHESTRATOR:
         return {"available": False}
     from dataclasses import asdict
@@ -2805,8 +2863,10 @@ async def system_handoffs(limit: int = Query(50, ge=1, le=200)):
 
 
 @app.get("/system/memory-graph", tags=["System"])
-async def system_memory_graph():
-    """Memory graph statistics."""
+async def system_memory_graph(request: Request):
+    """Memory graph statistics. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_MEMORY_GRAPH:
         return {"available": False}
     graph_stats = memory_graph.stats()
@@ -2820,16 +2880,20 @@ async def system_memory_graph():
 # ── Checkpoint / Confirmation endpoints ──
 
 @app.get("/checkpoints/{session_id}", tags=["System"])
-async def list_checkpoints(session_id: str):
-    """List conversation checkpoints for a session."""
+async def list_checkpoints(session_id: str, request: Request):
+    """List conversation checkpoints. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_CHECKPOINTS:
         return {"available": False}
     return {"checkpoints": checkpoint_manager.list_checkpoints(session_id)}
 
 
 @app.post("/checkpoints", tags=["System"])
-async def save_checkpoint(req: CheckpointSaveRequest):
-    """Save a conversation checkpoint."""
+async def save_checkpoint(req: CheckpointSaveRequest, request: Request):
+    """Save a conversation checkpoint. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_CHECKPOINTS:
         return JSONResponse(status_code=501, content={"error": "Checkpoints not available"})
     cp_id = checkpoint_manager.save_checkpoint(
@@ -2843,8 +2907,10 @@ async def save_checkpoint(req: CheckpointSaveRequest):
 
 
 @app.post("/checkpoints/{checkpoint_id}/resume", tags=["System"])
-async def resume_checkpoint(checkpoint_id: str):
-    """Resume from a conversation checkpoint."""
+async def resume_checkpoint(checkpoint_id: str, request: Request):
+    """Resume from a conversation checkpoint. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_CHECKPOINTS:
         return JSONResponse(status_code=501, content={"error": "Checkpoints not available"})
     result = checkpoint_manager.resume_from(checkpoint_id)
@@ -2855,8 +2921,10 @@ async def resume_checkpoint(checkpoint_id: str):
 
 
 @app.get("/confirmations/{session_id}", tags=["System"])
-async def pending_confirmations(session_id: str):
-    """List pending confirmations for a session."""
+async def pending_confirmations(session_id: str, request: Request):
+    """List pending confirmations. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_CHECKPOINTS:
         return {"available": False}
     pending = confirmation_manager.get_pending(session_id)
@@ -2866,8 +2934,10 @@ async def pending_confirmations(session_id: str):
 
 
 @app.post("/confirm/{confirmation_id}", tags=["System"])
-async def confirm_action(confirmation_id: str):
-    """Confirm a pending action."""
+async def confirm_action(confirmation_id: str, request: Request):
+    """Confirm a pending action. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_CHECKPOINTS:
         return JSONResponse(status_code=501, content={"error": "Checkpoints not available"})
     params = confirmation_manager.confirm(confirmation_id)
@@ -2878,7 +2948,9 @@ async def confirm_action(confirmation_id: str):
 
 @app.post("/reject/{confirmation_id}", tags=["System"])
 async def reject_action(confirmation_id: str, request: Request):
-    """Reject a pending action."""
+    """Reject a pending action. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_CHECKPOINTS:
         return JSONResponse(status_code=501, content={"error": "Checkpoints not available"})
     body = await request.json() if request.headers.get("content-type") == "application/json" else {}
@@ -2922,7 +2994,9 @@ async def enhanced_search(q: str = Query(..., max_length=200), limit: int = Quer
 
 
 @app.get("/system/quality")
-async def system_quality():
+async def system_quality(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     return {
         "quality": quality_tracker.stats(),
         "reflexion": reflexion_engine.stats(),
@@ -3180,7 +3254,9 @@ async def autocorrect_endpoint(q: str):
 # ── Circuit breaker stats ──
 
 @app.get("/system/circuit-breakers")
-async def circuit_breaker_stats():
+async def circuit_breaker_stats(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_CIRCUIT_BREAKER:
         return {"available": False}
     return {"available": True, **all_breaker_stats()}
@@ -3203,7 +3279,9 @@ async def graph_endpoint(entity_id: str, hops: int = 2, max_nodes: int = 30):
 # ── Guardrails ──
 
 @app.get("/system/guardrails", tags=["Level6"])
-async def guardrails_status():
+async def guardrails_status(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_GUARDRAILS:
         return {"available": False}
     return {
@@ -3213,7 +3291,9 @@ async def guardrails_status():
     }
 
 @app.post("/system/guardrails/check-input", tags=["Level6"])
-async def guardrails_check_input(req: GuardrailCheckRequest):
+async def guardrails_check_input(req: GuardrailCheckRequest, request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_GUARDRAILS:
         raise HTTPException(503, detail="Guardrails not available")
     return check_input(req.message, req.session_id)
@@ -3222,19 +3302,25 @@ async def guardrails_check_input(req: GuardrailCheckRequest):
 # ── Cost tracker ──
 
 @app.get("/system/costs", tags=["Level6"])
-async def cost_tracker_report():
+async def cost_tracker_report(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_COST_TRACKER:
         return {"available": False}
     return {"available": True, **get_cost_report()}
 
 @app.get("/system/costs/session/{session_id}", tags=["Level6"])
-async def cost_tracker_session(session_id: str):
+async def cost_tracker_session(session_id: str, request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_COST_TRACKER:
         raise HTTPException(503, detail="Cost tracker not available")
     return cost_attribution.get_session_cost(session_id)
 
 @app.get("/system/costs/budget", tags=["Level6"])
-async def cost_budget_status():
+async def cost_budget_status(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_COST_TRACKER:
         raise HTTPException(503, detail="Cost tracker not available")
     return {
@@ -3246,14 +3332,18 @@ async def cost_budget_status():
 # ── Eval framework ──
 
 @app.get("/system/eval/latest", tags=["Level6"])
-async def eval_latest():
+async def eval_latest(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_EVAL:
         return {"available": False}
     report = get_latest_report()
     return {"available": True, "report": report}
 
 @app.get("/system/eval/history", tags=["Level6"])
-async def eval_history(limit: int = Query(10, ge=1, le=100)):
+async def eval_history(request: Request, limit: int = Query(10, ge=1, le=100)):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_EVAL:
         return {"available": False}
     return {"available": True, "reports": get_report_history(limit)}
@@ -3262,7 +3352,9 @@ async def eval_history(limit: int = Query(10, ge=1, le=100)):
 # ── Self optimizer ──
 
 @app.get("/system/optimizer", tags=["Level6"])
-async def optimizer_report():
+async def optimizer_report(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_OPTIMIZER:
         return {"available": False}
     return {"available": True, **get_optimization_report()}
@@ -3271,13 +3363,17 @@ async def optimizer_report():
 # ── Semantic cache ──
 
 @app.get("/system/semantic-cache", tags=["Level6"])
-async def semantic_cache_status():
+async def semantic_cache_status(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_SEMANTIC_CACHE:
         return {"available": False}
     return {"available": True, **semantic_cache_stats()}
 
 @app.post("/system/semantic-cache/invalidate", tags=["Level6"])
-async def semantic_cache_invalidate(req: SemanticCacheInvalidateRequest):
+async def semantic_cache_invalidate(req: SemanticCacheInvalidateRequest, request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_SEMANTIC_CACHE:
         raise HTTPException(503, detail="Semantic cache not available")
     if req.entity_id:
@@ -3296,13 +3392,17 @@ async def semantic_cache_invalidate(req: SemanticCacheInvalidateRequest):
 # ── LLM Judge ──
 
 @app.get("/system/judge", tags=["Level7"])
-async def judge_report():
+async def judge_report(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_LLM_JUDGE:
         return {"available": False}
     return {"available": True, **get_judge_report()}
 
 @app.post("/system/judge/evaluate", tags=["Level7"])
-async def judge_evaluate(req: JudgeEvaluateRequest):
+async def judge_evaluate(req: JudgeEvaluateRequest, request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_LLM_JUDGE:
         raise HTTPException(503, detail="LLM Judge not available")
     result = judge(req.query, req.reply)
@@ -3312,7 +3412,9 @@ async def judge_evaluate(req: JudgeEvaluateRequest):
 # ── Dynamic agents ──
 
 @app.get("/system/dynamic-agents", tags=["Level7"])
-async def dynamic_agents_report():
+async def dynamic_agents_report(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_DYNAMIC_AGENTS:
         return {"available": False}
     return {"available": True, **get_agent_report()}
@@ -3448,9 +3550,8 @@ hr { border: none; border-top: 1px solid #e6e0d4; margin: 12px 0; }
 const msgs=document.getElementById('messages'),input=document.getElementById('input'),sendBtn=document.getElementById('sendBtn');
 let history=[];
 fetch('/health').then(r=>r.json()).then(d=>{
-  const c=d.cache||{};
   document.getElementById('statsBar').innerHTML=
-    '<span>'+d.entities+' thực thể</span><span>Cache: '+c.hit_rate+'</span><span>'+d.model+'</span>';
+    '<span>'+d.entities+' thực thể</span><span>'+d.status+'</span>';
 }).catch(()=>{});
 input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!sendBtn.disabled)send()});
 function ask(t){input.value=t;send()}

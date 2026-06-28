@@ -1073,13 +1073,13 @@ class TestSecurityPosture:
         assert "_otp_verify_phone_rate" in block, "verify_otp must check per-phone rate limit"
 
     def test_health_check_includes_llm_status(self):
-        """Health check must include LLM status in overall assessment."""
+        """Health core must include LLM status in overall assessment."""
         src = (Path(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
-        idx = src.find("async def health(")
-        assert idx > 0
-        block = src[idx:idx+2000]
-        assert "llm_ok" in block or "llm_status" in block.split("overall")[1][:200] if "overall" in block else False, \
-            "Health check must factor LLM status into overall assessment"
+        idx = src.find("def _health_core(")
+        assert idx > 0, "_health_core function must exist"
+        block = src[idx:idx+500]
+        assert "llm_ok" in block or "llm_status" in block, \
+            "Health core must factor LLM status into overall assessment"
 
     def test_streaming_uses_list_join(self):
         """Chat streaming must use list+join, not string concatenation."""
@@ -1533,3 +1533,101 @@ class TestDeepScanBatch5:
         src = (Path(__file__).resolve().parent.parent / "database.py").read_text(encoding="utf-8")
         assert "idx_notifications_user" in src, \
             "Must have index on notifications(user_id, created_at) for notification queries"
+
+
+class TestEndpointAuthGuards:
+    """Verify all internal endpoints have admin auth guards."""
+
+    def _server_src(self):
+        return (Path(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
+
+    def test_health_public_is_minimal(self):
+        """Public /health must NOT expose model, cache stats, or DB backend."""
+        src = self._server_src()
+        idx = src.find("async def health(")
+        assert idx > 0
+        block = src[idx:idx+300]
+        for field in ["model", "cache", "rate_limits", "errors", "backend"]:
+            assert field not in block, f"Public /health must not expose '{field}'"
+
+    def test_health_detail_behind_admin(self):
+        """/health/details must call require_admin."""
+        src = self._server_src()
+        idx = src.find("async def health_details(")
+        assert idx > 0
+        block = src[idx:idx+200]
+        assert "require_admin" in block
+
+    def test_health_deep_behind_admin(self):
+        """/health/deep must call require_admin."""
+        src = self._server_src()
+        idx = src.find("async def deep_health(")
+        assert idx > 0
+        block = src[idx:idx+200]
+        assert "require_admin" in block
+
+    def test_health_slo_behind_admin(self):
+        """/health/slo must call require_admin."""
+        src = self._server_src()
+        idx = src.find("async def slo_metrics(")
+        assert idx > 0
+        block = src[idx:idx+200]
+        assert "require_admin" in block
+
+    def test_metrics_behind_admin(self):
+        """/metrics must call require_admin."""
+        src = self._server_src()
+        idx = src.find("async def metrics_endpoint(")
+        assert idx > 0
+        block = src[idx:idx+200]
+        assert "require_admin" in block
+
+    def test_system_endpoints_behind_admin(self):
+        """All /system/* endpoints must call require_admin or verify_admin_key."""
+        src = self._server_src()
+        system_fns = [
+            "system_logs", "system_errors", "system_response_times",
+            "system_scheduler", "system_learning", "system_self_evolution",
+            "system_memory", "system_traces", "system_handoffs",
+            "system_memory_graph", "system_quality",
+            "circuit_breaker_stats", "guardrails_status",
+            "cost_tracker_report", "cost_budget_status",
+            "eval_latest", "optimizer_report",
+            "semantic_cache_status", "judge_report",
+            "dynamic_agents_report",
+        ]
+        for fn in system_fns:
+            idx = src.find(f"async def {fn}(")
+            assert idx > 0, f"Function {fn} must exist"
+            block = src[idx:idx+300]
+            assert "require_admin" in block or "verify_admin_key" in block, \
+                f"{fn} must have admin auth guard"
+
+    def test_analytics_behind_admin(self):
+        """All /analytics/* endpoints must call require_admin."""
+        src = self._server_src()
+        for fn in ["analytics_summary", "analytics_popular", "analytics_gaps",
+                    "analytics_daily", "analytics_top_entities"]:
+            idx = src.find(f"async def {fn}(")
+            assert idx > 0, f"Function {fn} must exist"
+            block = src[idx:idx+200]
+            assert "require_admin" in block, f"{fn} must have admin auth guard"
+
+    def test_checkpoint_endpoints_behind_admin(self):
+        """Checkpoint/confirmation endpoints must call require_admin."""
+        src = self._server_src()
+        for fn in ["list_checkpoints", "save_checkpoint", "resume_checkpoint",
+                    "pending_confirmations", "confirm_action", "reject_action"]:
+            idx = src.find(f"async def {fn}(")
+            assert idx > 0, f"Function {fn} must exist"
+            block = src[idx:idx+300]
+            assert "require_admin" in block, f"{fn} must have admin auth guard"
+
+    def test_middleware_gates_internal_paths(self):
+        """Middleware must gate /system, /analytics, /checkpoints, /confirm, /reject in prod."""
+        src = self._server_src()
+        idx = src.find("gate_internal_endpoints")
+        assert idx > 0
+        block = src[idx:idx+800]
+        for path in ["/system", "/analytics", "/checkpoints", "/confirm/", "/reject/"]:
+            assert path in block, f"Middleware must gate {path} in production"
