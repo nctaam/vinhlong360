@@ -1,5 +1,5 @@
 <template>
-  <aside v-if="fact" class="interstitial" :class="variant" role="complementary" :aria-label="ariaLabel">
+  <aside v-if="fact" class="interstitial reveal" :class="variant" role="complementary" :aria-label="ariaLabel">
     <span class="interstitial-icon" aria-hidden="true">{{ icon }}</span>
     <div class="interstitial-body">
       <p class="interstitial-text">{{ fact }}</p>

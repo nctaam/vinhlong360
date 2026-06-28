@@ -215,7 +215,7 @@ function goToSlide(idx: number) {
   cursor: pointer;
   transition: background 200ms, transform 200ms;
 }
-.pg-show-all:hover { background: #fff; transform: scale(1.03); }
+.pg-show-all:hover { background: var(--card, #fff); transform: scale(1.03); }
 .pg-show-all:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .pg-show-icon { font-size: 1em; }
 

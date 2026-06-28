@@ -393,7 +393,7 @@ onMounted(() => fetchReviews())
   width: 20px; height: 20px; line-height: 1;
   display: inline-flex; align-items: center; justify-content: center;
   border: none; border-radius: var(--radius-full);
-  background: rgba(0, 0, 0, .6); color: #fff; font-size: 14px;
+  background: rgba(0, 0, 0, .6); color: var(--text-on-dark, #fff); font-size: 14px;
   cursor: pointer; padding: 0;
   transition: background .15s cubic-bezier(.2, 1, .4, 1);
 }

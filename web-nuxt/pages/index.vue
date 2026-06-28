@@ -1002,8 +1002,8 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dish-arrow { color: var(--muted); font-size: var(--text-sm); flex-shrink: 0; transition: color .2s; }
 .dish-item:hover .dish-arrow { color: var(--primary-fg); }
 .dark .dish-rating-badge { background: linear-gradient(135deg, rgba(217,119,6,.2) 0%, rgba(217,119,6,.1) 100%); }
-.dark .dish-star { color: #fbbf24; }
-.dark .dish-score { color: #fcd34d; }
+.dark .dish-star { color: var(--accent, #fbbf24); }
+.dark .dish-score { color: var(--accent-text, #fcd34d); }
 .dark .dish-item { background: var(--card); border-color: var(--line); }
 .dark .dish-item:hover { border-color: rgba(255,255,255,.1); }
 
@@ -1130,8 +1130,8 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dark .home .section-head h2::before { background: linear-gradient(180deg, var(--accent) 0%, var(--primary-fg) 100%); }
 .dark .home .block + .block::before { background: linear-gradient(90deg, transparent, var(--line) 22%, var(--line) 78%, transparent); opacity: .6; }
 .dark .event-card { background: var(--card); border-color: var(--line); }
-.dark .ec-countdown { color: #e0b366; }
-.dark .ec-today { color: #f0846f; }
+.dark .ec-countdown { color: var(--accent-text, #e0b366); }
+.dark .ec-today { color: var(--secondary-fg, #f0846f); }
 .dark .event-card:hover { border-color: rgba(255,255,255,.1); }
 .dark .chatbot-cta { background: linear-gradient(135deg, var(--card) 0%, rgba(255,255,255,.03) 100%); border-color: var(--line); }
 .dark .chatbot-cta:hover { border-color: rgba(255,255,255,.1); }

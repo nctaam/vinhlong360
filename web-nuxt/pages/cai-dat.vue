@@ -758,7 +758,7 @@ onUnmounted(() => {
 .sf-avatar-preview:hover .sf-avatar-overlay { opacity: 1; }
 .sf-avatar-img { width: 100%; height: 100%; object-fit: cover; }
 .sf-avatar-overlay {
-  position: absolute; inset: 0; background: rgba(0,0,0,.45); color: #fff;
+  position: absolute; inset: 0; background: rgba(0,0,0,.45); color: var(--text-on-dark, #fff);
   display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
   opacity: 0; transition: opacity .2s;
 }

@@ -198,7 +198,7 @@ const ratingDisplay = computed(() => {
   transition: background 200ms, transform 200ms;
 }
 .card-dot.active {
-  background: #fff;
+  background: var(--text-on-dark, #fff);
   transform: scale(1.3);
 }
 .card-amenities { display: flex; align-items: center; gap: 2px; margin-top: .25rem; }
@@ -221,13 +221,13 @@ const ratingDisplay = computed(() => {
 .dark .badge.ocop-5 { box-shadow: 0 0 0 2px rgba(var(--secondary-rgb), .35); }
 .dark .badge.ocop-4 { color: var(--secondary-fg); }
 .badge.new-badge {
-  background: rgba(52, 199, 89, .14);
-  color: #157a33;
+  background: var(--success-bg, rgba(52, 199, 89, .14));
+  color: var(--success, #157a33);
   font-weight: 600;
 }
 .dark .badge.new-badge {
-  background: rgba(52, 199, 89, .22);
-  color: #4ade80;
+  background: rgba(var(--success-rgb, 102, 187, 106), .22);
+  color: var(--success);
 }
 .peak-dot {
   display: inline-block;
