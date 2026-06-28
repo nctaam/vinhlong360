@@ -1254,8 +1254,8 @@ async def edit_comment(comment_id: str, body: EditComment, user=Depends(require_
         with db._conn() as conn:
             db._execute(conn, f"""
                 UPDATE comments SET content = {ph}, moderation_status = {ph}, updated_at = NOW()
-                WHERE id::text = {ph}
-            """, (body.content, mod_result["status"], comment_id))
+                WHERE id::text = {ph} AND user_id = {ph}::uuid
+            """, (body.content, mod_result["status"], comment_id, uid))
             return db._fetchone(conn, f"""
                 SELECT {_COMMENT_COLS}, u.display_name, u.avatar_url
                 FROM comments c JOIN users u ON u.id = c.user_id

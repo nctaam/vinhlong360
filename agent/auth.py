@@ -421,7 +421,7 @@ async def verify_otp(body: OTPVerify, request: Request):
 
     if body.consent:
         await asyncio.to_thread(_log_consent, str(user["id"]), CONSENT_VERSION, ip)
-    ua = request.headers.get("user-agent", "")
+    ua = request.headers.get("user-agent", "")[:500]
 
     await asyncio.to_thread(
         _create_session_atomic, str(user["id"]), _hash_token(token), ua, ip, expires.isoformat()
@@ -505,7 +505,7 @@ async def login_password(body: PasswordLogin, request: Request):
 
     token = _generate_token()
     expires = datetime.now(timezone.utc) + timedelta(days=SESSION_EXPIRE_DAYS)
-    ua = request.headers.get("user-agent", "")
+    ua = request.headers.get("user-agent", "")[:500]
 
     await asyncio.to_thread(
         _create_session_atomic, str(user["id"]), _hash_token(token), ua, ip, expires.isoformat()
