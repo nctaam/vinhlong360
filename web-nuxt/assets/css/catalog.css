@@ -1,5 +1,4 @@
 /* ── Controls (Apple HIG) ── */
-.controls { margin: var(--space-5) 0 var(--space-3); }
 .control-label { font-size: .75rem; font-weight: var(--weight-semibold); color: var(--ink-700); text-transform: uppercase; letter-spacing: var(--tracking-caps); margin: var(--space-4) 0 var(--space-2); }
 .dark .control-label { color: rgba(255,255,255,.55); }
 .search-row { display: flex; gap: var(--space-3); flex-wrap: wrap; padding: var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-lg); background: var(--bg-alt); transition: border-color .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), background .35s var(--ease-out-expo); }
@@ -21,8 +20,7 @@
    ring to accent so it stays visible against the primary-coloured fill */
 .chip.active:focus-visible { outline-color: var(--accent); outline-offset: 4px; }
 .chip.active { background: var(--primary); color: var(--text-on-dark, #fff); border-color: var(--primary); }
-.chip.season.active { background: var(--primary); color: var(--text-on-dark, #fff); border-color: var(--primary); }
-.chip.season.active { background: rgba(var(--primary-rgb), .88); }
+.chip.season.active { background: rgba(var(--primary-rgb), .88); color: var(--text-on-dark, #fff); border-color: var(--primary); }
 .dark .chip.season.active { background: rgba(var(--primary-rgb), .75); }
 @media (max-width: 840px) {
   .chip-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 4px; scroll-snap-type: x proximity; overscroll-behavior-x: contain; mask-image: linear-gradient(to right, #000 85%, transparent); -webkit-mask-image: linear-gradient(to right, #000 85%, transparent); }
@@ -220,19 +218,6 @@
 /* dark mode: the cross-icon picks up a soft glow on hover */
 .dark .cross-card:hover .cross-icon { text-shadow: 0 0 12px rgba(var(--primary-rgb), .15); }
 
-/* ── Highlight card (larger featured card) ── */
-.highlight-scroll { display: flex; gap: var(--space-4); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: var(--space-2); scroll-snap-type: x proximity; overscroll-behavior-x: contain; mask-image: linear-gradient(to right, #000 90%, transparent); -webkit-mask-image: linear-gradient(to right, #000 90%, transparent); }
-.highlight-scroll::-webkit-scrollbar { display: none; }
-.highlight-scroll:hover, .highlight-scroll:focus-within { mask-image: none; -webkit-mask-image: none; }
-.highlight-card {
-  flex: 0 0 280px; background: var(--card); border: .5px solid var(--line);
-  border-radius: var(--radius-lg); overflow: hidden; scroll-snap-align: start;
-  box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .2s var(--ease-out);
-}
-.highlight-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--border); }
-.highlight-card:active { transform: scale(.98); transition-duration: .1s; }
-.highlight-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-
 /* ── Seasonal highlight (banner) ── */
 .seasonal-banner {
   display: flex; align-items: center; gap: var(--space-4);
@@ -357,8 +342,6 @@
 .dark .search-row:focus-within { box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .18); }
 .dark .chip { background: var(--bg-alt); border-color: var(--line); }
 .dark .chip:hover { background: rgba(255,255,255,.06); }
-.dark .highlight-card { border-color: var(--line); }
-.dark .highlight-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,.35); border-color: rgba(255,255,255,.1); }
 .dark .step-card { border-color: var(--line); }
 .dark .step-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.25); }
 .dark .step-note { color: var(--accent); }
@@ -423,6 +406,7 @@
 /* 1 ── Controls become one cohesive "panel" instead of loose rows.
    A soft surface card groups search + filters with calm rhythm. */
 .controls {
+  margin: var(--space-5) 0 var(--space-3);
   background: var(--card);
   border: .5px solid var(--line);
   border-radius: var(--radius-lg);
@@ -621,8 +605,6 @@
   .cross-card:active { transform: none; }
   .quick-pick:hover { transform: none; }
   .quick-pick:active { transform: none; }
-  .highlight-card:hover { transform: none; }
-  .highlight-card:active { transform: none; }
   .step-card:hover { transform: none; }
   .step-card:active { transform: none; }
   .chip:active { transform: none; }
