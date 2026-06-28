@@ -628,6 +628,7 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
   .notif-badge { animation: none; }
   .notif-item:active { transform: none; }
   .empty-illust { animation: none; }
+  .journey-bar { animation: none; }
   .form-error { animation: none; }
   .sheet-enter-active, .sheet-leave-active { transition: opacity .15s; }
   .sheet-enter-active .onboarding-sheet, .sheet-leave-active .onboarding-sheet { transition: none; }

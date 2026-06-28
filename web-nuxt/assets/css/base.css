@@ -632,6 +632,7 @@ a.thread-author:hover { color: var(--primary-fg); }
 .act-count { font-size: var(--text-xs); font-weight: var(--weight-medium); font-variant-numeric: tabular-nums; }
 .thread-act.like-pop svg { animation: likePopAnim .4s var(--ease-spring-gentle); }
 @keyframes likePopAnim { 0% { transform: scale(1); } 30% { transform: scale(1.35); } 60% { transform: scale(.9); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .thread-act.like-pop svg { animation: none; } }
 .thread-meta-row { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
 .thread-type-badge { font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: 1px var(--space-2); border-radius: var(--radius-full); }
 .thread-type-badge.type-review { background: rgba(var(--accent-rgb), .12); color: var(--accent-text); }

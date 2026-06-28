@@ -1369,6 +1369,7 @@ useHead({
   .momentum-fade-enter-active,
   .momentum-fade-leave-active { transition: none; }
   .bm-dismiss:active { transform: none; }
+  .threads-refresh .spinning { animation: none; }
 }
 .onboard-follows { width: 100%; margin-bottom: var(--space-3); text-align: left; }
 .onboard-title { font-size: var(--text-sm); font-weight: 600; margin-bottom: var(--space-2); color: var(--muted); }

@@ -97,4 +97,5 @@ function firstImage(p: any): string | null {
 .ef-sk-line.w90 { width: 90%; }
 .ef-sk-line.w40 { width: 40%; }
 @keyframes skPulse { 0%, 100% { opacity: .4; } 50% { opacity: .8; } }
+@media (prefers-reduced-motion: reduce) { .ef-sk-avatar, .ef-sk-line { animation: none; } }
 </style>

@@ -533,6 +533,8 @@ onUnmounted(() => {
   .admin-nav a:hover .nav-icon { transform: none; }
   .toggle-icon { transition: none; }
   .admin-user-info:hover .admin-user-avatar { transform: none; }
+  .admin-loading .spinner, .refresh-spin { animation: none; }
+  .collapsed .admin-nav a[title]:is(:hover, :focus-visible)::after { animation: none; }
 }
 
 /* ── Mobile ── */

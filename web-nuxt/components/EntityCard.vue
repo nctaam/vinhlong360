@@ -153,6 +153,7 @@ const ratingDisplay = computed(() => {
   100% { transform: scale(1); }
 }
 .card-save :deep(.save-active) { animation: heart-pop .3s; }
+@media (prefers-reduced-motion: reduce) { .card-save :deep(.save-active) { animation: none; } }
 /* Carousel arrows */
 .card-arrow {
   position: absolute;
