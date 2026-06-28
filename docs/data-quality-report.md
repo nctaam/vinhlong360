@@ -11,8 +11,8 @@ Tool: `python scripts/validate_data.py`
 | Entity quality score (avg) | **89.6/100** | 81.7 | +7.9 |
 | Critical entities (0-29) | 0 | 0 | — |
 | Needs work (30-59) | 0 | 5 | -5 |
-| OK (60-79) | 3 | 955 | -952 |
-| Good (80-100) | **1618** | 668 | +950 |
+| OK (60-79) | 2 | 955 | -953 |
+| Good (80-100) | **1619** | 668 | +951 |
 | Errors | 0 | 1 | -1 |
 | Warnings | 8 | 13 | -5 |
 | Graph components | 1 (fully connected) | 1 | — |
@@ -25,22 +25,26 @@ Tool: `python scripts/validate_data.py`
 |------|--------|-------|
 | Descriptions | 408 missing (23%) | **0 missing (100%)** |
 | Schema.org types | 0% coverage | **100% coverage** |
-| Confidence min | 0.5 | **0.78** |
+| Confidence min | 0.5 | **0.80** |
 | Confidence median | 0.7 | **0.95** |
-| Confidence 0.9+ | 74 | **1559** |
+| Confidence 0.9+ | 74 | **1575** |
 | Confidence <0.7 | 411 | **0** |
 | Itinerary stops | 16/16 empty | **0 empty** |
 | Itinerary duration | 10/16 missing | **0 missing** |
 | Itinerary season | 16/16 missing | **0 missing** |
 | Timestamp inversions | 1744 | **0** |
 | coords_without_address | 512 | **0** |
-| Missing coordinates | 55 | **8** |
+| Missing coordinates | 55 | **7** |
 | Unknown rel types | 3 | **0** |
 | Long names (>100ch) | 1 | **0** |
 | Address coverage (major types) | 76-100% | **100%** |
-| Geocoded from centroid | 0 | **33 entities** |
+| Geocoded from centroid | 0 | **34 entities** |
 | Relationship fanout errors | 3 | **0** |
 | SEO entities with zero attrs | 611 | **65** |
+| History architectural_style | 0 | **130 entities** |
+| Admission capitalization | inconsistent | **Normalized** |
+| Price range dash format | mixed (–/-) | **All en-dash (–)** |
+| Geocoded from centroid | 0 | **34 entities** |
 
 ## Errors
 
@@ -55,7 +59,7 @@ None.
 | `itinerary_area_mismatch` | 59 | Multi-province itineraries legitimately cross areas |
 | `rel_type_singletons` | 40 | Rare but valid relationship combos |
 | `invalid_phone_format` | 18 | 1800xxxx hotline numbers (valid, not mobile format) |
-| `missing_location` | 8 | 8 non-place entities without coordinates |
+| `missing_location` | 7 | 2 non-place + 5 itinerary entities without coordinates |
 | `missing_place_id` | 1 | ben-xe-mien-tay-hcm (HCM, outside VL+BT+TV scope) |
 | `duplicate_source_urls` | 31 | Shared sources (vinhlong360.vn, mytour.vn) — expected |
 
@@ -65,7 +69,7 @@ None.
 
 Images should be generated via `scripts/gen_image.py` using the `cx/gpt-5.5-image` API. No stock photos (Pexels/Unsplash), UGC, or Wikimedia images per project policy.
 
-**Impact on quality score:** -10 points per entity. Fixing images would raise avg score from 89.2 to ~99.
+**Impact on quality score:** -10 points per entity. Fixing images would raise avg score from 89.6 to ~99.
 
 ## Entities with Approximate Coordinates (QA-19)
 
@@ -98,10 +102,10 @@ Images should be generated via `scripts/gen_image.py` using the `cx/gpt-5.5-imag
 
 ## Confidence Distribution
 
-- Min: **0.78** (was 0.5)
+- Min: **0.80** (was 0.5)
 - Median: **0.95** (was 0.7)
 - Max: 1.0
-- Entities at 0.9+: **1559** (was 74)
+- Entities at 0.9+: **1575** (was 74)
 
 ## Relationship Summary
 
@@ -120,7 +124,7 @@ Images should be generated via `scripts/gen_image.py` using the `cx/gpt-5.5-imag
 |-----------|----------|-------------|------------|-------------|
 | No images | 1746 | -10 | -10.00 | Needs IMAGE_API_KEY |
 | No SEO attrs | 65 | -10 | -0.40 | Restaurant (39) + accommodation (26) need real data |
-| No coordinates | 3 | -15 | -0.03 | 1 HCM facility + 2 landmarks (Nominatim can't find) |
+| No coordinates | 2 | -15 | -0.02 | 1 HCM facility + 1 Khmer pagoda (Nominatim can't find) |
 | No placeId | 1 | -10 | -0.01 | HCM entity, outside scope |
 
 **Theoretical max without images: ~90.0.** Current: 89.6. Gap of 0.4 requires real business data for 65 entities (restaurant phone/hours, accommodation star/phone).
