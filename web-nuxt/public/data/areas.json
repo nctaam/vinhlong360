@@ -7,7 +7,7 @@
   {
     "id": "ben-tre",
     "name": "Bến Tre",
-    "entity_count": 503
+    "entity_count": 502
   },
   {
     "id": "tra-vinh",
@@ -17,6 +17,6 @@
   {
     "id": "unknown",
     "name": "unknown",
-    "entity_count": 5
+    "entity_count": 6
   }
 ]
