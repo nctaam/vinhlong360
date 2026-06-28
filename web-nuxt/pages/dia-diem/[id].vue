@@ -28,7 +28,7 @@
           </span>
         </span>
         <h1>{{ entity.name }}</h1>
-        <p v-if="entity.place_name" class="dc-place">📍 <NuxtLink v-if="entity.placeId" :to="`/xa-phuong/${entity.placeId}`" class="dc-place-link">{{ entity.place_name }}</NuxtLink><template v-else>{{ entity.place_name }}</template></p>
+        <p v-if="entity.place_name" class="dc-place"><NuxtLink v-if="entity.placeId" :to="`/xa-phuong/${entity.placeId}`" class="dc-place-link">{{ entity.place_name }}</NuxtLink><template v-else>{{ entity.place_name }}</template></p>
         <div class="dc-actions">
           <ClientOnly>
             <SaveButton :entity="entity" :show-label="true" />

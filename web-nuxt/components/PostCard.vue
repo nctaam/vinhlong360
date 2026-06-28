@@ -35,7 +35,7 @@
           {{ typeLabel }}
         </span>
         <NuxtLink v-if="post.entity_id" :to="`/dia-diem/${post.entity_id}`" class="thread-entity">
-          {{ post.entity_emoji || '📍' }} {{ post.entity_name || post.entity_id }}
+          {{ post.entity_name || post.entity_id }}
         </NuxtLink>
       </div>
 
@@ -176,10 +176,10 @@ const contentHtml = computed(() => {
 })
 
 const typeLabels: Record<string, string> = {
-  review: '⭐ Đánh giá',
-  question: '❓ Hỏi đáp',
-  recommend: '👍 Gợi ý',
-  share: '📸 Chia sẻ',
+  review: 'Đánh giá',
+  question: 'Hỏi đáp',
+  recommend: 'Gợi ý',
+  share: 'Chia sẻ',
 }
 const typeLabel = computed(() => typeLabels[props.post?.post_type] || '')
 

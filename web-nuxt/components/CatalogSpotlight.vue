@@ -2,7 +2,7 @@
   <section v-if="pick" class="block reveal">
     <div class="cspot">
       <NuxtLink :to="`/dia-diem/${pick.id}`" class="cspot-visual" :style="{ backgroundImage: bg }" :aria-label="pick.name">
-        <span v-if="region" class="cspot-region">📍 {{ region }}</span>
+        <span v-if="region" class="cspot-region">{{ region }}</span>
         <span class="cspot-icon" v-html="icon" aria-hidden="true" />
       </NuxtLink>
       <div class="cspot-body">
