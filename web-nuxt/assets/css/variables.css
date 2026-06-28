@@ -477,6 +477,11 @@
   --ink-rgb: 245, 245, 247;
   --danger-rgb: 255, 105, 97;
   --blue-rgb: 80, 145, 255;
+  --warning-rgb: 240, 160, 80;
+  --purple-rgb: 200, 120, 240;
+  --indigo-rgb: 120, 118, 240;
+  --teal-rgb: 50, 220, 210;
+  --red-rgb: 255, 100, 90;
   --success-rgb: 130, 225, 170;
   --focus-ring: 0 0 0 3px rgba(196, 105, 78, .25);
   --overlay-dark: rgba(0,0,0,.82);
