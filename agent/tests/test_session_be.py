@@ -273,6 +273,20 @@ def test_twitter_card_meta_entity():
     assert meta["twitter:image"] == "https://example.com/photo.jpg"
 
 
+def test_og_meta_escapes_html_in_entity_fields():
+    entity = {
+        "id": "xss-test",
+        "name": '"><script>alert(1)</script>',
+        "type": "attraction",
+        "summary": 'A "test" with <tags> & special chars',
+    }
+    meta = seo.build_og_meta(entity)
+    assert "<script>" not in meta["og:title"]
+    assert "&lt;script&gt;" in meta["og:title"]
+    assert "<tags>" not in meta["og:description"]
+    assert "&amp;" in meta["og:description"]
+
+
 def test_aggregate_rating_in_jsonld():
     entity = {
         "id": "rated-place",

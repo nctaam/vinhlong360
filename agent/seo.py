@@ -8,6 +8,7 @@ older coordinate/source shapes do not break structured data endpoints.
 
 from __future__ import annotations
 
+import html as _html
 import json
 import logging
 import re
@@ -1202,7 +1203,7 @@ def build_og_meta(entity: dict[str, Any] | None = None) -> dict[str, str]:
         return meta
 
     entity_id = str(entity.get("id", ""))
-    title = entity.get("name") or entity_id
+    title = _html.escape(entity.get("name") or entity_id)
     url = _entity_url(entity_id)
     meta["og:title"] = title
     meta["og:url"] = url
@@ -1210,7 +1211,7 @@ def build_og_meta(entity: dict[str, Any] | None = None) -> dict[str, str]:
     meta["twitter:title"] = title
 
     if entity.get("summary"):
-        desc = str(entity["summary"])[:200]
+        desc = _html.escape(str(entity["summary"])[:200])
         meta["og:description"] = desc
         meta["twitter:description"] = desc
 
