@@ -44,6 +44,15 @@
       <p>Nếu đi xe máy, ưu tiên khởi hành sáng sớm (trước 7h) để tránh nắng và tận dụng ánh sáng đẹp. Mang theo áo mưa — miền Tây hay có mưa rào chiều, đặc biệt từ tháng 6 đến tháng 11. Đường vào các làng nghề đôi khi hẹp và dốc cầu, chạy chậm khi qua khu dân cư.</p>
     </section>
 
+    <CatalogInterstitial
+      fact="Mỗi tuyến ghi rõ khoảng cách, thời gian và điểm dừng — tải về hoặc lưu vào tài khoản để xem offline khi đi."
+      icon="🛤️"
+      :links="[
+        { to: '/lich-trinh', label: 'Lịch trình gợi ý' },
+        { to: '/ban-do', label: 'Xem bản đồ' },
+      ]"
+    />
+
     <p class="result-meta" aria-live="polite">{{ filtered.length }} tuyến đường</p>
 
     <section class="reveal">
@@ -91,7 +100,7 @@
     </section>
 
     <!-- Cross-links -->
-    <section class="block catalog-cross reveal">
+    <section class="block band catalog-cross reveal">
       <h2>Khám phá thêm</h2>
       <p class="cross-sub">Tiếp tục hành trình miền Tây của bạn</p>
       <div class="cross-links">

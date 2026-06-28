@@ -23,6 +23,9 @@
       </div>
     </section>
 
+    <!-- Spotlight -->
+    <CatalogSpotlight :items="allEvents" />
+
     <p class="result-link">Tìm lễ hội truyền thống? <NuxtLink to="/le-hoi">Xem trang Lễ hội →</NuxtLink></p>
 
     <!-- Upcoming -->
