@@ -733,8 +733,9 @@ onUnmounted(() => {
 }
 .settings-tab:hover { color: var(--ink); }
 .settings-tab.active { color: var(--accent, var(--primary, #219653)); border-bottom-color: var(--accent, var(--primary, #219653)); font-weight: 600; }
+.settings-tab.active .settings-tab-icon { transform: scale(1.15); }
 .settings-tab:focus-visible { outline: 2px solid var(--accent, var(--primary)); outline-offset: -2px; border-radius: 4px; }
-.settings-tab-icon { font-size: 1rem; }
+.settings-tab-icon { font-size: 1rem; transition: transform .25s var(--ease-spring-gentle, cubic-bezier(.2,1,.4,1)); }
 .settings-form { display: flex; flex-direction: column; gap: 1.25rem; }
 .sf-field { display: flex; flex-direction: column; gap: .4rem; }
 .sf-label { font-weight: 600; font-size: .95rem; }
@@ -779,7 +780,7 @@ onUnmounted(() => {
 .session-info { flex: 1; display: flex; flex-direction: column; gap: .15rem; }
 .session-ua { font-weight: 600; font-size: .9rem; }
 .session-badge { font-size: .75rem; font-weight: 600; color: var(--accent); background: color-mix(in oklab, var(--accent) 12%, transparent); padding: .15rem .5rem; border-radius: var(--radius-full); }
-.settings-danger { border-color: rgba(192,57,43,.2); }
+.settings-danger { border-color: rgba(192,57,43,.2); border-left: 3px solid var(--error, #c0392b); }
 .danger-actions { display: flex; flex-direction: column; gap: .75rem; }
 .danger-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .danger-item p { margin: 0; }

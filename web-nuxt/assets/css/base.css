@@ -622,8 +622,10 @@ a.thread-author:hover { color: var(--primary-fg); }
 .thread-act:hover { background: var(--bg-alt); color: var(--ink); }
 .thread-act:active { transform: scale(.88); transition-duration: .08s; }
 .thread-act.active { color: var(--save-red, #dc2626); }
+.thread-act.active:hover { background: rgba(220,38,38,.08); }
 .thread-act.active svg { color: var(--save-red, #dc2626); }
 .thread-act-end.active { color: var(--primary-fg); }
+.thread-act-end.active:hover { background: rgba(var(--primary-rgb), .08); }
 .thread-act-end.active svg { color: var(--primary-fg); }
 .thread-act:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .thread-act-end { margin-inline-start: auto; }

@@ -101,7 +101,8 @@ useHead({
 .bxh-name { font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bxh-meta { display: flex; flex-wrap: wrap; gap: var(--space-2); font-size: var(--text-xs); color: var(--muted); }
 .bxh-level { color: var(--ink-700); }
-.bxh-points { flex-shrink: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--primary-fg); display: flex; flex-direction: column; align-items: center; line-height: 1; }
+.bxh-points { flex-shrink: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--primary-fg); display: flex; flex-direction: column; align-items: center; line-height: 1; font-variant-numeric: tabular-nums; }
+.bxh-item:nth-child(-n+3) .bxh-row { background: linear-gradient(135deg, rgba(var(--primary-rgb), .03) 0%, var(--card) 100%); }
 .bxh-points small { font-size: var(--text-xs); font-weight: var(--weight-normal); color: var(--muted); }
 @media (max-width: 480px) {
   .bxh-row { padding: var(--space-3) var(--space-2); gap: var(--space-2); }

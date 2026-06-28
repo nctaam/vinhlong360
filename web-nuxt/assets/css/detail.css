@@ -111,8 +111,8 @@
 .rel-more:disabled { opacity: .6; cursor: wait; }
 .rel-more:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
-.detail-aside { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); padding: var(--space-5) var(--space-5) var(--space-4); box-shadow: var(--shadow-sm); position: sticky; top: 78px; max-height: calc(100vh - 78px); max-height: calc(100dvh - 78px); overflow-y: auto; overscroll-behavior: contain; transition: box-shadow .35s var(--ease-out-expo); }
-.detail-aside:hover { box-shadow: var(--shadow-md); }
+.detail-aside { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); padding: var(--space-5) var(--space-5) var(--space-4); box-shadow: var(--shadow-sm); position: sticky; top: 78px; max-height: calc(100vh - 78px); max-height: calc(100dvh - 78px); overflow-y: auto; overscroll-behavior: contain; transition: box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
+.detail-aside:hover { box-shadow: var(--shadow-md); border-color: rgba(var(--primary-rgb), .2); }
 .detail-aside h2 { font-size: var(--text-base); font-weight: var(--weight-semibold); margin: 0 0 var(--space-2); }
 
 /* OCOP highlight badge */
