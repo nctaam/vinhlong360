@@ -1723,3 +1723,42 @@ class TestLLMConfig:
         """scheduler.py must not import client from server (should use llm_config)."""
         src = (Path(__file__).resolve().parent.parent / "scheduler.py").read_text(encoding="utf-8")
         assert "from server import client" not in src
+
+
+class TestCacheInvalidationOnEntityCRUD:
+    """B2: LLM cache must be invalidated when entities are modified."""
+
+    def test_update_entity_invalidates_cache(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        # update_entity handler must call cache.invalidate_all()
+        update_fn = src[src.index("async def update_entity("):]
+        update_fn = update_fn[:update_fn.index("\n@router.")]
+        assert "cache.invalidate_all()" in update_fn
+
+    def test_delete_entity_invalidates_cache(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        delete_fn = src[src.index("async def delete_entity("):]
+        delete_fn = delete_fn[:delete_fn.index("\n\n\nclass")]
+        assert "cache.invalidate_all()" in delete_fn
+
+    def test_bulk_delete_invalidates_cache(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        bulk_fn = src[src.index("async def bulk_delete("):]
+        bulk_fn = bulk_fn[:bulk_fn.index("\n@router.")]
+        assert "cache.invalidate_all()" in bulk_fn
+
+
+class TestImageURLLengthValidation:
+    """A3: Image URLs in CreatePost must have per-URL length limit."""
+
+    def test_image_url_length_validated(self):
+        from social import CreatePost
+        # Valid short URLs should pass
+        post = CreatePost(content="Test content for post", images=["https://example.com/img.jpg"])
+        assert len(post.images) == 1
+
+    def test_image_url_too_long_rejected(self):
+        from social import CreatePost
+        long_url = "https://example.com/" + "a" * 2100
+        with pytest.raises(Exception):
+            CreatePost(content="Test content for post", images=[long_url])

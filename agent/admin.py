@@ -365,6 +365,8 @@ async def update_entity(entity_id: str, update: EntityUpdate):
         invalidate_entity_cache(entity_id)
         if existing.get("type") == "place":
             invalidate_place_cache()
+        import cache
+        cache.invalidate_all()
         return {"status": "updated", "entity": existing}
     return await asyncio.to_thread(_query)
 
@@ -411,6 +413,8 @@ async def delete_entity(entity_id: str):
         invalidate_entity_cache(entity_id)
         if entity.get("type") == "place":
             invalidate_place_cache()
+        import cache
+        cache.invalidate_all()
     await asyncio.to_thread(_query)
     return {"success": True, "entity_id": entity_id}
 
@@ -750,6 +754,8 @@ async def bulk_delete(body: BulkDeleteRequest):
                 deleted += 1
         if deleted:
             _sync_kb()
+            import cache
+            cache.invalidate_all()
         return deleted
     deleted = await asyncio.to_thread(_query)
     return {"success": True, "count": deleted}

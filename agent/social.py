@@ -205,6 +205,9 @@ class CreatePost(BaseModel):
     def validate_images(cls, v):
         if len(v) > 20:
             raise ValueError("Tối đa 20 ảnh")
+        for url in v:
+            if len(url) > 2048:
+                raise ValueError("URL ảnh tối đa 2048 ký tự")
         return v
 
 
