@@ -542,7 +542,9 @@ useSeoMeta({
 .profile-loading .spinner { margin: 0 auto; }
 
 .profile-cover { position: relative; border-radius: var(--radius-xl, 20px); overflow: hidden; margin-bottom: calc(-1 * var(--space-8)); box-shadow: var(--shadow-lg, var(--shadow-md)); }
-.cover-img { width: 100%; height: 200px; object-fit: cover; display: block; }
+.cover-img { width: 100%; height: 200px; object-fit: cover; display: block; background: linear-gradient(90deg, var(--bg-alt) 25%, var(--line) 37%, var(--bg-alt) 63%); background-size: 400% 100%; animation: coverShimmer 1.4s ease infinite; }
+.cover-img[src] { animation: none; }
+@keyframes coverShimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
 .profile-private-notice { text-align: center; padding: var(--space-8) var(--space-4); color: var(--ink-700); font-size: .95rem; }
 .cover-scrim { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.18)); }
 .dark .cover-scrim { background: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,.45)); }
@@ -625,6 +627,14 @@ useSeoMeta({
   font-variant-numeric: tabular-nums; line-height: 1.6;
 }
 .saved-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-4); margin-top: var(--space-2); }
+.saved-grid > * { animation: savedEnter .4s var(--ease-out) backwards; }
+.saved-grid > *:nth-child(1) { animation-delay: 0s; }
+.saved-grid > *:nth-child(2) { animation-delay: .06s; }
+.saved-grid > *:nth-child(3) { animation-delay: .12s; }
+.saved-grid > *:nth-child(4) { animation-delay: .18s; }
+.saved-grid > *:nth-child(5) { animation-delay: .24s; }
+.saved-grid > *:nth-child(6) { animation-delay: .3s; }
+@keyframes savedEnter { from { opacity: 0; transform: translateY(8px); } }
 .saved-cta { text-align: center; margin-top: var(--space-5); }
 .saved-cta .btn:active { transform: scale(.97); transition-duration: .08s; }
 .dark .tab-count { background: rgba(232,163,61,.2); color: var(--accent); }
@@ -649,6 +659,8 @@ useSeoMeta({
   .profile-tabs .chip:active { transform: none; }
   .saved-cta .btn:active { transform: none; }
   .pc-fill { animation: none; }
+  .saved-grid > * { animation: none; }
+  .cover-img { animation: none; }
 }
 .profile-completion { padding: 0 var(--space-4); margin-bottom: var(--space-3); }
 .pc-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-1); }
