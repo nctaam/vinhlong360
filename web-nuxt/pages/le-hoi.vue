@@ -27,7 +27,7 @@
     <CatalogSpotlight :items="allEvents" />
 
     <!-- Upcoming / Featured -->
-    <section v-if="upcoming.length" class="block">
+    <section v-if="upcoming.length" class="block reveal">
       <div class="section-head">
         <h2>Sắp diễn ra</h2>
       </div>

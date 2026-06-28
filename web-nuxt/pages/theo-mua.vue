@@ -47,7 +47,7 @@
     <CatalogSpotlight :items="inSeasonItems" />
 
     <!-- Month selector -->
-    <section class="block">
+    <section class="block reveal">
       <div class="section-head">
         <h2>Chọn tháng</h2>
       </div>

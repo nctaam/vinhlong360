@@ -252,7 +252,7 @@
 
     <!-- 6. Cá nhân hóa — client-only (recently viewed + saved + AI recommendations) -->
     <ClientOnly>
-      <section v-if="recentlyViewed.length" class="block">
+      <section v-if="recentlyViewed.length" class="block reveal">
         <div class="section-head">
           <h2>Xem gần đây</h2>
         </div>
@@ -272,7 +272,7 @@
           </NuxtLink>
         </div>
       </section>
-      <section v-if="recentSaved.length" class="block">
+      <section v-if="recentSaved.length" class="block reveal">
         <div class="section-head">
           <h2>Đã lưu gần đây</h2>
           <NuxtLink class="see-all" to="/lich-trinh">Xem tất cả →</NuxtLink>

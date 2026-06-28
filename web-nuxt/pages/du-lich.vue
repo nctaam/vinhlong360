@@ -74,7 +74,7 @@
     </div>
 
     <!-- Full filterable grid -->
-    <section ref="gridSection" class="block" aria-label="Duyệt tất cả du lịch">
+    <section ref="gridSection" class="block reveal" aria-label="Duyệt tất cả du lịch">
       <div class="controls">
         <div class="search-row">
           <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm trong du lịch…" aria-label="Tìm kiếm" />

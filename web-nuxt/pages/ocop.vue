@@ -32,7 +32,7 @@
     <CatalogSpotlight :items="allOcop" />
 
     <!-- Star breakdown quick-picks -->
-    <section v-if="starStats.length" class="block">
+    <section v-if="starStats.length" class="block reveal">
       <div class="section-head">
         <h2>Xếp hạng sao</h2>
       </div>

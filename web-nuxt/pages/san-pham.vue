@@ -84,7 +84,7 @@
     </div>
 
     <!-- Full filterable grid -->
-    <section ref="gridSection" class="block" aria-label="Duyệt tất cả sản phẩm">
+    <section ref="gridSection" class="block reveal" aria-label="Duyệt tất cả sản phẩm">
       <div class="controls">
         <div class="search-row">
           <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm trong sản phẩm…" aria-label="Tìm sản phẩm" />
