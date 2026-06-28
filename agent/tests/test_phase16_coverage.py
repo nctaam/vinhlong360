@@ -958,7 +958,7 @@ class TestSecurityPosture:
         """Production modules must use datetime.now(timezone.utc), not naive datetime.now()."""
         import re
         from pathlib import Path
-        critical_modules = ["admin", "auth", "middleware", "server", "database", "analytics", "cost_tracker"]
+        critical_modules = ["admin", "auth", "middleware", "server", "database", "analytics", "cost_tracker", "social", "public_api"]
         for mod in critical_modules:
             src = (Path(__file__).resolve().parent.parent / f"{mod}.py").read_text(encoding="utf-8")
             for line_no, line in enumerate(src.split("\n"), 1):

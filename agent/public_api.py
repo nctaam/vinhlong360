@@ -86,7 +86,7 @@ def _maybe_rotate_jsonl(filepath: Path) -> None:
         lines = filepath.read_text(encoding="utf-8").splitlines()
         if len(lines) <= _JSONL_MAX_LINES:
             return
-        archive = filepath.with_suffix(f".{datetime.now().strftime('%Y%m%d%H%M%S')}.jsonl")
+        archive = filepath.with_suffix(f".{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}.jsonl")
         archive.write_text("\n".join(lines[:-_JSONL_MAX_LINES]) + "\n", encoding="utf-8")
         tmp = filepath.with_suffix(".tmp")
         tmp.write_text("\n".join(lines[-_JSONL_MAX_LINES:]) + "\n", encoding="utf-8")
@@ -390,7 +390,7 @@ def _event_is_past(e: dict) -> bool:
     if not date_end:
         return False
     try:
-        return datetime.strptime(date_end, "%Y-%m-%d").date() < datetime.now().date()
+        return datetime.strptime(date_end, "%Y-%m-%d").date() < datetime.now(timezone.utc).date()
     except (ValueError, TypeError):
         return False
 
@@ -479,7 +479,7 @@ def _diverse_pick(entities: list[dict], max_per_type: int = 2,
 async def homepage_curated(response: Response):
     """Curated homepage: smart-scored, type/area diverse, seasonal-aware, deduped."""
     response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
-    month = datetime.now().month
+    month = datetime.now(timezone.utc).month
 
     global _homepage_rebuilding
     _now = _time.time()
@@ -524,7 +524,7 @@ async def homepage_curated(response: Response):
     # Upcoming events (next 30 days, sorted by date_start)
     # Only show events with reliable dates: must have lunar_date OR
     # consistent month field. Exclude cat=mua (seasonal, not event).
-    today = datetime.now().date()
+    today = datetime.now(timezone.utc).date()
     from datetime import timedelta
     cutoff = today + timedelta(days=30)
     upcoming_pool = []
@@ -784,7 +784,7 @@ async def list_events(
 ):
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     """Sự kiện: sắp xếp theo date_start, mặc định ẩn sự kiện đã qua."""
-    today = datetime.now().date()
+    today = datetime.now(timezone.utc).date()
     all_ents = await asyncio.to_thread(db.list_entities, entity_type="event", limit=100000, offset=0, public_only=True)
     events = list(all_ents)
     _enrich_place(events)

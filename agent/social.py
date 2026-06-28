@@ -16,7 +16,7 @@ import asyncio
 import json
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, File
@@ -550,7 +550,7 @@ async def get_feed(
     where = " AND ".join(conditions)
     where_params = list(params)
 
-    month = datetime.now().month
+    month = datetime.now(timezone.utc).month
     month_str = str(month)
 
     query_params = where_params + [month_str, month_str, limit, offset]
