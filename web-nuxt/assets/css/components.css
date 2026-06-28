@@ -257,7 +257,7 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 .mention-item.active, .mention-item:hover { background: rgba(var(--primary-rgb), .08); }
 .mention-ic { flex-shrink: 0; }
 .mention-label { font-weight: var(--weight-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mention-sub { margin-left: auto; color: var(--ink-700); font-size: .8em; flex-shrink: 0; }
+.mention-sub { margin-inline-start: auto; color: var(--ink-700); font-size: .8em; flex-shrink: 0; }
 
 .img-preview-row { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-2); }
 .img-preview-item {
@@ -372,7 +372,7 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 .notif-item-icon { flex: 0 0 auto; font-size: 1.15rem; line-height: 1.4; }
 .notif-item-content { flex: 1 1 auto; min-width: 0; }
 .notif-item-title, .notif-item-body { overflow-wrap: anywhere; }
-.notif-unread-dot { flex: 0 0 auto; align-self: center; width: 8px; height: 8px; border-radius: 50%; background: var(--primary-fg, var(--primary)); margin-left: var(--space-2); }
+.notif-unread-dot { flex: 0 0 auto; align-self: center; width: 8px; height: 8px; border-radius: 50%; background: var(--primary-fg, var(--primary)); margin-inline-start: var(--space-2); }
 .notif-empty { text-align: center; padding: var(--space-5); color: var(--muted); font-size: .88rem; }
 .notif-loading { display: flex; justify-content: center; padding: var(--space-5); }
 /* Notification dropdown enter/leave (reduced-motion handled by global * rule) */
@@ -436,7 +436,7 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 /* Clear (X) button overlaid inside the search field */
 .ac-clear { position: absolute; right: var(--space-2); top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 32px; height: 32px; border: 0; background: none; color: var(--muted); border-radius: var(--radius-full); cursor: pointer; transition: color .2s, background .2s; z-index: 1; }
 .ac-clear:hover { color: var(--ink); background: var(--bg-alt); }
-.search-ac input[type="search"] { padding-right: 36px; }
+.search-ac input[type="search"] { padding-inline-end: 36px; }
 /* Recent-searches section */
 .ac-section { padding-block: var(--space-2); }
 .ac-section-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-2) var(--space-4) var(--space-1); }

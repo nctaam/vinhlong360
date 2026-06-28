@@ -359,11 +359,11 @@
   .quick-picks { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   /* safe-area aware hero padding on notched phones */
   .catalog-hero {
-    padding-right: max(var(--space-4), env(safe-area-inset-right));
-    padding-left: max(var(--space-4), env(safe-area-inset-left));
+    padding-inline-end: max(var(--space-4), env(safe-area-inset-right));
+    padding-inline-start: max(var(--space-4), env(safe-area-inset-left));
   }
   /* keep hero icon from crowding the title once stacked */
-  .catalog-hero-icon { margin-right: var(--space-2); }
+  .catalog-hero-icon { margin-inline-end: var(--space-2); }
 }
 /* very small phones: lock quick-picks to 2 columns so cells don't wrinkle */
 @media (max-width: 480px) {
@@ -428,11 +428,11 @@
 
 /* 2 ── Leading search glyph (CSS-only) so the field reads as search
    at a glance — refined over a bare input. Pads the input to clear it. */
-.controls .search-row { padding-left: calc(var(--space-3) + 26px); }
+.controls .search-row { padding-inline-start: calc(var(--space-3) + 26px); }
 .controls .search-row::before {
   content: "";
   position: absolute;
-  left: var(--space-4);
+  inset-inline-start: var(--space-4);
   top: 50%;
   width: 18px; height: 18px;
   transform: translateY(-50%);

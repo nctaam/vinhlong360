@@ -940,7 +940,8 @@ a.thread-author:hover { color: var(--primary-fg); }
   body { background: #fff; color: #000; }
   .topbar, .site-footer, .skip-link, .scroll-top, .chat-widget, .beta-banner,
   .hero-search, .hero-pills, .auth-area, .feed-sidebar, .nav-toggle,
-  .admin-sidebar, .thread-actions, .create-post, .scroll-row { display: none !important; }
+  .admin-sidebar, .thread-actions, .create-post, .scroll-row,
+  .journey-bar, .notif-bell, .onboarding-sheet, .toast-container { display: none !important; }
   .page, .detail-cover, .card, .modal-overlay { box-shadow: none !important; border-color: #ccc !important; }
   a[href]::after { content: " (" attr(href) ")"; font-size: .8em; color: #666; }
   a[href^="/"]::after, a[href^="#"]::after { content: none; }

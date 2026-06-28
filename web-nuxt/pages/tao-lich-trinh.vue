@@ -194,6 +194,8 @@ useReveal()
 import { TYPE_META, CARD_TYPES } from '~/composables/useConstants'
 import { fetchRoute, formatDistance, formatDuration, type TransportMode, type RouteResult } from '~/composables/useRouting'
 
+const LS_PLANS = 'vl360_plans'
+
 interface PlanStop {
   id: string
   name: string
@@ -396,7 +398,7 @@ async function _doSave() {
 
 function persistLocal(plans: SavedPlan[]) {
   if (import.meta.client) {
-    try { localStorage.setItem('vl360_plans', JSON.stringify(plans.filter(p => !p.id))) } catch {}
+    try { localStorage.setItem(LS_PLANS, JSON.stringify(plans.filter(p => !p.id))) } catch {}
   }
 }
 
@@ -589,7 +591,7 @@ watch(
 onMounted(async () => {
   let local: SavedPlan[] = []
   try {
-    const raw = localStorage.getItem('vl360_plans')
+    const raw = localStorage.getItem(LS_PLANS)
     if (raw) {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed)) local = parsed
@@ -604,7 +606,7 @@ onMounted(async () => {
           method: 'POST', headers: authHeaders(), body: { plans: local },
         })
         savedPlans.value = merged.plans || []
-        localStorage.removeItem('vl360_plans')
+        localStorage.removeItem(LS_PLANS)
       } else {
         const res = await $fetch<{ plans: SavedPlan[] }>('/api/my-plans', { headers: authHeaders() })
         savedPlans.value = res.plans || []

@@ -524,4 +524,11 @@ if (itinerary.value && !itinerary.value.error) {
   .route-loading { animation: none; }
   .route-map-loading { animation: none; background: var(--bg-alt); }
 }
+@media print {
+  .itin-actions, .transport-mode-spaced, .route-map-section { display: none; }
+  .step-card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+  .step-card:hover { transform: none; }
+  .timeline { padding-left: 16px; }
+  .timeline::before { background: #999; }
+}
 </style>

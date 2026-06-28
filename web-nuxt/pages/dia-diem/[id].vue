@@ -306,12 +306,12 @@
           <div v-if="entity.attributes?.phone" class="fact">
             <span class="fact-ic" aria-hidden="true">📞</span>
             <span class="k">{{ ss('labels.detail.fact_phone', 'Liên hệ') }}</span>
-            <span class="v"><a :href="telHref(entity.attributes.phone)" class="fact-link">{{ entity.attributes.phone }}</a></span>
+            <span class="v"><a :href="telHref(entity.attributes.phone)" class="fact-link">{{ entity.attributes.phone }}</a><button type="button" class="fact-copy" @click="copyText(entity.attributes.phone!, 'số điện thoại')" aria-label="Sao chép số điện thoại" title="Sao chép"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></span>
           </div>
           <div v-if="entity.attributes?.address" class="fact">
             <span class="fact-ic" aria-hidden="true">🏠</span>
             <span class="k">{{ ss('labels.detail.fact_address', 'Địa chỉ') }}</span>
-            <span class="v">{{ entity.attributes.address }}</span>
+            <span class="v">{{ entity.attributes.address }}<button type="button" class="fact-copy" @click="copyText(entity.attributes.address!, 'địa chỉ')" aria-label="Sao chép địa chỉ" title="Sao chép"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></span>
           </div>
           <div v-if="entity.attributes?.coords_approximate && hasCoords" class="fact fact-approx">
             <span class="fact-ic" aria-hidden="true">📍</span>
@@ -447,6 +447,16 @@ const id = computed(() => String(route.params.id || ''))
 const { isLoggedIn, authHeaders } = useAuth()
 const { openAuth } = useAuthModal()
 const { show: _showToast } = useToast()
+
+async function copyText(text: string, label: string) {
+  try {
+    await navigator.clipboard.writeText(text)
+    _showToast(`Đã sao chép ${label}`, 'success')
+  } catch {
+    _showToast('Không thể sao chép', 'error')
+  }
+}
+
 const visitStatus = ref<string | null>(null)
 const isFollowingPlace = ref(false)
 const rsvpGoing = ref(false)
@@ -457,12 +467,16 @@ async function toggleRsvp() {
   if (!isLoggedIn.value) { openAuth(() => toggleRsvp()); return }
   if (actionPending.value) return
   actionPending.value = true
+  const prevGoing = rsvpGoing.value
+  const prevCount = rsvpCount.value
+  rsvpGoing.value = !prevGoing
+  rsvpCount.value += prevGoing ? -1 : 1
   try {
     const r = await $fetch<{ going: boolean; count: number }>(`/api/events/${encodeURIComponent(id.value)}/rsvp`, { method: 'POST', headers: authHeaders() })
     rsvpGoing.value = r.going
     rsvpCount.value = r.count
     if (r.going) _showToast('Đã đăng ký đi sự kiện này 🎉', 'success')
-  } catch { _showToast('Không thể đăng ký, thử lại', 'error') }
+  } catch { rsvpGoing.value = prevGoing; rsvpCount.value = prevCount; _showToast('Không thể đăng ký, thử lại', 'error') }
   finally { actionPending.value = false }
 }
 
@@ -1069,6 +1083,15 @@ useHead({
   position: static;
   margin-bottom: var(--space-5);
 }
+
+.fact-copy {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; margin-left: var(--space-1); vertical-align: middle;
+  border: none; border-radius: var(--radius-sm); background: transparent;
+  color: var(--muted); cursor: pointer; transition: color .2s, background .2s;
+}
+.fact-copy:hover { color: var(--primary-fg); background: rgba(var(--primary-rgb), .08); }
+.fact-copy:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
 
 /* Hide old contact-row on desktop when ContactWidget is present */
 @media (min-width: 768px) {

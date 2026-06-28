@@ -193,7 +193,7 @@
               <div v-if="detailPostsLoading" class="ud-loading"><div class="spinner spinner-sm"></div></div>
               <div v-else-if="!detailPosts.length" class="ud-empty">Chưa có bài viết.</div>
               <div v-else class="ud-post-list">
-                <NuxtLink v-for="p in detailPosts" :key="p.id" :to="`/bai-viet/${p.id}`" class="ud-post" target="_blank" rel="noopener">
+                <NuxtLink v-for="p in detailPosts" :key="p.id" :to="`/bai-viet/${p.id}`" class="ud-post" target="_blank" rel="noopener" title="Mở trong tab mới">
                   <span class="ud-post-type" v-if="p.post_type">{{ p.post_type }}</span>
                   <span class="ud-post-content">{{ (p.content || '').slice(0, 120) }}</span>
                   <time class="ud-post-time">{{ formatDate(p.created_at) }}</time>

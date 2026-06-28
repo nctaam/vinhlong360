@@ -1,5 +1,6 @@
 <template>
   <button
+    ref="btnRef"
     type="button"
     class="lm-btn"
     :class="{ 'lm-loading': loading }"
@@ -13,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   loading?: boolean
   label?: string
   loadingText?: string
@@ -21,6 +22,16 @@ defineProps<{
 }>()
 
 defineEmits<{ load: [] }>()
+
+const btnRef = ref<HTMLButtonElement>()
+
+watch(() => props.loading, (now, prev) => {
+  if (prev && !now && btnRef.value) {
+    nextTick(() => {
+      btnRef.value?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    })
+  }
+})
 </script>
 
 <style scoped>

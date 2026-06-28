@@ -126,10 +126,11 @@ useSeasonTheme()
 const mobileNav = ref(false)
 const bannerEnabled = computed(() => ss('announcements.enabled', true))
 const showBeta = ref(false)
+const LS_BETA = 'vl360_beta_dismissed'
 onMounted(() => {
-  if (bannerEnabled.value && localStorage.getItem('vl360_beta_dismissed') !== '1') showBeta.value = true
+  if (bannerEnabled.value && localStorage.getItem(LS_BETA) !== '1') showBeta.value = true
 })
-function dismissBeta() { showBeta.value = false; localStorage.setItem('vl360_beta_dismissed', '1') }
+function dismissBeta() { showBeta.value = false; localStorage.setItem(LS_BETA, '1') }
 
 const DEFAULT_NAV_GROUPS: Array<{ label: string; to?: string; children?: { to: string; label: string }[] }> = [
   { label: 'Khám phá', children: [

@@ -88,6 +88,8 @@
               type="text"
               class="sf-input sf-username-input"
               maxlength="30"
+              minlength="3"
+              pattern="[a-z][a-z0-9._-]*"
               placeholder="ten-cua-ban"
               autocomplete="username"
               @input="onUsernameInput"
