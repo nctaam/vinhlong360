@@ -1,6 +1,6 @@
 # Data Quality Report
 
-Generated: 2026-06-28 (updated — deep research pass 2 complete)
+Generated: 2026-06-28 (updated — deep research pass 3 complete)
 Source: `web/data.json` (1745 entities, 11537 relationships, 33 itineraries)
 Tool: `python scripts/validate_data.py`
 
@@ -78,6 +78,25 @@ Tool: `python scripts/validate_data.py`
 | Thin market description | cho-dau-moi (52 chars) | **235 chars** (expanded) |
 | Description without period | 1 (phone at end) | **0** |
 | Low-rel entity | bia-chien-thang-thanh-phuoc (3 rels) | **12 rels** (+9 near/related_to) |
+| Lowercase description starts | 35 entities | **0** (all capitalized) |
+| Lowercase after period | 159 instances | **0** (all capitalized) |
+| Type-prefix descriptions | 80 (45 accommodation + 35 facility) | **Rewritten** (clean prose) |
+| Attraction sub_category | 6/202 | **202/202** (100%) |
+| Product sub_category | 0/218 | **218/218** (100%) |
+| Nature sub_category | 0/125 | **125/125** (100%) |
+| Experience sub_category | 0/92 | **92/92** (100%) |
+| History sub_category | 0/188 | **188/188** (100%) |
+| Dish sub_category | 6/120 | **120/120** (100%) |
+| Event sub_category | 0/67 | **67/67** (100%) |
+| Person sub_category | 0/35 | **35/35** (100%) |
+| Craft village sub_category | 0/86 | **86/86** (100%) |
+| **Total sub_category** | **~100/1604** | **1604/1604 (100%)** |
+| Structured data in descriptions | 243 (addr/price/phone/hours) | **0** (all stripped) |
+| Summary name repetition | 492 summaries | **0** (name prefix stripped) |
+| Short summaries (<50 chars) | 63 | **0** (regenerated from descriptions) |
+| Trailing whitespace before period | 2 | **0** |
+| Missing summary punctuation | 10 | **0** |
+| Ghost entity prov-1 | Present | **Deleted** |
 
 ## Errors
 
@@ -87,11 +106,11 @@ None.
 
 | Code | Count | Notes |
 |------|-------|-------|
-| `near_asymmetric` | 4262 | By design — system handles bidirectionality automatically |
+| `near_asymmetric` | 4271 | By design — system handles bidirectionality automatically |
 | `coordinate_clusters` | 189 clusters (1366 entities) | Ward/province centroids; needs real geocoding data |
 | `itinerary_area_mismatch` | 59 | Multi-province itineraries legitimately cross areas |
 | `rel_type_singletons` | 30 | Rare but valid relationship combos |
-| `summary_short` | 0 | Was 4, all enriched |
+| `summary_short` | 0 | Was 63 after name-strip, all fixed |
 | `missing_location` | 6 | 6 non-place entities without coordinates |
 | `missing_place_id` | 1 | ben-xe-mien-tay-hcm (HCM, outside VL+BT+TV scope) |
 | `data_js_unknown_shape` | 1 | web/data.js format — cosmetic |
@@ -138,21 +157,22 @@ Deep geographic analysis detected **159 entities** whose coordinates fell clearl
 
 | Type | Coverage | Key attributes |
 |------|----------|----------------|
-| accommodation | **100%** (164/164) | price_range=120, phone=89, star_rating=56, sub_category=164 |
-| attraction | **100%** (203/203) | admission=192, hours=102, price_range=25 |
-| cafe | **100%** (55/55) | specialty=55, price_range=17, hours=17 |
-| craft_village | **100%** (86/86) | specialty=86, phone=1 |
-| dish | **100%** (120/120) | specialty=114, price_range=76, origin=120 |
-| drink | **100%** (1/1) | price_range=1 |
-| event | **100%** (67/67) | date_start=67 |
-| experience | **100%** (92/92) | admission=89, price_range=50, hours=10 |
-| facility | **100%** (58/58) | sub_category=58 (transport/market/bank/hospital/pharmacy/telecom/etc.) |
-| nature | **100%** (125/125) | admission=125, hours=10 |
-| person | **100%** (35/35) | role=35 |
-| product | **100%** (218/218) | ocop_star=84, price_range=64, ocop_certified=48, brand=45 |
-| restaurant | **100%** (191/191) | specialty=191, price_range=108, hours=105, phone=1 |
+| accommodation | **100%** (164/164) | sub_category=164, price_range=120, phone=89, star_rating=56 |
+| attraction | **100%** (202/202) | sub_category=202, admission=191, hours=99, price_range=22 |
+| cafe | **100%** (56/56) | sub_category=56, specialty=56, price_range=18, hours=18 |
+| craft_village | **100%** (86/86) | sub_category=86, specialty=86 |
+| dish | **100%** (120/120) | sub_category=120, specialty=114, price_range=76, origin=120 |
+| drink | **100%** (1/1) | sub_category=1, price_range=1 |
+| event | **100%** (67/67) | sub_category=67, date_start=67 |
+| experience | **100%** (92/92) | sub_category=92, admission=89, price_range=50, hours=10 |
+| facility | **100%** (58/58) | sub_category=58 |
+| nature | **100%** (125/125) | sub_category=125, admission=125, hours=10 |
+| person | **100%** (35/35) | sub_category=35, role=35 |
+| product | **100%** (218/218) | sub_category=218, ocop_star=84, price_range=64, ocop_certified=48, brand=45 |
+| restaurant | **100%** (191/191) | sub_category=191, specialty=191, price_range=108, hours=105 |
+| organization | **100%** (1/1) | sub_category=1 |
 
-**All 13 entity types (12 SEO + facility) are at 100% coverage.** No entities are missing all required SEO attributes.
+**All entity types are at 100% sub_category coverage.** 1604/1604 non-place entities classified.
 
 ## Confidence Distribution
 
@@ -237,14 +257,15 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 
 ### Description Quality
 
-- Min length: **108 chars** (craft_village)
-- Median: **264 chars**
-- Average: **285 chars**
-- Max: **789 chars**
-- Descriptions <200 chars: 335 (mostly short entity types like craft_village, dish)
-- 48 descriptions had duplicated text segments → all deduplicated
-- 97 template-format accommodation descriptions rewritten to clean prose
-- 0 descriptions with "Liên hệ:" phone artifacts (97 cleaned)
+- Min length: **58 chars**
+- Median: **226 chars**
+- Average: **243 chars**
+- Max: **751 chars**
+- Descriptions <80 chars: 17
+- Descriptions >500 chars: 32
+- All structured data (address, price, phone, hours, payment) stripped from descriptions (1548 cleaned)
+- All summaries have entity name prefix stripped (492 cleaned)
+- All sub_category classified: 1604/1604 non-place entities (100%)
 
 ### Attribute Completeness (key types)
 
@@ -304,3 +325,9 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 | Duplicate names | **0** |
 | Summary == Name (redundant) | **0** |
 | Entities with only located_in | **0** (all have diverse rel types) |
+| Summary starts with entity name | **0** (492 fixed) |
+| Structured data in descriptions | **0** (1548 cleaned) |
+| Sub_category missing | **0** (1604/1604 = 100%) |
+| Ghost/test entities | **0** (prov-1 deleted) |
+| Description starts lowercase | **0** |
+| Double spaces in descriptions | **0** |
