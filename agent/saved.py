@@ -23,6 +23,8 @@ from auth_middleware import require_pg as _require_pg
 
 router = APIRouter(prefix="/api/saved", tags=["saved"], dependencies=[Depends(_require_pg)])
 
+MAX_SAVED = 2000
+
 
 class SavedItem(BaseModel):
     id: str = Field(max_length=200)
@@ -83,6 +85,11 @@ async def add_saved(item: SavedItem, user=Depends(require_user), _csrf=Depends(r
     check_rate(f"saved:{user['id']}", 60, 300, "Thao tác lưu quá nhanh. Vui lòng thử lại sau.")
     def _query():
         with db._conn() as conn:
+            ph = db._ph
+            cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM saved_entities WHERE user_id = {ph}::uuid",
+                               (str(user["id"]),))
+            if cnt and int(db._row_to_dict(cnt)["c"]) >= MAX_SAVED:
+                raise HTTPException(400, f"Tối đa {MAX_SAVED} địa điểm đã lưu. Hãy xoá bớt.")
             _upsert(conn, str(user["id"]), item)
     await asyncio.to_thread(_query)
     return {"saved": True}

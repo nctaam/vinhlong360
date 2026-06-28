@@ -206,7 +206,11 @@ async def notification_stream(request: Request, token: str = Query(None, max_len
     async with _sse_lock:
         subs = _sse_subscribers.setdefault(uid, [])
         if len(subs) >= _SSE_MAX_PER_USER:
-            subs.pop(0)
+            evicted = subs.pop(0)
+            try:
+                evicted.put_nowait(None)
+            except asyncio.QueueFull:
+                pass
         subs.append(queue)
 
     async def event_generator():
@@ -216,6 +220,8 @@ async def notification_stream(request: Request, token: str = Query(None, max_len
                     break
                 try:
                     data = await asyncio.wait_for(queue.get(), timeout=30)
+                    if data is None:
+                        break
                     yield f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
                 except asyncio.TimeoutError:
                     yield ": keepalive\n\n"

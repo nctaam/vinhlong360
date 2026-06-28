@@ -1230,3 +1230,45 @@ class TestMediumFixesBatch2:
         block = src[idx:idx+400]
         assert "len(nearby) >= limit" in block, \
             "First nearby loop must have early break at limit"
+
+    def test_saved_max_limit(self):
+        """saved.py must enforce a per-user save limit."""
+        src = (Path(__file__).resolve().parent.parent / "saved.py").read_text(encoding="utf-8")
+        assert "MAX_SAVED" in src, "saved.py must define MAX_SAVED"
+        idx = src.find("async def add_saved(")
+        assert idx > 0
+        block = src[idx:idx+600]
+        assert "MAX_SAVED" in block, "add_saved must check MAX_SAVED"
+
+    def test_sse_eviction_sends_sentinel(self):
+        """SSE subscriber eviction must send None sentinel to signal old generator."""
+        src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
+        idx = src.find("notification_stream")
+        assert idx > 0
+        block = src[idx:idx+1500]
+        assert "put_nowait(None)" in block, \
+            "SSE eviction must send None sentinel to old queue"
+
+    def test_sse_generator_handles_none_sentinel(self):
+        """SSE event generator must break on None sentinel."""
+        src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
+        idx = src.find("async def event_generator()")
+        assert idx > 0
+        block = src[idx:idx+400]
+        assert "data is None" in block, \
+            "Event generator must break on None sentinel from eviction"
+
+    def test_favicon_endpoint_exists(self):
+        """favicon.ico endpoint must return 204 to prevent 404 noise."""
+        src = (Path(__file__).resolve().parent.parent / "seo.py").read_text(encoding="utf-8")
+        assert "favicon.ico" in src, "seo.py must have /favicon.ico endpoint"
+        assert "204" in src, "favicon must return 204"
+
+    def test_site_settings_value_size_limit(self):
+        """site_settings upsert must limit value size."""
+        src = (Path(__file__).resolve().parent.parent / "site_settings.py").read_text(encoding="utf-8")
+        assert "_MAX_VALUE_SIZE" in src, "site_settings must define _MAX_VALUE_SIZE"
+        idx = src.find("def upsert(")
+        assert idx > 0
+        block = src[idx:idx+400]
+        assert "_MAX_VALUE_SIZE" in block, "upsert must check _MAX_VALUE_SIZE"

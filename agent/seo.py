@@ -1139,6 +1139,11 @@ def sitemap_index():
     )
 
 
+@router.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    return Response(status_code=204)
+
+
 @router.get("/robots.txt", response_class=PlainTextResponse)
 def robots():
     return f"""User-agent: *
