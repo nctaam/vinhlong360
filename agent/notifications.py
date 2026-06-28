@@ -22,7 +22,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from starlette.responses import StreamingResponse
 from pydantic import BaseModel, field_validator
 
-from auth_middleware import get_current_user, require_user, validate_path_id
+from auth_middleware import get_current_user, require_user, validate_path_id, require_csrf
 from database import db
 from ratelimit import check_rate
 
@@ -90,7 +90,7 @@ async def get_notifications(
 
 
 @router.post("/notifications/read-all")
-async def mark_all_read(user=Depends(require_user)):
+async def mark_all_read(user=Depends(require_user), _csrf=Depends(require_csrf)):
     def _query():
         ph = db._ph
         with db._conn() as conn:
@@ -103,7 +103,7 @@ async def mark_all_read(user=Depends(require_user)):
 
 
 @router.post("/notifications/{notif_id}/read")
-async def mark_notification_read(notif_id: str, user=Depends(require_user)):
+async def mark_notification_read(notif_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     notif_id = validate_path_id(notif_id, "notif_id")
     def _query():
         ph = db._ph
@@ -144,7 +144,7 @@ async def get_notification_preferences(user=Depends(require_user)):
 
 
 @router.put("/notification-preferences")
-async def update_notification_preferences(body: NotifPrefsUpdate, user=Depends(require_user)):
+async def update_notification_preferences(body: NotifPrefsUpdate, user=Depends(require_user), _csrf=Depends(require_csrf)):
     ph = db._ph
     uid = str(user["id"])
     updates = {k: v for k, v in body.model_dump().items() if v is not None}
@@ -275,7 +275,7 @@ def create_notification(user_id: str, notif_type: str, title: str,
 # ── Follow ──
 
 @router.post("/follow/{target_type}/{target_id}")
-async def toggle_follow(target_type: str, target_id: str, user=Depends(require_user)):
+async def toggle_follow(target_type: str, target_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     target_id = validate_path_id(target_id, "target_id")
     if target_type not in ("user", "entity"):
         raise HTTPException(400, "Loại follow: user hoặc entity")
@@ -421,7 +421,7 @@ RL_REPORT_LIMIT = 10
 RL_REPORT_WINDOW = 3600
 
 @router.post("/report-ugc")
-async def create_report(body: ReportRequest, user=Depends(require_user)):
+async def create_report(body: ReportRequest, user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"report:{user['id']}", RL_REPORT_LIMIT, RL_REPORT_WINDOW, "Bạn đã gửi quá nhiều báo cáo. Vui lòng thử lại sau.")
     ph = db._ph
     def _query():
@@ -444,7 +444,7 @@ async def create_report(body: ReportRequest, user=Depends(require_user)):
 # ── Block ──
 
 @router.post("/block/{blocked_id}")
-async def toggle_block(blocked_id: str, user=Depends(require_user)):
+async def toggle_block(blocked_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     blocked_id = validate_path_id(blocked_id, "blocked_id")
     if blocked_id == str(user["id"]):
         raise HTTPException(400, "Không thể tự chặn chính mình")
@@ -533,7 +533,7 @@ def _format_notif(row: dict) -> dict:
 # ── RSVP lễ-hội/sự-kiện: "Tôi sẽ đi" ──
 
 @router.post("/events/{entity_id}/rsvp")
-async def toggle_rsvp(entity_id: str, user=Depends(require_user)):
+async def toggle_rsvp(entity_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     validate_path_id(entity_id)
     entity = await asyncio.to_thread(db.get_entity, entity_id)
     if not entity:

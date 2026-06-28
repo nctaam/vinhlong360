@@ -4,10 +4,10 @@ Postgres-only (UGC parity); 503 ở SQLite dev. status ∈ {want, visited}, 1 st
 """
 import asyncio
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, field_validator
 
-from auth_middleware import require_user
+from auth_middleware import require_user, require_csrf
 from database import db
 
 
@@ -56,7 +56,7 @@ async def check_visit(entity_id: str, user=Depends(require_user)):
 
 
 @router.post("")
-async def set_visit(body: VisitBody, user=Depends(require_user)):
+async def set_visit(body: VisitBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
     def _query():
         ph = db._ph
         with db._conn() as conn:
@@ -69,7 +69,7 @@ async def set_visit(body: VisitBody, user=Depends(require_user)):
 
 
 @router.delete("/{entity_id}")
-async def remove_visit(entity_id: str, user=Depends(require_user)):
+async def remove_visit(entity_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     def _query():
         ph = db._ph
         with db._conn() as conn:

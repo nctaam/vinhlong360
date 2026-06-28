@@ -239,7 +239,7 @@ async def _send_sms(phone: str, message: str) -> bool:
     try:
         async with httpx.AsyncClient(timeout=10) as client:
             resp = await client.post(
-                "http://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_post_json/",
+                "https://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_post_json/",
                 json={
                     "ApiKey": ESMS_API_KEY,
                     "Content": message,
@@ -540,7 +540,7 @@ async def set_password(body: SetPassword, request: Request, _csrf=Depends(_requi
 
 
 @router.post("/logout")
-async def logout(request: Request):
+async def logout(request: Request, _csrf=Depends(_require_csrf_lazy)):
     token = _extract_token(request)
     if not token:
         return {"success": True}
@@ -582,7 +582,7 @@ async def list_sessions(request: Request):
 
 
 @router.delete("/sessions/{session_id}")
-async def revoke_session(session_id: str, request: Request):
+async def revoke_session(session_id: str, request: Request, _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
@@ -645,7 +645,7 @@ async def delete_account(request: Request, _csrf=Depends(_require_csrf_lazy)):
 
 
 @router.put("/profile")
-async def update_profile(body: ProfileUpdate, request: Request):
+async def update_profile(body: ProfileUpdate, request: Request, _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
@@ -710,7 +710,7 @@ async def check_username(username: str, request: Request):
 
 
 @router.post("/avatar")
-async def upload_avatar(request: Request, file: UploadFile = File(...)):
+async def upload_avatar(request: Request, file: UploadFile = File(...), _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
@@ -739,7 +739,7 @@ async def upload_avatar(request: Request, file: UploadFile = File(...)):
 
 
 @router.post("/cover")
-async def upload_cover(request: Request, file: UploadFile = File(...)):
+async def upload_cover(request: Request, file: UploadFile = File(...), _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
@@ -861,7 +861,7 @@ async def get_privacy(request: Request):
 
 
 @router.put("/privacy")
-async def update_privacy(body: PrivacyUpdate, request: Request):
+async def update_privacy(body: PrivacyUpdate, request: Request, _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")

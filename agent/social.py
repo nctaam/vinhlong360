@@ -22,7 +22,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, File
 from pydantic import BaseModel, field_validator
 
-from auth_middleware import get_current_user, require_user, validate_path_id
+from auth_middleware import get_current_user, require_user, validate_path_id, require_csrf
 from database import db
 from moderation import moderate_content, moderate_content_enhanced, log_moderation
 from notifications import create_notification
@@ -258,7 +258,7 @@ RL_POST_DAILY_LIMIT = 50
 RL_POST_DAILY_WINDOW = 86400
 
 @router.post("/posts")
-async def create_post(body: CreatePost, user=Depends(require_user)):
+async def create_post(body: CreatePost, user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"post:{user['id']}", RL_POST_LIMIT, RL_POST_WINDOW,
                "Bạn đăng bài quá nhanh. Vui lòng đợi ít phút rồi thử lại.")
     check_rate(f"post-day:{user['id']}", RL_POST_DAILY_LIMIT, RL_POST_DAILY_WINDOW,
@@ -402,7 +402,7 @@ async def get_post(post_id: str, user=Depends(get_current_user)):
 
 
 @router.delete("/posts/{post_id}")
-async def delete_post(post_id: str, user=Depends(require_user)):
+async def delete_post(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     post_id = validate_path_id(post_id, "post_id")
     check_rate(f"delete:{user['id']}", RL_DELETE_LIMIT, RL_DELETE_WINDOW,
                "Bạn xóa quá nhanh. Vui lòng đợi ít phút.")
@@ -420,7 +420,7 @@ async def delete_post(post_id: str, user=Depends(require_user)):
 
 
 @router.patch("/posts/{post_id}")
-async def update_post(post_id: str, body: UpdatePost, user=Depends(require_user)):
+async def update_post(post_id: str, body: UpdatePost, user=Depends(require_user), _csrf=Depends(require_csrf)):
     """Sửa bài của CHÍNH MÌNH (nội dung; review đổi sao). Kiểm duyệt + hashtag lại."""
     post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
@@ -1071,7 +1071,7 @@ async def get_comments(
 
 
 @router.post("/posts/{post_id}/comments")
-async def create_comment(post_id: str, body: CreateComment, user=Depends(require_user)):
+async def create_comment(post_id: str, body: CreateComment, user=Depends(require_user), _csrf=Depends(require_csrf)):
     post_id = validate_path_id(post_id, "post_id")
     check_rate(f"comment:{user['id']}", RL_COMMENT_LIMIT, RL_COMMENT_WINDOW,
                "Bạn bình luận quá nhanh. Vui lòng đợi chút rồi thử lại.")
@@ -1145,7 +1145,7 @@ class EditComment(BaseModel):
 
 
 @router.put("/comments/{comment_id}")
-async def edit_comment(comment_id: str, body: EditComment, user=Depends(require_user)):
+async def edit_comment(comment_id: str, body: EditComment, user=Depends(require_user), _csrf=Depends(require_csrf)):
     comment_id = validate_path_id(comment_id, "comment_id")
     ph = db._ph
     uid = str(user["id"])
@@ -1183,7 +1183,7 @@ async def edit_comment(comment_id: str, body: EditComment, user=Depends(require_
 
 
 @router.delete("/comments/{comment_id}")
-async def delete_comment(comment_id: str, user=Depends(require_user)):
+async def delete_comment(comment_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     comment_id = validate_path_id(comment_id, "comment_id")
     check_rate(f"del:{user['id']}", RL_DELETE_LIMIT, RL_DELETE_WINDOW,
                "Bạn xóa quá nhanh. Vui lòng đợi chút.")
@@ -1208,7 +1208,7 @@ class BestAnswerBody(BaseModel):
 
 
 @router.post("/posts/{post_id}/best-answer")
-async def set_best_answer(post_id: str, body: BestAnswerBody, user=Depends(require_user)):
+async def set_best_answer(post_id: str, body: BestAnswerBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
     post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
     def _query():
@@ -1234,7 +1234,7 @@ async def set_best_answer(post_id: str, body: BestAnswerBody, user=Depends(requi
 # ── Likes ──
 
 @router.post("/posts/{post_id}/like")
-async def toggle_like(post_id: str, user=Depends(require_user)):
+async def toggle_like(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     post_id = validate_path_id(post_id, "post_id")
     check_rate(f"like:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW,
                "Bạn thao tác quá nhanh. Vui lòng đợi chút.")
@@ -1290,7 +1290,7 @@ async def toggle_like(post_id: str, user=Depends(require_user)):
 # ── Bookmarks ──
 
 @router.post("/posts/{post_id}/bookmark")
-async def toggle_bookmark(post_id: str, user=Depends(require_user)):
+async def toggle_bookmark(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     post_id = validate_path_id(post_id, "post_id")
     check_rate(f"bookmark:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW,
                "Bạn thao tác quá nhanh. Vui lòng đợi chút.")
@@ -1341,7 +1341,7 @@ async def get_my_bookmarks(
 # ── Image upload ──
 
 @router.post("/upload/image")
-async def upload_image(file: UploadFile = File(...), user=Depends(require_user)):
+async def upload_image(file: UploadFile = File(...), user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"upload:{user['id']}", RL_UPLOAD_LIMIT, RL_UPLOAD_WINDOW,
                "Bạn tải ảnh quá nhanh. Vui lòng đợi chút rồi thử lại.")
     data = await file.read()

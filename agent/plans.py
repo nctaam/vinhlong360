@@ -8,10 +8,10 @@ import asyncio
 import json
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 
-from auth_middleware import require_user
+from auth_middleware import require_user, require_csrf
 from database import db
 
 
@@ -78,7 +78,7 @@ async def list_plans(user=Depends(require_user)):
 
 
 @router.post("")
-async def add_plan(body: PlanBody, user=Depends(require_user)):
+async def add_plan(body: PlanBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
     uid = str(user["id"])
     def _query():
         with db._conn() as conn:
@@ -92,7 +92,7 @@ async def add_plan(body: PlanBody, user=Depends(require_user)):
 
 
 @router.delete("/{plan_id}")
-async def remove_plan(plan_id: str, user=Depends(require_user)):
+async def remove_plan(plan_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     def _query():
         ph = db._ph
         with db._conn() as conn:
@@ -104,7 +104,7 @@ async def remove_plan(plan_id: str, user=Depends(require_user)):
 
 
 @router.post("/merge")
-async def merge_plans(body: MergeBody, user=Depends(require_user)):
+async def merge_plans(body: MergeBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
     uid = str(user["id"])
     incoming = (body.plans or [])[:MAX_PLANS]
     def _query():
@@ -121,7 +121,7 @@ class PublishBody(BaseModel):
 
 
 @router.post("/{plan_id}/publish")
-async def publish_plan(plan_id: str, body: PublishBody, user=Depends(require_user)):
+async def publish_plan(plan_id: str, body: PublishBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
     def _query():
         ph = db._ph
         with db._conn() as conn:

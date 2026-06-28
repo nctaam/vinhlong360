@@ -1825,9 +1825,7 @@ class TestPhase11CommentCap:
     def test_comment_cap_value_reasonable(self):
         """MAX_COMMENTS_PER_POST is set to 500."""
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
-        idx = src.find("def create_comment")
-        block = src[idx:idx + 500]
-        assert "500" in block
+        assert "MAX_COMMENTS_PER_POST = 500" in src
 
 
 class TestPhase11FollowingFeedBlockFilter:
@@ -1867,3 +1865,166 @@ class TestPhase11DailyPostLimit:
         import social
         assert social.RL_POST_DAILY_LIMIT == 50
         assert social.RL_POST_DAILY_WINDOW == 86400
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  Phase 12: CSRF on all state-changing endpoints + dependency security
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestPhase12CsrfCoverage:
+    """Phase 12: All POST/PUT/DELETE/PATCH endpoints must have CSRF dependency."""
+
+    def _check_csrf(self, module_name, func_name):
+        """Helper: verify _csrf=Depends(require_csrf) in function signature."""
+        import importlib
+        mod = importlib.import_module(module_name)
+        fn = getattr(mod, func_name)
+        import inspect
+        sig = inspect.signature(fn)
+        param_names = list(sig.parameters.keys())
+        assert "_csrf" in param_names, f"{module_name}.{func_name} missing _csrf Depends"
+
+    def test_social_create_post_csrf(self):
+        self._check_csrf("social", "create_post")
+
+    def test_social_delete_post_csrf(self):
+        self._check_csrf("social", "delete_post")
+
+    def test_social_update_post_csrf(self):
+        self._check_csrf("social", "update_post")
+
+    def test_social_create_comment_csrf(self):
+        self._check_csrf("social", "create_comment")
+
+    def test_social_edit_comment_csrf(self):
+        self._check_csrf("social", "edit_comment")
+
+    def test_social_delete_comment_csrf(self):
+        self._check_csrf("social", "delete_comment")
+
+    def test_social_set_best_answer_csrf(self):
+        self._check_csrf("social", "set_best_answer")
+
+    def test_social_toggle_like_csrf(self):
+        self._check_csrf("social", "toggle_like")
+
+    def test_social_toggle_bookmark_csrf(self):
+        self._check_csrf("social", "toggle_bookmark")
+
+    def test_social_upload_image_csrf(self):
+        self._check_csrf("social", "upload_image")
+
+    def test_notifications_mark_all_read_csrf(self):
+        self._check_csrf("notifications", "mark_all_read")
+
+    def test_notifications_mark_read_csrf(self):
+        self._check_csrf("notifications", "mark_notification_read")
+
+    def test_notifications_update_prefs_csrf(self):
+        self._check_csrf("notifications", "update_notification_preferences")
+
+    def test_notifications_toggle_follow_csrf(self):
+        self._check_csrf("notifications", "toggle_follow")
+
+    def test_notifications_create_report_csrf(self):
+        self._check_csrf("notifications", "create_report")
+
+    def test_notifications_toggle_block_csrf(self):
+        self._check_csrf("notifications", "toggle_block")
+
+    def test_notifications_toggle_rsvp_csrf(self):
+        self._check_csrf("notifications", "toggle_rsvp")
+
+    def test_auth_logout_csrf(self):
+        self._check_csrf("auth", "logout")
+
+    def test_auth_revoke_session_csrf(self):
+        self._check_csrf("auth", "revoke_session")
+
+    def test_auth_update_profile_csrf(self):
+        self._check_csrf("auth", "update_profile")
+
+    def test_auth_upload_avatar_csrf(self):
+        self._check_csrf("auth", "upload_avatar")
+
+    def test_auth_upload_cover_csrf(self):
+        self._check_csrf("auth", "upload_cover")
+
+    def test_auth_update_privacy_csrf(self):
+        self._check_csrf("auth", "update_privacy")
+
+    def test_visits_set_visit_csrf(self):
+        self._check_csrf("visits", "set_visit")
+
+    def test_visits_remove_visit_csrf(self):
+        self._check_csrf("visits", "remove_visit")
+
+    def test_saved_add_csrf(self):
+        self._check_csrf("saved", "add_saved")
+
+    def test_saved_remove_csrf(self):
+        self._check_csrf("saved", "remove_saved")
+
+    def test_saved_merge_csrf(self):
+        self._check_csrf("saved", "merge_saved")
+
+    def test_plans_add_csrf(self):
+        self._check_csrf("plans", "add_plan")
+
+    def test_plans_remove_csrf(self):
+        self._check_csrf("plans", "remove_plan")
+
+    def test_plans_merge_csrf(self):
+        self._check_csrf("plans", "merge_plans")
+
+    def test_plans_publish_csrf(self):
+        self._check_csrf("plans", "publish_plan")
+
+
+class TestPhase12DependencySecurity:
+    """Phase 12: Dependency and SMS security fixes."""
+
+    def test_python_multipart_version(self):
+        """python-multipart must be >=0.0.11 (CVE-2024-24762)."""
+        reqs = (Path(__file__).resolve().parent.parent.parent / "requirements.txt").read_text()
+        assert "python-multipart>=0.0.11" in reqs
+
+    def test_esms_uses_https(self):
+        """eSMS API must use HTTPS, not HTTP."""
+        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        assert "https://rest.esms.vn/" in src
+        assert "http://rest.esms.vn/" not in src
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  Phase 14: PG indexes for performance
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestPhase14PgIndexes:
+    """Phase 14: Missing PG indexes must be created."""
+
+    def test_follows_indexes_exist(self):
+        src = (Path(__file__).resolve().parent.parent / "database.py").read_text(encoding="utf-8")
+        assert "idx_follows_follower" in src
+        assert "idx_follows_target" in src
+
+    def test_posts_user_index_exists(self):
+        src = (Path(__file__).resolve().parent.parent / "database.py").read_text(encoding="utf-8")
+        assert "idx_posts_user" in src
+
+    def test_comments_post_index_exists(self):
+        src = (Path(__file__).resolve().parent.parent / "database.py").read_text(encoding="utf-8")
+        assert "idx_comments_post" in src
+
+    def test_likes_bookmarks_indexes_exist(self):
+        src = (Path(__file__).resolve().parent.parent / "database.py").read_text(encoding="utf-8")
+        assert "idx_likes_user" in src
+        assert "idx_bookmarks_user" in src
+
+    def test_entity_ratings_index_exists(self):
+        src = (Path(__file__).resolve().parent.parent / "database.py").read_text(encoding="utf-8")
+        assert "idx_entity_ratings" in src
+
+    def test_posts_entity_index_exists(self):
+        src = (Path(__file__).resolve().parent.parent / "database.py").read_text(encoding="utf-8")
+        assert "idx_posts_entity" in src

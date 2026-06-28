@@ -11,10 +11,10 @@ import asyncio
 import json
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
-from auth_middleware import require_user
+from auth_middleware import require_user, require_csrf
 from database import db
 
 
@@ -78,7 +78,7 @@ async def list_saved(user=Depends(require_user)):
 
 
 @router.post("")
-async def add_saved(item: SavedItem, user=Depends(require_user)):
+async def add_saved(item: SavedItem, user=Depends(require_user), _csrf=Depends(require_csrf)):
     def _query():
         with db._conn() as conn:
             _upsert(conn, str(user["id"]), item)
@@ -87,7 +87,7 @@ async def add_saved(item: SavedItem, user=Depends(require_user)):
 
 
 @router.delete("/{entity_id}")
-async def remove_saved(entity_id: str, user=Depends(require_user)):
+async def remove_saved(entity_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     def _query():
         ph = db._ph
         with db._conn() as conn:
@@ -99,7 +99,7 @@ async def remove_saved(entity_id: str, user=Depends(require_user)):
 
 
 @router.post("/merge")
-async def merge_saved(body: MergeBody, user=Depends(require_user)):
+async def merge_saved(body: MergeBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
     uid = str(user["id"])
     items = (body.items or [])[:500]
     def _query():

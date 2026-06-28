@@ -229,6 +229,14 @@ class Database:
                         "CREATE INDEX IF NOT EXISTS idx_entities_area ON entities(area)",
                         "CREATE INDEX IF NOT EXISTS idx_entities_status ON entities(status)",
                         "CREATE INDEX IF NOT EXISTS idx_entities_verified ON entities(verified)",
+                        "CREATE INDEX IF NOT EXISTS idx_follows_follower ON follows(follower_id)",
+                        "CREATE INDEX IF NOT EXISTS idx_follows_target ON follows(target_id, target_type)",
+                        "CREATE INDEX IF NOT EXISTS idx_posts_user ON posts(user_id, moderation_status)",
+                        "CREATE INDEX IF NOT EXISTS idx_posts_entity ON posts(entity_id, moderation_status)",
+                        "CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id, moderation_status)",
+                        "CREATE INDEX IF NOT EXISTS idx_likes_user ON likes(user_id, post_id)",
+                        "CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON bookmarks(user_id, post_id)",
+                        "CREATE INDEX IF NOT EXISTS idx_entity_ratings ON entity_ratings(entity_id)",
                     ]:
                         try:
                             cur.execute(idx_sql)
