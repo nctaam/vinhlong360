@@ -427,6 +427,9 @@ async def delete_post(post_id: str, user=Depends(require_user), _csrf=Depends(re
             if str(row["user_id"]) != str(user["id"]) and user.get("role") not in ("admin", "moderator"):
                 raise HTTPException(403, "Không có quyền xóa bài viết này")
             db._execute(conn, f"DELETE FROM notifications WHERE ref_type = 'post' AND ref_id = {ph}", (post_id,))
+            db._execute(conn, f"DELETE FROM comments WHERE post_id::text = {ph}", (post_id,))
+            db._execute(conn, f"DELETE FROM likes WHERE post_id::text = {ph}", (post_id,))
+            db._execute(conn, f"DELETE FROM bookmarks WHERE post_id::text = {ph}", (post_id,))
             db._execute(conn, f"UPDATE posts SET repost_of = NULL WHERE repost_of::text = {ph}", (post_id,))
             db._execute(conn, f"DELETE FROM posts WHERE id::text = {ph}", (post_id,))
     await asyncio.to_thread(_query)

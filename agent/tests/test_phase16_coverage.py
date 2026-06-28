@@ -1051,7 +1051,7 @@ class TestSecurityPosture:
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
         idx = src.find("async def delete_post(")
         assert idx > 0
-        block = src[idx:idx+1000]
+        block = src[idx:idx+1500]
         assert "repost_of" in block, "delete_post must handle repost_of references"
 
     def test_notification_dedup(self):
@@ -1762,3 +1762,25 @@ class TestImageURLLengthValidation:
         long_url = "https://example.com/" + "a" * 2100
         with pytest.raises(Exception):
             CreatePost(content="Test content for post", images=[long_url])
+
+
+class TestPostDeletionCleanup:
+    """B3: Post deletion must cascade to comments, likes, bookmarks."""
+
+    def test_delete_post_cleans_comments(self):
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        delete_fn = src[src.index("async def delete_post("):]
+        delete_fn = delete_fn[:delete_fn.index("\n@router.")]
+        assert "DELETE FROM comments WHERE post_id" in delete_fn
+
+    def test_delete_post_cleans_likes(self):
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        delete_fn = src[src.index("async def delete_post("):]
+        delete_fn = delete_fn[:delete_fn.index("\n@router.")]
+        assert "DELETE FROM likes WHERE post_id" in delete_fn
+
+    def test_delete_post_cleans_bookmarks(self):
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        delete_fn = src[src.index("async def delete_post("):]
+        delete_fn = delete_fn[:delete_fn.index("\n@router.")]
+        assert "DELETE FROM bookmarks WHERE post_id" in delete_fn
