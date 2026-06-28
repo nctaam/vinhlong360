@@ -46,6 +46,10 @@ Tool: `python scripts/validate_data.py`
 | Admission capitalization | inconsistent | **Normalized** |
 | Price range dash format | mixed (–/-) | **All en-dash (–)** |
 | Hours format | mixed Xh/hyphen | **All HH:MM + en-dash (156 fixed)** |
+| Type misclassification | 113 food as attraction | **96→restaurant, 17→cafe** |
+| Restaurant sub_category | 88 missing | **All 245 restaurants/cafes classified** |
+| Restaurant specialty | 19 missing (reclassified) | **All 190 restaurants have specialty** |
+| Test data removed | prov-1 placeholder | **Deleted** |
 | Geocoded from centroid | 0 | **34 entities** |
 
 ## Errors
