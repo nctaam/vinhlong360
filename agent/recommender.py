@@ -19,7 +19,7 @@ import logging
 import math
 import time
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 from threading import Lock
 
 logger = logging.getLogger(__name__)
@@ -658,7 +658,7 @@ def _recommend_impl(context: dict) -> dict:
 
     # Fallback: if no strategy matched, do contextual with current month
     if not strategies_used:
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         hour = now.hour
         if hour < 12:
             tod = "morning"

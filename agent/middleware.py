@@ -20,7 +20,7 @@ import time
 import threading
 import uuid
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 from threading import Lock
 from pathlib import Path
 
@@ -54,7 +54,7 @@ class StructuredLogger:
 
     def log(self, level: str, message: str, **extra):
         entry = {
-            "ts": datetime.now().isoformat(),
+            "ts": datetime.now(timezone.utc).isoformat(),
             "level": level,
             "msg": message,
             **extra,
@@ -99,13 +99,15 @@ class StructuredLogger:
             self._py_logger.debug("Log flush failed: %s", exc)
 
     def _rotate(self):
-        """Keep only last N entries."""
+        """Keep only last N entries (streaming read to avoid loading entire file)."""
         try:
             if self.log_file.exists():
-                lines = self.log_file.read_text(encoding="utf-8").strip().split("\n")
+                with open(self.log_file, "r", encoding="utf-8") as f:
+                    lines = f.readlines()
                 if len(lines) > self.max_entries:
                     keep = lines[-self.max_entries:]
-                    self.log_file.write_text("\n".join(keep) + "\n", encoding="utf-8")
+                    with open(self.log_file, "w", encoding="utf-8") as f:
+                        f.writelines(keep)
             self._flush_count = 0
         except Exception as exc:
             self._py_logger.debug("Log rotation failed: %s", exc)
@@ -120,7 +122,8 @@ class StructuredLogger:
         entries = []
         try:
             if self.log_file.exists():
-                lines = self.log_file.read_text(encoding="utf-8").strip().split("\n")
+                with open(self.log_file, "r", encoding="utf-8") as f:
+                    lines = f.readlines()
                 for line in lines[-limit * 2:]:
                     try:
                         entry = json.loads(line)
@@ -236,7 +239,7 @@ class ResponseTimeTracker:
             "endpoint": endpoint,
             "duration_ms": round(duration_ms, 1),
             "status": status,
-            "ts": datetime.now().isoformat(),
+            "ts": datetime.now(timezone.utc).isoformat(),
         }
         with self._lock:
             self._samples.append(entry)
@@ -397,7 +400,7 @@ def _is_valid_ip(ip_str: str) -> bool:
         return False
 
 # Trusted proxy IPs — only trust X-Forwarded-For from these
-TRUSTED_PROXIES = os.environ.get("TRUSTED_PROXIES", "127.0.0.1,::1").split(",")
+TRUSTED_PROXIES = [ip.strip() for ip in os.environ.get("TRUSTED_PROXIES", "127.0.0.1,::1").split(",") if ip.strip()]
 
 def get_client_ip(request) -> str:
     """Extract real client IP from request with proxy validation."""
@@ -421,11 +424,29 @@ def get_client_ip(request) -> str:
 #  SECURITY EVENT LOGGING
 # ══════════════════════════════════════════════════
 
+def _mask_ip(ip: str) -> str:
+    if not ip:
+        return ""
+    parts = ip.split(".")
+    if len(parts) == 4:
+        return f"{parts[0]}.{parts[1]}.***.*{parts[3][-1:]}"
+    if ":" in ip:
+        return ip[:ip.rfind(":")] + ":****"
+    return ip[:4] + "****"
+
+
+def _mask_phone(phone: str) -> str:
+    if not phone or len(phone) < 6:
+        return "***"
+    return phone[:3] + "****" + phone[-3:]
+
+
 class SecurityEventLogger:
     """Structured logging for security-relevant events (audit trail).
 
     All events go to the same StructuredLogger (server.log.jsonl) with
     level="security" so they can be filtered/exported separately.
+    PII (IP, phone) is masked before writing to log files.
     """
 
     _EVENT_AUTH_FAILURE = "auth_failure"
@@ -435,20 +456,32 @@ class SecurityEventLogger:
     _EVENT_SESSION_ANOMALY = "session_anomaly"
     _EVENT_CSRF_FAILURE = "csrf_failure"
 
+    _PII_FIELDS = {"ip", "phone", "user_phone"}
+
     def __init__(self, structured_logger: StructuredLogger):
         self._log = structured_logger
         self._lock = Lock()
         self._recent_events: list[dict] = []
         self._max_recent = 500
 
+    @staticmethod
+    def _mask_pii(entry: dict) -> dict:
+        masked = dict(entry)
+        if "ip" in masked:
+            masked["ip"] = _mask_ip(masked["ip"])
+        for k in ("phone", "user_phone"):
+            if k in masked:
+                masked[k] = _mask_phone(masked[k])
+        return masked
+
     def _record(self, event_type: str, ip: str, **details):
         entry = {
             "event": event_type,
             "ip": ip,
-            "ts": datetime.now().isoformat(),
+            "ts": datetime.now(timezone.utc).isoformat(),
             **details,
         }
-        self._log.log("security", f"[SEC] {event_type}", **entry)
+        self._log.log("security", f"[SEC] {event_type}", **self._mask_pii(entry))
         with self._lock:
             self._recent_events.append(entry)
             if len(self._recent_events) > self._max_recent:
@@ -538,6 +571,9 @@ class IPReputationTracker:
             if ip not in self._scores:
                 self._scores[ip] = []
             self._scores[ip].append((now, points))
+            if len(self._scores[ip]) > 500:
+                cutoff = now - self._decay
+                self._scores[ip] = [(t, p) for t, p in self._scores[ip] if t > cutoff]
             if len(self._scores) > self._max_ips:
                 self._gc(now)
             return self._level_locked(ip, now)
@@ -783,7 +819,7 @@ class SecurityEventCorrelator:
                     "ip": ip,
                     "patterns": matched,
                     "severity": severity,
-                    "ts": datetime.now().isoformat(),
+                    "ts": datetime.now(timezone.utc).isoformat(),
                 }
                 self._alerts.append(alert)
                 if len(self._alerts) > self._max_alerts:
@@ -1365,7 +1401,7 @@ class SecurityMetricsAggregator:
         Returns a flat dict suitable for JSON export to monitoring dashboards.
         """
         metrics = {
-            "ts": datetime.now().isoformat(),
+            "ts": datetime.now(timezone.utc).isoformat(),
         }
 
         # IP reputation stats

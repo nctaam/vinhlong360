@@ -16,7 +16,7 @@ psycopg2-binary>=2.9
 redis>=5.0
 Pillow>=10.0
 boto3>=1.35
-python-multipart>=0.0.9
+python-multipart>=0.0.11
 
 # Dev / Testing
 pytest>=8.0

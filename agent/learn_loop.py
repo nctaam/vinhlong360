@@ -29,7 +29,7 @@ import os
 import re
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock
 
@@ -170,9 +170,9 @@ def _extract_entity_from_snippet(snippet: str, title: str, url: str, query: str)
         "confidence": 0.4,  # Low — needs review
         "status": "provisional",   # quarantine: not yet trusted
         "verified": False,         # auto-learned, awaiting promotion/review
-        "learned_at": datetime.now().strftime("%Y-%m-%d"),
+        "learned_at": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         "source": {"title": url.split("/")[2] if "/" in url else "web", "url": url},
-        "updatedAt": datetime.now().strftime("%Y-%m-%d"),
+        "updatedAt": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         "attributes": {},
         "season": None,
         "images": [],
@@ -346,7 +346,7 @@ def record_feedback(query: str, rating: int, entity_id: str = None, session_id: 
         "rating": rating,
         "entity_id": entity_id,
         "session_id": session_id,
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     })
     _save_feedback(feedback)
 
@@ -369,7 +369,7 @@ def _adjust_entity_confidence(entity_id: str, delta: float):
                 old_conf = e.get("confidence", 0.7)
                 new_conf = max(0.1, min(1.0, old_conf + delta))
                 e["confidence"] = round(new_conf, 3)
-                e["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
+                e["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
                 _save_kb(kb)
                 # GĐ-audit (B1): cập nhật confidence vào DB (chat đọc DB).
                 try:
@@ -496,7 +496,7 @@ def enrich_entities(max_entities: int = 10, dry_run: bool = False) -> dict:
 
             if not dry_run:
                 entity["summary"] = summary
-                entity["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
+                entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
                 enriched += 1
                 _logger.info("  Enriched: %s ← %s...", name, summary[:60])
             else:
@@ -544,7 +544,7 @@ def _log_event(event_type: str, data: dict):
     try:
         entry = {
             "type": event_type,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             **data,
         }
         with open(LEARN_LOG, "a", encoding="utf-8") as f:
@@ -567,7 +567,7 @@ def learning_status() -> dict:
 
     # Feedback
     feedback = _load_feedback()
-    recent_fb = [fb for fb in feedback if fb.get("timestamp", "") > datetime.now().strftime("%Y-%m-%d")]
+    recent_fb = [fb for fb in feedback if fb.get("timestamp", "") > datetime.now(timezone.utc).strftime("%Y-%m-%d")]
 
     # Missing summaries
     try:

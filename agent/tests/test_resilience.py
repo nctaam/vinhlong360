@@ -2276,22 +2276,22 @@ class TestMiddlewareLogging:
         from middleware import StructuredLogger
         sl = StructuredLogger(name="test_rotate", max_entries=100)
         with patch.object(sl, "log_file",
-                          MagicMock(exists=MagicMock(return_value=True),
-                                    read_text=MagicMock(side_effect=OSError("read fail")))):
-            with patch.object(sl, "_py_logger") as mock_py:
-                sl._rotate()
-            mock_py.debug.assert_called()
+                          MagicMock(exists=MagicMock(return_value=True))):
+            with patch("builtins.open", side_effect=OSError("read fail")):
+                with patch.object(sl, "_py_logger") as mock_py:
+                    sl._rotate()
+                mock_py.debug.assert_called()
 
     def test_recent_read_failure_logged(self):
         from middleware import StructuredLogger
         sl = StructuredLogger(name="test_recent", max_entries=100)
         with patch.object(sl, "log_file",
-                          MagicMock(exists=MagicMock(return_value=True),
-                                    read_text=MagicMock(side_effect=OSError("gone")))):
-            with patch.object(sl, "_py_logger") as mock_py:
-                result = sl.recent(limit=10)
-            assert result == []
-            mock_py.debug.assert_called()
+                          MagicMock(exists=MagicMock(return_value=True))):
+            with patch("builtins.open", side_effect=OSError("gone")):
+                with patch.object(sl, "_py_logger") as mock_py:
+                    result = sl.recent(limit=10)
+                assert result == []
+                mock_py.debug.assert_called()
 
 
 class TestSelfEvalLogging:

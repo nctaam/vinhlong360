@@ -138,12 +138,17 @@ def get_all_grouped() -> dict[str, list[dict]]:
     return grouped
 
 
+_MAX_VALUE_SIZE = 100_000
+
+
 def upsert(key: str, value: object) -> bool:
     """Update a single setting's value. Invalidates cache."""
     if not db._use_pg:
         return False
     ph = db._ph
     val_json = json.dumps(value, ensure_ascii=False)
+    if len(val_json) > _MAX_VALUE_SIZE:
+        raise ValueError(f"Setting value too large ({len(val_json)} > {_MAX_VALUE_SIZE})")
     with db._conn() as conn:
         db._execute(conn, f"""
             UPDATE site_settings SET value = {ph}::jsonb, updated_at = NOW()

@@ -25,7 +25,7 @@ import os
 import re
 import time
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock, RLock
 
@@ -248,8 +248,8 @@ class UserProfile:
         self.disliked_entities: list[str] = []
         self.conversation_count: int = 0
         self.total_messages: int = 0
-        self.first_seen: str = datetime.now().isoformat()
-        self.last_seen: str = datetime.now().isoformat()
+        self.first_seen: str = datetime.now(timezone.utc).isoformat()
+        self.last_seen: str = datetime.now(timezone.utc).isoformat()
         self.feedback_history: list[dict] = []  # [{query, rating, ts}]
         self.semantic_facts: list[str] = []  # Extracted facts about user
 
@@ -283,8 +283,8 @@ class UserProfile:
         p.disliked_entities = data.get("disliked_entities", [])
         p.conversation_count = data.get("conversation_count", 0)
         p.total_messages = data.get("total_messages", 0)
-        p.first_seen = data.get("first_seen", datetime.now().isoformat())
-        p.last_seen = data.get("last_seen", datetime.now().isoformat())
+        p.first_seen = data.get("first_seen", datetime.now(timezone.utc).isoformat())
+        p.last_seen = data.get("last_seen", datetime.now(timezone.utc).isoformat())
         p.feedback_history = data.get("feedback_history", [])
         p.semantic_facts = data.get("semantic_facts", [])
         return p
@@ -359,7 +359,7 @@ class ColdMemory:
         """Merge hot memory insights into persistent profile."""
         with self._lock:
             profile = self.get_profile(user_id)
-            profile.last_seen = datetime.now().isoformat()
+            profile.last_seen = datetime.now(timezone.utc).isoformat()
             profile.conversation_count += 1
             profile.total_messages += len(hot.messages)
 
@@ -386,7 +386,7 @@ class ColdMemory:
                     profile.visited_entities.append({
                         "id": eid,
                         "name": eid,
-                        "ts": datetime.now().isoformat(),
+                        "ts": datetime.now(timezone.utc).isoformat(),
                     })
 
             self._save_all()
@@ -399,7 +399,7 @@ class ColdMemory:
                 "query": query[:200],
                 "rating": rating,
                 "entity_id": entity_id,
-                "ts": datetime.now().isoformat(),
+                "ts": datetime.now(timezone.utc).isoformat(),
             })
 
             # Update favorites/dislikes
@@ -445,6 +445,8 @@ class SkillDocumentStore:
     Tham khảo: nghiên cứu cho thấy skill docs giúp agent nhanh hơn 40%.
     """
 
+    _MAX_SKILLS = 200
+
     def __init__(self):
         self._skills_file = MEMORY_DIR / "skill_documents.json"
         self._skills: list[dict] = []
@@ -479,12 +481,14 @@ class SkillDocumentStore:
                 "tools": tool_sequence,
                 "strategy": success_strategy,
                 "category": category,
-                "created": datetime.now().isoformat(),
+                "created": datetime.now(timezone.utc).isoformat(),
                 "use_count": 0,
             }
-            # Dedup
             existing = [s for s in self._skills if s["pattern"] == query_pattern]
             if not existing:
+                if len(self._skills) >= self._MAX_SKILLS:
+                    self._skills.sort(key=lambda s: s.get("use_count", 0))
+                    self._skills = self._skills[1:]
                 self._skills.append(skill)
                 self._save()
 
@@ -585,7 +589,7 @@ class MemoryExtractor:
     _AREA_PATTERNS = re.compile(
         r"(?:muốn\s+đi\s+|quan\s+tâm\s+(?:đến\s+)?|thích\s+vùng\s+|"
         r"muốn\s+(?:tham\s+quan|khám\s+phá)\s+)"
-        r"(.+?)(?:\s+với\s+|\s+cùng\s+|\s+vào\s+|\s+trong\s+|\s+để\s+|[.,!?]|$)",
+        r"(.{2,60}?)(?:\s+với\s+|\s+cùng\s+|\s+vào\s+|\s+trong\s+|\s+để\s+|[.,!?]|$)",
         re.IGNORECASE,
     )
 
@@ -837,7 +841,7 @@ class MemoryExtractor:
                         profile.visited_entities.append({
                             "id": eid,
                             "name": entity_name,
-                            "ts": datetime.now().isoformat(),
+                            "ts": datetime.now(timezone.utc).isoformat(),
                         })
 
                 # Store extracted facts as semantic facts
@@ -869,6 +873,8 @@ class MemoryManager:
     Server gọi qua đây thay vì trực tiếp.
     """
 
+    _MAX_SESSIONS = 1000
+
     def __init__(self):
         self.cold = ColdMemory()
         self.skills = SkillDocumentStore()
@@ -879,6 +885,9 @@ class MemoryManager:
     def get_session(self, session_id: str) -> HotMemory:
         with self._lock:
             if session_id not in self._sessions:
+                if len(self._sessions) >= self._MAX_SESSIONS:
+                    oldest_key = min(self._sessions, key=lambda k: self._sessions[k].last_active)
+                    del self._sessions[oldest_key]
                 self._sessions[session_id] = HotMemory(session_id)
             return self._sessions[session_id]
 

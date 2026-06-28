@@ -38,13 +38,13 @@ TYPE_SCHEMA = {
     "attraction": "TouristAttraction",
     "cafe": "CafeOrCoffeeShop",
     "craft_village": "LocalBusiness",
-    "dish": "FoodEstablishment",
+    "dish": "Recipe",
     "drink": "Product",
     "economy": "LocalBusiness",
     "event": "Event",
     "experience": "TouristAttraction",
     "facility": "CivicStructure",
-    "history": "LandmarksOrHistoricalBuildings",
+    "history": "LandmarkOrHistoricalBuilding",
     "itinerary": "TouristTrip",
     "nature": "TouristAttraction",
     "organization": "Organization",
@@ -252,7 +252,7 @@ def parse_coordinates(value: Any) -> tuple[float, float] | None:
             break
         try:
             value = json.loads(value)
-        except Exception:
+        except (json.JSONDecodeError, ValueError, TypeError):
             return None
     if isinstance(value, dict):
         value = [value.get("lat", value.get("latitude")), value.get("lng", value.get("lon", value.get("longitude")))]
@@ -481,7 +481,11 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
             ld["material"] = attrs["material"]
         ld["countryOfOrigin"] = {"@type": "Country", "name": "Việt Nam"}
 
-    if schema_type in ("FoodEstablishment", "Restaurant", "CafeOrCoffeeShop"):
+    if schema_type == "Recipe":
+        cuisine = attrs.get("specialty") or attrs.get("food_type")
+        if cuisine:
+            ld["recipeCuisine"] = cuisine
+    elif schema_type in ("FoodEstablishment", "Restaurant", "CafeOrCoffeeShop"):
         cuisine = attrs.get("specialty") or attrs.get("food_type")
         if cuisine:
             ld["servesCuisine"] = cuisine
@@ -598,6 +602,22 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
                 break
         if related_urls:
             ld["relatedLink"] = related_urls
+
+    avg_rating = attrs.get("avg_rating") or entity.get("avg_rating")
+    rating_count = attrs.get("rating_count") or entity.get("rating_count")
+    if avg_rating is not None and rating_count:
+        try:
+            rv = float(avg_rating)
+            rc = int(rating_count)
+            if 1.0 <= rv <= 5.0 and rc > 0:
+                ld["aggregateRating"] = {
+                    "@type": "AggregateRating",
+                    "ratingValue": round(rv, 1),
+                    "bestRating": 5,
+                    "ratingCount": rc,
+                }
+        except (ValueError, TypeError):
+            pass
 
     date_modified = _safe_date(entity.get("updatedAt"))
     if date_modified:
@@ -1031,7 +1051,7 @@ def sitemap():
             loc,
             changefreq="weekly",
             priority=DETAIL_PRIORITY.get(str(entity.get("type")), "0.5"),
-            lastmod=_safe_date(entity.get("updatedAt"), now),
+            lastmod=_safe_date(entity.get("updatedAt"), None),
         ))
 
     for itinerary in data.get("itineraries", []):
@@ -1041,9 +1061,12 @@ def sitemap():
             _itinerary_url(str(itinerary["id"])),
             changefreq="monthly",
             priority="0.7",
-            lastmod=_safe_date(itinerary.get("updatedAt"), now),
+            lastmod=_safe_date(itinerary.get("updatedAt"), None),
         ))
 
+    if len(urls) > 50000:
+        logger.warning("Sitemap has %d URLs, truncating to 50000 (Google limit)", len(urls))
+        urls = urls[:50000]
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
     xml += "\n".join(urls)
@@ -1116,6 +1139,11 @@ def sitemap_index():
     )
 
 
+@router.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    return Response(status_code=204)
+
+
 @router.get("/robots.txt", response_class=PlainTextResponse)
 def robots():
     return f"""User-agent: *
@@ -1145,3 +1173,68 @@ Allow: /
 Host: {SITE}
 Sitemap: {SITE}/sitemap-index.xml
 """
+
+
+DEFAULT_OG_IMAGE = f"{SITE}/og-default.png"
+
+
+def build_og_meta(entity: dict[str, Any] | None = None) -> dict[str, str]:
+    """Open Graph + Twitter Card + Zalo meta data."""
+    meta: dict[str, str] = {
+        "og:site_name": "VinhLong360",
+        "og:locale": "vi_VN",
+        "og:type": "website",
+        "og:image": DEFAULT_OG_IMAGE,
+        "og:image:width": "1200",
+        "og:image:height": "630",
+        "twitter:card": "summary_large_image",
+        "twitter:site": "@vinhlong360",
+    }
+    if not entity:
+        title = "VinhLong360 — Khám phá Vĩnh Long, Bến Tre, Trà Vinh"
+        desc = "Điểm đến, ẩm thực, OCOP, lưu trú và cộng đồng miền Tây."
+        meta["og:title"] = title
+        meta["og:description"] = desc
+        meta["og:url"] = SITE
+        meta["twitter:title"] = title
+        meta["twitter:description"] = desc
+        meta["twitter:image"] = DEFAULT_OG_IMAGE
+        return meta
+
+    entity_id = str(entity.get("id", ""))
+    title = entity.get("name") or entity_id
+    url = _entity_url(entity_id)
+    meta["og:title"] = title
+    meta["og:url"] = url
+    meta["og:type"] = "article"
+    meta["twitter:title"] = title
+
+    if entity.get("summary"):
+        desc = str(entity["summary"])[:200]
+        meta["og:description"] = desc
+        meta["twitter:description"] = desc
+
+    images = entity.get("images")
+    if isinstance(images, list):
+        for img in images:
+            if isinstance(img, str) and img.startswith("http"):
+                meta["og:image"] = img
+                meta["twitter:image"] = img
+                break
+    meta["twitter:image"] = meta.get("twitter:image", meta["og:image"])
+    return meta
+
+
+@router.get("/seo/og/{entity_id}")
+def entity_og_meta(entity_id: str):
+    data = _load()
+    by_id = _by_id(data)
+    entity = by_id.get(entity_id)
+    if not entity:
+        raise HTTPException(status_code=404, detail="not found")
+    return build_og_meta(entity)
+
+
+@router.get("/seo/og")
+def site_og_meta():
+    return build_og_meta()

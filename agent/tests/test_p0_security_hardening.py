@@ -130,23 +130,27 @@ class TestGcRateDict:
         import auth
         d = {}
         now = time.time()
-        # Stale entry (older than window)
         d["stale_key"] = [now - 1000]
-        # Fresh entry
         d["fresh_key"] = [now]
-        # Trigger GC by exceeding _RATE_MAX_KEYS
-        for i in range(auth._RATE_MAX_KEYS + 1):
+        for i in range(auth._RATE_GC_THRESHOLD + 1):
             d[f"filler_{i}"] = [now - 1000]
         auth._gc_rate_dict(d, 500)
-        # Stale entries should be removed; fresh should remain
         assert "fresh_key" in d
 
     def test_gc_does_not_run_below_threshold(self):
         import auth
         d = {"key": [time.time() - 1000]}
         auth._gc_rate_dict(d, 500)
-        # Below _RATE_MAX_KEYS, GC should not run
         assert "key" in d
+
+    def test_gc_forced_eviction_over_4x_threshold(self):
+        import auth
+        d = {}
+        now = time.time()
+        for i in range(auth._RATE_GC_THRESHOLD * 5):
+            d[f"key_{i}"] = [now]
+        auth._gc_rate_dict(d, 500)
+        assert len(d) <= auth._RATE_GC_THRESHOLD
 
 
 # ============================================================================

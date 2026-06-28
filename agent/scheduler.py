@@ -132,6 +132,10 @@ def sync_data_json_to_js():
 _TASK_TIMEOUT = int(os.environ.get("SCHEDULER_TASK_TIMEOUT", "600"))
 
 
+_MAX_RETRIES = 2
+_RETRY_BACKOFF_BASE = 30
+
+
 class ScheduledTask:
     def __init__(self, name: str, func, interval_seconds: int, enabled: bool = True,
                  run_immediately: bool = True, timeout: int | None = None):
@@ -144,6 +148,7 @@ class ScheduledTask:
         self.last_error = None
         self.timeout = timeout or _TASK_TIMEOUT
         self.next_run_after = 0 if run_immediately else time.time() + interval_seconds
+        self._consecutive_failures = 0
 
     def should_run(self) -> bool:
         if not self.enabled:
@@ -170,8 +175,17 @@ class ScheduledTask:
             worker.join(timeout=self.timeout)
 
             if worker.is_alive():
+                self._consecutive_failures += 1
                 self.last_error = f"Task timed out after {self.timeout}s"
-                _sched_logger.error("Task timed out: %s (%ds)", self.name, self.timeout)
+                if self._consecutive_failures <= _MAX_RETRIES:
+                    backoff = _RETRY_BACKOFF_BASE * (2 ** (self._consecutive_failures - 1))
+                    self.next_run_after = time.time() + backoff
+                    _sched_logger.warning("Task timed out: %s (%ds), retry in %ds (attempt %d/%d)",
+                                          self.name, self.timeout, backoff,
+                                          self._consecutive_failures, _MAX_RETRIES + 1)
+                else:
+                    _sched_logger.error("Task timed out: %s (%ds) — %d consecutive failures",
+                                        self.name, self.timeout, self._consecutive_failures)
                 return
 
             if error_holder[0] is not None:
@@ -181,10 +195,19 @@ class ScheduledTask:
             self.last_run = time.time()
             self.run_count += 1
             self.last_error = None
+            self._consecutive_failures = 0
             _sched_logger.info("Task done: %s (%.1fs)", self.name, elapsed)
         except Exception as e:
+            self._consecutive_failures += 1
             self.last_error = str(e)
-            _sched_logger.error("Task failed: %s — %s\n%s", self.name, e, traceback.format_exc())
+            if self._consecutive_failures <= _MAX_RETRIES:
+                backoff = _RETRY_BACKOFF_BASE * (2 ** (self._consecutive_failures - 1))
+                self.next_run_after = time.time() + backoff
+                _sched_logger.warning("Task failed: %s (attempt %d/%d), retry in %ds — %s",
+                                      self.name, self._consecutive_failures, _MAX_RETRIES + 1, backoff, e)
+            else:
+                _sched_logger.error("Task failed: %s — %d consecutive failures, waiting normal interval — %s\n%s",
+                                    self.name, self._consecutive_failures, e, traceback.format_exc())
 
 
 def task_auto_learn():
@@ -570,6 +593,77 @@ def task_kb_promotion():
         _sched_logger.error("KB promotion error: %s\n%s", e, traceback.format_exc())
 
 
+def task_notification_cleanup():
+    """Prune notifications older than 90 days and read notifications older than 30 days."""
+    try:
+        import database as db
+        if not db._use_pg:
+            return
+        with db._conn() as conn:
+            db._execute(conn, "DELETE FROM notifications WHERE created_at < NOW() - INTERVAL '90 days'", ())
+            db._execute(conn, "DELETE FROM notifications WHERE is_read = TRUE AND created_at < NOW() - INTERVAL '30 days'", ())
+        _sched_logger.info("Notification cleanup: pruned old notifications")
+    except Exception as e:
+        _sched_logger.error("Notification cleanup error: %s", e)
+
+
+def task_session_cleanup():
+    """Purge expired user_sessions, otp_sessions, and sessions of deleted users."""
+    try:
+        import database as db
+        if not db._use_pg:
+            return
+        with db._conn() as conn:
+            db._execute(conn, "DELETE FROM user_sessions WHERE expires_at < NOW()", ())
+            db._execute(conn, "DELETE FROM otp_sessions WHERE expires_at < NOW()", ())
+            db._execute(conn, """
+                DELETE FROM user_sessions WHERE user_id IN (
+                    SELECT id FROM users WHERE deleted_at IS NOT NULL
+                    AND deleted_at < NOW() - INTERVAL '30 days'
+                )
+            """, ())
+            result = db._execute(conn, """
+                DELETE FROM users WHERE deleted_at IS NOT NULL
+                AND deleted_at < NOW() - INTERVAL '30 days'
+            """, ())
+            hard_deleted = getattr(result, 'rowcount', 0)
+            if hard_deleted and hard_deleted > 0:
+                _sched_logger.info("Session cleanup: hard-deleted %d accounts past grace period", hard_deleted)
+        _sched_logger.info("Session cleanup: purged expired sessions and OTPs")
+    except Exception as e:
+        _sched_logger.error("Session cleanup error: %s", e)
+
+
+def task_moderation_auto_escalation():
+    """Auto-approve pending posts older than 48h (solo admin can't review everything)."""
+    try:
+        import database as db
+        if not db._use_pg:
+            return
+        with db._conn() as conn:
+            result = db._execute(conn, """
+                UPDATE posts SET moderation_status = 'approved'
+                WHERE moderation_status = 'pending'
+                AND created_at < NOW() - INTERVAL '48 hours'
+            """, ())
+            rowcount = getattr(result, 'rowcount', 0)
+            if rowcount and rowcount > 0:
+                _sched_logger.info("Moderation auto-escalation: approved %d stale pending posts", rowcount)
+    except Exception as e:
+        _sched_logger.error("Moderation auto-escalation error: %s", e)
+
+
+def task_ratelimit_gc():
+    """Periodic GC for all in-memory rate-limit dicts to prevent memory leaks."""
+    try:
+        from ratelimit import gc_all
+        result = gc_all()
+        if result["freed"] > 0:
+            _sched_logger.info("Rate-limit GC: freed %d keys (%d→%d)", result["freed"], result["before"], result["after"])
+    except Exception as e:
+        _sched_logger.error("Rate-limit GC error: %s", e)
+
+
 TASKS = [
     ScheduledTask("auto-learn",     task_auto_learn,            interval_seconds=AUTO_LEARN_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 3h (env)
     ScheduledTask("relationships",  task_relationship_discovery, interval_seconds=12 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
@@ -585,6 +679,10 @@ TASKS = [
     ScheduledTask("agent-evolution",   task_agent_evolution,      interval_seconds=12 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
     ScheduledTask("optimizer-check",   task_optimizer_check,      interval_seconds=6 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 6h
     ScheduledTask("guardrails-cleanup",task_guardrails_cleanup,   interval_seconds=12 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
+    ScheduledTask("session-cleanup", task_session_cleanup,       interval_seconds=6 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 6h
+    ScheduledTask("notification-cleanup", task_notification_cleanup, interval_seconds=24 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h
+    ScheduledTask("ratelimit-gc",  task_ratelimit_gc,          interval_seconds=300),        # 5min
+    ScheduledTask("moderation-escalation", task_moderation_auto_escalation, interval_seconds=6 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 6h
     ScheduledTask("learning-loop",    task_learning_loop,         interval_seconds=LEARNING_LOOP_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 1h (env)
     ScheduledTask("kb-promotion",     task_kb_promotion,          interval_seconds=PROMOTION_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 6h (env)
     ScheduledTask("continuous-discovery", task_continuous_discovery, interval_seconds=DISCOVERY_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 1h adaptive 30m–6h (env)

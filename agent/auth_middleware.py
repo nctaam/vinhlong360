@@ -41,6 +41,15 @@ import secrets
 from fastapi import Depends, HTTPException, Request
 
 from auth import _get_current_user_or_none
+from database import db
+
+
+# ── Postgres guard (shared) ──
+
+def require_pg():
+    """Dependency: UGC/auth endpoints need Postgres. Returns 503 on SQLite."""
+    if not db._use_pg:
+        raise HTTPException(503, detail="Tính năng UGC/auth cần Postgres. Local dev: docker compose up postgres.")
 
 
 # ── Auth Dependencies ──
@@ -136,7 +145,7 @@ async def require_csrf(request: Request) -> None:
 #  INPUT VALIDATION UTILITIES
 # ══════════════════════════════════════════════════
 
-_PATH_ID_RE = re.compile(r'^[a-zA-Z0-9\-_]{1,128}$')
+_PATH_ID_RE = re.compile(r'^[a-zA-Z0-9\-_.]{1,128}$')
 _UUID_RE = re.compile(
     r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
     re.IGNORECASE,
@@ -388,16 +397,24 @@ SECURITY_HEADERS = {
 SECURITY_HEADERS_PROD = {
     **SECURITY_HEADERS,
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
-    "Content-Security-Policy": (
+}
+
+
+def generate_csp_nonce() -> str:
+    return secrets.token_urlsafe(16)
+
+
+def build_csp(nonce: str = "") -> str:
+    script_src = f"'self' 'nonce-{nonce}'" if nonce else "'self'"
+    return (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline'; "
+        f"script-src {script_src}; "
         "style-src 'self' 'unsafe-inline'; "
         "img-src 'self' data: https:; "
         "font-src 'self'; "
         "connect-src 'self'; "
         "frame-ancestors 'none'"
-    ),
-}
+    )
 
 
 def get_security_headers(is_production: bool = False) -> dict:
@@ -1206,6 +1223,19 @@ def check_idempotency(key: str) -> dict:
 
         _seen_idempotency_keys[key] = now
         return {"is_duplicate": False, "first_seen": now}
+
+
+async def require_idempotency(request: Request) -> None:
+    """FastAPI dependency: reject duplicate POST requests via Idempotency-Key header."""
+    key = request.headers.get("Idempotency-Key", "").strip()
+    if not key:
+        return
+    user = await _get_current_user_or_none(request)
+    if user:
+        key = f"{user['id']}:{key}"
+    result = check_idempotency(key)
+    if result["is_duplicate"]:
+        raise HTTPException(409, "Yêu cầu trùng lặp (idempotency key đã được xử lý)")
 
 
 def _reset_idempotency():

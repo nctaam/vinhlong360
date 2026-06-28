@@ -18,7 +18,7 @@ import json
 import logging
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -122,7 +122,7 @@ def check_freshness(entities: dict, max_age_days: int = DEFAULT_MAX_AGE_DAYS) ->
             "issues": [{"id": str, "name": str, "reasons": [str]}]
         }
     """
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     cutoff = now - timedelta(days=max_age_days)
 
     all_entities = entities.get("entities", [])
@@ -269,7 +269,7 @@ def freshness_report(entities: dict) -> str:
     lines = []
     lines.append("=" * 60)
     lines.append("  CONTENT FRESHNESS REPORT")
-    lines.append("  " + datetime.now().strftime("%Y-%m-%d %H:%M"))
+    lines.append("  " + datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"))
     lines.append("=" * 60)
     lines.append("")
 
@@ -375,7 +375,7 @@ def schedule_refresh(entity_ids: list[str]) -> dict:
 
     pending = queue.get("pending", [])
     existing_ids = {item["id"] for item in pending}
-    now_str = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    now_str = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
 
     added = 0
     for eid in entity_ids:

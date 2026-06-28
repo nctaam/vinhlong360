@@ -427,8 +427,36 @@ _SPAM_PATTERNS_V2 = [
 ]
 
 
+_SPAM_PATTERNS_SOUTHERN = [
+    # Southern Vietnamese dialect spam variants (miền Tây)
+    # "dzô" = "vô", "dui" = "vui", "dìa" = "về"
+    re.compile(
+        r'\b(ki[eế]m\s*l[ờợ]i\s*kh[uủ]ng|'
+        r'nh[aậ]n\s*ti[eề]n\s*li[eề]n|'
+        r'dzô\s*(link|web|trang)|'
+        r'b[aấ]m\s*dzô\s*[dđ][aâ]y)',
+        re.IGNORECASE,
+    ),
+    # Southern gambling slang: "đá gà", "lô đề", "bầu cua"
+    re.compile(
+        r'\b([dđ][aá]\s*g[aà]\s*online|'
+        r'l[oô]\s*[dđ][eề]\s*online|'
+        r'b[aầ]u\s*cua\s*online|'
+        r'c[aá]\s*[dđ][oộ]\s*b[oó]ng)',
+        re.IGNORECASE,
+    ),
+    # Southern slang for scam hooks: "dễ ợt", "ngon lành"
+    re.compile(
+        r'\b(ki[eế]m\s*ti[eề]n\s*d[eễ]\s*[oợ]t|'
+        r'l[aà]m\s*gi[aà]u\s*d[eễ]\s*[oợ]t|'
+        r'thu\s*nh[aậ]p\s*kh[uủ]ng\s*m[oỗ]i\s*ng[aà]y)',
+        re.IGNORECASE,
+    ),
+]
+
+
 def _check_spam_patterns_v2(content: str) -> dict:
-    """Extended spam patterns: MLM, loan sharks, fake medicine, phishing."""
+    """Extended spam patterns: MLM, loan sharks, fake medicine, phishing, Southern dialect."""
     if not content or not content.strip():
         return {"score": 0.0, "reasons": []}
 
@@ -436,7 +464,7 @@ def _check_spam_patterns_v2(content: str) -> dict:
     text = normalize_homoglyphs(content)
     reasons = []
     score = 0.0
-    for pattern in _SPAM_PATTERNS_V2:
+    for pattern in _SPAM_PATTERNS_V2 + _SPAM_PATTERNS_SOUTHERN:
         match = pattern.search(text)
         if match:
             score = max(score, 0.6)
@@ -487,6 +515,12 @@ def record_moderation_outcome(user_id: str, action: str):
         if user_id not in _user_moderation_history:
             _user_moderation_history[user_id] = []
         _user_moderation_history[user_id].append((now, action))
+        if len(_user_moderation_history) > 50_000:
+            cutoff = now - _MOD_HISTORY_WINDOW
+            dead = [k for k, v in _user_moderation_history.items()
+                    if not v or v[-1][0] < cutoff]
+            for k in dead:
+                del _user_moderation_history[k]
 
 
 def adjust_thresholds_for_trust(trust_level: str) -> tuple[float, float]:
@@ -552,7 +586,7 @@ def analyze_url_deep(url: str) -> dict:
         parsed = _urlparse.urlparse(url if '://' in url else f"http://{url}")
         hostname = (parsed.hostname or "").lower()
         path = parsed.path or ""
-    except Exception:
+    except (ValueError, AttributeError):
         return {"risk_score": 0.8, "reasons": ["unparseable_url"], "risk_level": "high"}
 
     # Skip analysis for legitimate domains

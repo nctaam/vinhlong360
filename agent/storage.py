@@ -153,7 +153,9 @@ class Storage:
             _s3.upload_fileobj(io.BytesIO(data), _BUCKET, key, ExtraArgs=extra)
             logger.debug("Uploaded %s to %s/%s (%d bytes)", content_type, self.backend, key, len(data))
             return f"{_PUBLIC_BASE}/{key}"
-        path = LOCAL_MEDIA_DIR / key
+        path = (LOCAL_MEDIA_DIR / key).resolve()
+        if not path.is_relative_to(LOCAL_MEDIA_DIR.resolve()):
+            raise ValueError("Invalid storage key")
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)
         logger.debug("Saved local file %s (%d bytes)", path, len(data))
@@ -184,10 +186,12 @@ class Storage:
             raise ValueError(f"Invalid folder path: {folder}")
         if content_type not in ALLOWED_TYPES:
             raise ValueError(f"Định dạng không hỗ trợ: {content_type}")
-        # Normalise everything to a single 1600px WebP for consistency + size.
-        webp = _to_webp(data, WEBP_SIZES["lg"])
-        key = f"{folder}/{uuid.uuid4().hex[:12]}.webp"
-        return self._put(webp, key, "image/webp")
+        import asyncio
+        def _sync_upload():
+            webp = _to_webp(data, WEBP_SIZES["lg"])
+            key = f"{folder}/{uuid.uuid4().hex[:12]}.webp"
+            return self._put(webp, key, "image/webp")
+        return await asyncio.to_thread(_sync_upload)
 
     def delete(self, key_or_url: str):
         if self.use_s3:
@@ -197,10 +201,15 @@ class Storage:
             _s3.delete_object(Bucket=_BUCKET, Key=key)
             logger.debug("Deleted %s/%s", self.backend, key)
         else:
-            path = LOCAL_MEDIA_DIR / key_or_url.replace("/media/", "")
-            if path.exists():
+            path = (LOCAL_MEDIA_DIR / key_or_url.replace("/media/", "")).resolve()
+            if not path.is_relative_to(LOCAL_MEDIA_DIR.resolve()):
+                logger.warning("Path traversal attempt in storage.delete: %s", key_or_url[:100])
+                return
+            try:
                 path.unlink()
                 logger.debug("Deleted local file %s", path)
+            except FileNotFoundError:
+                pass
 
 
 storage = Storage()

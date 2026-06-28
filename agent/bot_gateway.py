@@ -45,7 +45,7 @@ if sys.stdout.encoding != "utf-8":
 
 import httpx
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, HTTPException, Request, Response
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
@@ -767,7 +767,7 @@ class BotGateway:
             user_id = body.get("sender", {}).get("id", "")
 
             if not text or not user_id:
-                return {"status": "ok"}
+                return {"success": True}
 
             user_key = _session_key("zalo", user_id)
 
@@ -808,7 +808,7 @@ class BotGateway:
                 )
                 await self._zalo_send(user_id, welcome)
 
-        return {"status": "ok"}
+        return {"success": True}
 
     async def _zalo_send(self, user_id: str, text: str):
         """Send a text message via Zalo OA API.
@@ -938,19 +938,24 @@ def create_bot_app() -> FastAPI:
         then delegates to ``BotGateway.handle_zalo_event()``.
         """
         if not ZALO_OA_ID:
-            return {"error": "ZALO_OA_ID chua cau hinh"}
+            raise HTTPException(503, detail="ZALO_OA_ID not configured")
 
         # Read raw body for signature verification
         raw_body = await request.body()
 
-        # Verify signature
-        if ZALO_OA_SECRET:
-            signature = request.headers.get("X-ZEvent-Signature", "")
-            if not gw.verify_zalo_signature(raw_body, signature):
-                _bot_logger.warning("Zalo webhook: invalid signature")
-                return {"error": "Invalid signature"}
+        # Verify signature — reject if secret not configured (no unauthenticated webhooks)
+        if not ZALO_OA_SECRET:
+            _bot_logger.warning("Zalo webhook rejected: ZALO_OA_SECRET not configured")
+            raise HTTPException(503, detail="Webhook signature verification not configured")
+        signature = request.headers.get("X-ZEvent-Signature", "")
+        if not gw.verify_zalo_signature(raw_body, signature):
+            _bot_logger.warning("Zalo webhook: invalid signature")
+            raise HTTPException(401, detail="Invalid webhook signature")
 
-        body = json.loads(raw_body)
+        try:
+            body = json.loads(raw_body)
+        except (json.JSONDecodeError, ValueError):
+            raise HTTPException(400, detail="Invalid JSON body")
         return await gw.handle_zalo_event(body)
 
     @bot_app.get("/stats")

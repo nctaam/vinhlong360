@@ -14,6 +14,7 @@ Tuân thủ NĐ 147/2024: xác thực SĐT VN trước khi cho đăng bài/bình
 """
 import html as _html
 
+import asyncio
 import base64
 import hashlib
 import hmac
@@ -27,16 +28,29 @@ from datetime import datetime, timedelta, timezone
 logger = logging.getLogger("auth")
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, File
 from fastapi.concurrency import run_in_threadpool
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
+from config import settings as _cfg
 from database import db
 
 
+async def _require_csrf_lazy(request: Request) -> None:
+    from auth_middleware import require_csrf
+    await require_csrf(request)
+
+
+async def _check_session_binding_safe(request, user):
+    try:
+        from auth_middleware import check_session_binding
+        return await check_session_binding(request, user)
+    except Exception:
+        logging.getLogger("auth").warning("session binding check failed, allowing access", exc_info=True)
+        return True
+
+
 def _require_pg():
-    # GĐ3.1 (quyết định): UGC/auth chạy trên Postgres (dev/prod parity, đúng kiến trúc).
-    # SQLite dev -> trả 503 rõ ràng thay vì crash 500.
     if not db._use_pg:
         raise HTTPException(503, detail="Tính năng UGC/auth cần Postgres. Local dev: docker compose up postgres.")
 
@@ -46,48 +60,83 @@ router = APIRouter(prefix="/auth", tags=["auth"], dependencies=[Depends(_require
 # ── Config ──
 
 OTP_LENGTH = 6
-OTP_EXPIRE_MINUTES = 5
+OTP_EXPIRE_MINUTES = _cfg.OTP_EXPIRE_MINUTES
 OTP_MAX_ATTEMPTS = 5
 OTP_RATE_LIMIT_SECONDS = 60
-SESSION_EXPIRE_DAYS = 30
+SESSION_EXPIRE_DAYS = _cfg.SESSION_EXPIRE_DAYS
 
-ESMS_API_KEY = os.getenv("ESMS_API_KEY", "")
-ESMS_SECRET = os.getenv("ESMS_SECRET", "")
-ESMS_BRANDNAME = os.getenv("ESMS_BRANDNAME", "VinhLong360")
+ESMS_API_KEY = _cfg.ESMS_API_KEY
+ESMS_SECRET = _cfg.ESMS_SECRET
+ESMS_BRANDNAME = _cfg.ESMS_BRANDNAME
 
 VN_PHONE_RE = re.compile(r"^(0|\+84)(3|5|7|8|9)\d{8}$")
 
 _otp_rate: dict[str, float] = {}
 
-# GĐ4.7: rate-limit theo IP (chống SMS-pump bằng cách xoay nhiều số điện thoại).
-OTP_IP_LIMIT = 5          # tối đa 5 lần / cửa sổ
-OTP_IP_WINDOW = 600       # 10 phút
+OTP_IP_LIMIT = _cfg.OTP_IP_LIMIT
+OTP_IP_WINDOW = _cfg.OTP_IP_WINDOW
 _otp_ip_rate: dict[str, list[float]] = {}
 
-# P0-15: rate-limit /login theo IP (chống brute-force mật khẩu — OTP đã có limit, login thì chưa).
-LOGIN_IP_LIMIT = 10       # tối đa 10 lần / cửa sổ
-LOGIN_IP_WINDOW = 300     # 5 phút
+LOGIN_IP_LIMIT = _cfg.LOGIN_IP_LIMIT
+LOGIN_IP_WINDOW = _cfg.LOGIN_IP_WINDOW
 _login_ip_rate: dict[str, list[float]] = {}
 
-LOGIN_PHONE_LIMIT = 5     # 5 sai → khoá phone 15 phút
-LOGIN_PHONE_WINDOW = 900  # 15 phút
+LOGIN_PHONE_LIMIT = _cfg.LOGIN_PHONE_LIMIT
+LOGIN_PHONE_WINDOW = _cfg.LOGIN_PHONE_WINDOW
 _login_phone_fails: dict[str, list[float]] = {}
 
-_RATE_MAX_KEYS = 2000
+OTP_VERIFY_IP_LIMIT = 15
+OTP_VERIFY_IP_WINDOW = 300
+_otp_verify_ip_rate: dict[str, list[float]] = {}
+OTP_VERIFY_PHONE_LIMIT = 5
+OTP_VERIFY_PHONE_WINDOW = 300
+_otp_verify_phone_rate: dict[str, list[float]] = {}
+
+ACCOUNT_DELETE_GRACE_DAYS = _cfg.ACCOUNT_DELETE_GRACE_DAYS
+
+_RATE_GC_THRESHOLD = 500
 
 def _gc_rate_dict(d: dict, window: float) -> None:
-    if len(d) <= _RATE_MAX_KEYS:
+    if len(d) <= _RATE_GC_THRESHOLD:
         return
     now = time.time()
-    stale = [k for k, v in d.items() if not v or now - max(v) > window]
+    stale = [k for k, v in d.items()
+             if not v or now - (max(v) if isinstance(v, list) else v) > window]
     for k in stale:
         del d[k]
+    if len(d) > _RATE_GC_THRESHOLD * 4:
+        oldest = sorted(d.keys(), key=lambda k: max(d[k]) if isinstance(d[k], list) else d[k])
+        for k in oldest[:len(d) - _RATE_GC_THRESHOLD]:
+            del d[k]
+
+
+def _mask_phone(phone: str) -> str:
+    if len(phone) <= 6:
+        return phone[:2] + "***"
+    return phone[:3] + "***" + phone[-3:]
+
+
+def _create_session_atomic(uid: str, token_hash: str, ua: str, ip: str, expires_iso: str):
+    from auth_middleware import MAX_CONCURRENT_SESSIONS
+    with db._conn() as conn:
+        db._execute(conn, f"""
+            INSERT INTO user_sessions (user_id, token, user_agent, ip_address, expires_at)
+            VALUES ({db._ph}::uuid, {db._ph}, {db._ph}, {db._ph}, {db._ph})
+        """, (uid, token_hash, ua, ip, expires_iso))
+        db._execute(conn, f"""
+            DELETE FROM user_sessions WHERE id IN (
+                SELECT id FROM user_sessions
+                WHERE user_id::text = {db._ph} AND expires_at > NOW()
+                ORDER BY created_at DESC
+                OFFSET {db._ph}
+            )
+        """, (uid, MAX_CONCURRENT_SESSIONS))
 
 
 # ── Models ──
 
 class OTPRequest(BaseModel):
-    phone: str
+    phone: str = Field(..., max_length=20)
 
     @field_validator("phone")
     @classmethod
@@ -104,8 +153,8 @@ CONSENT_VERSION = "1.0"
 
 
 class OTPVerify(BaseModel):
-    phone: str
-    code: str
+    phone: str = Field(..., max_length=20)
+    code: str = Field(..., max_length=10)
     consent: bool = False
 
     @field_validator("phone")
@@ -118,8 +167,8 @@ class OTPVerify(BaseModel):
 
 
 class PasswordLogin(BaseModel):
-    phone: str
-    password: str
+    phone: str = Field(..., max_length=20)
+    password: str = Field(..., max_length=128)
 
     @field_validator("phone")
     @classmethod
@@ -131,8 +180,8 @@ class PasswordLogin(BaseModel):
 
 
 class SetPassword(BaseModel):
-    password: str
-    current_password: str | None = None
+    password: str = Field(..., max_length=128)
+    current_password: str | None = Field(None, max_length=128)
 
     @field_validator("password")
     @classmethod
@@ -147,7 +196,7 @@ class SetPassword(BaseModel):
 
 
 class CheckPhone(BaseModel):
-    phone: str
+    phone: str = Field(..., max_length=20)
 
     @field_validator("phone")
     @classmethod
@@ -159,9 +208,9 @@ class CheckPhone(BaseModel):
 
 
 class ProfileUpdate(BaseModel):
-    display_name: str | None = None
-    bio: str | None = None
-    username: str | None = None
+    display_name: str | None = Field(None, max_length=50)
+    bio: str | None = Field(None, max_length=300)
+    username: str | None = Field(None, max_length=30)
 
 
 # ── Helpers ──
@@ -192,12 +241,15 @@ def _hash_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
 
-_PBKDF2_ITERATIONS = 310_000
+_PBKDF2_ITERATIONS = _cfg.PBKDF2_ITERATIONS
 
 def _hash_password(password: str) -> str:
     salt = os.urandom(16)
     key = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, _PBKDF2_ITERATIONS)
     return base64.b64encode(salt + key).decode()
+
+
+_DUMMY_HASH = _hash_password("timing_safety_dummy")
 
 
 def _verify_password(password: str, stored: str) -> bool:
@@ -213,14 +265,14 @@ def _verify_password(password: str, stored: str) -> bool:
 async def _send_sms(phone: str, message: str) -> bool:
     """Send SMS via eSMS.vn API."""
     if not ESMS_API_KEY:
-        print(f"[AUTH] DEV MODE — SMS to {phone}: {message}")
+        logger.debug("DEV MODE — SMS to %s: %s", phone, message)
         return True
 
     intl_phone = "84" + phone[1:] if phone.startswith("0") else phone
     try:
         async with httpx.AsyncClient(timeout=10) as client:
             resp = await client.post(
-                "http://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_post_json/",
+                "https://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_post_json/",
                 json={
                     "ApiKey": ESMS_API_KEY,
                     "Content": message,
@@ -232,8 +284,8 @@ async def _send_sms(phone: str, message: str) -> bool:
             )
             data = resp.json()
             return data.get("CodeResult") == "100"
-    except Exception as e:
-        print(f"[AUTH] SMS send failed: {e}")
+    except Exception:
+        logger.exception("SMS send failed to %s", _mask_phone(phone))
         return False
 
 
@@ -261,16 +313,19 @@ async def request_otp(body: OTPRequest, request: Request):
     _gc_rate_dict(_otp_ip_rate, OTP_IP_WINDOW)
 
     _otp_rate[phone] = now
+    _gc_rate_dict(_otp_rate, OTP_RATE_LIMIT_SECONDS)
 
     code = _generate_otp()
     hashed = _hash_otp(code)
     expires = datetime.now(timezone.utc) + timedelta(minutes=OTP_EXPIRE_MINUTES)
 
-    with db._conn() as conn:
-        db._execute(conn, f"""
-            INSERT INTO otp_sessions (phone, code, expires_at)
-            VALUES ({db._ph}, {db._ph}, {db._ph})
-        """, (phone, hashed, expires.isoformat()))
+    def _save_otp():
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                INSERT INTO otp_sessions (phone, code, expires_at)
+                VALUES ({db._ph}, {db._ph}, {db._ph})
+            """, (phone, hashed, expires.isoformat()))
+    await asyncio.to_thread(_save_otp)
 
     message = f"Ma OTP cua ban la {code}. Het han sau {OTP_EXPIRE_MINUTES} phut."
     sent = await _send_sms(phone, message)
@@ -278,7 +333,7 @@ async def request_otp(body: OTPRequest, request: Request):
     # SEC-001: KHÔNG BAO GIỜ trả OTP trong HTTP response (auth-bypass nếu prod thiếu
     # ESMS_API_KEY). Khi chưa cấu hình SMS provider (dev), in ra log server để dev đọc.
     if not ESMS_API_KEY:
-        logger.warning("[DEV] OTP cho %s: %s (chưa cấu hình ESMS_API_KEY)", phone, code)
+        logger.warning("[DEV] OTP cho %s (chưa cấu hình ESMS_API_KEY)", _mask_phone(phone))
 
     return {
         "success": True,
@@ -289,68 +344,90 @@ async def request_otp(body: OTPRequest, request: Request):
 
 @router.post("/verify-otp")
 async def verify_otp(body: OTPVerify, request: Request):
+    from middleware import get_client_ip
+    ip = get_client_ip(request)
+    now = time.time()
+    hits = [t for t in _otp_verify_ip_rate.get(ip, []) if now - t < OTP_VERIFY_IP_WINDOW]
+    if len(hits) >= OTP_VERIFY_IP_LIMIT:
+        raise HTTPException(429, "Quá nhiều lần xác thực OTP từ IP này. Vui lòng thử lại sau.")
+    hits.append(now)
+    _otp_verify_ip_rate[ip] = hits
+    _gc_rate_dict(_otp_verify_ip_rate, OTP_VERIFY_IP_WINDOW)
+
     phone = _normalize_phone(body.phone)
+    phone_hits = [t for t in _otp_verify_phone_rate.get(phone, []) if now - t < OTP_VERIFY_PHONE_WINDOW]
+    if len(phone_hits) >= OTP_VERIFY_PHONE_LIMIT:
+        raise HTTPException(429, "Quá nhiều lần nhập OTP cho số này. Vui lòng yêu cầu mã mới sau 5 phút.")
+    phone_hits.append(now)
+    _otp_verify_phone_rate[phone] = phone_hits
+    _gc_rate_dict(_otp_verify_phone_rate, OTP_VERIFY_PHONE_WINDOW)
     hashed = _hash_otp(body.code.strip())
 
-    with db._conn() as conn:
-        row = db._fetchone(conn, f"""
-            SELECT * FROM otp_sessions
-            WHERE phone = {db._ph} AND verified = FALSE
-            ORDER BY created_at DESC LIMIT 1
-        """, (phone,))
-
-        if not row:
-            raise HTTPException(400, "Không tìm thấy OTP. Vui lòng yêu cầu mã mới")
-
-        otp = db._row_to_dict(row)
-
-        if isinstance(otp.get("expires_at"), str):
-            exp = datetime.fromisoformat(otp["expires_at"])
-        else:
-            exp = otp["expires_at"]
-
-        if exp.tzinfo is None:
-            exp = exp.replace(tzinfo=timezone.utc)
-
-        if datetime.now(timezone.utc) > exp:
-            raise HTTPException(400, "OTP đã hết hạn. Vui lòng yêu cầu mã mới")
-
-        attempts = otp.get("attempts", 0) + 1
-        if attempts > OTP_MAX_ATTEMPTS:
-            raise HTTPException(429, "Quá nhiều lần thử. Vui lòng yêu cầu mã mới")
-
-        if not hmac.compare_digest(otp["code"], hashed):
+    def _verify():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT id, code, expires_at, attempts, phone FROM otp_sessions
+                WHERE phone = {db._ph} AND verified = FALSE
+                ORDER BY created_at DESC LIMIT 1
+                FOR UPDATE SKIP LOCKED
+            """, (phone,))
+            if not row:
+                raise HTTPException(400, "Không tìm thấy OTP. Vui lòng yêu cầu mã mới")
+            otp = db._row_to_dict(row)
+            if isinstance(otp.get("expires_at"), str):
+                exp = datetime.fromisoformat(otp["expires_at"])
+            else:
+                exp = otp["expires_at"]
+            if exp.tzinfo is None:
+                exp = exp.replace(tzinfo=timezone.utc)
+            if datetime.now(timezone.utc) > exp:
+                raise HTTPException(400, "OTP đã hết hạn. Vui lòng yêu cầu mã mới")
+            attempts = otp.get("attempts", 0) + 1
+            if attempts > OTP_MAX_ATTEMPTS:
+                raise HTTPException(429, "Quá nhiều lần thử. Vui lòng yêu cầu mã mới")
+            if not hmac.compare_digest(otp["code"], hashed):
+                db._execute(conn, f"""
+                    UPDATE otp_sessions SET attempts = {db._ph} WHERE id::text = {db._ph}
+                """, (attempts, str(otp["id"])))
+                raise HTTPException(400, f"OTP không đúng. Còn {OTP_MAX_ATTEMPTS - attempts} lần thử")
             db._execute(conn, f"""
-                UPDATE otp_sessions SET attempts = {db._ph} WHERE id::text = {db._ph}
-            """, (attempts, str(otp["id"])))
-            raise HTTPException(400, f"OTP không đúng. Còn {OTP_MAX_ATTEMPTS - attempts} lần thử")
+                UPDATE otp_sessions SET verified = TRUE WHERE id::text = {db._ph}
+            """, (str(otp["id"]),))
+    await asyncio.to_thread(_verify)
 
-        db._execute(conn, f"""
-            UPDATE otp_sessions SET verified = TRUE WHERE id::text = {db._ph}
-        """, (str(otp["id"]),))
-
-    user = db.get_user_by_phone(phone)
-    if not user:
-        if not body.consent:
-            raise HTTPException(400, "Vui lòng đồng ý Điều khoản sử dụng và Chính sách bảo mật")
-        user = db.create_user(phone, consent_version=CONSENT_VERSION)
-    elif not user.get("is_active", True):
-        db.update_user(str(user["id"]), is_active=True)
-        user["is_active"] = True
+    def _get_or_create_user():
+        u = db.get_user_by_phone(phone)
+        if not u:
+            if not body.consent:
+                raise HTTPException(400, "Vui lòng đồng ý Điều khoản sử dụng và Chính sách bảo mật")
+            u = db.create_user(phone, consent_version=CONSENT_VERSION)
+        else:
+            updates = {}
+            if not u.get("is_active", True):
+                updates["is_active"] = True
+            if u.get("deleted_at"):
+                updates["deleted_at"] = None
+                updates["is_active"] = True
+            if updates:
+                db.update_user(str(u["id"]), **updates)
+                u.update(updates)
+        return u
+    user = await asyncio.to_thread(_get_or_create_user)
 
     token = _generate_token()
     expires = datetime.now(timezone.utc) + timedelta(days=SESSION_EXPIRE_DAYS)
     from middleware import get_client_ip
-    ip = get_client_ip(request)  # P1-19: IP thật (trusted-proxy), không phải IP proxy
+    ip = get_client_ip(request)
+
+    if body.consent:
+        await asyncio.to_thread(_log_consent, str(user["id"]), CONSENT_VERSION, ip)
     ua = request.headers.get("user-agent", "")
 
-    with db._conn() as conn:
-        db._execute(conn, f"""
-            INSERT INTO user_sessions (user_id, token, user_agent, ip_address, expires_at)
-            VALUES ({db._ph}::uuid, {db._ph}, {db._ph}, {db._ph}, {db._ph})
-        """, (str(user["id"]), _hash_token(token), ua, ip, expires.isoformat()))
+    await asyncio.to_thread(
+        _create_session_atomic, str(user["id"]), _hash_token(token), ua, ip, expires.isoformat()
+    )
 
-    _log_login(phone, "otp", True, request, str(user["id"]))
+    await asyncio.to_thread(_log_login, phone, "otp", True, request, str(user["id"]))
 
     return {
         "success": True,
@@ -361,10 +438,25 @@ async def verify_otp(body: OTPVerify, request: Request):
     }
 
 
+CHECK_PHONE_IP_LIMIT = _cfg.CHECK_PHONE_IP_LIMIT
+CHECK_PHONE_IP_WINDOW = _cfg.CHECK_PHONE_IP_WINDOW
+_check_phone_ip_rate: dict[str, list[float]] = {}
+
+
 @router.post("/check-phone")
-async def check_phone(body: CheckPhone):
+async def check_phone(body: CheckPhone, request: Request):
+    from middleware import get_client_ip
+    ip = get_client_ip(request)
+    now = time.time()
+    hits = [t for t in _check_phone_ip_rate.get(ip, []) if now - t < CHECK_PHONE_IP_WINDOW]
+    if len(hits) >= CHECK_PHONE_IP_LIMIT:
+        raise HTTPException(429, "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
+    hits.append(now)
+    _check_phone_ip_rate[ip] = hits
+    _gc_rate_dict(_check_phone_ip_rate, CHECK_PHONE_IP_WINDOW)
+
     phone = _normalize_phone(body.phone)
-    user = db.get_user_by_phone(phone)
+    user = await asyncio.to_thread(db.get_user_by_phone, phone)
     return {"has_password": bool(user and user.get("password_hash"))}
 
 
@@ -387,22 +479,26 @@ async def login_password(body: PasswordLogin, request: Request):
     if len(phone_hits) >= LOGIN_PHONE_LIMIT:
         raise HTTPException(429, "Tài khoản tạm khoá do đăng nhập sai nhiều lần. Thử lại sau 15 phút.")
 
-    user = db.get_user_by_phone(phone)
+    user = await asyncio.to_thread(db.get_user_by_phone, phone)
 
     if not user or not user.get("password_hash"):
+        # Constant-time: always run PBKDF2 to prevent timing oracle
+        _verify_password(body.password, _DUMMY_HASH)
         phone_hits.append(now)
         _login_phone_fails[phone] = phone_hits
-        _log_login(phone, "password", False, request)
+        _gc_rate_dict(_login_phone_fails, LOGIN_PHONE_WINDOW)
+        await asyncio.to_thread(_log_login, phone, "password", False, request)
         raise HTTPException(401, "Số điện thoại hoặc mật khẩu không đúng")
 
     if not user.get("is_active", True):
-        _log_login(phone, "password", False, request, str(user["id"]))
+        await asyncio.to_thread(_log_login, phone, "password", False, request, str(user["id"]))
         raise HTTPException(403, "Tài khoản đã bị vô hiệu hóa")
 
     if not _verify_password(body.password, user["password_hash"]):
         phone_hits.append(now)
         _login_phone_fails[phone] = phone_hits
-        _log_login(phone, "password", False, request, str(user["id"]))
+        _gc_rate_dict(_login_phone_fails, LOGIN_PHONE_WINDOW)
+        await asyncio.to_thread(_log_login, phone, "password", False, request, str(user["id"]))
         raise HTTPException(401, "Số điện thoại hoặc mật khẩu không đúng")
 
     _login_phone_fails.pop(phone, None)
@@ -411,13 +507,11 @@ async def login_password(body: PasswordLogin, request: Request):
     expires = datetime.now(timezone.utc) + timedelta(days=SESSION_EXPIRE_DAYS)
     ua = request.headers.get("user-agent", "")
 
-    with db._conn() as conn:
-        db._execute(conn, f"""
-            INSERT INTO user_sessions (user_id, token, user_agent, ip_address, expires_at)
-            VALUES ({db._ph}::uuid, {db._ph}, {db._ph}, {db._ph}, {db._ph})
-        """, (str(user["id"]), _hash_token(token), ua, ip, expires.isoformat()))
+    await asyncio.to_thread(
+        _create_session_atomic, str(user["id"]), _hash_token(token), ua, ip, expires.isoformat()
+    )
 
-    _log_login(phone, "password", True, request, str(user["id"]))
+    await asyncio.to_thread(_log_login, phone, "password", True, request, str(user["id"]))
 
     return {
         "success": True,
@@ -428,10 +522,14 @@ async def login_password(body: PasswordLogin, request: Request):
 
 
 @router.post("/set-password")
-async def set_password(body: SetPassword, request: Request):
+async def set_password(body: SetPassword, request: Request, _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
+    from ratelimit import check_rate
+    check_rate(f"set-password:{user['id']}", 5, 600, "Đổi mật khẩu quá nhanh. Vui lòng thử lại sau.")
+    if not await _check_session_binding_safe(request, user):
+        logger.warning("Session binding mismatch on set-password for user %s", user.get("id"))
 
     if user.get("password_hash"):
         if not body.current_password:
@@ -440,28 +538,31 @@ async def set_password(body: SetPassword, request: Request):
             raise HTTPException(400, "Mật khẩu hiện tại không đúng")
 
     hashed = _hash_password(body.password)
-    db.update_user(str(user["id"]), password_hash=hashed)
+    await asyncio.to_thread(db.update_user, str(user["id"]), password_hash=hashed)
 
     # P1-9: đổi mật khẩu → thu hồi MỌI phiên khác (giữ phiên hiện tại), chống chiếm dụng.
     cur = _extract_token(request)
     cur_hash = _hash_token(cur) if cur else None
-    with db._conn() as conn:
-        if cur_hash:
-            db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph} AND token != {db._ph}",
-                        (str(user["id"]), cur_hash))
-        else:
-            db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph}", (str(user["id"]),))
-
+    def _revoke_others():
+        with db._conn() as conn:
+            if cur_hash:
+                db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph} AND token != {db._ph}",
+                            (str(user["id"]), cur_hash))
+            else:
+                db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph}", (str(user["id"]),))
+    await asyncio.to_thread(_revoke_others)
     return {"success": True, "message": "Đã đặt mật khẩu thành công"}
 
 
 @router.post("/logout")
-async def logout(request: Request):
+async def logout(request: Request, _csrf=Depends(_require_csrf_lazy)):
     token = _extract_token(request)
     if not token:
         return {"success": True}
-    with db._conn() as conn:
-        db._execute(conn, f"DELETE FROM user_sessions WHERE token = {db._ph}", (_hash_token(token),))
+    def _query():
+        with db._conn() as conn:
+            db._execute(conn, f"DELETE FROM user_sessions WHERE token = {db._ph}", (_hash_token(token),))
+    await asyncio.to_thread(_query)
     return {"success": True}
 
 
@@ -472,13 +573,15 @@ async def list_sessions(request: Request):
         raise HTTPException(401, "Chưa đăng nhập")
     cur_token = _extract_token(request)
     cur_hash = _hash_token(cur_token) if cur_token else None
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT id, user_agent, ip_address, created_at, expires_at, token
-            FROM user_sessions
-            WHERE user_id::text = {db._ph} AND expires_at > NOW()
-            ORDER BY created_at DESC
-        """, (str(user["id"]),))
+    def _query():
+        with db._conn() as conn:
+            return db._fetchall(conn, f"""
+                SELECT id, user_agent, ip_address, created_at, expires_at, token
+                FROM user_sessions
+                WHERE user_id::text = {db._ph} AND expires_at > NOW()
+                ORDER BY created_at DESC
+            """, (str(user["id"]),))
+    rows = await asyncio.to_thread(_query)
     sessions = []
     for r in rows:
         rd = db._row_to_dict(r)
@@ -488,21 +591,23 @@ async def list_sessions(request: Request):
             "ip_address": rd.get("ip_address", ""),
             "created_at": str(rd.get("created_at", "")),
             "expires_at": str(rd.get("expires_at", "")),
-            "is_current": rd.get("token") == cur_hash,
+            "is_current": hmac.compare_digest(rd.get("token") or "", cur_hash or ""),
         })
     return {"sessions": sessions}
 
 
 @router.delete("/sessions/{session_id}")
-async def revoke_session(session_id: str, request: Request):
+async def revoke_session(session_id: str, request: Request, _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
-    with db._conn() as conn:
-        db._execute(conn, f"""
-            DELETE FROM user_sessions
-            WHERE id::text = {db._ph} AND user_id::text = {db._ph}
-        """, (session_id, str(user["id"])))
+    def _query():
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                DELETE FROM user_sessions
+                WHERE id::text = {db._ph} AND user_id::text = {db._ph}
+            """, (session_id, str(user["id"])))
+    await asyncio.to_thread(_query)
     return {"success": True}
 
 
@@ -515,35 +620,56 @@ async def get_me(request: Request):
 
 
 @router.post("/deactivate")
-async def deactivate_account(request: Request):
+async def deactivate_account(request: Request, _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
+    from ratelimit import check_rate
+    check_rate(f"deactivate:{user['id']}", 3, 3600, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    if not await _check_session_binding_safe(request, user):
+        logger.warning("Session binding mismatch on deactivate for user %s", user.get("id"))
     uid = str(user["id"])
-    db.update_user(uid, is_active=False)
-    with db._conn() as conn:
-        db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph}", (uid,))
+    await asyncio.to_thread(db.update_user, uid, is_active=False)
+    def _query():
+        with db._conn() as conn:
+            db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph}", (uid,))
+    await asyncio.to_thread(_query)
     return {"success": True, "message": "Tài khoản đã bị vô hiệu hóa. Đăng nhập lại bằng OTP để kích hoạt."}
 
 
 @router.delete("/account")
-async def delete_account(request: Request):
-    # GĐ5.5: quyền xoá dữ liệu (PDPL). Xoá user -> FK ON DELETE CASCADE xoá posts/comments/
-    # likes/bookmarks/follows/notifications/reports/sessions liên quan.
+async def delete_account(request: Request, _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
+    from ratelimit import check_rate
+    check_rate(f"delete-account:{user['id']}", 3, 3600, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    if not await _check_session_binding_safe(request, user):
+        logger.warning("Session binding mismatch on delete-account for user %s", user.get("id"))
     uid = str(user["id"])
-    with db._conn() as conn:
-        db._execute(conn, f"DELETE FROM users WHERE id::text = {db._ph}", (uid,))
-    return {"status": "deleted", "message": "Tài khoản và dữ liệu liên quan đã được xoá."}
+    def _query():
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                UPDATE users SET deleted_at = NOW(), is_active = FALSE
+                WHERE id::text = {db._ph}
+            """, (uid,))
+            db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph}", (uid,))
+    await asyncio.to_thread(_query)
+    return {
+        "success": True,
+        "status": "scheduled",
+        "message": f"Tài khoản sẽ bị xoá vĩnh viễn sau {ACCOUNT_DELETE_GRACE_DAYS} ngày. Đăng nhập lại bằng OTP để huỷ.",
+        "grace_days": ACCOUNT_DELETE_GRACE_DAYS,
+    }
 
 
 @router.put("/profile")
-async def update_profile(body: ProfileUpdate, request: Request):
+async def update_profile(body: ProfileUpdate, request: Request, _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
+    from ratelimit import check_rate
+    check_rate(f"profile:{user['id']}", 20, 600, "Cập nhật hồ sơ quá nhanh. Vui lòng thử lại sau.")
 
     fields = {}
     if body.display_name is not None:
@@ -568,16 +694,23 @@ async def update_profile(body: ProfileUpdate, request: Request):
             if uname in _reserved:
                 raise HTTPException(400, "Username này không được phép sử dụng")
             ph = db._ph
-            with db._conn() as conn:
-                existing = db._fetchone(conn,
-                    f"SELECT id FROM users WHERE lower(username) = {ph} AND id != {ph}::uuid",
-                    (uname, str(user["id"])))
+            def _check_uname():
+                with db._conn() as conn:
+                    return db._fetchone(conn,
+                        f"SELECT id FROM users WHERE lower(username) = {ph} AND id != {ph}::uuid",
+                        (uname, str(user["id"])))
+            existing = await asyncio.to_thread(_check_uname)
             if existing:
                 raise HTTPException(409, "Username đã được sử dụng")
             fields["username"] = uname
 
     if fields:
-        user = db.update_user(str(user["id"]), **fields)
+        try:
+            user = await asyncio.to_thread(lambda: db.update_user(str(user["id"]), **fields))
+        except Exception as e:
+            if "unique" in str(e).lower() or "duplicate" in str(e).lower():
+                raise HTTPException(409, "Username đã được sử dụng")
+            raise
 
     return {"user": _safe_user(user)}
 
@@ -590,8 +723,10 @@ async def check_username(username: str, request: Request):
     if not re.match(r'^[a-z][a-z0-9._-]*$', uname):
         return {"available": False, "reason": "Username chỉ gồm chữ cái, số, dấu chấm, gạch ngang"}
     ph = db._ph
-    with db._conn() as conn:
-        existing = db._fetchone(conn, f"SELECT id FROM users WHERE lower(username) = {ph}", (uname,))
+    def _query():
+        with db._conn() as conn:
+            return db._fetchone(conn, f"SELECT id FROM users WHERE lower(username) = {ph}", (uname,))
+    existing = await asyncio.to_thread(_query)
     if existing:
         user = await _get_current_user_or_none(request)
         if user and str(existing["id"]) == str(user["id"]):
@@ -601,7 +736,7 @@ async def check_username(username: str, request: Request):
 
 
 @router.post("/avatar")
-async def upload_avatar(request: Request, file: UploadFile = File(...)):
+async def upload_avatar(request: Request, file: UploadFile = File(...), _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
@@ -625,12 +760,12 @@ async def upload_avatar(request: Request, file: UploadFile = File(...)):
         raise HTTPException(500, "Không thể upload ảnh, vui lòng thử lại")
 
     avatar_url = urls.get("md") or urls.get("sm")
-    db.update_user(str(user["id"]), avatar_url=avatar_url)
+    await asyncio.to_thread(db.update_user, str(user["id"]), avatar_url=avatar_url)
     return {"avatar_url": avatar_url, "sizes": urls}
 
 
 @router.post("/cover")
-async def upload_cover(request: Request, file: UploadFile = File(...)):
+async def upload_cover(request: Request, file: UploadFile = File(...), _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
@@ -654,8 +789,45 @@ async def upload_cover(request: Request, file: UploadFile = File(...)):
         raise HTTPException(500, "Không thể upload ảnh, vui lòng thử lại")
 
     cover_url = urls.get("lg") or urls.get("md")
-    db.update_user(str(user["id"]), cover_url=cover_url)
+    await asyncio.to_thread(db.update_user, str(user["id"]), cover_url=cover_url)
     return {"cover_url": cover_url, "sizes": urls}
+
+
+# ── Consent logging ──
+
+def _log_consent(user_id: str, version: str, ip: str):
+    try:
+        ph = db._ph
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                INSERT INTO consent_log (user_id, version, ip)
+                VALUES ({ph}::uuid, {ph}, {ph})
+            """, (user_id, version, ip))
+    except Exception as e:
+        logger.warning("Failed to log consent for user %s: %s", user_id, e)
+
+
+@router.get("/consent-history")
+async def consent_history(request: Request):
+    user = await _get_current_user_or_none(request)
+    if not user:
+        raise HTTPException(401, "Chưa đăng nhập")
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT id, version, ip, created_at
+                FROM consent_log
+                WHERE user_id = {ph}::uuid
+                ORDER BY created_at DESC
+                LIMIT 20
+            """, (str(user["id"]),))
+        return {"history": [{"id": str(db._row_to_dict(r)["id"]),
+                             "version": db._row_to_dict(r).get("version"),
+                             "ip": db._row_to_dict(r).get("ip"),
+                             "created_at": str(db._row_to_dict(r).get("created_at", ""))}
+                            for r in rows]}
+    return await asyncio.to_thread(_query)
 
 
 # ── Login history ──
@@ -671,33 +843,49 @@ def _log_login(phone: str, method: str, success: bool, request: Request, user_id
                 INSERT INTO login_history (user_id, phone, method, success, ip, user_agent)
                 VALUES ({ph}::uuid, {ph}, {ph}, {ph}, {ph}, {ph})
             """, (user_id, phone, method, success, ip, ua))
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Failed to log login for %s: %s", _mask_phone(phone), e)
 
 
 @router.get("/login-history")
-async def get_login_history(request: Request, limit: int = 20):
+async def get_login_history(request: Request, limit: int = Query(20, ge=1, le=100)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
-    ph = db._ph
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT id, method, success, ip, user_agent, created_at
-            FROM login_history
-            WHERE user_id = {ph}::uuid
-            ORDER BY created_at DESC
-            LIMIT {ph}
-        """, (str(user["id"]), min(limit, 50)))
-    return {"history": [dict(r) for r in rows]}
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT id, method, success, ip, user_agent, created_at
+                FROM login_history
+                WHERE user_id = {ph}::uuid
+                ORDER BY created_at DESC
+                LIMIT {ph}
+            """, (str(user["id"]), min(limit, 50)))
+        result = []
+        for r in rows:
+            d = db._row_to_dict(r)
+            result.append({"id": str(d["id"]), "method": d.get("method"),
+                           "success": d.get("success"), "ip": d.get("ip"),
+                           "user_agent": d.get("user_agent"),
+                           "created_at": str(d.get("created_at", ""))})
+        return {"history": result}
+    return await asyncio.to_thread(_query)
 
 
 # ── Privacy settings ──
 
 class PrivacyUpdate(BaseModel):
-    profile_visibility: str | None = None
+    profile_visibility: str | None = Field(None, max_length=20)
     show_activity: bool | None = None
     show_saved: bool | None = None
+
+    @field_validator("profile_visibility")
+    @classmethod
+    def validate_visibility(cls, v):
+        if v is not None and v not in ("public", "followers", "private"):
+            raise ValueError("profile_visibility phải là: public, followers, private")
+        return v
 
 
 @router.get("/privacy")
@@ -705,17 +893,19 @@ async def get_privacy(request: Request):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
-    ph = db._ph
-    with db._conn() as conn:
-        row = db._fetchone(conn, f"SELECT * FROM user_privacy WHERE user_id = {ph}::uuid", (str(user["id"]),))
-    if row:
-        row = db._row_to_dict(row)
-        return {"profile_visibility": row["profile_visibility"], "show_activity": row["show_activity"], "show_saved": row["show_saved"]}
-    return {"profile_visibility": "public", "show_activity": True, "show_saved": True}
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT user_id, profile_visibility, show_activity, show_saved FROM user_privacy WHERE user_id = {ph}::uuid", (str(user["id"]),))
+        if row:
+            row = db._row_to_dict(row)
+            return {"profile_visibility": row["profile_visibility"], "show_activity": row["show_activity"], "show_saved": row["show_saved"]}
+        return {"profile_visibility": "public", "show_activity": True, "show_saved": True}
+    return await asyncio.to_thread(_query)
 
 
 @router.put("/privacy")
-async def update_privacy(body: PrivacyUpdate, request: Request):
+async def update_privacy(body: PrivacyUpdate, request: Request, _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
@@ -724,31 +914,32 @@ async def update_privacy(body: PrivacyUpdate, request: Request):
     if body.profile_visibility and body.profile_visibility not in valid_vis:
         raise HTTPException(400, f"profile_visibility phải là một trong: {', '.join(valid_vis)}")
 
-    ph = db._ph
-    uid = str(user["id"])
-    with db._conn() as conn:
-        existing = db._fetchone(conn, f"SELECT 1 FROM user_privacy WHERE user_id = {ph}::uuid", (uid,))
-        if existing:
-            sets, params = [], []
-            if body.profile_visibility is not None:
-                sets.append(f"profile_visibility = {ph}")
-                params.append(body.profile_visibility)
-            if body.show_activity is not None:
-                sets.append(f"show_activity = {ph}")
-                params.append(body.show_activity)
-            if body.show_saved is not None:
-                sets.append(f"show_saved = {ph}")
-                params.append(body.show_saved)
-            if sets:
-                sets.append(f"updated_at = NOW()")
-                params.append(uid)
-                db._execute(conn, f"UPDATE user_privacy SET {', '.join(sets)} WHERE user_id = {ph}::uuid", params)
-        else:
-            db._execute(conn, f"""
-                INSERT INTO user_privacy (user_id, profile_visibility, show_activity, show_saved)
-                VALUES ({ph}::uuid, {ph}, {ph}, {ph})
-            """, (uid, body.profile_visibility or "public", body.show_activity if body.show_activity is not None else True, body.show_saved if body.show_saved is not None else True))
-
+    def _query():
+        ph = db._ph
+        uid = str(user["id"])
+        with db._conn() as conn:
+            existing = db._fetchone(conn, f"SELECT 1 FROM user_privacy WHERE user_id = {ph}::uuid", (uid,))
+            if existing:
+                sets, params = [], []
+                if body.profile_visibility is not None:
+                    sets.append(f"profile_visibility = {ph}")
+                    params.append(body.profile_visibility)
+                if body.show_activity is not None:
+                    sets.append(f"show_activity = {ph}")
+                    params.append(body.show_activity)
+                if body.show_saved is not None:
+                    sets.append(f"show_saved = {ph}")
+                    params.append(body.show_saved)
+                if sets:
+                    sets.append(f"updated_at = NOW()")
+                    params.append(uid)
+                    db._execute(conn, f"UPDATE user_privacy SET {', '.join(sets)} WHERE user_id = {ph}::uuid", params)
+            else:
+                db._execute(conn, f"""
+                    INSERT INTO user_privacy (user_id, profile_visibility, show_activity, show_saved)
+                    VALUES ({ph}::uuid, {ph}, {ph}, {ph})
+                """, (uid, body.profile_visibility or "public", body.show_activity if body.show_activity is not None else True, body.show_saved if body.show_saved is not None else True))
+    await asyncio.to_thread(_query)
     return await get_privacy(request)
 
 
@@ -765,17 +956,21 @@ async def _get_current_user_or_none(request: Request) -> dict | None:
     token = _extract_token(request)
     if not token:
         return None
-    try:
-        with db._conn() as conn:
-            row = db._fetchone(conn, f"""
-                SELECT u.* FROM user_sessions s
-                JOIN users u ON u.id = s.user_id
-                WHERE s.token = {db._ph} AND s.expires_at > NOW() AND u.is_active = TRUE
-            """, (_hash_token(token),))
-            return db._row_to_dict(row)
-    except Exception:
-        logger.exception("DB error in _get_current_user_or_none")
-        return None
+    def _query():
+        try:
+            with db._conn() as conn:
+                row = db._fetchone(conn, f"""
+                    SELECT u.*, s.ip_address AS session_ip, s.user_agent AS session_ua
+                    FROM user_sessions s
+                    JOIN users u ON u.id = s.user_id
+                    WHERE s.token = {db._ph} AND s.expires_at > NOW()
+                      AND u.is_active = TRUE AND u.deleted_at IS NULL
+                """, (_hash_token(token),))
+                return db._row_to_dict(row)
+        except Exception:
+            logger.exception("DB error in _get_current_user_or_none")
+            return None
+    return await asyncio.to_thread(_query)
 
 
 def _safe_user(user: dict) -> dict:

@@ -261,9 +261,8 @@ def test_dish_emits_serves_cuisine():
         "attributes": {"specialty": "Bún mắm Trà Vinh", "price_range": "30.000-50.000"},
     }
     ld = seo.build_entity_jsonld(entity, {})
-    assert ld["@type"] == "FoodEstablishment"
-    assert ld["servesCuisine"] == "Bún mắm Trà Vinh"
-    assert ld["priceRange"] == "30.000-50.000"
+    assert ld["@type"] == "Recipe"
+    assert ld["recipeCuisine"] == "Bún mắm Trà Vinh"
 
 
 def test_restaurant_emits_serves_cuisine():
@@ -287,7 +286,7 @@ def test_food_type_fallback_for_cuisine():
         "attributes": {"food_type": "Chay"},
     }
     ld = seo.build_entity_jsonld(entity, {})
-    assert ld["servesCuisine"] == "Chay"
+    assert ld["recipeCuisine"] == "Chay"
 
 
 def test_food_without_attrs_omits_cuisine():
@@ -916,9 +915,9 @@ def test_area_jsonld_excludes_provisional_from_contains():
 def test_type_schema_all_values_are_known_schema_org_types():
     known_types = {
         "Thing", "Place", "Organization", "Person", "Event", "Product",
-        "Restaurant", "CafeOrCoffeeShop", "FoodEstablishment",
+        "Restaurant", "CafeOrCoffeeShop", "FoodEstablishment", "Recipe",
         "LodgingBusiness", "TouristAttraction", "TouristTrip",
-        "CivicStructure", "LocalBusiness", "LandmarksOrHistoricalBuildings",
+        "CivicStructure", "LocalBusiness", "LandmarkOrHistoricalBuilding",
     }
     for entity_type, schema_type in seo.TYPE_SCHEMA.items():
         assert schema_type in known_types, (
@@ -1216,7 +1215,7 @@ def test_entity_jsonld_unicode_name():
     entity = {"id": "unicode", "name": "Bánh tráng phơi sương 🌙", "type": "dish"}
     ld = seo.build_entity_jsonld(entity, {})
     assert "🌙" in ld["name"]
-    assert ld["@type"] == "FoodEstablishment"
+    assert ld["@type"] == "Recipe"
 
 
 def test_entity_jsonld_very_long_summary_truncation():

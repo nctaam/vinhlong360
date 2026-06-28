@@ -23,7 +23,7 @@ import os
 import re
 import time
 from collections import deque
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from threading import Lock
 from typing import Any, Deque, Dict, List, Optional
@@ -172,7 +172,7 @@ class CostAttribution:
     def _save(self) -> None:
         """Atomic write: ghi .tmp roi os.replace."""
         data = {
-            "saved_at": datetime.now().isoformat(),
+            "saved_at": datetime.now(timezone.utc).isoformat(),
             "total_records": len(self._records),
             "records": list(self._records),
         }
@@ -200,8 +200,8 @@ class CostAttribution:
     ) -> None:
         """Ghi nhan 1 LLM call voi chi phi."""
         entry = {
-            "timestamp": datetime.now().isoformat(),
-            "date": datetime.now().strftime("%Y-%m-%d"),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
             "session_id": session_id,
             "query": query[:200],
             "agent_name": agent_name,
@@ -268,7 +268,7 @@ class CostAttribution:
         """Xu huong chi phi theo ngay (days ngay gan nhat)."""
         with self._lock:
             records = list(self._records)
-        cutoff = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
+        cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%d")
         daily: Dict[str, Dict[str, Any]] = {}
         for r in records:
             date = r.get("date", "")
@@ -410,14 +410,14 @@ class BudgetManager:
         daily_costs = self._attribution.get_daily_costs(days=31)
 
         if scope == "daily":
-            today = datetime.now().strftime("%Y-%m-%d")
+            today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
             for day in daily_costs:
                 if day["date"] == today:
                     return day["cost"]
             return 0.0
 
         if scope == "monthly":
-            month_prefix = datetime.now().strftime("%Y-%m")
+            month_prefix = datetime.now(timezone.utc).strftime("%Y-%m")
             total = 0.0
             for day in daily_costs:
                 if day["date"].startswith(month_prefix):

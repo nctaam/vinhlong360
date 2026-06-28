@@ -19,7 +19,7 @@ import os
 import sqlite3
 import time
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock
 
@@ -47,6 +47,11 @@ RELATIONSHIP_TYPE_PRIORITY = {
 if USE_PG:
     import psycopg2
     import psycopg2.extras
+
+
+def escape_like(s: str) -> str:
+    """Escape SQL LIKE wildcards so user input is treated as literal text."""
+    return s.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
 # Bbox vùng VL+Bến Tre+Trà Vinh — guard validate toạ độ geocode (chống khớp nhầm tỉnh khác)
@@ -99,19 +104,26 @@ class Database:
         # tối ưu perf, <10k user connect-trực-tiếp dư sức. CHỈ bật lại sau khi test được với PG thật.
         self._pg_pool = None
         self._pg_pool_failed = False
+        self._pg_pool_fail_ts = 0.0
 
     def _get_pg_pool(self):
-        if self._pg_pool_failed or os.environ.get("PG_USE_POOL", "false").strip().lower() not in ("1", "true", "yes", "on"):
+        if os.environ.get("PG_USE_POOL", "false").strip().lower() not in ("1", "true", "yes", "on"):
             return None
+        if self._pg_pool_failed:
+            if time.time() - self._pg_pool_fail_ts < 60:
+                return None
         if self._pg_pool is None:
             with self._lock:
+                if self._pg_pool_failed:
+                    self._pg_pool_failed = False
                 if self._pg_pool is None:
                     try:
                         from psycopg2.pool import ThreadedConnectionPool
                         mx = max(2, int(os.environ.get("PG_POOL_MAX", "10")))
-                        self._pg_pool = ThreadedConnectionPool(1, mx, self._dsn)
+                        self._pg_pool = ThreadedConnectionPool(1, mx, self._dsn, connect_timeout=5)
                     except Exception:
-                        self._pg_pool_failed = True  # fallback connect-trực-tiếp
+                        self._pg_pool_failed = True
+                        self._pg_pool_fail_ts = time.time()
                         return None
         return self._pg_pool
 
@@ -120,7 +132,7 @@ class Database:
         """Thread-safe connection context manager."""
         if self._use_pg:
             pool = self._get_pg_pool()
-            conn = pool.getconn() if pool else psycopg2.connect(self._dsn)
+            conn = pool.getconn() if pool else psycopg2.connect(self._dsn, connect_timeout=5)
             conn.autocommit = False
             ok = True
             try:
@@ -135,7 +147,13 @@ class Database:
                 raise
             finally:
                 if pool:
-                    pool.putconn(conn, close=not ok)  # trả về pool; bỏ hẳn nếu lỗi (tránh poison)
+                    try:
+                        pool.putconn(conn, close=not ok)
+                    except Exception:
+                        try:
+                            conn.close()
+                        except Exception:
+                            pass
                 else:
                     conn.close()
         else:
@@ -214,6 +232,23 @@ class Database:
                         )
                         if not cur.fetchone():
                             cur.execute(f"ALTER TABLE entities ADD COLUMN {col} {coldef}")
+                    for idx_sql in [
+                        "CREATE INDEX IF NOT EXISTS idx_entities_area ON entities(area)",
+                        "CREATE INDEX IF NOT EXISTS idx_entities_status ON entities(status)",
+                        "CREATE INDEX IF NOT EXISTS idx_entities_verified ON entities(verified)",
+                        "CREATE INDEX IF NOT EXISTS idx_follows_follower ON follows(follower_id)",
+                        "CREATE INDEX IF NOT EXISTS idx_follows_target ON follows(target_id, target_type)",
+                        "CREATE INDEX IF NOT EXISTS idx_posts_user ON posts(user_id, moderation_status)",
+                        "CREATE INDEX IF NOT EXISTS idx_posts_entity ON posts(entity_id, moderation_status)",
+                        "CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id, moderation_status)",
+                        "CREATE INDEX IF NOT EXISTS idx_likes_user ON likes(user_id, post_id)",
+                        "CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON bookmarks(user_id, post_id)",
+                        "CREATE INDEX IF NOT EXISTS idx_entity_ratings ON entity_ratings(entity_id)",
+                    ]:
+                        try:
+                            cur.execute(idx_sql)
+                        except Exception:
+                            pass
                     conn.commit()
                 self._initialized = True
                 return
@@ -290,6 +325,7 @@ class Database:
                     CREATE INDEX IF NOT EXISTS idx_entities_type ON entities(type);
                     CREATE INDEX IF NOT EXISTS idx_entities_placeId ON entities(placeId);
                     CREATE INDEX IF NOT EXISTS idx_entities_updated ON entities(updatedAt DESC);
+                    CREATE INDEX IF NOT EXISTS idx_entities_area ON entities(area);
                     CREATE INDEX IF NOT EXISTS idx_itineraries_area ON itineraries(area);
                     CREATE INDEX IF NOT EXISTS idx_relationships_from ON relationships(from_id);
                     CREATE INDEX IF NOT EXISTS idx_relationships_to ON relationships(to_id);
@@ -313,6 +349,14 @@ class Database:
                     for col in ("status TEXT", "verified INTEGER DEFAULT 1"):
                         try:
                             conn.execute(f"ALTER TABLE entities ADD COLUMN {col}")
+                        except sqlite3.OperationalError:
+                            pass
+                    for idx_sql in [
+                        "CREATE INDEX IF NOT EXISTS idx_entities_status ON entities(status)",
+                        "CREATE INDEX IF NOT EXISTS idx_entities_verified ON entities(verified)",
+                    ]:
+                        try:
+                            conn.execute(idx_sql)
                         except sqlite3.OperationalError:
                             pass
 
@@ -355,7 +399,7 @@ class Database:
         # khớp nhầm tên → pin sai tỉnh). Thà null còn hơn sai (xem fix data 2026-06-14).
         if coords_val and not _coords_in_region(coords_val):
             coords_val = None
-        updated = entity.get("updatedAt", datetime.now().strftime("%Y-%m-%d"))
+        updated = entity.get("updatedAt", datetime.now(timezone.utc).strftime("%Y-%m-%d"))
 
         with self._conn() as conn:
             if self._use_pg:
@@ -457,7 +501,8 @@ class Database:
     def search_entities(self, q: str = None, entity_type: str = None,
                         area: str = None, limit: int = 20, offset: int = 0,
                         entity_types: list[str] | None = None,
-                        public_only: bool = False) -> list[dict]:
+                        public_only: bool = False,
+                        month: int | None = None) -> list[dict]:
         """Search entities with filters (offset hỗ-trợ phân-trang — FIX bug search lặp)."""
         self.initialize()
         ph = self._ph
@@ -484,14 +529,20 @@ class Database:
             """)
             params.extend([area, area])
 
+        if month is not None:
+            conditions.append(self._month_condition())
+            params.append(self._month_param(month))
+
         if q:
             if self._use_pg:
                 # không phân-biệt-dấu (f_unaccent + functional GIN trgm index, migration 015)
-                conditions.append(f"(f_unaccent(lower(e.name)) LIKE f_unaccent({ph}) OR f_unaccent(lower(e.summary)) LIKE f_unaccent({ph}))")
-                params.extend([f"%{q.lower()}%", f"%{q.lower()}%"])
+                conditions.append(f"(f_unaccent(lower(e.name)) LIKE f_unaccent({ph}) ESCAPE '\\' OR f_unaccent(lower(e.summary)) LIKE f_unaccent({ph}) ESCAPE '\\')")
+                q_esc = escape_like(q.lower())
+                params.extend([f"%{q_esc}%", f"%{q_esc}%"])
             else:
-                conditions.append(f"(e.name LIKE {ph} OR e.summary LIKE {ph})")
-                params.extend([f"%{q}%", f"%{q}%"])
+                conditions.append(f"(e.name LIKE {ph} ESCAPE '\\' OR e.summary LIKE {ph} ESCAPE '\\')")
+                q_esc = escape_like(q)
+                params.extend([f"%{q_esc}%", f"%{q_esc}%"])
 
         where = " AND ".join(conditions)
         params.append(limit)
@@ -506,10 +557,24 @@ class Database:
             """, params)
             return [self._parse_entity(r) for r in rows]
 
+    _SORT_OPTIONS = {"newest", "name", "rating"}
+
+    def _month_condition(self) -> str:
+        if self._use_pg:
+            return "e.season IS NOT NULL AND e.season::jsonb->'months' @> %s::jsonb"
+        return "e.season IS NOT NULL AND EXISTS (SELECT 1 FROM json_each(json_extract(e.season, '$.months')) WHERE value = ?)"
+
+    def _month_param(self, month: int):
+        if self._use_pg:
+            return json.dumps([month])
+        return month
+
     def list_entities(self, entity_type: str = None, area: str = None,
                       limit: int = 500, offset: int = 0,
                       entity_types: list[str] | None = None,
-                      public_only: bool = False) -> list[dict]:
+                      public_only: bool = False,
+                      sort: str | None = None,
+                      month: int | None = None) -> list[dict]:
         """List entities with pagination."""
         self.initialize()
         ph = self._ph
@@ -533,21 +598,35 @@ class Database:
                 ))
             """)
             params.extend([area, area])
+        if month is not None:
+            conditions.append(self._month_condition())
+            params.append(self._month_param(month))
 
         where = " AND ".join(conditions)
         params.extend([limit, offset])
 
-        col = 'e."updatedAt"' if self._use_pg else "e.updatedAt"
+        updated_col = 'e."updatedAt"' if self._use_pg else "e.updatedAt"
+        if sort == "name":
+            order = "e.name ASC"
+        elif sort == "rating":
+            if self._use_pg:
+                order = "(e.attributes->>'rating')::float DESC NULLS LAST"
+            else:
+                order = "json_extract(e.attributes, '$.rating') DESC"
+        else:
+            order = f"{updated_col} DESC"
+
         with self._conn() as conn:
             rows = self._fetchall(conn, f"""
                 SELECT e.* FROM entities e WHERE {where}
-                ORDER BY {col} DESC LIMIT {ph} OFFSET {ph}
+                ORDER BY {order} LIMIT {ph} OFFSET {ph}
             """, params)
             return [self._parse_entity(r) for r in rows]
 
     def count_entities_filtered(self, entity_type: str = None, area: str = None,
                                 q: str = None, entity_types: list[str] | None = None,
-                                public_only: bool = False) -> int:
+                                public_only: bool = False,
+                                month: int | None = None) -> int:
         """Count non-place entities with the same public filters as list/search."""
         self.initialize()
         ph = self._ph
@@ -564,6 +643,9 @@ class Database:
         elif entity_type:
             conditions.append(f"e.type = {ph}")
             params.append(entity_type)
+        if month is not None:
+            conditions.append(self._month_condition())
+            params.append(self._month_param(month))
         if area:
             place_col = 'e."placeId"' if self._use_pg else "e.placeId"
             conditions.append(f"""
@@ -575,11 +657,13 @@ class Database:
         if q:
             if self._use_pg:
                 # không phân-biệt-dấu (f_unaccent + functional GIN trgm index, migration 015)
-                conditions.append(f"(f_unaccent(lower(e.name)) LIKE f_unaccent({ph}) OR f_unaccent(lower(e.summary)) LIKE f_unaccent({ph}))")
-                params.extend([f"%{q.lower()}%", f"%{q.lower()}%"])
+                conditions.append(f"(f_unaccent(lower(e.name)) LIKE f_unaccent({ph}) ESCAPE '\\' OR f_unaccent(lower(e.summary)) LIKE f_unaccent({ph}) ESCAPE '\\')")
+                q_esc = escape_like(q.lower())
+                params.extend([f"%{q_esc}%", f"%{q_esc}%"])
             else:
-                conditions.append(f"(e.name LIKE {ph} OR e.summary LIKE {ph})")
-                params.extend([f"%{q}%", f"%{q}%"])
+                conditions.append(f"(e.name LIKE {ph} ESCAPE '\\' OR e.summary LIKE {ph} ESCAPE '\\')")
+                q_esc = escape_like(q)
+                params.extend([f"%{q_esc}%", f"%{q_esc}%"])
 
         where = " AND ".join(conditions)
         with self._conn() as conn:
@@ -662,6 +746,12 @@ class Database:
                 conn.execute(
                     "INSERT OR IGNORE INTO relationships (from_id, to_id, type) VALUES (?, ?, ?)",
                     (from_id, to_id, rel_type))
+        try:
+            from public_api import invalidate_entity_cache
+            invalidate_entity_cache(from_id)
+            invalidate_entity_cache(to_id)
+        except Exception:
+            pass
 
     def _parse_coordinates(self, value) -> list[float] | None:
         current = value
@@ -929,7 +1019,7 @@ class Database:
                     WHERE score IS NOT NULL AND created_at >= NOW() - INTERVAL '{days} days'
                 """)["a"]
             else:
-                cutoff = datetime.now().strftime("%Y-%m-%d")
+                cutoff = datetime.now(timezone.utc).strftime("%Y-%m-%d")
                 total = conn.execute(
                     "SELECT COUNT(*) as c FROM query_log WHERE created_at >= date(?, ?)",
                     (cutoff, f"-{days} days")).fetchone()["c"]
@@ -1016,9 +1106,9 @@ class Database:
 
             result = self._bulk_load(conn, data)
             if result.get("relationships_dropped", 0) > 0:
-                print(f"[replace_from_json] CANH BAO: {result['relationships_dropped']} quan he trung "
-                      f"(from,to,type) bi bo khi luu (input {result['relationships']} -> stored "
-                      f"{result['relationships_stored']})")
+                logger.warning("replace_from_json: %d quan he trung (from,to,type) bi bo khi luu "
+                               "(input %d -> stored %d)",
+                               result['relationships_dropped'], result['relationships'], result['relationships_stored'])
 
         result["mode"] = "replace"
         if backup_path:
@@ -1029,7 +1119,7 @@ class Database:
         """Nạp entities+relationships+itineraries vào DB trên CONNECTION đã cho (không tự
         commit) — để replace_from_json gói DELETE+INSERT trong 1 transaction (F1 atomic).
         SQLite + PostgreSQL dùng chung cấu trúc; SQL theo từng backend (copy từ upsert_*)."""
-        now = datetime.now().strftime("%Y-%m-%d")
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         entity_rows, fts_rows = [], []
         for entity in data.get("entities", []):
             season_val = entity.get("season")
@@ -1113,7 +1203,7 @@ class Database:
             raise NotImplementedError("Use pg_dump for PostgreSQL backups")
         self.initialize()
         if not backup_path:
-            ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+            ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
             backup_path = str(DB_DIR / f"vinhlong360_backup_{ts}.db")
         with self._conn() as conn:
             backup_conn = sqlite3.connect(backup_path)
@@ -1184,7 +1274,7 @@ class Database:
         sets = []
         params = []
         for k, v in fields.items():
-            if k in ("display_name", "avatar_url", "cover_url", "bio", "role", "is_active", "password_hash", "username"):
+            if k in ("display_name", "avatar_url", "cover_url", "bio", "role", "is_active", "password_hash", "username", "deleted_at"):
                 sets.append(f"{k} = {ph}")
                 params.append(v)
         if not sets:
@@ -1207,21 +1297,23 @@ class Database:
                 changes.append((entity_id, field, old_val[:2000], new_val[:2000], actor))
         if not changes:
             return
+        ph = self._ph
         with self._conn() as conn:
             for c in changes:
-                self._execute(conn, """
+                self._execute(conn, f"""
                     INSERT INTO entity_changes (entity_id, field, old_value, new_value, actor)
-                    VALUES (?, ?, ?, ?, ?)
+                    VALUES ({ph}, {ph}, {ph}, {ph}, {ph})
                 """, c)
 
     def get_entity_history(self, entity_id: str, limit: int = 50) -> list[dict]:
+        ph = self._ph
         with self._conn() as conn:
-            rows = self._fetchall(conn, """
+            rows = self._fetchall(conn, f"""
                 SELECT id, entity_id, field, old_value, new_value, actor, created_at
                 FROM entity_changes
-                WHERE entity_id = ?
+                WHERE entity_id = {ph}
                 ORDER BY created_at DESC
-                LIMIT ?
+                LIMIT {ph}
             """, (entity_id, limit))
         return [self._row_to_dict(r) for r in rows]
 
@@ -1238,7 +1330,7 @@ class Database:
             if d.get(field) and isinstance(d[field], str):
                 try:
                     d[field] = json.loads(d[field])
-                except Exception:
+                except (json.JSONDecodeError, ValueError, TypeError):
                     logger.warning("Corrupt JSON in entity %s field %s", d.get("id"), field)
         _normalize_entity_timestamps(d)
         return d
@@ -1249,7 +1341,7 @@ class Database:
             if d.get("stops") and isinstance(d["stops"], str):
                 try:
                     d["stops"] = json.loads(d["stops"])
-                except Exception:
+                except (json.JSONDecodeError, ValueError, TypeError):
                     logger.warning("Corrupt JSON in itinerary %s stops", d.get("id"))
                     d["stops"] = []
         return d
@@ -1262,7 +1354,7 @@ class Database:
 def _coerce_iso_date(value) -> str | None:
     """Trả ISO-8601 UTC (…Z) từ một giá trị ngày đã có sẵn trong DB/data.
     KHÔNG bịa ngày: chỉ chuẩn hoá định dạng. Trả None nếu không phân giải được.
-    Track-H: không bao giờ thay bằng datetime.now()."""
+    Track-H: không bao giờ thay bằng datetime.now(timezone.utc)."""
     if not value or not isinstance(value, str):
         return None
     s = value.strip()
