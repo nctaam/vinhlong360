@@ -14,11 +14,11 @@
       </div>
       <div v-if="entities.length" class="catalog-stats area-stats">
         <div class="stat-item">
-          <span class="stat-num">{{ entities.length }}</span>
+          <CountUp :value="entities.length" class="stat-num" />
           <span class="stat-label">địa điểm</span>
         </div>
         <div v-for="s in typeStats" :key="s.type" class="stat-item">
-          <span class="stat-num">{{ s.count }}</span>
+          <CountUp :value="s.count" class="stat-num" />
           <span class="stat-label">{{ s.label }}</span>
         </div>
       </div>
@@ -29,6 +29,21 @@
       <h2>{{ areaEditorial.title }}</h2>
       <p v-for="(p, i) in areaEditorial.paragraphs" :key="i">{{ p }}</p>
     </section>
+
+    <!-- Spotlight -->
+    <CatalogSpotlight :items="entities" />
+
+    <!-- Interstitial -->
+    <CatalogInterstitial
+      v-if="typeStats.length"
+      :fact="`${areaMeta?.name} quy tụ ${typeStats.length} loại hình khác nhau — từ trải nghiệm miệt vườn đến ẩm thực, lưu trú và làng nghề.`"
+      icon="🌟"
+      variant="warm"
+      :links="[
+        { to: `/du-lich?vung=${areaKey}`, label: `Du lịch ${areaMeta?.name}` },
+        { to: `/san-pham?vung=${areaKey}`, label: 'Đặc sản vùng' },
+      ]"
+    />
 
     <!-- Error state -->
     <EmptyState v-if="fetchError && !entities.length" tone="error" icon="⚠️" title="Không thể tải dữ liệu" message="Lỗi kết nối. Vui lòng thử lại.">
@@ -77,7 +92,7 @@
     </section>
 
     <!-- Wards -->
-    <section v-if="wards.length" class="block reveal">
+    <section v-if="wards.length" class="block band reveal">
       <div class="section-head">
         <h2>Xã / phường ({{ wards.length }})</h2>
       </div>

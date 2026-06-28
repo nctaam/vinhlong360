@@ -11,13 +11,13 @@
           <p>{{ interestMeta.description }}</p>
         </div>
       </div>
-      <div v-if="filtered.length" class="catalog-stats">
+      <div v-if="interestItems.length" class="catalog-stats">
         <div class="stat-item">
-          <span class="stat-num">{{ filtered.length }}</span>
+          <CountUp :value="interestItems.length" class="stat-num" />
           <span class="stat-label">mục</span>
         </div>
         <div v-if="typeBreakdown.length > 1" class="stat-item">
-          <span class="stat-num">{{ typeBreakdown.length }}</span>
+          <CountUp :value="typeBreakdown.length" class="stat-num" />
           <span class="stat-label">nhóm</span>
         </div>
       </div>

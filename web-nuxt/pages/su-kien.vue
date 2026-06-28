@@ -13,11 +13,11 @@
       </div>
       <div v-if="allEvents.length" class="catalog-stats">
         <div class="stat-item">
-          <span class="stat-num">{{ allEvents.length }}</span>
+          <CountUp :value="allEvents.length" class="stat-num" />
           <span class="stat-label">sự kiện</span>
         </div>
         <div v-for="a in areaCounts" :key="a.key" class="stat-item">
-          <span class="stat-num">{{ a.count }}</span>
+          <CountUp :value="a.count" class="stat-num" />
           <span class="stat-label">{{ a.name }}</span>
         </div>
       </div>
@@ -52,8 +52,20 @@
       </div>
     </section>
 
+    <!-- Interstitial -->
+    <CatalogInterstitial
+      v-if="allEvents.length"
+      fact="Mỗi sự kiện đều có nút tải .ics — thêm vào Google Calendar hoặc Apple Calendar chỉ một chạm."
+      icon="📅"
+      variant="accent"
+      :links="[
+        { to: '/le-hoi', label: 'Lễ hội truyền thống' },
+        { to: '/lich-trinh', label: 'Lịch trình gợi ý' },
+      ]"
+    />
+
     <!-- Region quick-picks -->
-    <section class="block reveal">
+    <section class="block band reveal">
       <div class="section-head">
         <h2>Chọn theo khu vực</h2>
       </div>
