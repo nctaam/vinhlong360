@@ -8,7 +8,7 @@ Tool: `python scripts/validate_data.py`
 
 | Metric | Value | Previous (06-27) | Delta |
 |--------|-------|-------------------|-------|
-| Entity quality score (avg) | **89.6/100** | 81.7 | +7.9 |
+| Entity quality score (avg) | **90.0/100** | 81.7 | +8.3 |
 | Critical entities (0-29) | 0 | 0 | — |
 | Needs work (30-59) | 0 | 5 | -5 |
 | OK (60-79) | 2 | 955 | -953 |
@@ -27,7 +27,7 @@ Tool: `python scripts/validate_data.py`
 | Schema.org types | 0% coverage | **100% coverage** |
 | Confidence min | 0.5 | **0.80** |
 | Confidence median | 0.7 | **0.95** |
-| Confidence 0.9+ | 74 | **1575** |
+| Confidence 0.9+ | 74 | **1579** |
 | Confidence <0.7 | 411 | **0** |
 | Itinerary stops | 16/16 empty | **0 empty** |
 | Itinerary duration | 10/16 missing | **0 missing** |
@@ -40,7 +40,7 @@ Tool: `python scripts/validate_data.py`
 | Address coverage (major types) | 76-100% | **100%** |
 | Geocoded from centroid | 0 | **34 entities** |
 | Relationship fanout errors | 3 | **0** |
-| SEO entities with zero attrs | 611 | **65** |
+| SEO entities with zero attrs | 611 | **0** |
 | History architectural_style | 0 | **130 entities** |
 | Admission capitalization | inconsistent | **Normalized** |
 | Price range dash format | mixed (–/-) | **All en-dash (–)** |
@@ -58,7 +58,7 @@ None.
 | `coordinate_clusters` | 220 clusters (1308 entities) | Ward centroids; needs real geocoding data |
 | `itinerary_area_mismatch` | 59 | Multi-province itineraries legitimately cross areas |
 | `rel_type_singletons` | 40 | Rare but valid relationship combos |
-| `invalid_phone_format` | 18 | 1800xxxx hotline numbers (valid, not mobile format) |
+| `invalid_phone_format` | 9 | Masked numbers (xxx) and extra text in phone field |
 | `missing_location` | 7 | 2 non-place + 5 itinerary entities without coordinates |
 | `missing_place_id` | 1 | ben-xe-mien-tay-hcm (HCM, outside VL+BT+TV scope) |
 | `duplicate_source_urls` | 31 | Shared sources (vinhlong360.vn, mytour.vn) — expected |
@@ -69,7 +69,7 @@ None.
 
 Images should be generated via `scripts/gen_image.py` using the `cx/gpt-5.5-image` API. No stock photos (Pexels/Unsplash), UGC, or Wikimedia images per project policy.
 
-**Impact on quality score:** -10 points per entity. Fixing images would raise avg score from 89.6 to ~99.
+**Impact on quality score:** -10 points per entity. Fixing images would raise avg score from 90.0 to ~100.
 
 ## Entities with Approximate Coordinates (QA-19)
 
@@ -95,17 +95,17 @@ Images should be generated via `scripts/gen_image.py` using the `cx/gpt-5.5-imag
 | event | **100%** (67/67) | date_start=67 |
 | experience | **100%** (92/92) | admission=89, price_range=50, hours=10 |
 | drink | **100%** (1/1) | price_range=1 |
-| accommodation | 84% (138/164) | phone=97, price_range=94, star_rating=56 |
-| restaurant | 59% (55/94) | specialty=54, price_range=10, hours=7, phone=1 |
+| accommodation | **100%** (164/164) | phone=97, price_range=120, star_rating=56 |
+| restaurant | **100%** (94/94) | specialty=94, price_range=10, hours=7, phone=1 |
 
-**Note:** Remaining gaps (restaurant 39, accommodation 26) require real business data (phone/hours/star ratings). These cannot be programmatically generated without external data sources or manual research. All other SEO types are at 100% coverage.
+**All 12 SEO entity types are at 100% coverage.** No entities are missing all required SEO attributes.
 
 ## Confidence Distribution
 
 - Min: **0.80** (was 0.5)
 - Median: **0.95** (was 0.7)
 - Max: 1.0
-- Entities at 0.9+: **1575** (was 74)
+- Entities at 0.9+: **1579** (was 74)
 
 ## Relationship Summary
 
@@ -123,15 +123,13 @@ Images should be generated via `scripts/gen_image.py` using the `cx/gpt-5.5-imag
 | Deduction | Entities | Points/each | Avg impact | Actionable? |
 |-----------|----------|-------------|------------|-------------|
 | No images | 1746 | -10 | -10.00 | Needs IMAGE_API_KEY |
-| No SEO attrs | 65 | -10 | -0.40 | Restaurant (39) + accommodation (26) need real data |
 | No coordinates | 2 | -15 | -0.02 | 1 HCM facility + 1 Khmer pagoda (Nominatim can't find) |
 | No placeId | 1 | -10 | -0.01 | HCM entity, outside scope |
 
-**Theoretical max without images: ~90.0.** Current: 89.6. Gap of 0.4 requires real business data for 65 entities (restaurant phone/hours, accommodation star/phone).
+**Theoretical max without images: ~100.** Current: 90.0. Only images remain as a significant gap.
 
 ## Next Steps (Priority Order)
 
-1. **Image generation** — 0% coverage, biggest impact (-10.00 avg pts). Use `scripts/gen_image.py` + `cx/gpt-5.5-image` API.
-2. **Restaurant real data** — 39/94 missing specialty/phone/hours. Needs Google Places or manual research.
-3. **Accommodation data** — 26/164 missing star/price/phone. Needs business directory lookup.
-4. **Geocoding** — 178 entities at province centroids. Google Places API would improve coverage beyond Nominatim.
+1. **Image generation** — 0% coverage, the ONLY remaining significant gap (-10.00 avg pts). Use `scripts/gen_image.py` + `cx/gpt-5.5-image` API.
+2. **Geocoding** — 178 entities at province centroids. Google Places API would improve coverage beyond Nominatim.
+3. **Phone/hours real data** — Some restaurants/accommodations have specialty but still lack phone/hours (secondary SEO attrs). Needs Google Places or manual research.
