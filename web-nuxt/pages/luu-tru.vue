@@ -57,7 +57,7 @@
       <div class="section-head">
         <h2>✨ Nơi ở được yêu thích</h2>
       </div>
-      <div class="scroll-row" role="region" aria-label="Nơi ở được yêu thích">
+      <div class="scroll-row" role="region" tabindex="0" aria-label="Nơi ở được yêu thích">
         <EntityCard v-for="e in featured" :key="e.id" :entity="e" />
       </div>
     </section>

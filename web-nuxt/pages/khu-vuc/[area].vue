@@ -66,7 +66,7 @@
         <h2>Nổi bật {{ areaMeta?.name }}</h2>
       </div>
       <p class="section-desc">Những địa điểm nổi bật nhất vùng — chọn lọc theo hình ảnh và mức độ quan tâm.</p>
-      <div class="scroll-row honor-roll" role="region" :aria-label="'Nổi bật ' + areaMeta?.name">
+      <div class="scroll-row honor-roll" role="region" tabindex="0" :aria-label="'Nổi bật ' + areaMeta?.name">
         <EntityCard v-for="e in featured" :key="e.id" :entity="e" />
       </div>
     </section>
@@ -86,7 +86,7 @@
         </button>
         <span v-else class="see-all-count">{{ cat.items.length }} mục</span>
       </div>
-      <div class="scroll-row" role="region" :aria-label="cat.label">
+      <div class="scroll-row" role="region" tabindex="0" :aria-label="cat.label">
         <EntityCard v-for="e in (expanded[cat.type] ? cat.items : cat.items.slice(0, 8))" :key="e.id" :entity="e" />
       </div>
     </section>

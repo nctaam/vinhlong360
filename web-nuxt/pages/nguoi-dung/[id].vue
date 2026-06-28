@@ -28,7 +28,7 @@
             <span v-if="!followLoading">{{ isFollowing ? 'Đang theo dõi' : 'Theo dõi' }}</span>
             <span v-else class="spinner spinner-sm" aria-label="Đang xử lý"></span>
           </button>
-          <div v-if="isLoggedIn && !isSelf" class="profile-more-wrap">
+          <div v-if="isLoggedIn && !isSelf" class="profile-more-wrap" @keydown.escape="showMoreMenu = false">
             <button type="button" class="btn btn-ghost btn-sm btn-icon" aria-label="Thêm" @click="showMoreMenu = !showMoreMenu">&#8226;&#8226;&#8226;</button>
             <div v-if="showMoreMenu" class="profile-more-menu" @click="showMoreMenu = false">
               <button type="button" class="pm-item" @click="toggleBlock">{{ isBlocked ? 'Bỏ chặn' : 'Chặn người này' }}</button>
