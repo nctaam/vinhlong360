@@ -87,7 +87,7 @@
    over the bright amber; stops badge gains a lighter green text + tint. */
 .dark .itinerary-duration-badge {
   background: linear-gradient(135deg, rgba(var(--accent-rgb), .95), rgba(var(--accent-rgb), .72));
-  color: #2a1c08;
+  color: var(--on-accent);
 }
 .dark .itinerary-stops-badge {
   background: rgba(var(--secondary-rgb), .22);

@@ -506,7 +506,7 @@
 .dark .next-steps { border-color: var(--line); }
 .dark .sticky-cta-bar { box-shadow: 0 -2px 16px rgba(0,0,0,.4); border-color: rgba(255,255,255,.06); }
 .dark .detail-aside:hover { box-shadow: var(--shadow-md); }.dark .detail-aside { background: var(--card); border-color: var(--line); }
-.dark .dc-ocop-chip { color: #f5e6d0; background: linear-gradient(135deg, rgba(196,135,42,.85), rgba(160,110,30,.85)); }
+.dark .dc-ocop-chip { color: var(--amber-100); background: linear-gradient(135deg, rgba(var(--accent-rgb), .85), rgba(var(--accent-rgb), .65)); }
 .dark .ms-cell { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.08); }
 .dark .ms-cell.on { background: rgba(var(--primary-rgb), .15); }
 .dark .ns-action { background: var(--card); }
