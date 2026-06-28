@@ -51,7 +51,7 @@
     "type": "craft_village",
     "label": "Làng nghề",
     "emoji": "🏺",
-    "count": 84
+    "count": 86
   },
   {
     "type": "event",
@@ -84,21 +84,15 @@
     "count": 16
   },
   {
-    "type": "organization",
-    "label": "Tổ chức",
-    "emoji": "🤝",
-    "count": 2
-  },
-  {
     "type": "drink",
     "label": "Thức uống",
     "emoji": "🥤",
     "count": 1
   },
   {
-    "type": "economy",
-    "label": "Kinh tế",
-    "emoji": "💰",
+    "type": "organization",
+    "label": "Tổ chức",
+    "emoji": "🤝",
     "count": 1
   }
 ]
