@@ -789,7 +789,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .img-mgr { border-top: .5px solid var(--line); padding-top: var(--space-3); margin-top: var(--space-1); }
 .img-row { display: flex; align-items: center; gap: var(--space-2); margin: var(--space-2) 0; }
 .img-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; flex: 0 0 40px; border: .5px solid var(--line); transition: transform .2s var(--ease-out, ease); }
-.img-row:hover .img-thumb { transform: scale(1.06); }
+.img-row:hover .img-thumb { transform: scale(var(--img-hover-scale)); }
 .img-url { flex: 1; font-size: .78rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ── Search box (clear + searching feedback) ── */

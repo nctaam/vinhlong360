@@ -368,7 +368,7 @@ onMounted(() => fetchReviews())
 .ri-images { display: flex; gap: var(--space-2); margin-top: var(--space-2); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; scroll-snap-type: x proximity; overscroll-behavior-x: contain; }
 .ri-images::-webkit-scrollbar { display: none; }
 .ri-images img { width: 120px; height: 90px; object-fit: cover; border-radius: var(--radius-sm); flex-shrink: 0; cursor: pointer; scroll-snap-align: start; transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
-.ri-images img:hover { transform: scale(1.05); box-shadow: var(--shadow-md); }
+.ri-images img:hover { transform: scale(var(--img-hover-scale)); box-shadow: var(--shadow-md); }
 .ri-images img:active { transform: scale(.96); transition-duration: .08s; }
 @media (prefers-reduced-motion: reduce) {
   .ri-images img:hover { transform: none; }
