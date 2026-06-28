@@ -333,6 +333,7 @@
   .event-date-badge { width: 48px; }
   .edb-day { font-size: var(--text-lg); }
   /* roomier calendar touch targets on phones */
+  .cal-grid { min-width: 320px; }
   .cal-cell { min-height: 64px; }
   .cal-event-dot { font-size: 9px; }
   /* keep the summary but cap it to 2 lines so the stacked row stays compact */
