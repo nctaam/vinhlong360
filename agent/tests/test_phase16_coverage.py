@@ -965,3 +965,20 @@ class TestSecurityPosture:
             for line_no, line in enumerate(src.split("\n"), 1):
                 if "datetime.now()" in line and "#" not in line.split("datetime.now()")[0]:
                     assert False, f"{mod}.py:{line_no} uses naive datetime.now() — use datetime.now(timezone.utc)"
+
+    def test_storage_path_traversal_protection(self):
+        """Storage module must validate paths stay within LOCAL_MEDIA_DIR."""
+        from storage import Storage
+        src = (Path(__file__).resolve().parent.parent / "storage.py").read_text(encoding="utf-8")
+        assert "is_relative_to" in src, "storage.py must use is_relative_to() for path traversal protection"
+        assert src.count("is_relative_to") >= 2, "Both _put and delete must check is_relative_to"
+
+    def test_comments_endpoint_has_offset(self):
+        """Comments endpoint must support offset pagination."""
+        from pathlib import Path
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        idx = src.find("async def get_comments(")
+        assert idx != -1
+        func_block = src[idx:idx+700]
+        assert "offset" in func_block, "get_comments must accept offset parameter"
+        assert "OFFSET" in func_block, "get_comments SQL must use OFFSET"

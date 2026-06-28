@@ -1059,12 +1059,13 @@ async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10)):
 async def get_comments(
     post_id: str, request: Request,
     limit: int = Query(100, ge=1, le=200),
+    offset: int = Query(0, ge=0, le=10000),
     user=Depends(get_current_user),
 ):
     post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
     bc, bc_p = _block_sql(user, "c.user_id")
-    params: list = [post_id] + bc_p + [min(limit, 200)]
+    params: list = [post_id] + bc_p + [min(limit, 200), offset]
     comment_sql = f"""
         SELECT {_COMMENT_COLS}, u.display_name, u.avatar_url
         FROM comments c
@@ -1072,7 +1073,7 @@ async def get_comments(
         WHERE c.post_id::text = {ph} AND c.moderation_status = 'approved'
         {bc}
         ORDER BY c.created_at ASC
-        LIMIT {ph}
+        LIMIT {ph} OFFSET {ph}
     """
     comment_params = tuple(params)
 

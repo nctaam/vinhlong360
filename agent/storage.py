@@ -153,7 +153,9 @@ class Storage:
             _s3.upload_fileobj(io.BytesIO(data), _BUCKET, key, ExtraArgs=extra)
             logger.debug("Uploaded %s to %s/%s (%d bytes)", content_type, self.backend, key, len(data))
             return f"{_PUBLIC_BASE}/{key}"
-        path = LOCAL_MEDIA_DIR / key
+        path = (LOCAL_MEDIA_DIR / key).resolve()
+        if not path.is_relative_to(LOCAL_MEDIA_DIR.resolve()):
+            raise ValueError("Invalid storage key")
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)
         logger.debug("Saved local file %s (%d bytes)", path, len(data))
@@ -197,7 +199,10 @@ class Storage:
             _s3.delete_object(Bucket=_BUCKET, Key=key)
             logger.debug("Deleted %s/%s", self.backend, key)
         else:
-            path = LOCAL_MEDIA_DIR / key_or_url.replace("/media/", "")
+            path = (LOCAL_MEDIA_DIR / key_or_url.replace("/media/", "")).resolve()
+            if not path.is_relative_to(LOCAL_MEDIA_DIR.resolve()):
+                logger.warning("Path traversal attempt in storage.delete: %s", key_or_url[:100])
+                return
             if path.exists():
                 path.unlink()
                 logger.debug("Deleted local file %s", path)
