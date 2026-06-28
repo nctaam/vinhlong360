@@ -13,11 +13,11 @@
       </div>
       <div v-if="allEntities.length" class="catalog-stats">
         <div class="stat-item">
-          <span class="stat-num">{{ allEntities.length }}</span>
+          <CountUp :value="allEntities.length" class="stat-num" />
           <span class="stat-label">nơi lưu trú</span>
         </div>
         <div v-for="a in areaCounts" :key="a.key" class="stat-item">
-          <span class="stat-num">{{ a.count }}</span>
+          <CountUp :value="a.count" class="stat-num" />
           <span class="stat-label">{{ a.name }}</span>
         </div>
       </div>
@@ -29,8 +29,11 @@
       </ul>
     </section>
 
+    <!-- Spotlight nổi bật -->
+    <CatalogSpotlight :items="allEntities" />
+
     <!-- Quick picks by region -->
-    <section class="block">
+    <section class="block band">
       <div class="section-head">
         <h2>Chọn theo khu vực</h2>
       </div>
@@ -50,7 +53,7 @@
     </section>
 
     <!-- Featured -->
-    <section v-if="featured.length" class="block reveal">
+    <section v-if="featured.length" class="block band reveal">
       <div class="section-head">
         <h2>✨ Nơi ở được yêu thích</h2>
       </div>
@@ -58,6 +61,13 @@
         <EntityCard v-for="e in featured" :key="e.id" :entity="e" />
       </div>
     </section>
+
+    <!-- Interstitial -->
+    <CatalogInterstitial
+      fact="Homestay nhà vườn miền Tây là trải nghiệm đặc trưng — ngủ giữa vườn trái cây, thức dậy với tiếng chim và hương bưởi."
+      icon="🏡"
+      :links="[{ to: '/lich-trinh', label: 'Ghép lịch trình' }, { to: '/du-lich', label: 'Điểm du lịch gần' }]"
+    />
 
     <!-- Editorial -->
     <section class="page-article reveal">

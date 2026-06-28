@@ -13,7 +13,7 @@
       </div>
       <div v-if="allEntities.length" class="catalog-stats">
         <div class="stat-item" v-for="s in stats" :key="s.label">
-          <span class="stat-num">{{ s.count }}</span>
+          <CountUp :value="s.count" class="stat-num" />
           <span class="stat-label">{{ s.label }}</span>
         </div>
       </div>
@@ -23,7 +23,7 @@
     <CatalogSpotlight :items="allEntities" />
 
     <!-- Featured -->
-    <section v-if="featured.length" class="block reveal">
+    <section v-if="featured.length" class="block band reveal">
       <div class="section-head">
         <h2>Nổi bật</h2>
       </div>
@@ -43,6 +43,14 @@
         <EntityCard v-for="e in cat.items.slice(0, 8)" :key="e.id" :entity="e" />
       </div>
     </section>
+
+    <!-- Interstitial -->
+    <CatalogInterstitial
+      fact="Vĩnh Long, Bến Tre và Trà Vinh có hơn 200 điểm du lịch sinh thái — phần lớn nằm trên các cù lao giữa sông Tiền và sông Hậu."
+      icon="🌊"
+      variant="warm"
+      :links="[{ to: '/ban-do', label: 'Xem bản đồ' }, { to: '/lich-trinh', label: 'Lịch trình gợi ý' }]"
+    />
 
     <!-- Editorial -->
     <section v-once class="page-article reveal">

@@ -13,15 +13,15 @@
       </div>
       <div v-if="allEntities.length" class="catalog-stats">
         <div class="stat-item">
-          <span class="stat-num">{{ allEntities.length }}</span>
+          <CountUp :value="allEntities.length" class="stat-num" />
           <span class="stat-label">sản phẩm</span>
         </div>
         <div class="stat-item">
-          <span class="stat-num">{{ ocopCount }}</span>
+          <CountUp :value="ocopCount" class="stat-num" />
           <span class="stat-label">OCOP</span>
         </div>
         <div class="stat-item">
-          <span class="stat-num">{{ inSeasonCount }}</span>
+          <CountUp :value="inSeasonCount" class="stat-num" />
           <span class="stat-label">đang mùa</span>
         </div>
       </div>
@@ -31,7 +31,7 @@
     <CatalogSpotlight :items="allEntities" />
 
     <!-- Đang vào mùa -->
-    <section v-if="seasonalHighlights.length" class="block reveal">
+    <section v-if="seasonalHighlights.length" class="block band reveal">
       <div class="seasonal-banner seasonal-banner-live">
         <span class="seasonal-banner-icon" aria-hidden="true">🔥</span>
         <div>
@@ -56,6 +56,14 @@
         <EntityCard v-for="e in ocopHighlights" :key="e.id" :entity="e" />
       </div>
     </section>
+
+    <!-- Interstitial -->
+    <CatalogInterstitial
+      fact="Ba tỉnh Vĩnh Long, Bến Tre, Trà Vinh là vựa trái cây lớn nhất ĐBSCL — mỗi mùa mang đến hương vị đặc trưng riêng."
+      icon="🍊"
+      variant="accent"
+      :links="[{ to: '/theo-mua', label: 'Xem theo mùa' }, { to: '/ocop', label: 'Sản phẩm OCOP' }]"
+    />
 
     <!-- Editorial -->
     <section v-once class="page-article reveal">

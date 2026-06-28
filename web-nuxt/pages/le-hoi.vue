@@ -13,15 +13,18 @@
       </div>
       <div v-if="allEvents.length" class="catalog-stats">
         <div class="stat-item">
-          <span class="stat-num">{{ allEvents.length }}</span>
+          <CountUp :value="allEvents.length" class="stat-num" />
           <span class="stat-label">lễ hội</span>
         </div>
         <div v-for="a in areaCounts" :key="a.key" class="stat-item">
-          <span class="stat-num">{{ a.count }}</span>
+          <CountUp :value="a.count" class="stat-num" />
           <span class="stat-label">{{ a.name }}</span>
         </div>
       </div>
     </section>
+
+    <!-- Spotlight nổi bật -->
+    <CatalogSpotlight :items="allEvents" />
 
     <!-- Upcoming / Featured -->
     <section v-if="upcoming.length" class="block">
@@ -56,7 +59,7 @@
     </section>
 
     <!-- Region quick-picks -->
-    <section class="block reveal">
+    <section class="block band reveal">
       <div class="section-head">
         <h2>Chọn theo khu vực</h2>
       </div>
@@ -73,6 +76,14 @@
         </button>
       </div>
     </section>
+
+    <!-- Interstitial -->
+    <CatalogInterstitial
+      fact="Vùng đất ba tỉnh là nơi giao thoa văn hoá Kinh – Khmer – Hoa, tạo nên hệ thống lễ hội đa dạng hiếm có trong cả nước."
+      icon="🎋"
+      variant="warm"
+      :links="[{ to: '/du-lich', label: 'Trải nghiệm du lịch' }, { to: '/ban-do', label: 'Xem trên bản đồ' }]"
+    />
 
     <!-- Editorial -->
     <section v-once class="page-article reveal">

@@ -13,11 +13,11 @@
       </div>
       <div v-if="totalWards" class="catalog-stats">
         <div class="stat-item">
-          <span class="stat-num">{{ totalWards }}</span>
+          <CountUp :value="totalWards" class="stat-num" />
           <span class="stat-label">xã/phường</span>
         </div>
         <div v-for="g in wardGroups" :key="g.area" class="stat-item">
-          <span class="stat-num">{{ g.wards.length }}</span>
+          <CountUp :value="g.wards.length" class="stat-num" />
           <span class="stat-label">{{ g.label }}</span>
         </div>
       </div>
@@ -29,7 +29,7 @@
     </EmptyState>
 
     <!-- Region quick-picks -->
-    <section v-if="!placesError" class="block">
+    <section v-if="!placesError" class="block band">
       <div class="section-head">
         <h2>Chọn khu vực</h2>
       </div>

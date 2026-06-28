@@ -18,15 +18,18 @@
       </div>
       <div v-if="allOcop.length" class="catalog-stats">
         <div class="stat-item">
-          <span class="stat-num">{{ allOcop.length }}</span>
+          <CountUp :value="allOcop.length" class="stat-num" />
           <span class="stat-label">sản phẩm OCOP</span>
         </div>
         <div v-for="s in starStats" :key="s.stars" class="stat-item">
-          <span class="stat-num">{{ s.count }}</span>
+          <CountUp :value="s.count" class="stat-num" />
           <span class="stat-label">{{ s.stars }} sao</span>
         </div>
       </div>
     </section>
+
+    <!-- Spotlight nổi bật -->
+    <CatalogSpotlight :items="allOcop" />
 
     <!-- Star breakdown quick-picks -->
     <section v-if="starStats.length" class="block">
@@ -64,7 +67,7 @@
     </section>
 
     <!-- Region quick-picks -->
-    <section class="block reveal">
+    <section class="block band reveal">
       <div class="section-head">
         <h2>Chọn theo khu vực</h2>
       </div>
@@ -83,6 +86,14 @@
         </button>
       </div>
     </section>
+
+    <!-- Interstitial -->
+    <CatalogInterstitial
+      fact="Chương trình OCOP đã chứng nhận hàng trăm sản phẩm từ 3 tỉnh — mỗi sản phẩm đều qua đánh giá nghiêm ngặt về chất lượng và nguồn gốc."
+      icon="🏅"
+      variant="warm"
+      :links="[{ to: '/san-pham', label: 'Tất cả sản phẩm' }, { to: '/theo-mua', label: 'Theo mùa vụ' }]"
+    />
 
     <!-- Editorial -->
     <section v-once class="page-article reveal">

@@ -29,19 +29,22 @@
 
       <div v-if="inSeasonItems.length" class="catalog-stats">
         <div class="stat-item">
-          <span class="stat-num">{{ inSeasonItems.length }}</span>
+          <CountUp :value="inSeasonItems.length" class="stat-num" />
           <span class="stat-label">đang mùa</span>
         </div>
         <div v-if="peakCount" class="stat-item">
-          <span class="stat-num">{{ peakCount }}</span>
+          <CountUp :value="peakCount" class="stat-num" />
           <span class="stat-label">cao điểm</span>
         </div>
         <div v-for="t in typeStats" :key="t.type" class="stat-item">
-          <span class="stat-num">{{ t.count }}</span>
+          <CountUp :value="t.count" class="stat-num" />
           <span class="stat-label">{{ t.label }}</span>
         </div>
       </div>
     </section>
+
+    <!-- Spotlight nổi bật (entity đang mùa có summary dài nhất) -->
+    <CatalogSpotlight :items="inSeasonItems" />
 
     <!-- Month selector -->
     <section class="block">
@@ -75,7 +78,7 @@
     </ClientOnly>
 
     <!-- Peak highlights (honor row) -->
-    <section v-if="peakItems.length" class="block reveal">
+    <section v-if="peakItems.length" class="block band reveal">
       <div class="seasonal-banner peak-banner">
         <span class="seasonal-banner-icon">🔥</span>
         <div>
@@ -130,6 +133,14 @@
         </div>
       </div>
     </section>
+
+    <!-- Interstitial -->
+    <CatalogInterstitial
+      fact="Mùa nước nổi (tháng 8–11) mang đến cá linh, bông điên điển, bông súng — những đặc sản chỉ có vài tháng mỗi năm."
+      icon="🌾"
+      variant="accent"
+      :links="[{ to: '/san-pham', label: 'Xem đặc sản' }, { to: '/kham-pha/am-thuc', label: 'Ẩm thực miền Tây' }]"
+    />
 
     <!-- B2B callout (§1.4: liên hệ/hỏi-giá only, no order form) -->
     <aside class="b2b-callout">

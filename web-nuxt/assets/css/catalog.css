@@ -587,6 +587,20 @@
   .page-article h2 { font-size: var(--text-base); margin: var(--space-5) 0 var(--space-2); }
 }
 
+/* ── Band rhythm — warm-toned section strip (shared with homepage) ── */
+.block.band {
+  background: var(--bg-warm);
+  border-radius: var(--radius-xl);
+  padding-inline: var(--space-6);
+}
+.block.band + .block::before,
+.block + .block.band::before {
+  display: none;
+}
+.dark .block.band {
+  background: var(--bg-alt);
+}
+
 /* ── Reduced motion (catalog shared) ── */
 @media (prefers-reduced-motion: reduce) {
   .cross-card:hover { transform: none; }
