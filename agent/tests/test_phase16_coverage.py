@@ -1451,3 +1451,38 @@ class TestDeepScanBatch4:
         assert idx > 0
         block = src[idx:idx+300]
         assert "str(exc)" not in block, "Must not expose str(exc) in HTTP response"
+
+
+class TestDeepScanBatch5:
+    """Tests for deep scan round 5: budget enforcement, module scanning."""
+
+    def test_budget_ram_fallback_on_disk_failure(self):
+        """autonomous_budget must maintain in-memory counter when disk write fails."""
+        src = (Path(__file__).resolve().parent.parent / "autonomous_budget.py").read_text(encoding="utf-8")
+        assert "_ram_count" in src, \
+            "Must have in-memory counter for budget enforcement fallback"
+        idx = src.find("def try_consume")
+        assert idx > 0
+        block = src[idx:idx+800]
+        assert "ram_count" in block, \
+            "try_consume must use RAM counter alongside disk counter"
+        assert "max(disk_count, ram_count)" in block or "max(disk_count," in block, \
+            "Must use max of disk and RAM counts to prevent budget bypass"
+
+    def test_budget_status_uses_ram_fallback(self):
+        """Budget status must also use RAM counter for accurate reporting."""
+        src = (Path(__file__).resolve().parent.parent / "autonomous_budget.py").read_text(encoding="utf-8")
+        idx = src.find("def status()")
+        assert idx > 0
+        block = src[idx:idx+400]
+        assert "ram_count" in block, \
+            "status() must use RAM counter for accurate budget reporting"
+
+    def test_budget_ram_counter_date_reset(self):
+        """RAM counter must check date to reset on new day."""
+        src = (Path(__file__).resolve().parent.parent / "autonomous_budget.py").read_text(encoding="utf-8")
+        idx = src.find("def try_consume")
+        assert idx > 0
+        block = src[idx:idx+800]
+        assert '_ram_count["date"]' in block or "_ram_count['date']" in block, \
+            "Must update RAM counter date to detect day rollover"

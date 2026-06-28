@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 _DATA = Path(__file__).resolve().parent / "data" / "autonomous_budget.json"
 _lock = threading.Lock()
+_ram_count: dict = {"date": "", "count": 0}
 
 
 def _today() -> str:
@@ -57,13 +58,19 @@ def try_consume(n: int = 1) -> bool:
     cap = max_calls_per_day()
     with _lock:
         d = _load()
-        count = _count_today(d)
+        today = _today()
+        disk_count = _count_today(d)
+        ram_count = _ram_count["count"] if _ram_count["date"] == today else 0
+        count = max(disk_count, ram_count)
         if count + n > cap:
             return False
+        new_count = count + n
+        _ram_count["date"] = today
+        _ram_count["count"] = new_count
         try:
             _DATA.parent.mkdir(parents=True, exist_ok=True)
             tmp = _DATA.with_suffix(".tmp")
-            tmp.write_text(json.dumps({"date": _today(), "count": count + n}), encoding="utf-8")
+            tmp.write_text(json.dumps({"date": today, "count": new_count}), encoding="utf-8")
             tmp.replace(_DATA)
         except Exception as exc:
             logger.warning("Budget file write failed (%s) — cap enforced in RAM only this session", exc)
@@ -73,6 +80,9 @@ def try_consume(n: int = 1) -> bool:
 def status() -> dict:
     cap = max_calls_per_day()
     with _lock:
-        used = _count_today(_load())
+        today = _today()
+        disk_count = _count_today(_load())
+        ram_count = _ram_count["count"] if _ram_count["date"] == today else 0
+        used = max(disk_count, ram_count)
     return {"enabled": enabled(), "cap_per_day": cap, "used_today": used,
-            "remaining_today": max(0, cap - used), "date": _today()}
+            "remaining_today": max(0, cap - used), "date": today}
