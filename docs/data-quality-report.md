@@ -1,7 +1,7 @@
 # Data Quality Report
 
 Generated: 2026-06-28 (final — all actionable fixes applied)
-Source: `web/data.json` (1745 entities, 11542 relationships, 33 itineraries)
+Source: `web/data.json` (1745 entities, 11580 relationships, 33 itineraries)
 Tool: `python scripts/validate_data.py`
 
 ## Summary
@@ -51,7 +51,7 @@ Tool: `python scripts/validate_data.py`
 | Restaurant specialty | 19 missing (reclassified) | **All 190 restaurants have specialty** |
 | Test data removed | prov-1 placeholder | **Deleted (SQLite + JSON)** |
 | Geocoded from centroid | 0 | **34 entities** |
-| produced_in coverage | 137/218 products | **153/218 products** (+16 curated) |
+| produced_in coverage | 137/218 products | **215/218 products** (+16 curated, +22 keyword) |
 | Invalid phone numbers | 9 masked/incomplete | **0** (removed) |
 | Far near rels (>50km) | 62 centroid artifacts | **0** (removed) |
 | Description repeats | 48 had duplicated text | **0** (deduped) |
@@ -60,6 +60,10 @@ Tool: `python scripts/validate_data.py`
 | Near-duplicate restaurant | ham-luong + nha-hang-ham-luong-ben-tre | **Merged** (6 rels transferred) |
 | Wrong located_in | ben-xe-mien-tay-hcm→p-an-hoi | **Removed** (HCM, not Bến Tre) |
 | Missing coords | chua-ang-angkorajaborey | **TV centroid** (approximate) |
+| Empty phone attrs | 12 entities with phone='' | **0** (removed) |
+| Low-rel entities | 6 with ≤3 rels | **All enriched** (+10 near, +6 related_to) |
+| Type misclassification | 2 organization + 1 economy | **2→craft_village, 1→organization** |
+| produced_in coverage | 153/218 products | **215/218 products** (+22 keyword-verified) |
 
 ## Errors
 
@@ -122,7 +126,7 @@ Deep geographic analysis detected **159 entities** whose coordinates fell clearl
 | accommodation | **100%** (164/164) | price_range=120, phone=89, star_rating=56 |
 | attraction | **100%** (205/205) | admission=194, hours=102, price_range=25 |
 | cafe | **100%** (55/55) | specialty=55, price_range=17, hours=17 |
-| craft_village | **100%** (84/84) | specialty=84, phone=1 |
+| craft_village | **100%** (86/86) | specialty=86, phone=1 |
 | dish | **100%** (120/120) | specialty=114, price_range=76, origin=120 |
 | drink | **100%** (1/1) | price_range=1 |
 | event | **100%** (67/67) | date_start=67 |
@@ -148,12 +152,12 @@ Note: Confidence formula now correctly differentiates approximate coordinates (+
 
 | Type | Count |
 |------|-------|
-| near | 4284 |
-| related_to | 4156 |
+| near | 4294 |
+| related_to | 4162 |
 | located_in | 2214 |
 | associated_with | 670 |
-| produced_in | 218 |
-| **Total** | **11542** |
+| produced_in | 240 |
+| **Total** | **11580** |
 
 ## Deep Research Findings
 
@@ -240,8 +244,8 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 
 ### Connectivity
 
-- Only **3 entities** with ≤2 relationships (excellent graph density)
-- Average 13.2 relationships per entity (counting both directions)
+- Only **1 entity** with ≤2 relationships (ben-xe-mien-tay-hcm, outside scope)
+- Average 13.3 relationships per entity (counting both directions)
 
 ## Score Gap Analysis
 
@@ -258,5 +262,5 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 1. **Image generation** — 0% coverage, the ONLY remaining significant gap (-10.00 avg pts). Use `scripts/gen_image.py` + `cx/gpt-5.5-image` API.
 2. **Geocoding** — ~337 entities at province centroids (178 original + 159 from geographic fixes). Google Places API would improve coverage beyond Nominatim.
 3. **Experience coverage** — Trà Vinh has only 7 experiences vs 70 for Vĩnh Long (10x imbalance). Need curated TV experiences.
-4. **produced_in coverage** — 153/218 products linked; remaining 65 are fresh produce without matching craft villages.
+4. **produced_in coverage** — 215/218 products linked (98.6%); remaining 3 are fresh produce without matching craft villages.
 5. **Phone/hours real data** — Some restaurants/accommodations have specialty but still lack phone/hours. Needs Google Places or manual research.
