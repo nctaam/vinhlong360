@@ -1,7 +1,7 @@
 # Data Quality Report
 
-Generated: 2026-06-28 (final — all actionable fixes applied)
-Source: `web/data.json` (1745 entities, 11580 relationships, 33 itineraries)
+Generated: 2026-06-28 (updated — deep research pass complete)
+Source: `web/data.json` (1745 entities, 11527 relationships, 33 itineraries)
 Tool: `python scripts/validate_data.py`
 
 ## Summary
@@ -63,7 +63,13 @@ Tool: `python scripts/validate_data.py`
 | Empty phone attrs | 12 entities with phone='' | **0** (removed) |
 | Low-rel entities | 6 with ≤3 rels | **All enriched** (+10 near, +6 related_to) |
 | Type misclassification | 2 organization + 1 economy | **2→craft_village, 1→organization** |
-| produced_in coverage | 153/218 products | **215/218 products** (+22 keyword-verified) |
+| produced_in coverage | 137/218 products | **156/218 products** (71%) |
+| Boilerplate "Mùa tốt nhất:" | 266+4 descriptions | **0** (all stripped) |
+| Duplicate source entry | lo-com-cuu-long (2 same-title) | **Deduped** (keep specific URL) |
+| Vegetarian stall misclass | 2 attractions (quán chay) | **→restaurant** |
+| Facility sub_category | 0/58 classified | **58/58** (transport, market, bank, etc.) |
+| Wrong dish→CV produced_in | 59 rels (dish→craft_village) | **Removed** (dishes ≠ products) |
+| produced_in (new rels) | 0 | **+6** (chiếu, cam sành, kẹo dừa) |
 
 ## Errors
 
@@ -73,10 +79,10 @@ None.
 
 | Code | Count | Notes |
 |------|-------|-------|
-| `near_asymmetric` | 4252 | By design — system handles bidirectionality automatically |
+| `near_asymmetric` | 4262 | By design — system handles bidirectionality automatically |
 | `coordinate_clusters` | 189 clusters (1366 entities) | Ward/province centroids; needs real geocoding data |
 | `itinerary_area_mismatch` | 59 | Multi-province itineraries legitimately cross areas |
-| `rel_type_singletons` | 40 | Rare but valid relationship combos |
+| `rel_type_singletons` | 30 | Rare but valid relationship combos |
 | `missing_location` | 6 | 6 non-place entities without coordinates |
 | `missing_place_id` | 1 | ben-xe-mien-tay-hcm (HCM, outside VL+BT+TV scope) |
 | `data_js_unknown_shape` | 1 | web/data.js format — cosmetic |
@@ -123,20 +129,21 @@ Deep geographic analysis detected **159 entities** whose coordinates fell clearl
 
 | Type | Coverage | Key attributes |
 |------|----------|----------------|
-| accommodation | **100%** (164/164) | price_range=120, phone=89, star_rating=56 |
-| attraction | **100%** (205/205) | admission=194, hours=102, price_range=25 |
+| accommodation | **100%** (164/164) | price_range=120, phone=89, star_rating=56, sub_category=164 |
+| attraction | **100%** (203/203) | admission=192, hours=102, price_range=25 |
 | cafe | **100%** (55/55) | specialty=55, price_range=17, hours=17 |
 | craft_village | **100%** (86/86) | specialty=86, phone=1 |
 | dish | **100%** (120/120) | specialty=114, price_range=76, origin=120 |
 | drink | **100%** (1/1) | price_range=1 |
 | event | **100%** (67/67) | date_start=67 |
 | experience | **100%** (92/92) | admission=89, price_range=50, hours=10 |
+| facility | **100%** (58/58) | sub_category=58 (transport/market/bank/hospital/pharmacy/telecom/etc.) |
 | nature | **100%** (125/125) | admission=125, hours=10 |
 | person | **100%** (35/35) | role=35 |
 | product | **100%** (218/218) | ocop_star=84, price_range=64, ocop_certified=48, brand=45 |
-| restaurant | **100%** (189/189) | specialty=189, price_range=106, hours=103, phone=1 |
+| restaurant | **100%** (191/191) | specialty=191, price_range=108, hours=105, phone=1 |
 
-**All 12 SEO entity types are at 100% coverage.** No entities are missing all required SEO attributes.
+**All 13 entity types (12 SEO + facility) are at 100% coverage.** No entities are missing all required SEO attributes.
 
 ## Confidence Distribution
 
@@ -156,8 +163,8 @@ Note: Confidence formula now correctly differentiates approximate coordinates (+
 | related_to | 4162 |
 | located_in | 2214 |
 | associated_with | 670 |
-| produced_in | 240 |
-| **Total** | **11580** |
+| produced_in | 187 |
+| **Total** | **11527** |
 
 ## Deep Research Findings
 
@@ -232,10 +239,10 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 
 | Type | Attribute | Coverage | Note |
 |------|-----------|----------|------|
-| restaurant | specialty | 189/189 (100%) | |
-| restaurant | price_range | 106/189 (56%) | Needs external data |
-| restaurant | hours | 103/189 (55%) | Needs external data |
-| restaurant | phone | 1/189 (1%) | Needs external data |
+| restaurant | specialty | 191/191 (100%) | |
+| restaurant | price_range | 108/191 (57%) | Needs external data |
+| restaurant | hours | 105/191 (55%) | Needs external data |
+| restaurant | phone | 1/191 (1%) | Needs external data |
 | cafe | specialty | 55/55 (100%) | |
 | cafe | hours | 17/55 (31%) | Needs external data |
 | accommodation | price_range | 120/164 (73%) | |
@@ -262,5 +269,20 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 1. **Image generation** — 0% coverage, the ONLY remaining significant gap (-10.00 avg pts). Use `scripts/gen_image.py` + `cx/gpt-5.5-image` API.
 2. **Geocoding** — ~337 entities at province centroids (178 original + 159 from geographic fixes). Google Places API would improve coverage beyond Nominatim.
 3. **Experience coverage** — Trà Vinh has only 7 experiences vs 70 for Vĩnh Long (10x imbalance). Need curated TV experiences.
-4. **produced_in coverage** — 215/218 products linked (98.6%); remaining 3 are fresh produce without matching craft villages.
+4. **produced_in coverage** — 156/218 products linked (71%); remaining 62 are fresh produce/processed foods without matching craft village entities.
 5. **Phone/hours real data** — Some restaurants/accommodations have specialty but still lack phone/hours. Needs Google Places or manual research.
+
+## Data Integrity Checks (all pass)
+
+| Check | Result |
+|-------|--------|
+| Duplicate entity IDs | **0** |
+| Self-referencing relationships | **0** |
+| Dangling relationship references | **0** |
+| HTML tags in descriptions | **0** |
+| URLs in descriptions | **0** |
+| Empty entity names | **0** |
+| Empty attribute values | **0** |
+| Descriptions ending without period | **3** (phone numbers at end — acceptable)
+| Summary == Name (redundant) | **0** |
+| Entities with only located_in | **0** (all have diverse rel types) |
