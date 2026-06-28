@@ -2642,29 +2642,29 @@ async def prompt_cache_stats():
 @app.get("/analytics/summary")
 async def analytics_summary():
     try:
-        return analytics.get_summary()
+        return await asyncio.to_thread(analytics.get_summary)
     except Exception:
         raise HTTPException(503, detail="Analytics data unavailable")
 
 
 @app.get("/analytics/popular")
 async def analytics_popular(limit: int = Query(20, ge=1, le=200)):
-    return {"popular_queries": analytics.get_popular_queries(limit)}
+    return {"popular_queries": await asyncio.to_thread(analytics.get_popular_queries, limit)}
 
 
 @app.get("/analytics/gaps")
 async def analytics_gaps(limit: int = Query(20, ge=1, le=200)):
-    return {"knowledge_gaps": analytics.get_knowledge_gaps(limit)}
+    return {"knowledge_gaps": await asyncio.to_thread(analytics.get_knowledge_gaps, limit)}
 
 
 @app.get("/analytics/daily")
 async def analytics_daily(days: int = Query(30, ge=1, le=365)):
-    return {"daily_stats": analytics.get_daily_stats(days)}
+    return {"daily_stats": await asyncio.to_thread(analytics.get_daily_stats, days)}
 
 
 @app.get("/analytics/top-entities")
 async def analytics_top_entities(limit: int = Query(20, ge=1, le=200)):
-    return {"top_entities": analytics.get_top_entities(limit)}
+    return {"top_entities": await asyncio.to_thread(analytics.get_top_entities, limit)}
 
 
 # ── System monitoring endpoints ──
