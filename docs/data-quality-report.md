@@ -1,7 +1,7 @@
 # Data Quality Report
 
-Generated: 2026-06-28 (updated — deep research pass complete)
-Source: `web/data.json` (1745 entities, 11527 relationships, 33 itineraries)
+Generated: 2026-06-28 (updated — deep research pass 2 complete)
+Source: `web/data.json` (1745 entities, 11537 relationships, 33 itineraries)
 Tool: `python scripts/validate_data.py`
 
 ## Summary
@@ -14,7 +14,7 @@ Tool: `python scripts/validate_data.py`
 | OK (60-79) | 1 | 955 | -954 |
 | Good (80-100) | **1619** | 668 | +951 |
 | Errors | 0 | 1 | -1 |
-| Warnings | 7 | 13 | -6 |
+| Warnings | 6 | 13 | -7 |
 | Graph components | 1 (fully connected) | 1 | — |
 | Isolated entities | 0 | 0 | — |
 | Broken relationships | 0 | 0 | — |
@@ -70,6 +70,14 @@ Tool: `python scripts/validate_data.py`
 | Facility sub_category | 0/58 classified | **58/58** (transport, market, bank, etc.) |
 | Wrong dish→CV produced_in | 59 rels (dish→craft_village) | **Removed** (dishes ≠ products) |
 | produced_in (new rels) | 0 | **+6** (chiếu, cam sành, kẹo dừa) |
+| Phone in facility summaries | 24 summaries with ĐT: | **0** (stripped, phone in attributes.phone) |
+| Summary punctuation | 50 summaries missing terminal period | **0** (all end with punctuation) |
+| Short summaries | 4 <50 chars | **0** (all enriched) |
+| Liên hệ: in descriptions | 97 accommodations | **0** (phone stripped, already in attrs) |
+| Template descriptions | 42 accommodations with "Name (type), Address" | **Rewritten** (clean prose) |
+| Thin market description | cho-dau-moi (52 chars) | **235 chars** (expanded) |
+| Description without period | 1 (phone at end) | **0** |
+| Low-rel entity | bia-chien-thang-thanh-phuoc (3 rels) | **12 rels** (+9 near/related_to) |
 
 ## Errors
 
@@ -83,6 +91,7 @@ None.
 | `coordinate_clusters` | 189 clusters (1366 entities) | Ward/province centroids; needs real geocoding data |
 | `itinerary_area_mismatch` | 59 | Multi-province itineraries legitimately cross areas |
 | `rel_type_singletons` | 30 | Rare but valid relationship combos |
+| `summary_short` | 0 | Was 4, all enriched |
 | `missing_location` | 6 | 6 non-place entities without coordinates |
 | `missing_place_id` | 1 | ben-xe-mien-tay-hcm (HCM, outside VL+BT+TV scope) |
 | `data_js_unknown_shape` | 1 | web/data.js format — cosmetic |
@@ -159,12 +168,12 @@ Note: Confidence formula now correctly differentiates approximate coordinates (+
 
 | Type | Count |
 |------|-------|
-| near | 4294 |
-| related_to | 4162 |
+| near | 4303 |
+| related_to | 4163 |
 | located_in | 2214 |
 | associated_with | 670 |
 | produced_in | 187 |
-| **Total** | **11527** |
+| **Total** | **11537** |
 
 ## Deep Research Findings
 
@@ -228,12 +237,14 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 
 ### Description Quality
 
-- Min length: **92 chars** (1 entity)
-- Median: **274 chars**
-- Average: **295 chars**
+- Min length: **108 chars** (craft_village)
+- Median: **264 chars**
+- Average: **285 chars**
 - Max: **789 chars**
-- Descriptions <200 chars: 320 (mostly short entity types like craft_village, dish)
+- Descriptions <200 chars: 335 (mostly short entity types like craft_village, dish)
 - 48 descriptions had duplicated text segments → all deduplicated
+- 97 template-format accommodation descriptions rewritten to clean prose
+- 0 descriptions with "Liên hệ:" phone artifacts (97 cleaned)
 
 ### Attribute Completeness (key types)
 
@@ -251,8 +262,9 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 
 ### Connectivity
 
-- Only **1 entity** with ≤2 relationships (ben-xe-mien-tay-hcm, outside scope)
-- Average 13.3 relationships per entity (counting both directions)
+- Only **1 entity** with ≤2 relationships (ben-xe-mien-tay-hcm, outside scope — HCM)
+- 1 entity with 3 relationships (bia-chien-thang-thanh-phuoc) → enriched to 12
+- Average 13.2 relationships per entity (counting both directions)
 
 ## Score Gap Analysis
 
@@ -283,6 +295,12 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 | URLs in descriptions | **0** |
 | Empty entity names | **0** |
 | Empty attribute values | **0** |
-| Descriptions ending without period | **3** (phone numbers at end — acceptable)
+| Descriptions ending without period | **0** |
+| Summaries ending without punctuation | **0** |
+| Phone in summaries (ĐT:) | **0** |
+| Liên hệ: in descriptions | **0** |
+| Template-format descriptions | **0** |
+| Duplicate summaries | **0** |
+| Duplicate names | **0** |
 | Summary == Name (redundant) | **0** |
 | Entities with only located_in | **0** (all have diverse rel types) |
