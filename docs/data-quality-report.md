@@ -6,27 +6,27 @@ Tool: `python scripts/validate_data.py`
 
 ## Summary
 
-| Metric | Value | Previous (06-27) |
-|--------|-------|-------------------|
-| Entity quality score (avg) | **84.9/100** | 81.7 |
-| Critical entities (0-29) | 0 | 0 |
-| Needs work (30-59) | 0 | 5 |
-| OK (60-79) | 8 | 955 |
-| Good (80-100) | **1613** | 668 |
-| Errors | 0 | 1 |
-| Warnings | 8 | 13 |
-| Graph components | 1 (fully connected) | 1 |
-| Isolated entities | 0 | 0 |
-| Broken relationships | 0 | 0 |
+| Metric | Value | Previous (06-27) | Delta |
+|--------|-------|-------------------|-------|
+| Entity quality score (avg) | **89.1/100** | 81.7 | +7.4 |
+| Critical entities (0-29) | 0 | 0 | — |
+| Needs work (30-59) | 0 | 5 | -5 |
+| OK (60-79) | 8 | 955 | -947 |
+| Good (80-100) | **1613** | 668 | +945 |
+| Errors | 0 | 1 | -1 |
+| Warnings | 8 | 13 | -5 |
+| Graph components | 1 (fully connected) | 1 | — |
+| Isolated entities | 0 | 0 | — |
+| Broken relationships | 0 | 0 | — |
 
-## Improvements This Round (2026-06-28)
+## Improvements This Session (2026-06-28)
 
 | Area | Before | After |
 |------|--------|-------|
 | Descriptions | 408 missing (23%) | **0 missing (100%)** |
 | Schema.org types | 0% coverage | **100% coverage** |
-| Confidence median | 0.7 | **0.95** |
 | Confidence min | 0.5 | **0.78** |
+| Confidence median | 0.7 | **0.95** |
 | Confidence 0.9+ | 74 | **1488** |
 | Confidence <0.7 | 411 | **0** |
 | Itinerary stops | 16/16 empty | **0 empty** |
@@ -38,11 +38,9 @@ Tool: `python scripts/validate_data.py`
 | Unknown rel types | 3 | **0** |
 | Long names (>100ch) | 1 | **0** |
 | Address coverage (major types) | 76-100% | **100%** |
-| Restaurant specialty | 6% (6/94) | **53% (50/94)** |
-| Craft village specialty | 1% (1/84) | **71% (60/84)** |
-| Cafe specialty | 0% (0/38) | **11% (4/38)** |
 | Geocoded from centroid | 0 | **33 entities** |
 | Relationship fanout errors | 3 | **0** |
+| SEO entities with zero attrs | 611 | **134** |
 
 ## Errors
 
@@ -67,6 +65,8 @@ None.
 
 Images should be generated via `scripts/gen_image.py` using the `cx/gpt-5.5-image` API. No stock photos (Pexels/Unsplash), UGC, or Wikimedia images per project policy.
 
+**Impact on quality score:** -10 points per entity. Fixing images would raise avg score from 89.1 to ~99.
+
 ## Entities with Approximate Coordinates (QA-19)
 
 **1044 entities have `coords_approximate=true`** — flagged entities whose coordinates are derived from ward centroids or placeId fallback rather than exact geocoding.
@@ -77,25 +77,23 @@ Images should be generated via `scripts/gen_image.py` using the `cx/gpt-5.5-imag
 | Ward centroids | ~589 entities |
 | placeId fallback | 47 entities |
 
-**Recommendation:** Real geocoding via Nominatim or similar should replace approximate coordinates. Prioritize restaurants, accommodations, and attractions. Note: generic names (chain restaurants, generic cafes) have low Nominatim hit rate.
-
 ## SEO Attribute Coverage
 
 | Type | Coverage | Key attributes |
 |------|----------|----------------|
-| person | 100% (35/35) | role=35 |
+| dish | **100%** (120/120) | specialty=114, price_range=76, origin=120 |
+| cafe | **100%** (38/38) | specialty=38 |
+| person | **100%** (35/35) | role=35 |
+| nature | **96%** (120/125) | admission=120, hours=10 |
+| product | **95%** (208/218) | ocop_star=84, price_range=64, ocop_certified=48, brand=35, ocop=24 |
+| attraction | **94%** (298/318) | admission=239, hours=215, specialty=104, price_range=138 |
+| craft_village | **92%** (77/84) | specialty=77, phone=1 |
 | event | 85% (57/67) | date_start=57 |
-| accommodation | 83% (136/164) | star_rating=48, price_range=94, phone=97 |
-| craft_village | 73% (61/84) | specialty=60, phone=1 |
-| dish | 63% (76/120) | specialty=5, price_range=76 |
-| restaurant | 54% (51/94) | specialty=50, price_range=10, phone=1, hours=7 |
-| attraction | 24% (75/318) | admission=75 |
-| nature | 13% (16/125) | admission=16 |
-| cafe | 11% (4/38) | specialty=4 |
-| product | 11% (24/218) | ocop_star=24 |
-| experience | 11% (10/92) | admission=10 |
+| accommodation | 84% (138/164) | phone=97, price_range=94, star_rating=56 |
+| experience | 82% (75/92) | admission=73, price_range=49, hours=10 |
+| restaurant | 59% (55/94) | specialty=54, price_range=10, hours=7, phone=1 |
 
-**Note:** SEO attribute gaps (phone, hours, price_range for cafe/restaurant) require real business data. These cannot be programmatically generated without external data sources or manual research.
+**Note:** Remaining gaps (restaurant phone/hours, accommodation phone, event dates) require real business data. These cannot be programmatically generated without external data sources or manual research.
 
 ## Confidence Distribution
 
@@ -103,8 +101,6 @@ Images should be generated via `scripts/gen_image.py` using the `cx/gpt-5.5-imag
 - Median: **0.95** (was 0.7)
 - Max: 1.0
 - Entities at 0.9+: **1488** (was 74)
-- Entities at 0.78-0.9: 133 (was 1261 at 0.7-0.9)
-- Entities below 0.7: **0** (was 411)
 
 ## Relationship Summary
 
@@ -117,10 +113,22 @@ Images should be generated via `scripts/gen_image.py` using the `cx/gpt-5.5-imag
 | produced_in | 202 |
 | **Total** | **11591** |
 
-## Next Steps (Remaining Gaps)
+## Score Gap Analysis
 
-1. **Image generation** — 0% coverage. Biggest quality gap. Use `scripts/gen_image.py` + `cx/gpt-5.5-image` API (requires IMAGE_API_KEY).
-2. **Real geocoding** — 178 entities still at province centroids. Nominatim has diminishing returns for generic names; Google Places API would improve coverage.
-3. **SEO attributes** — cafe (11%), experience (11%), product (11%) need real business data.
-4. **Product OCOP data** — only 24/218 have OCOP star rating. Requires OCOP registry data.
-5. **Phone/hours** — restaurant (1 phone, 7 hours), cafe (0/0). Needs manual research or business directory.
+| Deduction | Entities | Points/each | Avg impact | Actionable? |
+|-----------|----------|-------------|------------|-------------|
+| No images | 1746 | -10 | -10.77 | Needs IMAGE_API_KEY |
+| No SEO attrs | 134 | -10 | -0.83 | Needs real business data |
+| No coordinates | 8 | -15 | -0.07 | Nominatim diminishing returns |
+| No area | 6 | -5 | -0.02 | 5 itineraries + 1 HCM entity |
+| No placeId | 1 | -10 | -0.01 | HCM entity, outside scope |
+
+**Theoretical max without images: ~90.0.** Current: 89.1. Gap of 0.9 requires real business data for 134 entities.
+
+## Next Steps (Priority Order)
+
+1. **Image generation** — 0% coverage, biggest impact (-10.77 avg pts). Use `scripts/gen_image.py` + `cx/gpt-5.5-image` API.
+2. **Restaurant real data** — 39/94 missing specialty/phone/hours. Needs Google Places or manual research.
+3. **Accommodation data** — 26/164 missing star/price/phone. Needs business directory lookup.
+4. **Event dates** — 10/67 traditional festivals without specific dates.
+5. **Geocoding** — 178 entities at province centroids. Google Places API would improve coverage beyond Nominatim.
