@@ -797,6 +797,27 @@ class TestSecurityPosture:
                 if "page: int = Query(" in line:
                     assert "le=" in line, f"{module}.py:{line_no} page without upper bound: {line.strip()}"
 
+    def test_ssrf_protection_on_entity_image_url(self):
+        """add_entity_image_url must call _assert_public_url for external URLs."""
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("def add_entity_image_url")
+        assert idx > 0
+        block = src[idx:idx + 500]
+        assert "_assert_public_url" in block, "add_entity_image_url missing SSRF validation"
+
+    def test_social_cache_invalidation_on_mutations(self):
+        """Post create/update/delete must invalidate trending + leaderboard caches."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        assert "def _invalidate_social_caches" in src
+        for fn in ("create_post", "update_post", "delete_post"):
+            idx = src.find(f"def {fn}")
+            assert idx > 0
+            end = src.find("\nasync def ", idx + 1)
+            if end < 0:
+                end = len(src)
+            block = src[idx:end]
+            assert "_invalidate_social_caches()" in block, f"{fn} missing cache invalidation"
+
     def test_admin_silent_passes_have_logging(self):
         """Dashboard/stats silent except blocks should log for debuggability."""
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")

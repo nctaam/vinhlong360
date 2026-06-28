@@ -418,8 +418,10 @@ async def add_entity_image_url(entity_id: str, body: _EntityImageURL):
     """GĐ8.4: thêm ảnh entity theo URL (chỉ nguồn cấp phép — B6)."""
     entity_id = validate_path_id(entity_id, "entity_id")
     url = (body.url or "").strip()
-    if not (url.startswith("http://") or url.startswith("https://") or url.startswith("/")):
-        raise HTTPException(400, "URL ảnh không hợp lệ")
+    if url.startswith("/"):
+        pass
+    else:
+        _assert_public_url(url)
     def _query():
         entity = db.get_entity(entity_id)
         if not entity:
