@@ -54,11 +54,11 @@
         <div class="profile-stats">
           <template v-if="!profile.is_private || isSelf">
             <div class="stat-item">
-              <strong>{{ profile.post_count || 0 }}</strong>
+              <strong><CountUp :value="profile.post_count || 0" /></strong>
               <span>bài viết</span>
             </div>
             <div class="stat-item">
-              <strong>{{ profile.review_count || 0 }}</strong>
+              <strong><CountUp :value="profile.review_count || 0" /></strong>
               <span>đánh giá</span>
             </div>
           </template>
@@ -107,7 +107,7 @@
         </button>
       </div>
 
-      <div v-if="!profile.is_private" class="feed-main">
+      <div v-if="!profile.is_private" class="feed-main reveal">
         <!-- Đã lưu (self only, client-only — từ localStorage) -->
         <ClientOnly v-if="tab === 'saved'">
           <div v-if="favorites.length" class="saved-grid">

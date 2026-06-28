@@ -33,10 +33,11 @@
       <div class="section-head">
         <h2>Chọn khu vực</h2>
       </div>
-      <div class="quick-picks" role="group" aria-label="Chọn khu vực">
+      <div class="quick-picks region-quick-picks" role="group" aria-label="Chọn khu vực">
         <button type="button"
           v-for="g in wardGroups" :key="g.area"
           :class="['quick-pick', { active: selectedArea === g.area }]"
+          :style="{ '--AREA-rgb': AREA_RGB[g.area] }"
           :aria-pressed="selectedArea === g.area"
           @click="selectedArea = selectedArea === g.area ? '' : g.area"
         >
@@ -147,8 +148,14 @@
 </template>
 
 <script setup lang="ts">
-import type { Place, Entity} from '~/types'
+import type { Place, Entity } from '~/types'
 import { OFFICE_KIND, AREA_META } from '~/composables/useConstants'
+
+const AREA_RGB: Record<string, string> = {
+  'vinh-long': 'var(--primary-rgb)',
+  'ben-tre': 'var(--secondary-rgb)',
+  'tra-vinh': 'var(--river-rgb)',
+}
 
 useReveal()
 const { f: pc } = usePageContent('danh_ba')
