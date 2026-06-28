@@ -3,7 +3,7 @@
 /* Breadcrumb + Highlights → assets/css/detail-shared.css (global, dùng cả ngoài trang chi tiết) */
 
 .detail-cover { color: var(--text-on-dark, #fff); background: var(--cat-place); padding: var(--space-8) var(--space-5) var(--space-8); position: relative; overflow: hidden; }
-.detail-cover.has-cover-img { padding: 0; min-height: 380px; display: flex; align-items: flex-end; aspect-ratio: 16/9; max-height: 500px; }
+.detail-cover.has-cover-img { padding: 0; min-height: 380px; display: flex; align-items: flex-end; aspect-ratio: 16/9; max-height: 500px; width: 100%; }
 .detail-cover.cat-experience { background: var(--cat-experience); }
 .detail-cover.cat-product { background: var(--cat-product); }
 .detail-cover.cat-attraction { background: var(--cat-attraction); }

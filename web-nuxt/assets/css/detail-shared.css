@@ -31,7 +31,7 @@
 
 /* Highlights quét nhanh (giờ/giá/liên hệ/map) */
 .highlights { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0 0 var(--space-5); }
-.hl { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: var(--weight-semibold); min-height: 44px; line-height: 1.2; flex-shrink: 0; }
+.hl { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: var(--weight-semibold); min-height: 44px; line-height: 1.2; flex-shrink: 0; max-width: 100%; overflow-wrap: break-word; word-break: break-word; }
 .hl:not(a) { background: var(--bg-warm); color: var(--ink); border: .5px solid var(--line); transition: transform .3s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), background .3s var(--ease-out), border-color .3s var(--ease-out); }
 .hl:not(a):hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); background: var(--card); border-color: var(--border); }
 a.hl { background: var(--primary); color: var(--text-on-dark, #fff); min-height: 44px; box-shadow: 0 2px 8px rgba(var(--primary-rgb), .28), inset 0 1px 0 rgba(255,255,255,.16); transition: background .3s var(--ease-out), transform .3s var(--ease-spring-gentle), box-shadow .3s var(--ease-out-expo); }

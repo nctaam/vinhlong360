@@ -132,7 +132,7 @@ function getThumb(e: Entity): string | undefined {
     grid-template-columns: 1fr;
   }
 }
-.nearby-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-md); transition: background .3s var(--ease-out), border-color .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
+.nearby-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-md); min-width: 0; transition: background .3s var(--ease-out), border-color .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
 .nearby-item:hover { background: var(--bg-warm); border-color: var(--primary-fg); transform: translateX(4px); box-shadow: var(--shadow-sm); }
 .nearby-item:active { transform: translateX(1px) scale(.98); transition-duration: .1s; }
 .nearby-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
