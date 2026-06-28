@@ -247,6 +247,9 @@ class Database:
                         "CREATE INDEX IF NOT EXISTS idx_posts_feed ON posts(moderation_status, created_at DESC)",
                         "CREATE INDEX IF NOT EXISTS idx_posts_created ON posts(created_at DESC)",
                         "CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, created_at DESC)",
+                        "CREATE INDEX IF NOT EXISTS idx_posts_hashtags ON posts USING GIN(hashtags)",
+                        "CREATE INDEX IF NOT EXISTS idx_user_sessions_token ON user_sessions(token)",
+                        "CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON user_sessions(user_id, expires_at DESC)",
                     ]:
                         try:
                             cur.execute(idx_sql)

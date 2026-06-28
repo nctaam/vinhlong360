@@ -1429,9 +1429,11 @@ async def approve_post(post_id: str):
     def _query():
         ph = db._ph
         with db._conn() as conn:
-            db._execute(conn, f"""
+            cur = db._execute(conn, f"""
                 UPDATE posts SET moderation_status = 'approved' WHERE id::text = {ph}
             """, (post_id,))
+            if cur.rowcount == 0:
+                raise HTTPException(404, "Bài viết không tồn tại")
         _log_mod_action("post", post_id, "approved")
     await asyncio.to_thread(_query)
     return {"success": True}
@@ -1447,9 +1449,11 @@ async def reject_post(post_id: str, body: RejectBody = RejectBody()):
     def _query():
         ph = db._ph
         with db._conn() as conn:
-            db._execute(conn, f"""
+            cur = db._execute(conn, f"""
                 UPDATE posts SET moderation_status = 'rejected' WHERE id::text = {ph}
             """, (post_id,))
+            if cur.rowcount == 0:
+                raise HTTPException(404, "Bài viết không tồn tại")
         _log_mod_action("post", post_id, "rejected", (body.reason or "").strip() or None)
     await asyncio.to_thread(_query)
     return {"success": True}
@@ -1473,11 +1477,13 @@ async def batch_moderation(body: BatchModerationBody):
         placeholders = ", ".join(ph for _ in body.post_ids)
         params = [status] + list(body.post_ids)
         with db._conn() as conn:
-            db._execute(conn, f"UPDATE posts SET moderation_status = {ph} WHERE id::text IN ({placeholders})", tuple(params))
+            cur = db._execute(conn, f"UPDATE posts SET moderation_status = {ph} WHERE id::text IN ({placeholders})", tuple(params))
+            updated = cur.rowcount
         for pid in body.post_ids:
             _log_mod_action("post", pid, status, body.reason.strip() or None)
-    await asyncio.to_thread(_query)
-    return {"success": True, "updated": len(body.post_ids)}
+        return updated
+    updated = await asyncio.to_thread(_query)
+    return {"success": True, "updated": updated, "requested": len(body.post_ids)}
 
 
 class ModNoteBody(BaseModel):
@@ -1590,10 +1596,11 @@ async def bulk_report_action(body: BulkReportAction):
         ph = db._ph
         placeholders = ",".join([ph] * len(body.ids))
         with db._conn() as conn:
-            db._execute(conn, f"UPDATE reports SET status = {ph} WHERE id::text IN ({placeholders})",
-                        (status, *body.ids))
-    await asyncio.to_thread(_query)
-    return {"success": True, "updated": len(body.ids)}
+            cur = db._execute(conn, f"UPDATE reports SET status = {ph} WHERE id::text IN ({placeholders})",
+                              (status, *body.ids))
+            return cur.rowcount
+    updated = await asyncio.to_thread(_query)
+    return {"success": True, "updated": updated, "requested": len(body.ids)}
 
 
 @router.post("/reports/{report_id}/resolve")
@@ -1602,9 +1609,11 @@ async def resolve_report(report_id: str):
     def _query():
         ph = db._ph
         with db._conn() as conn:
-            db._execute(conn, f"""
+            cur = db._execute(conn, f"""
                 UPDATE reports SET status = 'resolved' WHERE id::text = {ph}
             """, (report_id,))
+            if cur.rowcount == 0:
+                raise HTTPException(404, "Báo cáo không tồn tại")
     await asyncio.to_thread(_query)
     return {"success": True}
 
@@ -1615,9 +1624,11 @@ async def dismiss_report(report_id: str):
     def _query():
         ph = db._ph
         with db._conn() as conn:
-            db._execute(conn, f"""
+            cur = db._execute(conn, f"""
                 UPDATE reports SET status = 'dismissed' WHERE id::text = {ph}
             """, (report_id,))
+            if cur.rowcount == 0:
+                raise HTTPException(404, "Báo cáo không tồn tại")
     await asyncio.to_thread(_query)
     return {"success": True}
 
