@@ -1789,3 +1789,32 @@ class TestPostDeletionCleanup:
         delete_fn = src[src.index("async def delete_post("):]
         delete_fn = delete_fn[:delete_fn.index("\n@router.")]
         assert "DELETE FROM bookmarks WHERE post_id" in delete_fn
+
+
+class TestInfoReportsLockShared:
+    """Info reports file must be protected by a shared lock across public_api and admin."""
+
+    def test_admin_uses_shared_jsonl_lock(self):
+        import admin as admin_mod
+        import public_api
+        assert admin_mod._info_reports_lock is public_api._jsonl_lock, \
+            "admin._info_reports_lock must be the SAME object as public_api._jsonl_lock"
+
+    def test_info_report_action_uses_lock(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("def info_report_action")
+        assert idx > 0
+        block = src[idx:idx+500]
+        assert "_info_reports_lock" in block, \
+            "info_report_action must use _info_reports_lock for thread safety"
+
+    def test_trending_cache_has_asyncio_lock(self):
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        assert "_trending_lock = asyncio.Lock()" in src
+        assert "_leaderboard_lock = asyncio.Lock()" in src
+        idx = src.find("async def trending_tags(")
+        block = src[idx:idx+800]
+        assert "_trending_lock" in block
+        idx2 = src.find("async def community_leaderboard(")
+        block2 = src[idx2:idx2+800]
+        assert "_leaderboard_lock" in block2

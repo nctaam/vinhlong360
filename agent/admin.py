@@ -1625,6 +1625,7 @@ async def dismiss_report(report_id: str):
 # GĐ13.6f: báo-sai thông tin (facility/entity) & báo nội dung ẩn danh — kênh nhẹ JSONL
 # (KHÔNG cần đăng nhập, không DB), tách khỏi UGC `reports` (Postgres) ở trên.
 _INFO_REPORTS_FILE = Path(__file__).resolve().parent / "data" / "reports.jsonl"
+from public_api import _jsonl_lock as _info_reports_lock
 
 
 @router.get("/info-reports")
@@ -1706,26 +1707,27 @@ class ReportActionRequest(BaseModel):
 async def info_report_action(body: ReportActionRequest):
     """Đổi trạng thái 1 báo-sai (resolve/dismiss/open) — ghi lại reports.jsonl atomic."""
     def _query():
-        if not _INFO_REPORTS_FILE.exists():
-            raise HTTPException(404, "Không có báo cáo")
-        records, found = [], False
-        for line in _INFO_REPORTS_FILE.read_text(encoding="utf-8").splitlines():
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                r = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            if r.get("ts") == body.ts:
-                r["status"] = body.status
-                found = True
-            records.append(r)
-        if not found:
-            raise HTTPException(404, f"Không tìm thấy báo cáo ts={body.ts}")
-        tmp = _INFO_REPORTS_FILE.with_suffix(".tmp")
-        tmp.write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in records) + "\n", encoding="utf-8")
-        tmp.replace(_INFO_REPORTS_FILE)
+        with _info_reports_lock:
+            if not _INFO_REPORTS_FILE.exists():
+                raise HTTPException(404, "Không có báo cáo")
+            records, found = [], False
+            for line in _INFO_REPORTS_FILE.read_text(encoding="utf-8").splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    r = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if r.get("ts") == body.ts:
+                    r["status"] = body.status
+                    found = True
+                records.append(r)
+            if not found:
+                raise HTTPException(404, f"Không tìm thấy báo cáo ts={body.ts}")
+            tmp = _INFO_REPORTS_FILE.with_suffix(".tmp")
+            tmp.write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in records) + "\n", encoding="utf-8")
+            tmp.replace(_INFO_REPORTS_FILE)
     await asyncio.to_thread(_query)
     return {"success": True, "ts": body.ts, "new_status": body.status}
 
