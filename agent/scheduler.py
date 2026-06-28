@@ -604,6 +604,17 @@ def task_session_cleanup():
         _sched_logger.error("Session cleanup error: %s", e)
 
 
+def task_ratelimit_gc():
+    """Periodic GC for all in-memory rate-limit dicts to prevent memory leaks."""
+    try:
+        from ratelimit import gc_all
+        result = gc_all()
+        if result["freed"] > 0:
+            _sched_logger.info("Rate-limit GC: freed %d keys (%d→%d)", result["freed"], result["before"], result["after"])
+    except Exception as e:
+        _sched_logger.error("Rate-limit GC error: %s", e)
+
+
 TASKS = [
     ScheduledTask("auto-learn",     task_auto_learn,            interval_seconds=AUTO_LEARN_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 3h (env)
     ScheduledTask("relationships",  task_relationship_discovery, interval_seconds=12 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
@@ -621,6 +632,7 @@ TASKS = [
     ScheduledTask("guardrails-cleanup",task_guardrails_cleanup,   interval_seconds=12 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
     ScheduledTask("session-cleanup", task_session_cleanup,       interval_seconds=6 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 6h
     ScheduledTask("notification-cleanup", task_notification_cleanup, interval_seconds=24 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h
+    ScheduledTask("ratelimit-gc",  task_ratelimit_gc,          interval_seconds=300),        # 5min
     ScheduledTask("learning-loop",    task_learning_loop,         interval_seconds=LEARNING_LOOP_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 1h (env)
     ScheduledTask("kb-promotion",     task_kb_promotion,          interval_seconds=PROMOTION_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 6h (env)
     ScheduledTask("continuous-discovery", task_continuous_discovery, interval_seconds=DISCOVERY_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 1h adaptive 30m–6h (env)

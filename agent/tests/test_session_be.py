@@ -1823,9 +1823,9 @@ class TestPhase11CommentCap:
         assert "đạt giới hạn bình luận" in block
 
     def test_comment_cap_value_reasonable(self):
-        """MAX_COMMENTS_PER_POST is set to 500."""
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
-        assert "MAX_COMMENTS_PER_POST = 500" in src
+        """MAX_COMMENTS_PER_POST is set to 500 (via config)."""
+        from config import settings
+        assert settings.MAX_COMMENTS_PER_POST == 500
 
 
 class TestPhase11FollowingFeedBlockFilter:
@@ -2028,3 +2028,150 @@ class TestPhase14PgIndexes:
     def test_posts_entity_index_exists(self):
         src = (Path(__file__).resolve().parent.parent / "database.py").read_text(encoding="utf-8")
         assert "idx_posts_entity" in src
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  Phase 13: Config centralization — hardcoded values wired to config.py
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestPhase13ConfigCentralization:
+    """Phase 13: Business constants must use config.py, not hardcoded values."""
+
+    def test_config_has_business_rules(self):
+        from config import settings
+        assert settings.MAX_COMMENTS_PER_POST == 500
+        assert settings.MAX_CONCURRENT_SESSIONS == 5
+        assert settings.COMMENT_EDIT_WINDOW_HOURS == 24
+        assert settings.RL_POST_DAILY_LIMIT == 50
+        assert settings.RL_POST_DAILY_WINDOW == 86400
+        assert settings.TRENDING_CACHE_TTL == 120
+        assert settings.BACKUP_COOLDOWN == 300
+        assert settings.ACCOUNT_DELETE_GRACE_DAYS == 30
+        assert settings.PBKDF2_ITERATIONS == 310_000
+
+    def test_social_uses_config_for_daily_limit(self):
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        assert "_cfg.RL_POST_DAILY_LIMIT" in src
+        assert "_cfg.RL_POST_DAILY_WINDOW" in src
+
+    def test_social_uses_config_for_comment_cap(self):
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        assert "_cfg.MAX_COMMENTS_PER_POST" in src
+
+    def test_social_uses_config_for_edit_window(self):
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        assert "_cfg.COMMENT_EDIT_WINDOW_HOURS" in src
+
+    def test_social_uses_config_for_trending_ttl(self):
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        assert "_cfg.TRENDING_CACHE_TTL" in src
+
+    def test_auth_uses_config_for_pbkdf2(self):
+        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        assert "_cfg.PBKDF2_ITERATIONS" in src
+
+    def test_auth_uses_config_for_delete_grace(self):
+        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        assert "_cfg.ACCOUNT_DELETE_GRACE_DAYS" in src
+
+    def test_admin_uses_config_for_backup_cooldown(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        assert "_cfg.BACKUP_COOLDOWN" in src
+
+    def test_no_hardcoded_daily_limit(self):
+        """Ensure RL_POST_DAILY_LIMIT is not hardcoded to 50 in social.py."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        lines = [l for l in src.splitlines() if "RL_POST_DAILY_LIMIT" in l and "= 50" in l]
+        assert not lines, f"Hardcoded daily limit found: {lines}"
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  Phase 14b: Rate limit background GC
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestPhase14RatelimitGC:
+    """Phase 14: Rate limit background GC prevents memory leaks."""
+
+    def test_gc_all_exists(self):
+        from ratelimit import gc_all
+        result = gc_all()
+        assert "before" in result
+        assert "after" in result
+        assert "freed" in result
+
+    def test_gc_all_cleans_expired(self):
+        from ratelimit import _buckets, gc_all, _now
+        import time
+        _buckets["test_gc_expired"] = [time.time() - 7200]
+        result = gc_all()
+        assert "test_gc_expired" not in _buckets
+        assert result["freed"] >= 1
+
+    def test_scheduler_has_ratelimit_gc_task(self):
+        src = (Path(__file__).resolve().parent.parent / "scheduler.py").read_text(encoding="utf-8")
+        assert "ratelimit-gc" in src
+        assert "task_ratelimit_gc" in src
+
+    def test_scheduler_gc_interval_reasonable(self):
+        src = (Path(__file__).resolve().parent.parent / "scheduler.py").read_text(encoding="utf-8")
+        assert "interval_seconds=300" in src.split("ratelimit-gc")[1][:100]
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  Phase 14c: Leaderboard cache + SELECT * fix
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestPhase14QueryOptimization:
+    """Phase 14: Query optimization — caching and SELECT * removal."""
+
+    def test_leaderboard_cache_exists(self):
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        assert "_leaderboard_cache" in src
+
+    def test_no_select_star_in_privacy(self):
+        """user_privacy queries must select explicit columns."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        assert "SELECT * FROM user_privacy" not in src
+
+    def test_privacy_selects_explicit_columns(self):
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        assert "profile_visibility, show_activity, show_saved FROM user_privacy" in src
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  Phase 15: Idempotency key support
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestPhase15Idempotency:
+    """Phase 15: Idempotency key support for write endpoints."""
+
+    def test_require_idempotency_exists(self):
+        from auth_middleware import require_idempotency
+        import inspect
+        assert inspect.iscoroutinefunction(require_idempotency)
+
+    def test_create_post_has_idempotency(self):
+        import inspect
+        import social
+        sig = inspect.signature(social.create_post)
+        assert "_idem" in sig.parameters
+
+    def test_create_comment_has_idempotency(self):
+        import inspect
+        import social
+        sig = inspect.signature(social.create_comment)
+        assert "_idem" in sig.parameters
+
+    def test_idempotency_check_deduplication(self):
+        from auth_middleware import check_idempotency, _reset_idempotency
+        _reset_idempotency()
+        r1 = check_idempotency("test-key-123")
+        assert r1["is_duplicate"] is False
+        r2 = check_idempotency("test-key-123")
+        assert r2["is_duplicate"] is True
+        _reset_idempotency()
+
+    def test_idempotency_empty_key_not_duplicate(self):
+        from auth_middleware import check_idempotency
+        r = check_idempotency("")
+        assert r["is_duplicate"] is False

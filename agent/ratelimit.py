@@ -378,6 +378,36 @@ def check_rate_load_aware(
     check_rate(key, effective_limit, base_window, msg)
 
 
+def gc_all() -> dict:
+    """Periodic GC for all in-memory rate-limit dicts. Call from scheduler."""
+    now = _now()
+    before = sum(len(d) for d in [_buckets, _violations, _ip_global, _resource_access,
+                                    _slow_rate_tracking, _token_buckets, _penalty_box,
+                                    _penalty_violations, _sliding_counters])
+    _gc(now)
+    cutoff_global = now - _IP_GLOBAL_WINDOW * 2
+    for k in [k for k, ts in _ip_global.items() if not ts or now - ts[-1] > cutoff_global]:
+        _ip_global.pop(k, None)
+    for k in [k for k, ts in _violations.items() if not ts or now - ts[-1] > _VIOLATION_DECAY]:
+        _violations.pop(k, None)
+    for k in [k for k, v in _resource_access.items() if not v or v[-1][0] < now - _COORD_WINDOW]:
+        _resource_access.pop(k, None)
+    for k in [k for k, ts in _slow_rate_tracking.items() if not ts or now - ts[-1] > _SLOW_RATE_WINDOW]:
+        _slow_rate_tracking.pop(k, None)
+    for k in [k for k, (_, t) in _token_buckets.items() if t < now - 3600]:
+        _token_buckets.pop(k, None)
+    for ip in [ip for ip, t in _penalty_box.items() if now >= t]:
+        _penalty_box.pop(ip, None)
+    for ip in [ip for ip, cnt in _penalty_violations.items() if cnt <= 0]:
+        _penalty_violations.pop(ip, None)
+    for k in [k for k, v in _sliding_counters.items() if not v or v[-1][0] < now - 3600]:
+        _sliding_counters.pop(k, None)
+    after = sum(len(d) for d in [_buckets, _violations, _ip_global, _resource_access,
+                                   _slow_rate_tracking, _token_buckets, _penalty_box,
+                                   _penalty_violations, _sliding_counters])
+    return {"before": before, "after": after, "freed": before - after}
+
+
 def _reset() -> None:
     """Chỉ dùng trong test."""
     global _load_multiplier

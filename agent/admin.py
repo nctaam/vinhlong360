@@ -1022,7 +1022,7 @@ async def admin_stats():
 
 
 _last_backup_time: float = 0
-_BACKUP_COOLDOWN = 300  # 5 minutes
+_BACKUP_COOLDOWN = _cfg.BACKUP_COOLDOWN
 
 @router.post("/backup-trigger")
 async def trigger_backup():

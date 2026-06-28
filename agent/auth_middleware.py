@@ -1225,6 +1225,16 @@ def check_idempotency(key: str) -> dict:
         return {"is_duplicate": False, "first_seen": now}
 
 
+async def require_idempotency(request: Request) -> None:
+    """FastAPI dependency: reject duplicate POST requests via Idempotency-Key header."""
+    key = request.headers.get("Idempotency-Key", "").strip()
+    if not key:
+        return
+    result = check_idempotency(key)
+    if result["is_duplicate"]:
+        raise HTTPException(409, "Yêu cầu trùng lặp (idempotency key đã được xử lý)")
+
+
 def _reset_idempotency():
     """Test-only."""
     with _dedup_lock:

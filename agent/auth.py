@@ -89,7 +89,7 @@ OTP_VERIFY_IP_LIMIT = 15
 OTP_VERIFY_IP_WINDOW = 300
 _otp_verify_ip_rate: dict[str, list[float]] = {}
 
-ACCOUNT_DELETE_GRACE_DAYS = 30
+ACCOUNT_DELETE_GRACE_DAYS = _cfg.ACCOUNT_DELETE_GRACE_DAYS
 
 _RATE_MAX_KEYS = 2000
 
@@ -211,7 +211,7 @@ def _hash_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
 
-_PBKDF2_ITERATIONS = 310_000
+_PBKDF2_ITERATIONS = _cfg.PBKDF2_ITERATIONS
 
 def _hash_password(password: str) -> str:
     salt = os.urandom(16)

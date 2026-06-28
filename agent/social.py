@@ -22,7 +22,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, File
 from pydantic import BaseModel, field_validator
 
-from auth_middleware import get_current_user, require_user, validate_path_id, require_csrf
+from auth_middleware import get_current_user, require_user, validate_path_id, require_csrf, require_idempotency
 from database import db
 from moderation import moderate_content, moderate_content_enhanced, log_moderation
 from notifications import create_notification
@@ -254,11 +254,11 @@ POST_TYPE_LABELS = {
 
 # ── Posts ──
 
-RL_POST_DAILY_LIMIT = 50
-RL_POST_DAILY_WINDOW = 86400
+RL_POST_DAILY_LIMIT = _cfg.RL_POST_DAILY_LIMIT
+RL_POST_DAILY_WINDOW = _cfg.RL_POST_DAILY_WINDOW
 
 @router.post("/posts")
-async def create_post(body: CreatePost, user=Depends(require_user), _csrf=Depends(require_csrf)):
+async def create_post(body: CreatePost, user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
     check_rate(f"post:{user['id']}", RL_POST_LIMIT, RL_POST_WINDOW,
                "Bạn đăng bài quá nhanh. Vui lòng đợi ít phút rồi thử lại.")
     check_rate(f"post-day:{user['id']}", RL_POST_DAILY_LIMIT, RL_POST_DAILY_WINDOW,
@@ -728,7 +728,7 @@ async def community_stats():
 
 
 _trending_cache: dict = {"ts": 0.0, "data": {}}
-_TRENDING_TTL = 120
+_TRENDING_TTL = _cfg.TRENDING_CACHE_TTL
 
 @router.get("/community/trending-tags")
 async def trending_tags(limit: int = Query(10, ge=1, le=20)):
@@ -759,11 +759,17 @@ async def trending_tags(limit: int = Query(10, ge=1, le=20)):
     return result
 
 
+_leaderboard_cache: dict = {"ts": 0.0, "data": None}
+
 @router.get("/community/leaderboard")
 async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depends(get_current_user)):
     """Bảng xếp hạng: thành viên tích cực theo điểm danh-tiếng (1 query gộp)."""
+    import time as _t
+    now = _t.time()
     ph = db._ph
     bc, bc_p = _block_sql(user)
+    if not bc and _leaderboard_cache["data"] is not None and now - _leaderboard_cache["ts"] < _cfg.TRENDING_CACHE_TTL:
+        return {"leaders": _leaderboard_cache["data"][:limit]}
     def _query():
         with db._conn() as conn:
             return db._fetchall(conn, f"""
@@ -809,6 +815,9 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
             "posts": posts, "reviews": reviews,
         })
     leaders.sort(key=lambda x: x["points"], reverse=True)
+    if not bc:
+        _leaderboard_cache["ts"] = _t.time()
+        _leaderboard_cache["data"] = leaders
     return {"leaders": leaders[:limit]}
 
 
@@ -1071,7 +1080,7 @@ async def get_comments(
 
 
 @router.post("/posts/{post_id}/comments")
-async def create_comment(post_id: str, body: CreateComment, user=Depends(require_user), _csrf=Depends(require_csrf)):
+async def create_comment(post_id: str, body: CreateComment, user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
     post_id = validate_path_id(post_id, "post_id")
     check_rate(f"comment:{user['id']}", RL_COMMENT_LIMIT, RL_COMMENT_WINDOW,
                "Bạn bình luận quá nhanh. Vui lòng đợi chút rồi thử lại.")
@@ -1079,7 +1088,7 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
     status = mod_result["status"]
     mentions = _clean_mentions(body.mentions)
 
-    MAX_COMMENTS_PER_POST = 500
+    MAX_COMMENTS_PER_POST = _cfg.MAX_COMMENTS_PER_POST
     ph = db._ph
     def _query():
         with db._conn() as conn:
@@ -1149,7 +1158,7 @@ async def edit_comment(comment_id: str, body: EditComment, user=Depends(require_
     comment_id = validate_path_id(comment_id, "comment_id")
     ph = db._ph
     uid = str(user["id"])
-    COMMENT_EDIT_WINDOW_HOURS = 24
+    COMMENT_EDIT_WINDOW_HOURS = _cfg.COMMENT_EDIT_WINDOW_HOURS
     def _check():
         with db._conn() as conn:
             row = db._fetchone(conn, f"SELECT user_id, created_at FROM comments WHERE id::text = {ph}", (comment_id,))
@@ -1503,7 +1512,7 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
 
             privacy = None
             try:
-                prow = db._fetchone(conn, f"SELECT * FROM user_privacy WHERE user_id = {ph}::uuid", (resolved_id,))
+                prow = db._fetchone(conn, f"SELECT user_id, profile_visibility, show_activity, show_saved FROM user_privacy WHERE user_id = {ph}::uuid", (resolved_id,))
                 if prow:
                     privacy = db._row_to_dict(prow)
             except Exception:

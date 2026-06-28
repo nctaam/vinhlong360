@@ -88,6 +88,17 @@ class Settings(BaseSettings):
     RL_LIKE_WINDOW: int = 60
     AUDIT_MAX_LINES: int = 5000
 
+    # ── Business rules ──
+    MAX_COMMENTS_PER_POST: int = 500
+    MAX_CONCURRENT_SESSIONS: int = 5
+    COMMENT_EDIT_WINDOW_HOURS: int = 24
+    RL_POST_DAILY_LIMIT: int = 50
+    RL_POST_DAILY_WINDOW: int = 86400
+    TRENDING_CACHE_TTL: int = 120
+    BACKUP_COOLDOWN: int = 300
+    ACCOUNT_DELETE_GRACE_DAYS: int = 30
+    PBKDF2_ITERATIONS: int = 310_000
+
     # ── Misc ──
     DYNAMIC_AGENT_MAX: int = 10
     KB_CONTEXT_MODE: str = "index"
