@@ -1712,3 +1712,43 @@ class TestPhase11SelfLikePrevention:
         block = src[idx:idx + 1500]
         assert "404" in block
         assert "Bài viết không tồn tại" in block
+
+
+class TestPhase11HtmlSanitization:
+    """Phase 11: HTML tag stripping in content validators."""
+
+    def test_strip_html_tags_helper(self):
+        """_strip_html_tags removes HTML tags."""
+        import social
+        assert social._strip_html_tags("<script>alert(1)</script>hello") == "alert(1)hello"
+        assert social._strip_html_tags("no tags here") == "no tags here"
+        assert social._strip_html_tags("<b>bold</b> <i>italic</i>") == "bold italic"
+        assert social._strip_html_tags("") == ""
+
+    def test_create_post_validator_strips_html(self):
+        """CreatePost.validate_content strips HTML tags."""
+        import social
+        p = social.CreatePost(content="<b>Hello world</b> this is a test post", post_type="share")
+        assert "<b>" not in p.content
+        assert "Hello world" in p.content
+
+    def test_create_comment_validator_strips_html(self):
+        """CreateComment.validate_content strips HTML tags."""
+        import social
+        c = social.CreateComment(content="<script>alert('xss')</script>bình luận hợp lệ")
+        assert "<script>" not in c.content
+        assert "bình luận hợp lệ" in c.content
+
+    def test_edit_comment_validator_strips_html(self):
+        """EditComment.validate_content strips HTML tags."""
+        import social
+        c = social.EditComment(content="<img src=x onerror=alert(1)>OK comment here")
+        assert "<img" not in c.content
+        assert "OK comment here" in c.content
+
+    def test_update_post_strips_html(self):
+        """UpdatePost.validate_content strips HTML tags."""
+        import social
+        p = social.UpdatePost(content="<div onclick='hack()'>Safe content here for testing</div>")
+        assert "<div" not in p.content
+        assert "Safe content" in p.content

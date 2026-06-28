@@ -87,6 +87,13 @@ def _enrich_user_status(posts: list[dict], user) -> list[dict]:
     return posts
 
 
+_HTML_TAG_RE = re.compile(r"<[^>]+>")
+
+def _strip_html_tags(s: str) -> str:
+    """Remove HTML tags from user content (defense-in-depth against stored XSS)."""
+    return _HTML_TAG_RE.sub("", s)
+
+
 def _extract_hashtags(content: str) -> list[str]:
     """Trích #hashtag (Unicode, tiếng Việt OK) → lowercase, dedup, cap 10."""
     seen, out = set(), []
@@ -165,7 +172,7 @@ class CreatePost(BaseModel):
     @field_validator("content")
     @classmethod
     def validate_content(cls, v):
-        v = (v or "").strip()
+        v = _strip_html_tags((v or "").strip())
         # Cho phép RỖNG (repost không kèm lời); 1-9 ký tự = quá ngắn → chặn. ≥10 OK.
         if 0 < len(v) < 10:
             raise ValueError("Nội dung cần ít nhất 10 ký tự")
@@ -203,7 +210,7 @@ class CreateComment(BaseModel):
     @field_validator("content")
     @classmethod
     def validate_content(cls, v):
-        v = v.strip()
+        v = _strip_html_tags(v.strip())
         if len(v) < 1:
             raise ValueError("Bình luận không được để trống")
         if len(v) > 2000:
@@ -220,7 +227,7 @@ class UpdatePost(BaseModel):
     def validate_content(cls, v):
         if v is None:
             return v
-        v = v.strip()
+        v = _strip_html_tags(v.strip())
         if 0 < len(v) < 10:
             raise ValueError("Nội dung cần ít nhất 10 ký tự")
         if len(v) > 5000:
@@ -1117,7 +1124,7 @@ class EditComment(BaseModel):
     @field_validator("content")
     @classmethod
     def validate_content(cls, v):
-        v = (v or "").strip()
+        v = _strip_html_tags((v or "").strip())
         if len(v) < 2:
             raise ValueError("Bình luận quá ngắn")
         if len(v) > 2000:
