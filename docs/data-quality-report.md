@@ -45,6 +45,7 @@ Tool: `python scripts/validate_data.py`
 | History architectural_style | 0 | **130 entities** |
 | Admission capitalization | inconsistent | **Normalized** |
 | Price range dash format | mixed (–/-) | **All en-dash (–)** |
+| Hours format | mixed Xh/hyphen | **All HH:MM + en-dash (156 fixed)** |
 | Geocoded from centroid | 0 | **34 entities** |
 
 ## Errors
@@ -143,6 +144,66 @@ Note: Confidence formula now correctly differentiates approximate coordinates (+
 | produced_in | 202 |
 | **Total** | **11591** |
 
+## Deep Research Findings
+
+### Coverage Imbalance (entities per area, excluding place)
+
+| Type | VL | BT | TV | Ratio | Severity |
+|------|-----|-----|-----|-------|----------|
+| experience | 70 | 15 | 7 | 10.0x | Critical |
+| person | 23 | 6 | 6 | 3.8x | High |
+| accommodation | 99 | 29 | 36 | 3.4x | Medium |
+
+**Impact:** TV (Trà Vinh) is severely underrepresented in experiences. After 3-province merge, users searching for experiences in the former TV area will find very few options.
+
+### Duplicate Detection
+
+1 near-duplicate found: "Nhà hàng Hàm Luông" (`nha-hang-ham-luong-ben-tre`) and "Hàm Luông" (`ham-luong`) — both at 200C Hùng Vương, Bến Tre. Same restaurant listed under different names.
+
+### Relationship Quality
+
+- Dangling references: **0** (clean)
+- Self-references: **0** (clean)
+- Duplicate relationships: **0** (clean)
+- Far "near" relationships (>50km): **62** — all involve centroid entities (artifacts of approximate coordinates, will resolve with real geocoding)
+
+### Itinerary Quality
+
+- 33 total itineraries, 185 stops
+- **174/185 stops** (94%) linked to existing entities
+- 11 unlinked stops are generic activities (departure, pool, dinner) without corresponding entities — legitimate
+- 21 itineraries use stop `id` field, 12 newer ones use `entityId` field
+
+### Source Data Origins
+
+| Source | Count |
+|--------|-------|
+| Curated | 336 |
+| Ward Crawl 2-3 (vinhlong360) | 449 |
+| Agent discovery (LLM + geocode) | 144 |
+| vinhlong.gov.vn | 143 |
+| vinhlong360 auto-learn | 141 |
+| foody.vn | 127 |
+| vinhlongtourist.vn | 49 |
+| Facebook crawl | 1 |
+
+Sources are stored as list of dicts `[{title, method}]`, not URL strings.
+
+### Attribute Format Normalization (completed)
+
+| Attribute | Before | After |
+|-----------|--------|-------|
+| Hours format | Mixed Xh/HH:MM/hyphen | All HH:MM with en-dash (156 fixed) |
+| Price range dash | Mixed hyphen/en-dash | All en-dash (297 fixed, earlier session) |
+| Admission capitalization | Inconsistent | Normalized (earlier session) |
+
+### Remaining Format Variations (acceptable)
+
+| Attribute | Variation | Reason |
+|-----------|-----------|--------|
+| Price range "other" (30) | "Trung bình", "Cao cấp", "Bình dân" | Qualitative tiers, not numeric ranges |
+| Hours "other" (20) | "Thường tham quan ban ngày" | Places without fixed hours |
+
 ## Score Gap Analysis
 
 | Deduction | Entities | Points/each | Avg impact | Actionable? |
@@ -157,4 +218,6 @@ Note: Confidence formula now correctly differentiates approximate coordinates (+
 
 1. **Image generation** — 0% coverage, the ONLY remaining significant gap (-10.00 avg pts). Use `scripts/gen_image.py` + `cx/gpt-5.5-image` API.
 2. **Geocoding** — ~337 entities at province centroids (178 original + 159 from geographic fixes). Google Places API would improve coverage beyond Nominatim.
-3. **Phone/hours real data** — Some restaurants/accommodations have specialty but still lack phone/hours (secondary SEO attrs). Needs Google Places or manual research.
+3. **Experience coverage** — Trà Vinh has only 7 experiences vs 70 for Vĩnh Long (10x imbalance). Need curated TV experiences.
+4. **Merge duplicate** — "Nhà hàng Hàm Luông" / "Hàm Luông" at same address in Bến Tre.
+5. **Phone/hours real data** — Some restaurants/accommodations have specialty but still lack phone/hours. Needs Google Places or manual research.
