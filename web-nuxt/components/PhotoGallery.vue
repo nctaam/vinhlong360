@@ -63,7 +63,7 @@ function goToSlide(idx: number) {
         @click="emit('open-lightbox', i + 1)"
         :aria-label="`Ảnh ${i + 2} — ${alt}`"
       >
-        <NuxtImg v-if="isRemote(src)" :src="src" alt="" aria-hidden="true" class="pg-thumb-img" loading="lazy" width="200" height="200" decoding="async" />
+        <NuxtImg v-if="isRemote(src)" :src="src" alt="" aria-hidden="true" class="pg-thumb-img" loading="lazy" width="200" height="200" sizes="sm:60px md:80px lg:100px" decoding="async" />
         <img v-else :src="src" alt="" aria-hidden="true" class="pg-thumb-img" loading="lazy" width="200" height="200" decoding="async" />
       </button>
     </div>
@@ -84,7 +84,7 @@ function goToSlide(idx: number) {
         @click="emit('open-lightbox', i)"
         :aria-label="`Ảnh ${i + 1} — ${alt}`"
       >
-        <NuxtImg v-if="isRemote(src)" :src="src" :alt="i === 0 ? alt : ''" :aria-hidden="i > 0 ? 'true' : undefined" class="pg-slide-img" :loading="i === 0 ? 'eager' : 'lazy'" width="400" height="267" decoding="async" />
+        <NuxtImg v-if="isRemote(src)" :src="src" :alt="i === 0 ? alt : ''" :aria-hidden="i > 0 ? 'true' : undefined" class="pg-slide-img" :loading="i === 0 ? 'eager' : 'lazy'" width="400" height="267" sizes="sm:100vw md:60vw lg:400px" decoding="async" />
         <img v-else :src="src" :alt="i === 0 ? alt : ''" :aria-hidden="i > 0 ? 'true' : undefined" class="pg-slide-img" :loading="i === 0 ? 'eager' : 'lazy'" width="400" height="267" decoding="async" />
       </button>
     </div>

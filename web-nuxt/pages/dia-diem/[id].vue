@@ -55,7 +55,7 @@
       </button>
       <div v-if="hasEntityImages && entity.images.length > 1" class="dc-thumbs">
         <template v-for="(src, i) in entity.images.slice(0, 4)" :key="src">
-          <NuxtImg v-if="isRemoteUrl(src)" :src="src" :alt="`${entity.name} - ${i + 1}`" :class="['dc-thumb', { active: i === 0 }]" loading="lazy" width="56" height="40" decoding="async" role="button" tabindex="0" @click="openCoverLightbox(i)" @keydown.enter="openCoverLightbox(i)" @keydown.space.prevent="openCoverLightbox(i)" />
+          <NuxtImg v-if="isRemoteUrl(src)" :src="src" :alt="`${entity.name} - ${i + 1}`" :class="['dc-thumb', { active: i === 0 }]" loading="lazy" width="56" height="40" sizes="56px" decoding="async" role="button" tabindex="0" @click="openCoverLightbox(i)" @keydown.enter="openCoverLightbox(i)" @keydown.space.prevent="openCoverLightbox(i)" />
           <img v-else :src="src" :alt="`${entity.name} - ${i + 1}`" :class="['dc-thumb', { active: i === 0 }]" loading="lazy" width="56" height="40" decoding="async" role="button" tabindex="0" @click="openCoverLightbox(i)" @keydown.enter="openCoverLightbox(i)" @keydown.space.prevent="openCoverLightbox(i)" />
         </template>
         <button type="button" v-if="entity.images.length > 4" class="dc-thumb-more" :aria-label="`Xem thêm ${entity.images.length - 4} ảnh`" @click="openCoverLightbox(4)">

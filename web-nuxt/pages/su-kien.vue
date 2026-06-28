@@ -152,7 +152,7 @@
             </div>
           </div>
           <div v-if="e.images?.length" class="event-thumb">
-            <NuxtImg v-if="isRemoteUrl(e.images[0])" :src="e.images[0]" :alt="e.name" loading="lazy" decoding="async" width="160" height="120" />
+            <NuxtImg v-if="isRemoteUrl(e.images[0])" :src="e.images[0]" :alt="e.name" loading="lazy" decoding="async" width="160" height="120" sizes="160px" />
             <img v-else :src="e.images[0]" :alt="e.name" loading="lazy" decoding="async" width="160" height="120" />
           </div>
           <button v-if="e.attributes?.date_start" type="button" class="ical-btn" title="Thêm vào lịch" @click.stop.prevent="downloadIcal(e)">📅</button>
