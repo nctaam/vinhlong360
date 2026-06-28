@@ -151,15 +151,19 @@ class ScheduledTask:
         self.timeout = timeout or _TASK_TIMEOUT
         self.next_run_after = 0 if run_immediately else time.time() + interval_seconds
         self._consecutive_failures = 0
+        self._is_running = False
 
     def should_run(self) -> bool:
         if not self.enabled:
+            return False
+        if self._is_running:
             return False
         if time.time() < self.next_run_after:
             return False
         return time.time() - self.last_run >= self.interval
 
     def run(self):
+        self._is_running = True
         try:
             _sched_logger.info("Running task: %s (timeout=%ds)", self.name, self.timeout)
             start = time.time()
@@ -210,6 +214,8 @@ class ScheduledTask:
             else:
                 _sched_logger.error("Task failed: %s — %d consecutive failures, waiting normal interval — %s\n%s",
                                     self.name, self._consecutive_failures, e, traceback.format_exc())
+        finally:
+            self._is_running = False
 
 
 def task_auto_learn():

@@ -1897,3 +1897,30 @@ class TestDeleteRowcountChecks:
         block = src[idx:idx+600]
         assert "if not row" in block or "rowcount" in block, \
             "reject_post must verify the post exists"
+
+
+class TestSchedulerOverlapGuard:
+    """Scheduler tasks must prevent overlapping execution."""
+
+    def test_scheduled_task_has_is_running_flag(self):
+        src = (Path(__file__).resolve().parent.parent / "scheduler.py").read_text(encoding="utf-8")
+        assert "_is_running" in src, \
+            "ScheduledTask must have _is_running flag to prevent overlapping execution"
+
+    def test_should_run_checks_is_running(self):
+        src = (Path(__file__).resolve().parent.parent / "scheduler.py").read_text(encoding="utf-8")
+        idx = src.find("def should_run(self)")
+        block = src[idx:idx+300]
+        assert "_is_running" in block, \
+            "should_run must check _is_running to prevent concurrent execution"
+
+    def test_run_sets_and_clears_flag(self):
+        src = (Path(__file__).resolve().parent.parent / "scheduler.py").read_text(encoding="utf-8")
+        idx = src.find("def run(self)")
+        block = src[idx:idx+3000]
+        assert "self._is_running = True" in block, \
+            "run() must set _is_running = True at start"
+        assert "self._is_running = False" in block, \
+            "run() must clear _is_running in finally block"
+        assert "finally:" in block, \
+            "run() must use finally to guarantee _is_running is cleared"
