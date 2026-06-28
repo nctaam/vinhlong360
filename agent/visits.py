@@ -7,8 +7,9 @@ import asyncio
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, field_validator
 
-from auth_middleware import require_user, require_csrf
+from auth_middleware import require_user, require_csrf, validate_path_id
 from database import db
+from ratelimit import check_rate
 
 
 from auth_middleware import require_pg as _require_pg
@@ -46,6 +47,7 @@ async def list_visits(status: str = Query(None), user=Depends(require_user)):
 
 @router.get("/check/{entity_id}")
 async def check_visit(entity_id: str, user=Depends(require_user)):
+    entity_id = validate_path_id(entity_id, "entity_id")
     def _query():
         ph = db._ph
         with db._conn() as conn:
@@ -57,6 +59,7 @@ async def check_visit(entity_id: str, user=Depends(require_user)):
 
 @router.post("")
 async def set_visit(body: VisitBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    check_rate(f"visit:{user['id']}", 60, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     def _query():
         ph = db._ph
         with db._conn() as conn:
@@ -70,6 +73,8 @@ async def set_visit(body: VisitBody, user=Depends(require_user), _csrf=Depends(r
 
 @router.delete("/{entity_id}")
 async def remove_visit(entity_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    entity_id = validate_path_id(entity_id, "entity_id")
+    check_rate(f"visit:{user['id']}", 60, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     def _query():
         ph = db._ph
         with db._conn() as conn:

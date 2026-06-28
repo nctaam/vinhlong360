@@ -16,6 +16,7 @@ from pydantic import BaseModel
 
 from auth_middleware import require_user, require_csrf, validate_path_id
 from database import db
+from ratelimit import check_rate
 
 
 from auth_middleware import require_pg as _require_pg
@@ -79,6 +80,7 @@ async def list_saved(user=Depends(require_user)):
 
 @router.post("")
 async def add_saved(item: SavedItem, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    check_rate(f"saved:{user['id']}", 60, 300, "Thao tác lưu quá nhanh. Vui lòng thử lại sau.")
     def _query():
         with db._conn() as conn:
             _upsert(conn, str(user["id"]), item)
@@ -89,6 +91,7 @@ async def add_saved(item: SavedItem, user=Depends(require_user), _csrf=Depends(r
 @router.delete("/{entity_id}")
 async def remove_saved(entity_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     entity_id = validate_path_id(entity_id, "entity_id")
+    check_rate(f"saved:{user['id']}", 60, 300, "Thao tác lưu quá nhanh. Vui lòng thử lại sau.")
     def _query():
         ph = db._ph
         with db._conn() as conn:
@@ -101,6 +104,7 @@ async def remove_saved(entity_id: str, user=Depends(require_user), _csrf=Depends
 
 @router.post("/merge")
 async def merge_saved(body: MergeBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    check_rate(f"saved-merge:{user['id']}", 10, 300, "Đồng bộ quá nhanh. Vui lòng thử lại sau.")
     uid = str(user["id"])
     items = (body.items or [])[:500]
     def _query():

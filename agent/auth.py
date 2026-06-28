@@ -46,6 +46,7 @@ async def _check_session_binding_safe(request, user):
         from auth_middleware import check_session_binding
         return await check_session_binding(request, user)
     except Exception:
+        logging.getLogger("auth").warning("session binding check failed, allowing access", exc_info=True)
         return True
 
 

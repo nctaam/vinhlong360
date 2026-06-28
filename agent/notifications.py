@@ -222,7 +222,7 @@ async def notification_stream(request: Request, token: str = Query(None)):
                 if not subs:
                     _sse_subscribers.pop(uid, None)
             except Exception:
-                pass
+                logging.getLogger("notifications").warning("SSE subscriber cleanup failed", exc_info=True)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
@@ -278,6 +278,7 @@ def create_notification(user_id: str, notif_type: str, title: str,
 @router.post("/follow/{target_type}/{target_id}")
 async def toggle_follow(target_type: str, target_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     target_id = validate_path_id(target_id, "target_id")
+    check_rate(f"follow:{user['id']}", 30, 300, "Thao tác follow quá nhanh. Vui lòng thử lại sau.")
     if target_type not in ("user", "entity"):
         raise HTTPException(400, "Loại follow: user hoặc entity")
 
@@ -447,6 +448,7 @@ async def create_report(body: ReportRequest, user=Depends(require_user), _csrf=D
 @router.post("/block/{blocked_id}")
 async def toggle_block(blocked_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     blocked_id = validate_path_id(blocked_id, "blocked_id")
+    check_rate(f"block:{user['id']}", 20, 300, "Thao tác chặn quá nhanh. Vui lòng thử lại sau.")
     if blocked_id == str(user["id"]):
         raise HTTPException(400, "Không thể tự chặn chính mình")
 
@@ -536,6 +538,7 @@ def _format_notif(row: dict) -> dict:
 @router.post("/events/{entity_id}/rsvp")
 async def toggle_rsvp(entity_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     validate_path_id(entity_id)
+    check_rate(f"rsvp:{user['id']}", 30, 300, "Thao tác RSVP quá nhanh. Vui lòng thử lại sau.")
     entity = await asyncio.to_thread(db.get_entity, entity_id)
     if not entity:
         raise HTTPException(404, "Không tìm thấy sự kiện")

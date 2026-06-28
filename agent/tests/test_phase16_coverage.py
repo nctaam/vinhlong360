@@ -473,3 +473,86 @@ class TestSelectStarRemoval:
     def test_notifications_explicit_columns(self):
         src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
         assert "SELECT id, type, title, body, ref_type, ref_id, is_read, created_at" in src
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  Rate limiting on mutation endpoints
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestRateLimitMutationEndpoints:
+    """All mutation endpoints must have rate limiting."""
+
+    def test_saved_add_has_rate_limit(self):
+        src = (Path(__file__).resolve().parent.parent / "saved.py").read_text(encoding="utf-8")
+        idx = src.find("def add_saved")
+        assert "check_rate" in src[idx:idx+300]
+
+    def test_saved_remove_has_rate_limit(self):
+        src = (Path(__file__).resolve().parent.parent / "saved.py").read_text(encoding="utf-8")
+        idx = src.find("def remove_saved")
+        assert "check_rate" in src[idx:idx+300]
+
+    def test_saved_merge_has_rate_limit(self):
+        src = (Path(__file__).resolve().parent.parent / "saved.py").read_text(encoding="utf-8")
+        idx = src.find("def merge_saved")
+        assert "check_rate" in src[idx:idx+300]
+
+    def test_visits_set_has_rate_limit(self):
+        src = (Path(__file__).resolve().parent.parent / "visits.py").read_text(encoding="utf-8")
+        idx = src.find("def set_visit")
+        assert "check_rate" in src[idx:idx+300]
+
+    def test_visits_remove_has_rate_limit(self):
+        src = (Path(__file__).resolve().parent.parent / "visits.py").read_text(encoding="utf-8")
+        idx = src.find("def remove_visit")
+        assert "check_rate" in src[idx:idx+300]
+
+    def test_plans_add_has_rate_limit(self):
+        src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
+        idx = src.find("def add_plan")
+        assert "check_rate" in src[idx:idx+300]
+
+    def test_plans_remove_has_rate_limit(self):
+        src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
+        idx = src.find("def remove_plan")
+        assert "check_rate" in src[idx:idx+300]
+
+    def test_plans_merge_has_rate_limit(self):
+        src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
+        idx = src.find("def merge_plans")
+        assert "check_rate" in src[idx:idx+300]
+
+    def test_plans_publish_has_rate_limit(self):
+        src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
+        idx = src.find("def publish_plan")
+        assert "check_rate" in src[idx:idx+300]
+
+    def test_follow_has_rate_limit(self):
+        src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
+        idx = src.find("def toggle_follow")
+        assert "check_rate" in src[idx:idx+300]
+
+    def test_block_has_rate_limit(self):
+        src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
+        idx = src.find("def toggle_block")
+        assert "check_rate" in src[idx:idx+300]
+
+    def test_rsvp_has_rate_limit(self):
+        src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
+        idx = src.find("def toggle_rsvp")
+        assert "check_rate" in src[idx:idx+300]
+
+
+class TestBareExceptFixes:
+    """Bare except blocks should log errors instead of silently swallowing."""
+
+    def test_session_binding_logs_on_error(self):
+        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        idx = src.find("_check_session_binding_safe")
+        block = src[idx:idx+300]
+        assert "exc_info=True" in block or "logging" in block
+
+    def test_sse_cleanup_logs_on_error(self):
+        src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
+        idx = src.find("SSE subscriber cleanup")
+        assert idx != -1

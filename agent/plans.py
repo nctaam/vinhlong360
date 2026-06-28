@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 
 from auth_middleware import require_user, require_csrf, validate_path_id
 from database import db
+from ratelimit import check_rate
 
 
 from auth_middleware import require_pg as _require_pg
@@ -79,6 +80,7 @@ async def list_plans(user=Depends(require_user)):
 
 @router.post("")
 async def add_plan(body: PlanBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    check_rate(f"plan:{user['id']}", 30, 300, "Tạo lịch trình quá nhanh. Vui lòng thử lại sau.")
     uid = str(user["id"])
     def _query():
         with db._conn() as conn:
@@ -94,6 +96,7 @@ async def add_plan(body: PlanBody, user=Depends(require_user), _csrf=Depends(req
 @router.delete("/{plan_id}")
 async def remove_plan(plan_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     plan_id = validate_path_id(plan_id, "plan_id")
+    check_rate(f"plan:{user['id']}", 30, 300, "Xóa lịch trình quá nhanh. Vui lòng thử lại sau.")
     def _query():
         ph = db._ph
         with db._conn() as conn:
@@ -106,6 +109,7 @@ async def remove_plan(plan_id: str, user=Depends(require_user), _csrf=Depends(re
 
 @router.post("/merge")
 async def merge_plans(body: MergeBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    check_rate(f"plan-merge:{user['id']}", 10, 300, "Đồng bộ lịch trình quá nhanh. Vui lòng thử lại sau.")
     uid = str(user["id"])
     incoming = (body.plans or [])[:MAX_PLANS]
     def _query():
@@ -124,6 +128,7 @@ class PublishBody(BaseModel):
 @router.post("/{plan_id}/publish")
 async def publish_plan(plan_id: str, body: PublishBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
     plan_id = validate_path_id(plan_id, "plan_id")
+    check_rate(f"plan:{user['id']}", 30, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     def _query():
         ph = db._ph
         with db._conn() as conn:
