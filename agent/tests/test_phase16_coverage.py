@@ -788,3 +788,23 @@ class TestSecurityPosture:
             assert idx > 0, f"Missing endpoint {endpoint}"
             block = src[idx:idx + 500]
             assert "check_rate(" in block, f"{endpoint} missing rate limiting"
+
+    def test_page_params_have_upper_bound(self):
+        """All page query params must have le= upper bound to prevent DoS via large OFFSET."""
+        for module in ("social", "admin"):
+            src = (Path(__file__).resolve().parent.parent / f"{module}.py").read_text(encoding="utf-8")
+            for line_no, line in enumerate(src.split("\n"), 1):
+                if "page: int = Query(" in line:
+                    assert "le=" in line, f"{module}.py:{line_no} page without upper bound: {line.strip()}"
+
+    def test_admin_silent_passes_have_logging(self):
+        """Dashboard/stats silent except blocks should log for debuggability."""
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        lines = src.split("\n")
+        bare_passes = 0
+        for i, line in enumerate(lines):
+            if line.strip() == "except Exception:":
+                next_line = lines[i + 1].strip() if i + 1 < len(lines) else ""
+                if next_line == "pass":
+                    bare_passes += 1
+        assert bare_passes <= 15, f"admin.py has {bare_passes} silent except:pass blocks (expected <=15 after adding logging)"

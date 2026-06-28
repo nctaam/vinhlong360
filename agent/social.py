@@ -478,7 +478,7 @@ async def update_post(post_id: str, body: UpdatePost, user=Depends(require_user)
 
 @router.get("/feed")
 async def get_feed(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=50),
     post_type: Optional[str] = Query(None, max_length=50),
     entity_type: Optional[str] = Query(None, max_length=50),
@@ -575,7 +575,7 @@ async def get_feed(
 
 @router.get("/feed/following")
 async def get_following_feed(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=50),
     user=Depends(require_user),
 ):
@@ -627,7 +627,7 @@ async def get_following_feed(
 @router.get("/search/posts")
 async def search_posts(
     q: str = Query(..., min_length=2, max_length=100),
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000),
     user=Depends(get_current_user),
 ):
     """Tìm bài viết cộng đồng theo nội dung (PG trigram `lower(content) LIKE`,
@@ -674,7 +674,7 @@ async def search_posts(
 @router.get("/search/users")
 async def search_users(
     q: str = Query(..., min_length=2, max_length=50),
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000),
     user=Depends(get_current_user),
 ):
     """Tìm người dùng theo tên hiển thị (không phân-biệt-dấu). Thông tin hồ-sơ công-khai."""
@@ -927,7 +927,7 @@ async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge
 @router.get("/entities/{entity_id}/feed")
 async def get_entity_feed(
     entity_id: str,
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=50),
     user=Depends(get_current_user),
 ):
@@ -1330,7 +1330,7 @@ async def toggle_bookmark(post_id: str, user=Depends(require_user), _csrf=Depend
 
 @router.get("/me/bookmarks")
 async def get_my_bookmarks(
-    page: int = Query(1, ge=1), limit: int = Query(20, ge=1, le=50),
+    page: int = Query(1, ge=1, le=1000), limit: int = Query(20, ge=1, le=50),
     user=Depends(require_user),
 ):
     ph = db._ph
@@ -1595,7 +1595,7 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
 @router.get("/users/{user_id}/posts")
 async def get_user_posts(
     user_id: str,
-    page: int = Query(1, ge=1), limit: int = Query(20, ge=1, le=50),
+    page: int = Query(1, ge=1, le=1000), limit: int = Query(20, ge=1, le=50),
 ):
     validate_path_id(user_id, "user_id")
     ph = db._ph

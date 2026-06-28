@@ -988,7 +988,7 @@ async def admin_stats():
                     "total_posts": db._row_to_dict(total_posts)["c"] if total_posts else 0,
                 }
             except Exception:
-                pass
+                logger.debug("Stats PG deltas query failed", exc_info=True)
 
         entities_week = 0
         try:
@@ -996,7 +996,7 @@ async def admin_stats():
                 ew = db._fetchone(c3, "SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND created_at >= datetime('now', '-7 days')", ())
                 entities_week = db._row_to_dict(ew)["c"] if ew else 0
         except Exception:
-            pass
+            logger.debug("Stats entities_week query failed", exc_info=True)
 
         backup_info = None
         try:
@@ -1008,7 +1008,7 @@ async def admin_stats():
                     size_mb = round(sum(f.stat().st_size for f in latest.rglob("*") if f.is_file()) / 1048576, 1)
                     backup_info = {"last": latest.name, "size_mb": size_mb, "count": len(dirs)}
         except Exception:
-            pass
+            logger.debug("Stats backup info scan failed", exc_info=True)
 
         return {
             "total_entities": total_entities,
@@ -1071,7 +1071,7 @@ async def trigger_backup():
 
 @router.get("/media")
 async def media_gallery(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000),
     limit: int = Query(50, ge=1, le=200),
     filter: str = Query("all", pattern="^(all|missing_credit|duplicate)$"),
 ):
@@ -1146,7 +1146,7 @@ async def badge_counts():
         try:
             counts["images"] = _imgq.status_counts().get("pending", 0)
         except Exception:
-            pass
+            logger.debug("Badge image queue count failed", exc_info=True)
         with db._conn() as conn2:
             unc_row = db._fetchone(conn2, "SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND (placeId IS NULL OR placeId = '')", ())
             counts["unclassified"] = db._row_to_dict(unc_row)["c"] if unc_row else 0
@@ -1155,13 +1155,13 @@ async def badge_counts():
             s = kb_curation.stats()
             counts["provisional"] = s.get("pending", 0)
         except Exception:
-            pass
+            logger.debug("Badge kb_curation stats failed", exc_info=True)
         if _INFO_REPORTS_FILE.exists():
             try:
                 lines = _INFO_REPORTS_FILE.read_text(encoding="utf-8").strip().split("\n")
                 counts["reports"] = sum(1 for l in lines if l.strip() and json.loads(l).get("status", "open") == "open")
             except Exception:
-                pass
+                logger.debug("Badge reports file parse failed", exc_info=True)
         return counts
     return await asyncio.to_thread(_query)
 
@@ -1187,13 +1187,13 @@ async def dashboard_alerts():
                 if open_reports:
                     alerts.append({"type": "reports", "count": open_reports, "label": f"{open_reports} báo sai chưa xử lý", "icon": "⚠️", "link": "/admin/bao-cao", "priority": 3})
             except Exception:
-                pass
+                logger.debug("Alert reports file parse failed", exc_info=True)
         try:
             img_pending = _imgq.status_counts().get("pending", 0)
             if img_pending:
                 alerts.append({"type": "images", "count": img_pending, "label": f"{img_pending} ảnh chờ duyệt", "icon": "🖼️", "link": "/admin/duyet-anh", "priority": 4})
         except Exception:
-            pass
+            logger.debug("Alert image queue count failed", exc_info=True)
         with db._conn() as conn2:
             unc_row = db._fetchone(conn2, "SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND (placeId IS NULL OR placeId = '')", ())
             unc_count = db._row_to_dict(unc_row)["c"] if unc_row else 0
@@ -1206,7 +1206,7 @@ async def dashboard_alerts():
             if prov:
                 alerts.append({"type": "provisional", "count": prov, "label": f"{prov} entity chờ xét duyệt", "icon": "🔬", "link": "/admin/duyet-tu-hoc", "priority": 6})
         except Exception:
-            pass
+            logger.debug("Alert kb_curation stats failed", exc_info=True)
         alerts.sort(key=lambda a: a["priority"])
         return {"alerts": alerts[:5]}
     return await asyncio.to_thread(_query)
@@ -1375,7 +1375,7 @@ async def list_sources():
 @router.get("/moderation/queue")
 async def moderation_queue(
     status: str = Query("review", pattern="^(review|pending|flagged|approved|rejected)$"),
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=100),
 ):
     ph = db._ph
@@ -1534,7 +1534,7 @@ async def analytics_overview(days: int = Query(0, ge=0, le=365)):
 @router.get("/reports")
 async def get_reports(
     status: str = Query("pending", pattern="^(pending|resolved|dismissed)$"),
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=100),
 ):
     ph = db._ph
@@ -1722,7 +1722,7 @@ async def cost_overview():
             import autonomous_budget as ab
             out["agent_budget"] = ab.status()
         except Exception:
-            pass
+            logger.debug("Cost overview: autonomous_budget unavailable", exc_info=True)
         try:
             from cost_tracker import cost_attribution
             s = cost_attribution.get_summary()
@@ -1733,7 +1733,7 @@ async def cost_overview():
                 "daily": cost_attribution.get_daily_costs(7),
             }
         except Exception:
-            pass
+            logger.debug("Cost overview: cost_tracker unavailable", exc_info=True)
         return out
     return await asyncio.to_thread(_query)
 
@@ -1775,7 +1775,7 @@ async def ai_triage():
 
 @router.get("/users")
 async def list_users(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=100),
     search: str = Query("", max_length=100),
 ):
