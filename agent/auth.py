@@ -809,7 +809,11 @@ async def consent_history(request: Request):
                 ORDER BY created_at DESC
                 LIMIT 20
             """, (str(user["id"]),))
-        return {"history": [dict(r) for r in rows]}
+        return {"history": [{"id": str(db._row_to_dict(r)["id"]),
+                             "version": db._row_to_dict(r).get("version"),
+                             "ip": db._row_to_dict(r).get("ip"),
+                             "created_at": str(db._row_to_dict(r).get("created_at", ""))}
+                            for r in rows]}
     return await asyncio.to_thread(_query)
 
 
@@ -845,7 +849,14 @@ async def get_login_history(request: Request, limit: int = Query(20, ge=1, le=10
                 ORDER BY created_at DESC
                 LIMIT {ph}
             """, (str(user["id"]), min(limit, 50)))
-        return {"history": [dict(r) for r in rows]}
+        result = []
+        for r in rows:
+            d = db._row_to_dict(r)
+            result.append({"id": str(d["id"]), "method": d.get("method"),
+                           "success": d.get("success"), "ip": d.get("ip"),
+                           "user_agent": d.get("user_agent"),
+                           "created_at": str(d.get("created_at", ""))})
+        return {"history": result}
     return await asyncio.to_thread(_query)
 
 

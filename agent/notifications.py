@@ -491,9 +491,16 @@ async def list_blocked_users(user=Depends(require_user)):
                 FROM blocks b JOIN users u ON u.id = b.blocked_id
                 WHERE b.blocker_id = {ph}::uuid
                 ORDER BY b.created_at DESC
+                LIMIT 200
             """, (str(user["id"]),))
     rows = await asyncio.to_thread(_query)
-    return {"blocked": [{"id": str(db._row_to_dict(r)["id"]), "display_name": db._row_to_dict(r).get("display_name"), "avatar_url": db._row_to_dict(r).get("avatar_url"), "username": db._row_to_dict(r).get("username"), "blocked_at": str(db._row_to_dict(r).get("created_at", ""))} for r in rows]}
+    result = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        result.append({"id": str(d["id"]), "display_name": d.get("display_name"),
+                        "avatar_url": d.get("avatar_url"), "username": d.get("username"),
+                        "blocked_at": str(d.get("created_at", ""))})
+    return {"blocked": result}
 
 
 # ── Helpers ──
