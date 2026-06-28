@@ -86,7 +86,7 @@ async def get_notifications(
     grouped = _group_notifications(raw)
     return {
         "notifications": grouped,
-        "unread_count": unread["c"] if unread else 0,
+        "unread_count": db._row_to_dict(unread)["c"] if unread else 0,
     }
 
 

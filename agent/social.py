@@ -424,7 +424,8 @@ async def delete_post(post_id: str, user=Depends(require_user), _csrf=Depends(re
             row = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
             if not row:
                 raise HTTPException(404, "Bài viết không tồn tại")
-            if str(row["user_id"]) != str(user["id"]) and user.get("role") not in ("admin", "moderator"):
+            rd = db._row_to_dict(row)
+            if str(rd["user_id"]) != str(user["id"]) and user.get("role") not in ("admin", "moderator"):
                 raise HTTPException(403, "Không có quyền xóa bài viết này")
             db._execute(conn, f"DELETE FROM notifications WHERE ref_type = 'post' AND ref_id = {ph}", (post_id,))
             db._execute(conn, f"DELETE FROM comments WHERE post_id::text = {ph}", (post_id,))
@@ -693,7 +694,7 @@ async def search_posts(
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
     await asyncio.to_thread(_enrich_user_status, posts, user)
 
-    total_c = total["c"] if total else 0
+    total_c = db._row_to_dict(total)["c"] if total else 0
     return {"posts": posts, "q": q, "page": page, "total": total_c,
             "has_more": offset + limit < total_c}
 
@@ -1024,6 +1025,8 @@ async def get_entity_feed(
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
     await asyncio.to_thread(_enrich_user_status, posts, user)
 
+    total_d = db._row_to_dict(total) if total else {}
+    rating_d = db._row_to_dict(rating_row) if rating_row else {}
     return {
         "entity": {
             "id": entity["id"],
@@ -1032,11 +1035,11 @@ async def get_entity_feed(
             "summary": entity.get("summary", ""),
         },
         "rating": {
-            "avg": round(rating_row["avg_rating"], 1) if rating_row else 0,
-            "count": rating_row["rating_count"] if rating_row else 0,
+            "avg": round(rating_d["avg_rating"], 1) if rating_d else 0,
+            "count": rating_d.get("rating_count", 0),
         },
         "posts": posts,
-        "total": total["c"] if total else 0,
+        "total": total_d.get("c", 0),
     }
 
 
@@ -1183,7 +1186,7 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
             if body.parent_id:
                 pa = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph}", (body.parent_id,))
                 if pa:
-                    parent_author = str(pa["user_id"])
+                    parent_author = str(db._row_to_dict(pa)["user_id"])
         return row, post_owner, parent_author
     row, post_owner, parent_author = await asyncio.to_thread(_query)
 
@@ -1192,7 +1195,7 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
     if status == "approved":
         def _notify_comment():
             me = str(user["id"])
-            owner_id = str(post_owner["user_id"]) if post_owner else None
+            owner_id = str(db._row_to_dict(post_owner)["user_id"]) if post_owner else None
             preview = body.content[:80] + ("..." if len(body.content) > 80 else "")
             if owner_id and owner_id != me:
                 create_notification(
@@ -1238,10 +1241,11 @@ async def edit_comment(comment_id: str, body: EditComment, user=Depends(require_
             row = db._fetchone(conn, f"SELECT user_id, created_at FROM comments WHERE id::text = {ph}", (comment_id,))
             if not row:
                 raise HTTPException(404, "Bình luận không tồn tại")
-            if str(row["user_id"]) != uid:
+            rd = db._row_to_dict(row)
+            if str(rd["user_id"]) != uid:
                 raise HTTPException(403, "Bạn chỉ có thể sửa bình luận của mình")
             from datetime import datetime, timezone, timedelta
-            created = row["created_at"]
+            created = rd["created_at"]
             if isinstance(created, str):
                 created = datetime.fromisoformat(created)
             if created.tzinfo is None:
@@ -1277,7 +1281,8 @@ async def delete_comment(comment_id: str, user=Depends(require_user), _csrf=Depe
             row = db._fetchone(conn, f"SELECT user_id, post_id FROM comments WHERE id::text = {ph}", (comment_id,))
             if not row:
                 raise HTTPException(404, "Bình luận không tồn tại")
-            if str(row["user_id"]) != uid:
+            rd = db._row_to_dict(row)
+            if str(rd["user_id"]) != uid:
                 raise HTTPException(403, "Bạn chỉ có thể xóa bình luận của mình")
             db._execute(conn, f"DELETE FROM notifications WHERE ref_type = 'comment' AND ref_id = {ph}", (comment_id,))
             db._execute(conn, f"DELETE FROM comments WHERE id::text = {ph}", (comment_id,))
@@ -1331,7 +1336,8 @@ async def toggle_like(post_id: str, user=Depends(require_user), _csrf=Depends(re
             row = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
             if not row:
                 raise HTTPException(404, "Bài viết không tồn tại")
-            if str(row["user_id"]) == uid:
+            rd = db._row_to_dict(row)
+            if str(rd["user_id"]) == uid:
                 raise HTTPException(400, "Không thể thích bài viết của chính mình")
     await asyncio.to_thread(_check_self_like)
 
@@ -1577,8 +1583,9 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
                 FROM posts
                 WHERE user_id::text = {ph} AND moderation_status = 'approved'
             """, (resolved_id,))
-            posts_n = counts["total"] if counts else 0
-            reviews_n = counts["reviews"] if counts else 0
+            counts_d = db._row_to_dict(counts) if counts else {}
+            posts_n = counts_d.get("total", 0)
+            reviews_n = counts_d.get("reviews", 0)
 
             reputation = _reputation(conn, resolved_id, posts_n, reviews_n)
             following_row = db._fetchone(conn, f"""
@@ -1653,7 +1660,7 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
                 "posts": posts_n,
                 "reviews": reviews_n,
                 "followers": follower_count,
-                "following": following_row["c"] if following_row else 0,
+                "following": db._row_to_dict(following_row)["c"] if following_row else 0,
             },
             "reputation": reputation,
             "show_activity": show_activity,
@@ -1749,7 +1756,7 @@ def _resolve_user_id(user_id: str) -> str | None:
         row = db._fetchone(conn,
             f"SELECT id FROM users WHERE lower(username) = {ph} AND is_active = TRUE",
             (user_id.lower(),))
-    return str(row["id"]) if row else None
+    return str(db._row_to_dict(row)["id"]) if row else None
 
 
 def _format_post(row: dict) -> dict:
