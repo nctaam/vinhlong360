@@ -725,10 +725,10 @@ async def data_quality_rollback(batch_id: str):
     def _query():
         try:
             result = data_quality.rollback_apply(batch_id)
-        except ValueError as exc:
-            raise HTTPException(400, detail=str(exc)) from exc
-        except FileNotFoundError as exc:
-            raise HTTPException(404, detail=str(exc)) from exc
+        except ValueError:
+            raise HTTPException(400, detail="Batch ID không hợp lệ")
+        except FileNotFoundError:
+            raise HTTPException(404, detail="Không tìm thấy batch")
         _sync_kb()
         return result
     return await asyncio.to_thread(_query)

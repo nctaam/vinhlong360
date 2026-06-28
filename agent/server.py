@@ -3149,6 +3149,8 @@ async def image_recognize_endpoint(request: Request):
         if not file:
             return JSONResponse(status_code=400, content={"error": "No file uploaded"})
         file_bytes = await file.read()
+        if len(file_bytes) > 10 * 1024 * 1024:
+            return JSONResponse(status_code=413, content={"error": "Image too large (max 10MB)"})
         filename = getattr(file, "filename", "image.jpg")
         ct = getattr(file, "content_type", "image/jpeg")
         result = process_upload(file_bytes, filename, ct)

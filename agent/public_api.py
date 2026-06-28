@@ -263,7 +263,7 @@ async def list_places(response: Response, area: Optional[str] = Query(None, max_
                     (area,))
             else:
                 rows = db._fetchall(conn,
-                    "SELECT id, name, area, level FROM entities WHERE type = 'place' ORDER BY name")
+                    "SELECT id, name, area, level FROM entities WHERE type = 'place' ORDER BY name LIMIT 500")
         return [db._row_to_dict(r) for r in rows]
     return await asyncio.to_thread(_query)
 
@@ -1012,6 +1012,7 @@ async def get_review_stats(entity_id: str, response: Response):
                 WHERE entity_id = {ph} AND post_type = 'review'
                     AND moderation_status = 'approved' AND content IS NOT NULL
                     AND content != ''
+                ORDER BY created_at DESC LIMIT 200
             """, (entity_id,))
         return dist_rows, content_rows
 

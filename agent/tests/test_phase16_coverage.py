@@ -1415,3 +1415,39 @@ class TestDeepScanBatch4:
             "Consumer must catch disconnect exceptions to signal producer"
         assert "_cancelled.set()" in block, \
             "Consumer must set cancellation flag on disconnect"
+
+    def test_image_upload_size_check(self):
+        """Multipart image upload must check file size before processing."""
+        src = (Path(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
+        idx = src.find("image_recognize")
+        assert idx > 0
+        block = src[idx:idx+1200]
+        assert "413" in block, "Must return 413 for oversized uploads"
+        assert "10" in block, "Must enforce ~10MB limit"
+
+    def test_review_stats_content_limit(self):
+        """Review stats must LIMIT content rows to prevent unbounded fetch."""
+        src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
+        idx = src.find("review_stats")
+        assert idx > 0
+        block = src[idx:idx+1500]
+        parts = block.split("content_rows")
+        assert len(parts) >= 2
+        after_content = parts[1]
+        assert "LIMIT" in after_content, "Content query must have LIMIT"
+
+    def test_list_places_has_limit(self):
+        """Public list_places must have LIMIT to prevent unbounded results."""
+        src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
+        idx = src.find("list_places")
+        assert idx > 0
+        block = src[idx:idx+900]
+        assert "LIMIT" in block, "list_places query must have LIMIT"
+
+    def test_admin_rollback_no_exc_leak(self):
+        """Admin rollback must not leak exception details in error response."""
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("rollback_apply")
+        assert idx > 0
+        block = src[idx:idx+300]
+        assert "str(exc)" not in block, "Must not expose str(exc) in HTTP response"
