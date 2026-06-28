@@ -116,8 +116,20 @@ async def merge_saved(body: MergeBody, user=Depends(require_user), _csrf=Depends
     items = (body.items or [])[:500]
     def _query():
         with db._conn() as conn:
+            ph = db._ph
             for it in items:
                 if it.id:
                     _upsert(conn, uid, it)
+            cnt_row = db._fetchone(conn, f"SELECT COUNT(*) c FROM saved_entities WHERE user_id = {ph}::uuid", (uid,))
+            total = int(db._row_to_dict(cnt_row)["c"]) if cnt_row else 0
+            if total > MAX_SAVED:
+                db._execute(conn, f"""
+                    DELETE FROM saved_entities WHERE id IN (
+                        SELECT id FROM saved_entities
+                        WHERE user_id = {ph}::uuid
+                        ORDER BY created_at ASC
+                        LIMIT {ph}
+                    )
+                """, (uid, total - MAX_SAVED))
             return {"items": _list(conn, uid)}
     return await asyncio.to_thread(_query)

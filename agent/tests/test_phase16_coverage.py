@@ -1946,3 +1946,66 @@ class TestSchedulerOverlapGuard:
             "run() must clear _is_running in finally block"
         assert "finally:" in block, \
             "run() must use finally to guarantee _is_running is cleared"
+
+
+class TestSavedMergeCap:
+    """Verify merge_saved enforces MAX_SAVED cap."""
+
+    def test_merge_has_max_saved_enforcement(self):
+        src = (Path(__file__).resolve().parent.parent / "saved.py").read_text(encoding="utf-8")
+        idx = src.find("def merge_saved")
+        assert idx != -1, "merge_saved function must exist"
+        block = src[idx:idx+800]
+        assert "MAX_SAVED" in block, \
+            "merge_saved must reference MAX_SAVED to enforce limit"
+        assert "DELETE" in block, \
+            "merge_saved must trim excess items after upsert"
+
+    def test_merge_trims_oldest(self):
+        src = (Path(__file__).resolve().parent.parent / "saved.py").read_text(encoding="utf-8")
+        idx = src.find("def merge_saved")
+        block = src[idx:idx+1200]
+        assert "ORDER BY created_at ASC" in block, \
+            "merge_saved must delete OLDEST items when trimming"
+
+
+class TestBotMessageTruncation:
+    """Verify bot gateway truncates incoming message text."""
+
+    def test_telegram_text_truncated(self):
+        src = (Path(__file__).resolve().parent.parent / "bot_gateway.py").read_text(encoding="utf-8")
+        idx = src.find("async def _tg_message")
+        assert idx != -1
+        block = src[idx:idx+500]
+        assert "[:5000]" in block, \
+            "Telegram message text must be truncated to 5000 chars"
+
+    def test_zalo_text_truncated(self):
+        src = (Path(__file__).resolve().parent.parent / "bot_gateway.py").read_text(encoding="utf-8")
+        idx = src.find("handle_zalo_event")
+        assert idx != -1
+        block = src[idx:idx+800]
+        assert "[:5000]" in block, \
+            "Zalo message text must be truncated to 5000 chars"
+
+
+class TestReportIpPseudonymization:
+    """Verify report/contact-view logs pseudonymize IPs."""
+
+    def test_report_uses_ip_hash(self):
+        src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
+        idx = src.find("def submit_report")
+        assert idx != -1
+        block = src[idx:idx+1200]
+        assert "ip_hash" in block, \
+            "submit_report must store ip_hash, not raw ip"
+        assert '"ip": ip' not in block, \
+            "submit_report must NOT store raw ip"
+
+    def test_contact_view_uses_ip_hash(self):
+        src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
+        idx = src.find("def track_contact_view")
+        assert idx != -1
+        block = src[idx:idx+500]
+        assert "ip_hash" in block, \
+            "track_contact_view must store ip_hash, not raw ip"
