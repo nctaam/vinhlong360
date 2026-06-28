@@ -130,8 +130,7 @@ class Settings(BaseSettings):
                 missing.append("LLM_BASE_URL")
             if not self.ADMIN_API_KEY:
                 missing.append("ADMIN_API_KEY")
-            if not self.JWT_SECRET:
-                missing.append("JWT_SECRET")
+            # JWT_SECRET: not yet used by any endpoint — skip until auth JWT is implemented
             if not self.DATABASE_URL:
                 missing.append("DATABASE_URL")
             if missing:
