@@ -65,10 +65,10 @@ const is404 = computed(() => props.error?.statusCode === 404)
 
 const q = ref('')
 const popularLinks = [
-  { label: '🏞️ Du lịch', to: '/du-lich' },
-  { label: '🍜 Ẩm thực', to: '/san-pham' },
-  { label: '🎉 Sự kiện', to: '/su-kien' },
-  { label: '🛍️ OCOP', to: '/ocop' },
+  { label: 'Du lịch', to: '/du-lich' },
+  { label: 'Ẩm thực', to: '/san-pham' },
+  { label: 'Sự kiện', to: '/su-kien' },
+  { label: 'OCOP', to: '/ocop' },
 ]
 
 function goSearch() {

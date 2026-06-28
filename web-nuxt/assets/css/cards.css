@@ -32,7 +32,6 @@
 .card h3 { margin: 0; font-size: 1.06rem; font-weight: var(--weight-semibold); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; letter-spacing: var(--tracking-tight); line-height: var(--leading-snug); }
 .card .summary { margin: 0; color: var(--muted); font-size: var(--text-sm); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: var(--leading-relaxed); }
 .card .place { margin: 0; font-size: .84rem; opacity: .7; }
-.card .place::before { content: "📍 "; }
 
 /* ── Itinerary card: curated-trip badge row (duration + stops) ──
    Two scannable pills above the summary that frame an itinerary as a
@@ -306,14 +305,6 @@
 @media (max-width: 480px) {
   .card.cat-product .cover-img { --card-cover-height: 160px; }
 }
-/* product card meta reads as an appetizing, scannable pill */
-.card.cat-product .card-meta {
-  align-self: flex-start;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-full);
-  background: var(--bg-alt);
-}
-.dark .card.cat-product .card-meta { background: rgba(255,255,255,.06); }
 
 /* OCOP "honor roll" carousel: opt-in via .scroll-row.honor-roll so the
    curated 5-star row lifts higher with a leaf-green (secondary) glow,
