@@ -734,3 +734,27 @@ class TestSecurityPosture:
         for line in src.split("\n"):
             if "limit: int = " in line and "def " in line:
                 assert "Query(" in line, f"plans.py unvalidated limit: {line.strip()}"
+
+    def test_offset_params_have_upper_bound(self):
+        for module in ("admin", "notifications", "public_api", "social"):
+            src = (Path(__file__).resolve().parent.parent / f"{module}.py").read_text(encoding="utf-8")
+            for line_no, line in enumerate(src.split("\n"), 1):
+                if "offset: int = Query(" in line:
+                    assert "le=" in line, f"{module}.py:{line_no} offset without upper bound"
+
+    def test_phone_masking_in_auth_logs(self):
+        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        assert "def _mask_phone" in src
+        assert "logger.exception(\"SMS send failed to %s\", _mask_phone(" in src
+        assert "_mask_phone(phone)" in src
+
+    def test_no_otp_code_in_logs(self):
+        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        for line in src.split("\n"):
+            if "logger" in line and "OTP" in line:
+                assert ", code)" not in line, "OTP code leaked in log"
+
+    def test_list_fields_have_max_length(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        assert "candidate_ids: list[str] | None = Field(None, max_length=" in src
+        assert 'images: list[str] = Field(default=[], max_length=' in src
