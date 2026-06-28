@@ -151,7 +151,7 @@ const DEFAULT_NAV_GROUPS: Array<{ label: string; to?: string; children?: { to: s
   { label: 'Lịch trình', children: [
     { to: '/lich-trinh', label: 'Lịch trình gợi ý' },
     { to: '/tao-lich-trinh', label: 'Tạo lịch trình' },
-    { to: '/lich-trinh', label: 'Đã lưu ❤️' },
+    { to: '/lich-trinh', label: 'Đã lưu' },
   ] },
   { label: 'Cộng đồng', to: '/cong-dong' },
 ]
@@ -176,13 +176,13 @@ const DEFAULT_FOOTER_COLUMNS = [
     { to: '/huong-dan', label: 'Hướng dẫn sử dụng' },
   ] },
   { title: 'Khu vực', links: [
-    { to: '/khu-vuc/vinh-long', label: '🍊 Vĩnh Long' },
-    { to: '/khu-vuc/ben-tre', label: '🥥 Bến Tre' },
-    { to: '/khu-vuc/tra-vinh', label: '🛕 Trà Vinh' },
+    { to: '/khu-vuc/vinh-long', label: 'Vĩnh Long' },
+    { to: '/khu-vuc/ben-tre', label: 'Bến Tre' },
+    { to: '/khu-vuc/tra-vinh', label: 'Trà Vinh' },
   ] },
   { title: 'Dành cho cơ sở', links: [
-    { to: '/lien-he?ref=claim', label: '🏷️ Đăng ký quản lý trang' },
-    { to: '/lien-he', label: '🤝 Hợp tác quảng bá' },
+    { to: '/lien-he?ref=claim', label: 'Đăng ký quản lý trang' },
+    { to: '/lien-he', label: 'Hợp tác quảng bá' },
   ] },
 ]
 const footerColumns = computed(() => ss('footer.columns', DEFAULT_FOOTER_COLUMNS) as typeof DEFAULT_FOOTER_COLUMNS)

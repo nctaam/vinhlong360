@@ -6,7 +6,7 @@
         <span class="cspot-icon" v-html="icon" aria-hidden="true" />
       </NuxtLink>
       <div class="cspot-body">
-        <span class="cspot-kicker">{{ meta?.emoji }} {{ meta?.label }} · Nổi bật</span>
+        <span class="cspot-kicker">{{ meta?.label }} · Nổi bật</span>
         <h2>{{ pick.name }}</h2>
         <div class="cspot-badges">
           <span v-if="isPeak" class="cspot-badge cspot-badge-peak">Đang mùa</span>
