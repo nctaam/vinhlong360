@@ -29,7 +29,7 @@
         </div>
 
         <div class="chat-panel-input">
-          <input v-model="inputText" :placeholder="chatPlaceholder" aria-label="Nhập câu hỏi" :disabled="streaming" maxlength="500" @keyup.enter="sendMessage(inputText)" />
+          <input v-model="inputText" :placeholder="chatPlaceholder" aria-label="Nhập câu hỏi" enterkeyhint="send" :disabled="streaming" maxlength="500" @keyup.enter="sendMessage(inputText)" />
           <button v-if="streaming" type="button" aria-label="Dừng trả lời" @click="stopStream">Dừng</button>
           <button v-else type="button" aria-label="Gửi tin nhắn" :disabled="!inputText.trim()" @click="sendMessage(inputText)">Gửi</button>
         </div>

@@ -4,7 +4,7 @@
     <aside class="guide-sidebar" aria-label="Điều hướng hướng dẫn">
       <div class="sidebar-inner">
         <div class="sidebar-search">
-          <input v-model="search" type="search" placeholder="Tìm trong hướng dẫn..." aria-label="Tìm trong hướng dẫn" class="search-input" />
+          <input v-model="search" type="search" enterkeyhint="search" placeholder="Tìm trong hướng dẫn..." aria-label="Tìm trong hướng dẫn" class="search-input" />
         </div>
         <nav class="sidebar-nav">
           <a href="#bat-dau" class="snav-link" :class="{ active: activeId === 'bat-dau' }" @click.prevent="scrollTo('bat-dau')">🚀 Bắt đầu nhanh</a>

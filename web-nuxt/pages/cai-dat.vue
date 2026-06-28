@@ -70,6 +70,7 @@
             v-model="displayName"
             type="text"
             class="sf-input"
+            enterkeyhint="done"
             maxlength="50"
             required
             :aria-invalid="!!nameError"

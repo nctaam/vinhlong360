@@ -41,6 +41,7 @@
                 maxlength="500"
                 :placeholder="replyingTo ? `Trả lời @${replyingTo.author?.display_name || 'Người dùng'}…` : `Trả lời ${post.display_name || 'bài viết'}…`"
                 aria-label="Nội dung bình luận (gõ @ để nhắc người dùng hoặc địa điểm)"
+                enterkeyhint="send"
                 @input="onMentionInput"
                 @keydown="onCommentKeydown"
               />

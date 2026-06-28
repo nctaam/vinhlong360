@@ -6,6 +6,7 @@
         ref="inputEl"
         v-model="query"
         class="cmd-input"
+        enterkeyhint="search"
         placeholder="Tìm trang, entity, thao tác…"
         @keydown.escape="open = false"
         @keydown.down.prevent="move(1)"

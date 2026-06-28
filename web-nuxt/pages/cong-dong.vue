@@ -160,6 +160,7 @@
             v-model="searchInput"
             class="cs-input"
             type="search"
+            enterkeyhint="search"
             maxlength="100"
             placeholder="Tìm bài viết trong cộng đồng…"
             aria-label="Tìm bài viết trong cộng đồng"
