@@ -2089,7 +2089,8 @@ async def admin_update_llm_config(body: LLMConfigUpdate):
             body.base_url, body.api_key, body.model, body.model_mini,
         )
     except ValueError as e:
-        raise HTTPException(400, detail=str(e))
+        logger.warning("LLM config update rejected: %s", e)
+        raise HTTPException(400, detail="Cấu hình LLM không hợp lệ")
     return {"success": True, "config": result}
 
 
