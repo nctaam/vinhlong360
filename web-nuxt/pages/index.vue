@@ -991,19 +991,16 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dish-rating-badge {
   display: flex; align-items: center; gap: 3px; flex-shrink: 0;
   padding: var(--space-1) var(--space-2);
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  background: var(--accent-container);
   border-radius: var(--radius-sm); font-weight: var(--weight-extrabold);
 }
 .dish-star { color: var(--accent); font-size: var(--text-sm); }
-.dish-score { color: var(--ink-secondary); font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
+.dish-score { color: var(--on-accent-container); font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
 .dish-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .dish-name { font-size: var(--text-sm); font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dish-reviews { font-size: var(--text-xs); color: var(--muted); }
 .dish-arrow { color: var(--muted); font-size: var(--text-sm); flex-shrink: 0; transition: color .2s; }
 .dish-item:hover .dish-arrow { color: var(--primary-fg); }
-.dark .dish-rating-badge { background: linear-gradient(135deg, rgba(217,119,6,.2) 0%, rgba(217,119,6,.1) 100%); }
-.dark .dish-star { color: var(--accent, #fbbf24); }
-.dark .dish-score { color: var(--accent-text, #fcd34d); }
 .dark .dish-item { background: var(--card); border-color: var(--line); }
 .dark .dish-item:hover { border-color: rgba(255,255,255,.1); }
 
