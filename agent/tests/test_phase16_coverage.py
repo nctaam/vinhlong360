@@ -2009,3 +2009,65 @@ class TestReportIpPseudonymization:
         block = src[idx:idx+500]
         assert "ip_hash" in block, \
             "track_contact_view must store ip_hash, not raw ip"
+
+
+class TestAdminBugFixes:
+    """Verify admin.py bug fixes: row_to_dict, search pagination, image delete."""
+
+    def test_stats_uses_row_to_dict_for_counts(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("def admin_stats")
+        assert idx != -1
+        block = src[idx:idx+6000]
+        assert 'rel_count["c"]' not in block, \
+            "admin_stats must use db._row_to_dict(rel_count) not raw row access"
+        assert 'itin_count["c"]' not in block, \
+            "admin_stats must use db._row_to_dict(itin_count) not raw row access"
+        assert "_row_to_dict(rel_count)" in block or "row_to_dict(rel_count)" in block
+        assert "_row_to_dict(itin_count)" in block or "row_to_dict(itin_count)" in block
+
+    def test_moderation_queue_uses_row_to_dict(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("def moderation_queue")
+        assert idx != -1
+        block = src[idx:idx+1500]
+        assert 'total["c"]' not in block, \
+            "moderation_queue total must use _row_to_dict"
+
+    def test_search_pagination_correct_total(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("def list_entities")
+        assert idx != -1
+        block = src[idx:idx+2000]
+        assert "limit=10000" in block or "limit=5000" in block, \
+            "search path must fetch all matches for correct total count"
+        assert "all_matches" in block, \
+            "search path should use all_matches for correct total"
+
+    def test_remove_image_rejects_invalid_index(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("def remove_entity_image")
+        assert idx != -1
+        block = src[idx:idx+600]
+        assert "HTTPException" in block and "400" in block, \
+            "remove_entity_image must raise 400 on invalid index"
+
+    def test_audit_cache_invalidated_on_write(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("def _log_admin_audit")
+        assert idx != -1
+        block = src[idx:idx+900]
+        assert '_audit_cache["mtime"]' in block and "= 0" in block, \
+            "_log_admin_audit must invalidate audit cache after write"
+
+    def test_media_gallery_stats_computed_before_filter(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("def media_gallery")
+        assert idx != -1
+        block = src[idx:idx+2500]
+        total_idx = block.find("total_images = len(media_items)")
+        filter_idx = block.find('if filter == "missing_credit"')
+        assert total_idx != -1, "media_gallery must compute total_images before filtering"
+        assert filter_idx != -1
+        assert total_idx < filter_idx, \
+            "total_images must be computed BEFORE filter is applied"

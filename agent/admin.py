@@ -86,6 +86,7 @@ def _log_admin_audit(actor: str, method: str, path: str, ip: str) -> None:
                    "method": method, "path": path, "ip": ip}
             with open(_AUDIT_FILE, "a", encoding="utf-8") as f:
                 f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+            _audit_cache["mtime"] = 0.0
             _maybe_rotate_audit()
     except Exception:
         logger.exception("Failed to write admin audit log")
@@ -275,25 +276,37 @@ async def list_entities(
     """Danh sách entities với filter — đọc từ database."""
     def _query():
         if q:
-            results = db.search_entities(q=q, entity_type=type, area=area, limit=limit)
+            all_matches = db.search_entities(q=q, entity_type=type, area=area, limit=10000, offset=0)
         elif type:
+            all_matches = None
             results = db.list_entities(entity_type=type, area=area, limit=limit, offset=offset)
         else:
+            all_matches = None
             results = db.list_entities(area=area, limit=limit, offset=offset)
 
         if include_places:
             places = db.list_entities(entity_type=None, limit=1000, offset=0)
-            results = [e for e in (results + [p for p in places if p["type"] == "place"])]
+            if all_matches is not None:
+                all_matches = all_matches + [p for p in places if p["type"] == "place"]
+            else:
+                results = results + [p for p in places if p["type"] == "place"]
 
         if orphans_only:
             with db._conn() as conn:
                 rows = db._fetchall(conn,
                     "SELECT from_id AS eid FROM relationships UNION SELECT to_id FROM relationships", ())
                 rel_ids = {db._row_to_dict(r)["eid"] for r in rows}
-            results = [e for e in results if e.get("type") != "place" and e["id"] not in rel_ids]
+            if all_matches is not None:
+                all_matches = [e for e in all_matches if e.get("type") != "place" and e["id"] not in rel_ids]
+            else:
+                results = [e for e in results if e.get("type") != "place" and e["id"] not in rel_ids]
 
-        total = len(results)
-        items = results[:limit] if q else results
+        if all_matches is not None:
+            total = len(all_matches)
+            items = all_matches[offset:offset + limit]
+        else:
+            total = len(results)
+            items = results
 
         place_ids = list({e["placeId"] for e in items if e.get("placeId")})
         if place_ids:
@@ -498,8 +511,9 @@ async def remove_entity_image(entity_id: str, idx: int):
         if not entity:
             raise HTTPException(404, "Entity not found")
         images = list(entity.get("images") or [])
-        if 0 <= idx < len(images):
-            images.pop(idx)
+        if not (0 <= idx < len(images)):
+            raise HTTPException(400, f"Chỉ số ảnh không hợp lệ (0–{len(images) - 1})")
+        images.pop(idx)
         entity["images"] = images
         entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         db.upsert_entity(entity)
@@ -1035,8 +1049,8 @@ async def admin_stats():
         return {
             "total_entities": total_entities,
             "total_places": total_places,
-            "total_relationships": rel_count["c"] if rel_count else 0,
-            "total_itineraries": itin_count["c"] if itin_count else 0,
+            "total_relationships": db._row_to_dict(rel_count)["c"] if rel_count else 0,
+            "total_itineraries": db._row_to_dict(itin_count)["c"] if itin_count else 0,
             "by_type": by_type,
             "completeness": completeness,
             "entities_week": entities_week,
@@ -1126,6 +1140,10 @@ async def media_gallery(
                 media_items.append(item)
                 url_usage.setdefault(url, []).append(e.get("id", ""))
 
+        total_images = len(media_items)
+        no_credit_count = sum(1 for m in media_items if not m["credit"])
+        dup_count = sum(1 for u, ids in url_usage.items() if len(ids) > 1)
+
         if filter == "missing_credit":
             media_items = [m for m in media_items if not m["credit"]]
         elif filter == "duplicate":
@@ -1140,15 +1158,12 @@ async def media_gallery(
             usage = url_usage.get(item["url"], [])
             item["usage_count"] = len(usage)
 
-        dup_count = sum(1 for u, ids in url_usage.items() if len(ids) > 1)
-        no_credit_count = sum(1 for m in media_items if not m["credit"]) if filter != "missing_credit" else total
-
         return {
             "items": page_items,
             "total": total,
             "page": page,
             "stats": {
-                "total_images": len(media_items) if filter == "all" else sum(len(e.get("images") or []) for e in entities),
+                "total_images": total_images,
                 "duplicates": dup_count,
                 "missing_credit": no_credit_count,
             },
@@ -1421,7 +1436,7 @@ async def moderation_queue(
             """, (*statuses,))
         return {
             "posts": [_mod_post(db._row_to_dict(r)) for r in rows],
-            "total": total["c"] if total else 0,
+            "total": db._row_to_dict(total)["c"] if total else 0,
             "page": page,
         }
     return await asyncio.to_thread(_query)
@@ -1621,7 +1636,7 @@ async def get_reports(
             """, (status,))
         return {
             "reports": [db._row_to_dict(r) for r in rows],
-            "total": total["c"] if total else 0,
+            "total": db._row_to_dict(total)["c"] if total else 0,
         }
     return await asyncio.to_thread(_query)
 
@@ -1891,7 +1906,7 @@ async def list_users(
                 "is_active": r.get("is_active", True),
                 "created_at": str(r.get("created_at", "")),
             } for r in [db._row_to_dict(row) for row in rows]],
-            "total": total["c"] if total else 0,
+            "total": db._row_to_dict(total)["c"] if total else 0,
             "role_counts": role_counts,
         }
     return await asyncio.to_thread(_query)
