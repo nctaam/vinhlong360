@@ -173,12 +173,13 @@ async def update_notification_preferences(body: NotifPrefsUpdate, user=Depends(r
 
 
 _sse_subscribers: dict[str, list[asyncio.Queue]] = {}
+_sse_lock = asyncio.Lock()
 _SSE_MAX_PER_USER = 5
 
 
 def _notify_sse(user_id: str, data: dict):
     queues = _sse_subscribers.get(user_id, [])
-    for q in queues:
+    for q in list(queues):
         try:
             q.put_nowait(data)
         except asyncio.QueueFull:
@@ -202,10 +203,11 @@ async def notification_stream(request: Request, token: str = Query(None, max_len
         raise HTTPException(401, "Invalid token")
     uid = str(db._row_to_dict(row)["id"])
     queue: asyncio.Queue = asyncio.Queue(maxsize=50)
-    subs = _sse_subscribers.setdefault(uid, [])
-    if len(subs) >= _SSE_MAX_PER_USER:
-        subs.pop(0)
-    subs.append(queue)
+    async with _sse_lock:
+        subs = _sse_subscribers.setdefault(uid, [])
+        if len(subs) >= _SSE_MAX_PER_USER:
+            subs.pop(0)
+        subs.append(queue)
 
     async def event_generator():
         try:
@@ -218,14 +220,12 @@ async def notification_stream(request: Request, token: str = Query(None, max_len
                 except asyncio.TimeoutError:
                     yield ": keepalive\n\n"
         finally:
-            try:
+            async with _sse_lock:
                 subs = _sse_subscribers.get(uid, [])
                 if queue in subs:
                     subs.remove(queue)
                 if not subs:
                     _sse_subscribers.pop(uid, None)
-            except Exception:
-                logging.getLogger("notifications").warning("SSE subscriber cleanup failed", exc_info=True)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})

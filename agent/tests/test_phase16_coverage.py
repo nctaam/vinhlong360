@@ -553,10 +553,9 @@ class TestBareExceptFixes:
         block = src[idx:idx+300]
         assert "exc_info=True" in block or "logging" in block
 
-    def test_sse_cleanup_logs_on_error(self):
+    def test_sse_cleanup_uses_lock(self):
         src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
-        idx = src.find("SSE subscriber cleanup")
-        assert idx != -1
+        assert "_sse_lock" in src, "SSE cleanup must use asyncio.Lock instead of bare try/except"
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -1023,3 +1022,18 @@ class TestSecurityPosture:
         assert idx > 0
         block = src[idx:idx+300]
         assert "(.+?)" not in block, "_AREA_PATTERNS must use bounded capture group, not (.+?)"
+
+    def test_storage_upload_uses_to_thread(self):
+        """storage.upload_image must use asyncio.to_thread to avoid blocking event loop."""
+        src = (Path(__file__).resolve().parent.parent / "storage.py").read_text(encoding="utf-8")
+        idx = src.find("async def upload_image")
+        assert idx > 0
+        block = src[idx:idx+800]
+        assert "to_thread" in block, "upload_image must use asyncio.to_thread for sync I/O"
+
+    def test_sse_subscribers_has_lock(self):
+        """SSE subscriber dict must be protected by asyncio.Lock."""
+        src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
+        assert "_sse_lock" in src, "notifications.py must define _sse_lock for SSE subscribers"
+        assert "async with _sse_lock" in src, "SSE subscriber mutations must use async with _sse_lock"
+        assert src.count("async with _sse_lock") >= 2, "Both subscribe and unsubscribe must use lock"

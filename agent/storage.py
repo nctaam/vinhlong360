@@ -186,10 +186,12 @@ class Storage:
             raise ValueError(f"Invalid folder path: {folder}")
         if content_type not in ALLOWED_TYPES:
             raise ValueError(f"Định dạng không hỗ trợ: {content_type}")
-        # Normalise everything to a single 1600px WebP for consistency + size.
-        webp = _to_webp(data, WEBP_SIZES["lg"])
-        key = f"{folder}/{uuid.uuid4().hex[:12]}.webp"
-        return self._put(webp, key, "image/webp")
+        import asyncio
+        def _sync_upload():
+            webp = _to_webp(data, WEBP_SIZES["lg"])
+            key = f"{folder}/{uuid.uuid4().hex[:12]}.webp"
+            return self._put(webp, key, "image/webp")
+        return await asyncio.to_thread(_sync_upload)
 
     def delete(self, key_or_url: str):
         if self.use_s3:
