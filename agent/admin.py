@@ -1843,7 +1843,7 @@ async def ai_triage():
             return {"ok": True, "suggestion": resp.choices[0].message.content, "context": raw}
         except Exception as e:  # noqa: BLE001 - LLM down/budget → vẫn trả context để admin tự xử
             return {"ok": False, "suggestion": None, "context": raw,
-                    "note": "LLM không khả dụng — xem tình hình thô bên dưới.", "detail": str(e)[:120]}
+                    "note": "LLM không khả dụng — xem tình hình thô bên dưới."}
     return await asyncio.to_thread(_query)
 
 

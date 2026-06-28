@@ -2797,27 +2797,32 @@ async def system_self_evolution(request: Request):
         import self_evolve
         out["evolution"] = self_evolve.status()
     except Exception as e:
-        out["evolution"] = {"error": str(e)}
+        logger.warning("self_evolve status error: %s", e)
+        out["evolution"] = {"error": "unavailable"}
     try:
         import self_eval
         out["current_fitness"] = self_eval.compute_fitness()
     except Exception as e:
-        out["current_fitness"] = {"error": str(e)}
+        logger.warning("self_eval fitness error: %s", e)
+        out["current_fitness"] = {"error": "unavailable"}
     try:
         import kb_curation
         out["curation"] = kb_curation.stats()
     except Exception as e:
-        out["curation"] = {"error": str(e)}
+        logger.warning("kb_curation stats error: %s", e)
+        out["curation"] = {"error": "unavailable"}
     try:
         import experience_memory
         out["experience"] = experience_memory.stats()
     except Exception as e:
-        out["experience"] = {"error": str(e)}
+        logger.warning("experience_memory stats error: %s", e)
+        out["experience"] = {"error": "unavailable"}
     try:
         import geocode
         out["geocode"] = geocode.stats()
     except Exception as e:
-        out["geocode"] = {"error": str(e)}
+        logger.warning("geocode stats error: %s", e)
+        out["geocode"] = {"error": "unavailable"}
     return out
 
 
