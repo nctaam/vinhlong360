@@ -427,6 +427,12 @@
   --cat-itinerary: linear-gradient(135deg, #9C3D22, #E8A33D);
   --cat-org: linear-gradient(135deg, #6B7B73, #97A89C);
   --cat-place: linear-gradient(135deg, #33646E, #4E8A96);
+
+  /* ── Category solid accents (borders, chips) ── */
+  --cat-attraction-accent: #2a9d8f;
+  --cat-dish-accent: #d94f3d;
+  --cat-craft-accent: #b5651d;
+  --cat-accommodation-accent: #5b6cc4;
 }
 
 /* ── Dark mode: @nuxtjs/color-mode thêm class .dark vào <html>.
@@ -562,6 +568,11 @@
   --primary-fg-strong: #E09980;
   --secondary-fg: #4BA97D;
   --tertiary-fg: #6BA6B2;
+  /* Category solid accents (dark — lighter for contrast) */
+  --cat-attraction-accent: #3dbfb0;
+  --cat-dish-accent: #ef6f5e;
+  --cat-craft-accent: #d4863e;
+  --cat-accommodation-accent: #7b8ce0;
 }
 
 /* === Travel Platform UX Tokens (2026-06-27) === */

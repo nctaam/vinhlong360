@@ -400,14 +400,10 @@
 .step-card:hover { transform: translateX(3px); box-shadow: var(--shadow-md); }
 .step-card:active { transform: translateX(1px) scale(.98); transition-duration: .1s; }
 .step-card.cat-product { border-left-color: var(--accent); }
-.step-card.cat-attraction { border-left-color: #2a9d8f; }
-.step-card.cat-dish { border-left-color: #d94f3d; }
-.step-card.cat-craft { border-left-color: #b5651d; }
-.step-card.cat-accommodation { border-left-color: #5b6cc4; }
-.dark .step-card.cat-attraction { border-left-color: #3dbfb0; }
-.dark .step-card.cat-dish { border-left-color: #ef6f5e; }
-.dark .step-card.cat-craft { border-left-color: #d4863e; }
-.dark .step-card.cat-accommodation { border-left-color: #7b8ce0; }
+.step-card.cat-attraction { border-left-color: var(--cat-attraction-accent); }
+.step-card.cat-dish { border-left-color: var(--cat-dish-accent); }
+.step-card.cat-craft { border-left-color: var(--cat-craft-accent); }
+.step-card.cat-accommodation { border-left-color: var(--cat-accommodation-accent); }
 .step-emoji { font-size: 1.8rem; }
 .step-card h3 { margin: 2px 0; font-size: 1.05rem; }
 .stop-link { color: inherit; }
