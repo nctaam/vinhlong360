@@ -413,9 +413,9 @@ def task_autonomous_agent():
     raw = "\n".join(ctx) or "(không có dữ liệu)"
 
     try:
-        from server import client, MODEL_MINI
-        resp = client.chat.completions.create(
-            model=MODEL_MINI, temperature=0.3, max_tokens=400, timeout=20,  # P1-2: tránh treo scheduler
+        from llm_config import get_client, get_model_mini
+        resp = get_client().chat.completions.create(
+            model=get_model_mini(), temperature=0.3, max_tokens=400, timeout=20,  # P1-2: tránh treo scheduler
             messages=[
                 {"role": "system", "content": "Bạn là trợ lý quản trị vinhlong360. Đề xuất TỐI ĐA 3 việc ưu tiên xử lý, ngắn gọn, tiếng Việt, có thứ tự."},
                 {"role": "user", "content": f"Tình hình hiện tại:\n{raw}\n\nĐề xuất việc ưu tiên:"},

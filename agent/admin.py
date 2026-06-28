@@ -1771,9 +1771,9 @@ async def ai_triage():
         raw = "\n".join(ctx) or "(không có dữ liệu)"
 
         try:
-            from server import client, MODEL_MINI
-            resp = client.chat.completions.create(
-                model=MODEL_MINI, temperature=0.3, max_tokens=400,
+            from llm_config import get_client, get_model_mini
+            resp = get_client().chat.completions.create(
+                model=get_model_mini(), temperature=0.3, max_tokens=400,
                 messages=[
                     {"role": "system", "content": "Bạn là trợ lý quản trị của vinhlong360. Dựa trên tình hình, đề xuất TỐI ĐA 3 việc ưu tiên xử lý, ngắn gọn, tiếng Việt, có thứ tự."},
                     {"role": "user", "content": f"Tình hình hiện tại:\n{raw}\n\nĐề xuất việc ưu tiên:"},
@@ -1997,6 +1997,46 @@ async def admin_reset_category(category: str):
         return site_settings.reset_category(category, DEFAULTS)
     count = await asyncio.to_thread(_query)
     return {"success": True, "reset": count}
+
+
+# ══════════════════════════════════════════════════
+#  LLM CONFIG — runtime AI configuration
+# ══════════════════════════════════════════════════
+
+@router.get("/llm-config")
+async def admin_get_llm_config():
+    """Current LLM configuration (API key masked)."""
+    import llm_config
+    return await asyncio.to_thread(llm_config.get_status)
+
+
+class LLMConfigUpdate(BaseModel):
+    base_url: str = Field(..., min_length=1, max_length=500)
+    api_key: str = Field(..., min_length=1, max_length=500)
+    model: str = Field(..., min_length=1, max_length=100)
+    model_mini: str = Field(..., min_length=1, max_length=100)
+
+
+@router.put("/llm-config")
+async def admin_update_llm_config(body: LLMConfigUpdate):
+    """Update LLM config. Validates with a test API call before applying."""
+    import llm_config
+    try:
+        result = await asyncio.to_thread(
+            llm_config.update_config,
+            body.base_url, body.api_key, body.model, body.model_mini,
+        )
+    except ValueError as e:
+        raise HTTPException(400, detail=str(e))
+    return {"success": True, "config": result}
+
+
+@router.post("/llm-config/reset")
+async def admin_reset_llm_config():
+    """Reset LLM config to environment variables."""
+    import llm_config
+    result = await asyncio.to_thread(llm_config.reset_to_env)
+    return {"success": True, "config": result}
 
 
 @router.post("/notifications/cleanup")

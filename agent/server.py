@@ -40,7 +40,6 @@ from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
-from openai import OpenAI
 from pydantic import BaseModel
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
@@ -267,14 +266,9 @@ for _name, _val in {
 }.items():
     features.register(_name, _val)
 
-# ── OpenAI client ──
+# ── OpenAI client (runtime-configurable via admin) ──
 
-client = OpenAI(
-    api_key=os.environ["LLM_API_KEY"],
-    base_url=os.environ["LLM_BASE_URL"],
-)
-MODEL = os.environ.get("LLM_MODEL", "cx/gpt-5.4")
-MODEL_MINI = os.environ.get("LLM_MODEL_MINI", "cx/gpt-5.4-mini")
+from llm_config import get_client, get_model, get_model_mini
 
 # ── Web search (DuckDuckGo) ──
 
@@ -329,8 +323,8 @@ def _tool_description(name: str, args: dict) -> str:
 
 def generate_followups(context: str) -> list[str]:
     try:
-        response = client.chat.completions.create(
-            model=MODEL_MINI,
+        response = get_client().chat.completions.create(
+            model=get_model_mini(),
             messages=[{"role": "user", "content": f"""Dựa vào ngữ cảnh sau, gợi ý 3 câu hỏi tiếp theo ngắn gọn (< 40 ký tự) mà du khách có thể muốn hỏi.
 
 Ngữ cảnh: {context}
@@ -846,7 +840,7 @@ async def lifespan(app):
     # only when deployment should wait for the full enhanced search index.
     start_search_index_build(background=BACKGROUND_INDEX_BUILD)
     start_scheduler()
-    logger.info("Server started", model=MODEL, entities=len(knowledge._entities))
+    logger.info("Server started", model=get_model(), entities=len(knowledge._entities))
     yield
     logger.info("Server shutting down — stopping scheduler")
     stop_scheduler()
@@ -1440,17 +1434,17 @@ def _build_messages(
 LLM_TIMEOUT = int(os.environ.get("LLM_TIMEOUT", "30"))
 
 
-def _make_llm_call_fn(model_override=None):
+def _make_llm_call_fn(model_fn=None):
     """Create an LLM call function for orchestrator injection.
 
-    ``model_override`` selects which model to use (MODEL or MODEL_MINI).
+    ``model_fn`` is a callable returning the model name (resolved at call time).
     """
-    _model = model_override or MODEL
 
     def _llm_call_fn(messages, tools, temperature):
+        _model = (model_fn or get_model)()
         if tools:
             if HAS_CIRCUIT_BREAKER:
-                cb_result = safe_llm_call(client, model=_model, messages=messages, tools=tools, tool_choice="auto", timeout=LLM_TIMEOUT)
+                cb_result = safe_llm_call(get_client(), model=_model, messages=messages, tools=tools, tool_choice="auto", timeout=LLM_TIMEOUT)
                 if not cb_result["success"]:
                     class _MockChoice:
                         class message:
@@ -1460,14 +1454,14 @@ def _make_llm_call_fn(model_override=None):
                         choices = [_MockChoice()]
                     return _MockResponse()
                 return cb_result["response"]
-            return client.chat.completions.create(
+            return get_client().chat.completions.create(
                 model=_model, messages=messages, tools=tools, tool_choice="auto",
                 timeout=LLM_TIMEOUT,
             )
 
         # No-tools synthesis call
         if HAS_CIRCUIT_BREAKER:
-            cb_result = safe_llm_call(client, model=_model, messages=messages, timeout=LLM_TIMEOUT)
+            cb_result = safe_llm_call(get_client(), model=_model, messages=messages, timeout=LLM_TIMEOUT)
             if not cb_result["success"]:
                 class _MockChoice:
                     class message:
@@ -1477,13 +1471,13 @@ def _make_llm_call_fn(model_override=None):
                     choices = [_MockChoice()]
                 return _MockResponse()
             return cb_result["response"]
-        return client.chat.completions.create(model=_model, messages=messages, timeout=LLM_TIMEOUT)
+        return get_client().chat.completions.create(model=_model, messages=messages, timeout=LLM_TIMEOUT)
 
     return _llm_call_fn
 
 
-_llm_call_fn_default = _make_llm_call_fn(MODEL)
-_llm_call_fn_mini = _make_llm_call_fn(MODEL_MINI)
+_llm_call_fn_default = _make_llm_call_fn(get_model)
+_llm_call_fn_mini = _make_llm_call_fn(get_model_mini)
 
 
 # Orchestrator singleton (lazy init)
@@ -1577,13 +1571,13 @@ def _run_agent(messages: list[dict], max_rounds: int = 8, max_tool_calls: int = 
         # Circuit breaker protected LLM call
         try:
             if HAS_CIRCUIT_BREAKER:
-                cb_result = safe_llm_call(client, model=MODEL, messages=messages, tools=TOOLS, tool_choice="auto")
+                cb_result = safe_llm_call(get_client(), model=get_model(), messages=messages, tools=TOOLS, tool_choice="auto")
                 if not cb_result["success"]:
                     return cb_result["message"], tools_used, suggestions
                 response = cb_result["response"]
             else:
-                response = client.chat.completions.create(
-                    model=MODEL, messages=messages, tools=TOOLS, tool_choice="auto",
+                response = get_client().chat.completions.create(
+                    model=get_model(), messages=messages, tools=TOOLS, tool_choice="auto",
                     timeout=LLM_TIMEOUT,
                 )
             msg = response.choices[0].message
@@ -1747,7 +1741,7 @@ async def chat(req: ChatRequest, request: Request):
     _trace_ctx = None
     try:
         if HAS_TRACING:
-            _trace_ctx = trace_chat_request(corrected_message, session_id, MODEL)
+            _trace_ctx = trace_chat_request(corrected_message, session_id, get_model())
             _trace_ctx.__enter__()
         messages, build_info = _build_messages(corrected_message, req.history, session_id, user_id)
 
@@ -1933,9 +1927,9 @@ async def chat(req: ChatRequest, request: Request):
             # Estimate tokens from message + reply when no response object
             est_in = token_counter.estimate_tokens(corrected_message)
             est_out = token_counter.estimate_tokens(reply)
-            cost_attribution.record(session_id, corrected_message[:200], "chat", None, MODEL,
+            cost_attribution.record(session_id, corrected_message[:200], "chat", None, get_model(),
                                      {"prompt_tokens": est_in, "completion_tokens": est_out, "total_tokens": est_in + est_out},
-                                     token_counter.calculate_cost({"prompt_tokens": est_in, "completion_tokens": est_out}, MODEL))
+                                     token_counter.calculate_cost({"prompt_tokens": est_in, "completion_tokens": est_out}, get_model()))
         except Exception:
             pass
 
@@ -2170,13 +2164,13 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
         messages[0]["content"] = _sys
 
     # ── Smart model routing for stream path ──
-    _stream_model = MODEL
+    _stream_model = get_model()
     try:
         from orchestrator import QueryRouter as _QR2, _CATEGORY_AGENTS
         _stream_cat = _QR2.classify(message)
         _stream_agent = _CATEGORY_AGENTS.get(_stream_cat)
         if _stream_agent and getattr(_stream_agent, "use_mini", False):
-            _stream_model = MODEL_MINI
+            _stream_model = get_model_mini()
             logger.info("Stream model routing: MINI", category=_stream_cat.value)
     except Exception:
         pass
@@ -2209,7 +2203,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                     _kw["temperature"] = _stream_temp
                 # CONC-001: chạy LLM-call ĐỒNG-BỘ trong thread để KHÔNG chặn event loop
                 # (request /chat khác + /health vẫn xử lý được trong lúc chờ LLM).
-                response = await asyncio.to_thread(lambda: client.chat.completions.create(**_kw))
+                response = await asyncio.to_thread(lambda: get_client().chat.completions.create(**_kw))
                 msg = response.choices[0].message
             except Exception as exc:
                 error_tracker.record_error("/chat/stream", str(exc), traceback.format_exc())
@@ -2260,7 +2254,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
 
                 def _produce_stream():
                     try:
-                        stream = client.chat.completions.create(
+                        stream = get_client().chat.completions.create(
                             model=_stream_model, messages=messages, stream=True,
                             timeout=LLM_TIMEOUT,
                         )
@@ -2315,9 +2309,9 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                     try:
                         est_in = token_counter.estimate_tokens(message)
                         est_out = token_counter.estimate_tokens(full_text)
-                        cost_attribution.record(sid, message[:200], "stream", None, MODEL,
+                        cost_attribution.record(sid, message[:200], "stream", None, get_model(),
                                                  {"prompt_tokens": est_in, "completion_tokens": est_out, "total_tokens": est_in + est_out},
-                                                 token_counter.calculate_cost({"prompt_tokens": est_in, "completion_tokens": est_out}, MODEL))
+                                                 token_counter.calculate_cost({"prompt_tokens": est_in, "completion_tokens": est_out}, get_model()))
                     except Exception:
                         pass
 
@@ -2404,7 +2398,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                             "tốt nhất TỪ thông tin đã thu thập, KHÔNG gọi thêm tool, "
                             "trả lời trực tiếp bằng tiếng Việt."),
             })
-            synth = client.chat.completions.create(model=_stream_model, messages=messages, stream=True, timeout=LLM_TIMEOUT)
+            synth = get_client().chat.completions.create(model=_stream_model, messages=messages, stream=True, timeout=LLM_TIMEOUT)
             synth_text = ""
             for chunk in synth:
                 delta = chunk.choices[0].delta
@@ -2473,8 +2467,8 @@ _health_llm_cache = {"status": "not_checked", "checked_at": 0.0}
 async def _check_llm_health() -> str:
     def _ping() -> str:
         try:
-            client.chat.completions.create(
-                model=MODEL_MINI,
+            get_client().chat.completions.create(
+                model=get_model_mini(),
                 messages=[{"role": "user", "content": "ping"}],
                 max_tokens=5,
                 timeout=8,
@@ -2544,7 +2538,7 @@ async def _health_detail() -> dict:
         "deep_checks": False,
         "entities": len(knowledge._entities),
         "data_quality": data_quality,
-        "model": MODEL,
+        "model": get_model(),
         "cache": cache.stats(),
         "response_times": response_tracker.stats(),
         "rate_limits": chat_limiter.stats(),
@@ -3672,7 +3666,7 @@ if __name__ == "__main__":
     print("=" * 64)
     print("  vinhlong360 Knowledge Agent v8.2 — Level 7 Architecture")
     print("=" * 64)
-    print(f"  Model:       {MODEL}")
+    print(f"  Model:       {get_model()}")
     print(f"  API:         {os.environ.get('LLM_BASE_URL', '(unset)')}")
     print(f"  Chat:        /chat, /chat/stream  (+rate limit)")
     print(f"  Admin:       /admin/* (Nuxt SPA)")

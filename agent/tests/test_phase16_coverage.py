@@ -1639,3 +1639,87 @@ class TestEndpointAuthGuards:
         assert idx > 0
         block = src[idx:idx+2000]
         assert "LIMIT" in block, "suggested_follows SQL must have LIMIT clause"
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  LLM Config — runtime-configurable AI settings
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestLLMConfig:
+    """Verify llm_config module structure and server.py wiring."""
+
+    def test_llm_config_module_exports(self):
+        """llm_config must export get_client, get_model, get_model_mini, get_status, update_config, reset_to_env."""
+        import llm_config
+        for fn_name in ["get_client", "get_model", "get_model_mini",
+                        "get_status", "update_config", "reset_to_env"]:
+            assert callable(getattr(llm_config, fn_name, None)), f"{fn_name} must be callable"
+
+    def test_get_model_returns_string(self):
+        import llm_config
+        model = llm_config.get_model()
+        assert isinstance(model, str)
+        assert len(model) > 0
+
+    def test_get_model_mini_returns_string(self):
+        import llm_config
+        model = llm_config.get_model_mini()
+        assert isinstance(model, str)
+        assert len(model) > 0
+
+    def test_get_status_shape(self):
+        import llm_config
+        status = llm_config.get_status()
+        assert "source" in status
+        assert "base_url" in status
+        assert "api_key_set" in status
+        assert "api_key_preview" in status
+        assert "model" in status
+        assert "model_mini" in status
+        assert status["source"] in ("env", "database")
+
+    def test_get_client_returns_openai_instance(self):
+        import os
+        from openai import OpenAI
+        old_key = os.environ.get("LLM_API_KEY")
+        old_url = os.environ.get("LLM_BASE_URL")
+        try:
+            os.environ.setdefault("LLM_API_KEY", "test-key")
+            os.environ.setdefault("LLM_BASE_URL", "http://localhost:1234")
+            import llm_config
+            llm_config._client = None
+            llm_config._config = {}
+            llm_config._ENV_DEFAULTS["api_key"] = os.environ["LLM_API_KEY"]
+            llm_config._ENV_DEFAULTS["base_url"] = os.environ["LLM_BASE_URL"]
+            c = llm_config.get_client()
+            assert isinstance(c, OpenAI)
+        finally:
+            if old_key is None:
+                os.environ.pop("LLM_API_KEY", None)
+            if old_url is None:
+                os.environ.pop("LLM_BASE_URL", None)
+
+    def test_server_uses_llm_config_getters(self):
+        """server.py must use get_client()/get_model()/get_model_mini() instead of static globals."""
+        src = (Path(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
+        assert "from llm_config import get_client, get_model, get_model_mini" in src
+        assert "client = OpenAI(" not in src, "Must not have static OpenAI client"
+        assert "\nMODEL = " not in src, "Must not have static MODEL global"
+        assert "\nMODEL_MINI = " not in src, "Must not have static MODEL_MINI global"
+
+    def test_admin_llm_config_endpoints_exist(self):
+        """admin.py must have GET/PUT /admin/llm-config and POST /admin/llm-config/reset."""
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        assert 'async def admin_get_llm_config(' in src
+        assert 'async def admin_update_llm_config(' in src
+        assert 'async def admin_reset_llm_config(' in src
+
+    def test_no_server_import_client_in_admin(self):
+        """admin.py must not import client from server (should use llm_config)."""
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        assert "from server import client" not in src
+
+    def test_no_server_import_client_in_scheduler(self):
+        """scheduler.py must not import client from server (should use llm_config)."""
+        src = (Path(__file__).resolve().parent.parent / "scheduler.py").read_text(encoding="utf-8")
+        assert "from server import client" not in src
