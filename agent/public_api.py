@@ -169,7 +169,7 @@ async def list_entities(
     month: Optional[int] = Query(None, ge=1, le=12),
     sort: Optional[str] = Query(None, pattern="^(rating|newest|name)$"),
     fields: Optional[str] = Query(None, pattern="^(minimal|full)$"),
-    limit: int = Query(50, le=1000),
+    limit: int = Query(50, ge=1, le=1000),
     offset: int = Query(0, ge=0, le=10000),
 ):
     entity_types: list[str] | None = None
@@ -363,7 +363,7 @@ async def search(
     q: str = Query(..., min_length=1, max_length=200),
     type: Optional[str] = Query(None, max_length=50),
     area: Optional[str] = Query(None, max_length=100),
-    limit: int = Query(20, le=100),
+    limit: int = Query(20, ge=1, le=100),
 ):
     from ratelimit import check_rate
     check_rate(f"search:{get_client_ip(request)}", 30, 60, "Tìm kiếm quá nhanh. Vui lòng thử lại sau.")
@@ -498,7 +498,7 @@ async def homepage_curated(response: Response):
             return _homepage_cache["data"]
         _homepage_rebuilding = True
 
-    all_ents = await asyncio.to_thread(db.list_entities, limit=100000, offset=0, public_only=True)
+    all_ents = await asyncio.to_thread(db.list_entities, limit=5000, offset=0, public_only=True)
     public = [e for e in all_ents if not _event_is_past(e)]
     _enrich_place(public)
 
@@ -740,7 +740,7 @@ async def get_map_pins(
         type_filters = [t.strip() for t in type.split(",") if t.strip()]
 
     def _query():
-        all_ents = db.list_entities(limit=100000, offset=0, area=area, public_only=True, entity_types=type_filters)
+        all_ents = db.list_entities(limit=5000, offset=0, area=area, public_only=True, entity_types=type_filters)
         pins = []
         for e in all_ents:
             coords = e.get("coordinates")
@@ -782,12 +782,12 @@ async def list_events(
     response: Response,
     area: Optional[str] = Query(None, max_length=100),
     include_past: bool = False,
-    limit: int = Query(50, le=200),
+    limit: int = Query(50, ge=1, le=200),
 ):
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     """Sự kiện: sắp xếp theo date_start, mặc định ẩn sự kiện đã qua."""
     today = datetime.now(timezone.utc).date()
-    all_ents = await asyncio.to_thread(db.list_entities, entity_type="event", limit=100000, offset=0, public_only=True)
+    all_ents = await asyncio.to_thread(db.list_entities, entity_type="event", limit=2000, offset=0, public_only=True)
     events = list(all_ents)
     _enrich_place(events)
 

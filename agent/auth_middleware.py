@@ -85,6 +85,8 @@ def require_role(*roles: str):
 
 _CSRF_SECRET = os.environ.get("CSRF_SECRET", "")
 if not _CSRF_SECRET:
+    if os.environ.get("ENVIRONMENT") == "production":
+        raise RuntimeError("CSRF_SECRET is required in production")
     _CSRF_SECRET = secrets.token_hex(32)
 
 _SAFE_METHODS = frozenset({"GET", "HEAD", "OPTIONS"})

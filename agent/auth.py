@@ -457,7 +457,7 @@ async def check_phone(body: CheckPhone, request: Request):
 
     phone = _normalize_phone(body.phone)
     user = await asyncio.to_thread(db.get_user_by_phone, phone)
-    return {"has_password": bool(user and user.get("password_hash"))}
+    return {"exists": bool(user)}
 
 
 @router.post("/login")
