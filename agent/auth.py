@@ -32,6 +32,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field, field_validator
 
+from config import settings as _cfg
 from database import db
 
 
@@ -58,20 +59,18 @@ router = APIRouter(prefix="/auth", tags=["auth"], dependencies=[Depends(_require
 # ── Config ──
 
 OTP_LENGTH = 6
-OTP_EXPIRE_MINUTES = 5
+OTP_EXPIRE_MINUTES = _cfg.OTP_EXPIRE_MINUTES
 OTP_MAX_ATTEMPTS = 5
 OTP_RATE_LIMIT_SECONDS = 60
-SESSION_EXPIRE_DAYS = 30
+SESSION_EXPIRE_DAYS = _cfg.SESSION_EXPIRE_DAYS
 
-ESMS_API_KEY = os.getenv("ESMS_API_KEY", "")
-ESMS_SECRET = os.getenv("ESMS_SECRET", "")
-ESMS_BRANDNAME = os.getenv("ESMS_BRANDNAME", "VinhLong360")
+ESMS_API_KEY = _cfg.ESMS_API_KEY
+ESMS_SECRET = _cfg.ESMS_SECRET
+ESMS_BRANDNAME = _cfg.ESMS_BRANDNAME
 
 VN_PHONE_RE = re.compile(r"^(0|\+84)(3|5|7|8|9)\d{8}$")
 
 _otp_rate: dict[str, float] = {}
-
-from config import settings as _cfg
 
 OTP_IP_LIMIT = _cfg.OTP_IP_LIMIT
 OTP_IP_WINDOW = _cfg.OTP_IP_WINDOW

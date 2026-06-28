@@ -98,6 +98,8 @@ class Settings(BaseSettings):
     BACKUP_COOLDOWN: int = 300
     ACCOUNT_DELETE_GRACE_DAYS: int = 30
     PBKDF2_ITERATIONS: int = 310_000
+    SESSION_EXPIRE_DAYS: int = 30
+    OTP_EXPIRE_MINUTES: int = 5
 
     # ── Misc ──
     DYNAMIC_AGENT_MAX: int = 10

@@ -2175,3 +2175,37 @@ class TestPhase15Idempotency:
         from auth_middleware import check_idempotency
         r = check_idempotency("")
         assert r["is_duplicate"] is False
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  Phase 13b: Auth config centralization (SESSION_EXPIRE, OTP, ESMS)
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestPhase13bAuthConfig:
+    """Phase 13b: auth.py uses centralized config for session/OTP/ESMS values."""
+
+    def test_config_has_session_expire(self):
+        from config import settings
+        assert settings.SESSION_EXPIRE_DAYS == 30
+
+    def test_config_has_otp_expire(self):
+        from config import settings
+        assert settings.OTP_EXPIRE_MINUTES == 5
+
+    def test_auth_uses_config_session_expire(self):
+        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        assert "_cfg.SESSION_EXPIRE_DAYS" in src
+
+    def test_auth_uses_config_otp_expire(self):
+        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        assert "_cfg.OTP_EXPIRE_MINUTES" in src
+
+    def test_auth_uses_config_esms(self):
+        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        assert "_cfg.ESMS_API_KEY" in src
+        assert "_cfg.ESMS_SECRET" in src
+        assert "_cfg.ESMS_BRANDNAME" in src
+
+    def test_no_os_getenv_in_auth(self):
+        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        assert "os.getenv" not in src, "auth.py should use config.py, not os.getenv"
