@@ -146,7 +146,13 @@ class Database:
                 raise
             finally:
                 if pool:
-                    pool.putconn(conn, close=not ok)  # trả về pool; bỏ hẳn nếu lỗi (tránh poison)
+                    try:
+                        pool.putconn(conn, close=not ok)
+                    except Exception:
+                        try:
+                            conn.close()
+                        except Exception:
+                            pass
                 else:
                     conn.close()
         else:

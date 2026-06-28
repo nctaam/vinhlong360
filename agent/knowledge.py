@@ -516,6 +516,8 @@ def nearby_entities(entity_id: str, limit: int = 8) -> list[dict]:
     # 1. Cùng placeId
     if pid:
         for other in _entities.values():
+            if len(nearby) >= limit:
+                break
             if other["id"] == entity_id:
                 continue
             if other["type"] not in CARD_TYPES:
