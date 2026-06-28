@@ -173,15 +173,18 @@ def _redis_get(key: str) -> dict | None:
         raw = _redis_client.get(_redis_key(key))
         if raw is not None:
             entry = json.loads(raw)
-            _stats["hits"] += 1
+            with _lock:
+                _stats["hits"] += 1
             _track_cache_metric("hit")
             return entry["response"]
-        _stats["misses"] += 1
+        with _lock:
+            _stats["misses"] += 1
         _track_cache_metric("miss")
         return None
     except Exception as exc:
         logger.warning("Redis GET failed: %s", exc)
-        _stats["misses"] += 1
+        with _lock:
+            _stats["misses"] += 1
         _track_cache_metric("miss")
         return None
 
