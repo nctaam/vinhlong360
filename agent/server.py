@@ -2918,7 +2918,7 @@ async def user_feedback(req: FeedbackRequest, request: Request):
     except Exception:
         pass  # Non-critical
     logger.info("User feedback", user_id=user_id, rating=rating, query=query[:50])
-    return {"status": "ok"}
+    return {"success": True}
 
 
 @app.post("/api/client-error")
@@ -2954,7 +2954,7 @@ async def client_error(req: ClientErrorRequest, request: Request):
     except Exception:
         # Ghi log không bao giờ được làm vỡ response.
         pass
-    return {"status": "ok"}
+    return {"success": True}
 
 
 @app.get("/system/client-errors", tags=["System"])
@@ -3246,10 +3246,10 @@ async def semantic_cache_invalidate(req: SemanticCacheInvalidateRequest):
         raise HTTPException(503, detail="Semantic cache not available")
     if req.entity_id:
         multi_tier_cache.invalidate_entity(req.entity_id)
-        return {"status": "ok", "invalidated": f"entity:{req.entity_id}"}
+        return {"success": True, "invalidated": f"entity:{req.entity_id}"}
     elif req.query:
         multi_tier_cache.invalidate(req.query)
-        return {"status": "ok", "invalidated": f"query:{req.query[:50]}"}
+        return {"success": True, "invalidated": f"query:{req.query[:50]}"}
     raise HTTPException(400, detail="Provide entity_id or query")
 
 

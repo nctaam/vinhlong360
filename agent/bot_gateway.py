@@ -767,7 +767,7 @@ class BotGateway:
             user_id = body.get("sender", {}).get("id", "")
 
             if not text or not user_id:
-                return {"status": "ok"}
+                return {"success": True}
 
             user_key = _session_key("zalo", user_id)
 
@@ -808,7 +808,7 @@ class BotGateway:
                 )
                 await self._zalo_send(user_id, welcome)
 
-        return {"status": "ok"}
+        return {"success": True}
 
     async def _zalo_send(self, user_id: str, text: str):
         """Send a text message via Zalo OA API.

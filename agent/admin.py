@@ -406,7 +406,7 @@ async def delete_entity(entity_id: str):
             from public_api import invalidate_place_cache
             invalidate_place_cache()
     await asyncio.to_thread(_query)
-    return {"status": "deleted", "entity_id": entity_id}
+    return {"success": True, "entity_id": entity_id}
 
 
 class _EntityImageURL(BaseModel):
@@ -541,7 +541,7 @@ async def assign_place(entity_id: str, body: AssignPlaceRequest):
         e["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
         db.upsert_entity(e)
         _sync_kb()
-        return {"status": "ok", "id": entity_id, "placeId": pid}
+        return {"success": True, "id": entity_id, "placeId": pid}
     return await asyncio.to_thread(_query)
 
 
@@ -617,7 +617,7 @@ async def delete_itinerary(itin_id: str):
         with db._conn() as conn:
             db._execute(conn, f"DELETE FROM itineraries WHERE id = {ph}", (itin_id,))
     await asyncio.to_thread(_query)
-    return {"status": "deleted", "id": itin_id}
+    return {"success": True, "id": itin_id}
 
 
 # ── Relationship CRUD ──
@@ -638,7 +638,7 @@ async def delete_relationship(from_id: str, to_id: str, type: str):
             db._execute(conn, f"DELETE FROM relationships WHERE from_id={ph} AND to_id={ph} AND type={ph}",
                         (from_id, to_id, type))
     await asyncio.to_thread(_query)
-    return {"status": "deleted"}
+    return {"success": True}
 
 
 @router.post("/relationships/bulk")
@@ -740,7 +740,7 @@ async def bulk_delete(body: BulkDeleteRequest):
                 deleted += 1
         return deleted
     deleted = await asyncio.to_thread(_query)
-    return {"status": "deleted", "count": deleted}
+    return {"success": True, "count": deleted}
 
 
 # ══════════════════════════════════════════════════
@@ -1709,7 +1709,7 @@ async def info_report_action(body: ReportActionRequest):
         tmp.write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in records) + "\n", encoding="utf-8")
         tmp.replace(_INFO_REPORTS_FILE)
     await asyncio.to_thread(_query)
-    return {"status": "ok", "ts": body.ts, "new_status": body.status}
+    return {"success": True, "ts": body.ts, "new_status": body.status}
 
 
 @router.get("/cost-overview")
