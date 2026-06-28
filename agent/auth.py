@@ -571,6 +571,8 @@ async def list_sessions(request: Request):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
+    from ratelimit import check_rate
+    check_rate(f"sessions:{user['id']}", 10, 60, "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
     cur_token = _extract_token(request)
     cur_hash = _hash_token(cur_token) if cur_token else None
     def _query():
@@ -717,6 +719,9 @@ async def update_profile(body: ProfileUpdate, request: Request, _csrf=Depends(_r
 
 @router.get("/check-username/{username}")
 async def check_username(username: str, request: Request):
+    from middleware import get_client_ip
+    from ratelimit import check_rate
+    check_rate(f"check-username:{get_client_ip(request)}", 20, 60, "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
     uname = username.strip().lower()
     if len(uname) < 3 or len(uname) > 30:
         return {"available": False, "reason": "Username phải từ 3–30 ký tự"}
