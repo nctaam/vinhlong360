@@ -780,6 +780,7 @@ def build_search_indexes():
     return built
 
 
+_index_build_lock = threading.Lock()
 _index_build_state = {
     "enabled": BUILD_SEARCH_INDEXES,
     "background": BACKGROUND_INDEX_BUILD,
@@ -795,24 +796,30 @@ def start_search_index_build(background: bool = True):
     if not BUILD_SEARCH_INDEXES:
         logger.info("Search index build disabled by BUILD_SEARCH_INDEXES")
         return {"enabled": False}
-    if _index_build_state["running"]:
-        return {"running": True}
+    with _index_build_lock:
+        if _index_build_state["running"]:
+            return {"running": True}
+        _index_build_state["running"] = True
 
     def _run():
-        _index_build_state.update({
-            "running": True,
-            "started_at": datetime.now().isoformat(),
-            "finished_at": None,
-            "last_error": None,
-        })
+        with _index_build_lock:
+            _index_build_state.update({
+                "started_at": datetime.now().isoformat(),
+                "finished_at": None,
+                "last_error": None,
+            })
         try:
-            _index_build_state["last_result"] = build_search_indexes()
+            result = build_search_indexes()
+            with _index_build_lock:
+                _index_build_state["last_result"] = result
         except Exception as e:
-            _index_build_state["last_error"] = str(e)
+            with _index_build_lock:
+                _index_build_state["last_error"] = str(e)
             logger.error(f"Index build error: {e}")
         finally:
-            _index_build_state["running"] = False
-            _index_build_state["finished_at"] = datetime.now().isoformat()
+            with _index_build_lock:
+                _index_build_state["running"] = False
+                _index_build_state["finished_at"] = datetime.now().isoformat()
 
     if background:
         thread = threading.Thread(target=_run, daemon=True, name="search-index-build")
@@ -820,7 +827,8 @@ def start_search_index_build(background: bool = True):
         return {"running": True, "background": True}
 
     _run()
-    return _index_build_state
+    with _index_build_lock:
+        return dict(_index_build_state)
 
 
 @asynccontextmanager
@@ -2398,7 +2406,7 @@ async def reload_data(request: Request):
         except Exception:
             authed = False
     if not authed:
-        return JSONResponse(status_code=401, content={"error": "unauthorized",
+        return JSONResponse(status_code=403, content={"error": "forbidden",
                             "detail": "Cần X-Admin-Key hoặc phiên admin"})
 
     def _reload_blocking():
@@ -2696,7 +2704,7 @@ async def trigger_learning(request: Request):
     """Trigger 1 vòng lặp tự học SAU cổng fitness (admin only, eval-gated)."""
     from middleware import verify_admin_key
     if not verify_admin_key(request):
-        return JSONResponse(status_code=401, content={"error": "Admin key required"})
+        return JSONResponse(status_code=403, content={"error": "forbidden"})
     try:
         from self_evolve import guarded_evolve
         from learn_loop import run_full_cycle
@@ -2991,7 +2999,7 @@ async def build_vectors(request: Request):
     # GĐ4.2: rebuild nặng -> chỉ admin (chống DoS compute ẩn danh).
     from middleware import verify_admin_key
     if not verify_admin_key(request):
-        return JSONResponse(status_code=401, content={"error": "unauthorized", "detail": "Cần X-Admin-Key"})
+        return JSONResponse(status_code=403, content={"error": "forbidden"})
     if not HAS_VECTOR:
         return JSONResponse(status_code=501, content={"error": "Vector search module not available"})
     knowledge._ensure()
@@ -3105,7 +3113,7 @@ async def image_recognize_endpoint(request: Request):
     # (Frontend hiện không dùng. Mở cho user đã xác thực + rate-limit khi cần — Backlog.)
     from middleware import verify_admin_key
     if not verify_admin_key(request):
-        return JSONResponse(status_code=401, content={"error": "unauthorized", "detail": "Cần X-Admin-Key"})
+        return JSONResponse(status_code=403, content={"error": "forbidden"})
     if not HAS_IMAGE_RECOGNITION:
         return JSONResponse(status_code=501, content={"error": "Image recognition not available"})
     content_type = request.headers.get("content-type", "")
@@ -3287,7 +3295,7 @@ async def dynamic_agents_create(req: DynamicAgentCreateRequest, request: Request
     # soát → prompt-injection/đốt LLM budget nếu mở). Bắt buộc X-Admin-Key.
     from middleware import verify_admin_key
     if not verify_admin_key(request):
-        return JSONResponse(status_code=401, content={"error": "unauthorized", "detail": "Cần X-Admin-Key"})
+        return JSONResponse(status_code=403, content={"error": "forbidden"})
     if not HAS_DYNAMIC_AGENTS:
         raise HTTPException(503, detail="Dynamic agents not available")
     spec = agent_factory.create_agent(
