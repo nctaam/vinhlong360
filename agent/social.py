@@ -1130,13 +1130,22 @@ async def edit_comment(comment_id: str, body: EditComment, user=Depends(require_
     comment_id = validate_path_id(comment_id, "comment_id")
     ph = db._ph
     uid = str(user["id"])
+    COMMENT_EDIT_WINDOW_HOURS = 24
     def _check():
         with db._conn() as conn:
-            row = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph}", (comment_id,))
+            row = db._fetchone(conn, f"SELECT user_id, created_at FROM comments WHERE id::text = {ph}", (comment_id,))
             if not row:
                 raise HTTPException(404, "Bình luận không tồn tại")
             if str(row["user_id"]) != uid:
                 raise HTTPException(403, "Bạn chỉ có thể sửa bình luận của mình")
+            from datetime import datetime, timezone, timedelta
+            created = row["created_at"]
+            if isinstance(created, str):
+                created = datetime.fromisoformat(created)
+            if created.tzinfo is None:
+                created = created.replace(tzinfo=timezone.utc)
+            if datetime.now(timezone.utc) - created > timedelta(hours=COMMENT_EDIT_WINDOW_HOURS):
+                raise HTTPException(400, "Chỉ có thể sửa bình luận trong 24 giờ đầu")
     await asyncio.to_thread(_check)
     mod_result = await moderate_content_enhanced(body.content, user_id=uid)
     def _update():
@@ -1212,6 +1221,16 @@ async def toggle_like(post_id: str, user=Depends(require_user)):
                "Bạn thao tác quá nhanh. Vui lòng đợi chút.")
     ph = db._ph
     uid = str(user["id"])
+
+    def _check_self_like():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
+            if not row:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            if str(row["user_id"]) == uid:
+                raise HTTPException(400, "Không thể thích bài viết của chính mình")
+    await asyncio.to_thread(_check_self_like)
+
     def _query():
         with db._conn() as conn:
             return db._fetchone(conn, f"""

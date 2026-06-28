@@ -1669,3 +1669,46 @@ class TestPhase11NotificationCleanup:
         import scheduler
         src = inspect.getsource(scheduler.task_notification_cleanup)
         assert "is_read = TRUE" in src
+
+
+class TestPhase11CommentEditWindow:
+    """Phase 11: comment edit time window."""
+
+    def test_edit_comment_has_time_check(self):
+        """edit_comment rejects edits after 24 hours."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        idx = src.find("def edit_comment")
+        end = src.find("\nasync def ", idx + 1)
+        block = src[idx:end] if end != -1 else src[idx:idx + 3000]
+        assert "24" in block
+        assert "COMMENT_EDIT_WINDOW_HOURS" in block
+        assert "created_at" in block
+
+    def test_edit_comment_returns_400_after_window(self):
+        """edit_comment raises 400 when window expired."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        idx = src.find("def edit_comment")
+        end = src.find("\nasync def ", idx + 1)
+        block = src[idx:end] if end != -1 else src[idx:idx + 3000]
+        assert "400" in block
+        assert "24 giờ" in block
+
+
+class TestPhase11SelfLikePrevention:
+    """Phase 11: self-like prevention."""
+
+    def test_toggle_like_prevents_self_like(self):
+        """toggle_like rejects liking own post."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        idx = src.find("def toggle_like")
+        end = src.find("\nasync def ", idx + 1)
+        block = src[idx:end] if end != -1 else src[idx:idx + 4000]
+        assert "Không thể thích bài viết của chính mình" in block
+
+    def test_toggle_like_checks_post_exists(self):
+        """toggle_like verifies post exists before like check."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        idx = src.find("def toggle_like")
+        block = src[idx:idx + 1500]
+        assert "404" in block
+        assert "Bài viết không tồn tại" in block
