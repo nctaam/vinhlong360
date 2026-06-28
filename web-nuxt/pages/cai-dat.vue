@@ -793,11 +793,12 @@ onUnmounted(() => {
 .notif-pref-icon { font-size: 1.25rem; flex-shrink: 0; }
 .notif-pref-info strong { display: block; font-size: .9rem; }
 .notif-pref-info .sf-hint { display: block; margin-top: .1rem; }
-.toggle { appearance: none; width: 40px; height: 22px; background: var(--muted); border-radius: 11px; position: relative; cursor: pointer; transition: background .2s; flex-shrink: 0; min-height: 44px; padding: 11px 0; box-sizing: content-box; }
-.toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: var(--white, #fff); border-radius: 50%; transition: transform .2s; }
+.toggle { appearance: none; width: 40px; height: 22px; background: var(--muted); border-radius: 11px; position: relative; cursor: pointer; transition: background .25s var(--ease-out, ease); flex-shrink: 0; min-height: 44px; padding: 11px 0; box-sizing: content-box; }
+.toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: var(--white, #fff); border-radius: 50%; transition: transform .3s var(--ease-spring-gentle, cubic-bezier(.2,1,.4,1)); box-shadow: 0 1px 3px rgba(0,0,0,.15); }
 .toggle:checked { background: var(--accent, var(--primary)); }
 .toggle:checked::after { transform: translateX(18px); }
 .toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.toggle:active::after { width: 22px; }
 
 /* ── Cover photo ── */
 .sf-cover-section { display: flex; align-items: flex-start; gap: 1rem; overflow: hidden; }
