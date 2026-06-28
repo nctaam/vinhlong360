@@ -527,7 +527,7 @@ useSeoMeta({
   description: () => `Trang cá nhân của ${profile.value?.display_name || 'thành viên'} trên cộng đồng vinhlong360.`,
   ogTitle: () => `${profile.value?.display_name || 'Người dùng'} — vinhlong360`,
   ogDescription: () => `Trang cá nhân của ${profile.value?.display_name || 'thành viên'} trên cộng đồng vinhlong360.`,
-  ogImage: () => profile.value?.cover_url || profile.value?.avatar || '/icons/icon-512.png',
+  ogImage: () => entityOgImage([profile.value?.cover_url || profile.value?.avatar].filter(Boolean) as string[]),
   robots: 'noindex,follow',
 })
 </script>

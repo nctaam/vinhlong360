@@ -64,7 +64,7 @@
     </div>
 
     <!-- Load more -->
-    <button v-if="hasMore" type="button" class="btn btn-outline media-load-more" :disabled="loading || loadingMore" @click="loadMore">{{ loadingMore ? 'Đang tải...' : 'Xem thêm' }} ({{ total - items.length }} còn lại)</button>
+    <LoadMoreButton v-if="hasMore" :loading="loadingMore" :remaining="total - items.length" @load="loadMore" />
 
     </template>
 
@@ -228,7 +228,6 @@ onMounted(fetchMedia)
 .media-credit { font-size: .72rem; color: var(--primary-fg); }
 .media-no-credit { font-size: .72rem; color: var(--warning, #FF9F0A); font-style: italic; }
 
-.media-load-more { margin-top: var(--space-4); }
 
 .media-preview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3); }
 .media-preview-img { width: 100%; max-height: 60vh; object-fit: contain; border-radius: 8px; background: var(--bg-alt); margin-bottom: var(--space-3); }

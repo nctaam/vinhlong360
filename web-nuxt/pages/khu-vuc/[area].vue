@@ -113,7 +113,7 @@
         <EntityCard v-for="e in visibleEntities" :key="e.id" :entity="e" />
       </div>
       <div v-if="visibleEntities.length < entities.length" class="load-more-wrap">
-        <button type="button" class="btn btn-outline" @click="showMore">Xem thêm ({{ entities.length - visibleEntities.length }} còn lại)</button>
+        <LoadMoreButton :remaining="entities.length - visibleEntities.length" @load="showMore" />
       </div>
     </section>
     <EmptyState v-else-if="data && !fetchError" icon="📍" title="Chưa có dữ liệu" message="Chưa có dữ liệu cho khu vực này. Dữ liệu đang được cập nhật.">
@@ -262,10 +262,7 @@ if (areaMeta) {
     description: areaMeta.blurb,
     ogTitle: `${areaMeta.emoji} ${areaMeta.name} — vinhlong360`,
     ogDescription: areaMeta.blurb,
-    ogImage: () => {
-      const f = featured.value
-      return f.length && f[0].images?.length ? f[0].images[0] : '/icons/icon-512.png'
-    },
+    ogImage: () => entityOgImage(featured.value[0]?.images),
   })
 
   useHead(() => ({

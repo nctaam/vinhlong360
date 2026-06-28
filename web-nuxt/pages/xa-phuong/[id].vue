@@ -217,10 +217,7 @@ useSeoMeta({
   description: () => data.value?.place?.summary || `Tổng hợp địa điểm du lịch, cơ sở lưu trú, sản phẩm đặc sản và danh bạ hành chính của ${placeName.value}.`,
   ogTitle: () => `${placeName.value} — vinhlong360`,
   ogDescription: () => data.value?.place?.summary || `Du lịch, đặc sản & danh bạ ${placeName.value}.`,
-  ogImage: () => {
-    const first = allWardEntities.value.find(e => e.images?.length)
-    return first?.images?.[0] || '/icons/icon-512.png'
-  },
+  ogImage: () => entityOgImage(allWardEntities.value.find(e => e.images?.length)?.images),
 })
 useHead(() => {
   const place = data.value?.place

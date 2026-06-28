@@ -42,9 +42,7 @@
             </button>
           </li>
         </ul>
-        <button v-if="hasMore" type="button" class="btn btn-outline btn-sm tb-load-more" :disabled="loadingMore" @click="loadMore">
-          {{ loadingMore ? 'Đang tải...' : 'Xem thêm' }}
-        </button>
+        <LoadMoreButton v-if="hasMore" :loading="loadingMore" @load="loadMore" />
       </template>
     </template>
   </section>
@@ -162,7 +160,6 @@ useHead({
 .tb-filters { display: flex; gap: var(--space-2); margin-bottom: var(--space-4); overflow-x: auto; padding-bottom: var(--space-1); scrollbar-width: none; }
 .tb-filters::-webkit-scrollbar { display: none; }
 .tb-filters .chip { white-space: nowrap; }
-.tb-load-more { display: block; width: 100%; margin-top: var(--space-3); }
 
 /* ── Dark mode ── */
 .dark .tb-item { background: var(--bg-alt); border-color: var(--line); }

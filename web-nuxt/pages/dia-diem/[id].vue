@@ -856,8 +856,7 @@ async function loadMoreRelationships() {
 }
 
 // ── Reactive SEO meta: updates when entity changes (client-side navigation) ──
-const SITE = 'https://vinhlong360.vn'
-const absUrl = (u: string) => (u.startsWith('http') ? u : `${SITE}${u}`)
+const absUrl = (u: string) => (u.startsWith('http') ? u : `${SITE_URL}${u}`)
 
 const TYPE_TO_SCHEMA: Record<string, string> = {
   product: 'Product',
@@ -885,12 +884,7 @@ useSeoMeta({
   description: () => seoDesc.value,
   ogTitle: () => entity.value ? `${entity.value.name} — vinhlong360` : 'Địa điểm — vinhlong360',
   ogDescription: () => seoDesc.value,
-  ogImage: () => {
-    const e = entity.value
-    if (!e) return `${SITE}/img/og-default.jpg`
-    const hasRealPhoto = Array.isArray(e.images) && e.images.length > 0
-    return hasRealPhoto ? absUrl(e.images[0]) : `${SITE}/img/og-default.jpg`
-  },
+  ogImage: () => entityOgImage(entity.value?.images),
 })
 
 // JSON-LD + canonical: rebuilt reactively via computed
@@ -901,7 +895,7 @@ const jsonLdScripts = computed(() => {
   const ldType = TYPE_TO_SCHEMA[e.type] || 'TouristAttraction'
   const hasRealPhoto = Array.isArray(e.images) && e.images.length > 0
 
-  const entityUrl = `${SITE}/dia-diem/${e.id}`
+  const entityUrl = `${SITE_URL}/dia-diem/${e.id}`
   const ld: Record<string, any> = {
     '@context': 'https://schema.org',
     '@type': ldType,
@@ -1002,11 +996,11 @@ const jsonLdScripts = computed(() => {
   }
 
   const bcItems: any[] = [
-    { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE}/` },
+    { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
     { '@type': 'ListItem', position: 2, name: typeMeta.value.label, item: `${SITE}${typeBreadcrumbUrl.value}` },
   ]
   if (e.place_area) {
-    bcItems.push({ '@type': 'ListItem', position: 3, name: areaName.value, item: `${SITE}/khu-vuc/${e.place_area}` })
+    bcItems.push({ '@type': 'ListItem', position: 3, name: areaName.value, item: `${SITE_URL}/khu-vuc/${e.place_area}` })
   }
   bcItems.push({ '@type': 'ListItem', position: bcItems.length + 1, name: e.name, item: entityUrl })
   const breadcrumb = {

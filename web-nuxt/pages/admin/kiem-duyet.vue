@@ -150,9 +150,7 @@
     </div>
 
     <!-- Load more -->
-    <button type="button" v-if="hasMore" class="btn btn-outline mod-load-more" :disabled="loading" @click="loadMore">
-      Xem thêm
-    </button>
+    <LoadMoreButton v-if="hasMore" :loading="loading" @load="loadMore" />
 
     <!-- Content preview modal -->
     <Transition name="modal-fade">
@@ -523,7 +521,6 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .btn-ghost-sm { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; padding: 8px 12px; border-radius: 8px; }
 .btn-ghost-sm:hover { background: var(--bg-alt); color: var(--ink); }
 
-.mod-load-more { margin-top: var(--space-4); }
 .mod-empty-action {
   background: none; border: .5px solid var(--line); border-radius: 8px;
   padding: 7px 14px; font-size: .82rem; font-weight: 500; color: var(--primary, #219653);

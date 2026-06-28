@@ -452,7 +452,7 @@ useSeoMeta({
   description: () => (post.value?.content || '').substring(0, 160),
   ogTitle: () => `${post.value?.display_name || 'Bài viết'} — vinhlong360`,
   ogDescription: () => (post.value?.content || '').substring(0, 160),
-  ogImage: () => post.value?.images?.[0] || '/icons/icon-512.png',
+  ogImage: () => entityOgImage(post.value?.images),
 })
 
 useHead({
