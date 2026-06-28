@@ -1628,6 +1628,6 @@ class TestEndpointAuthGuards:
         src = self._server_src()
         idx = src.find("gate_internal_endpoints")
         assert idx > 0
-        block = src[idx:idx+800]
-        for path in ["/system", "/analytics", "/checkpoints", "/confirm/", "/reject/"]:
+        block = src[idx:idx+1200]
+        for path in ["/system", "/analytics", "/checkpoints", "/confirm/", "/reject/", "/freshness"]:
             assert path in block, f"Middleware must gate {path} in production"

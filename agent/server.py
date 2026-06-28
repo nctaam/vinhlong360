@@ -1020,6 +1020,7 @@ async def gate_internal_endpoints(request: Request, call_next):
     if _IS_PROD:
         path = request.url.path
         _gated = (path == "/metrics"
+                  or path == "/vectors/stats"
                   or path.startswith("/system")
                   or path.startswith("/analytics")
                   or path.startswith("/checkpoints")
@@ -1027,7 +1028,8 @@ async def gate_internal_endpoints(request: Request, call_next):
                   or path.startswith("/confirm/")
                   or path.startswith("/reject/")
                   or path.startswith("/ab-testing")
-                  or path.startswith("/prompt-cache"))
+                  or path.startswith("/prompt-cache")
+                  or path.startswith("/freshness"))
         if _gated:
             from middleware import verify_admin_key
             if not verify_admin_key(request):
@@ -3107,7 +3109,9 @@ async def build_vectors(request: Request):
     return result
 
 @app.get("/vectors/stats")
-async def vector_stats():
+async def vector_stats(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_VECTOR:
         return {"available": False}
     return {"available": True, **embedding_store.stats()}
@@ -3184,21 +3188,27 @@ async def recommend_endpoint(
 # ── Freshness endpoints ──
 
 @app.get("/freshness/check")
-async def freshness_check_endpoint():
+async def freshness_check_endpoint(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_FRESHNESS:
         raise HTTPException(503, detail="Freshness module not available")
     knowledge._ensure()
     return check_freshness(knowledge._entities)
 
 @app.get("/freshness/report")
-async def freshness_report_endpoint():
+async def freshness_report_endpoint(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_FRESHNESS:
         raise HTTPException(503, detail="Freshness module not available")
     knowledge._ensure()
     return {"report": freshness_report(knowledge._entities)}
 
 @app.get("/freshness/candidates")
-async def freshness_candidates_endpoint(limit: int = Query(20, ge=1, le=200)):
+async def freshness_candidates_endpoint(request: Request, limit: int = Query(20, ge=1, le=200)):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_FRESHNESS:
         raise HTTPException(503, detail="Freshness module not available")
     knowledge._ensure()
