@@ -254,10 +254,15 @@ POST_TYPE_LABELS = {
 
 # ── Posts ──
 
+RL_POST_DAILY_LIMIT = 50
+RL_POST_DAILY_WINDOW = 86400
+
 @router.post("/posts")
 async def create_post(body: CreatePost, user=Depends(require_user)):
     check_rate(f"post:{user['id']}", RL_POST_LIMIT, RL_POST_WINDOW,
                "Bạn đăng bài quá nhanh. Vui lòng đợi ít phút rồi thử lại.")
+    check_rate(f"post-day:{user['id']}", RL_POST_DAILY_LIMIT, RL_POST_DAILY_WINDOW,
+               "Bạn đã đạt giới hạn đăng bài trong ngày. Vui lòng thử lại ngày mai.")
 
     if body.content.strip() and not body.repost_of:
         ph = db._ph
@@ -573,6 +578,7 @@ async def get_following_feed(
     offset = (page - 1) * limit
     uid = str(user["id"])
     # điều kiện: tác giả là người mình follow HOẶC bài gắn địa-điểm mình follow
+    bc, bc_p = _block_sql(user, "p.user_id")
     follow_cond = f"""
         (p.user_id IN (SELECT target_id::uuid FROM follows
                          WHERE follower_id = {ph}::uuid AND target_type='user')
@@ -586,18 +592,20 @@ async def get_following_feed(
         JOIN users u ON u.id = p.user_id
         LEFT JOIN entities e ON e.id = p.entity_id
         WHERE p.moderation_status = 'approved' AND {follow_cond}
+        {bc}
         ORDER BY p.created_at DESC
         LIMIT {ph} OFFSET {ph}
     """
     count_sql = f"""
         SELECT COUNT(*) as c FROM posts p
         WHERE p.moderation_status = 'approved' AND {follow_cond}
+        {bc}
     """
 
     def _following_query():
         with db._conn() as conn:
-            rows = db._fetchall(conn, feed_sql, (uid, uid, limit, offset))
-            total = db._fetchone(conn, count_sql, (uid, uid))
+            rows = db._fetchall(conn, feed_sql, (uid, uid, *bc_p, limit, offset))
+            total = db._fetchone(conn, count_sql, (uid, uid, *bc_p))
         return rows, total
 
     rows, total = await asyncio.to_thread(_following_query)

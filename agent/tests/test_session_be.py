@@ -1828,3 +1828,42 @@ class TestPhase11CommentCap:
         idx = src.find("def create_comment")
         block = src[idx:idx + 500]
         assert "500" in block
+
+
+class TestPhase11FollowingFeedBlockFilter:
+    """Phase 11: following feed must exclude blocked users."""
+
+    def test_following_feed_has_block_sql(self):
+        """get_following_feed applies _block_sql to filter blocked users."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        idx = src.find("def get_following_feed")
+        end = src.find("\nasync def ", idx + 1)
+        block = src[idx:end] if end != -1 else src[idx:idx + 4000]
+        assert "_block_sql" in block
+        assert "bc_p" in block or "bc" in block
+
+    def test_following_feed_block_in_both_queries(self):
+        """Block filter applied to both feed and count SQL."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        idx = src.find("def get_following_feed")
+        end = src.find("\nasync def ", idx + 1)
+        block = src[idx:end] if end != -1 else src[idx:idx + 4000]
+        assert block.count("{bc}") >= 2
+
+
+class TestPhase11DailyPostLimit:
+    """Phase 11: daily post creation limit."""
+
+    def test_create_post_has_daily_limit(self):
+        """create_post enforces a daily rate limit in addition to per-minute."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        idx = src.find("def create_post")
+        block = src[idx:idx + 1000]
+        assert "post-day:" in block
+        assert "RL_POST_DAILY" in block
+
+    def test_daily_limit_is_50(self):
+        """Daily post limit is 50."""
+        import social
+        assert social.RL_POST_DAILY_LIMIT == 50
+        assert social.RL_POST_DAILY_WINDOW == 86400
