@@ -1,5 +1,5 @@
 <template>
-  <main class="page">
+  <section class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lưu trú' }]" :json-ld="true" />
 
     <!-- Hero -->
@@ -146,7 +146,7 @@
         </NuxtLink>
       </div>
     </section>
-  </main>
+  </section>
 </template>
 
 <script setup lang="ts">

@@ -1,20 +1,20 @@
 <template>
-  <main v-if="fetchFailed" class="page">
+  <section v-if="fetchFailed" class="page">
     <EmptyState icon="⚠️" title="Không thể tải trang" message="Lỗi kết nối. Vui lòng thử lại.">
       <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData(`ward-${id}`)">Thử lại</button>
     </EmptyState>
-  </main>
+  </section>
 
-  <main v-else-if="!data?.place" class="page">
+  <section v-else-if="!data?.place" class="page">
     <EmptyState icon="🔍" title="Không tìm thấy xã/phường" message="Có thể đơn vị hành chính đã được sắp xếp lại hoặc đường dẫn chưa đúng.">
       <template #actions>
         <NuxtLink to="/danh-ba" class="btn btn-primary">Danh bạ hành chính</NuxtLink>
         <NuxtLink to="/" class="btn btn-ghost">Về trang chủ</NuxtLink>
       </template>
     </EmptyState>
-  </main>
+  </section>
 
-  <main v-else class="wp">
+  <section v-else class="wp">
     <!-- Breadcrumb -->
     <nav class="breadcrumb" aria-label="Breadcrumb">
       <ol>
@@ -137,7 +137,7 @@
         </NuxtLink>
       </aside>
     </div>
-  </main>
+  </section>
 </template>
 
 <script setup lang="ts">

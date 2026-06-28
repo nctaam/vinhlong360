@@ -1,5 +1,5 @@
 <template>
-  <main class="page dd-page">
+  <section class="page dd-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Địa điểm' }]" />
 
     <!-- Hero -->
@@ -144,7 +144,7 @@
         {{ loadingMore ? 'Đang tải…' : `Xem thêm (còn ${total - items.length})` }}
       </button>
     </template>
-  </main>
+  </section>
 </template>
 
 <script setup lang="ts">

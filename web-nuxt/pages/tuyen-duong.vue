@@ -1,5 +1,5 @@
 <template>
-  <main class="page">
+  <section class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tuyến đường gợi ý' }]" />
 
     <!-- Hero -->
@@ -122,7 +122,7 @@
         </NuxtLink>
       </div>
     </section>
-  </main>
+  </section>
 </template>
 
 <script setup lang="ts">

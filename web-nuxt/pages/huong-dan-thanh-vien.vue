@@ -1,5 +1,5 @@
 <template>
-  <main class="guide-page">
+  <section class="guide-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng', to: '/cong-dong' }, { label: 'Hướng dẫn thành viên' }]" />
 
     <header class="guide-hero">
@@ -100,7 +100,7 @@
         <NuxtLink to="/bang-xep-hang" class="btn btn-ghost">Xem bảng xếp hạng</NuxtLink>
       </div>
     </section>
-  </main>
+  </section>
 </template>
 
 <script lang="ts">

@@ -1,5 +1,5 @@
 <template>
-  <main class="legal-page about-page">
+  <section class="legal-page about-page">
     <!-- Hero -->
     <section class="catalog-hero cat-org about-hero">
       <div class="catalog-hero-inner">
@@ -30,7 +30,7 @@
         <div class="legal-body" v-html="mdLite(s.body)"></div>
       </div>
     </article>
-  </main>
+  </section>
 </template>
 
 <script setup lang="ts">

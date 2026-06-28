@@ -21,7 +21,7 @@
     </aside>
 
     <!-- Main content -->
-    <main class="guide-main">
+    <section class="guide-main">
       <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Hướng dẫn sử dụng' }]" />
 
       <header class="guide-hero">
@@ -242,7 +242,7 @@
       </section>
 
       <p class="guide-updated">Cập nhật: {{ updatedDate }}</p>
-    </main>
+    </section>
   </div>
 </template>
 

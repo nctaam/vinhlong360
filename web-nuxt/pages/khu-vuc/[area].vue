@@ -1,5 +1,5 @@
 <template>
-  <main class="page">
+  <section class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: areaMeta?.name || 'Khu vực' }]" />
 
     <!-- Hero -->
@@ -145,7 +145,7 @@
         </NuxtLink>
       </div>
     </section>
-  </main>
+  </section>
 </template>
 
 <script setup lang="ts">

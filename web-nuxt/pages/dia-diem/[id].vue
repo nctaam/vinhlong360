@@ -1,5 +1,5 @@
 <template>
-  <main v-if="entity" class="entity-detail-page">
+  <section v-if="entity" class="entity-detail-page">
     <!-- Breadcrumb -->
     <nav class="breadcrumb" aria-label="Breadcrumb">
       <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
@@ -403,8 +403,8 @@
       <NuxtLink v-if="hasCoords" class="scta-map" :to="mapUrl" aria-label="Xem trên bản đồ">🗺️ Bản đồ</NuxtLink>
       <NuxtLink v-if="!hasStickyContact" to="/tao-lich-trinh" no-prefetch class="scta-plan" aria-label="Thêm vào lịch trình">📋 {{ ss('labels.detail.next_add_itinerary', 'Thêm vào lịch trình') }}</NuxtLink>
     </div>
-  </main>
-  <main v-else-if="fetchError" class="page">
+  </section>
+  <section v-else-if="fetchError" class="page">
     <EmptyState
       :icon="fetchError.statusCode === 404 ? '🔍' : '⚠️'"
       :title="fetchError.statusCode === 404 ? 'Không tìm thấy địa điểm này' : 'Không thể tải dữ liệu'"
@@ -419,15 +419,15 @@
         <NuxtLink to="/" class="btn btn-ghost">Về trang chủ</NuxtLink>
       </template>
     </EmptyState>
-  </main>
-  <main v-else class="page">
+  </section>
+  <section v-else class="page">
     <EmptyState icon="🔍" title="Không tìm thấy địa điểm này" message="Có thể nội dung đã được di chuyển hoặc đường dẫn chưa đúng. Bạn thử khám phá các điểm đến khác nhé.">
       <template #actions>
         <NuxtLink to="/du-lich" class="btn btn-primary">Khám phá điểm đến</NuxtLink>
         <NuxtLink to="/" class="btn btn-ghost">Về trang chủ</NuxtLink>
       </template>
     </EmptyState>
-  </main>
+  </section>
 </template>
 
 <script setup lang="ts">

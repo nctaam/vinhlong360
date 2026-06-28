@@ -1,5 +1,5 @@
 <template>
-  <main class="page dir-page">
+  <section class="page dir-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Danh bạ' }]" />
 
     <!-- Hero -->
@@ -143,7 +143,7 @@
         </NuxtLink>
       </div>
     </section>
-  </main>
+  </section>
 </template>
 
 <script setup lang="ts">
