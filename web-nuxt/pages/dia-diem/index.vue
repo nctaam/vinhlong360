@@ -2,20 +2,88 @@
   <main class="page dd-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Địa điểm' }]" />
 
-    <header class="dd-hero">
-      <h1>Danh bạ địa điểm</h1>
-      <p>Tất cả điểm đến, đặc sản, làng nghề, lưu trú và di tích của Vĩnh Long, Bến Tre, Trà Vinh — lọc theo loại và khu vực.</p>
-    </header>
+    <!-- Hero -->
+    <section class="catalog-hero cat-directory" aria-label="Danh bạ địa điểm">
+      <div class="catalog-hero-inner">
+        <span class="catalog-hero-icon" aria-hidden="true">📍</span>
+        <div>
+          <h1>Danh bạ địa điểm</h1>
+          <p>Tất cả điểm đến, đặc sản, làng nghề, lưu trú và di tích của Vĩnh Long, Bến Tre, Trà Vinh — lọc theo loại và khu vực.</p>
+        </div>
+      </div>
+      <div v-if="total" class="catalog-stats">
+        <div class="stat-item">
+          <CountUp :value="total" class="stat-num" />
+          <span class="stat-label">địa điểm</span>
+        </div>
+        <div class="stat-item">
+          <CountUp :value="CARD_TYPES.length" class="stat-num" />
+          <span class="stat-label">loại hình</span>
+        </div>
+        <div class="stat-item">
+          <CountUp :value="Object.keys(AREA_META).length" class="stat-num" />
+          <span class="stat-label">khu vực</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Spotlight -->
+    <CatalogSpotlight :items="firstPage" />
+
+    <!-- Region discovery -->
+    <section class="block band reveal">
+      <div class="section-head">
+        <h2>Khám phá theo khu vực</h2>
+      </div>
+      <div class="quick-picks region-quick-picks">
+        <button type="button"
+          v-for="(meta, key) in AREA_META" :key="key"
+          :class="['quick-pick', 'region-pick', { active: areaFilter === key }]"
+          :aria-pressed="areaFilter === key"
+          @click="pickArea(key as string)"
+        >
+          <span class="quick-pick-icon">{{ meta.emoji }}</span>
+          <span class="quick-pick-label">{{ meta.name }}</span>
+          <span class="quick-pick-blurb">{{ meta.blurb }}</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Type discovery -->
+    <section class="block reveal">
+      <div class="section-head">
+        <h2>Duyệt theo loại hình</h2>
+      </div>
+      <div class="scroll-row" role="region" aria-label="Loại hình" tabindex="0">
+        <button type="button"
+          v-for="t in typeChips" :key="t.value"
+          :class="['dd-type-card', { active: typeFilter === t.value }]"
+          :aria-pressed="typeFilter === t.value"
+          @click="pickType(t.value)"
+        >
+          <span class="dd-type-icon">{{ t.emoji }}</span>
+          <span class="dd-type-label">{{ t.label }}</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Interstitial -->
+    <CatalogInterstitial
+      fact="Vĩnh Long, Bến Tre và Trà Vinh có hơn 1.500 điểm đến, đặc sản và dịch vụ — từ cù lao xanh mát đến làng nghề trăm năm, tất cả được xác minh và cập nhật liên tục."
+      icon="📊"
+      variant="warm"
+      :links="[{ to: '/ban-do', label: 'Xem bản đồ' }, { to: '/du-lich', label: 'Du lịch sinh thái' }]"
+    />
 
     <!-- Editorial -->
-    <section class="page-article" aria-label="Giới thiệu">
+    <section v-once class="page-article reveal">
       <h2>Khám phá toàn bộ điểm đến miền Tây</h2>
-      <p>Danh bạ địa điểm tổng hợp mọi điểm đến, trải nghiệm, sản phẩm, lưu trú và di tích trên toàn vùng Vĩnh Long, Bến Tre và Trà Vinh. Mỗi mục đều có thông tin thực tế: địa chỉ, số điện thoại, giờ mở cửa, giá tham khảo và mùa vụ phù hợp. Bạn có thể lọc theo loại hình (du lịch, ẩm thực, lưu trú, OCOP) và khu vực để tìm nhanh điều mình cần.</p>
+      <p>Danh bạ địa điểm tổng hợp mọi điểm đến, trải nghiệm, sản phẩm, lưu trú và di tích trên toàn vùng Vĩnh Long, Bến Tre và Trà Vinh. Mỗi mục đều có thông tin thực tế: địa chỉ, số điện thoại, giờ mở cửa, giá tham khảo và mùa vụ phù hợp.</p>
       <p>Dữ liệu được thu thập từ nhiều nguồn: trang thông tin chính quyền địa phương, khảo sát thực địa và đóng góp từ cộng đồng. Nếu bạn phát hiện thông tin sai hoặc thiếu, hãy báo cho chúng tôi qua nút "Báo sai dữ liệu" trên mỗi trang chi tiết.</p>
     </section>
 
     <!-- Tìm + lọc -->
-    <div class="dd-search">
+    <div ref="gridAnchor" class="dd-search">
       <svg class="dd-search-ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
       <input v-model="qInput" type="search" enterkeyhint="search" class="dd-search-input" placeholder="Tìm địa điểm, đặc sản, làng nghề…" aria-label="Tìm địa điểm" @keyup.enter="applyQuery" />
       <button v-if="qApplied" type="button" class="dd-search-clear" aria-label="Xoá tìm" @click="clearQuery">&times;</button>
@@ -86,6 +154,11 @@ useReveal()
 const route = useRoute()
 const router = useRouter()
 const PAGE = 24
+const gridAnchor = ref<HTMLElement | null>(null)
+
+function scrollToGrid() {
+  gridAnchor.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
 
 const typeFilter = ref<string>(typeof route.query.type === 'string' ? route.query.type : 'all')
 const areaFilter = ref<string>(typeof route.query.area === 'string' ? route.query.area : 'all')
@@ -152,6 +225,8 @@ function syncUrlAndRefresh() {
 }
 function setType(t: string) { if (typeFilter.value !== t) { typeFilter.value = t; syncUrlAndRefresh() } }
 function setArea(a: string) { if (areaFilter.value !== a) { areaFilter.value = a; syncUrlAndRefresh() } }
+function pickArea(key: string) { areaFilter.value = areaFilter.value === key ? 'all' : key; syncUrlAndRefresh(); scrollToGrid() }
+function pickType(value: string) { typeFilter.value = typeFilter.value === value ? 'all' : value; syncUrlAndRefresh(); scrollToGrid() }
 function applyQuery() { qApplied.value = qInput.value.trim(); syncUrlAndRefresh() }
 function clearQuery() { qInput.value = ''; qApplied.value = ''; syncUrlAndRefresh() }
 function resetAll() { typeFilter.value = 'all'; areaFilter.value = 'all'; qInput.value = ''; qApplied.value = ''; syncUrlAndRefresh() }
@@ -183,9 +258,19 @@ useHead({
 
 <style scoped>
 .dd-page { max-width: 1100px; margin: 0 auto; }
-.dd-hero { margin-bottom: var(--space-5); }
-.dd-hero h1 { margin: 0 0 var(--space-2); }
-.dd-hero p { color: var(--muted); margin: 0; max-width: 60ch; }
+
+.dd-type-card {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  cursor: pointer; transition: border-color .2s, box-shadow .2s;
+  min-width: 100px; flex-shrink: 0;
+}
+.dd-type-card:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+.dd-type-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.dd-type-card.active { border-color: var(--primary); background: rgba(var(--primary-rgb), .06); }
+.dd-type-icon { font-size: 1.6rem; }
+.dd-type-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); white-space: nowrap; }
 
 .dd-search { display: flex; align-items: center; gap: var(--space-2); padding: .35rem .5rem .35rem .75rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-full); margin-bottom: var(--space-3); }
 .dd-search:focus-within { border-color: var(--primary); }
