@@ -1579,11 +1579,22 @@ async def get_moderation_notes(post_id: str):
 @router.get("/moderation/stats")
 async def moderation_stats():
     def _query():
+        ph = db._ph
         with db._conn() as conn:
             rows = db._fetchall(conn, """
                 SELECT moderation_status, COUNT(*) as c FROM posts GROUP BY moderation_status
             """, ())
-        return {"counts": {r["moderation_status"]: r["c"] for r in [db._row_to_dict(row) for row in rows]}}
+            today = db._fetchone(conn, """
+                SELECT COUNT(*) as c FROM posts WHERE created_at > NOW() - INTERVAL '24 hours'
+            """, ())
+            week = db._fetchone(conn, """
+                SELECT COUNT(*) as c FROM posts WHERE created_at > NOW() - INTERVAL '7 days'
+            """, ())
+        return {
+            "counts": {db._row_to_dict(row)["moderation_status"]: db._row_to_dict(row)["c"] for row in rows},
+            "today": db._row_to_dict(today)["c"] if today else 0,
+            "week": db._row_to_dict(week)["c"] if week else 0,
+        }
     return await asyncio.to_thread(_query)
 
 
@@ -1864,6 +1875,7 @@ async def list_users(
     page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=100),
     search: str = Query("", max_length=100),
+    role_filter: Optional[str] = Query(None, pattern="^(user|moderator|admin)$"),
 ):
     ph = db._ph
     offset = (page - 1) * limit
@@ -1873,19 +1885,24 @@ async def list_users(
         search_esc = _escape_like(search)
         conditions.append(f"(display_name ILIKE {ph} ESCAPE '\\' OR phone LIKE {ph} ESCAPE '\\')")
         params.extend([f"%{search_esc}%", f"%{search_esc}%"])
+    if role_filter:
+        conditions.append(f"COALESCE(role, 'user') = {ph}")
+        params.append(role_filter)
     where = " AND ".join(conditions)
+    count_params = list(params)
     params.extend([limit, offset])
     def _query():
         with db._conn() as conn:
             rows = db._fetchall(conn, f"""
-                SELECT id, phone, display_name, role, is_active, created_at
-                FROM users WHERE {where}
-                ORDER BY created_at DESC
+                SELECT u.id, u.phone, u.display_name, u.role, u.is_active, u.created_at,
+                       (SELECT COUNT(*) FROM posts p WHERE p.user_id = u.id AND p.moderation_status = 'approved') as post_count
+                FROM users u WHERE {where}
+                ORDER BY u.created_at DESC
                 LIMIT {ph} OFFSET {ph}
             """, params)
             total = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM users WHERE {where}
-            """, params[:len(params) - 2])
+            """, count_params)
         role_counts = {}
         try:
             with db._conn() as conn2:
@@ -1903,6 +1920,7 @@ async def list_users(
                 "role": r.get("role", "user"),
                 "is_active": r.get("is_active", True),
                 "created_at": str(r.get("created_at", "")),
+                "post_count": r.get("post_count", 0),
             } for r in [db._row_to_dict(row) for row in rows]],
             "total": db._row_to_dict(total)["c"] if total else 0,
             "role_counts": role_counts,
