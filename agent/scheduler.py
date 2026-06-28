@@ -604,6 +604,25 @@ def task_session_cleanup():
         _sched_logger.error("Session cleanup error: %s", e)
 
 
+def task_moderation_auto_escalation():
+    """Auto-approve pending posts older than 48h (solo admin can't review everything)."""
+    try:
+        import database as db
+        if not db._use_pg:
+            return
+        with db._conn() as conn:
+            result = db._execute(conn, """
+                UPDATE posts SET moderation_status = 'approved'
+                WHERE moderation_status = 'pending'
+                AND created_at < NOW() - INTERVAL '48 hours'
+            """, ())
+            rowcount = getattr(result, 'rowcount', 0)
+            if rowcount and rowcount > 0:
+                _sched_logger.info("Moderation auto-escalation: approved %d stale pending posts", rowcount)
+    except Exception as e:
+        _sched_logger.error("Moderation auto-escalation error: %s", e)
+
+
 def task_ratelimit_gc():
     """Periodic GC for all in-memory rate-limit dicts to prevent memory leaks."""
     try:
@@ -633,6 +652,7 @@ TASKS = [
     ScheduledTask("session-cleanup", task_session_cleanup,       interval_seconds=6 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 6h
     ScheduledTask("notification-cleanup", task_notification_cleanup, interval_seconds=24 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h
     ScheduledTask("ratelimit-gc",  task_ratelimit_gc,          interval_seconds=300),        # 5min
+    ScheduledTask("moderation-escalation", task_moderation_auto_escalation, interval_seconds=6 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 6h
     ScheduledTask("learning-loop",    task_learning_loop,         interval_seconds=LEARNING_LOOP_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 1h (env)
     ScheduledTask("kb-promotion",     task_kb_promotion,          interval_seconds=PROMOTION_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 6h (env)
     ScheduledTask("continuous-discovery", task_continuous_discovery, interval_seconds=DISCOVERY_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 1h adaptive 30m–6h (env)
