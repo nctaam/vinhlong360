@@ -204,7 +204,7 @@ onMounted(fetchMedia)
   transition: background .2s, color .2s;
 }
 .media-tab:hover { border-color: var(--primary); color: var(--ink); }
-.media-tab.active { background: var(--primary, #219653); color: #fff; border-color: var(--primary); }
+.media-tab.active { background: var(--primary, #219653); color: var(--text-on-dark, #fff); border-color: var(--primary); }
 
 .media-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));

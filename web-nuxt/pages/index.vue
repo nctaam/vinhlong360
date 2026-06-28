@@ -994,8 +994,8 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
   border-radius: var(--radius-sm); font-weight: var(--weight-extrabold);
 }
-.dish-star { color: #d97706; font-size: var(--text-sm); }
-.dish-score { color: #92400e; font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
+.dish-star { color: var(--accent); font-size: var(--text-sm); }
+.dish-score { color: var(--ink-secondary); font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
 .dish-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .dish-name { font-size: var(--text-sm); font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dish-reviews { font-size: var(--text-xs); color: var(--muted); }

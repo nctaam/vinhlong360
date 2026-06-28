@@ -150,7 +150,7 @@ onMounted(reload)
 .ff-toggle input:checked + .ff-track { background: var(--primary, #219653); }
 .ff-thumb {
   position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%;
-  background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.18);
+  background: var(--bg); box-shadow: 0 1px 4px rgba(0,0,0,.18);
   transition: transform .3s cubic-bezier(.2,1,.4,1);
 }
 .ff-toggle input:checked + .ff-track .ff-thumb { transform: translateX(20px); }
@@ -158,7 +158,7 @@ onMounted(reload)
 .cs-save-row { display: flex; gap: var(--space-3); padding-top: var(--space-5); margin-top: var(--space-4); border-top: .5px solid var(--line); }
 .sf-save {
   padding: 12px 28px; border-radius: 12px; font-weight: 600; font-size: .88rem;
-  background: var(--primary, #219653); color: #fff; border: none; cursor: pointer; min-height: 44px;
+  background: var(--primary, #219653); color: var(--text-on-dark, #fff); border: none; cursor: pointer; min-height: 44px;
   transition: transform .2s cubic-bezier(.2,1,.4,1), box-shadow .2s;
 }
 .sf-save:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 4px 12px rgba(var(--primary-rgb),.2); }
