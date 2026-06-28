@@ -2712,7 +2712,8 @@ async def trigger_learning(request: Request):
         return {"status": "completed", "decision": summary["decision"],
                 "reason": summary["reason"], "before": summary["before"], "after": summary["after"]}
     except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        logger.error("learning-loop error: %s", e)
+        return JSONResponse(status_code=500, content={"error": "Internal server error"})
 
 
 @app.get("/system/self-evolution", tags=["System"])

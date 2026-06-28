@@ -692,7 +692,12 @@ async def update_profile(body: ProfileUpdate, request: Request, _csrf=Depends(_r
             fields["username"] = uname
 
     if fields:
-        user = await asyncio.to_thread(lambda: db.update_user(str(user["id"]), **fields))
+        try:
+            user = await asyncio.to_thread(lambda: db.update_user(str(user["id"]), **fields))
+        except Exception as e:
+            if "unique" in str(e).lower() or "duplicate" in str(e).lower():
+                raise HTTPException(409, "Username đã được sử dụng")
+            raise
 
     return {"user": _safe_user(user)}
 
