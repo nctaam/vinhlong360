@@ -23,7 +23,7 @@
             <span class="hf-body">
               <span class="hf-tag">✦ Gợi ý nổi bật</span>
               <span class="hf-title">{{ heroFeature.name }}</span>
-              <span v-if="hfRegion" class="hf-region">📍 {{ hfRegion }}</span>
+              <span v-if="hfRegion" class="hf-region">{{ hfRegion }}</span>
               <span class="hf-cta">Khám phá →</span>
             </span>
           </NuxtLink>
@@ -131,7 +131,7 @@
             :style="{ backgroundImage: spotBg }"
             :aria-label="spotlight.name"
           >
-            <span v-if="spotRegion" class="spot-region">📍 {{ spotRegion }}</span>
+            <span v-if="spotRegion" class="spot-region">{{ spotRegion }}</span>
             <span class="spot-icon" v-html="spotIcon" aria-hidden="true" />
           </NuxtLink>
           <div class="spot-body">
@@ -238,7 +238,7 @@
                 <div class="cm-meta">
                   <span v-if="p.likes">❤️ {{ p.likes }}</span>
                   <span v-if="p.comments_count || p.comment_count">💬 {{ p.comments_count || p.comment_count }}</span>
-                  <span v-if="p.entity_name" class="cm-place">📍 {{ p.entity_name }}</span>
+                  <span v-if="p.entity_name" class="cm-place">{{ p.entity_name }}</span>
                 </div>
               </div>
             </NuxtLink>
