@@ -1,7 +1,7 @@
 # Data Quality Report
 
-Generated: 2026-06-28 (updated — deep research pass 3 complete)
-Source: `web/data.json` (1745 entities, 11537 relationships, 33 itineraries)
+Generated: 2026-06-28 (updated — deep research pass 4 complete)
+Source: `web/data.json` (1745 entities, 12441 relationships, 33 itineraries)
 Tool: `python scripts/validate_data.py`
 
 ## Summary
@@ -97,6 +97,14 @@ Tool: `python scripts/validate_data.py`
 | Trailing whitespace before period | 2 | **0** |
 | Missing summary punctuation | 10 | **0** |
 | Ghost entity prov-1 | Present | **Deleted** |
+| Double periods in descriptions | 1053 | **0** (all cleaned) |
+| Unbalanced parentheses | 13 | **0** (all fixed) |
+| Corrupted encoding (? chars) | 4 entities | **0** (all rewritten) |
+| Near relationships (isolated) | 155 entities without near | **2** (762 near rels added) |
+| Related_to (isolated) | 67 entities without related_to | **16** (142 rels added) |
+| Total relationships | 11537 | **12441** (+904) |
+| Short descriptions (<80 chars) | 17 | **0** (all enriched to 80+ chars) |
+| Summary == Description | 581 identical pairs | **Differentiated** (121 single-sentence remain) |
 
 ## Errors
 
@@ -106,7 +114,7 @@ None.
 
 | Code | Count | Notes |
 |------|-------|-------|
-| `near_asymmetric` | 4271 | By design — system handles bidirectionality automatically |
+| `near_asymmetric` | 5033 | By design — system handles bidirectionality automatically |
 | `coordinate_clusters` | 189 clusters (1366 entities) | Ward/province centroids; needs real geocoding data |
 | `itinerary_area_mismatch` | 59 | Multi-province itineraries legitimately cross areas |
 | `rel_type_singletons` | 30 | Rare but valid relationship combos |
@@ -188,12 +196,12 @@ Note: Confidence formula now correctly differentiates approximate coordinates (+
 
 | Type | Count |
 |------|-------|
-| near | 4303 |
-| related_to | 4163 |
+| near | 5065 |
+| related_to | 4305 |
 | located_in | 2214 |
 | associated_with | 670 |
 | produced_in | 187 |
-| **Total** | **11537** |
+| **Total** | **12441** |
 
 ## Deep Research Findings
 
@@ -257,12 +265,15 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 
 ### Description Quality
 
-- Min length: **58 chars**
+- Min length: **83 chars**
 - Median: **226 chars**
-- Average: **243 chars**
+- Average: **244 chars**
 - Max: **751 chars**
-- Descriptions <80 chars: 17
+- Descriptions <80 chars: **0** (17 enriched)
 - Descriptions >500 chars: 32
+- Double periods: **0** (1053 fixed)
+- Unbalanced parentheses: **0** (13 fixed)
+- Corrupted encoding: **0** (4 entities rewritten)
 - All structured data (address, price, phone, hours, payment) stripped from descriptions (1548 cleaned)
 - All summaries have entity name prefix stripped (492 cleaned)
 - All sub_category classified: 1604/1604 non-place entities (100%)
@@ -284,8 +295,9 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 ### Connectivity
 
 - Only **1 entity** with ≤2 relationships (ben-xe-mien-tay-hcm, outside scope — HCM)
-- 1 entity with 3 relationships (bia-chien-thang-thanh-phuoc) → enriched to 12
-- Average 13.2 relationships per entity (counting both directions)
+- 762 near relationships added for 154 previously isolated entities
+- 142 related_to relationships added for 51 entities without cross-references
+- Average 14.3 relationships per entity (counting both directions)
 
 ## Score Gap Analysis
 
