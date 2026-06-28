@@ -169,7 +169,7 @@ const ratingDisplay = computed(() => {
   line-height: 1;
   cursor: pointer;
   opacity: 0;
-  transition: opacity 200ms, transform 200ms;
+  transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-spring-gentle);
   display: flex;
   align-items: center;
   justify-content: center;
