@@ -1521,3 +1521,15 @@ class TestDeepScanBatch5:
         block = src[idx:idx+600]
         assert ".tmp" in block, "JSONL rotation must use temp file for atomic write"
         assert ".replace(" in block, "JSONL rotation must use replace() for atomic swap"
+
+    def test_database_has_feed_index(self):
+        """Database must have composite index for feed query performance."""
+        src = (Path(__file__).resolve().parent.parent / "database.py").read_text(encoding="utf-8")
+        assert "idx_posts_feed" in src, \
+            "Must have composite index on posts(moderation_status, created_at) for feed performance"
+
+    def test_database_has_notification_index(self):
+        """Database must have index on notifications for user query performance."""
+        src = (Path(__file__).resolve().parent.parent / "database.py").read_text(encoding="utf-8")
+        assert "idx_notifications_user" in src, \
+            "Must have index on notifications(user_id, created_at) for notification queries"

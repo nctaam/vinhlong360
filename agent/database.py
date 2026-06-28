@@ -244,6 +244,9 @@ class Database:
                         "CREATE INDEX IF NOT EXISTS idx_likes_user ON likes(user_id, post_id)",
                         "CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON bookmarks(user_id, post_id)",
                         "CREATE INDEX IF NOT EXISTS idx_entity_ratings ON entity_ratings(entity_id)",
+                        "CREATE INDEX IF NOT EXISTS idx_posts_feed ON posts(moderation_status, created_at DESC)",
+                        "CREATE INDEX IF NOT EXISTS idx_posts_created ON posts(created_at DESC)",
+                        "CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, created_at DESC)",
                     ]:
                         try:
                             cur.execute(idx_sql)
