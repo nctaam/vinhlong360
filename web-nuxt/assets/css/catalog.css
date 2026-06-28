@@ -356,7 +356,7 @@
   .catalog-hero h1 { font-size: var(--text-xl); }
   .catalog-stats { flex-wrap: wrap; gap: var(--space-4); }
   .cross-links { grid-template-columns: repeat(2, 1fr); }
-  .quick-picks { grid-template-columns: repeat(3, 1fr); }
+  .quick-picks { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   /* safe-area aware hero padding on notched phones */
   .catalog-hero {
     padding-right: max(var(--space-4), env(safe-area-inset-right));
@@ -367,7 +367,7 @@
 }
 /* very small phones: lock quick-picks to 2 columns so cells don't wrinkle */
 @media (max-width: 480px) {
-  .quick-picks { grid-template-columns: repeat(2, 1fr); }
+  .quick-picks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* ── Itinerary cards + timeline ── */
