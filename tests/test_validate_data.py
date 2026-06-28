@@ -1270,6 +1270,11 @@ def test_vn_phone_regex_patterns() -> None:
     assert validate_data.VN_PHONE.match("0909123456")
     assert validate_data.VN_PHONE.match("+84909123456")
     assert validate_data.VN_PHONE.match("02703822456")
+    assert validate_data.VN_PHONE.match("18006821")
+    assert validate_data.VN_PHONE.match("1800545413")
+    assert validate_data.VN_PHONE.match("19009247")
+    assert validate_data.VN_PHONE.match("115")
+    assert validate_data.VN_PHONE.match("113")
     assert not validate_data.VN_PHONE.match("12345")
     assert not validate_data.VN_PHONE.match("abc")
 
