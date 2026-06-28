@@ -74,19 +74,7 @@
       @open-lightbox="openCoverLightbox"
     />
 
-    <!-- Lightbox (replaces old ImageGallery) -->
-    <Teleport to="body">
-      <Transition name="lb-fade">
-      <div v-if="lightboxOpen" class="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh" @click.self="lightboxOpen = false" @keydown.escape="lightboxOpen = false" @keydown.left="lbPrev" @keydown.right="lbNext" @keydown.tab="lbFocusTrap" tabindex="-1" ref="lightboxEl"
-        @touchstart.passive="lbTouchStart" @touchmove.passive="lbTouchMove" @touchend="lbTouchEnd">
-        <button type="button" class="lb-close" aria-label="Đóng" @click="lightboxOpen = false">&times;</button>
-        <button type="button" v-if="entity.images?.length > 1" class="lb-prev" aria-label="Ảnh trước" @click="lbPrev">&#8249;</button>
-        <img :src="entity.images[lbIndex]" :alt="`${entity.name} - ${lbIndex + 1}`" class="lb-img" :style="lbDragStyle" :key="lbIndex" loading="eager" decoding="async" @error="($event.target as HTMLImageElement).style.opacity = '0.3'" />
-        <button type="button" v-if="entity.images?.length > 1" class="lb-next" aria-label="Ảnh tiếp" @click="lbNext">&#8250;</button>
-        <div class="lb-counter" aria-live="polite">{{ lbIndex + 1 }} / {{ entity.images.length }}</div>
-      </div>
-      </Transition>
-    </Teleport>
+    <ImageLightbox v-if="entity?.images?.length" v-model="lightboxOpen" :images="entity.images" :start-index="lbIndex" />
 
     <!-- Body -->
     <div class="detail-body">
@@ -593,116 +581,11 @@ const imageCredit = computed(() => {
 
 const lightboxOpen = ref(false)
 const lbIndex = ref(0)
-const lightboxEl = ref<HTMLElement | null>(null)
-let lbTriggerEl: HTMLElement | null = null
 function openCoverLightbox(idx = 0) {
   if (!entity.value?.images?.length) return
-  lbTriggerEl = document.activeElement as HTMLElement
   lbIndex.value = typeof idx === 'number' ? idx : 0
   lightboxOpen.value = true
-  nextTick(() => lightboxEl.value?.focus())
 }
-function lbPrev() {
-  const len = entity.value?.images?.length || 1
-  lbIndex.value = (lbIndex.value - 1 + len) % len
-}
-function lbNext() {
-  const len = entity.value?.images?.length || 1
-  lbIndex.value = (lbIndex.value + 1) % len
-}
-// Preload adjacent lightbox images for smoother navigation
-const prefetchedSrcs = new Set<string>()
-const prefetchLinks: HTMLLinkElement[] = []
-watch(lbIndex, (idx) => {
-  if (!lightboxOpen.value || !import.meta.client) return
-  const imgs = entity.value?.images
-  if (!imgs || imgs.length <= 1) return
-  const len = imgs.length
-  for (const offset of [1, -1]) {
-    const src = imgs[(idx + offset + len) % len]
-    if (src && !prefetchedSrcs.has(src)) {
-      prefetchedSrcs.add(src)
-      const link = document.createElement('link')
-      link.rel = 'prefetch'
-      link.as = 'image'
-      link.href = src
-      document.head.appendChild(link)
-      prefetchLinks.push(link)
-    }
-  }
-})
-function lbFocusTrap(e: KeyboardEvent) {
-  const el = lightboxEl.value
-  if (!el) return
-  const focusable = el.querySelectorAll<HTMLElement>('button:not([disabled])')
-  if (!focusable.length) return
-  const first = focusable[0]
-  const last = focusable[focusable.length - 1]
-  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
-  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
-}
-// Lightbox swipe gestures (mobile) — rAF-throttled to avoid per-pixel reactive updates
-const lbTouchX = ref(0)
-const lbTouchDX = ref(0)
-const lbSwiping = ref(false)
-let _pendingDragDx = 0
-let _dragRafId = 0
-const lbDragStyle = computed(() => {
-  if (!lbSwiping.value || !lbTouchDX.value) return {}
-  const dx = lbTouchDX.value
-  const abs = Math.abs(dx)
-  const opacity = Math.max(0.5, 1 - abs / 380)
-  const scale = opacity > 0.75 ? 1 : Math.max(0.94, opacity)
-  return {
-    transform: `translateX(${dx}px) scale(${scale})`,
-    opacity,
-    transition: 'none',
-  }
-})
-function lbTouchStart(e: TouchEvent) {
-  if (!e.touches.length) return
-  lbTouchX.value = e.touches[0].clientX
-  lbTouchDX.value = 0
-  _pendingDragDx = 0
-  lbSwiping.value = true
-}
-function lbTouchMove(e: TouchEvent) {
-  if (!lbSwiping.value || !e.touches.length) return
-  _pendingDragDx = e.touches[0].clientX - lbTouchX.value
-  if (!_dragRafId) {
-    _dragRafId = requestAnimationFrame(() => {
-      lbTouchDX.value = _pendingDragDx
-      _dragRafId = 0
-    })
-  }
-}
-function lbTouchEnd() {
-  if (_dragRafId) { cancelAnimationFrame(_dragRafId); _dragRafId = 0 }
-  if (!lbSwiping.value) return
-  lbTouchDX.value = _pendingDragDx
-  const threshold = 60
-  if (lbTouchDX.value < -threshold) lbNext()
-  else if (lbTouchDX.value > threshold) lbPrev()
-  lbSwiping.value = false
-  lbTouchDX.value = 0
-}
-
-watch(lightboxOpen, (v) => {
-  if (!import.meta.client) return
-  document.body.style.overflow = v ? 'hidden' : ''
-  if (!v) {
-    lbSwiping.value = false
-    lbTouchDX.value = 0
-    nextTick(() => lbTriggerEl?.focus())
-  }
-})
-onUnmounted(() => {
-  if (import.meta.client) {
-    document.body.style.overflow = ''
-    prefetchLinks.forEach(link => link.remove())
-    if (_dragRafId) { cancelAnimationFrame(_dragRafId); _dragRafId = 0 }
-  }
-})
 
 const TYPE_BREADCRUMB: Record<string, string> = {
   product: '/san-pham', experience: '/du-lich', attraction: '/du-lich',
