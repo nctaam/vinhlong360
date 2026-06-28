@@ -556,6 +556,7 @@ useHead({
 }
 .compose-input-sm::placeholder { color: var(--ink-tertiary, var(--muted)); }
 .compose-input-sm:focus { border-bottom-color: var(--primary-fg); box-shadow: none; }
+.compose-input-sm:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .compose-send {
   width: 44px; height: 44px; min-height: 44px; padding: 0;
   display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-full);

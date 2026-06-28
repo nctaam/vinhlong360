@@ -558,7 +558,7 @@ useSeoMeta({
 .profile-name-row { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
 .profile-name-row h1 { flex: 1; min-width: 0; }
 .profile-more-wrap { position: relative; }
-.btn-icon { min-width: 32px; padding: .3rem .5rem; letter-spacing: 2px; font-weight: 700; }
+.btn-icon { min-width: 44px; padding: .3rem .5rem; letter-spacing: 2px; font-weight: 700; }
 .profile-more-menu { position: absolute; right: 0; top: 100%; margin-top: 4px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-md); z-index: var(--z-dropdown); min-width: 160px; overflow: hidden; }
 .pm-item { display: block; width: 100%; text-align: left; padding: .6rem 1rem; border: none; background: none; font: inherit; font-size: var(--text-sm); color: var(--ink); cursor: pointer; transition: background .15s; }
 .pm-item:hover { background: var(--bg-alt); }

@@ -110,6 +110,7 @@ defineExpose({ open })
 .cmd-overlay { position: fixed; inset: 0; z-index: var(--z-lightbox); background: rgba(0,0,0,.4); display: flex; align-items: flex-start; justify-content: center; padding-top: 15vh; }
 .cmd-palette { width: min(540px, 90vw); background: var(--bg, #fff); border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.2); overflow: hidden; }
 .cmd-input { width: 100%; padding: 14px 20px; border: none; outline: none; font-size: 1rem; background: transparent; color: var(--ink); }
+.cmd-input:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
 .cmd-input::placeholder { color: var(--muted); }
 .cmd-results { max-height: 360px; overflow-y: auto; border-top: .5px solid var(--line); }
 .cmd-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 20px; border: none; background: none; cursor: pointer; text-align: left; font: inherit; color: var(--ink); transition: background .15s var(--ease-out); }

@@ -70,7 +70,7 @@ const sizeClass = computed(() => `modal-${props.size}`)
 .modal-lg { width: min(640px, 100%); }
 .modal-close {
   position: absolute; top: var(--space-3); right: var(--space-3);
-  width: 36px; height: 36px;
+  width: 44px; height: 44px;
   display: flex; align-items: center; justify-content: center;
   border: none; border-radius: var(--radius-full);
   background: transparent; color: var(--muted);

@@ -276,6 +276,7 @@ useHead({
 .dd-search:focus-within { border-color: var(--primary); }
 .dd-search-ic { color: var(--muted); flex-shrink: 0; }
 .dd-search-input { flex: 1; min-width: 0; border: none; background: none; outline: none; color: var(--ink); font-size: var(--text-sm); padding: .4rem 0; }
+.dd-search-input:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .dd-search-input::placeholder { color: var(--muted); }
 .dd-search-clear { border: none; background: none; color: var(--muted); font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0 .25rem; }
 .dd-search-clear:hover { color: var(--ink); }
