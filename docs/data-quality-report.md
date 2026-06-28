@@ -1,6 +1,6 @@
 # Data Quality Report
 
-Generated: 2026-06-28 (updated — pass 7 complete)
+Generated: 2026-06-28 (updated — pass 8 complete)
 Source: `web/data.json` (1745 entities, 12441 relationships, 33 itineraries)
 Tool: `python scripts/validate_data.py`
 
@@ -134,6 +134,12 @@ Tool: `python scripts/validate_data.py`
 | Minimal descriptions enriched | 49 (type+address only → +specialty/price from attrs) | **49 enriched** |
 | Bare "Resort." start | 1 | **0** (rewritten) |
 | Lowercase after period | 7 (artifacts from automated stripping) | **0** |
+| Robotic "Name là [type]" openers | 174 business + 17 non-biz entities | **149 fixed** (42 too short, 22 dish/product kept for SEO) |
+| Address casing errors | 129 accommodation descriptions | **0** (all proper nouns capitalized) |
+| Entity name casing mismatch | 51 desc vs name inconsistencies | **0** (45 desc fixed, 3 names fixed, 3 desc de-capitalized) |
+| Brochure "du khách có thể" | 25 remaining (missed pass 7) | **0** (→ "Có thể") |
+| Remaining clichés | 1 "viên ngọc", 4 "tuyệt vời/ấn tượng" | **0** |
+| "bức tranh" metaphor | 1 | **0** (→ "khung cảnh") |
 
 ## Errors
 
@@ -300,9 +306,9 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 
 - Min length: **57 chars**
 - Median: **215 chars**
-- Average: **214 chars**
+- Average: **212 chars**
 - Max: **660 chars**
-- Descriptions <80 chars: **66** (mostly food/café/accommodation — minimal factual info)
+- Descriptions <80 chars: **124** (mostly food/café/accommodation — minimal factual info after name prefix dropped)
 - Descriptions >500 chars: 32
 - Double periods: **0** (1053 fixed)
 - Unbalanced parentheses: **0** (15 fixed)
@@ -345,7 +351,7 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 
 **Theoretical max without images: ~100.** Current: 90.0. Only images remain as a significant gap.
 
-## S+ Quality Analysis (pass 7)
+## S+ Quality Analysis (pass 8)
 
 Audit against viet-content-optimizer S+ criteria. Results below represent
 remaining quality concerns that require **per-entity manual review** or
@@ -353,17 +359,18 @@ remaining quality concerns that require **per-entity manual review** or
 
 | Dimension | Finding | Status |
 |-----------|---------|--------|
-| Empty adjectives | nổi tiếng=172, thu hút=49, hấp dẫn=15, độc đáo=59 | Context-dependent — many are valid (e.g. "nổi tiếng với dừa sáp") |
-| First sentence >155 chars | 215 entities | SEO concern — truncated in Google snippet |
-| Starts with entity name | 569 entities | Violates S+ "never open with entity name" |
-| desc==summary | 453 (single-sentence entities) | Structural — can't differentiate without adding content |
-| Descriptions <80 chars | 66 (food/café/accommodation) | Minimal factual info available |
+| Empty adjectives | ~275 total (nổi tiếng/thu hút/hấp dẫn/độc đáo) | Context-dependent — most are valid (e.g. "nổi tiếng với dừa sáp") |
+| First sentence >155 chars | 12 entities (was 215) | No good split points — would break mid-clause |
+| Starts with entity name | 471 (was 569) | 149 fixed; remaining are natural patterns (location/dash/comma) |
+| desc==summary | 352 (single-sentence entities) | Structural — can't differentiate without adding content |
+| Descriptions <80 chars | 124 (food/café/accommodation) | Minimal factual info available |
 
-**Eliminated (pass 7):**
+**Eliminated (pass 7 + 8):**
 - Place template boilerplate (120), accommodation copy-paste (87), structured amenity lists (46)
-- Brochure tone (17), northern tone (2), cliché metaphors (2)
-- Copy-paste filler sentences (29), "đông đảo" filler (8)
+- Brochure tone (25+17=42 total: "du khách có thể" → "Có thể"), northern tone (2), cliché metaphors (2+5=7)
+- Copy-paste filler sentences (29), "đông đảo" filler (8), "bức tranh" metaphor (1)
 - Duplicate province names (33), bare type starts (1)
+- Robotic "Name là [type]" openers (149), address casing errors (129), name casing mismatches (51)
 
 ## Next Steps (Priority Order)
 
@@ -392,7 +399,7 @@ remaining quality concerns that require **per-entity manual review** or
 | Place template ("khu vực X. Được thành lập...") | **0** (120 rewritten) |
 | Accommodation boilerplate | **0** (87+30+46 stripped/naturalized) |
 | Copy-paste filler sentences | **0** (29 stripped) |
-| Brochure tone ("du khách có thể") | **0** (17 rephrased) |
+| Brochure tone ("du khách có thể") | **0** (42 rephrased total) |
 | Northern tone (thưởng ngoạn/du ngoạn) | **0** (2 fixed) |
 | Duplicate summaries | **0** |
 | Duplicate names | **0** |
@@ -409,3 +416,9 @@ remaining quality concerns that require **per-entity manual review** or
 | Ghost/test entities | **0** (prov-1 deleted) |
 | Description starts lowercase | **0** |
 | Double spaces in descriptions | **0** |
+| Robotic "Name là [type]" openers | **42 remain** (22 dish/product + 20 too short; 149 fixed) |
+| Address casing errors | **0** (129 fixed) |
+| Entity name/description casing mismatch | **0** (51 fixed) |
+| "viên ngọc" cliché | **0** (1 fixed) |
+| "tuyệt vời/ấn tượng" filler | **0** (4 fixed) |
+| "bức tranh" metaphor | **0** (1 fixed) |
