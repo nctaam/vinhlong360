@@ -298,6 +298,8 @@ async def create_post(body: CreatePost, user=Depends(require_user)):
         if od.get("repost_of"):
             raise HTTPException(400, "Không thể đăng lại một bài đã là repost")
         orig_author_id = str(od["user_id"])
+        if orig_author_id == str(user["id"]):
+            raise HTTPException(400, "Không thể đăng lại bài viết của chính mình")
         repost_snapshot = {
             "id": str(od["id"]), "author": od.get("display_name") or "",
             "content": (od.get("content") or "")[:280], "created_at": str(od.get("created_at") or ""),

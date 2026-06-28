@@ -24,6 +24,7 @@ from pydantic import BaseModel, field_validator
 
 from auth_middleware import get_current_user, require_user, validate_path_id
 from database import db
+from ratelimit import check_rate
 
 
 from auth_middleware import require_pg as _require_pg
@@ -293,6 +294,17 @@ async def toggle_follow(target_type: str, target_id: str, user=Depends(require_u
         if not await asyncio.to_thread(_check_user):
             raise HTTPException(404, "Không tìm thấy người dùng")
 
+        uid = str(user["id"])
+        def _check_block():
+            with db._conn() as conn:
+                return db._fetchone(conn, f"""
+                    SELECT 1 FROM blocks
+                    WHERE (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+                       OR (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+                """, (uid, target_id, target_id, uid))
+        if await asyncio.to_thread(_check_block):
+            raise HTTPException(403, "Không thể follow người dùng này")
+
     ph = db._ph
     uid = str(user["id"])
     def _toggle():
@@ -405,8 +417,12 @@ async def get_follower_count(target_type: str, target_id: str):
 
 # P0-20: đổi path để KHÔNG đụng `POST /api/report` của public_api (báo-sai ẩn danh → JSONL).
 # Endpoint authed này ghi PG reports table; FE hiện dùng public JSONL, giữ cả hai tách bạch.
+RL_REPORT_LIMIT = 10
+RL_REPORT_WINDOW = 3600
+
 @router.post("/report-ugc")
 async def create_report(body: ReportRequest, user=Depends(require_user)):
+    check_rate(f"report:{user['id']}", RL_REPORT_LIMIT, RL_REPORT_WINDOW, "Bạn đã gửi quá nhiều báo cáo. Vui lòng thử lại sau.")
     ph = db._ph
     def _query():
         with db._conn() as conn:
@@ -519,6 +535,12 @@ def _format_notif(row: dict) -> dict:
 @router.post("/events/{entity_id}/rsvp")
 async def toggle_rsvp(entity_id: str, user=Depends(require_user)):
     validate_path_id(entity_id)
+    entity = await asyncio.to_thread(db.get_entity, entity_id)
+    if not entity:
+        raise HTTPException(404, "Không tìm thấy sự kiện")
+    etype = entity.get("type", "") if isinstance(entity, dict) else ""
+    if etype != "event":
+        raise HTTPException(400, "Chỉ có thể RSVP cho sự kiện (event)")
     ph = db._ph
     uid = str(user["id"])
     def _query():

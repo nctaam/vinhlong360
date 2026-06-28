@@ -1575,3 +1575,97 @@ class TestPhase10PaginationConsistency:
         auth_src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
         block = self._func_block(auth_src, "delete_account")
         assert '"success"' in block
+
+
+class TestPhase11SessionLimit:
+    """Phase 11: max concurrent session enforcement."""
+
+    def test_verify_otp_enforces_session_limit(self):
+        """verify_otp evicts oldest session when limit reached."""
+        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        idx = src.find("def verify_otp")
+        end = src.find("\nasync def ", idx + 1)
+        block = src[idx:end] if end != -1 else src[idx:idx + 5000]
+        assert "MAX_CONCURRENT_SESSIONS" in block
+        assert "ORDER BY created_at ASC LIMIT 1" in block
+
+    def test_login_password_enforces_session_limit(self):
+        """login_password evicts oldest session when limit reached."""
+        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        idx = src.find("def login_password")
+        end = src.find("\nasync def ", idx + 1)
+        block = src[idx:end] if end != -1 else src[idx:idx + 5000]
+        assert "MAX_CONCURRENT_SESSIONS" in block
+        assert "ORDER BY created_at ASC LIMIT 1" in block
+
+
+class TestPhase11BlockFollow:
+    """Phase 11: block prevents follow."""
+
+    def test_follow_checks_block_bidirectional(self):
+        """toggle_follow checks blocks table before allowing follow."""
+        src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
+        block = src[src.find("def toggle_follow"):src.find("def toggle_follow") + 3000]
+        assert "blocks" in block.lower()
+        assert "blocker_id" in block
+        assert "blocked_id" in block
+        assert "403" in block
+
+
+class TestPhase11SelfRepost:
+    """Phase 11: prevent self-repost."""
+
+    def test_repost_blocks_own_post(self):
+        """create_post rejects reposting own post."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        idx = src.find("def create_post")
+        block = src[idx:idx + 5000]
+        assert "Không thể đăng lại bài viết của chính mình" in block
+
+
+class TestPhase11RsvpValidation:
+    """Phase 11: RSVP entity type validation."""
+
+    def test_rsvp_checks_entity_type(self):
+        """toggle_rsvp validates entity is of type 'event'."""
+        src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
+        block = src[src.find("def toggle_rsvp"):src.find("def toggle_rsvp") + 2000]
+        assert "get_entity" in block
+        assert '"event"' in block
+        assert "404" in block
+
+
+class TestPhase11ReportRateLimit:
+    """Phase 11: rate limit on report-ugc."""
+
+    def test_report_has_rate_limit(self):
+        """create_report calls check_rate before processing."""
+        src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
+        block = src[src.find("def create_report"):src.find("def create_report") + 1000]
+        assert "check_rate" in block
+        assert "report:" in block
+
+
+class TestPhase11NotificationCleanup:
+    """Phase 11: notification cleanup scheduler task."""
+
+    def test_notification_cleanup_task_exists(self):
+        """Scheduler has notification-cleanup task."""
+        import scheduler
+        names = [t.name for t in scheduler.TASKS]
+        assert "notification-cleanup" in names
+
+    def test_notification_cleanup_prunes_old(self):
+        """task_notification_cleanup deletes old notifications."""
+        import inspect
+        import scheduler
+        src = inspect.getsource(scheduler.task_notification_cleanup)
+        assert "90 days" in src
+        assert "30 days" in src
+
+    def test_notification_cleanup_prunes_read(self):
+        """task_notification_cleanup prunes read notifications after 30 days."""
+        import inspect
+        import scheduler
+        src = inspect.getsource(scheduler.task_notification_cleanup)
+        assert "is_read = TRUE" in src

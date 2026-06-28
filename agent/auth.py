@@ -386,10 +386,20 @@ async def verify_otp(body: OTPVerify, request: Request):
 
     def _create_session():
         with db._conn() as conn:
+            from auth_middleware import MAX_CONCURRENT_SESSIONS
+            uid = str(user["id"])
+            cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM user_sessions WHERE user_id::text = {db._ph} AND expires_at > NOW()", (uid,))
+            if cnt and int(db._row_to_dict(cnt)["c"]) >= MAX_CONCURRENT_SESSIONS:
+                db._execute(conn, f"""
+                    DELETE FROM user_sessions WHERE id IN (
+                        SELECT id FROM user_sessions WHERE user_id::text = {db._ph}
+                        ORDER BY created_at ASC LIMIT 1
+                    )
+                """, (uid,))
             db._execute(conn, f"""
                 INSERT INTO user_sessions (user_id, token, user_agent, ip_address, expires_at)
                 VALUES ({db._ph}::uuid, {db._ph}, {db._ph}, {db._ph}, {db._ph})
-            """, (str(user["id"]), _hash_token(token), ua, ip, expires.isoformat()))
+            """, (uid, _hash_token(token), ua, ip, expires.isoformat()))
     await asyncio.to_thread(_create_session)
 
     await asyncio.to_thread(_log_login, phone, "otp", True, request, str(user["id"]))
@@ -472,10 +482,20 @@ async def login_password(body: PasswordLogin, request: Request):
 
     def _create_session():
         with db._conn() as conn:
+            from auth_middleware import MAX_CONCURRENT_SESSIONS
+            uid = str(user["id"])
+            cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM user_sessions WHERE user_id::text = {db._ph} AND expires_at > NOW()", (uid,))
+            if cnt and int(db._row_to_dict(cnt)["c"]) >= MAX_CONCURRENT_SESSIONS:
+                db._execute(conn, f"""
+                    DELETE FROM user_sessions WHERE id IN (
+                        SELECT id FROM user_sessions WHERE user_id::text = {db._ph}
+                        ORDER BY created_at ASC LIMIT 1
+                    )
+                """, (uid,))
             db._execute(conn, f"""
                 INSERT INTO user_sessions (user_id, token, user_agent, ip_address, expires_at)
                 VALUES ({db._ph}::uuid, {db._ph}, {db._ph}, {db._ph}, {db._ph})
-            """, (str(user["id"]), _hash_token(token), ua, ip, expires.isoformat()))
+            """, (uid, _hash_token(token), ua, ip, expires.isoformat()))
     await asyncio.to_thread(_create_session)
 
     await asyncio.to_thread(_log_login, phone, "password", True, request, str(user["id"]))
