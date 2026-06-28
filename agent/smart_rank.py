@@ -38,7 +38,7 @@ def get_popularity(entity_id: str) -> int:
     with _lock:
         if time.time() - _last_load > RELOAD_INTERVAL:
             _load_popularity()
-    return _popularity.get(entity_id, 0)
+        return _popularity.get(entity_id, 0)
 
 
 def popularity_score(entity_id: str, max_boost: float = 3.0) -> float:

@@ -361,7 +361,9 @@ def apply_candidates(candidate_ids: list[str] | None = None, *, dry_run: bool = 
         # nên KHÔNG xoá edit admin khác. Rollback dùng `before` trong history.
         changed_ids = {str(c["entity_id"]) for c in changes}
         for eid in changed_ids:
-            db.upsert_entity(by_id[eid])
+            entity = by_id.get(eid)
+            if entity:
+                db.upsert_entity(entity)
         _append_apply_history({
             "record_type": "apply",
             "batch_id": batch_id,

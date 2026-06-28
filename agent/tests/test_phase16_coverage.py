@@ -1272,3 +1272,31 @@ class TestMediumFixesBatch2:
         assert idx > 0
         block = src[idx:idx+400]
         assert "_MAX_VALUE_SIZE" in block, "upsert must check _MAX_VALUE_SIZE"
+
+    def test_smart_rank_get_popularity_holds_lock(self):
+        """get_popularity must return inside the lock to prevent race condition."""
+        src = (Path(__file__).resolve().parent.parent / "smart_rank.py").read_text(encoding="utf-8")
+        idx = src.find("def get_popularity(")
+        assert idx > 0
+        block = src[idx:idx+300]
+        lines = block.split("\n")
+        return_line = None
+        lock_indent = None
+        for line in lines:
+            if "with _lock:" in line:
+                lock_indent = len(line) - len(line.lstrip())
+            if "return _popularity" in line and lock_indent is not None:
+                return_indent = len(line) - len(line.lstrip())
+                assert return_indent > lock_indent, \
+                    "return must be INSIDE the with _lock block (indented deeper)"
+                return_line = line
+                break
+        assert return_line, "get_popularity must return _popularity.get inside lock"
+
+    def test_data_quality_apply_safe_get(self):
+        """data_quality apply_candidates must use .get() to avoid KeyError on deleted entities."""
+        src = (Path(__file__).resolve().parent.parent / "data_quality.py").read_text(encoding="utf-8")
+        idx = src.find("changed_ids")
+        assert idx > 0
+        block = src[idx:idx+200]
+        assert "by_id.get(" in block, "Must use by_id.get() not by_id[] to avoid KeyError"
