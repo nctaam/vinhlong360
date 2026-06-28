@@ -696,7 +696,7 @@ async def search_posts(
     await asyncio.to_thread(_enrich_user_status, posts, user)
 
     total_c = db._row_to_dict(total)["c"] if total else 0
-    return {"posts": posts, "q": q, "page": page, "total": total_c,
+    return {"posts": posts, "q": _strip_html_tags(q), "page": page, "total": total_c,
             "has_more": offset + limit < total_c}
 
 
@@ -745,7 +745,7 @@ async def search_users(
                 "avatar_url": d.get("avatar_url"), "username": d.get("username"),
                 "post_count": int(d.get("post_count") or 0),
             })
-    return {"users": users, "q": q, "page": page, "total": len(users), "has_more": len(users) == limit}
+    return {"users": users, "q": _strip_html_tags(q), "page": page, "total": len(users), "has_more": len(users) == limit}
 
 
 @router.get("/community/stats")

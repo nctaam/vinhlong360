@@ -2118,3 +2118,25 @@ class TestAdminBugFixes:
         block = src[idx:idx+800]
         assert "_row_to_dict" in block, \
             "set_user_role must convert fetchone result with _row_to_dict"
+
+    def test_search_api_strips_html_from_q(self):
+        """Search API must strip HTML tags from returned q (XSS defense-in-depth)."""
+        src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
+        idx = src.find("async def search(")
+        assert idx != -1
+        block = src[idx:idx+800]
+        assert "re.sub" in block or "_strip_html" in block or "html.escape" in block, \
+            "Search endpoint must sanitize q before returning"
+
+    def test_social_search_strips_html_from_q(self):
+        """Social search endpoints must strip HTML tags from returned q."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        for fn in ["async def search_posts", "async def search_users"]:
+            idx = src.find(fn)
+            assert idx != -1, f"{fn} not found"
+            end_idx = src.find("\n@router.", idx + 1)
+            if end_idx == -1:
+                end_idx = idx + 3000
+            block = src[idx:end_idx]
+            assert "_strip_html_tags(q)" in block, \
+                f"{fn} must pass q through _strip_html_tags before returning"

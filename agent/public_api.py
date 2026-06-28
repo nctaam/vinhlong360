@@ -370,7 +370,8 @@ async def search(
     results = await asyncio.to_thread(db.search_entities, q=q, entity_type=type, area=area, limit=limit)
     _enrich_place(results)
     total = await asyncio.to_thread(db.count_entities_filtered, entity_type=type, area=area, q=q)
-    return {"q": q, "total": total, "results": results}
+    safe_q = re.sub(r"<[^>]+>", "", q)
+    return {"q": safe_q, "total": total, "results": results}
 
 
 @router.get("/stats")
