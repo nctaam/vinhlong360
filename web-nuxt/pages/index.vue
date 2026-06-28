@@ -52,8 +52,8 @@
       <SkeletonGrid :count="3" />
     </section>
 
-    <!-- 1b. Khám phá nhanh — compact category grid -->
-    <section v-if="hasHomeContent" class="block block-compact reveal">
+    <!-- 1b. Khám phá nhanh — compact category grid (always visible for navigation) -->
+    <section v-if="!homePending" class="block block-compact reveal">
       <nav class="cat-grid" aria-label="Khám phá theo chủ đề">
         <NuxtLink v-for="cat in categoryLinks" :key="cat.to" :to="cat.to" class="cat-tile" :class="`cat-tile-${cat.accent}`">
           <span class="cat-emoji" aria-hidden="true">{{ cat.emoji }}</span>
@@ -444,7 +444,7 @@ const statsItems = computed(() => {
   return items
 })
 
-const hasHomeContent = computed(() => !!(upcomingEvents.value.length || seasonal.value.length || itineraries.value.length || spotlight.value || topDishes.value.length))
+const hasHomeContent = computed(() => !!(upcomingEvents.value.length || seasonal.value.length || itineraries.value.length || spotlight.value || topDishes.value.length || trending.value.length || communityPosts.value.length))
 const homeFailed = computed(() => !homePending.value && (!!homeError.value || (!!homeData.value && !hasHomeContent.value)))
 const homeLoadingSkeleton = computed(() => !hasHomeContent.value && !homeFailed.value)
 onMounted(() => { if (homeError.value || !hasHomeContent.value) refreshHome() })
