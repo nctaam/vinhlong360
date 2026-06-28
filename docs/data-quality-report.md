@@ -104,7 +104,7 @@ Tool: `python scripts/validate_data.py`
 | Related_to (isolated) | 67 entities without related_to | **16** (142 rels added) |
 | Total relationships | 11537 | **12441** (+904) |
 | Short descriptions (<80 chars) | 17 | **0** (all enriched to 80+ chars) |
-| Summary == Description | 581 identical pairs | **Differentiated** (121 single-sentence remain) |
+| Summary == Description | 581 identical pairs | **174 remain** (all single-sentence, can't differentiate) |
 | Structured data pass 2 (desc) | 464 (Mở cửa/Nên mua/Đặc sản/Thời lượng/Chi phí/Giá phòng/etc.) | **0** |
 | Orphan price fragments | 207 (broken "000–X đ/unit" remnants) | **0** |
 | Structured data in summaries | 278 (same patterns as descriptions) | **0** |
@@ -112,6 +112,9 @@ Tool: `python scripts/validate_data.py`
 | Address-only descriptions | 20 entities (shop/market/supermarket) | **Rewritten** (proper prose) |
 | Wrong province in BT/TV | 159 desc + 143 summ saying "tỉnh Vĩnh Long" | **0** (corrected to actual province) |
 | Summary length inversions | 100 summaries > descriptions | **0** (regenerated) |
+| Summary/desc differentiation | 349 desc==summary (185 multi-sentence) | **169 differentiated** (174 single-sentence remain) |
+| Vague "được nhắc đến" | 20 template-like descriptions | **0** (all rewritten with factual prose) |
+| Duplicate descriptions | 0 | **0** (verified clean) |
 
 ## Errors
 
@@ -125,7 +128,7 @@ None.
 | `coordinate_clusters` | 189 clusters (1366 entities) | Ward/province centroids; needs real geocoding data |
 | `itinerary_area_mismatch` | 59 | Multi-province itineraries legitimately cross areas |
 | `rel_type_singletons` | 30 | Rare but valid relationship combos |
-| `summary_short` | 1 | 1 remaining at 46 chars — acceptable content |
+| `summary_short` | 2 | 2 remaining at 46 chars — acceptable content |
 | `missing_location` | 6 | 6 non-place entities without coordinates |
 | `missing_place_id` | 1 | ben-xe-mien-tay-hcm (HCM, outside VL+BT+TV scope) |
 | `data_js_unknown_shape` | 1 | web/data.js format — cosmetic |
