@@ -1808,3 +1808,23 @@ class TestPhase11AdminHardening:
         block = src[max(0, idx - 200):idx + 1500]
         assert "_BACKUP_COOLDOWN" in block
         assert "429" in block
+
+
+class TestPhase11CommentCap:
+    """Phase 11: per-post comment cap."""
+
+    def test_create_comment_has_per_post_cap(self):
+        """create_comment enforces MAX_COMMENTS_PER_POST."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        idx = src.find("def create_comment")
+        end = src.find("\nasync def ", idx + 1)
+        block = src[idx:end] if end != -1 else src[idx:idx + 4000]
+        assert "MAX_COMMENTS_PER_POST" in block
+        assert "đạt giới hạn bình luận" in block
+
+    def test_comment_cap_value_reasonable(self):
+        """MAX_COMMENTS_PER_POST is set to 500."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        idx = src.find("def create_comment")
+        block = src[idx:idx + 500]
+        assert "500" in block

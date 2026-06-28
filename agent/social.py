@@ -1071,12 +1071,16 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
     status = mod_result["status"]
     mentions = _clean_mentions(body.mentions)
 
+    MAX_COMMENTS_PER_POST = 500
     ph = db._ph
     def _query():
         with db._conn() as conn:
             post = db._fetchone(conn, f"SELECT id FROM posts WHERE id::text = {ph}", (post_id,))
             if not post:
                 raise HTTPException(404, "Bài viết không tồn tại")
+            cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM comments WHERE post_id::text = {ph}", (post_id,))
+            if cnt and int(db._row_to_dict(cnt)["c"]) >= MAX_COMMENTS_PER_POST:
+                raise HTTPException(400, "Bài viết đã đạt giới hạn bình luận")
             row = db._fetchone(conn, f"""
                 INSERT INTO comments (post_id, user_id, parent_id, content, moderation_status, mentions)
                 VALUES ({ph}::uuid, {ph}::uuid, {ph}::uuid, {ph}, {ph}, {ph}::jsonb)
