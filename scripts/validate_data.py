@@ -34,7 +34,7 @@ from urllib.parse import urlparse  # noqa: E402
 
 import re  # noqa: E402
 
-VN_PHONE = re.compile(r"^(\+84|0)\d{9,10}$")
+VN_PHONE = re.compile(r"^(\+84|0)\d{9,10}$|^1(800|900)\d{4,6}$|^11[345]$")
 
 BOILERPLATE_SUMMARY = re.compile(
     r"không\s*(có\s*)?đủ thông tin|404|không tìm thấy thông tin|no information|not found",
