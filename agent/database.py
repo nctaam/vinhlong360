@@ -250,6 +250,8 @@ class Database:
                         "CREATE INDEX IF NOT EXISTS idx_posts_hashtags ON posts USING GIN(hashtags)",
                         "CREATE INDEX IF NOT EXISTS idx_user_sessions_token ON user_sessions(token)",
                         "CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON user_sessions(user_id, expires_at DESC)",
+                        "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(lower(username)) WHERE username IS NOT NULL",
+                        "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_phone ON users(phone_number) WHERE phone_number IS NOT NULL",
                     ]:
                         try:
                             cur.execute(idx_sql)
