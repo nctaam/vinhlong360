@@ -1106,8 +1106,8 @@ class FeedbackRequest(BaseModel):
 
 class CheckpointSaveRequest(BaseModel):
     session_id: str = Field(default="", max_length=64)
-    messages: list[dict] = Field(default=[])
-    tools_used: list[str] = Field(default=[])
+    messages: list[dict] = Field(default=[], max_length=200)
+    tools_used: list[str] = Field(default=[], max_length=50)
     agent_state: dict = Field(default={})
     metadata: dict = Field(default={})
 
@@ -1122,9 +1122,9 @@ class JudgeEvaluateRequest(BaseModel):
 class DynamicAgentCreateRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     description: str = Field(default="", max_length=500)
-    trigger_patterns: list[str] = Field(default=[])
+    trigger_patterns: list[str] = Field(default=[], max_length=20)
     system_prompt_addon: str = Field(default="", max_length=2000)
-    tool_whitelist: list[str] | None = None
+    tool_whitelist: list[str] | None = Field(None, max_length=50)
 
 class SemanticCacheInvalidateRequest(BaseModel):
     entity_id: str | None = Field(default=None, max_length=64)

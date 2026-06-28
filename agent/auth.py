@@ -856,6 +856,13 @@ class PrivacyUpdate(BaseModel):
     show_activity: bool | None = None
     show_saved: bool | None = None
 
+    @field_validator("profile_visibility")
+    @classmethod
+    def validate_visibility(cls, v):
+        if v is not None and v not in ("public", "followers", "private"):
+            raise ValueError("profile_visibility phải là: public, followers, private")
+        return v
+
 
 @router.get("/privacy")
 async def get_privacy(request: Request):
