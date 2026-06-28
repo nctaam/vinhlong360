@@ -818,6 +818,25 @@ class TestSecurityPosture:
             block = src[idx:end]
             assert "_invalidate_social_caches()" in block, f"{fn} missing cache invalidation"
 
+    def test_validate_path_id_has_param_name(self):
+        """All validate_path_id calls must include the param_name argument."""
+        import re
+        for module in ("social", "admin", "notifications", "public_api", "saved", "visits", "plans"):
+            path = Path(__file__).resolve().parent.parent / f"{module}.py"
+            if not path.exists():
+                continue
+            src = path.read_text(encoding="utf-8")
+            bare = re.findall(r'validate_path_id\(\w+\)(?!,)', src)
+            assert not bare, f"{module}.py has validate_path_id without param_name: {bare}"
+
+    def test_no_bare_404_without_detail(self):
+        """All HTTPException(404) should include a detail message."""
+        for module in ("social", "admin", "notifications", "public_api"):
+            src = (Path(__file__).resolve().parent.parent / f"{module}.py").read_text(encoding="utf-8")
+            for line_no, line in enumerate(src.split("\n"), 1):
+                if "raise HTTPException(404)" in line and "404," not in line:
+                    assert False, f"{module}.py:{line_no} bare HTTPException(404) without detail"
+
     def test_admin_silent_passes_have_logging(self):
         """Dashboard/stats silent except blocks should log for debuggability."""
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")

@@ -717,7 +717,7 @@ async def data_quality_history(limit: int = Query(20, ge=1, le=200)):
 
 @router.post("/data-quality/rollback/{batch_id}")
 async def data_quality_rollback(batch_id: str):
-    validate_path_id(batch_id)
+    validate_path_id(batch_id, "batch_id")
     def _query():
         try:
             result = data_quality.rollback_apply(batch_id)
@@ -791,7 +791,7 @@ async def list_image_suggestions(
 @router.get("/image-suggestions/{suggestion_id}")
 async def get_image_suggestion(suggestion_id: str):
     """Chi tiết 1 ứng viên ảnh (kèm tên entity để review)."""
-    validate_path_id(suggestion_id)
+    validate_path_id(suggestion_id, "suggestion_id")
     def _query():
         s = _imgq.get_suggestion(suggestion_id)
         if not s:
@@ -833,7 +833,7 @@ def _assert_public_url(url: str) -> None:
 async def approve_image_suggestion(suggestion_id: str):
     """Duyệt 1 ứng viên: tải ảnh → WebP 3 cỡ → R2 → gắn vào entity.images + lưu
     license/author/source vào attributes.image_credits (B6). Chỉ xử lý khi đang 'pending'."""
-    validate_path_id(suggestion_id)
+    validate_path_id(suggestion_id, "suggestion_id")
     from fastapi.concurrency import run_in_threadpool
     from storage import storage, MAX_IMAGE_SIZE
 
@@ -911,7 +911,7 @@ async def approve_image_suggestion(suggestion_id: str):
 @router.post("/image-suggestions/{suggestion_id}/reject")
 async def reject_image_suggestion(suggestion_id: str, body: RejectSuggestionRequest = RejectSuggestionRequest()):
     """Từ chối 1 ứng viên (ghi lý do). Không tải/không upload gì."""
-    validate_path_id(suggestion_id)
+    validate_path_id(suggestion_id, "suggestion_id")
     def _query():
         s = _imgq.get_suggestion(suggestion_id)
         if not s:
@@ -1290,7 +1290,7 @@ async def list_provisional_entities():
 @router.post("/provisional/{entity_id}/approve")
 async def approve_provisional(entity_id: str):
     """Duyệt 1 entity provisional → verified (tin cậy)."""
-    validate_path_id(entity_id)
+    validate_path_id(entity_id, "entity_id")
     def _query():
         import kb_curation
         result = kb_curation.promote(entity_id)
@@ -1303,7 +1303,7 @@ async def approve_provisional(entity_id: str):
 @router.post("/provisional/{entity_id}/reject")
 async def reject_provisional(entity_id: str):
     """Từ chối + xóa 1 entity provisional khỏi KB."""
-    validate_path_id(entity_id)
+    validate_path_id(entity_id, "entity_id")
     def _query():
         import kb_curation
         result = kb_curation.reject(entity_id)

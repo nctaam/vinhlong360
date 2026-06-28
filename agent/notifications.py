@@ -340,7 +340,7 @@ async def toggle_follow(target_type: str, target_id: str, user=Depends(require_u
 
 @router.get("/follow/check/{target_type}/{target_id}")
 async def check_follow(target_type: str, target_id: str, user=Depends(require_user)):
-    validate_path_id(target_id)
+    validate_path_id(target_id, "target_id")
     _require_pg()
     if target_type not in ("user", "entity"):
         raise HTTPException(400, "Loại follow: user hoặc entity")
@@ -402,7 +402,7 @@ async def get_following(
 
 @router.get("/followers/count/{target_type}/{target_id}")
 async def get_follower_count(target_type: str, target_id: str):
-    validate_path_id(target_id)
+    validate_path_id(target_id, "target_id")
     def _query():
         ph = db._ph
         with db._conn() as conn:
@@ -537,7 +537,7 @@ def _format_notif(row: dict) -> dict:
 
 @router.post("/events/{entity_id}/rsvp")
 async def toggle_rsvp(entity_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
-    validate_path_id(entity_id)
+    validate_path_id(entity_id, "entity_id")
     check_rate(f"rsvp:{user['id']}", 30, 300, "Thao tác RSVP quá nhanh. Vui lòng thử lại sau.")
     entity = await asyncio.to_thread(db.get_entity, entity_id)
     if not entity:
@@ -564,7 +564,7 @@ async def toggle_rsvp(entity_id: str, user=Depends(require_user), _csrf=Depends(
 
 @router.get("/events/{entity_id}/rsvp")
 async def get_rsvp(entity_id: str, request: Request = None):
-    validate_path_id(entity_id)
+    validate_path_id(entity_id, "entity_id")
     u = await get_current_user(request) if request else None
     uid = str(u["id"]) if u else None
     def _query():

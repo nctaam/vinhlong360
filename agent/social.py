@@ -418,7 +418,7 @@ async def delete_post(post_id: str, user=Depends(require_user), _csrf=Depends(re
         with db._conn() as conn:
             row = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
             if not row:
-                raise HTTPException(404)
+                raise HTTPException(404, "Bài viết không tồn tại")
             if str(row["user_id"]) != str(user["id"]) and user.get("role") not in ("admin", "moderator"):
                 raise HTTPException(403, "Không có quyền xóa bài viết này")
             db._execute(conn, f"DELETE FROM posts WHERE id::text = {ph}", (post_id,))

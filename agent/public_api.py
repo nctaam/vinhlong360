@@ -197,7 +197,7 @@ async def get_entity_relationships(
     type: Optional[str] = None,
     include_near: bool = True,
 ):
-    validate_path_id(entity_id)
+    validate_path_id(entity_id, "entity_id")
     def _query():
         e = db.get_entity(entity_id)
         if not e:
@@ -219,7 +219,7 @@ async def get_entity(
     response: Response,
     relationship_limit: int = Query(DEFAULT_RELATIONSHIP_LIMIT, ge=0, le=100),
 ):
-    validate_path_id(entity_id)
+    validate_path_id(entity_id, "entity_id")
     response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
     cache_key = f"{entity_id}:{relationship_limit}"
     now = _time.time()
@@ -288,7 +288,7 @@ async def place_overview(place_id: str):
 
     Gom theo placeId trong 1 lượt gọi. facilities rỗng đến khi có dữ liệu thật (Track-H 13.6).
     """
-    validate_path_id(place_id)
+    validate_path_id(place_id, "place_id")
     def _query():
         p = db.get_entity(place_id)
         if not p or p.get("type") != "place":
@@ -330,7 +330,7 @@ async def list_itineraries(area: Optional[str] = None):
 
 @router.get("/itineraries/{itin_id}")
 async def get_itinerary(itin_id: str):
-    validate_path_id(itin_id)
+    validate_path_id(itin_id, "itin_id")
     def _query():
         it = db.get_itinerary(itin_id)
         if not it:
