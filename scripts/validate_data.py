@@ -136,10 +136,10 @@ def haversine_km(a: list[float] | None, b: list[float] | None) -> float | None:
 
 SEO_REQUIRED: dict[str, list[str]] = {
     "restaurant": ["specialty", "price_range", "phone", "hours"],
-    "dish": ["specialty", "price_range"],
+    "dish": ["specialty", "price_range", "origin"],
     "cafe": ["specialty", "price_range", "phone", "hours"],
     "accommodation": ["star_rating", "price_range", "phone"],
-    "product": ["price", "ocop"],
+    "product": ["price", "price_range", "ocop", "ocop_star", "ocop_certified", "brand"],
     "event": ["date_start", "startDate"],
     "attraction": ["admission"],
     "experience": ["admission"],
