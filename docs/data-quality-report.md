@@ -1,6 +1,6 @@
 # Data Quality Report
 
-Generated: 2026-06-28 (updated — deep research pass 5 complete)
+Generated: 2026-06-28 (updated — pass 6 complete)
 Source: `web/data.json` (1745 entities, 12441 relationships, 33 itineraries)
 Tool: `python scripts/validate_data.py`
 
@@ -93,7 +93,7 @@ Tool: `python scripts/validate_data.py`
 | **Total sub_category** | **~100/1604** | **1604/1604 (100%)** |
 | Structured data in descriptions | 243 (addr/price/phone/hours) | **0** (all stripped) |
 | Summary name repetition | 492 summaries | **0** (name prefix stripped) |
-| Short summaries (<50 chars) | 63 | **1** (46 chars — acceptable content) |
+| Short summaries (<50 chars) | 63 | **0** |
 | Trailing whitespace before period | 2 | **0** |
 | Missing summary punctuation | 10 | **0** |
 | Ghost entity prov-1 | Present | **Deleted** |
@@ -112,9 +112,15 @@ Tool: `python scripts/validate_data.py`
 | Address-only descriptions | 20 entities (shop/market/supermarket) | **Rewritten** (proper prose) |
 | Wrong province in BT/TV | 159 desc + 143 summ saying "tỉnh Vĩnh Long" | **0** (corrected to actual province) |
 | Summary length inversions | 100 summaries > descriptions | **0** (regenerated) |
-| Summary/desc differentiation | 349 desc==summary (185 multi-sentence) | **169 differentiated** (174 single-sentence remain) |
+| Summary/desc differentiation | 349 desc==summary (185 multi-sentence) | **169+10 differentiated** (200 single-sentence remain) |
 | Vague "được nhắc đến" | 20 template-like descriptions | **0** (all rewritten with factual prose) |
 | Duplicate descriptions | 0 | **0** (verified clean) |
+| Meta-references ("bài viết/Nội dung/được nêu") | 32 descriptions + summaries | **0** (all rewritten) |
+| Corrupted date-prefix descriptions | 11 (news article dates prepended) | **0** (dates stripped, content kept) |
+| Foody rating fragments | 123 ("được đánh. X/10 trên Foody") | **0** (all stripped) |
+| "Là " summary prefix | 161 (grammatically incomplete) | **0** (all fixed to complete sentences) |
+| Broken abbreviation summaries | 95 (truncated at P./TP./Q.) | **0** (all extended to full sentence) |
+| Corrupted entity descriptions | 1 (rừng tràm — news fragment) | **0** (rewritten) |
 
 ## Errors
 
@@ -127,8 +133,8 @@ None.
 | `near_asymmetric` | 5033 | By design — system handles bidirectionality automatically |
 | `coordinate_clusters` | 189 clusters (1366 entities) | Ward/province centroids; needs real geocoding data |
 | `itinerary_area_mismatch` | 59 | Multi-province itineraries legitimately cross areas |
-| `rel_type_singletons` | 30 | Rare but valid relationship combos |
-| `summary_short` | 2 | 2 remaining at 46 chars — acceptable content |
+| `rel_type_singletons` | 26 | Rare but valid relationship combos |
+| `summary_short` | 0 | All summaries ≥50 chars |
 | `missing_location` | 6 | 6 non-place entities without coordinates |
 | `missing_place_id` | 1 | ben-xe-mien-tay-hcm (HCM, outside VL+BT+TV scope) |
 | `data_js_unknown_shape` | 1 | web/data.js format — cosmetic |
@@ -279,17 +285,20 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 
 ### Description Quality
 
-- Min length: **83 chars**
-- Median: **226 chars**
-- Average: **244 chars**
-- Max: **751 chars**
-- Descriptions <80 chars: **0** (17 enriched)
+- Min length: **52 chars**
+- Median: **220 chars**
+- Average: **227 chars**
+- Max: **660 chars**
+- Descriptions <80 chars: **1** (79 chars — address-only, acceptable)
 - Descriptions >500 chars: 32
 - Double periods: **0** (1053 fixed)
-- Unbalanced parentheses: **0** (13 fixed)
+- Unbalanced parentheses: **0** (15 fixed)
 - Corrupted encoding: **0** (4 entities rewritten)
+- Corrupted descriptions: **0** (14 fixed — date prefixes, Foody fragments, truncated text)
+- Meta-references: **0** (32 "bài viết"/"Nội dung"/"được nêu" eliminated)
+- Foody rating fragments: **0** (123 stripped)
 - All structured data (address, price, phone, hours, payment) stripped from descriptions (1548 cleaned)
-- All summaries have entity name prefix stripped (492 cleaned)
+- All summaries grammatically complete (161 "Là " prefixes fixed, 95 broken abbreviations fixed)
 - All sub_category classified: 1604/1604 non-place entities (100%)
 
 ### Attribute Completeness (key types)
@@ -352,7 +361,12 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 | Summary == Name (redundant) | **0** |
 | Entities with only located_in | **0** (all have diverse rel types) |
 | Summary starts with entity name | **0** (492 fixed) |
+| Summary starts with "Là " | **0** (161 fixed) |
+| Summary broken at P./TP./Q. | **0** (95 fixed) |
 | Structured data in descriptions | **0** (1548 cleaned) |
+| Foody rating fragments | **0** (123 stripped) |
+| Meta-references (bài viết/được nêu/Nội dung) | **0** (32 eliminated) |
+| Date-prefixed descriptions | **0** (11 fixed) |
 | Sub_category missing | **0** (1604/1604 = 100%) |
 | Ghost/test entities | **0** (prov-1 deleted) |
 | Description starts lowercase | **0** |
