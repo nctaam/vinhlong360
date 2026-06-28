@@ -1,6 +1,6 @@
 # Data Quality Report
 
-Generated: 2026-06-28 (updated — produced_in + phone + far_near fix)
+Generated: 2026-06-28 (final — all actionable fixes applied)
 Source: `web/data.json` (1746 entities, 11545 relationships, 33 itineraries)
 Tool: `python scripts/validate_data.py`
 
@@ -54,6 +54,9 @@ Tool: `python scripts/validate_data.py`
 | produced_in coverage | 137/218 products | **153/218 products** (+16 curated) |
 | Invalid phone numbers | 9 masked/incomplete | **0** (removed) |
 | Far near rels (>50km) | 62 centroid artifacts | **0** (removed) |
+| Description repeats | 48 had duplicated text | **0** (deduped) |
+| Itinerary stop field | 136 stops with only `id` | **All 178 have `entityId`** |
+| coords_without_address | 1 | **0** (address added) |
 
 ## Errors
 
@@ -113,18 +116,18 @@ Deep geographic analysis detected **159 entities** whose coordinates fell clearl
 
 | Type | Coverage | Key attributes |
 |------|----------|----------------|
-| dish | **100%** (120/120) | specialty=114, price_range=76, origin=120 |
-| cafe | **100%** (38/38) | specialty=38 |
-| person | **100%** (35/35) | role=35 |
-| nature | **100%** (125/125) | admission=125, hours=10 |
-| product | **100%** (218/218) | ocop_star=84, price_range=64, ocop_certified=48, brand=45, ocop=24 |
-| attraction | **100%** (318/318) | admission=256, hours=215, specialty=109, price_range=138 |
+| accommodation | **100%** (164/164) | price_range=120, phone=89, star_rating=56 |
+| attraction | **100%** (205/205) | admission=194, hours=102, price_range=25 |
+| cafe | **100%** (55/55) | specialty=55, price_range=17, hours=17 |
 | craft_village | **100%** (84/84) | specialty=84, phone=1 |
+| dish | **100%** (120/120) | specialty=114, price_range=76, origin=120 |
+| drink | **100%** (1/1) | price_range=1 |
 | event | **100%** (67/67) | date_start=67 |
 | experience | **100%** (92/92) | admission=89, price_range=50, hours=10 |
-| drink | **100%** (1/1) | price_range=1 |
-| accommodation | **100%** (164/164) | phone=97, price_range=120, star_rating=56 |
-| restaurant | **100%** (94/94) | specialty=94, price_range=10, hours=7, phone=1 |
+| nature | **100%** (125/125) | admission=125, hours=10 |
+| person | **100%** (35/35) | role=35 |
+| product | **100%** (218/218) | ocop_star=84, price_range=64, ocop_certified=48, brand=45 |
+| restaurant | **100%** (190/190) | specialty=190, price_range=106, hours=103, phone=1 |
 
 **All 12 SEO entity types are at 100% coverage.** No entities are missing all required SEO attributes.
 
@@ -177,7 +180,7 @@ Note: Confidence formula now correctly differentiates approximate coordinates (+
 - 33 total itineraries, 185 stops
 - **174/185 stops** (94%) linked to existing entities
 - 11 unlinked stops are generic activities (departure, pool, dinner) without corresponding entities — legitimate
-- 21 itineraries use stop `id` field, 12 newer ones use `entityId` field
+- All stops now have `entityId` field (136 normalized from `id`-only)
 
 ### Source Data Origins
 
@@ -208,6 +211,34 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 |-----------|-----------|--------|
 | Price range "other" (30) | "Trung bình", "Cao cấp", "Bình dân" | Qualitative tiers, not numeric ranges |
 | Hours "other" (20) | "Thường tham quan ban ngày" | Places without fixed hours |
+
+### Description Quality
+
+- Min length: **92 chars** (1 entity)
+- Median: **274 chars**
+- Average: **295 chars**
+- Max: **789 chars**
+- Descriptions <200 chars: 320 (mostly short entity types like craft_village, dish)
+- 48 descriptions had duplicated text segments → all deduplicated
+
+### Attribute Completeness (key types)
+
+| Type | Attribute | Coverage | Note |
+|------|-----------|----------|------|
+| restaurant | specialty | 190/190 (100%) | |
+| restaurant | price_range | 106/190 (56%) | Needs external data |
+| restaurant | hours | 103/190 (54%) | Needs external data |
+| restaurant | phone | 1/190 (1%) | Needs external data |
+| cafe | specialty | 55/55 (100%) | |
+| cafe | hours | 17/55 (31%) | Needs external data |
+| accommodation | price_range | 120/164 (73%) | |
+| accommodation | phone | 89/164 (54%) | |
+| accommodation | star_rating | 56/164 (34%) | Needs external data |
+
+### Connectivity
+
+- Only **3 entities** with ≤2 relationships (excellent graph density)
+- Average 13.2 relationships per entity (counting both directions)
 
 ## Score Gap Analysis
 
