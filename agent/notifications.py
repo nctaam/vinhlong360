@@ -255,8 +255,10 @@ def create_notification(user_id: str, notif_type: str, title: str,
     with db._conn() as conn:
         if actor_id:
             blocked = db._fetchone(conn, f"""
-                SELECT 1 FROM blocks WHERE blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid
-            """, (user_id, actor_id))
+                SELECT 1 FROM blocks
+                WHERE (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+                   OR (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+            """, (user_id, actor_id, actor_id, user_id))
             if blocked:
                 return
         if not _user_wants_notif(conn, user_id, notif_type):
@@ -315,7 +317,7 @@ async def toggle_follow(target_type: str, target_id: str, user=Depends(require_u
             create_notification(
                 target_id, "follow",
                 f"{user.get('display_name', 'Ai đó')} đã theo dõi bạn",
-                ref_type="user", ref_id=str(user["id"]),
+                ref_type="user", ref_id=str(user["id"]), actor_id=str(user["id"]),
             )
         await asyncio.to_thread(_notify_follow)
 
@@ -449,8 +451,8 @@ async def toggle_block(blocked_id: str, user=Depends(require_user)):
             """, (uid, blocked_id))
             db._execute(conn, f"""
                 DELETE FROM follows
-                WHERE follower_id = {ph}::uuid AND followed_id = {ph}::uuid
-                   OR follower_id = {ph}::uuid AND followed_id = {ph}::uuid
+                WHERE (follower_id = {ph}::uuid AND target_type = 'user' AND target_id = {ph})
+                   OR (follower_id = {ph}::uuid AND target_type = 'user' AND target_id = {ph})
             """, (uid, blocked_id, blocked_id, uid))
             return True
     blocked = await asyncio.to_thread(_query)

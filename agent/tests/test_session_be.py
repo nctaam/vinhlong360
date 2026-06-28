@@ -1173,3 +1173,93 @@ class TestPhase7DataIntegrity:
         import public_api
         source = inspect.getsource(public_api.submit_report)
         assert "_jsonl_lock" in source
+
+
+# ── Phase 8: Block enforcement + notification hardening ─────────────────
+
+class TestPhase8BlockEnforcement:
+    """Phase 8: block enforcement fixes."""
+
+    def test_enrich_post_no_phone(self):
+        """_enrich_post must NOT leak phone to API response."""
+        import social
+        row = {"id": "test-id", "content": "hello", "user_id": "u1", "like_count": 0,
+               "comment_count": 0, "created_at": "2025-01-01"}
+        user = {"display_name": "TestUser", "avatar_url": None, "phone": "0909123456"}
+        result = social._enrich_post(row, user)
+        assert "phone" not in result
+
+    def test_enrich_post_sets_display(self):
+        """_enrich_post copies display_name and avatar from user."""
+        import social
+        row = {"id": "test-id", "content": "hello", "user_id": "u1", "like_count": 0,
+               "comment_count": 0, "created_at": "2025-01-01"}
+        user = {"display_name": "TestUser", "avatar_url": "http://img.test/a.webp", "phone": "090"}
+        result = social._enrich_post(row, user)
+        assert result["author"]["display_name"] == "TestUser"
+        assert result["author"]["avatar_url"] == "http://img.test/a.webp"
+
+    def test_toggle_block_unfollow_uses_target_id(self):
+        """Auto-unfollow SQL must use target_id (not followed_id) column."""
+        import inspect
+        import notifications
+        src = inspect.getsource(notifications.toggle_block)
+        assert "target_id" in src, "toggle_block unfollow must use target_id column"
+        assert "followed_id" not in src, "followed_id column does not exist in follows table"
+
+    def test_toggle_block_unfollow_uses_target_type(self):
+        """Auto-unfollow must filter target_type = 'user'."""
+        import inspect
+        import notifications
+        src = inspect.getsource(notifications.toggle_block)
+        assert "target_type = 'user'" in src
+
+    def test_notification_block_check_symmetric(self):
+        """create_notification block check must be symmetric (both directions)."""
+        import inspect
+        import notifications
+        src = inspect.getsource(notifications.create_notification)
+        assert src.count("blocker_id") >= 2, "Must check block in both directions"
+        assert src.count("blocked_id") >= 2, "Must check block in both directions"
+
+    def test_mention_notification_has_actor_id(self):
+        """_notify_mentions passes actor_id for block check."""
+        import inspect
+        import social
+        src = inspect.getsource(social._notify_mentions)
+        assert "actor_id=" in src
+
+    def test_entity_follower_notification_has_actor_id(self):
+        """_notify_entity_followers passes actor_id for block check."""
+        import inspect
+        import social
+        src = inspect.getsource(social._notify_entity_followers)
+        assert "actor_id=" in src
+
+    def test_comment_notification_has_actor_id(self):
+        """Comment notification passes actor_id=me for block check."""
+        import inspect
+        import social
+        src = inspect.getsource(social.create_comment)
+        assert "actor_id=" in src
+
+    def test_like_notification_has_actor_id(self):
+        """Like notification passes actor_id for block check."""
+        import inspect
+        import social
+        src = inspect.getsource(social.toggle_like)
+        assert "actor_id=" in src
+
+    def test_follow_notification_has_actor_id(self):
+        """Follow notification passes actor_id for block check."""
+        import inspect
+        import notifications
+        src = inspect.getsource(notifications.toggle_follow)
+        assert "actor_id=" in src
+
+    def test_entity_type_cap(self):
+        """Entity type filter caps at 10 types to prevent abuse."""
+        import inspect
+        import public_api
+        src = inspect.getsource(public_api.list_entities)
+        assert "[:10]" in src

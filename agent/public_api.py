@@ -168,11 +168,10 @@ async def list_entities(
     limit: int = Query(50, le=1000),
     offset: int = Query(0, ge=0),
 ):
-    # Support comma-separated types: ?type=experience,attraction,dish
     entity_types: list[str] | None = None
     single_type = type
     if type and "," in type:
-        entity_types = [t.strip() for t in type.split(",") if t.strip()]
+        entity_types = [t.strip() for t in type.split(",") if t.strip()][:10]
         single_type = None
 
     db_sort = sort if sort in ("rating", "name", "newest") else None

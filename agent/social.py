@@ -125,7 +125,7 @@ def _notify_mentions(mentions: list[dict], author_id: str, author_name, post_id:
         seen.add(uid)
         try:
             create_notification(uid, "mention", f"{author_name or 'Ai đó'} đã nhắc đến bạn",
-                                body=preview, ref_type="post", ref_id=post_id)
+                                body=preview, ref_type="post", ref_id=post_id, actor_id=author_id)
         except Exception:
             logger.exception("Failed to notify mention for user %s on post %s", uid, post_id)
 
@@ -146,7 +146,7 @@ def _notify_entity_followers(entity_id, author_id, author_name, post_id: str) ->
             title = f"{author_name or 'Ai đó'} đã đăng về địa điểm bạn theo dõi"
             for uid in follower_ids:
                 try:
-                    create_notification(uid, "entity_post", title, ref_type="post", ref_id=post_id)
+                    create_notification(uid, "entity_post", title, ref_type="post", ref_id=post_id, actor_id=author_id)
                 except Exception:
                     logger.exception("Failed to notify entity follower %s on post %s", uid, post_id)
     except Exception:
@@ -333,7 +333,7 @@ async def create_post(body: CreatePost, user=Depends(require_user)):
                 try:
                     create_notification(orig_author_id, "repost",
                                         f"{user.get('display_name') or 'Ai đó'} đã đăng lại bài của bạn",
-                                        ref_type="post", ref_id=str(post["id"]))
+                                        ref_type="post", ref_id=str(post["id"]), actor_id=str(user["id"]))
                 except Exception:
                     logger.exception("Failed to notify repost to user %s", orig_author_id)
         await asyncio.to_thread(_notify_post)
@@ -1091,13 +1091,13 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
                 create_notification(
                     owner_id, "comment",
                     f"{user.get('display_name', 'Ai đó')} đã bình luận bài viết của bạn",
-                    body=preview, ref_type="post", ref_id=post_id,
+                    body=preview, ref_type="post", ref_id=post_id, actor_id=me,
                 )
             if parent_author and parent_author != me and parent_author != owner_id:
                 create_notification(
                     parent_author, "comment",
                     f"{user.get('display_name', 'Ai đó')} đã trả lời bình luận của bạn",
-                    body=preview, ref_type="post", ref_id=post_id,
+                    body=preview, ref_type="post", ref_id=post_id, actor_id=me,
                 )
             _notify_mentions(mentions, str(user["id"]), user.get("display_name"), post_id, body.content)
         await asyncio.to_thread(_notify_comment)
@@ -1236,7 +1236,7 @@ async def toggle_like(post_id: str, user=Depends(require_user)):
             create_notification(
                 post_owner, "like",
                 f"{user.get('display_name', 'Ai đó')} đã thích bài viết của bạn",
-                ref_type="post", ref_id=post_id,
+                ref_type="post", ref_id=post_id, actor_id=uid,
             )
         await asyncio.to_thread(_notify_like)
 
@@ -1709,5 +1709,4 @@ def _format_comment(row: dict) -> dict:
 def _enrich_post(row: dict, user: dict) -> dict:
     row["display_name"] = user.get("display_name")
     row["avatar_url"] = user.get("avatar_url")
-    row["phone"] = user.get("phone", "")
     return _format_post(row)

@@ -624,6 +624,8 @@ async def add_relationship(body: RelationshipCreate):
 
 @router.delete("/relationships")
 async def delete_relationship(from_id: str, to_id: str, type: str):
+    validate_path_id(from_id, "from_id")
+    validate_path_id(to_id, "to_id")
     def _query():
         db.initialize()
         ph = db._ph
@@ -1463,6 +1465,7 @@ async def add_moderation_note(post_id: str, body: ModNoteBody):
 
 @router.get("/moderation/{post_id}/notes")
 async def get_moderation_notes(post_id: str):
+    post_id = validate_path_id(post_id, "post_id")
     def _query():
         ph = db._ph
         with db._conn() as conn:
@@ -1555,6 +1558,7 @@ async def bulk_report_action(body: BulkReportAction):
 
 @router.post("/reports/{report_id}/resolve")
 async def resolve_report(report_id: str):
+    report_id = validate_path_id(report_id, "report_id")
     def _query():
         ph = db._ph
         with db._conn() as conn:
@@ -1567,6 +1571,7 @@ async def resolve_report(report_id: str):
 
 @router.post("/reports/{report_id}/dismiss")
 async def dismiss_report(report_id: str):
+    report_id = validate_path_id(report_id, "report_id")
     def _query():
         ph = db._ph
         with db._conn() as conn:
