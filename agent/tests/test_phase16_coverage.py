@@ -625,3 +625,16 @@ class TestQueryParamConstraints:
     def test_admin_reports_explicit_columns(self):
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
         assert "SELECT r.*" not in src
+
+    def test_social_no_select_star_posts(self):
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        assert "p.*" not in src
+
+    def test_social_no_select_star_comments(self):
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        assert "c.*" not in src
+
+    def test_social_uses_post_cols_constant(self):
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        assert "_POST_COLS" in src
+        assert "_COMMENT_COLS" in src
