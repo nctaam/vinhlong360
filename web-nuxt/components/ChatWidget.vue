@@ -228,7 +228,7 @@ onBeforeUnmount(() => {
   padding: 6px 12px 10px;
   font-size: 11px;
   line-height: 1.4;
-  color: var(--c-text-muted, #888);
+  color: var(--text-muted, var(--muted));
   text-align: center;
 }
 .cmsg-failed { opacity: .7; border-left: 2px solid var(--error, #d32); }
