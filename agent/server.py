@@ -2245,6 +2245,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                 # chunk qua asyncio.Queue (thread-safe) để consumer async yield không chặn.
                 loop = asyncio.get_running_loop()
                 chunk_q: asyncio.Queue = asyncio.Queue()
+                _cancelled = threading.Event()
 
                 def _produce_stream():
                     try:
@@ -2253,24 +2254,32 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                             timeout=LLM_TIMEOUT,
                         )
                         for chunk in stream:
+                            if _cancelled.is_set():
+                                break
                             delta = chunk.choices[0].delta
                             if delta.content:
                                 loop.call_soon_threadsafe(chunk_q.put_nowait, delta.content)
-                    except Exception as exc:  # đẩy lỗi sang consumer để xử lý sạch
-                        loop.call_soon_threadsafe(chunk_q.put_nowait, exc)
+                    except Exception as exc:
+                        if not _cancelled.is_set():
+                            loop.call_soon_threadsafe(chunk_q.put_nowait, exc)
                     finally:
-                        loop.call_soon_threadsafe(chunk_q.put_nowait, None)  # sentinel hết stream
+                        loop.call_soon_threadsafe(chunk_q.put_nowait, None)
 
                 producer = asyncio.create_task(asyncio.to_thread(_produce_stream))
                 _chunks: list[str] = []
-                while True:
-                    item = await chunk_q.get()
-                    if item is None:
-                        break
-                    if isinstance(item, Exception):
-                        raise item
-                    _chunks.append(item)
-                    yield f"data: {json.dumps({'type': 'text', 'content': item}, ensure_ascii=False)}\n\n"
+                try:
+                    while True:
+                        item = await chunk_q.get()
+                        if item is None:
+                            break
+                        if isinstance(item, Exception):
+                            raise item
+                        _chunks.append(item)
+                        yield f"data: {json.dumps({'type': 'text', 'content': item}, ensure_ascii=False)}\n\n"
+                except (asyncio.CancelledError, GeneratorExit):
+                    _cancelled.set()
+                    await producer
+                    return
                 await producer
                 full_text = "".join(_chunks)
 

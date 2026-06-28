@@ -1389,3 +1389,29 @@ class TestDeepScanBatch3:
         block = src[idx:idx+900]
         assert "FileNotFoundError" in block, \
             "delete must catch FileNotFoundError instead of TOCTOU exists() check"
+
+
+class TestDeepScanBatch4:
+    """Tests for deep scan round 4: streaming disconnect + cross-cutting."""
+
+    def test_stream_producer_cancellation(self):
+        """Streaming producer must check cancellation flag to stop when client disconnects."""
+        src = (Path(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
+        idx = src.find("def _produce_stream():")
+        assert idx > 0
+        block = src[idx:idx+500]
+        assert "_cancelled" in block, \
+            "Producer must check cancellation flag between chunks"
+        assert "_cancelled.is_set()" in block, \
+            "Producer must call _cancelled.is_set() to detect client disconnect"
+
+    def test_stream_consumer_cancellation_handler(self):
+        """Streaming consumer must handle CancelledError to signal producer."""
+        src = (Path(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
+        idx = src.find("_cancelled = threading.Event()")
+        assert idx > 0
+        block = src[idx:idx+2000]
+        assert "CancelledError" in block or "GeneratorExit" in block, \
+            "Consumer must catch disconnect exceptions to signal producer"
+        assert "_cancelled.set()" in block, \
+            "Consumer must set cancellation flag on disconnect"
