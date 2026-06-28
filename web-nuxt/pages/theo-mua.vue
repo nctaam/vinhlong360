@@ -78,7 +78,7 @@
     </ClientOnly>
 
     <!-- Peak highlights (honor row) -->
-    <section v-if="peakItems.length" class="block band reveal">
+    <section ref="resultsSection" v-if="peakItems.length" class="block band reveal">
       <div class="seasonal-banner peak-banner">
         <span class="seasonal-banner-icon">🔥</span>
         <div>
@@ -247,6 +247,12 @@ const { f: pc } = usePageContent('theo_mua')
 const { relevanceScore, seasonText } = useSeason()
 
 const month = ref(new Date().getMonth() + 1)
+const resultsSection = ref<HTMLElement | null>(null)
+
+watch(month, () => {
+  nextTick(() => resultsSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+})
+
 const seasonEmoji = computed(() => SEASON_EMOJIS[month.value - 1] || '📅')
 
 /* Mekong quarters → mood label + note (evocative, not factual claims). */

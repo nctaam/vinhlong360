@@ -55,7 +55,7 @@
     </section>
 
     <!-- Ward picker -->
-    <section class="block reveal">
+    <section ref="wardSection" class="block reveal">
       <label class="ward-pick">
         <span class="control-label">Chọn xã / phường:</span>
         <select v-model="wardId" aria-label="Chọn xã/phường">
@@ -165,6 +165,11 @@ const areaFromQuery = computed(() => {
 })
 
 const selectedArea = ref(areaFromQuery.value)
+const wardSection = ref<HTMLElement | null>(null)
+
+watch(selectedArea, () => {
+  nextTick(() => wardSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+})
 
 const wardGroups = computed(() => {
   const grouped: Record<string, Entity[]> = {}

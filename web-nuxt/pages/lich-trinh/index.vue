@@ -98,7 +98,7 @@
     </div>
 
     <!-- Suggested itineraries -->
-    <section class="block reveal">
+    <section ref="gridSection" class="block reveal">
       <div class="controls">
         <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
           <button type="button" :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả</button>
@@ -113,10 +113,11 @@
 
       <p class="result-meta" aria-live="polite">{{ filtered.length }} lịch trình</p>
 
-      <div v-if="fetchError" class="fetch-error" role="alert">
-        <p>Không tải được lịch trình. Có thể mạng đang chập chờn.</p>
-        <button type="button" class="btn btn-outline" @click="refreshNuxtData('itineraries')">Thử lại</button>
-      </div>
+      <EmptyState v-if="fetchError" icon="⚠️" title="Không tải được lịch trình" message="Có thể mạng đang chập chờn. Thử lại nhé.">
+        <template #actions>
+          <button type="button" class="btn btn-outline" @click="refreshNuxtData('itineraries')">Thử lại</button>
+        </template>
+      </EmptyState>
       <SkeletonGrid v-else-if="!itineraries" :count="4" />
       <div v-else-if="filtered.length" class="grid itin">
         <ItineraryCard v-for="it in filtered" :key="it.id" :itinerary="it" />
@@ -180,6 +181,12 @@ async function clearAll() {
 }
 
 const areaFilter = ref('all')
+const gridSection = ref<HTMLElement | null>(null)
+
+watch(areaFilter, () => {
+  nextTick(() => gridSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+})
+
 useFilterUrl({ vung: areaFilter }, { vung: 'all' })
 
 const { data: itineraries, error: fetchError } = await useAsyncData('itineraries', () =>
@@ -294,7 +301,6 @@ useHead(() => ({
 /* Itinerary empty-state wrapper rhythm */
 .itin-empty { margin-top: var(--space-2); }
 
-.fetch-error { color: var(--error); text-align: center; padding: var(--space-5); display: flex; flex-direction: column; align-items: center; gap: var(--space-3); }
 .block-cta { margin-top: var(--space-6); text-align: center; }
 .block-cta .btn:active { transform: scale(.97); transition-duration: .08s; }
 .danger { color: var(--error); }

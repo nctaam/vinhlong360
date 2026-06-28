@@ -104,7 +104,7 @@
     </div>
 
     <!-- Controls -->
-    <div class="controls">
+    <div ref="controlsSection" class="controls">
       <div class="search-row">
         <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm lễ hội…" aria-label="Tìm lễ hội" />
       </div>
@@ -248,6 +248,13 @@ const q = ref('')
 const areaFilter = ref('all')
 const statusFilter = ref('all')
 const view = ref('list')
+const controlsSection = ref<HTMLElement | null>(null)
+
+function scrollToControls() {
+  nextTick(() => controlsSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+}
+
+watch([areaFilter, statusFilter], scrollToControls)
 
 useFilterUrl({ vung: areaFilter, trang_thai: statusFilter }, { vung: 'all', trang_thai: 'all' })
 
