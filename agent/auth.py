@@ -945,11 +945,19 @@ async def update_privacy(body: PrivacyUpdate, request: Request, _csrf=Depends(_r
 
 # ── Auth helpers (used by other modules) ──
 
+_TOKEN_MAX_LEN = 128
+
 def _extract_token(request: Request) -> str | None:
     auth = request.headers.get("authorization", "")
     if auth.startswith("Bearer "):
-        return auth[7:]
-    return request.cookies.get("token")
+        t = auth[7:]
+        if 16 <= len(t) <= _TOKEN_MAX_LEN:
+            return t
+        return None
+    t = request.cookies.get("token")
+    if t and 16 <= len(t) <= _TOKEN_MAX_LEN:
+        return t
+    return None
 
 
 async def _get_current_user_or_none(request: Request) -> dict | None:
