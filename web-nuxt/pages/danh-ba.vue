@@ -29,7 +29,7 @@
     </EmptyState>
 
     <!-- Region quick-picks -->
-    <section v-if="!placesError" class="block band">
+    <section v-if="!placesError" class="block band reveal">
       <div class="section-head">
         <h2>Chọn khu vực</h2>
       </div>

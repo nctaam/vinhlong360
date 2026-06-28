@@ -382,7 +382,7 @@
           </div>
         </div>
 
-        <div class="sidebar-card">
+        <div class="sidebar-card reveal">
           <h3>Cách tham gia</h3>
           <ul class="sidebar-list">
             <li>

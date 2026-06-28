@@ -283,18 +283,24 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
 .reveal.revealed:nth-child(6) { animation-delay: .3s; }
 .reveal.revealed:nth-child(7) { animation-delay: .36s; }
 .reveal.revealed:nth-child(8) { animation-delay: .42s; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .reveal, html.js .reveal { opacity: 1; transform: none; } .reveal.revealed { animation: none; } .scroll-row .card { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .reveal, html.js .reveal { opacity: 1; transform: none; } .reveal.revealed { animation: none; } .scroll-row .card { animation: none !important; } .revealed .scroll-row > *, .revealed .grid > *, .revealed .sidebar-list > *, .revealed .quick-picks > *, .revealed .hl, .revealed .cw-row { animation: none; } }
 
 /* Card stagger entrance within scroll-row */
 @keyframes cardIn { from { opacity: 0; transform: translateY(12px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
 .revealed .scroll-row > *,
-.revealed .grid > * { animation: cardIn .45s var(--ease-out-expo) both; }
-.revealed .scroll-row > *:nth-child(1), .revealed .grid > *:nth-child(1) { animation-delay: .05s; }
-.revealed .scroll-row > *:nth-child(2), .revealed .grid > *:nth-child(2) { animation-delay: .1s; }
-.revealed .scroll-row > *:nth-child(3), .revealed .grid > *:nth-child(3) { animation-delay: .15s; }
-.revealed .scroll-row > *:nth-child(4), .revealed .grid > *:nth-child(4) { animation-delay: .2s; }
-.revealed .scroll-row > *:nth-child(5), .revealed .grid > *:nth-child(5) { animation-delay: .25s; }
-.revealed .scroll-row > *:nth-child(6), .revealed .grid > *:nth-child(6) { animation-delay: .3s; }
+.revealed .grid > *,
+.revealed .sidebar-list > *,
+.revealed .quick-picks > *,
+.revealed .hl,
+.revealed .cw-row { animation: cardIn .45s var(--ease-out-expo) both; }
+.revealed .scroll-row > *:nth-child(1), .revealed .grid > *:nth-child(1), .revealed .sidebar-list > *:nth-child(1), .revealed .quick-picks > *:nth-child(1) { animation-delay: .05s; }
+.revealed .scroll-row > *:nth-child(2), .revealed .grid > *:nth-child(2), .revealed .sidebar-list > *:nth-child(2), .revealed .quick-picks > *:nth-child(2) { animation-delay: .1s; }
+.revealed .scroll-row > *:nth-child(3), .revealed .grid > *:nth-child(3), .revealed .sidebar-list > *:nth-child(3), .revealed .quick-picks > *:nth-child(3) { animation-delay: .15s; }
+.revealed .scroll-row > *:nth-child(4), .revealed .grid > *:nth-child(4), .revealed .sidebar-list > *:nth-child(4), .revealed .quick-picks > *:nth-child(4) { animation-delay: .2s; }
+.revealed .scroll-row > *:nth-child(5), .revealed .grid > *:nth-child(5), .revealed .sidebar-list > *:nth-child(5), .revealed .quick-picks > *:nth-child(5) { animation-delay: .25s; }
+.revealed .scroll-row > *:nth-child(6), .revealed .grid > *:nth-child(6), .revealed .sidebar-list > *:nth-child(6), .revealed .quick-picks > *:nth-child(6) { animation-delay: .3s; }
+.revealed .scroll-row > *:nth-child(7), .revealed .grid > *:nth-child(7), .revealed .sidebar-list > *:nth-child(7), .revealed .quick-picks > *:nth-child(7) { animation-delay: .35s; }
+.revealed .scroll-row > *:nth-child(8), .revealed .grid > *:nth-child(8), .revealed .sidebar-list > *:nth-child(8), .revealed .quick-picks > *:nth-child(8) { animation-delay: .4s; }
 .map-popup-link { font-weight: 700; color: var(--primary-fg-strong); }
 .search-row-spaced { margin-bottom: var(--space-4); }
 .chip-row-spaced { margin-bottom: var(--space-3); }

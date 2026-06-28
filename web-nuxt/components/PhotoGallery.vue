@@ -18,7 +18,7 @@ function openLightbox(idx: number) {
     lbStart.value = idx
     lbOpen.value = true
   } else {
-    openLightbox(idx)
+    emit('open-lightbox', idx)
   }
 }
 
