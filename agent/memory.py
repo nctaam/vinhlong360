@@ -445,6 +445,8 @@ class SkillDocumentStore:
     Tham khảo: nghiên cứu cho thấy skill docs giúp agent nhanh hơn 40%.
     """
 
+    _MAX_SKILLS = 200
+
     def __init__(self):
         self._skills_file = MEMORY_DIR / "skill_documents.json"
         self._skills: list[dict] = []
@@ -482,9 +484,11 @@ class SkillDocumentStore:
                 "created": datetime.now(timezone.utc).isoformat(),
                 "use_count": 0,
             }
-            # Dedup
             existing = [s for s in self._skills if s["pattern"] == query_pattern]
             if not existing:
+                if len(self._skills) >= self._MAX_SKILLS:
+                    self._skills.sort(key=lambda s: s.get("use_count", 0))
+                    self._skills = self._skills[1:]
                 self._skills.append(skill)
                 self._save()
 
@@ -585,7 +589,7 @@ class MemoryExtractor:
     _AREA_PATTERNS = re.compile(
         r"(?:muốn\s+đi\s+|quan\s+tâm\s+(?:đến\s+)?|thích\s+vùng\s+|"
         r"muốn\s+(?:tham\s+quan|khám\s+phá)\s+)"
-        r"(.+?)(?:\s+với\s+|\s+cùng\s+|\s+vào\s+|\s+trong\s+|\s+để\s+|[.,!?]|$)",
+        r"(.{2,60}?)(?:\s+với\s+|\s+cùng\s+|\s+vào\s+|\s+trong\s+|\s+để\s+|[.,!?]|$)",
         re.IGNORECASE,
     )
 
@@ -869,6 +873,8 @@ class MemoryManager:
     Server gọi qua đây thay vì trực tiếp.
     """
 
+    _MAX_SESSIONS = 1000
+
     def __init__(self):
         self.cold = ColdMemory()
         self.skills = SkillDocumentStore()
@@ -879,6 +885,9 @@ class MemoryManager:
     def get_session(self, session_id: str) -> HotMemory:
         with self._lock:
             if session_id not in self._sessions:
+                if len(self._sessions) >= self._MAX_SESSIONS:
+                    oldest_key = min(self._sessions, key=lambda k: self._sessions[k].last_active)
+                    del self._sessions[oldest_key]
                 self._sessions[session_id] = HotMemory(session_id)
             return self._sessions[session_id]
 

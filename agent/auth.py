@@ -91,16 +91,20 @@ _otp_verify_ip_rate: dict[str, list[float]] = {}
 
 ACCOUNT_DELETE_GRACE_DAYS = _cfg.ACCOUNT_DELETE_GRACE_DAYS
 
-_RATE_MAX_KEYS = 2000
+_RATE_GC_THRESHOLD = 500
 
 def _gc_rate_dict(d: dict, window: float) -> None:
-    if len(d) <= _RATE_MAX_KEYS:
+    if len(d) <= _RATE_GC_THRESHOLD:
         return
     now = time.time()
     stale = [k for k, v in d.items()
              if not v or now - (max(v) if isinstance(v, list) else v) > window]
     for k in stale:
         del d[k]
+    if len(d) > _RATE_GC_THRESHOLD * 4:
+        oldest = sorted(d.keys(), key=lambda k: max(d[k]) if isinstance(d[k], list) else d[k])
+        for k in oldest[:len(d) - _RATE_GC_THRESHOLD]:
+            del d[k]
 
 
 def _mask_phone(phone: str) -> str:

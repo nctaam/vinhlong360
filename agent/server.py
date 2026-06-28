@@ -885,11 +885,14 @@ app = FastAPI(
 )
 _raw_origins = os.environ.get("CORS_ORIGINS", "http://localhost:8360,http://localhost:3000,https://vinhlong360.vn")
 ALLOWED_ORIGINS = [o.strip() for o in _raw_origins.split(",") if o.strip()]
-if os.environ.get("ENVIRONMENT") == "production":
+_env_name = os.environ.get("ENVIRONMENT", "").strip().lower()
+if _env_name in ("production", "prod", "prd"):
     _local = [o for o in ALLOWED_ORIGINS if "localhost" in o or "127.0.0.1" in o]
     if _local:
-        logger.warn(f"CORS: removing localhost origins in production mode: {_local}")
+        logger.warning("CORS: removing localhost origins in production mode: %s", _local)
         ALLOWED_ORIGINS = [o for o in ALLOWED_ORIGINS if o not in _local]
+    if not os.environ.get("CORS_ORIGINS"):
+        logger.warning("CORS_ORIGINS not explicitly set in production — using defaults without localhost")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,

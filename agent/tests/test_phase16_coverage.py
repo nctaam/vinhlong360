@@ -982,3 +982,44 @@ class TestSecurityPosture:
         func_block = src[idx:idx+700]
         assert "offset" in func_block, "get_comments must accept offset parameter"
         assert "OFFSET" in func_block, "get_comments SQL must use OFFSET"
+
+    def test_rate_limit_gc_threshold(self):
+        """Rate limit GC must trigger at a reasonable threshold, not wait for 2000+ keys."""
+        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        assert "_RATE_GC_THRESHOLD = 500" in src, "Rate limit GC threshold should be 500"
+        assert "_RATE_MAX_KEYS" not in src, "Old _RATE_MAX_KEYS constant should be removed"
+
+    def test_cors_env_check_case_insensitive(self):
+        """CORS production check must match case-insensitive environment values."""
+        src = (Path(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
+        assert ".lower()" in src.split("CORS")[0].split("_env_name")[-1] or \
+               "_env_name" in src and ".strip().lower()" in src, \
+               "CORS environment check must be case-insensitive"
+        assert '"prod"' in src or "'prod'" in src, "CORS must match 'prod' variant"
+        assert '"prd"' in src or "'prd'" in src, "CORS must match 'prd' variant"
+
+    def test_memory_sessions_max_size(self):
+        """MemoryManager must cap sessions to prevent unbounded memory growth."""
+        src = (Path(__file__).resolve().parent.parent / "memory.py").read_text(encoding="utf-8")
+        assert "_MAX_SESSIONS" in src, "MemoryManager must define _MAX_SESSIONS"
+        idx = src.find("def get_session")
+        assert idx > 0
+        block = src[idx:idx+500]
+        assert "_MAX_SESSIONS" in block, "get_session must enforce max sessions"
+
+    def test_skill_store_max_size(self):
+        """SkillDocumentStore must cap skills to prevent unbounded list growth."""
+        src = (Path(__file__).resolve().parent.parent / "memory.py").read_text(encoding="utf-8")
+        assert "_MAX_SKILLS" in src, "SkillDocumentStore must define _MAX_SKILLS"
+        idx = src.find("def add_skill")
+        assert idx > 0
+        block = src[idx:idx+800]
+        assert "_MAX_SKILLS" in block, "add_skill must enforce max skills"
+
+    def test_area_regex_no_unbounded_capture(self):
+        """_AREA_PATTERNS regex must not use (.+?) which risks ReDoS on long input."""
+        src = (Path(__file__).resolve().parent.parent / "memory.py").read_text(encoding="utf-8")
+        idx = src.find("_AREA_PATTERNS")
+        assert idx > 0
+        block = src[idx:idx+300]
+        assert "(.+?)" not in block, "_AREA_PATTERNS must use bounded capture group, not (.+?)"
