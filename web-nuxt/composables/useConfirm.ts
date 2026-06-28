@@ -1,11 +1,6 @@
-// P2-1: hộp xác nhận in-app (thay confirm()/alert() native — đẹp + đồng bộ, mobile tốt).
-interface ConfirmState {
-  open: boolean
-  title: string
-  message: string
-  confirmText: string
-  cancelText: string
-  danger: boolean
+import type { ConfirmState as ConfirmStateBase } from '~/types'
+
+interface ConfirmState extends ConfirmStateBase {
   _resolve: ((v: boolean) => void) | null
 }
 

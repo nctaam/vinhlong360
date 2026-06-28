@@ -256,3 +256,19 @@ export interface InfoReport {
   user_id?: string
 }
 
+export interface Toast {
+  id: number
+  message: string
+  type: 'success' | 'error' | 'warning' | 'info'
+  duration: number
+}
+
+export interface ConfirmState {
+  open: boolean
+  title: string
+  message: string
+  confirmText: string
+  cancelText: string
+  danger: boolean
+}
+
