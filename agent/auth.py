@@ -35,6 +35,19 @@ from pydantic import BaseModel, Field, field_validator
 from database import db
 
 
+async def _require_csrf_lazy(request: Request) -> None:
+    from auth_middleware import require_csrf
+    await require_csrf(request)
+
+
+async def _check_session_binding_safe(request, user):
+    try:
+        from auth_middleware import check_session_binding
+        return await check_session_binding(request, user)
+    except Exception:
+        return True
+
+
 def _require_pg():
     if not db._use_pg:
         raise HTTPException(503, detail="Tính năng UGC/auth cần Postgres. Local dev: docker compose up postgres.")
@@ -71,6 +84,12 @@ _login_ip_rate: dict[str, list[float]] = {}
 LOGIN_PHONE_LIMIT = _cfg.LOGIN_PHONE_LIMIT
 LOGIN_PHONE_WINDOW = _cfg.LOGIN_PHONE_WINDOW
 _login_phone_fails: dict[str, list[float]] = {}
+
+OTP_VERIFY_IP_LIMIT = 15
+OTP_VERIFY_IP_WINDOW = 300
+_otp_verify_ip_rate: dict[str, list[float]] = {}
+
+ACCOUNT_DELETE_GRACE_DAYS = 30
 
 _RATE_MAX_KEYS = 2000
 
@@ -292,6 +311,16 @@ async def request_otp(body: OTPRequest, request: Request):
 
 @router.post("/verify-otp")
 async def verify_otp(body: OTPVerify, request: Request):
+    from middleware import get_client_ip
+    ip = get_client_ip(request)
+    now = time.time()
+    hits = [t for t in _otp_verify_ip_rate.get(ip, []) if now - t < OTP_VERIFY_IP_WINDOW]
+    if len(hits) >= OTP_VERIFY_IP_LIMIT:
+        raise HTTPException(429, "Quá nhiều lần xác thực OTP từ IP này. Vui lòng thử lại sau.")
+    hits.append(now)
+    _otp_verify_ip_rate[ip] = hits
+    _gc_rate_dict(_otp_verify_ip_rate, OTP_VERIFY_IP_WINDOW)
+
     phone = _normalize_phone(body.phone)
     hashed = _hash_otp(body.code.strip())
 
@@ -332,9 +361,16 @@ async def verify_otp(body: OTPVerify, request: Request):
             if not body.consent:
                 raise HTTPException(400, "Vui lòng đồng ý Điều khoản sử dụng và Chính sách bảo mật")
             u = db.create_user(phone, consent_version=CONSENT_VERSION)
-        elif not u.get("is_active", True):
-            db.update_user(str(u["id"]), is_active=True)
-            u["is_active"] = True
+        else:
+            updates = {}
+            if not u.get("is_active", True):
+                updates["is_active"] = True
+            if u.get("deleted_at"):
+                updates["deleted_at"] = None
+                updates["is_active"] = True
+            if updates:
+                db.update_user(str(u["id"]), **updates)
+                u.update(updates)
         return u
     user = await asyncio.to_thread(_get_or_create_user)
 
@@ -452,10 +488,12 @@ async def login_password(body: PasswordLogin, request: Request):
 
 
 @router.post("/set-password")
-async def set_password(body: SetPassword, request: Request):
+async def set_password(body: SetPassword, request: Request, _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
+    if not await _check_session_binding_safe(request, user):
+        logger.warning("Session binding mismatch on set-password for user %s", user.get("id"))
 
     if user.get("password_hash"):
         if not body.current_password:
@@ -546,10 +584,12 @@ async def get_me(request: Request):
 
 
 @router.post("/deactivate")
-async def deactivate_account(request: Request):
+async def deactivate_account(request: Request, _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
+    if not await _check_session_binding_safe(request, user):
+        logger.warning("Session binding mismatch on deactivate for user %s", user.get("id"))
     uid = str(user["id"])
     await asyncio.to_thread(db.update_user, uid, is_active=False)
     def _query():
@@ -560,18 +600,26 @@ async def deactivate_account(request: Request):
 
 
 @router.delete("/account")
-async def delete_account(request: Request):
-    # GĐ5.5: quyền xoá dữ liệu (PDPL). Xoá user -> FK ON DELETE CASCADE xoá posts/comments/
-    # likes/bookmarks/follows/notifications/reports/sessions liên quan.
+async def delete_account(request: Request, _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
+    if not await _check_session_binding_safe(request, user):
+        logger.warning("Session binding mismatch on delete-account for user %s", user.get("id"))
     uid = str(user["id"])
     def _query():
         with db._conn() as conn:
-            db._execute(conn, f"DELETE FROM users WHERE id::text = {db._ph}", (uid,))
+            db._execute(conn, f"""
+                UPDATE users SET deleted_at = NOW(), is_active = FALSE
+                WHERE id::text = {db._ph}
+            """, (uid,))
+            db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph}", (uid,))
     await asyncio.to_thread(_query)
-    return {"status": "deleted", "message": "Tài khoản và dữ liệu liên quan đã được xoá."}
+    return {
+        "status": "scheduled",
+        "message": f"Tài khoản sẽ bị xoá vĩnh viễn sau {ACCOUNT_DELETE_GRACE_DAYS} ngày. Đăng nhập lại bằng OTP để huỷ.",
+        "grace_days": ACCOUNT_DELETE_GRACE_DAYS,
+    }
 
 
 @router.put("/profile")
@@ -846,9 +894,11 @@ async def _get_current_user_or_none(request: Request) -> dict | None:
         try:
             with db._conn() as conn:
                 row = db._fetchone(conn, f"""
-                    SELECT u.* FROM user_sessions s
+                    SELECT u.*, s.ip_address AS session_ip, s.user_agent AS session_ua
+                    FROM user_sessions s
                     JOIN users u ON u.id = s.user_id
-                    WHERE s.token = {db._ph} AND s.expires_at > NOW() AND u.is_active = TRUE
+                    WHERE s.token = {db._ph} AND s.expires_at > NOW()
+                      AND u.is_active = TRUE AND u.deleted_at IS NULL
                 """, (_hash_token(token),))
                 return db._row_to_dict(row)
         except Exception:

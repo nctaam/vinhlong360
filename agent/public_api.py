@@ -39,6 +39,7 @@ DEFAULT_RELATIONSHIP_LIMIT = 24
 import time as _time
 _homepage_cache: dict = {"month": None, "data": None, "ts": 0.0}
 _HOMEPAGE_TTL = 120  # giây
+_homepage_rebuilding = False
 
 _ENTITY_CACHE_MAX = 1000
 _entity_cache: OrderedDict[str, tuple[float, dict]] = OrderedDict()
@@ -73,6 +74,8 @@ REPORTS_FILE = Path(__file__).resolve().parent / "data" / "reports.jsonl"
 _VALID_TARGET_TYPES = {"facility", "entity", "post", "comment", "other"}
 
 _JSONL_MAX_LINES = 5000
+import threading as _threading
+_jsonl_lock = _threading.Lock()
 
 
 def _maybe_rotate_jsonl(filepath: Path) -> None:
@@ -476,11 +479,15 @@ async def homepage_curated(response: Response):
     response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
     month = datetime.now().month
 
-    # Perf-P0: trả cache nếu còn hạn + cùng tháng (tránh scan toàn bảng mỗi request)
+    global _homepage_rebuilding
     _now = _time.time()
-    if (_homepage_cache["data"] is not None and _homepage_cache["month"] == month
-            and _now - _homepage_cache["ts"] < _HOMEPAGE_TTL):
+    cache_fresh = (_homepage_cache["data"] is not None and _homepage_cache["month"] == month
+                   and _now - _homepage_cache["ts"] < _HOMEPAGE_TTL)
+    if cache_fresh:
         return _homepage_cache["data"]
+    if _homepage_rebuilding and _homepage_cache["data"] is not None:
+        return _homepage_cache["data"]
+    _homepage_rebuilding = True
 
     all_ents = await asyncio.to_thread(db.list_entities, limit=100000, offset=0, public_only=True)
     public = [e for e in all_ents if not _event_is_past(e)]
@@ -677,7 +684,8 @@ async def homepage_curated(response: Response):
         "upcoming_events": upcoming_events,
         "seasonal_tagline": seasonal_tagline,
     }
-    _homepage_cache.update(month=month, data=result, ts=_now)
+    _homepage_cache.update(month=month, data=result, ts=_time.time())
+    _homepage_rebuilding = False
     return result
 
 
@@ -854,10 +862,11 @@ async def submit_report(payload: ReportIn, request: Request):
         "status": "open",
     }
     def _write():
-        REPORTS_FILE.parent.mkdir(exist_ok=True)
-        with open(REPORTS_FILE, "a", encoding="utf-8") as f:
-            f.write(json.dumps(record, ensure_ascii=False) + "\n")
-        _maybe_rotate_jsonl(REPORTS_FILE)
+        with _jsonl_lock:
+            REPORTS_FILE.parent.mkdir(exist_ok=True)
+            with open(REPORTS_FILE, "a", encoding="utf-8") as f:
+                f.write(json.dumps(record, ensure_ascii=False) + "\n")
+            _maybe_rotate_jsonl(REPORTS_FILE)
     try:
         await asyncio.to_thread(_write)
     except OSError:
@@ -1054,10 +1063,11 @@ async def track_contact_view(
     }
 
     def _write():
-        CONTACT_VIEWS_FILE.parent.mkdir(exist_ok=True)
-        with open(CONTACT_VIEWS_FILE, "a", encoding="utf-8") as f:
-            f.write(json.dumps(record, ensure_ascii=False) + "\n")
-        _maybe_rotate_jsonl(CONTACT_VIEWS_FILE)
+        with _jsonl_lock:
+            CONTACT_VIEWS_FILE.parent.mkdir(exist_ok=True)
+            with open(CONTACT_VIEWS_FILE, "a", encoding="utf-8") as f:
+                f.write(json.dumps(record, ensure_ascii=False) + "\n")
+            _maybe_rotate_jsonl(CONTACT_VIEWS_FILE)
 
     try:
         await asyncio.to_thread(_write)

@@ -1009,8 +1009,11 @@ async def track_response_time(request: Request, call_next):
     req_id = generate_request_id()
     request.state.request_id = req_id
 
+    is_streaming = request.url.path in ("/chat", "/chat/stream")
+    timeout_s = 120 if is_streaming else 30
+
     try:
-        response = await call_next(request)
+        response = await asyncio.wait_for(call_next(request), timeout=timeout_s)
         duration_ms = (time.time() - start) * 1000
         endpoint = f"{request.method} {request.url.path}"
         response_tracker.record(endpoint, duration_ms, response.status_code)
@@ -1030,6 +1033,16 @@ async def track_response_time(request: Request, call_next):
                 response.headers["Cache-Control"] = "no-cache"
         return response
 
+    except asyncio.TimeoutError:
+        duration_ms = (time.time() - start) * 1000
+        endpoint = f"{request.method} {request.url.path}"
+        response_tracker.record(endpoint, duration_ms, 504)
+        logger.error("Request timeout", endpoint=endpoint, req_id=req_id,
+                      duration_ms=round(duration_ms), timeout_s=timeout_s)
+        return JSONResponse(
+            status_code=504,
+            content={"error": "Request timeout", "request_id": req_id},
+        )
     except Exception as exc:
         duration_ms = (time.time() - start) * 1000
         endpoint = f"{request.method} {request.url.path}"
@@ -2527,6 +2540,51 @@ async def deep_health():
     if payload["llm_api"] != "ok" and payload["status"] == "ok":
         payload["status"] = "degraded"
     return payload
+
+
+@app.get("/health/ready")
+async def readiness_probe():
+    """Lightweight readiness probe for load balancers / orchestrators."""
+    from database import db as _db
+    checks = {"knowledge": len(knowledge._entities) > 0}
+    try:
+        with _db._conn() as conn:
+            _db._fetchone(conn, "SELECT 1", ())
+        checks["database"] = True
+    except Exception:
+        checks["database"] = False
+    ready = all(checks.values())
+    return JSONResponse(
+        status_code=200 if ready else 503,
+        content={"ready": ready, "checks": checks},
+    )
+
+
+@app.get("/health/slo")
+async def slo_metrics():
+    """Basic SLO tracking: uptime, error rate, p95 latency."""
+    uptime_s = time.time() - _server_start_time
+    rt_stats = response_tracker.stats()
+    err_stats = error_tracker.stats()
+    total_req = rt_stats.get("total_requests", 0)
+    error_count = err_stats.get("recent_errors", 0)
+    error_rate = round(error_count / max(total_req, 1) * 100, 2)
+    p95 = rt_stats.get("p95_ms", 0)
+    return {
+        "uptime_seconds": round(uptime_s, 0),
+        "uptime_pct": round(min(100, uptime_s / max(uptime_s, 1) * 100), 2),
+        "total_requests": total_req,
+        "error_rate_pct": error_rate,
+        "p95_latency_ms": p95,
+        "slo_targets": {
+            "error_rate_pct": 1.0,
+            "p95_latency_ms": 3000,
+        },
+        "slo_met": {
+            "error_rate": error_rate <= 1.0,
+            "latency": p95 <= 3000,
+        },
+    }
 
 
 # ── Prometheus metrics endpoint ──

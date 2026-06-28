@@ -424,11 +424,29 @@ def get_client_ip(request) -> str:
 #  SECURITY EVENT LOGGING
 # ══════════════════════════════════════════════════
 
+def _mask_ip(ip: str) -> str:
+    if not ip:
+        return ""
+    parts = ip.split(".")
+    if len(parts) == 4:
+        return f"{parts[0]}.{parts[1]}.***.*{parts[3][-1:]}"
+    if ":" in ip:
+        return ip[:ip.rfind(":")] + ":****"
+    return ip[:4] + "****"
+
+
+def _mask_phone(phone: str) -> str:
+    if not phone or len(phone) < 6:
+        return "***"
+    return phone[:3] + "****" + phone[-3:]
+
+
 class SecurityEventLogger:
     """Structured logging for security-relevant events (audit trail).
 
     All events go to the same StructuredLogger (server.log.jsonl) with
     level="security" so they can be filtered/exported separately.
+    PII (IP, phone) is masked before writing to log files.
     """
 
     _EVENT_AUTH_FAILURE = "auth_failure"
@@ -438,11 +456,23 @@ class SecurityEventLogger:
     _EVENT_SESSION_ANOMALY = "session_anomaly"
     _EVENT_CSRF_FAILURE = "csrf_failure"
 
+    _PII_FIELDS = {"ip", "phone", "user_phone"}
+
     def __init__(self, structured_logger: StructuredLogger):
         self._log = structured_logger
         self._lock = Lock()
         self._recent_events: list[dict] = []
         self._max_recent = 500
+
+    @staticmethod
+    def _mask_pii(entry: dict) -> dict:
+        masked = dict(entry)
+        if "ip" in masked:
+            masked["ip"] = _mask_ip(masked["ip"])
+        for k in ("phone", "user_phone"):
+            if k in masked:
+                masked[k] = _mask_phone(masked[k])
+        return masked
 
     def _record(self, event_type: str, ip: str, **details):
         entry = {
@@ -451,7 +481,7 @@ class SecurityEventLogger:
             "ts": datetime.now().isoformat(),
             **details,
         }
-        self._log.log("security", f"[SEC] {event_type}", **entry)
+        self._log.log("security", f"[SEC] {event_type}", **self._mask_pii(entry))
         with self._lock:
             self._recent_events.append(entry)
             if len(self._recent_events) > self._max_recent:

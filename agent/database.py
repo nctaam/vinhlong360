@@ -1250,7 +1250,7 @@ class Database:
         sets = []
         params = []
         for k, v in fields.items():
-            if k in ("display_name", "avatar_url", "cover_url", "bio", "role", "is_active", "password_hash", "username"):
+            if k in ("display_name", "avatar_url", "cover_url", "bio", "role", "is_active", "password_hash", "username", "deleted_at"):
                 sets.append(f"{k} = {ph}")
                 params.append(v)
         if not sets:

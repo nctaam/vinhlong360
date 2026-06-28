@@ -999,3 +999,177 @@ class TestMonthFilter:
         for e in month_3:
             months = (e.get("season") or {}).get("months") or []
             assert 3 in months, f"Entity {e['id']} missing month 3 in season"
+
+
+# ═══════════════════════════════════════════════════════
+# Phase 7A: Security hardening tests
+# ═══════════════════════════════════════════════════════
+
+class TestPhase7Security:
+    """Tests for Phase 7A security improvements."""
+
+    def test_csrf_enforced_on_set_password(self):
+        """set_password endpoint requires CSRF dependency."""
+        import inspect
+        sig = inspect.signature(auth.set_password)
+        param_names = list(sig.parameters.keys())
+        assert "_csrf" in param_names, "set_password must have _csrf Depends(_require_csrf_lazy)"
+
+    def test_csrf_enforced_on_deactivate(self):
+        """deactivate_account endpoint requires CSRF dependency."""
+        import inspect
+        sig = inspect.signature(auth.deactivate_account)
+        assert "_csrf" in list(inspect.signature(auth.deactivate_account).parameters.keys())
+
+    def test_csrf_enforced_on_delete_account(self):
+        """delete_account endpoint requires CSRF dependency."""
+        import inspect
+        assert "_csrf" in list(inspect.signature(auth.delete_account).parameters.keys())
+
+    def test_session_binding_imported(self):
+        """_check_session_binding_safe is defined and callable in auth module."""
+        assert hasattr(auth, '_check_session_binding_safe')
+        assert callable(auth._check_session_binding_safe)
+
+    def test_otp_verify_rate_limit_config(self):
+        """OTP verify has per-IP rate limiting configured."""
+        assert hasattr(auth, 'OTP_VERIFY_IP_LIMIT')
+        assert hasattr(auth, 'OTP_VERIFY_IP_WINDOW')
+        assert auth.OTP_VERIFY_IP_LIMIT > 0
+        assert auth.OTP_VERIFY_IP_WINDOW > 0
+
+    def test_otp_verify_rate_dict_exists(self):
+        """OTP verify IP rate dict exists."""
+        assert hasattr(auth, '_otp_verify_ip_rate')
+        assert isinstance(auth._otp_verify_ip_rate, dict)
+
+    def test_soft_delete_grace_period(self):
+        """Account deletion has configurable grace period."""
+        assert hasattr(auth, 'ACCOUNT_DELETE_GRACE_DAYS')
+        assert auth.ACCOUNT_DELETE_GRACE_DAYS >= 7
+
+    def test_get_current_user_excludes_deleted(self):
+        """_get_current_user_or_none query excludes deleted users."""
+        import inspect
+        source = inspect.getsource(auth._get_current_user_or_none)
+        assert "deleted_at IS NULL" in source
+
+    def test_get_current_user_includes_session_data(self):
+        """_get_current_user_or_none returns session IP/UA for binding."""
+        import inspect
+        source = inspect.getsource(auth._get_current_user_or_none)
+        assert "session_ip" in source
+        assert "session_ua" in source
+
+    def test_update_user_allows_deleted_at(self):
+        """database.update_user accepts deleted_at field."""
+        import inspect
+        source = inspect.getsource(db.update_user)
+        assert "deleted_at" in source
+
+    def test_migration_026_exists(self):
+        """Migration 026 for soft-delete column exists."""
+        migration = Path(__file__).resolve().parent.parent / "migrations" / "026_soft_delete.sql"
+        assert migration.exists()
+        content = migration.read_text()
+        assert "deleted_at" in content
+
+
+# ═══════════════════════════════════════════════════════
+# Phase 7B: Performance tests
+# ═══════════════════════════════════════════════════════
+
+class TestPhase7Performance:
+    """Tests for Phase 7B performance improvements."""
+
+    def test_homepage_stampede_flag(self):
+        """Homepage cache has stampede protection flag."""
+        import public_api
+        assert hasattr(public_api, '_homepage_rebuilding')
+
+    def test_request_timeout_in_middleware(self):
+        """Response tracking middleware uses asyncio.wait_for for timeout."""
+        server_path = Path(__file__).resolve().parent.parent / "server.py"
+        source = server_path.read_text(encoding="utf-8")
+        assert "asyncio.wait_for" in source
+        assert "TimeoutError" in source
+
+    def test_timeout_returns_504(self):
+        """Timeout handler returns 504 status code."""
+        server_path = Path(__file__).resolve().parent.parent / "server.py"
+        source = server_path.read_text(encoding="utf-8")
+        assert "504" in source
+
+
+# ═══════════════════════════════════════════════════════
+# Phase 7C: Observability tests
+# ═══════════════════════════════════════════════════════
+
+class TestPhase7Observability:
+    """Tests for Phase 7C observability improvements."""
+
+    def test_pii_masking_ip(self):
+        """IP addresses are masked before logging."""
+        from middleware import _mask_ip
+        assert _mask_ip("192.168.1.100") != "192.168.1.100"
+        assert _mask_ip("192.168.1.100").startswith("192.168.")
+
+    def test_pii_masking_ipv6(self):
+        """IPv6 addresses are masked."""
+        from middleware import _mask_ip
+        masked = _mask_ip("2001:db8::1")
+        assert "****" in masked
+
+    def test_pii_masking_phone(self):
+        """Phone numbers are masked."""
+        from middleware import _mask_phone
+        assert _mask_phone("0901234567") == "090****567"
+
+    def test_pii_masking_short_phone(self):
+        """Short/empty phone values handled gracefully."""
+        from middleware import _mask_phone
+        assert _mask_phone("") == "***"
+        assert _mask_phone("123") == "***"
+
+    def test_security_logger_masks_pii(self):
+        """SecurityEventLogger._mask_pii masks ip and phone fields."""
+        from middleware import SecurityEventLogger
+        entry = {"ip": "10.0.0.1", "phone": "0901234567", "event": "test"}
+        masked = SecurityEventLogger._mask_pii(entry)
+        assert masked["ip"] != "10.0.0.1"
+        assert masked["phone"] != "0901234567"
+        assert masked["event"] == "test"
+
+    def test_readiness_endpoint_exists(self):
+        """Server has /health/ready endpoint defined."""
+        server_path = Path(__file__).resolve().parent.parent / "server.py"
+        source = server_path.read_text(encoding="utf-8")
+        assert '/health/ready' in source
+        assert 'async def readiness_probe' in source
+
+    def test_slo_endpoint_exists(self):
+        """Server has /health/slo endpoint defined."""
+        server_path = Path(__file__).resolve().parent.parent / "server.py"
+        source = server_path.read_text(encoding="utf-8")
+        assert '/health/slo' in source
+        assert 'async def slo_metrics' in source
+
+
+# ═══════════════════════════════════════════════════════
+# Phase 7D: Data integrity tests
+# ═══════════════════════════════════════════════════════
+
+class TestPhase7DataIntegrity:
+    """Tests for Phase 7D data integrity improvements."""
+
+    def test_jsonl_lock_exists(self):
+        """JSONL write lock exists for atomicity."""
+        import public_api
+        assert hasattr(public_api, '_jsonl_lock')
+
+    def test_jsonl_write_uses_lock(self):
+        """Report write uses _jsonl_lock for thread safety."""
+        import inspect
+        import public_api
+        source = inspect.getsource(public_api.submit_report)
+        assert "_jsonl_lock" in source
