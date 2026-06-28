@@ -33,7 +33,7 @@ import analytics
 
 logger = logging.getLogger("admin")
 import site_settings
-from database import db
+from database import db, escape_like as _escape_like
 
 try:
     from cost_tracker import get_cost_report as _get_cost_report
@@ -275,21 +275,20 @@ async def list_entities(
 ):
     """Danh sách entities với filter — đọc từ database."""
     def _query():
-        if q:
-            all_matches = db.search_entities(q=q, entity_type=type, area=area, limit=10000, offset=0)
-        elif type:
-            all_matches = None
-            results = db.list_entities(entity_type=type, area=area, limit=limit, offset=offset)
+        if q or orphans_only:
+            all_matches = db.search_entities(q=q, entity_type=type, area=area, limit=10000, offset=0) if q else db.list_entities(entity_type=type, area=area, limit=10000, offset=0)
         else:
             all_matches = None
-            results = db.list_entities(area=area, limit=limit, offset=offset)
+            results = db.list_entities(entity_type=type, area=area, limit=limit, offset=offset)
 
         if include_places:
-            places = db.list_entities(entity_type=None, limit=1000, offset=0)
+            with db._conn() as conn:
+                place_rows = db._fetchall(conn, "SELECT * FROM entities WHERE type = 'place' ORDER BY name LIMIT 1000", ())
+            places = [db._parse_entity(r) for r in place_rows]
             if all_matches is not None:
-                all_matches = all_matches + [p for p in places if p["type"] == "place"]
+                all_matches = all_matches + places
             else:
-                results = results + [p for p in places if p["type"] == "place"]
+                results = results + places
 
         if orphans_only:
             with db._conn() as conn:
@@ -298,14 +297,12 @@ async def list_entities(
                 rel_ids = {db._row_to_dict(r)["eid"] for r in rows}
             if all_matches is not None:
                 all_matches = [e for e in all_matches if e.get("type") != "place" and e["id"] not in rel_ids]
-            else:
-                results = [e for e in results if e.get("type") != "place" and e["id"] not in rel_ids]
 
         if all_matches is not None:
             total = len(all_matches)
             items = all_matches[offset:offset + limit]
         else:
-            total = len(results)
+            total = db.count_entities_filtered(entity_type=type, area=area)
             items = results
 
         place_ids = list({e["placeId"] for e in items if e.get("placeId")})
@@ -1873,8 +1870,9 @@ async def list_users(
     conditions = ["1=1"]
     params = []
     if search:
-        conditions.append(f"(display_name ILIKE {ph} OR phone LIKE {ph})")
-        params.extend([f"%{search}%", f"%{search}%"])
+        search_esc = _escape_like(search)
+        conditions.append(f"(display_name ILIKE {ph} ESCAPE '\\' OR phone LIKE {ph} ESCAPE '\\')")
+        params.extend([f"%{search_esc}%", f"%{search_esc}%"])
     where = " AND ".join(conditions)
     params.extend([limit, offset])
     def _query():
@@ -1944,7 +1942,8 @@ async def unban_user(user_id: str):
             target = db._fetchone(conn, f"SELECT is_active FROM users WHERE id::text = {ph}", (user_id,))
             if not target:
                 raise HTTPException(404, "Không tìm thấy người dùng")
-            if target["is_active"]:
+            td = db._row_to_dict(target)
+            if td["is_active"]:
                 raise HTTPException(400, "Người dùng không bị ban")
             db._execute(conn, f"""
                 UPDATE users SET is_active = TRUE WHERE id::text = {ph}
@@ -1963,7 +1962,8 @@ async def set_user_role(user_id: str, role: str = Query(..., pattern="^(user|mod
             target = db._fetchone(conn, f"SELECT is_active FROM users WHERE id::text = {ph}", (user_id,))
             if not target:
                 raise HTTPException(404, "Không tìm thấy người dùng")
-            if not target["is_active"]:
+            td = db._row_to_dict(target)
+            if not td["is_active"]:
                 raise HTTPException(400, "Không thể gán quyền cho tài khoản đã bị ban")
             db._execute(conn, f"""
                 UPDATE users SET role = {ph} WHERE id::text = {ph}

@@ -2071,3 +2071,50 @@ class TestAdminBugFixes:
         assert filter_idx != -1
         assert total_idx < filter_idx, \
             "total_images must be computed BEFORE filter is applied"
+
+    def test_entity_list_pagination_uses_count(self):
+        """Non-search entity list must use count_entities_filtered for total, not len(results)."""
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("def list_entities")
+        assert idx != -1
+        block = src[idx:idx+2500]
+        assert "count_entities_filtered" in block, \
+            "Non-search path must use count_entities_filtered for accurate pagination total"
+
+    def test_include_places_queries_places_directly(self):
+        """include_places must query places from DB, not list_entities (which excludes places)."""
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("def list_entities")
+        assert idx != -1
+        block = src[idx:idx+2500]
+        assert "type = 'place'" in block, \
+            "include_places should query entities WHERE type = 'place' directly"
+
+    def test_user_search_like_escaped(self):
+        """Admin user search must escape LIKE wildcards in search term."""
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("def list_users")
+        assert idx != -1
+        block = src[idx:idx+1500]
+        assert "_escape_like" in block or "escape_like" in block, \
+            "list_users search must escape LIKE wildcards"
+        assert "ESCAPE" in block, \
+            "list_users LIKE clause must have ESCAPE"
+
+    def test_unban_user_uses_row_to_dict(self):
+        """unban_user must use _row_to_dict before dict-style access."""
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("def unban_user")
+        assert idx != -1
+        block = src[idx:idx+800]
+        assert "_row_to_dict" in block, \
+            "unban_user must convert fetchone result with _row_to_dict"
+
+    def test_set_user_role_uses_row_to_dict(self):
+        """set_user_role must use _row_to_dict before dict-style access."""
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("def set_user_role")
+        assert idx != -1
+        block = src[idx:idx+800]
+        assert "_row_to_dict" in block, \
+            "set_user_role must convert fetchone result with _row_to_dict"
