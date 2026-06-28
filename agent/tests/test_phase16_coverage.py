@@ -1,6 +1,7 @@
 """
-Phase 16-17 test coverage: tools.py schema validation, seo.py helpers,
-moderation auto-escalation, and cross-module consistency.
+Phase 16-17+ test coverage: tools.py schema validation, seo.py helpers,
+moderation auto-escalation, cross-module consistency, path validation,
+rate limiting, SELECT * removal, query param constraints.
 """
 import json
 import sys
@@ -638,3 +639,59 @@ class TestQueryParamConstraints:
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
         assert "_POST_COLS" in src
         assert "_COMMENT_COLS" in src
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  Comprehensive security posture verification
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestSecurityPosture:
+    """Verify overall security hardening across the backend."""
+
+    def test_no_user_input_in_admin_errors(self):
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        assert "f\"Entity '{entity_id}'" not in src
+
+    def test_csrf_on_all_saved_mutations(self):
+        src = (Path(__file__).resolve().parent.parent / "saved.py").read_text(encoding="utf-8")
+        for fn in ("add_saved", "remove_saved", "merge_saved"):
+            idx = src.find(f"def {fn}")
+            assert idx != -1
+            block = src[idx:idx+200]
+            assert "require_csrf" in block, f"{fn} missing CSRF"
+
+    def test_csrf_on_all_visit_mutations(self):
+        src = (Path(__file__).resolve().parent.parent / "visits.py").read_text(encoding="utf-8")
+        for fn in ("set_visit", "remove_visit"):
+            idx = src.find(f"def {fn}")
+            block = src[idx:idx+200]
+            assert "require_csrf" in block, f"{fn} missing CSRF"
+
+    def test_csrf_on_all_plan_mutations(self):
+        src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
+        for fn in ("add_plan", "remove_plan", "merge_plans", "publish_plan"):
+            idx = src.find(f"def {fn}")
+            block = src[idx:idx+200]
+            assert "require_csrf" in block, f"{fn} missing CSRF"
+
+    def test_require_pg_on_ugc_routers(self):
+        for module in ("saved", "visits", "plans", "notifications", "social"):
+            src = (Path(__file__).resolve().parent.parent / f"{module}.py").read_text(encoding="utf-8")
+            assert "_require_pg" in src, f"{module}.py missing _require_pg"
+
+    def test_validate_path_id_coverage(self):
+        for module, fns in [
+            ("saved", ["remove_saved"]),
+            ("visits", ["check_visit", "remove_visit"]),
+            ("plans", ["remove_plan", "publish_plan", "get_shared"]),
+        ]:
+            src = (Path(__file__).resolve().parent.parent / f"{module}.py").read_text(encoding="utf-8")
+            for fn in fns:
+                idx = src.find(f"def {fn}")
+                block = src[idx:idx+300]
+                assert "validate_path_id" in block, f"{module}.{fn} missing validate_path_id"
+
+    def test_no_select_star_in_ugc_files(self):
+        for module in ("social", "auth", "notifications"):
+            src = (Path(__file__).resolve().parent.parent / f"{module}.py").read_text(encoding="utf-8")
+            assert "SELECT *" not in src, f"{module}.py still has SELECT *"
