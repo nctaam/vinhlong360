@@ -323,7 +323,7 @@ useSeoMeta({
   title: 'Bản đồ du lịch Vĩnh Long — vinhlong360',
   description: 'Bản đồ tương tác hiển thị tất cả điểm du lịch, đặc sản, lưu trú, làng nghề tại Vĩnh Long, Bến Tre, Trà Vinh.',
   ogTitle: 'Bản đồ du lịch — vinhlong360',
-  ogDescription: 'Xem tất cả điểm đến trên bản đồ tương tác.',
+  ogDescription: 'Bản đồ tương tác hiển thị tất cả điểm du lịch, đặc sản, lưu trú, làng nghề tại Vĩnh Long, Bến Tre, Trà Vinh.',
 })
 
 useHead({

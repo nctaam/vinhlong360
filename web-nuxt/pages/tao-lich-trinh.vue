@@ -175,11 +175,11 @@
               <small>{{ plan.stops.length }} điểm · Lưu {{ formatDate(plan.savedAt) }}</small>
             </button>
             <div class="saved-plan-actions">
-              <button v-if="plan.id" type="button" :class="['btn btn-sm', plan.is_public ? 'btn-primary' : 'btn-ghost']" @click="publishPlan(pi)">
-                {{ plan.is_public ? '🌐 Công khai' : '🔒 Riêng tư' }}
+              <button v-if="plan.id" type="button" :class="['btn btn-sm', plan.is_public ? 'btn-primary' : 'btn-ghost']" :disabled="planBusy === pi" @click="publishPlan(pi)">
+                {{ planBusy === pi ? '…' : plan.is_public ? '🌐 Công khai' : '🔒 Riêng tư' }}
               </button>
-              <button type="button" class="btn btn-sm btn-ghost" @click="sharePlan(pi)">Chia sẻ</button>
-              <button type="button" class="btn btn-sm btn-ghost danger" @click="deletePlan(pi)">Xóa</button>
+              <button type="button" class="btn btn-sm btn-ghost" :disabled="planBusy === pi" @click="sharePlan(pi)">Chia sẻ</button>
+              <button type="button" class="btn btn-sm btn-ghost danger" :disabled="planBusy === pi" @click="deletePlan(pi)">Xóa</button>
             </div>
           </div>
         </div>
@@ -215,6 +215,7 @@ const { favorites: favList, count: favCount } = useFavorites()
 const { confirmDialog } = useConfirm()
 const { isLoggedIn, authHeaders } = useAuth()
 const routeError = ref(false)   // OSRM không tính được route (≥2 điểm có toạ độ)
+const planBusy = ref(-1)
 
 const TYPES = CARD_TYPES as readonly string[]
 const typeChips = TYPES.map(t => ({
@@ -409,17 +410,17 @@ async function loadPlan(idx: number) {
 async function deletePlan(idx: number) {
   const plan = savedPlans.value[idx]
   if (!await confirmDialog(`Xóa lịch trình "${plan?.title || 'chưa đặt tên'}"?`, { danger: true, confirmText: 'Xóa' })) return
-  if (plan?.id && isLoggedIn.value) {
-    try {
+  planBusy.value = idx
+  try {
+    if (plan?.id && isLoggedIn.value) {
       await $fetch(`/api/my-plans/${plan.id}`, { method: 'DELETE', headers: authHeaders() })
-    } catch (e: unknown) {
-      showToast(extractErrorMessage(e, 'Không thể xoá trên tài khoản'), 'error')
-      return
     }
-  }
-  savedPlans.value.splice(idx, 1)
-  persistLocal(savedPlans.value)
-  showToast('Đã xóa lịch trình', 'success')
+    savedPlans.value.splice(idx, 1)
+    persistLocal(savedPlans.value)
+    showToast('Đã xóa lịch trình', 'success')
+  } catch (e: unknown) {
+    showToast(extractErrorMessage(e, 'Không thể xoá trên tài khoản'), 'error')
+  } finally { planBusy.value = -1 }
 }
 
 const { show: showToast } = useToast()
@@ -427,6 +428,7 @@ const { show: showToast } = useToast()
 async function publishPlan(idx: number) {
   const plan = savedPlans.value[idx]
   if (!plan?.id) return
+  planBusy.value = idx
   const next = !plan.is_public
   try {
     await $fetch(`/api/my-plans/${plan.id}/publish`, { method: 'POST', headers: authHeaders(), body: { is_public: next } })
@@ -439,6 +441,7 @@ async function publishPlan(idx: number) {
       showToast('Đã chuyển về riêng tư', 'success')
     }
   } catch (e: unknown) { showToast(extractErrorMessage(e, 'Không thể đổi trạng thái'), 'error') }
+  finally { planBusy.value = -1 }
 }
 
 function sharePlan(idx: number) {

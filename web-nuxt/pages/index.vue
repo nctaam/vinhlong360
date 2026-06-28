@@ -488,7 +488,7 @@ useSeoMeta({
   title: ss('seo.default_title', 'vinhlong360 — Du lịch & Sản phẩm địa phương'),
   description: ss('seo.default_description', 'Cổng du lịch và sản phẩm địa phương Vĩnh Long: trải nghiệm miệt vườn, đặc sản theo mùa, OCOP, làng nghề và lịch trình gợi ý.'),
   ogTitle: ss('seo.default_title', 'vinhlong360 — Du lịch & Sản phẩm địa phương'),
-  ogDescription: ss('branding.tagline', 'Khám phá Vĩnh Long theo cách của người bản địa.'),
+  ogDescription: ss('seo.default_description', 'Cổng du lịch và sản phẩm địa phương Vĩnh Long: trải nghiệm miệt vườn, đặc sản theo mùa, OCOP, làng nghề và lịch trình gợi ý.'),
   ogImage: ss('branding.og_image', 'https://vinhlong360.vn/img/og-default.jpg'),
 })
 
