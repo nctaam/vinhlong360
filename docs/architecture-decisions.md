@@ -1,25 +1,27 @@
 # VinhLong360 Architecture Decisions
 
-Date: 2026-06-12
-Status: Accepted for stabilization sprint
+Date: 2026-06-12 (updated 2026-06-27)
+Status: Accepted — reflects decisions through GĐ13
 
 ## Decisions
 
-1. The primary frontend is `web-nuxt`.
-   - `web` is treated as the legacy/static frontend during migration.
-   - `web-astro` is treated as an optional SEO/static generation surface.
+1. The **only** frontend is `web-nuxt` (Nuxt 4 SSR).
+   - `web-astro` has been removed (commit 949c843).
+   - `web/` retains only `data.json` (tracked seed), `data.js` (legacy export), `admin*.html` (admin UI), and `media/`. These are candidates for removal in GĐ7.
 
 2. The primary backend is the FastAPI application in `agent`.
    - New public API behavior should be implemented behind explicit routers/services.
    - Import-time side effects should be reduced as server code is touched.
 
-3. The primary database is PostgreSQL.
-   - Docker Compose already provisions PostgreSQL as `vl360-postgres`.
-   - SQLite is only a local/dev fallback unless a specific test depends on it.
+3. The primary database is **PostgreSQL** (the source of truth for all knowledge data since GĐ3).
+   - Docker Compose provisions PostgreSQL as `vl360-postgres`.
+   - SQLite is a local/dev cache for the knowledge base only.
+   - **UGC/auth is Postgres-only** (GĐ3.1 decision): `_require_pg` guards on 3 UGC routers return 503 on SQLite. No SQLite port for users/posts/comments/notifications/follows/reviews. Rationale: dev/prod parity, avoid maintaining 2 SQL dialects.
 
-4. Static data files are build/cache artifacts, not the long-term source of truth.
-   - `web/data.json` and `web/data.js` may remain during migration.
-   - Data exports must follow the same schema as the API contract.
+4. **Database is the source of truth** (DB-as-SoT, finalized GĐ3).
+   - `web/data.json` is an **export** from the database, not the source. It serves as a tracked seed for rebuilding SQLite dev cache and as a prerender data source.
+   - Admin CRUD writes to DB → `knowledge.reload()` → in-memory graph updated (split-brain eliminated).
+   - `web/data.js` (`window.__DATA__`) is a legacy format kept for backward compatibility.
 
 5. The canonical entity coordinate field is `coordinates`.
    - Existing `coords` values may remain temporarily for legacy compatibility.
@@ -50,10 +52,34 @@ Redis
     - Use `python agent/database.py --replace` to rebuild SQLite from `web/data.json`.
     - The command backs up the SQLite file before replacing knowledge tables.
 
-## Non-goals for this sprint
+11. **CSS: pure tokens, no Tailwind** (Design System decision, 2026-06-14).
+    - Keep hand-written CSS with 3-tier design tokens (`variables.css`).
+    - Keep the existing color system (amber/green Mekong palette).
+    - Rationale: solo dev, existing CSS is manageable, Tailwind adds build complexity and learning curve for no proportional gain at this scale.
 
-- Rewrite the whole backend.
-- Delete the static frontend immediately.
-- Delete SQLite immediately.
+12. **3-tỉnh sáp nhập: chủ đề thay vì địa lý** (2026-06-18+).
+    - Vĩnh Long + Bến Tre + Trà Vinh merge into one province (NQ 1687/NQ-UBTVQH15).
+    - Homepage/navigation organized by **topic** (du lịch, sản phẩm, ẩm thực, lưu trú) not by 3 geographic zones.
+    - 124 xã/phường modeled at ward level (35 phường + 89 xã); no district level.
+    - `area` field (vinh-long/ben-tre/tra-vinh) retained for data provenance and filtering.
+
+13. **Showcase-only commerce** (GĐ13, §1.4).
+    - No booking, no cart, no payment on-site. CTA = Zalo/phone/website link only.
+    - Avoids NĐ52/85 e-commerce registration requirements.
+    - Revenue model: B2G contracts + premium listing (Track-H).
+
+14. **Anti-hallucination for data** (§1.4, enforced since GĐ2).
+    - Never fabricate addresses, phone numbers, seasonal data, or ward assignments.
+    - `placeId=None` for unclassifiable entities rather than guessing.
+    - `coords_approximate=true` flag for centroid-derived coordinates.
+    - Frontend shows "Gần đúng" badge when approximate.
+
+## Non-goals (updated)
+
+- ~~Rewrite the whole backend.~~ Stable; incremental improvement only.
+- ~~Delete the static frontend immediately.~~ `web-astro` removed; `web/` legacy cleanup in GĐ7.
+- ~~Delete SQLite immediately.~~ SQLite kept as dev cache; UGC is Postgres-only.
 - Deploy to a public production environment without an explicit release step.
 - Rotate secrets automatically from code.
+- Add Tailwind, heavy JS frameworks, or native app targets.
+- Self-generate data that requires real-world verification (addresses, phone numbers, seasonal data).

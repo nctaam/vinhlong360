@@ -50,7 +50,9 @@ export default defineNuxtConfig({
       viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
       title: 'vinhlong360 — Du lịch & Sản phẩm địa phương',
       meta: [
-        { name: 'description', content: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long: trải nghiệm miệt vườn, đặc sản theo mùa, OCOP, làng nghề và lịch trình gợi ý.' },
+        { name: 'description', content: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long – Bến Tre – Trà Vinh: trải nghiệm miệt vườn, đặc sản theo mùa, OCOP, làng nghề và lịch trình gợi ý.' },
+        { property: 'og:title', content: 'vinhlong360 — Du lịch & Sản phẩm địa phương' },
+        { property: 'og:description', content: 'Khám phá Vĩnh Long, Bến Tre, Trà Vinh: du lịch miệt vườn, đặc sản OCOP, làng nghề, lưu trú và lịch trình gợi ý.' },
         { name: 'theme-color', content: '#9C3D22', media: '(prefers-color-scheme: light)' },
         { name: 'theme-color', content: '#1a1a1a', media: '(prefers-color-scheme: dark)' },
         { name: 'color-scheme', content: 'light dark' },
@@ -70,6 +72,9 @@ export default defineNuxtConfig({
         { name: 'twitter:image', content: 'https://vinhlong360.vn/img/og-default.jpg' },
       ],
       link: [
+        { rel: 'canonical', href: 'https://vinhlong360.vn' },
+        { rel: 'preconnect', href: 'https://vinhlong360.vn' },
+        { rel: 'dns-prefetch', href: '//vinhlong360.vn' },
         { rel: 'preconnect', href: 'https://images.weserv.nl' },
         { rel: 'dns-prefetch', href: 'https://maptiles.openmap.vn' },
         { rel: 'sitemap', type: 'application/xml', href: '/sitemap.xml' },
@@ -83,6 +88,30 @@ export default defineNuxtConfig({
         // present — no flash-of-hidden, and full visibility when JS is off/slow.
         { children: "document.documentElement.classList.add('js')", tagPosition: 'head' },
         { innerHTML: "if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js')})}", type: 'text/javascript' },
+        {
+          type: 'application/ld+json',
+          innerHTML: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            'name': 'VinhLong360',
+            'alternateName': 'Khám phá Vĩnh Long – Bến Tre – Trà Vinh',
+            'url': 'https://vinhlong360.vn',
+            'description': 'Nền tảng khám phá du lịch, OCOP và cộng đồng cho vùng Vĩnh Long – Bến Tre – Trà Vinh',
+            'potentialAction': {
+              '@type': 'SearchAction',
+              'target': {
+                '@type': 'EntryPoint',
+                'urlTemplate': 'https://vinhlong360.vn/tim-kiem?q={search_term_string}',
+              },
+              'query-input': 'required name=search_term_string',
+            },
+            'publisher': {
+              '@type': 'Organization',
+              'name': 'VinhLong360',
+              'url': 'https://vinhlong360.vn',
+            },
+          }),
+        },
       ],
     },
   },
@@ -136,6 +165,8 @@ export default defineNuxtConfig({
     '/freshness/**': { proxy: `${apiBase}/freshness/**` },
     '/events': { proxy: `${apiBase}/events` },
     '/sitemap.xml': { proxy: `${apiBase}/sitemap.xml` },
+    '/sitemap-media.xml': { proxy: `${apiBase}/sitemap-media.xml` },
+    '/sitemap-index.xml': { proxy: `${apiBase}/sitemap-index.xml` },
     '/robots.txt': { proxy: `${apiBase}/robots.txt` },
   },
 

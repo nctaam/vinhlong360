@@ -1270,6 +1270,11 @@ def test_vn_phone_regex_patterns() -> None:
     assert validate_data.VN_PHONE.match("0909123456")
     assert validate_data.VN_PHONE.match("+84909123456")
     assert validate_data.VN_PHONE.match("02703822456")
+    assert validate_data.VN_PHONE.match("18006821")
+    assert validate_data.VN_PHONE.match("1800545413")
+    assert validate_data.VN_PHONE.match("19009247")
+    assert validate_data.VN_PHONE.match("115")
+    assert validate_data.VN_PHONE.match("113")
     assert not validate_data.VN_PHONE.match("12345")
     assert not validate_data.VN_PHONE.match("abc")
 
@@ -1902,3 +1907,219 @@ def test_validate_places_excluded_from_coords_without_address(tmp_path: Path) ->
     data_path.write_text(json.dumps(data), encoding="utf-8")
     _, stats = validate_data.validate(data, data_path)
     assert stats["coords_without_address"] == 0
+
+
+def test_validate_flags_unknown_entity_type(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "e1", "type": "totally_made_up", "name": "Bad", "summary": "x" * 60},
+            {"id": "e2", "type": "attraction", "name": "Good", "summary": "x" * 60},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+    assert stats["unknown_entity_types"] == 1
+    assert "unknown_entity_type" in {i.code for i in issues}
+
+
+def test_validate_no_unknown_type_for_valid_types(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": f"e-{t}", "type": t, "name": t, "summary": "x" * 60}
+            for t in ("attraction", "dish", "place", "person", "history", "cafe")
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+    assert stats["unknown_entity_types"] == 0
+    assert "unknown_entity_type" not in {i.code for i in issues}
+
+
+def test_validate_short_summary_examples(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "e1", "type": "dish", "name": "Short", "summary": "Hi"},
+            {"id": "e2", "type": "dish", "name": "Long enough", "summary": "x" * 60},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    _, stats = validate_data.validate(data, tmp_path / "data.json")
+    examples = stats.get("short_summary_examples", [])
+    assert any("e1" in ex for ex in examples)
+    assert not any("e2" in ex for ex in examples)
+
+
+def test_validate_dangling_rel_entity_ids(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "e1", "type": "attraction", "name": "A", "summary": "x" * 60},
+        ],
+        "relationships": [
+            {"source_id": "e1", "target_id": "ghost", "rel_type": "near"},
+        ],
+        "itineraries": [],
+    }
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+    ids = stats.get("dangling_rel_entity_ids", [])
+    assert "ghost" in ids
+    assert any("broken_relationships" == i.code for i in issues)
+
+
+# ── SEO_REQUIRED expanded keys (validator update 2026-06-28) ────────
+
+
+@pytest.mark.parametrize("attr_key", [
+    "price", "price_range", "ocop", "ocop_star", "ocop_certified", "brand",
+])
+def test_product_seo_any_key_passes(attr_key, tmp_path: Path) -> None:
+    """Product with ANY one of the expanded SEO keys should pass the SEO check."""
+    data = {
+        "entities": [
+            {"id": "p1", "type": "product", "name": "Sản phẩm", "summary": "Sản phẩm test",
+             "area": "vinh-long", "attributes": {attr_key: "test-value"}},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    cov = stats["seo_attr_coverage"]["product"]
+    assert cov["has_any_seo_attr"] == 1
+
+
+def test_product_seo_fails_without_any_key(tmp_path: Path) -> None:
+    """Product with none of the required keys should fail the SEO check."""
+    data = {
+        "entities": [
+            {"id": "p1", "type": "product", "name": "Sản phẩm", "summary": "Sản phẩm test",
+             "area": "vinh-long", "attributes": {"schema_type": "Product"}},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    cov = stats["seo_attr_coverage"]["product"]
+    assert cov["has_any_seo_attr"] == 0
+
+
+@pytest.mark.parametrize("attr_key", ["date_start", "startDate"])
+def test_event_seo_both_date_keys(attr_key, tmp_path: Path) -> None:
+    """Event with either date_start or startDate should pass."""
+    data = {
+        "entities": [
+            {"id": "ev1", "type": "event", "name": "Lễ hội", "summary": "Lễ hội test",
+             "area": "vinh-long", "attributes": {attr_key: "2026-01-15"}},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    cov = stats["seo_attr_coverage"]["event"]
+    assert cov["has_any_seo_attr"] == 1
+
+
+def test_drink_seo_coverage(tmp_path: Path) -> None:
+    """Drink type should be tracked in SEO coverage."""
+    data = {
+        "entities": [
+            {"id": "d1", "type": "drink", "name": "Nước dừa", "summary": "Thức uống",
+             "area": "vinh-long", "attributes": {"specialty": "Nước dừa tươi"}},
+            {"id": "d2", "type": "drink", "name": "Trà", "summary": "Thức uống",
+             "area": "vinh-long", "attributes": {}},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    cov = stats["seo_attr_coverage"]["drink"]
+    assert cov["total"] == 2
+    assert cov["has_any_seo_attr"] == 1
+    assert cov["per_attr"]["specialty"] == 1
+
+
+def test_quality_score_product_ocop_star_not_penalized() -> None:
+    """Product with ocop_star should get full SEO score (no -10 penalty)."""
+    entity = {
+        "id": "p", "type": "product", "name": "Cam sành Vĩnh Long",
+        "summary": "Mô tả đủ dài cho SEO, có nội dung hữu ích cho người đọc.",
+        "coordinates": [10.25, 106.0], "area": "vinh-long", "placeId": "xa-1",
+        "source": [{"url": "https://example.com"}],
+        "images": ["https://example.com/img.jpg"],
+        "confidence": 0.9,
+        "attributes": {"ocop_star": 4},
+    }
+    score = validate_data.entity_quality_score(entity)
+    assert score == 100
+
+
+def test_quality_score_product_brand_not_penalized() -> None:
+    """Product with only brand attr should still pass SEO check."""
+    entity = {
+        "id": "p", "type": "product", "name": "Kẹo dừa Bến Tre",
+        "summary": "Mô tả đủ dài cho SEO, có nội dung hữu ích cho người đọc.",
+        "coordinates": [10.25, 106.0], "area": "ben-tre", "placeId": "xa-1",
+        "source": [{"url": "https://example.com"}],
+        "images": ["https://example.com/img.jpg"],
+        "confidence": 0.9,
+        "attributes": {"brand": "Đặc sản Bến Tre"},
+    }
+    score = validate_data.entity_quality_score(entity)
+    assert score == 100
+
+
+def test_seo_required_product_has_all_expanded_keys() -> None:
+    """Verify the product SEO_REQUIRED list includes all expanded key names."""
+    product_keys = validate_data.SEO_REQUIRED["product"]
+    for key in ("price", "price_range", "ocop", "ocop_star", "ocop_certified", "brand"):
+        assert key in product_keys
+
+
+def test_seo_required_event_has_both_date_keys() -> None:
+    """Event should accept both date_start and startDate."""
+    event_keys = validate_data.SEO_REQUIRED["event"]
+    assert "date_start" in event_keys
+    assert "startDate" in event_keys
+
+
+def test_seo_required_attraction_has_expanded_keys() -> None:
+    """Attraction should check admission, hours, specialty, price_range."""
+    attr_keys = validate_data.SEO_REQUIRED["attraction"]
+    for key in ("admission", "hours", "specialty", "price_range"):
+        assert key in attr_keys
+
+
+def test_quality_score_itinerary_not_penalized_for_coords_area() -> None:
+    """Itinerary entities should NOT be penalized for missing coords/area/placeId."""
+    entity = {
+        "id": "it-test", "type": "itinerary", "name": "Lộ trình test",
+        "summary": "Mô tả đủ dài cho SEO và nội dung hữu ích cho người đọc.",
+        "placeId": "xa-1",
+        "source": [{"url": "https://example.com"}],
+        "images": ["https://example.com/img.jpg"],
+        "confidence": 1.0,
+    }
+    score = validate_data.entity_quality_score(entity)
+    assert score == 100
+
+
+def test_quality_score_itinerary_without_placeId_or_area() -> None:
+    """Itinerary without placeId and area should NOT lose points for those."""
+    entity = {
+        "id": "it-min", "type": "itinerary", "name": "Lộ trình",
+        "summary": "Mô tả đủ dài cho SEO và nội dung hữu ích cho người đọc.",
+        "source": [{"url": "https://example.com"}],
+        "images": ["https://example.com/img.jpg"],
+        "confidence": 1.0,
+    }
+    score = validate_data.entity_quality_score(entity)
+    assert score == 100

@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -8,10 +6,12 @@ services:
       POSTGRES_DB: vinhlong360
       POSTGRES_USER: vl360
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vl360_dev_password}
+      POSTGRES_INITDB_ARGS: "--wal-segsize=16"
     ports:
       - "5432:5432"
     volumes:
       - pg-data:/var/lib/postgresql/data
+      - pg-wal:/var/lib/postgresql/wal
       - ./init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     restart: unless-stopped
     healthcheck:
@@ -109,8 +109,64 @@ services:
       - nuxt
     restart: unless-stopped
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: vl360-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./scripts/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=30d'
+      - '--storage.tsdb.retention.size=1GB'
+    restart: unless-stopped
+    depends_on:
+      - agent
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: vl360-grafana
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./scripts/monitoring/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+  loki:
+    image: grafana/loki:latest
+    container_name: vl360-loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki-data:/loki
+      - ./scripts/monitoring/loki-config.yml:/etc/loki/local-config.yaml:ro
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: vl360-promtail
+    volumes:
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./scripts/monitoring/promtail-config.yml:/etc/promtail/config.yml:ro
+    depends_on:
+      - loki
+    restart: unless-stopped
+
 volumes:
   pg-data:
+  pg-wal:
   redis-data:
   agent-data:
   memory-data:
+  prometheus-data:
+  grafana-data:
+  loki-data:

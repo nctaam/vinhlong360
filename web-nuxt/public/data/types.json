@@ -1,0 +1,98 @@
+[
+  {
+    "type": "product",
+    "label": "Đặc sản",
+    "emoji": "🎁",
+    "count": 218
+  },
+  {
+    "type": "attraction",
+    "label": "Tham quan",
+    "emoji": "📸",
+    "count": 202
+  },
+  {
+    "type": "restaurant",
+    "label": "Nhà hàng",
+    "emoji": "🍽️",
+    "count": 191
+  },
+  {
+    "type": "history",
+    "label": "Di tích",
+    "emoji": "🏛️",
+    "count": 188
+  },
+  {
+    "type": "accommodation",
+    "label": "Lưu trú",
+    "emoji": "🏨",
+    "count": 164
+  },
+  {
+    "type": "nature",
+    "label": "Thiên nhiên",
+    "emoji": "🌿",
+    "count": 125
+  },
+  {
+    "type": "dish",
+    "label": "Ẩm thực",
+    "emoji": "🍜",
+    "count": 120
+  },
+  {
+    "type": "experience",
+    "label": "Trải nghiệm",
+    "emoji": "🎯",
+    "count": 92
+  },
+  {
+    "type": "craft_village",
+    "label": "Làng nghề",
+    "emoji": "🏺",
+    "count": 86
+  },
+  {
+    "type": "event",
+    "label": "Sự kiện",
+    "emoji": "🎉",
+    "count": 67
+  },
+  {
+    "type": "facility",
+    "label": "Tiện ích",
+    "emoji": "🏢",
+    "count": 58
+  },
+  {
+    "type": "cafe",
+    "label": "Cà phê",
+    "emoji": "☕",
+    "count": 56
+  },
+  {
+    "type": "person",
+    "label": "Nhân vật",
+    "emoji": "👤",
+    "count": 35
+  },
+  {
+    "type": "itinerary",
+    "label": "Lộ trình",
+    "emoji": "🗺️",
+    "count": 16
+  },
+  {
+    "type": "drink",
+    "label": "Thức uống",
+    "emoji": "🥤",
+    "count": 1
+  },
+  {
+    "type": "organization",
+    "label": "Tổ chức",
+    "emoji": "🤝",
+    "count": 1
+  }
+]

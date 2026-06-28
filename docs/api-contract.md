@@ -1,50 +1,57 @@
 # VinhLong360 API Contract
 
-Date: 2026-06-12
-Status: Stabilization draft
+Date: 2026-06-12 (updated 2026-06-27)
+Status: Production — reflects actual endpoints after GĐ13
 
-This contract defines the shape that the FastAPI backend and Nuxt frontend should converge on.
+This contract defines the data shapes and API endpoints shared between the FastAPI backend (`agent/`) and the Nuxt frontend (`web-nuxt/`).
 
-## Entity
+## Data Shapes
+
+### Entity
 
 ```json
 {
   "id": "entity-id",
   "name": "Display name",
-  "type": "attraction",
+  "type": "attraction|place|dish|drink|product|itinerary|facility|organization|accommodation|experience|craft_village|event",
   "summary": "Short description",
   "description": "Long description",
   "coordinates": [10.0, 106.0],
+  "coords_approximate": false,
   "area": "vinh-long",
-  "placeId": "place-id",
-  "source": "source label or URL",
-  "season": { "months": [6, 7], "peak": [6] },
+  "placeId": "p-xa-name",
+  "level": "xa|phuong|tinh|null",
+  "parentId": "parent-entity-id|null",
+  "source": [{"title": "Source name", "url": "https://..."}],
+  "season": {"months": [6, 7], "peak": [6]},
   "images": ["https://cdn/.../img1.webp"],
-  "attributes": {}
+  "attributes": {},
+  "confidence": 1.0,
+  "updatedAt": "2026-06-22T10:00:00Z",
+  "created_at": "2026-06-22 10:00:00"
 }
 ```
 
 Rules:
-
 - `id`, `name`, and `type` are required.
-- `coordinates` is the canonical coordinate field.
-- `images` is an array of image URLs (DB column `images JSONB`; frontend đọc `entity.images[0]` làm cover + gallery). Mặc định `[]`.
-- `season` (nếu có) gồm `months` và `peak` (mảng số tháng 1..12) — dùng cho wedge "theo mùa".
-- Coordinates use `[lat, lng]` order.
-- `coords` is legacy compatibility only.
-- `area` identifies the province-level content bucket (`vinh-long`, `ben-tre`, or `tra-vinh`) when known.
-- `placeId` may link an entity to a more specific place entity; `area` should not blindly inherit from `placeId` if entity text contradicts it.
-- `attributes` must be an object when present.
+- `coordinates` is canonical (`[lat, lng]`). `coords` is legacy-only.
+- `coords_approximate` — true when coordinates are derived from ward centroid (not exact).
+- `images` — array of URLs, default `[]`. First element is the cover image.
+- `source` — array of `{title, url}` objects (may also be a plain string for legacy data).
+- `season` — `months` (array 1..12) and optional `peak` subset.
+- `area` — province-level bucket: `vinh-long`, `ben-tre`, or `tra-vinh`.
+- `placeId` — links to a ward/commune entity. May be `null` for unclassified entities.
+- `level` — only for place entities: `xa`, `phuong`, or `tinh`.
+- `attributes` — always an object when present.
+- `confidence` — 0.0–1.0, data trustworthiness score.
 
-## Relationship
-
-Public relationship responses should use this canonical shape:
+### Relationship
 
 ```json
 {
   "source_id": "source-entity-id",
   "target_id": "target-entity-id",
-  "rel_type": "near",
+  "rel_type": "near|related_to|associated_with|located_in|part_of|produced_in",
   "target_name": "Target display name",
   "target_type": "place",
   "source_name": "Source display name",
@@ -52,56 +59,212 @@ Public relationship responses should use this canonical shape:
 }
 ```
 
-Compatibility aliases may be included during migration:
+Legacy aliases (`from_id`, `to_id`, `type`) may be included during migration.
+
+### Itinerary
 
 ```json
 {
-  "from_id": "source-entity-id",
-  "to_id": "target-entity-id",
-  "type": "near"
+  "id": "itinerary-id",
+  "name": "2 ngày 1 đêm Vĩnh Long",
+  "summary": "...",
+  "area": "vinh-long",
+  "stops": [
+    {"entity_id": "entity-id", "name": "Stop name", "day": 1, "order": 1, "note": "..."}
+  ],
+  "duration": "2 ngày 1 đêm",
+  "attributes": {}
 }
 ```
 
-Rules:
+---
 
-- New Nuxt code should prefer `source_id`, `target_id`, and `rel_type`.
-- Backend may include both canonical fields and legacy aliases until all clients are migrated.
-- Relationship endpoints must not return links to missing entity IDs.
+## API Endpoints
 
-## Core endpoints
+### Public API (no auth required)
 
-### `GET /api/entities`
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/entities` | List entities (filters: type, area, q, month, limit, offset) |
+| GET | `/api/entities/{id}` | Entity detail with relationships + quality score |
+| GET | `/api/entities/{id}/relationships` | Paginated relationships |
+| GET | `/api/places` | List place entities (xã/phường/tỉnh) |
+| GET | `/api/facilities` | List facility entities |
+| GET | `/api/places/{id}/overview` | Place overview with child entity summary |
+| GET | `/api/itineraries` | List itineraries |
+| GET | `/api/itineraries/{id}` | Itinerary detail |
+| GET | `/api/search` | Full-text search entities + itineraries |
+| GET | `/api/stats` | Public stats (entity counts, etc.) |
+| GET | `/api/homepage` | Homepage data (seasonal, events, featured) |
+| GET | `/api/events` | Upcoming events |
+| GET | `/api/site-settings` | Public site settings (cached 60s) |
+| GET | `/api/mentions` | @-mention autocomplete |
+| POST | `/api/report` | Report content/entity (rate-limited) |
+| POST | `/api/client-error` | Client-side error reporting |
 
-Returns a list of entities. Items should follow the Entity shape.
+### Chat
 
-### `GET /api/entities/{id}`
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/chat` | Chat (JSON request/response) |
+| GET | `/chat/stream` | SSE streaming chat |
 
-Returns one entity by ID.
+### Authentication (`/api/auth`)
 
-### `GET /api/entities/{id}/relationships`
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/auth/request-otp` | No | Request SMS OTP |
+| POST | `/api/auth/verify-otp` | No | Verify OTP, create session |
+| POST | `/api/auth/check-phone` | No | Check if phone has password |
+| POST | `/api/auth/login` | No | Login with phone + password |
+| POST | `/api/auth/set-password` | Yes | Set/update password |
+| POST | `/api/auth/logout` | Yes | Logout + revoke session |
+| GET | `/api/auth/me` | Yes | Current user profile |
+| PUT | `/api/auth/profile` | Yes | Update profile |
+| POST | `/api/auth/avatar` | Yes | Upload avatar |
+| POST | `/api/auth/cover` | Yes | Upload cover image |
+| DELETE | `/api/auth/account` | Yes | Permanently delete account |
+| POST | `/api/auth/deactivate` | Yes | Deactivate account |
+| GET | `/api/auth/sessions` | Yes | List active sessions |
+| DELETE | `/api/auth/sessions/{id}` | Yes | Revoke session |
+| GET | `/api/auth/check-username/{username}` | No | Check username availability |
+| GET | `/api/auth/login-history` | Yes | Login history |
+| GET | `/api/auth/privacy` | Yes | Privacy settings |
+| PUT | `/api/auth/privacy` | Yes | Update privacy settings |
 
-Returns canonical Relationship items for direct relationships.
+### Social & UGC (`/api`, requires Postgres)
 
-### `GET /api/places`
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/posts` | Yes | Create post |
+| GET | `/api/posts/{id}` | Optional | Get post |
+| DELETE | `/api/posts/{id}` | Yes | Delete own post |
+| PATCH | `/api/posts/{id}` | Yes | Update post |
+| GET | `/api/feed` | Optional | Community feed |
+| GET | `/api/feed/following` | Yes | Following feed |
+| GET | `/api/posts/{id}/comments` | No | List comments |
+| POST | `/api/posts/{id}/comments` | Yes | Add comment |
+| POST | `/api/posts/{id}/like` | Yes | Like/unlike |
+| POST | `/api/posts/{id}/bookmark` | Yes | Bookmark/unbookmark |
+| GET | `/api/me/bookmarks` | Yes | List bookmarks |
+| POST | `/api/posts/{id}/best-answer` | Yes | Mark best answer |
+| GET | `/api/users/{id}` | No | User profile |
+| GET | `/api/users/{id}/posts` | No | User's posts |
+| POST | `/api/follow/{type}/{id}` | Yes | Follow user/entity |
+| GET | `/api/follow/check/{type}/{id}` | Yes | Check follow status |
+| GET | `/api/community/stats` | No | Community stats |
+| GET | `/api/community/trending-tags` | No | Trending hashtags |
+| GET | `/api/community/leaderboard` | No | Top users/entities |
+| GET | `/api/entities/{id}/feed` | No | Posts about entity |
+| POST | `/api/report-ugc` | Yes | Report UGC violation |
+| POST | `/api/block/{id}` | Yes | Block/unblock user |
+| POST | `/api/upload/image` | Yes | Upload image for post |
+| POST | `/api/events/{id}/rsvp` | Yes | RSVP for event |
 
-Returns place entities using the Entity shape.
+### Saved & Plans (Postgres only)
 
-### `GET /api/itineraries`
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/saved` | Yes | List saved entities |
+| POST | `/api/saved` | Yes | Save entity |
+| DELETE | `/api/saved/{id}` | Yes | Unsave entity |
+| POST | `/api/saved/merge` | Yes | Merge local favorites on login |
+| GET | `/api/my-plans` | Yes | List personal plans |
+| POST | `/api/my-plans` | Yes | Create plan |
+| DELETE | `/api/my-plans/{id}` | Yes | Delete plan |
+| POST | `/api/my-plans/{id}/publish` | Yes | Toggle plan public/private |
+| GET | `/api/shared-plans` | No | List public plans |
+| GET | `/api/shared-plans/{id}` | No | View public plan |
 
-Returns itinerary summaries. Stop references should use entity IDs and normalized coordinates.
+### Visits (Postgres only)
 
-### `POST /chat`
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/me/visits` | Yes | List visit marks |
+| POST | `/api/me/visits` | Yes | Mark visited/want-to-visit |
+| DELETE | `/api/me/visits/{id}` | Yes | Clear visit mark |
+| GET | `/api/me/visits/check/{id}` | Yes | Check visit status |
 
-Returns an assistant response. Tool/source metadata should use entity IDs that exist in the canonical dataset.
+### Notifications
 
-## Validation gates
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/notifications` | Yes | Paginated notifications |
+| GET | `/api/notifications/stream` | Yes | SSE real-time notifications |
+| POST | `/api/notifications/read-all` | Yes | Mark all read |
+| POST | `/api/notifications/{id}/read` | Yes | Mark one read |
+| GET | `/api/notification-preferences` | Yes | Get preferences |
+| PUT | `/api/notification-preferences` | Yes | Update preferences |
 
-The data contract is considered healthy when:
+### SEO (no auth)
 
-- No relationship references a missing entity ID.
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/sitemap.xml` | Entity sitemap |
+| GET | `/sitemap-media.xml` | Media sitemap |
+| GET | `/sitemap-index.xml` | Sitemap index |
+| GET | `/robots.txt` | Robots directives |
+| GET | `/seo/jsonld/site` | Organization + WebSite schema |
+| GET | `/seo/jsonld/{entity_id}` | Entity JSON-LD + FAQ |
+| GET | `/seo/jsonld/area/{slug}` | TouristDestination schema |
+| GET | `/seo/jsonld/itinerary/{id}` | TouristTrip schema |
+| GET | `/seo/jsonld/collection/{type}` | ItemList schema |
+
+### Admin (`/api/admin`, requires admin key)
+
+Organized by function — full list of 90+ admin endpoints:
+
+**Entity CRUD:** `GET|POST|PUT|DELETE /api/admin/entities[/{id}]`, images, history, bulk-delete, unclassified, place assignment.
+
+**Itinerary CRUD:** `GET|POST|PUT|DELETE /api/admin/itineraries[/{id}]`.
+
+**Relationships:** `POST|DELETE /api/admin/relationships`, bulk create.
+
+**Data Quality:** summary, review, apply (dry-run/commit), history, rollback.
+
+**Image Suggestions:** list, detail, create-batch, approve, reject.
+
+**Content Moderation:** queue, approve, reject, batch, notes, stats.
+
+**User Management:** list, ban, unban, role change.
+
+**Reports:** list, resolve, dismiss, bulk action, info-reports.
+
+**Analytics:** overview, badge-counts, dashboard-alerts, cost-overview, AI triage.
+
+**Site Settings:** get, get-by-category, update, bulk-update, reset.
+
+**Maintenance:** trigger-learn, backup-trigger, notification-cleanup, media list, audit-log, export, sources, stats.
+
+### Health & System
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/health` | No | Quick health (no external calls) |
+| GET | `/health/deep` | No | Deep health (LLM API check) |
+| POST | `/reload` | Admin | Hot-reload knowledge data |
+| GET | `/metrics` | Admin (prod) | Prometheus metrics |
+| GET | `/system/*` | Admin (prod) | ~25 monitoring endpoints (logs, errors, scheduler, circuit-breakers, costs, etc.) |
+
+---
+
+## Validation Gates
+
+The data contract is healthy when:
+
+- No relationship references a missing entity ID (0 dangling).
 - Entities with location data expose `coordinates`.
 - `attributes` is always an object when present.
-- Duplicate names are reviewed or explicitly allowed.
-- Duplicate display names should be disambiguated when they represent different content records.
-- Non-place summary coverage should remain at 100%.
-- Public API relationship fields match Nuxt expectations.
+- Non-place summary coverage at 100%.
+- `validate_data.py` exits with code 0.
+- Entity IDs contain no spaces or control characters.
+- Phone numbers match Vietnamese format (0[2-9]...).
+- `source` URLs are valid when present.
+
+## Auth Model
+
+- **Public endpoints:** No auth required (read-only data).
+- **User endpoints:** Bearer token from `/api/auth/verify-otp` or `/api/auth/login`.
+- **Admin endpoints:** `X-Admin-Key` header matching `ADMIN_API_KEY` env var.
+- **System endpoints:** Gated by `gate_internal_endpoints` middleware (404 in prod without admin key).
+- **UGC endpoints:** Require Postgres — return 503 on SQLite (`_require_pg` guard).

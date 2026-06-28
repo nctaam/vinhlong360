@@ -183,10 +183,10 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 **Tiên quyết:** DoD-3.
 
-- [ ] **11.1** (HOÃN — rewrite lớn, file embeddings 208MB gitignored, đổi format lưu = rủi ro; không benchmark được trong sandbox) Sparse-vector TF-IDF. → Backlog.
+- [x] **11.1** ✅ Sparse-vector TF-IDF (commit 61e766b test trước + 85c1ca3 refactor: `_vectors` dict sparse; 208MB→~5MB, ~41x nhỏ hơn; +19 test; full passed).
 - [x] **11.2** ✅ Index kề `_get_adjacency()` cho `related()` (self-healing khi `_relationships` đổi). Verify: adjacency == brute-force trên entity nhiều cạnh. `entity_detail`/`nearby` (hot path) O(degree).
 - [x] **11.3** ✅ Precompute BM25 `_doc_tf` lúc build (bỏ `Counter()` mỗi doc mỗi query). 58 test contextual/vector xanh (điểm không đổi). (Contextual re-tokenize 534: BM25 đã xử lý phần nặng nhất.)
-- [ ] **11.4** (HOÃN — atomic swap đa-global cần refactor single-container đụng `server.py` đọc `knowledge._entities`; rủi ro lan rộng, lợi ích thấp ở tần suất reload-admin) → Backlog.
+- [x] **11.4** ✅ `/reload` nền + atomic swap (commit 62da6ae: `reload()` build+swap dưới `_reload_lock` + vô hiệu adjacency; endpoint qua `asyncio.to_thread`; +4 test gồm concurrency). **→ GĐ11 hoàn tất.**
 
 **🚦 Cổng DoD-11:** thời gian /chat & RSS giảm rõ; reload không chặn; test xanh.
 
@@ -268,9 +268,9 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 ## VERIFY TỔNG THỂ (sau toàn bộ)
 
-- [ ] Sửa entity ở admin → phản ánh ngay ở **cả** chat lẫn Nuxt.
-- [ ] `validate_data.py` sạch; relationship ~10k.
-- [ ] 2+ /chat đồng thời không chặn nhau; endpoint nhạy có auth; không call LLM tự động khi load trang.
+- [x] Sửa entity ở admin → phản ánh ngay ở **cả** chat lẫn Nuxt. *(GĐ3.6 test integration xanh)*
+- [x] `validate_data.py` sạch; relationship ~10k. *(audit 2026-06-22: 9505 rels, validate exit 0)*
+- [x] 2+ /chat đồng thời không chặn nhau; endpoint nhạy có auth; không call LLM tự động khi load trang. *(GĐ4.1-4.7 xong)*
 - [ ] Chỉ còn 1 frontend; thêm type mới không phải sửa nhiều nơi.
 - [ ] Entity nổi bật có ảnh; og:image + image sitemap hoạt động.
 - [ ] Uptime/analytics/error/cost đo được; eval baseline có điểm.
