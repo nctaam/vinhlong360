@@ -590,11 +590,12 @@ async def get_feed(
 
     await asyncio.to_thread(_enrich_user_status, posts, user)
 
+    total_c = db._row_to_dict(total)["c"] if total else 0
     return {
         "posts": posts,
         "page": page,
-        "total": total["c"] if total else 0,
-        "has_more": offset + limit < (total["c"] if total else 0),
+        "total": total_c,
+        "has_more": offset + limit < total_c,
     }
 
 
