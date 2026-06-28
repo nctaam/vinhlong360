@@ -112,9 +112,10 @@ class Database:
         if self._pg_pool_failed:
             if time.time() - self._pg_pool_fail_ts < 60:
                 return None
-            self._pg_pool_failed = False
         if self._pg_pool is None:
             with self._lock:
+                if self._pg_pool_failed:
+                    self._pg_pool_failed = False
                 if self._pg_pool is None:
                     try:
                         from psycopg2.pool import ThreadedConnectionPool

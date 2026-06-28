@@ -1340,3 +1340,34 @@ class TestDeepScanBatch3:
         block = src[idx:idx+600]
         assert "except OSError" in block or "except (OSError" in block, \
             "save_conversation must handle OSError"
+
+    def test_db_pool_retry_flag_inside_lock(self):
+        """Pool retry flag must be reset inside the lock to prevent race."""
+        src = (Path(__file__).resolve().parent.parent / "database.py").read_text(encoding="utf-8")
+        idx = src.find("def _get_pg_pool(")
+        assert idx > 0
+        block = src[idx:idx+500]
+        lock_idx = block.find("with self._lock:")
+        reset_idx = block.find("self._pg_pool_failed = False")
+        assert lock_idx > 0 and reset_idx > 0, "Pool must have lock and reset"
+        assert reset_idx > lock_idx, "Reset must happen INSIDE the lock, not before it"
+
+    def test_publish_plan_verifies_rowcount(self):
+        """publish_plan must check rowcount to detect missing/unauthorized plans."""
+        src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
+        idx = src.find("def _query():")
+        # Find the publish_plan context
+        pub_idx = src.find("publish_plan")
+        assert pub_idx > 0
+        block = src[pub_idx:pub_idx+700]
+        assert "rowcount" in block, "publish_plan must check cursor.rowcount"
+        assert "404" in block, "publish_plan must raise 404 on zero rows"
+
+    def test_ip_reputation_per_ip_cap(self):
+        """IP reputation tracker must cap per-IP entries to prevent memory growth."""
+        src = (Path(__file__).resolve().parent.parent / "middleware.py").read_text(encoding="utf-8")
+        idx = src.find("def record(self, ip: str, event_type: str)")
+        assert idx > 0
+        block = src[idx:idx+400]
+        assert "500" in block or "_decay" in block, \
+            "record() must cap per-IP entries or prune within decay window"

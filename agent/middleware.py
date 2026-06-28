@@ -571,6 +571,9 @@ class IPReputationTracker:
             if ip not in self._scores:
                 self._scores[ip] = []
             self._scores[ip].append((now, points))
+            if len(self._scores[ip]) > 500:
+                cutoff = now - self._decay
+                self._scores[ip] = [(t, p) for t, p in self._scores[ip] if t > cutoff]
             if len(self._scores) > self._max_ips:
                 self._gc(now)
             return self._level_locked(ip, now)

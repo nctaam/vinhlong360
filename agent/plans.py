@@ -144,9 +144,11 @@ async def publish_plan(plan_id: str, body: PublishBody, user=Depends(require_use
     def _query():
         ph = db._ph
         with db._conn() as conn:
-            db._execute(conn, f"""
+            cur = db._execute(conn, f"""
                 UPDATE user_plans SET is_public = {ph} WHERE id::text = {ph} AND user_id = {ph}::uuid
             """, (body.is_public, plan_id, str(user["id"])))
+            if hasattr(cur, "rowcount") and cur.rowcount == 0:
+                raise HTTPException(404, "Lịch trình không tồn tại hoặc không thuộc về bạn")
     await asyncio.to_thread(_query)
     return {"is_public": body.is_public}
 
