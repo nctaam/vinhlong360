@@ -108,16 +108,28 @@
         </blockquote>
 
         <!-- Mô tả chi tiết -->
-        <div v-if="descriptionParagraphs.length" class="entity-description">
-          <div id="desc-content" class="desc-content" :class="{ expanded: descExpanded || descriptionParagraphs.length <= 3 }">
-            <p v-for="(para, i) in descriptionParagraphs" :key="i">{{ para }}</p>
+        <div v-if="descriptionSections.length" class="entity-description" :class="{ 'rich-desc': hasRichDescription }">
+          <div id="desc-content" class="desc-content" :class="{ expanded: descExpanded || totalDescParagraphs <= 5 }">
+            <template v-for="(section, si) in descriptionSections" :key="si">
+              <h2 v-if="section.level === 2" class="desc-heading">{{ section.heading }}</h2>
+              <h3 v-else-if="section.level === 3" class="desc-subheading">{{ section.heading }}</h3>
+              <p v-for="(para, pi) in section.paragraphs" :key="`${si}-${pi}`">{{ para }}</p>
+            </template>
           </div>
-          <button type="button" v-if="descriptionParagraphs.length > 3" class="desc-toggle" :aria-expanded="descExpanded" aria-controls="desc-content" @click="descExpanded = !descExpanded">
+          <button type="button" v-if="totalDescParagraphs > 5" class="desc-toggle" :aria-expanded="descExpanded" aria-controls="desc-content" @click="descExpanded = !descExpanded">
             <span class="desc-toggle-icon" :class="{ rotated: descExpanded }">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
             </span>
             {{ descExpanded ? ss('labels.detail.desc_collapse', 'Thu gọn') : ss('labels.detail.desc_expand', 'Đọc thêm') }}
           </button>
+        </div>
+
+        <!-- Extra content sections from attributes -->
+        <div v-if="extraContentSections.length" class="extra-content">
+          <div v-for="sec in extraContentSections" :key="sec.title" class="extra-section">
+            <h2 class="section-subtitle"><span aria-hidden="true">{{ sec.icon }}</span> {{ sec.title }}</h2>
+            <p>{{ sec.text }}</p>
+          </div>
         </div>
 
         <!-- Lưu ý thực tế — Scenarios 2,3,6,9: practical tips for food/family/OCOP/delegation -->
@@ -706,7 +718,49 @@ const descriptionParagraphs = computed(() => {
   if (!desc || typeof desc !== 'string') return []
   return desc.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 0)
 })
+
+interface DescSection { level: 0 | 2 | 3; heading: string; paragraphs: string[] }
+const descriptionSections = computed<DescSection[]>(() => {
+  const desc = entity.value?.description
+  if (!desc || typeof desc !== 'string') return []
+  const blocks = desc.split(/\n\s*\n/).map(b => b.trim()).filter(b => b.length > 0)
+  const sections: DescSection[] = []
+  let current: DescSection = { level: 0, heading: '', paragraphs: [] }
+  for (const block of blocks) {
+    const h2 = block.match(/^##\s+(.+)$/)
+    const h3 = block.match(/^###\s+(.+)$/)
+    if (h3) {
+      if (current.paragraphs.length || current.heading) sections.push(current)
+      current = { level: 3, heading: h3[1], paragraphs: [] }
+    } else if (h2) {
+      if (current.paragraphs.length || current.heading) sections.push(current)
+      current = { level: 2, heading: h2[1], paragraphs: [] }
+    } else {
+      current.paragraphs.push(block)
+    }
+  }
+  if (current.paragraphs.length || current.heading) sections.push(current)
+  return sections
+})
+const hasRichDescription = computed(() => descriptionSections.value.some(s => s.level > 0))
+const totalDescParagraphs = computed(() => descriptionSections.value.reduce((n, s) => n + s.paragraphs.length + (s.heading ? 1 : 0), 0))
+
 const descExpanded = ref(false)
+
+const extraContentSections = computed(() => {
+  const a = entity.value?.attributes
+  if (!a) return []
+  const sections: { icon: string; title: string; text: string }[] = []
+  if (a.significance && typeof a.significance === 'string')
+    sections.push({ icon: '🏛️', title: 'Ý nghĩa', text: a.significance })
+  if (a.atmosphere && typeof a.atmosphere === 'string')
+    sections.push({ icon: '🌿', title: 'Không gian', text: a.atmosphere })
+  if (a.famous_for && typeof a.famous_for === 'string')
+    sections.push({ icon: '⭐', title: 'Nổi tiếng với', text: a.famous_for })
+  if (a.travel_tips && typeof a.travel_tips === 'string')
+    sections.push({ icon: '💡', title: 'Mẹo du lịch', text: a.travel_tips })
+  return sections
+})
 
 // GĐ13.2: link Zalo từ attributes.zalo (số hoặc URL). KHÔNG đặt hàng — chỉ liên hệ.
 const zaloLink = computed(() => {
@@ -1011,7 +1065,7 @@ const jsonLdScripts = computed(() => {
 
   const bcItems: any[] = [
     { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
-    { '@type': 'ListItem', position: 2, name: typeMeta.value.label, item: `${SITE}${typeBreadcrumbUrl.value}` },
+    { '@type': 'ListItem', position: 2, name: typeMeta.value.label, item: `${SITE_URL}${typeBreadcrumbUrl.value}` },
   ]
   if (e.place_area) {
     bcItems.push({ '@type': 'ListItem', position: 3, name: areaName.value, item: `${SITE_URL}/khu-vuc/${e.place_area}` })
