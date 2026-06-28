@@ -1486,3 +1486,38 @@ class TestDeepScanBatch5:
         block = src[idx:idx+800]
         assert '_ram_count["date"]' in block or "_ram_count['date']" in block, \
             "Must update RAM counter date to detect day rollover"
+
+    def test_entity_followers_notification_has_limit(self):
+        """Entity follower notification query must have LIMIT to prevent unbounded fetch."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        idx = src.find("_notify_entity_followers")
+        assert idx > 0
+        block = src[idx:idx+600]
+        assert "LIMIT" in block, "Entity followers query must have LIMIT"
+
+    def test_community_leaderboard_has_limit(self):
+        """Community leaderboard SQL must have LIMIT to cap result set."""
+        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        idx = src.find("community_leaderboard")
+        assert idx > 0
+        block = src[idx:idx+2000]
+        assert "LIMIT 500" in block or "LIMIT 200" in block or "LIMIT 100" in block, \
+            "Leaderboard query must have LIMIT to prevent unbounded results"
+
+    def test_audit_rotation_atomic_write(self):
+        """Audit log rotation must use atomic temp-rename for main file."""
+        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        idx = src.find("def _maybe_rotate_audit")
+        assert idx > 0
+        block = src[idx:idx+800]
+        assert ".tmp" in block, "Rotation must use temp file for atomic write"
+        assert ".replace(" in block, "Rotation must use replace() for atomic swap"
+
+    def test_jsonl_rotation_atomic_write(self):
+        """JSONL rotation must use atomic temp-rename for main file."""
+        src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
+        idx = src.find("_maybe_rotate_jsonl")
+        assert idx > 0
+        block = src[idx:idx+600]
+        assert ".tmp" in block, "JSONL rotation must use temp file for atomic write"
+        assert ".replace(" in block, "JSONL rotation must use replace() for atomic swap"

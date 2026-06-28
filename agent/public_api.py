@@ -88,7 +88,9 @@ def _maybe_rotate_jsonl(filepath: Path) -> None:
             return
         archive = filepath.with_suffix(f".{datetime.now().strftime('%Y%m%d%H%M%S')}.jsonl")
         archive.write_text("\n".join(lines[:-_JSONL_MAX_LINES]) + "\n", encoding="utf-8")
-        filepath.write_text("\n".join(lines[-_JSONL_MAX_LINES:]) + "\n", encoding="utf-8")
+        tmp = filepath.with_suffix(".tmp")
+        tmp.write_text("\n".join(lines[-_JSONL_MAX_LINES:]) + "\n", encoding="utf-8")
+        tmp.replace(filepath)
     except Exception:
         logger.exception("JSONL rotation failed for %s", filepath)
 

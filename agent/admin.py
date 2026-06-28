@@ -94,7 +94,9 @@ def _maybe_rotate_audit() -> None:
             return
         archive = _AUDIT_FILE.with_suffix(f".{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}.jsonl")
         archive.write_text("\n".join(lines[:-_AUDIT_MAX_LINES]) + "\n", encoding="utf-8")
-        _AUDIT_FILE.write_text("\n".join(lines[-_AUDIT_MAX_LINES:]) + "\n", encoding="utf-8")
+        tmp = _AUDIT_FILE.with_suffix(".tmp")
+        tmp.write_text("\n".join(lines[-_AUDIT_MAX_LINES:]) + "\n", encoding="utf-8")
+        tmp.replace(_AUDIT_FILE)
     except Exception:
         logger.exception("Audit log rotation failed")
 

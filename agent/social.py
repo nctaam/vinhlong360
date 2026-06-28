@@ -151,7 +151,7 @@ def _notify_entity_followers(entity_id, author_id, author_name, post_id: str) ->
     try:
         with db._conn() as conn:
             rows = db._fetchall(conn,
-                f"SELECT follower_id FROM follows WHERE target_type='entity' AND target_id = {ph}", (entity_id,))
+                f"SELECT follower_id FROM follows WHERE target_type='entity' AND target_id = {ph} LIMIT 500", (entity_id,))
             follower_ids = [str(db._row_to_dict(r)["follower_id"]) for r in rows]
             follower_ids = [fid for fid in follower_ids if fid != author_id]
             if not follower_ids:
@@ -824,6 +824,7 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
                 {bc}
                 GROUP BY u.id, u.display_name, u.avatar_url, u.username, fc.c
                 HAVING COUNT(p.id) > 0
+                LIMIT 500
             """, tuple(bc_p))
     rows = await asyncio.to_thread(_query)
 
