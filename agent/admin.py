@@ -1292,8 +1292,8 @@ async def trigger_learn(category: Optional[str] = Query(None, max_length=50), to
             _learn_proc = subprocess.Popen(
                 cmd,
                 cwd=str(ROOT),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
                 env={**os.environ, "PYTHONIOENCODING": "utf-8"},
             )
             return {
