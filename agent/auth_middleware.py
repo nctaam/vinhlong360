@@ -548,9 +548,10 @@ def validate_redirect_url(url: str, allowed_hosts: frozenset[str] | None = None)
 
     hosts = allowed_hosts or _DEFAULT_ALLOWED_HOSTS
 
-    # Block javascript: and data: schemes
-    url_stripped = url.strip().lower()
-    if url_stripped.startswith("javascript:") or url_stripped.startswith("data:"):
+    # Strip control chars and whitespace that browsers may ignore in scheme position
+    import re as _re
+    url_stripped = _re.sub(r'[\x00-\x1f\x7f\s]', '', url).lower()
+    if url_stripped.startswith("javascript:") or url_stripped.startswith("data:") or url_stripped.startswith("vbscript:"):
         return {"safe": False, "reason": "dangerous_scheme"}
 
     # Relative URLs are safe

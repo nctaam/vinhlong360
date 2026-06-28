@@ -49,10 +49,13 @@ def check_rate(key: str, limit: int, window: int,
 def _gc(now: float | None = None) -> None:
     """Dọn các bucket rỗng/hết hạn (gọi cơ hội khi dict phình to)."""
     now = now if now is not None else _now()
-    # window lớn nhất đang dùng ~600s; bucket không có timestamp nào < 3600s coi như chết
     dead = [k for k, ts in _buckets.items() if not ts or now - ts[-1] > 3600]
     for k in dead:
         _buckets.pop(k, None)
+    if len(_buckets) > _MAX_KEYS:
+        by_age = sorted(_buckets.items(), key=lambda kv: kv[1][-1] if kv[1] else 0)
+        for k, _ in by_age[:len(_buckets) - _MAX_KEYS + _MAX_KEYS // 10]:
+            _buckets.pop(k, None)
 
 
 def check_rate_ip(ip: str, action: str, limit: int, window: int,
