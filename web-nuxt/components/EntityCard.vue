@@ -239,4 +239,10 @@ const ratingDisplay = computed(() => {
   background: currentColor;
   vertical-align: middle;
 }
+.dark .card-arrow {
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+.dark .card-dot { background: rgba(255, 255, 255, 0.4); }
 </style>

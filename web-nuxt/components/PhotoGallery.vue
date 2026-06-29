@@ -307,6 +307,12 @@ function goToSlide(idx: number) {
     font-weight: var(--weight-semibold, 600);
   }
 }
+.dark .pg-show-all {
+  background: rgba(0, 0, 0, 0.7);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+.dark .pg-show-all:hover { background: rgba(0, 0, 0, 0.8); }
 @media (prefers-reduced-motion: reduce) {
   .pg-main .pg-main-img,
   .pg-thumb-img { transition: none; }
