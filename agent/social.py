@@ -45,7 +45,7 @@ from auth_middleware import require_pg as _require_pg
 _POST_COLS = ("p.id, p.user_id, p.content, p.mentions, p.hashtags, p.best_answer_id, "
               "p.pinned_comment_id, "
               "p.repost_of, p.repost_snapshot, p.post_type, p.rating, p.images, "
-              "p.like_count, p.comment_count, p.created_at, p.entity_id, p.entity_name, "
+              "p.like_count, p.comment_count, p.share_count, p.created_at, p.entity_id, p.entity_name, "
               "p.entity_type, p.moderation_status")
 _COMMENT_COLS = "c.id, c.user_id, c.content, c.mentions, c.parent_id, c.created_at"
 
@@ -1832,6 +1832,32 @@ async def get_my_bookmarks(
     return {"posts": posts, "page": page, "has_more": len(posts) == limit}
 
 
+# ── Share Tracking ──
+
+@router.post("/posts/{post_id}/share")
+async def track_share(post_id: str, user=Depends(get_current_user), _csrf=Depends(require_csrf)):
+    """Track when a user shares a post (copy link, social media share)."""
+    post_id = validate_path_id(post_id, "post_id")
+    if user:
+        check_rate(f"share:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW,
+                   "Bạn thao tác quá nhanh. Vui lòng đợi chút.")
+    ph = db._ph
+
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                UPDATE posts SET share_count = COALESCE(share_count, 0) + 1
+                WHERE id::text = {ph} AND moderation_status = 'approved'
+                RETURNING share_count
+            """, (post_id,))
+            if not row:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            return db._row_to_dict(row)["share_count"]
+
+    new_count = await asyncio.to_thread(_query)
+    return {"share_count": new_count}
+
+
 # ── Hide / Pin ──
 
 @router.post("/posts/{post_id}/hide")
@@ -2401,6 +2427,7 @@ def _format_post(row: dict) -> dict:
         "best_answer_id": str(row["best_answer_id"]) if row.get("best_answer_id") else None,
         "pinned_comment_id": str(row["pinned_comment_id"]) if row.get("pinned_comment_id") else None,
         "is_pinned": bool(row.get("is_pinned")),
+        "share_count": row.get("share_count", 0) or 0,
         "repost_of": str(row["repost_of"]) if row.get("repost_of") else None,
         "repost": _jlist_obj(row.get("repost_snapshot")),
         "post_type": row.get("post_type", "share"),

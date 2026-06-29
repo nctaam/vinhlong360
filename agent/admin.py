@@ -2590,6 +2590,80 @@ async def reject_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisio
     return {"success": True}
 
 
+# ── Admin Comment List ────────────────────────────────────────────────────
+
+@router.get("/comments")
+async def admin_list_comments(
+    search: str = Query("", max_length=200),
+    post_id: str = Query(None, max_length=50),
+    page: int = Query(1, ge=1, le=1000),
+    limit: int = Query(20, ge=1, le=100),
+):
+    """List comments for admin review with optional search and post filter."""
+    ph = db._ph
+    offset = (page - 1) * limit
+
+    def _query():
+        conditions = []
+        params = []
+        if search:
+            search_esc = _escape_like(search)
+            conditions.append(f"c.content ILIKE {ph} ESCAPE '\\'")
+            params.append(f"%{search_esc}%")
+        if post_id:
+            conditions.append(f"c.post_id::text = {ph}")
+            params.append(post_id)
+        where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
+        count_params = list(params)
+        params.extend([limit, offset])
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT c.id, c.content, c.post_id, c.parent_id, c.created_at,
+                       u.display_name as author_name, u.id as user_id,
+                       p.title as post_title, p.post_type
+                FROM comments c
+                JOIN users u ON u.id = c.user_id
+                JOIN posts p ON p.id = c.post_id
+                {where}
+                ORDER BY c.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, tuple(params))
+            total = db._fetchone(conn, f"SELECT COUNT(*) as c FROM comments c {where}", tuple(count_params))
+        return {
+            "comments": [db._row_to_dict(r) for r in rows],
+            "total": db._row_to_dict(total)["c"] if total else 0,
+            "page": page,
+        }
+
+    return await asyncio.to_thread(_query)
+
+
+@router.delete("/comments/{comment_id}")
+async def admin_delete_comment(comment_id: str, request: Request):
+    """Admin force-delete a comment."""
+    comment_id = validate_path_id(comment_id, "comment_id")
+    ph = db._ph
+
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                DELETE FROM comments WHERE id::text = {ph}
+                RETURNING id, post_id, user_id
+            """, (comment_id,))
+            if not row:
+                raise HTTPException(404, "Bình luận không tồn tại")
+            rd = db._row_to_dict(row)
+            db._execute(conn, f"""
+                UPDATE posts SET comment_count = GREATEST(comment_count - 1, 0)
+                WHERE id = {ph}::uuid
+            """, (str(rd["post_id"]),))
+        _log_mod_action("comment", comment_id, "deleted")
+        return rd
+
+    result = await asyncio.to_thread(_query)
+    return {"success": True, "deleted_comment": str(result["id"])}
+
+
 @router.get("/content-stats")
 async def content_stats(days: int = Query(30, ge=1, le=365)):
     ph = db._ph

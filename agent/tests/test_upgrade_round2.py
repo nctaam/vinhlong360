@@ -2448,3 +2448,102 @@ class TestRound3SecurityGuards:
         ]:
             src = inspect.getsource(getattr(__import__(mod_name), func_name))
             assert "db._ph" in src or "ph" in src, f"{mod_name}.{func_name} missing parameterized queries"
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Share Tracking
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestShareTracking:
+    def test_migration_file_exists(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "042_share_count.sql"
+        assert p.exists()
+
+    def test_migration_adds_column(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "042_share_count.sql"
+        sql = p.read_text(encoding="utf-8")
+        assert "share_count" in sql
+        assert "ALTER TABLE posts" in sql
+
+    def test_endpoint_exists(self):
+        from social import router
+        methods_paths = [(list(r.methods)[0] if hasattr(r, "methods") else "", r.path)
+                        for r in router.routes if hasattr(r, "path")]
+        assert ("POST", "/api/posts/{post_id}/share") in methods_paths
+
+    def test_validates_path_id(self):
+        src = inspect.getsource(__import__("social").track_share)
+        assert "validate_path_id" in src
+
+    def test_increments_count(self):
+        src = inspect.getsource(__import__("social").track_share)
+        assert "share_count" in src
+        assert "+ 1" in src or "+1" in src
+
+    def test_returns_new_count(self):
+        src = inspect.getsource(__import__("social").track_share)
+        assert '"share_count"' in src
+
+    def test_only_approved_posts(self):
+        src = inspect.getsource(__import__("social").track_share)
+        assert "approved" in src
+
+    def test_format_post_includes_share_count(self):
+        src = inspect.getsource(__import__("social")._format_post)
+        assert "share_count" in src
+
+    def test_post_cols_includes_share_count(self):
+        from social import _POST_COLS
+        assert "share_count" in _POST_COLS
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Admin Comment List
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestAdminCommentList:
+    def test_list_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/comments" in paths
+
+    def test_delete_endpoint_exists(self):
+        from admin import router
+        methods_paths = [(list(r.methods)[0] if hasattr(r, "methods") else "", r.path)
+                        for r in router.routes if hasattr(r, "path")]
+        assert ("DELETE", "/admin/comments/{comment_id}") in methods_paths
+
+    def test_list_has_search(self):
+        src = inspect.getsource(__import__("admin").admin_list_comments)
+        assert "ILIKE" in src
+        assert "_escape_like" in src
+
+    def test_list_has_post_filter(self):
+        src = inspect.getsource(__import__("admin").admin_list_comments)
+        assert "post_id" in src
+
+    def test_list_has_pagination(self):
+        src = inspect.getsource(__import__("admin").admin_list_comments)
+        assert "LIMIT" in src
+        assert "OFFSET" in src
+
+    def test_list_includes_author(self):
+        src = inspect.getsource(__import__("admin").admin_list_comments)
+        assert "author_name" in src
+
+    def test_list_includes_post_info(self):
+        src = inspect.getsource(__import__("admin").admin_list_comments)
+        assert "post_title" in src
+
+    def test_delete_validates_path_id(self):
+        src = inspect.getsource(__import__("admin").admin_delete_comment)
+        assert "validate_path_id" in src
+
+    def test_delete_decrements_comment_count(self):
+        src = inspect.getsource(__import__("admin").admin_delete_comment)
+        assert "comment_count" in src
+        assert "GREATEST" in src
+
+    def test_delete_logs_mod_action(self):
+        src = inspect.getsource(__import__("admin").admin_delete_comment)
+        assert "_log_mod_action" in src
