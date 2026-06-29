@@ -200,7 +200,7 @@ onUnmounted(() => {
 .admin-sidebar {
   width: 240px; background: var(--ink, #1a1a2e); color: var(--text-on-dark, #fff);
   display: flex; flex-direction: column; flex-shrink: 0;
-  transition: width .35s cubic-bezier(.2,1,.4,1);
+  transition: width .35s var(--ease-soft);
   border-right: .5px solid rgba(255,255,255,.06);
   position: sticky; top: 0; height: 100vh; height: 100dvh;
   overflow: hidden;
@@ -234,12 +234,12 @@ onUnmounted(() => {
   min-width: 44px; min-height: 44px;
   display: flex; align-items: center; justify-content: center;
   border-radius: 8px;
-  transition: color .25s, background .25s, transform .35s cubic-bezier(.2,1,.4,1);
+  transition: color .25s, background .25s, transform .35s var(--ease-soft);
 }
 .sidebar-toggle:hover { color: rgba(255,255,255,.9); background: rgba(255,255,255,.08); }
 .sidebar-toggle:active { transform: scale(.88); transition-duration: .08s; }
 .sidebar-toggle:focus-visible { outline: 2px solid var(--accent, #f5c518); outline-offset: 2px; }
-.toggle-icon { display: inline-block; transition: transform .35s cubic-bezier(.2,1,.4,1); }
+.toggle-icon { display: inline-block; transition: transform .35s var(--ease-soft); }
 .toggle-icon.rotated { transform: rotate(90deg); }
 
 /* ── Nav groups ── */
@@ -264,7 +264,7 @@ onUnmounted(() => {
   color: rgba(255,255,255,.6); text-decoration: none;
   font-size: .85rem; font-weight: 500;
   min-height: 44px; position: relative;
-  transition: background .25s, color .25s, transform .35s cubic-bezier(.2,1,.4,1);
+  transition: background .25s, color .25s, transform .35s var(--ease-soft);
 }
 .admin-nav a:hover { background: rgba(255,255,255,.08); color: rgba(255,255,255,.95); }
 .admin-nav a:active { transform: scale(.97); transition-duration: .08s; }
@@ -274,7 +274,7 @@ onUnmounted(() => {
   box-shadow: inset 4px 0 0 var(--accent, #f5c518);
   transition: box-shadow .2s, background .2s, color .25s;
 }
-.nav-icon { font-size: 1.05rem; flex-shrink: 0; width: 24px; text-align: center; transition: transform .35s cubic-bezier(.2,1,.4,1); }
+.nav-icon { font-size: 1.05rem; flex-shrink: 0; width: 24px; text-align: center; transition: transform .35s var(--ease-soft); }
 .admin-nav a:hover .nav-icon { transform: scale(1.1); }
 .nav-text { white-space: nowrap; overflow: hidden; transition: opacity .2s; }
 .nav-badge {
@@ -294,7 +294,7 @@ onUnmounted(() => {
   transform: translateY(-50%); background: rgba(0,0,0,.85); color: var(--text-on-dark);
   padding: var(--space-1) 10px; border-radius: 6px; font-size: .75rem; font-weight: 600;
   white-space: nowrap; z-index: var(--z-overlay); pointer-events: none;
-  animation: tooltipIn .15s ease-out;
+  animation: tooltipIn .15s var(--ease-out);
 }
 @keyframes tooltipIn { from { opacity: 0; transform: translateY(-50%) translateX(-4px); } to { opacity: 1; transform: translateY(-50%) translateX(0); } }
 
@@ -310,7 +310,7 @@ onUnmounted(() => {
   background: var(--accent, #f5c518); color: var(--ink, #1a1a2e);
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: .8rem; flex-shrink: 0;
-  transition: transform .35s cubic-bezier(.2,1,.4,1);
+  transition: transform .35s var(--ease-soft);
 }
 .admin-user-info:hover .admin-user-avatar { transform: scale(1.08); }
 .admin-user-meta { display: flex; flex-direction: column; overflow: hidden; }
@@ -318,7 +318,7 @@ onUnmounted(() => {
 .admin-user-role { font-size: .68rem; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: 1px; }
 .back-link {
   color: rgba(255,255,255,.45); text-decoration: none; font-size: .78rem;
-  transition: color .25s, transform .35s cubic-bezier(.2,1,.4,1);
+  transition: color .25s, transform .35s var(--ease-soft);
   display: inline-flex; align-items: center; gap: var(--space-2);
   min-height: 36px; padding: var(--space-1) 0;
 }
@@ -355,7 +355,7 @@ onUnmounted(() => {
 .stat-card {
   background: var(--bg); border-radius: 14px; padding: var(--space-5);
   box-shadow: 0 1px 3px rgba(0,0,0,.04); border: .5px solid var(--line);
-  transition: transform .35s cubic-bezier(.2,1,.4,1), box-shadow .35s cubic-bezier(.4,0,.2,1), border-color .25s;
+  transition: transform .35s var(--ease-soft), box-shadow .35s var(--ease-standard), border-color .25s;
   position: relative; overflow: hidden;
 }
 .stat-card::before {
@@ -381,7 +381,7 @@ onUnmounted(() => {
   box-shadow: 0 2px 4px rgba(0,0,0,.02);
 }
 .admin-table td { padding: var(--space-3) var(--space-4); border-bottom: .5px solid var(--line); font-size: .88rem; }
-.admin-table tbody tr { transition: background .25s cubic-bezier(.4,0,.2,1); }
+.admin-table tbody tr { transition: background .25s var(--ease-standard); }
 .admin-table tbody tr:hover td { background: rgba(0,0,0,.02); }
 .admin-table tbody tr.row-selected td { background: rgba(var(--primary-rgb), .06); }
 .admin-table tbody tr:last-child td { border-bottom: none; }
@@ -395,7 +395,7 @@ onUnmounted(() => {
 .admin-actions button {
   padding: 6px var(--space-3); font-size: .8rem; border-radius: 8px;
   border: .5px solid var(--line); background: var(--bg); cursor: pointer;
-  transition: background .25s, color .25s, border-color .25s, transform .35s cubic-bezier(.2,1,.4,1), box-shadow .25s;
+  transition: background .25s, color .25s, border-color .25s, transform .35s var(--ease-soft), box-shadow .25s;
   font-weight: 500; min-height: 44px;
 }
 .admin-actions button:hover { background: var(--bg-alt); }
@@ -412,7 +412,7 @@ onUnmounted(() => {
   padding: var(--space-2) var(--space-4); border: .5px solid var(--line);
   border-radius: 8px; background: var(--bg); cursor: pointer;
   font-size: .85rem; font-weight: 500; min-height: 36px;
-  transition: background .25s, color .25s, border-color .25s, transform .35s cubic-bezier(.2,1,.4,1), box-shadow .25s;
+  transition: background .25s, color .25s, border-color .25s, transform .35s var(--ease-soft), box-shadow .25s;
 }
 .admin-pagination button:hover:not(:disabled) { border-color: var(--primary, #219653); color: var(--primary); transform: translateY(-1px); }
 .admin-pagination button:active:not(:disabled) { transform: scale(.95); transition-duration: .08s; }
@@ -433,7 +433,7 @@ onUnmounted(() => {
   background: none; border: .5px solid var(--line); border-radius: 8px;
   padding: var(--space-2) var(--space-3); cursor: pointer; font-size: .82rem;
   color: var(--muted); font-weight: 500; min-height: 36px;
-  transition: border-color .25s, color .25s, background .25s, transform .35s cubic-bezier(.2,1,.4,1);
+  transition: border-color .25s, color .25s, background .25s, transform .35s var(--ease-soft);
 }
 .admin-refresh:hover { border-color: var(--primary, #219653); color: var(--primary); background: rgba(var(--primary-rgb),.04); }
 .admin-refresh:active { transform: scale(.95); transition-duration: .08s; }

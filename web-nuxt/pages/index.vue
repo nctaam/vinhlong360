@@ -877,7 +877,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 45%; z-index: -1;
   background: linear-gradient(105deg, transparent 0%, rgba(255,255,255,.16) 50%, transparent 100%);
   transform: translateX(0) skewX(-14deg);
-  animation: event-sheen 6.5s ease-in-out 1.2s infinite;
+  animation: event-sheen 6.5s var(--ease-in-out) 1.2s infinite;
   will-change: transform;
 }
 @keyframes event-sheen {
@@ -1096,7 +1096,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 /* ═══════════════════════════════════════════════════
    SKELETON + MISC
    ═══════════════════════════════════════════════════ */
-.sk-heading { height: 1.4rem; width: 180px; border-radius: var(--radius-sm); background: linear-gradient(90deg, var(--bg-alt) 25%, var(--line) 37%, var(--bg-alt) 63%); background-size: 400% 100%; animation: skShimmer 1.4s ease infinite; }
+.sk-heading { height: 1.4rem; width: 180px; border-radius: var(--radius-sm); background: linear-gradient(90deg, var(--bg-alt) 25%, var(--line) 37%, var(--bg-alt) 63%); background-size: 400% 100%; animation: skShimmer 1.4s var(--ease-out) infinite; }
 @keyframes skShimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
 .home .grid .card, .home .scroll-row .card { transition: transform .18s var(--ease-out), box-shadow .25s var(--ease-out); }
 

@@ -351,7 +351,7 @@ onMounted(fetchDashboard)
 .dark .dash-error-state { background: rgba(var(--danger-rgb),.08); border-color: rgba(var(--danger-rgb),.15); }
 
 /* Signal freshly-loaded (vs stale) data: fade content in after fetch resolves */
-.dash-loaded { animation: dash-fade-in .4s ease-out both; }
+.dash-loaded { animation: dash-fade-in .4s var(--ease-out) both; }
 @keyframes dash-fade-in { from { opacity: .5; } to { opacity: 1; } }
 
 /* ── Primary stat cards ── */

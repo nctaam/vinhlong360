@@ -251,14 +251,14 @@ function addChild(parentIdx: number) {
 
 /* ── List transitions ── */
 .sl-list-enter-active { transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft); }
-.sl-list-leave-active { transition: opacity .2s ease-in, transform .2s ease-in; }
+.sl-list-leave-active { transition: opacity .2s var(--ease-standard-accel),transform .2s var(--ease-standard-accel); }
 .sl-list-enter-from { opacity: 0; transform: translateY(-8px); }
 .sl-list-leave-to { opacity: 0; transform: scale(.96); }
 .sl-list-move { transition: transform .3s var(--ease-soft); }
 
 /* ── Expand transition ── */
 .sl-expand-enter-active { transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft); }
-.sl-expand-leave-active { transition: opacity .15s ease-in, transform .15s ease-in; }
+.sl-expand-leave-active { transition: opacity .15s var(--ease-standard-accel),transform .15s var(--ease-standard-accel); }
 .sl-expand-enter-from { opacity: 0; transform: translateY(-6px); }
 .sl-expand-leave-to { opacity: 0; }
 
