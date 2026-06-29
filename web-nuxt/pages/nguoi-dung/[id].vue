@@ -99,10 +99,10 @@
         <p>🔒 Hồ sơ riêng tư — theo dõi để xem nội dung.</p>
       </div>
 
-      <div v-else class="profile-tabs">
-        <button type="button" :class="['chip', { active: tab === 'posts' }]" :aria-pressed="tab === 'posts'" @click="tab = 'posts'">Bài viết</button>
-        <button type="button" :class="['chip', { active: tab === 'reviews' }]" :aria-pressed="tab === 'reviews'" @click="tab = 'reviews'">Đánh giá</button>
-        <button type="button" v-if="isSelf" :class="['chip', { active: tab === 'saved' }]" :aria-pressed="tab === 'saved'" @click="tab = 'saved'">
+      <div v-else class="profile-tabs" role="tablist" aria-label="Nội dung người dùng">
+        <button type="button" role="tab" :class="['chip', { active: tab === 'posts' }]" :aria-selected="tab === 'posts'" @click="tab = 'posts'">Bài viết</button>
+        <button type="button" role="tab" :class="['chip', { active: tab === 'reviews' }]" :aria-selected="tab === 'reviews'" @click="tab = 'reviews'">Đánh giá</button>
+        <button type="button" role="tab" v-if="isSelf" :class="['chip', { active: tab === 'saved' }]" :aria-selected="tab === 'saved'" @click="tab = 'saved'">
           Đã lưu<ClientOnly><span v-if="savedCount > 0" class="tab-count">{{ savedCount }}</span></ClientOnly>
         </button>
       </div>
@@ -187,9 +187,9 @@
       <div v-if="followModalOpen" class="fm-overlay" @click.self="followModalOpen = false" @keydown.escape="followModalOpen = false">
         <div class="fm-dialog" role="dialog" aria-modal="true" aria-label="Danh sách theo dõi" tabindex="-1" ref="followDialogEl">
           <header class="fm-head">
-            <div class="fm-tabs">
-              <button type="button" :class="['fm-tab', { active: followModalTab === 'followers' }]" @click="followModalTab = 'followers'">Người theo dõi</button>
-              <button type="button" :class="['fm-tab', { active: followModalTab === 'following' }]" @click="followModalTab = 'following'">Đang theo dõi</button>
+            <div class="fm-tabs" role="tablist" aria-label="Danh sách theo dõi">
+              <button type="button" role="tab" :class="['fm-tab', { active: followModalTab === 'followers' }]" :aria-selected="followModalTab === 'followers'" @click="followModalTab = 'followers'">Người theo dõi</button>
+              <button type="button" role="tab" :class="['fm-tab', { active: followModalTab === 'following' }]" :aria-selected="followModalTab === 'following'" @click="followModalTab = 'following'">Đang theo dõi</button>
             </div>
             <button type="button" class="fm-close" aria-label="Đóng" @click="followModalOpen = false">&times;</button>
           </header>

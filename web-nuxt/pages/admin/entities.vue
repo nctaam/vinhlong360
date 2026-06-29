@@ -89,9 +89,9 @@
             </td>
             <td class="admin-td-muted">{{ e.place_name || '—' }}</td>
             <td class="ent-health-cell">
-              <span class="ent-dot" :class="e.summary ? 'dot-ok' : 'dot-miss'" :title="e.summary ? 'Có tóm tắt' : 'Thiếu tóm tắt'"></span>
-              <span class="ent-dot" :class="e.images?.length ? 'dot-ok' : 'dot-miss'" :title="e.images?.length ? `${e.images.length} ảnh` : 'Thiếu ảnh'"></span>
-              <span class="ent-dot" :class="e.placeId ? 'dot-ok' : 'dot-miss'" :title="e.placeId ? 'Có địa điểm' : 'Thiếu địa điểm'"></span>
+              <span class="ent-dot" :class="e.summary ? 'dot-ok' : 'dot-miss'" :title="e.summary ? 'Có tóm tắt' : 'Thiếu tóm tắt'" :aria-label="e.summary ? 'Có tóm tắt' : 'Thiếu tóm tắt'" role="img">{{ e.summary ? '✓' : '✗' }}</span>
+              <span class="ent-dot" :class="e.images?.length ? 'dot-ok' : 'dot-miss'" :title="e.images?.length ? `${e.images.length} ảnh` : 'Thiếu ảnh'" :aria-label="e.images?.length ? `${e.images.length} ảnh` : 'Thiếu ảnh'" role="img">{{ e.images?.length ? '✓' : '✗' }}</span>
+              <span class="ent-dot" :class="e.placeId ? 'dot-ok' : 'dot-miss'" :title="e.placeId ? 'Có địa điểm' : 'Thiếu địa điểm'" :aria-label="e.placeId ? 'Có địa điểm' : 'Thiếu địa điểm'" role="img">{{ e.placeId ? '✓' : '✗' }}</span>
             </td>
             <td class="admin-actions">
               <button type="button" class="btn-success" @click="openEdit(e)" :aria-label="`Sửa ${e.name}`">Sửa</button>
@@ -924,8 +924,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 /* ── Health indicator dots ── */
 .ent-health-cell { white-space: nowrap; }
 .ent-dot {
-  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-  margin-right: 3px; vertical-align: middle; transition: transform .15s, box-shadow .15s;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 50%;
+  margin-right: 2px; vertical-align: middle; transition: transform .15s, box-shadow .15s;
+  font-size: 9px; line-height: 1; color: #fff;
 }
 .ent-health-cell:hover .ent-dot { transform: scale(1.4); }
 .ent-health-cell:hover .dot-miss { box-shadow: 0 0 0 3px rgba(255,59,48,.15); }

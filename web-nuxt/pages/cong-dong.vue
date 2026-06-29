@@ -177,11 +177,11 @@
         </div>
 
         <!-- Main tabs -->
-        <div v-if="!searchMode" class="threads-filter" role="region" aria-label="Bộ lọc bảng tin">
-          <button type="button" :class="['threads-tab', { active: activeTab === 'latest' }]" :aria-pressed="activeTab === 'latest'" @click="setTab('latest')">Mới nhất</button>
-          <button type="button" :class="['threads-tab', { active: activeTab === 'trending' }]" :aria-pressed="activeTab === 'trending'" @click="setTab('trending')">Nổi bật</button>
-          <button type="button" v-if="isLoggedIn" :class="['threads-tab', { active: activeTab === 'following' }]" :aria-pressed="activeTab === 'following'" @click="setTab('following')">Đang theo dõi</button>
-          <button type="button" v-if="isLoggedIn" :class="['threads-tab', { active: activeTab === 'bookmarks' }]" :aria-pressed="activeTab === 'bookmarks'" @click="setTab('bookmarks')">
+        <div v-if="!searchMode" class="threads-filter" role="tablist" aria-label="Bộ lọc bảng tin">
+          <button type="button" role="tab" :class="['threads-tab', { active: activeTab === 'latest' }]" :aria-selected="activeTab === 'latest'" @click="setTab('latest')">Mới nhất</button>
+          <button type="button" role="tab" :class="['threads-tab', { active: activeTab === 'trending' }]" :aria-selected="activeTab === 'trending'" @click="setTab('trending')">Nổi bật</button>
+          <button type="button" role="tab" v-if="isLoggedIn" :class="['threads-tab', { active: activeTab === 'following' }]" :aria-selected="activeTab === 'following'" @click="setTab('following')">Đang theo dõi</button>
+          <button type="button" role="tab" v-if="isLoggedIn" :class="['threads-tab', { active: activeTab === 'bookmarks' }]" :aria-selected="activeTab === 'bookmarks'" @click="setTab('bookmarks')">
             <svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>Đã lưu
           </button>
           <button type="button" class="threads-tab threads-refresh" :disabled="loading" aria-label="Tải lại bảng tin" @click="refreshFeed">
@@ -225,17 +225,17 @@
         </div>
 
         <!-- Post type filter (only for feed tabs, not bookmarks/search) -->
-        <div v-if="activeTab !== 'bookmarks' && !searchMode" class="type-filter-row" role="region" aria-label="Lọc loại bài viết">
-          <button type="button"
+        <div v-if="activeTab !== 'bookmarks' && !searchMode" class="type-filter-row" role="tablist" aria-label="Lọc loại bài viết">
+          <button type="button" role="tab"
             :class="['chip chip-filter', { active: filterType === '' }]"
-            :aria-pressed="filterType === ''"
+            :aria-selected="filterType === ''"
             @click="filterType = ''"
           >Tất cả</button>
-          <button type="button"
+          <button type="button" role="tab"
             v-for="pt in postTypes"
             :key="pt.value"
             :class="['chip chip-filter', { active: filterType === pt.value }]"
-            :aria-pressed="filterType === pt.value"
+            :aria-selected="filterType === pt.value"
             @click="filterType = pt.value"
           >{{ pt.label }}</button>
         </div>
