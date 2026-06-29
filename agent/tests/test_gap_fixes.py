@@ -1114,3 +1114,64 @@ class TestCacheControlCoverage:
                 continue
             src = inspect.getsource(fn)
             assert "Cache-Control" in src, f"{name} missing Cache-Control header"
+
+
+class TestPrivacyRateLimit:
+    """PUT /privacy must have rate limiting."""
+
+    def test_update_privacy_has_rate_limit(self):
+        import auth
+        src = inspect.getsource(auth.update_privacy)
+        assert "check_rate" in src, "update_privacy missing rate limiting"
+
+
+class TestRelationshipDeleteValidation:
+    """DELETE /relationships type param must be bounded."""
+
+    def test_type_param_has_max_length(self):
+        import admin
+        src = inspect.getsource(admin.delete_relationship)
+        assert "max_length" in src, "delete_relationship type param missing max_length"
+
+    def test_from_id_validated(self):
+        import admin
+        src = inspect.getsource(admin.delete_relationship)
+        assert "validate_path_id" in src
+
+
+class TestWriteEndpointRateLimits:
+    """All POST/PUT/DELETE/PATCH endpoints across social, notifications, auth should have rate limiting."""
+
+    _EXEMPT = set()
+
+    def _check_module_ratelimit(self, mod_name):
+        import importlib
+        import fastapi
+        mod = importlib.import_module(mod_name)
+        router = getattr(mod, "router")
+        missing = []
+        for route in router.routes:
+            if not isinstance(route, fastapi.routing.APIRoute):
+                continue
+            methods = route.methods or set()
+            if methods & {"POST", "PUT", "DELETE", "PATCH"}:
+                fn = route.endpoint
+                name = fn.__name__
+                if name in self._EXEMPT:
+                    continue
+                src = inspect.getsource(fn)
+                if "check_rate" not in src and "_otp_rate" not in src and "_login_ip_rate" not in src and "_check_phone_ip_rate" not in src and "_otp_verify_ip_rate" not in src:
+                    missing.append(name)
+        return missing
+
+    def test_social_all_writes_have_ratelimit(self):
+        missing = self._check_module_ratelimit("social")
+        assert not missing, f"social.py write endpoints missing check_rate: {missing}"
+
+    def test_notifications_all_writes_have_ratelimit(self):
+        missing = self._check_module_ratelimit("notifications")
+        assert not missing, f"notifications.py write endpoints missing check_rate: {missing}"
+
+    def test_auth_all_writes_have_ratelimit(self):
+        missing = self._check_module_ratelimit("auth")
+        assert not missing, f"auth.py write endpoints missing check_rate: {missing}"

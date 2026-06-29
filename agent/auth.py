@@ -680,6 +680,9 @@ async def reset_password_otp(body: ResetPasswordOTP, request: Request, _csrf=Dep
 
 @router.post("/logout")
 async def logout(request: Request, _csrf=Depends(_require_csrf_lazy)):
+    from ratelimit import check_rate
+    from middleware import get_client_ip
+    check_rate(f"logout:{get_client_ip(request)}", 10, 60, "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
     token = _extract_token(request)
     if not token:
         return {"success": True}
@@ -728,6 +731,8 @@ async def revoke_session(session_id: str, request: Request, _csrf=Depends(_requi
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
+    from ratelimit import check_rate
+    check_rate(f"revoke:{user['id']}", 20, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     def _query():
         with db._conn() as conn:
             db._execute(conn, f"""
@@ -1050,6 +1055,8 @@ async def update_privacy(body: PrivacyUpdate, request: Request, _csrf=Depends(_r
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
+    from ratelimit import check_rate
+    check_rate(f"privacy:{user['id']}", 10, 600, "Cập nhật quá nhanh. Vui lòng thử lại sau.")
 
     valid_vis = ("public", "followers", "private")
     if body.profile_visibility and body.profile_visibility not in valid_vis:

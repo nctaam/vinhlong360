@@ -659,7 +659,7 @@ async def add_relationship(body: RelationshipCreate):
     return {"status": "created"}
 
 @router.delete("/relationships")
-async def delete_relationship(from_id: str, to_id: str, type: str):
+async def delete_relationship(from_id: str, to_id: str, type: str = Query(..., max_length=100)):
     validate_path_id(from_id, "from_id")
     validate_path_id(to_id, "to_id")
     def _query():
