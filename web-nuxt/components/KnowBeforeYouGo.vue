@@ -143,7 +143,7 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
   border-radius: 16px;
 }
 .kbyg-title {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: var(--space-2);
   font-size: 1.1rem; font-weight: 700;
   margin: 0 0 var(--space-4);
   color: var(--ink);
@@ -152,11 +152,11 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
 
 /* Amenity badges */
 .kbyg-badges {
-  display: flex; flex-wrap: wrap; gap: 8px;
+  display: flex; flex-wrap: wrap; gap: var(--space-2);
   margin-bottom: var(--space-4);
 }
 .kbyg-badge {
-  display: inline-flex; align-items: center; gap: 4px;
+  display: inline-flex; align-items: center; gap: var(--space-1);
   padding: 5px 12px; border-radius: 100px;
   font-size: .8rem; font-weight: 500;
   background: rgba(var(--blue-rgb), .08);
@@ -172,7 +172,7 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
   margin-bottom: var(--space-4);
 }
 .kbyg-golden-item {
-  display: flex; align-items: flex-start; gap: 8px;
+  display: flex; align-items: flex-start; gap: var(--space-2);
   padding: 10px 14px; border-radius: 12px;
   background: rgba(var(--accent-rgb), .08);
   flex: 1 1 160px; min-width: 160px;
@@ -183,12 +183,12 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
 
 /* Tips */
 .kbyg-tips {
-  display: flex; flex-direction: column; gap: 8px;
+  display: flex; flex-direction: column; gap: var(--space-2);
   margin-bottom: var(--space-4);
 }
 .kbyg-tip {
-  display: flex; align-items: flex-start; gap: 8px;
-  padding: 8px 12px; border-radius: 10px;
+  display: flex; align-items: flex-start; gap: var(--space-2);
+  padding: var(--space-2) var(--space-3); border-radius: 10px;
   background: rgba(var(--secondary-rgb), .06);
   font-size: .88rem; line-height: 1.45;
 }

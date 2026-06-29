@@ -324,10 +324,10 @@ async function onReset() {
 /* ── Repeater (A3) ── */
 .sf-rep-label { font-size: .88rem; font-weight: 500; }
 .sf-rep-sub { display: block; font-size: .75rem; color: var(--muted); margin-top: 2px; }
-.sf-rep-field { display: flex; flex-direction: column; gap: 4px; }
+.sf-rep-field { display: flex; flex-direction: column; gap: var(--space-1); }
 .sf-rep-flabel { font-size: .72rem; font-weight: 500; color: var(--muted); }
 .sf-rep-input {
-  padding: 8px 12px; border: .5px solid var(--line); border-radius: 10px;
+  padding: var(--space-2) var(--space-3); border: .5px solid var(--line); border-radius: 10px;
   font-size: .85rem; background: var(--bg); color: var(--ink); min-height: 38px;
   font-family: inherit; resize: vertical;
   transition: border-color .2s, box-shadow .2s;
@@ -344,7 +344,7 @@ async function onReset() {
 }
 .sf-color-picker:focus { outline: none; box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .15); }
 .sf-color-hex {
-  width: 110px; padding: 10px 12px; border: .5px solid var(--line); border-radius: 10px;
+  width: 110px; padding: 10px var(--space-3); border: .5px solid var(--line); border-radius: 10px;
   font-size: .85rem; font-family: 'SF Mono', 'Cascadia Code', monospace;
   min-height: 44px; box-sizing: border-box; background: var(--bg); color: var(--ink);
   transition: border-color .2s, box-shadow .2s;
@@ -393,7 +393,7 @@ async function onReset() {
   margin-top: var(--space-2); border-top: .5px solid var(--line);
 }
 .sf-save {
-  padding: 12px 28px; border-radius: 12px; font-weight: 600; font-size: .88rem;
+  padding: var(--space-3) 28px; border-radius: 12px; font-weight: 600; font-size: .88rem;
   background: var(--primary, #219653); color: var(--text-on-dark, #fff); border: none; cursor: pointer;
   min-height: 44px;
   transition: transform .2s cubic-bezier(.2,1,.4,1), opacity .2s, box-shadow .2s;
@@ -403,7 +403,7 @@ async function onReset() {
 .sf-save:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .sf-save:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 .sf-reset {
-  padding: 12px 20px; border-radius: 12px; font-size: .85rem; font-weight: 500;
+  padding: var(--space-3) var(--space-5); border-radius: 12px; font-size: .85rem; font-weight: 500;
   background: transparent; border: .5px solid var(--line); color: var(--muted); cursor: pointer;
   min-height: 44px;
   transition: border-color .2s, color .2s, transform .15s cubic-bezier(.2,1,.4,1);
@@ -413,7 +413,7 @@ async function onReset() {
 .sf-reset:focus-visible { outline: 2px solid var(--danger, #D94F3D); outline-offset: 2px; }
 
 /* ── Save spinner ── */
-.sf-save { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.sf-save { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); }
 .sf-spinner {
   width: 16px; height: 16px; flex-shrink: 0;
   border: 2px solid rgba(255,255,255,.4); border-top-color: var(--text-on-dark, #fff); border-radius: 50%;

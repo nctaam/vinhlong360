@@ -508,7 +508,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
 /* Inline action spinner (reuses global admin-spin keyframe) */
 .mod-btn-spin { display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: admin-spin .6s linear infinite; }
-.mod-reason-presets { display: flex; flex-wrap: wrap; gap: 4px; width: 100%; }
+.mod-reason-presets { display: flex; flex-wrap: wrap; gap: var(--space-1); width: 100%; }
 .mod-reason-chip {
   padding: 4px 10px; border-radius: 100px; border: .5px solid var(--line);
   background: var(--bg); font-size: .76rem; font-weight: 500; color: var(--muted);
@@ -516,9 +516,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 }
 .mod-reason-chip:hover { border-color: var(--error); color: var(--error); }
 .mod-reason-chip.active { background: rgba(var(--danger-rgb),.12); border-color: var(--error); color: var(--error); font-weight: 600; }
-.mod-reason-input { flex: 1; min-width: 200px; padding: 9px 12px; border: .5px solid var(--line); border-radius: 10px; font-size: .85rem; background: var(--bg); color: var(--ink); min-height: 40px; }
+.mod-reason-input { flex: 1; min-width: 200px; padding: 9px var(--space-3); border: .5px solid var(--line); border-radius: 10px; font-size: .85rem; background: var(--bg); color: var(--ink); min-height: 40px; }
 .mod-reason-input:focus { outline: none; border-color: var(--error); box-shadow: 0 0 0 3px rgba(var(--danger-rgb),.1); }
-.btn-ghost-sm { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; padding: 8px 12px; border-radius: 8px; }
+.btn-ghost-sm { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; padding: var(--space-2) var(--space-3); border-radius: 8px; }
 .btn-ghost-sm:hover { background: var(--bg-alt); color: var(--ink); }
 
 .mod-empty-action {

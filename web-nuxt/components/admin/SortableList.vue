@@ -166,7 +166,7 @@ function addChild(parentIdx: number) {
 
 .sl-item-head {
   display: flex; align-items: center; gap: var(--space-3);
-  padding: 12px 14px; min-height: 44px;
+  padding: var(--space-3) 14px; min-height: 44px;
 }
 .sl-handle {
   color: var(--muted); font-size: .85rem; cursor: grab; user-select: none;
@@ -186,7 +186,7 @@ function addChild(parentIdx: number) {
 .sl-item-label { font-size: .88rem; font-weight: 500; }
 .sl-item-sub { display: block; font-size: .75rem; color: var(--muted); margin-top: 2px; }
 
-.sl-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.sl-actions { display: flex; gap: var(--space-1); flex-shrink: 0; }
 .sl-btn {
   min-width: 44px; min-height: 44px; border-radius: 8px;
   border: .5px solid var(--line); background: var(--bg);
@@ -201,10 +201,10 @@ function addChild(parentIdx: number) {
 .sl-btn-remove:hover:not(:disabled) { background: rgba(var(--danger-rgb, 217,79,61), .06); color: var(--danger, #D94F3D); }
 
 .sl-edit-fields { display: flex; flex-direction: column; gap: var(--space-3); }
-.sl-edit-group { display: flex; flex-direction: column; gap: 4px; }
+.sl-edit-group { display: flex; flex-direction: column; gap: var(--space-1); }
 .sl-edit-label { font-size: .72rem; font-weight: 500; color: var(--muted); text-transform: capitalize; }
 .sl-edit-input {
-  padding: 8px 12px; border: .5px solid var(--line); border-radius: 10px;
+  padding: var(--space-2) var(--space-3); border: .5px solid var(--line); border-radius: 10px;
   font-size: .85rem; background: var(--bg); color: var(--ink);
   min-height: 44px;
   transition: border-color .2s, box-shadow .2s;

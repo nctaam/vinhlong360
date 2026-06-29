@@ -902,7 +902,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 /* ── Duplicate warning ── */
 .ent-dup-warn {
   display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-  padding: 8px 12px; border-radius: 8px; font-size: .82rem;
+  padding: var(--space-2) var(--space-3); border-radius: 8px; font-size: .82rem;
   background: rgba(var(--warning-rgb),.1); border: .5px solid rgba(var(--warning-rgb),.3);
   color: var(--warning); animation: ent-fade-in .2s ease;
 }
