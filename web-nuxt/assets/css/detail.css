@@ -411,7 +411,9 @@
   .ms-cell:hover { transform: none; }
   .ms-cell.on.peak { animation: none; }
   .ns-action:hover { transform: none; }
-  .pt-item:hover { transform: none; }  .rel-list li:hover { transform: none; }  .ocop-highlight:hover { transform: none; }
+  .pt-item:hover { transform: none; }
+  .rel-list li:hover { transform: none; }
+  .ocop-highlight:hover { transform: none; }
   .provenance-block:hover { box-shadow: 0 0 0 1px rgba(var(--secondary-rgb), .1), var(--shadow-xs); }
   .dc-photo-btn:hover, .dc-photo-btn:active { transform: none; }
   .dc-thumb-more:hover, .dc-thumb-more:active { transform: none; }
@@ -425,14 +427,17 @@
 @media (min-width: 769px) and (max-width: 1024px) {
   .detail-body { grid-template-columns: 1fr 260px; gap: var(--space-5); }
   .detail-cover.has-cover-img { min-height: 320px; }
-  .dc-thumbs { right: 120px; }}
+  .dc-thumbs { right: 120px; }
+}
 @media (max-width: 840px) {
   .detail-body { grid-template-columns: 1fr; }
-  .detail-aside { position: static; max-height: none; overflow-y: visible; }  /* Sticky CTA bar is the single source of truth for contact on mobile —
+  .detail-aside { position: static; max-height: none; overflow-y: visible; }
+  /* Sticky CTA bar is the single source of truth for contact on mobile —
      hide the duplicate sidebar contact-row to avoid showing Gọi/Zalo twice. */
   .contact-row { display: none; }
 }
-@media (max-width: 768px) {  .detail-cover h1 { font-size: var(--text-2xl); }
+@media (max-width: 768px) {
+  .detail-cover h1 { font-size: var(--text-2xl); }
 }
 @media (max-width: 480px) {
   .detail-cover h1 { font-size: 1.5rem; }
@@ -471,8 +476,10 @@
 }
 .dark .pb-report:active {
   background: rgba(255, 255, 255, .12);
-}.dark .ms-cell.on.peak { color: var(--ink-900); }
-.dark .detail-cover.has-cover-img .dc-overlay { background: linear-gradient(to top, rgba(0,0,0,.82) 0%, rgba(0,0,0,.5) 40%, rgba(0,0,0,.18) 75%, rgba(0,0,0,.08) 100%); }.dark .practical-tips { border-color: var(--line); }
+}
+.dark .ms-cell.on.peak { color: var(--ink-900); }
+.dark .detail-cover.has-cover-img .dc-overlay { background: linear-gradient(to top, rgba(0,0,0,.82) 0%, rgba(0,0,0,.5) 40%, rgba(0,0,0,.18) 75%, rgba(0,0,0,.08) 100%); }
+.dark .practical-tips { border-color: var(--line); }
 .dark .pt-item { border-color: var(--line); }
 .dark .fact { border-color: var(--line); }
 .dark .facts-card { background: rgba(255,255,255,.02); border-color: var(--line); }
@@ -481,7 +488,8 @@
 .dark .facts-heading-icon { background: rgba(var(--primary-rgb), .18); }
 .dark .next-steps { border-color: var(--line); }
 .dark .sticky-cta-bar { box-shadow: 0 -2px 16px rgba(0,0,0,.4); border-color: rgba(255,255,255,.06); }
-.dark .detail-aside:hover { box-shadow: var(--shadow-md); }.dark .detail-aside { background: var(--card); border-color: var(--line); }
+.dark .detail-aside:hover { box-shadow: var(--shadow-md); }
+.dark .detail-aside { background: var(--card); border-color: var(--line); }
 .dark .dc-ocop-chip { color: var(--amber-100); background: linear-gradient(135deg, rgba(var(--accent-rgb), .85), rgba(var(--accent-rgb), .65)); }
 .dark .ms-cell { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.08); }
 .dark .ms-cell.on { background: rgba(var(--primary-rgb), .15); }

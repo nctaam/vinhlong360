@@ -211,7 +211,10 @@ a:focus:not(:focus-visible), button:focus:not(:focus-visible) { outline: none; }
   .sk-shimmer::after { animation: sk-pulse 2s ease-in-out infinite; background: var(--sk-highlight); transform: none; }
   @keyframes sk-pulse { 0%, 100% { opacity: 0; } 50% { opacity: .5; } }
 }
-@media (forced-colors: active) { .sk-shimmer { border: 1px solid GrayText; } .sk-shimmer::after { display: none; } }
+@media (forced-colors: active) {
+  .sk-shimmer { border: 1px solid GrayText; }
+  .sk-shimmer::after { display: none; }
+}
 
 /* ── CUBE Composition Layer — reusable layout primitives ── */
 .flow > * + * { margin-top: var(--flow-space, var(--space-4)); }
@@ -276,7 +279,13 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
 .reveal.revealed:nth-child(6) { animation-delay: .3s; }
 .reveal.revealed:nth-child(7) { animation-delay: .36s; }
 .reveal.revealed:nth-child(8) { animation-delay: .42s; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .reveal, html.js .reveal { opacity: 1; transform: none; } .reveal.revealed { animation: none; } .scroll-row .card { animation: none !important; } .revealed .scroll-row > *, .revealed .grid > *, .revealed .sidebar-list > *, .revealed .quick-picks > *, .revealed .hl, .revealed .cw-row { animation: none; } }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal, html.js .reveal { opacity: 1; transform: none; }
+  .reveal.revealed { animation: none; }
+  .scroll-row .card { animation: none !important; }
+  .revealed .scroll-row > *, .revealed .grid > *, .revealed .sidebar-list > *, .revealed .quick-picks > *, .revealed .hl, .revealed .cw-row { animation: none; }
+}
 
 /* Card stagger entrance within scroll-row */
 @keyframes cardIn { from { opacity: 0; transform: translateY(12px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }

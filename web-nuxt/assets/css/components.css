@@ -438,7 +438,10 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 .ac-remove-recent:hover { color: var(--ink); background: var(--bg-alt); }
 .ac-empty { padding: var(--space-5) var(--space-4); text-align: center; color: var(--muted); font-size: var(--text-sm); line-height: 1.5; }
 .ac-loading { display: flex; justify-content: center; padding: var(--space-5); }
-@media (hover: none) { .ac-remove-recent { opacity: 1; width: 40px; height: 40px; } .ac-clear { width: 40px; height: 40px; } }
+@media (hover: none) {
+  .ac-remove-recent { opacity: 1; width: 40px; height: 40px; }
+  .ac-clear { width: 40px; height: 40px; }
+}
 
 /* ── Dark mode (components) ── */
 .dark .save-btn:not(.save-btn-sm) { background: rgba(28, 28, 30, .88); border-color: var(--line); }
@@ -489,7 +492,12 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 .jb-actions { display: flex; gap: var(--space-2); }
 .jb-link { white-space: nowrap; }
 @keyframes jbSlideUp { from { opacity: 0; transform: translateX(-50%) translateY(16px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-@media (max-width: 480px) { .journey-bar { bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); left: var(--space-3); right: var(--space-3); transform: none; border-radius: var(--radius-lg); flex-wrap: wrap; gap: var(--space-2) var(--space-3); justify-content: center; padding: var(--space-3); } .jb-actions { flex: 1 1 100%; } .jb-actions .jb-link { flex: 1; } @keyframes jbSlideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } } }
+@media (max-width: 480px) {
+  .journey-bar { bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); left: var(--space-3); right: var(--space-3); transform: none; border-radius: var(--radius-lg); flex-wrap: wrap; gap: var(--space-2) var(--space-3); justify-content: center; padding: var(--space-3); }
+  .jb-actions { flex: 1 1 100%; }
+  .jb-actions .jb-link { flex: 1; }
+  @keyframes jbSlideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+}
 
 /* ── Supplementary hints (AI-powered, shown as subtle suggestions) ── */
 /* Căn giữa + max-width như .block — fix bug grid trải full-width văng mép trái ở desktop */
