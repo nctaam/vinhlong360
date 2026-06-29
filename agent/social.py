@@ -1014,14 +1014,15 @@ async def trending_posts(
     ph = db._ph
     bc, bc_p = _block_sql(user, "p.user_id")
     mc, mc_p = _mute_sql(user, "p.user_id")
+    interval_param = f"{days} days"
     def _query():
         with db._conn() as conn:
             total_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as cnt FROM posts p
                 WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
-                  AND p.created_at > NOW() - INTERVAL '{days} days'
+                  AND p.created_at > NOW() - CAST({ph} AS INTERVAL)
                   {bc} {mc}
-            """, (*bc_p, *mc_p))
+            """, (interval_param, *bc_p, *mc_p))
             total = db._row_to_dict(total_row).get("cnt", 0) if total_row else 0
             rows = db._fetchall(conn, f"""
                 SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
@@ -1030,12 +1031,12 @@ async def trending_posts(
                 JOIN users u ON u.id = p.user_id
                 LEFT JOIN entities e ON e.id = p.entity_id
                 WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
-                  AND p.created_at > NOW() - INTERVAL '{days} days'
+                  AND p.created_at > NOW() - CAST({ph} AS INTERVAL)
                   {bc} {mc}
                 ORDER BY (p.like_count * 2 + p.comment_count * 3) DESC,
                          p.created_at DESC
                 LIMIT {ph}
-            """, (*bc_p, *mc_p, limit))
+            """, (interval_param, *bc_p, *mc_p, limit))
             return total, rows
     total, rows = await asyncio.to_thread(_query)
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
@@ -1403,17 +1404,18 @@ async def trending_tags(
             return _trending_cache["data"][cache_key]
 
         ph = db._ph
+        interval_param = f"{days} days"
         def _query():
             with db._conn() as conn:
                 return db._fetchall(conn, f"""
                     SELECT tag, COUNT(*) AS c
                     FROM posts p, jsonb_array_elements_text(p.hashtags) AS tag
                     WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
-                      AND p.created_at > NOW() - INTERVAL '{days} days'
+                      AND p.created_at > NOW() - CAST({ph} AS INTERVAL)
                     GROUP BY tag
                     ORDER BY c DESC, tag
                     LIMIT {ph}
-                """, (limit,))
+                """, (interval_param, limit))
         rows = await asyncio.to_thread(_query)
         tags = [{"tag": (d := db._row_to_dict(r))["tag"], "count": int(d["c"])} for r in rows]
         result = {"tags": tags, "period": period, "days": days}

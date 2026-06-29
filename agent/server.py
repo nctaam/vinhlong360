@@ -897,6 +897,7 @@ if _env_name in ("production", "prod", "prd"):
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["Content-Type", "X-Admin-Key", "Authorization", "X-CSRF-Token"],
 )
@@ -988,7 +989,7 @@ async def mention_search(q: str = ""):
                     results.append({"type": "user", "id": str(d["id"]), "label": d["display_name"],
                                     "sub": "Người dùng", "avatar": d.get("avatar_url")})
     except Exception:
-        pass
+        logger.debug("Mention search user query failed", exc_info=True)
     # Địa điểm/entity (in-RAM, nhanh)
     try:
         ents = [e for e in (knowledge._entities or {}).values() if ql in (e.get("name") or "").lower()]
@@ -997,7 +998,7 @@ async def mention_search(q: str = ""):
             results.append({"type": "entity", "id": e["id"], "label": e["name"],
                             "sub": TYPE_LABELS_VI.get(e.get("type"), e.get("type") or "Địa điểm")})
     except Exception:
-        pass
+        logger.debug("Mention search entity query failed", exc_info=True)
     return {"results": results}
 
 

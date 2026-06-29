@@ -2061,3 +2061,14 @@ class TestReliabilityFixes:
         src = (AGENT_DIR / "database.py").read_text(encoding="utf-8")
         idx = src.index("PG pool creation failed")
         assert idx > 0
+
+    def test_no_interval_interpolation(self):
+        """SQL INTERVAL must use parameterized CAST, not f-string interpolation."""
+        for fname in ("admin.py", "social.py", "database.py", "server.py"):
+            src = (AGENT_DIR / fname).read_text(encoding="utf-8")
+            assert "INTERVAL '{days}" not in src, f"{fname} still has INTERVAL interpolation"
+
+    def test_cors_credentials(self):
+        """CORS must include allow_credentials for cookie-based auth."""
+        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
+        assert "allow_credentials=True" in src

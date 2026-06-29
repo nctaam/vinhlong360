@@ -1708,35 +1708,36 @@ async def user_engagement_stats(days: int = Query(30, ge=1, le=365)):
     def _query():
         if not db._use_pg:
             return {"error": "Chức năng này yêu cầu Postgres"}
+        interval_param = f"{days} days"
         with db._conn() as conn:
             active_posters = db._fetchone(conn, f"""
                 SELECT COUNT(DISTINCT user_id) as c FROM posts
-                WHERE created_at > NOW() - INTERVAL '{days} days'
-            """, ())
+                WHERE created_at > NOW() - CAST({ph} AS INTERVAL)
+            """, (interval_param,))
             active_commenters = db._fetchone(conn, f"""
                 SELECT COUNT(DISTINCT user_id) as c FROM comments
-                WHERE created_at > NOW() - INTERVAL '{days} days'
-            """, ())
+                WHERE created_at > NOW() - CAST({ph} AS INTERVAL)
+            """, (interval_param,))
             active_likers = db._fetchone(conn, f"""
                 SELECT COUNT(DISTINCT user_id) as c FROM likes
-                WHERE created_at > NOW() - INTERVAL '{days} days'
-            """, ())
+                WHERE created_at > NOW() - CAST({ph} AS INTERVAL)
+            """, (interval_param,))
             new_users = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM users
-                WHERE created_at > NOW() - INTERVAL '{days} days'
-            """, ())
+                WHERE created_at > NOW() - CAST({ph} AS INTERVAL)
+            """, (interval_param,))
             retained = db._fetchone(conn, f"""
                 SELECT COUNT(DISTINCT p.user_id) as c FROM posts p
                 JOIN users u ON u.id = p.user_id
-                WHERE p.created_at > NOW() - INTERVAL '{days} days'
-                  AND u.created_at < NOW() - INTERVAL '{days} days'
-            """, ())
+                WHERE p.created_at > NOW() - CAST({ph} AS INTERVAL)
+                  AND u.created_at < NOW() - CAST({ph} AS INTERVAL)
+            """, (interval_param, interval_param))
             total_users = db._fetchone(conn, f"SELECT COUNT(*) as c FROM users WHERE is_active = TRUE", ())
             daily = db._fetchall(conn, f"""
                 SELECT DATE(created_at) as day, COUNT(DISTINCT user_id) as active_users
-                FROM posts WHERE created_at > NOW() - INTERVAL '{days} days'
+                FROM posts WHERE created_at > NOW() - CAST({ph} AS INTERVAL)
                 GROUP BY DATE(created_at) ORDER BY day
-            """, ())
+            """, (interval_param,))
         tu = db._row_to_dict(total_users)["c"] if total_users else 1
         ap = db._row_to_dict(active_posters)["c"] if active_posters else 0
         return {
@@ -1759,13 +1760,14 @@ async def user_growth(days: int = Query(30, ge=7, le=365)):
     def _query():
         if not db._use_pg:
             return {"error": "Chức năng này yêu cầu Postgres"}
+        interval_param = f"{days} days"
         with db._conn() as conn:
             daily_reg = db._fetchall(conn, f"""
                 SELECT DATE(created_at) as day, COUNT(*) as signups
                 FROM users
-                WHERE created_at > NOW() - INTERVAL '{days} days'
+                WHERE created_at > NOW() - CAST({ph} AS INTERVAL)
                 GROUP BY DATE(created_at) ORDER BY day
-            """, ())
+            """, (interval_param,))
             total = db._fetchone(conn, "SELECT COUNT(*) as c FROM users WHERE is_active = TRUE", ())
             deactivated = db._fetchone(conn, "SELECT COUNT(*) as c FROM users WHERE is_active = FALSE", ())
             week_ago = db._fetchone(conn, f"""
@@ -2174,7 +2176,8 @@ async def export_posts_csv(
         if status != "all":
             where_parts.append(f"p.moderation_status = {ph}")
             params.append(status)
-        where_parts.append(f"p.created_at > NOW() - INTERVAL '{days} days'")
+        where_parts.append(f"p.created_at > NOW() - CAST({ph} AS INTERVAL)")
+        params.append(f"{days} days")
         where_clause = " AND ".join(where_parts) if where_parts else "TRUE"
         with db._conn() as conn:
             rows = db._fetchall(conn, f"""
@@ -2877,38 +2880,39 @@ async def content_stats(days: int = Query(30, ge=1, le=365)):
     def _query():
         if not db._use_pg:
             return {"error": "Chức năng này yêu cầu Postgres"}
+        interval_param = f"{days} days"
         with db._conn() as conn:
             by_type = db._fetchall(conn, f"""
                 SELECT post_type, COUNT(*) as cnt
                 FROM posts
-                WHERE created_at > NOW() - INTERVAL '{days} days'
+                WHERE created_at > NOW() - CAST({ph} AS INTERVAL)
                   AND moderation_status = 'approved'
                 GROUP BY post_type ORDER BY cnt DESC
-            """, ())
+            """, (interval_param,))
             by_status = db._fetchall(conn, f"""
                 SELECT moderation_status, COUNT(*) as cnt
                 FROM posts
-                WHERE created_at > NOW() - INTERVAL '{days} days'
+                WHERE created_at > NOW() - CAST({ph} AS INTERVAL)
                 GROUP BY moderation_status ORDER BY cnt DESC
-            """, ())
+            """, (interval_param,))
             avg_rating = db._fetchone(conn, f"""
                 SELECT AVG(rating) as avg_r, COUNT(*) as cnt
                 FROM posts
                 WHERE post_type = 'review' AND rating IS NOT NULL
-                  AND created_at > NOW() - INTERVAL '{days} days'
+                  AND created_at > NOW() - CAST({ph} AS INTERVAL)
                   AND moderation_status = 'approved'
-            """, ())
+            """, (interval_param,))
             total_comments = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM comments
-                WHERE created_at > NOW() - INTERVAL '{days} days'
-            """, ())
+                WHERE created_at > NOW() - CAST({ph} AS INTERVAL)
+            """, (interval_param,))
             daily_posts = db._fetchall(conn, f"""
                 SELECT DATE(created_at) as day, COUNT(*) as cnt
                 FROM posts
-                WHERE created_at > NOW() - INTERVAL '{days} days'
+                WHERE created_at > NOW() - CAST({ph} AS INTERVAL)
                   AND moderation_status = 'approved'
                 GROUP BY DATE(created_at) ORDER BY day
-            """, ())
+            """, (interval_param,))
         ar = db._row_to_dict(avg_rating) if avg_rating else {}
         return {
             "period_days": days,

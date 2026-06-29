@@ -1019,14 +1019,15 @@ class Database:
         ph = self._ph
         with self._conn() as conn:
             if self._use_pg:
+                interval_param = f"{days} days"
                 total = self._fetchone(conn, f"""
                     SELECT COUNT(*) as c FROM query_log
-                    WHERE created_at >= NOW() - INTERVAL '{days} days'
-                """)["c"]
+                    WHERE created_at >= NOW() - CAST({ph} AS INTERVAL)
+                """, (interval_param,))["c"]
                 avg_score = self._fetchone(conn, f"""
                     SELECT AVG(score) as a FROM query_log
-                    WHERE score IS NOT NULL AND created_at >= NOW() - INTERVAL '{days} days'
-                """)["a"]
+                    WHERE score IS NOT NULL AND created_at >= NOW() - CAST({ph} AS INTERVAL)
+                """, (interval_param,))["a"]
             else:
                 cutoff = datetime.now(timezone.utc).strftime("%Y-%m-%d")
                 total = conn.execute(
