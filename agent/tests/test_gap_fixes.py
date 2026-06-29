@@ -627,3 +627,33 @@ class TestBlockEnforcementOnInteractions:
         src = inspect.getsource(__import__("social").toggle_like)
         assert src.count("blocker_id") >= 2
         assert src.count("blocked_id") >= 2
+
+
+class TestBookmarksTotalCount:
+    """get_my_bookmarks returns total count and enriches reactions."""
+
+    def test_bookmarks_has_total(self):
+        src = inspect.getsource(__import__("social").get_my_bookmarks)
+        assert '"total"' in src
+        assert "COUNT(*)" in src
+
+    def test_bookmarks_enriches_reactions(self):
+        src = inspect.getsource(__import__("social").get_my_bookmarks)
+        assert "_enrich_reactions" in src
+
+    def test_bookmarks_accurate_has_more(self):
+        src = inspect.getsource(__import__("social").get_my_bookmarks)
+        assert "offset + limit < total" in src
+
+
+class TestHiddenPostsTotalCount:
+    """list_hidden_posts returns total count."""
+
+    def test_hidden_posts_has_total(self):
+        src = inspect.getsource(__import__("social").list_hidden_posts)
+        assert '"total"' in src
+        assert "COUNT(*)" in src
+
+    def test_hidden_posts_accurate_has_more(self):
+        src = inspect.getsource(__import__("social").list_hidden_posts)
+        assert "offset + limit < total" in src

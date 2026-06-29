@@ -2546,9 +2546,16 @@ async def get_my_bookmarks(
 ):
     ph = db._ph
     offset = (page - 1) * limit
+    uid = str(user["id"])
     def _query():
         with db._conn() as conn:
-            return db._fetchall(conn, f"""
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM bookmarks b
+                JOIN posts p ON p.id = b.post_id
+                WHERE b.user_id = {ph}::uuid AND p.moderation_status = 'approved'
+            """, (uid,))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
                 SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
                        e.name as entity_name, e.type as entity_type
                 FROM bookmarks b
@@ -2558,10 +2565,13 @@ async def get_my_bookmarks(
                 WHERE b.user_id = {ph}::uuid AND p.moderation_status = 'approved'
                 ORDER BY b.created_at DESC
                 LIMIT {ph} OFFSET {ph}
-            """, (str(user["id"]), limit, offset))
-    rows = await asyncio.to_thread(_query)
-    posts = [_format_post(db._row_to_dict(r)) for r in rows]
-    return {"posts": posts, "page": page, "has_more": len(posts) == limit}
+            """, (uid, limit, offset))
+            return rows, total
+    rows, total = await asyncio.to_thread(_query)
+    posts = [db._row_to_dict(r) for r in rows]
+    await asyncio.to_thread(_enrich_reactions, posts)
+    posts = [_format_post(p) for p in posts]
+    return {"posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
 
 
 # ── User Collections (themed post lists) ──
@@ -2805,7 +2815,9 @@ async def list_hidden_posts(
     uid = str(user["id"])
     def _query():
         with db._conn() as conn:
-            return db._fetchall(conn, f"""
+            total_row = db._fetchone(conn, f"SELECT COUNT(*) as c FROM user_hidden_posts WHERE user_id = {ph}::uuid", (uid,))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
                 SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
                        e.name as entity_name, e.type as entity_type
                 FROM user_hidden_posts h
@@ -2816,9 +2828,10 @@ async def list_hidden_posts(
                 ORDER BY h.created_at DESC
                 LIMIT {ph} OFFSET {ph}
             """, (uid, limit, offset))
-    rows = await asyncio.to_thread(_query)
+            return rows, total
+    rows, total = await asyncio.to_thread(_query)
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
-    return {"posts": posts, "page": page, "has_more": len(posts) == limit}
+    return {"posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
 
 
 @router.post("/posts/{post_id}/pin-comment")
