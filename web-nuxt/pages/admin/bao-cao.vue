@@ -507,6 +507,7 @@ onMounted(() => fetchAll())
   .rpt-chip:active, .rpt-loadmore:active { transform: none; }
   .rpt-bulkbar { animation: none; }
   .rpt-chip.active::after { animation: none; }
+  .refresh-spin { animation: none; }
 }
 
 /* ── Dark ── */

@@ -76,7 +76,7 @@
           <strong>{{ previewItem.entity_name }}</strong>
           <button type="button" class="btn btn-ghost btn-sm" @click="previewItem = null">Đóng</button>
         </div>
-        <img :src="previewItem.url" :alt="previewItem.entity_name" class="media-preview-img" loading="lazy" />
+        <img :src="previewItem.url" :alt="previewItem.entity_name" class="media-preview-img" loading="lazy" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
         <div class="media-preview-meta">
           <div><strong>Entity:</strong> <NuxtLink :to="`/dia-diem/${previewItem.entity_id}`" target="_blank" rel="noopener">{{ previewItem.entity_name }}</NuxtLink> ({{ previewItem.entity_type }})</div>
           <div><strong>Credit:</strong> {{ previewItem.credit || 'Không có' }}</div>
@@ -238,5 +238,5 @@ onMounted(fetchMedia)
 
 .stat-card.status-warn { border-left: 4px solid var(--warning, #FF9F0A); }
 @media (max-width: 640px) { .media-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }
-@media (prefers-reduced-motion: reduce) { .media-card:hover { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .media-card:hover { transform: none; } .media-skeleton-img, .media-skeleton-line { animation: none; } }
 </style>

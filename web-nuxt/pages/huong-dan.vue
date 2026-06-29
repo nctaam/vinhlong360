@@ -6,7 +6,7 @@
         <div class="sidebar-search">
           <input v-model="search" type="search" enterkeyhint="search" placeholder="Tìm trong hướng dẫn..." aria-label="Tìm trong hướng dẫn" class="search-input" />
         </div>
-        <nav class="sidebar-nav">
+        <nav class="sidebar-nav" aria-label="Mục lục hướng dẫn">
           <a href="#bat-dau" class="snav-link" :class="{ active: activeId === 'bat-dau' }" @click.prevent="scrollTo('bat-dau')">🚀 Bắt đầu nhanh</a>
           <template v-for="s in filteredSections" :key="s.id">
             <a :href="`#${s.id}`" class="snav-link" :class="{ active: activeId === s.id }" @click.prevent="scrollTo(s.id)">
@@ -35,7 +35,7 @@
       <!-- Mobile TOC -->
       <details class="mobile-toc reveal">
         <summary class="mobile-toc-toggle">📑 Mục lục ({{ sections.length + 3 }} phần)</summary>
-        <nav class="mobile-toc-nav">
+        <nav class="mobile-toc-nav" aria-label="Mục lục hướng dẫn">
           <a href="#bat-dau" @click.prevent="scrollTo('bat-dau')">🚀 Bắt đầu nhanh</a>
           <a v-for="s in sections" :key="s.id" :href="`#${s.id}`" @click.prevent="scrollTo(s.id)">{{ s.icon }} {{ s.title }}</a>
           <a href="#phim-tat" @click.prevent="scrollTo('phim-tat')">⌨️ Phím tắt</a>

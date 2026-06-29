@@ -168,7 +168,7 @@
         </div>
         <div class="mod-preview-body">{{ previewPost.content }}</div>
         <div v-if="previewPost.images?.length" class="mod-preview-images">
-          <img v-for="(img, i) in previewPost.images" :key="i" :src="img" :alt="`Ảnh ${i+1}`" loading="lazy" width="200" height="150" />
+          <img v-for="(img, i) in previewPost.images" :key="i" :src="img" :alt="`Ảnh ${i+1}`" loading="lazy" width="200" height="150" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
         </div>
         <!-- Moderation notes -->
         <div class="mod-notes-section">
@@ -512,7 +512,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-reason-chip {
   padding: 4px 10px; border-radius: 100px; border: .5px solid var(--line);
   background: var(--bg); font-size: .76rem; font-weight: 500; color: var(--muted);
-  cursor: pointer; transition: all .15s;
+  cursor: pointer; transition: background .15s, color .15s, border-color .15s;
 }
 .mod-reason-chip:hover { border-color: var(--error); color: var(--error); }
 .mod-reason-chip.active { background: rgba(var(--danger-rgb),.12); border-color: var(--error); color: var(--error); font-weight: 600; }

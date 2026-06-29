@@ -375,6 +375,7 @@ onMounted(fetchData)
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   .tk-panel:hover { transform: none; }
+  .tk-bar-bg { animation: none; }
 }
 
 /* ── Dark mode ── */
@@ -441,7 +442,7 @@ onMounted(fetchData)
 .tk-chip {
   padding: 6px 14px; border-radius: 100px; border: .5px solid var(--line);
   background: var(--bg); color: var(--muted); font-size: .82rem; font-weight: 500;
-  cursor: pointer; transition: all .2s;
+  cursor: pointer; transition: background .2s, color .2s, border-color .2s;
 }
 .tk-chip:hover { border-color: var(--primary, #219653); color: var(--ink); }
 .tk-chip.active { background: var(--primary, #219653); color: var(--text-on-dark); border-color: var(--primary, #219653); }

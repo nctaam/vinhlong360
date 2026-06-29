@@ -103,7 +103,7 @@
           <p class="disclaimer">{{ ss('footer.disclaimer', 'Thông tin mùa vụ, giá & địa điểm mang tính tham khảo — vui lòng xác nhận với địa phương trước khi sử dụng.') }}</p>
           <div class="footer-bottom-row">
             <p>{{ ss('footer.copyright', '© 2024–2026 vinhlong360') }}</p>
-            <nav class="footer-legal">
+            <nav class="footer-legal" aria-label="Pháp lý">
               <NuxtLink v-for="link in footerLegalLinks" :key="link.to" :to="link.to">{{ link.label }}</NuxtLink>
             </nav>
           </div>

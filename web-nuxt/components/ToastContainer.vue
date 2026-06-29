@@ -112,6 +112,7 @@ function iconFor(type?: string) {
   .toast-leave-active,
   .toast-move { transition: none; }
   .toast-icon { animation: none; }
+  .toast-progress { animation: none; }
 }
 @media (forced-colors: active) {
   .toast { border: 1px solid CanvasText; background: Canvas; }

@@ -246,15 +246,15 @@ function addChild(parentIdx: number) {
 .sl-add:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 
 /* ── List transitions ── */
-.sl-list-enter-active { transition: all .3s cubic-bezier(.2,1,.4,1); }
-.sl-list-leave-active { transition: all .2s ease-in; }
+.sl-list-enter-active { transition: opacity .3s cubic-bezier(.2,1,.4,1), transform .3s cubic-bezier(.2,1,.4,1); }
+.sl-list-leave-active { transition: opacity .2s ease-in, transform .2s ease-in; }
 .sl-list-enter-from { opacity: 0; transform: translateY(-8px); }
 .sl-list-leave-to { opacity: 0; transform: scale(.96); }
 .sl-list-move { transition: transform .3s cubic-bezier(.2,1,.4,1); }
 
 /* ── Expand transition ── */
-.sl-expand-enter-active { transition: all .3s cubic-bezier(.2,1,.4,1); }
-.sl-expand-leave-active { transition: all .15s ease-in; }
+.sl-expand-enter-active { transition: opacity .3s cubic-bezier(.2,1,.4,1), transform .3s cubic-bezier(.2,1,.4,1); }
+.sl-expand-leave-active { transition: opacity .15s ease-in, transform .15s ease-in; }
 .sl-expand-enter-from { opacity: 0; transform: translateY(-6px); }
 .sl-expand-leave-to { opacity: 0; }
 

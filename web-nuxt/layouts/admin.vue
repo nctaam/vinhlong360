@@ -1,7 +1,7 @@
 <template>
   <div class="admin-shell">
     <a href="#admin-main" class="skip-link">Chuyển đến nội dung chính</a>
-    <aside class="admin-sidebar" :class="{ collapsed: sidebarCollapsed }">
+    <aside class="admin-sidebar" :class="{ collapsed: sidebarCollapsed }" aria-label="Menu quản trị">
       <div class="admin-sidebar-head">
         <NuxtLink class="admin-brand" to="/admin">
           <span class="logo">vinhlong<span class="dot">360</span></span>
@@ -528,6 +528,7 @@ onUnmounted(() => {
   .admin-pagination button:hover:not(:disabled) { transform: none; }
   .admin-pagination button:active:not(:disabled) { transform: none; }
   .admin-refresh:active { transform: none; }
+  .admin-loading .spinner, .refresh-spin { animation: none; }
   .sidebar-toggle:active { transform: none; }
   .back-link:hover { transform: none; }
   .admin-nav a:hover .nav-icon { transform: none; }

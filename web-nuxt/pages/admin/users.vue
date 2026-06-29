@@ -585,6 +585,7 @@ onMounted(() => fetchUsers())
   .usr-active .usr-status-dot { animation: none; }
   .usr-sort-arrow { transition: none; }
   .usr-skeleton-line { animation: none; }
+  .refresh-spin { animation: none; }
 }
 
 /* ── Dark ── */
