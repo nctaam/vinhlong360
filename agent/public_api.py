@@ -341,7 +341,7 @@ async def entity_types(response: Response):
     def _query():
         with db._conn() as conn:
             rows = db._fetchall(conn, "SELECT type, COUNT(*) as count FROM entities GROUP BY type ORDER BY count DESC", ())
-        return [{"type": db._row_to_dict(r)["type"], "count": db._row_to_dict(r)["count"]} for r in rows]
+        return [{"type": d["type"], "count": d["count"]} for d in (db._row_to_dict(r) for r in rows)]
     result = await asyncio.to_thread(_query)
     return {"types": result, "total": sum(t["count"] for t in result)}
 

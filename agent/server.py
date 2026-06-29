@@ -2443,16 +2443,17 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                             "trả lời trực tiếp bằng tiếng Việt."),
             })
             synth_q: asyncio.Queue = asyncio.Queue()
+            loop = asyncio.get_event_loop()
             def _synth_produce():
                 try:
                     resp = get_client().chat.completions.create(model=_stream_model, messages=messages, stream=True, timeout=LLM_TIMEOUT)
                     for chunk in resp:
                         delta = chunk.choices[0].delta
                         if delta.content:
-                            synth_q.put_nowait(delta.content)
+                            loop.call_soon_threadsafe(synth_q.put_nowait, delta.content)
                 finally:
-                    synth_q.put_nowait(None)
-            asyncio.get_event_loop().run_in_executor(None, _synth_produce)
+                    loop.call_soon_threadsafe(synth_q.put_nowait, None)
+            loop.run_in_executor(None, _synth_produce)
             synth_text = ""
             while True:
                 token = await synth_q.get()
