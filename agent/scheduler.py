@@ -2,7 +2,7 @@
 vinhlong360 — Task Scheduler.
 
 Chạy các tác vụ nền định kỳ:
-  - Auto-learn từ knowledge gaps (mỗi 6h)
+  - Auto-learn từ knowledge gaps (mỗi 3h, cấu hình LEARN_INTERVAL_AUTOLEARN)
   - Relationship discovery (mỗi 24h)
   - Data sync (data.json → data.js) sau mỗi thay đổi
   - Analytics cleanup (mỗi 24h)
@@ -367,23 +367,54 @@ def task_admin_digest():
         _sched_logger.error("digest send error: %s", e)
 
 
+_TELEGRAM_RETRY_QUEUE: list[tuple[str, int]] = []
+_TELEGRAM_MAX_QUEUE = 50
+
 def _send_telegram_admins(text: str) -> bool:
-    """Gửi 1 tin Telegram tới mọi ADMIN_TELEGRAM_IDS (free, HTTP API)."""
-    import os
+    """Gửi 1 tin Telegram tới mọi ADMIN_TELEGRAM_IDS (free, HTTP API).
+    Retry 3 lần với backoff; nếu vẫn thất bại thì xếp hàng chờ retry sau."""
+    import os, time as _time
     token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
     ids = [x.strip() for x in os.environ.get("ADMIN_TELEGRAM_IDS", "").split(",") if x.strip()]
     if not token or not ids:
         return False
-    sent = False
-    try:
-        import httpx
-        for cid in ids:
-            httpx.post(f"https://api.telegram.org/bot{token}/sendMessage",
-                       json={"chat_id": cid, "text": text, "parse_mode": "Markdown"}, timeout=15)
-            sent = True
-    except Exception as e:
-        _sched_logger.error("telegram send error: %s", e)
-    return sent
+    import httpx
+    for cid in ids:
+        ok = False
+        for attempt in range(3):
+            try:
+                resp = httpx.post(f"https://api.telegram.org/bot{token}/sendMessage",
+                                  json={"chat_id": cid, "text": text, "parse_mode": "Markdown"}, timeout=15)
+                if resp.status_code < 500:
+                    ok = True
+                    break
+            except Exception:
+                _sched_logger.warning("telegram attempt %d failed for chat %s", attempt + 1, cid)
+            _time.sleep(0.5 * (2 ** attempt))
+        if not ok:
+            _sched_logger.error("telegram send failed after 3 attempts for chat %s", cid)
+            if len(_TELEGRAM_RETRY_QUEUE) < _TELEGRAM_MAX_QUEUE:
+                _TELEGRAM_RETRY_QUEUE.append((text, int(_time.time())))
+            return False
+    return True
+
+
+def retry_pending_telegram(max_age_hours: int = 24):
+    """Retry queued Telegram messages (called from digest or cleanup tasks)."""
+    import time as _time
+    cutoff = int(_time.time()) - max_age_hours * 3600
+    retried = 0
+    while _TELEGRAM_RETRY_QUEUE:
+        text, ts = _TELEGRAM_RETRY_QUEUE[0]
+        if ts < cutoff:
+            _TELEGRAM_RETRY_QUEUE.pop(0)
+            continue
+        if _send_telegram_admins(text):
+            _TELEGRAM_RETRY_QUEUE.pop(0)
+            retried += 1
+        else:
+            break
+    return retried
 
 
 def task_autonomous_agent():
