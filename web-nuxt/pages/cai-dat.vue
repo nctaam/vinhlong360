@@ -240,7 +240,7 @@
             </button>
           </div>
         </div>
-        <label class="notif-pref-item" @click.prevent="setPrivacy('show_activity', !privacy.show_activity)">
+        <label class="notif-pref-item">
           <div class="notif-pref-info">
             <span class="notif-pref-icon">📊</span>
             <div>
@@ -248,9 +248,9 @@
               <span class="sf-hint">Cho người khác xem bạn đã thích, bình luận gì gần đây.</span>
             </div>
           </div>
-          <input type="checkbox" class="toggle" :checked="privacy.show_activity" />
+          <input type="checkbox" class="toggle" :checked="privacy.show_activity" @change="setPrivacy('show_activity', !privacy.show_activity)" />
         </label>
-        <label class="notif-pref-item" @click.prevent="setPrivacy('show_saved', !privacy.show_saved)">
+        <label class="notif-pref-item">
           <div class="notif-pref-info">
             <span class="notif-pref-icon">💾</span>
             <div>
@@ -258,7 +258,7 @@
               <span class="sf-hint">Cho người khác xem địa điểm bạn đã lưu.</span>
             </div>
           </div>
-          <input type="checkbox" class="toggle" :checked="privacy.show_saved" />
+          <input type="checkbox" class="toggle" :checked="privacy.show_saved" @change="setPrivacy('show_saved', !privacy.show_saved)" />
         </label>
       </div>
     </div>
