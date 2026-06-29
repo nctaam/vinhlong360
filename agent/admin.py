@@ -2884,6 +2884,69 @@ async def list_users(
     return await asyncio.to_thread(_query)
 
 
+@router.get("/users/{user_id}")
+async def admin_user_detail(user_id: str):
+    """Comprehensive user detail for admin panel."""
+    user_id = validate_path_id(user_id, "user_id")
+    ph = db._ph
+
+    def _query():
+        with db._conn() as conn:
+            user = db._fetchone(conn, f"""
+                SELECT id, phone, display_name, avatar_url, cover_url, bio,
+                       username, role, is_active, created_at
+                FROM users WHERE id::text = {ph}
+            """, (user_id,))
+            if not user:
+                raise HTTPException(404, "Người dùng không tồn tại")
+            ud = db._row_to_dict(user)
+            ud["phone"] = _mask(ud.get("phone", ""))
+
+            post_stats = db._fetchone(conn, f"""
+                SELECT COUNT(*) as total,
+                       COUNT(*) FILTER (WHERE moderation_status = 'approved') as approved,
+                       COUNT(*) FILTER (WHERE moderation_status = 'rejected') as rejected,
+                       COUNT(*) FILTER (WHERE moderation_status = 'pending') as pending,
+                       COUNT(*) FILTER (WHERE post_type = 'review') as reviews,
+                       COUNT(*) FILTER (WHERE post_type = 'question') as questions
+                FROM posts WHERE user_id::text = {ph}
+            """, (user_id,))
+            ps = db._row_to_dict(post_stats) if post_stats else {}
+
+            comment_count = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM comments WHERE user_id::text = {ph}
+            """, (user_id,))
+
+            follow_stats = db._fetchone(conn, f"""
+                SELECT
+                    (SELECT COUNT(*) FROM follows WHERE follower_id::text = {ph} AND target_type = 'user') as following,
+                    (SELECT COUNT(*) FROM follows WHERE target_id = {ph} AND target_type = 'user') as followers
+            """, (user_id, user_id))
+            fs = db._row_to_dict(follow_stats) if follow_stats else {}
+
+            session_count = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM user_sessions WHERE user_id = {ph}::uuid
+            """, (user_id,))
+
+            report_count = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM reports WHERE reporter_id::text = {ph}
+            """, (user_id,))
+
+        return {
+            "user": ud,
+            "stats": {
+                "posts": ps,
+                "comments": db._row_to_dict(comment_count)["c"] if comment_count else 0,
+                "following": fs.get("following", 0),
+                "followers": fs.get("followers", 0),
+                "active_sessions": db._row_to_dict(session_count)["c"] if session_count else 0,
+                "reports_filed": db._row_to_dict(report_count)["c"] if report_count else 0,
+            },
+        }
+
+    return await asyncio.to_thread(_query)
+
+
 @router.post("/users/{user_id}/ban")
 async def ban_user(user_id: str, request: Request):
     user_id = validate_path_id(user_id, "user_id")

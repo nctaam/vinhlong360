@@ -434,6 +434,54 @@ async def get_entity_stats(entity_id: str, response: Response):
     return result
 
 
+@router.get("/entities/{entity_id}/rating-breakdown")
+async def get_entity_rating_breakdown(entity_id: str, response: Response):
+    """5-star rating distribution for an entity."""
+    validate_path_id(entity_id, "entity_id")
+    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
+    _require_pg()
+    ph = db._ph
+
+    def _query():
+        e = db.get_entity(entity_id)
+        if not e:
+            return None
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT rating, COUNT(*) as count
+                FROM posts
+                WHERE entity_id = {ph} AND post_type = 'review'
+                  AND moderation_status = 'approved' AND rating IS NOT NULL
+                GROUP BY rating ORDER BY rating DESC
+            """, (entity_id,))
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as total, COALESCE(AVG(rating), 0) as avg
+                FROM posts
+                WHERE entity_id = {ph} AND post_type = 'review'
+                  AND moderation_status = 'approved' AND rating IS NOT NULL
+            """, (entity_id,))
+        breakdown = {str(i): 0 for i in range(1, 6)}
+        for r in rows:
+            rd = db._row_to_dict(r)
+            star = str(int(rd["rating"]))
+            if star in breakdown:
+                breakdown[star] = rd["count"]
+        td = db._row_to_dict(total_row) if total_row else {}
+        total = td.get("total", 0)
+        return {
+            "entity_id": entity_id,
+            "breakdown": breakdown,
+            "total_reviews": total,
+            "avg_rating": round(float(td.get("avg", 0)), 1),
+            "percentages": {k: round(v / total * 100, 1) if total > 0 else 0 for k, v in breakdown.items()},
+        }
+
+    result = await asyncio.to_thread(_query)
+    if not result:
+        return JSONResponse(status_code=404, content={"error": "not_found"})
+    return result
+
+
 @router.get("/entities/{entity_id}/reviews")
 async def get_entity_reviews(
     entity_id: str,
@@ -1951,6 +1999,62 @@ async def entities_map_search(
         if len(results) >= limit:
             break
     return {"entities": results, "total": len(results), "bbox": {"north": north, "south": south, "east": east, "west": west}}
+
+
+# ── Entity Trending (hot entities recently) ──────────────────────────────
+
+@router.get("/entities/trending")
+async def entities_trending(
+    days: int = Query(7, ge=1, le=90),
+    entity_type: str = Query(None, max_length=50),
+    limit: int = Query(10, ge=1, le=50),
+    response: Response = None,
+):
+    """Entities with most activity (posts+reviews+bookmarks) in recent days."""
+    _require_pg()
+    ph = db._ph
+    if response:
+        response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
+
+    def _query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT entity_id,
+                       COUNT(*) as activity_count,
+                       COUNT(*) FILTER (WHERE post_type = 'review') as review_count,
+                       COALESCE(AVG(rating) FILTER (WHERE rating IS NOT NULL), 0) as avg_rating
+                FROM posts
+                WHERE entity_id IS NOT NULL
+                  AND moderation_status = 'approved'
+                  AND created_at >= NOW() - INTERVAL '1 day' * {ph}
+                GROUP BY entity_id
+                ORDER BY activity_count DESC, review_count DESC
+                LIMIT {ph}
+            """, (days, limit * 3))
+        candidates = [db._row_to_dict(r) for r in rows]
+        results = []
+        for c in candidates:
+            e = db.get_entity(c["entity_id"])
+            if not e:
+                continue
+            if entity_type and e.get("type") != entity_type:
+                continue
+            results.append({
+                "entity_id": c["entity_id"],
+                "name": e.get("name"),
+                "type": e.get("type"),
+                "place": e.get("place"),
+                "coordinates": e.get("coordinates"),
+                "images": (e.get("images") or [])[:1],
+                "activity_count": c["activity_count"],
+                "review_count": c["review_count"],
+                "avg_rating": round(float(c["avg_rating"]), 1),
+            })
+            if len(results) >= limit:
+                break
+        return {"entities": results, "total": len(results), "period_days": days}
+
+    return await asyncio.to_thread(_query)
 
 
 # ── User Engagement Stats ────────────────────────────────────────────────

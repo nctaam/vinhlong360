@@ -2139,3 +2139,130 @@ class TestUserEngagementStats:
     def test_uses_parameterized_queries(self):
         src = inspect.getsource(__import__("public_api").user_engagement_stats)
         assert "db._ph" in src or "ph" in src
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Entity Rating Breakdown
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestEntityRatingBreakdown:
+    def test_endpoint_exists(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/entities/{entity_id}/rating-breakdown" in paths
+
+    def test_validates_path_id(self):
+        src = inspect.getsource(__import__("public_api").get_entity_rating_breakdown)
+        assert "validate_path_id" in src
+
+    def test_requires_pg(self):
+        src = inspect.getsource(__import__("public_api").get_entity_rating_breakdown)
+        assert "_require_pg" in src
+
+    def test_returns_breakdown_dict(self):
+        src = inspect.getsource(__import__("public_api").get_entity_rating_breakdown)
+        assert '"breakdown"' in src
+
+    def test_5_star_keys(self):
+        src = inspect.getsource(__import__("public_api").get_entity_rating_breakdown)
+        assert "range(1, 6)" in src
+
+    def test_returns_percentages(self):
+        src = inspect.getsource(__import__("public_api").get_entity_rating_breakdown)
+        assert '"percentages"' in src
+
+    def test_returns_total_and_avg(self):
+        src = inspect.getsource(__import__("public_api").get_entity_rating_breakdown)
+        assert '"total_reviews"' in src
+        assert '"avg_rating"' in src
+
+    def test_filters_approved_only(self):
+        src = inspect.getsource(__import__("public_api").get_entity_rating_breakdown)
+        assert "approved" in src
+
+    def test_404_for_missing_entity(self):
+        src = inspect.getsource(__import__("public_api").get_entity_rating_breakdown)
+        assert "404" in src
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Entity Trending
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestEntityTrending:
+    def test_endpoint_exists(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/entities/trending" in paths
+
+    def test_requires_pg(self):
+        src = inspect.getsource(__import__("public_api").entities_trending)
+        assert "_require_pg" in src
+
+    def test_has_days_param(self):
+        src = inspect.getsource(__import__("public_api").entities_trending)
+        assert "days" in src
+        assert "INTERVAL" in src
+
+    def test_has_type_filter(self):
+        src = inspect.getsource(__import__("public_api").entities_trending)
+        assert "entity_type" in src
+
+    def test_returns_activity_count(self):
+        src = inspect.getsource(__import__("public_api").entities_trending)
+        assert "activity_count" in src
+
+    def test_returns_entity_details(self):
+        src = inspect.getsource(__import__("public_api").entities_trending)
+        assert '"name"' in src
+        assert '"type"' in src
+
+    def test_respects_limit(self):
+        src = inspect.getsource(__import__("public_api").entities_trending)
+        assert "limit" in src
+
+    def test_orders_by_activity(self):
+        src = inspect.getsource(__import__("public_api").entities_trending)
+        assert "ORDER BY activity_count DESC" in src
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Admin User Detail
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestAdminUserDetail:
+    def test_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/users/{user_id}" in paths
+
+    def test_validates_path_id(self):
+        src = inspect.getsource(__import__("admin").admin_user_detail)
+        assert "validate_path_id" in src
+
+    def test_returns_user_data(self):
+        src = inspect.getsource(__import__("admin").admin_user_detail)
+        assert '"user"' in src
+
+    def test_returns_post_stats(self):
+        src = inspect.getsource(__import__("admin").admin_user_detail)
+        assert "approved" in src
+        assert "rejected" in src
+        assert "pending" in src
+
+    def test_returns_follow_stats(self):
+        src = inspect.getsource(__import__("admin").admin_user_detail)
+        assert '"following"' in src
+        assert '"followers"' in src
+
+    def test_masks_phone(self):
+        src = inspect.getsource(__import__("admin").admin_user_detail)
+        assert "_mask" in src
+
+    def test_includes_session_count(self):
+        src = inspect.getsource(__import__("admin").admin_user_detail)
+        assert "active_sessions" in src
+
+    def test_404_for_missing_user(self):
+        src = inspect.getsource(__import__("admin").admin_user_detail)
+        assert "404" in src
