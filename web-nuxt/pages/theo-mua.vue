@@ -101,7 +101,7 @@
     <!-- Type sections -->
     <template v-for="(cat, ci) in typeSections" :key="cat.type">
       <div v-if="ci > 0" class="type-section-divider" aria-hidden="true" />
-      <section class="block reveal">
+      <section :class="['block', 'reveal', { band: ci % 2 === 0 }]">
         <div class="section-eyebrow">{{ cat.emoji }} {{ cat.eyebrow }}</div>
         <div class="section-head">
           <h2>{{ cat.emoji }} {{ cat.label }}</h2>

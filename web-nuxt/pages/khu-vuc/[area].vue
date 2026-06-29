@@ -72,7 +72,7 @@
     </section>
 
     <!-- Type sections -->
-    <section v-for="cat in typeSections" :key="cat.type" class="block reveal area-type-block">
+    <section v-for="(cat, ci) in typeSections" :key="cat.type" :class="['block', 'reveal', 'area-type-block', { band: ci % 2 === 1 }]">
       <div class="section-head">
         <h2>{{ cat.emoji }} {{ cat.label }}</h2>
         <button
