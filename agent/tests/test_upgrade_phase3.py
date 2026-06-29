@@ -185,3 +185,50 @@ class TestContactFunnel:
         src = inspect.getsource(__import__("admin").contact_funnel)
         assert "cutoff" in src
         assert "ts < cutoff" in src
+
+
+# ── BE-10: Completeness standalone ──────────────────────────────────
+
+class TestCompletenessEndpoint:
+
+    def test_completeness_overview_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/completeness" in paths
+
+    def test_completeness_details_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/completeness/details" in paths
+
+    def test_completeness_overview_response_shape(self):
+        src = inspect.getsource(__import__("admin").completeness_overview)
+        assert '"total_entities"' in src
+        assert '"source"' in src
+        assert '"images"' in src
+        assert '"place_id"' in src
+        assert '"summary"' in src
+
+    def test_completeness_overview_uses_entity_quality(self):
+        src = inspect.getsource(__import__("admin").completeness_overview)
+        assert "entity_quality" in src or "data_quality.entity_quality" in src
+
+    def test_completeness_details_has_missing_filter(self):
+        src = inspect.getsource(__import__("admin").completeness_details)
+        assert "source|images|place|summary" in src
+
+    def test_completeness_details_has_type_filter(self):
+        src = inspect.getsource(__import__("admin").completeness_details)
+        assert "entity_type" in src
+
+    def test_completeness_details_response_shape(self):
+        src = inspect.getsource(__import__("admin").completeness_details)
+        assert '"items"' in src
+        assert '"total"' in src
+        assert '"score"' in src
+        assert '"has_source"' in src
+        assert '"has_images"' in src
+
+    def test_completeness_details_sorts_by_score(self):
+        src = inspect.getsource(__import__("admin").completeness_details)
+        assert 'key=lambda x: x["score"]' in src

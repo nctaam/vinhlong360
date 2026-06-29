@@ -841,6 +841,88 @@ async def stale_mark_reviewed(entity_id: str):
     return await asyncio.to_thread(_query)
 
 
+# ── Completeness standalone (BE-10) ──
+
+
+@router.get("/completeness")
+async def completeness_overview():
+    """Tổng quan hoàn thiện: % entities có source+images+placeId+summary."""
+    def _query():
+        entities = knowledge._entities if hasattr(knowledge, "_entities") else {}
+        total = 0
+        has_source = 0
+        has_images = 0
+        has_place = 0
+        has_summary = 0
+        for e in entities.values():
+            if e.get("type") == "place":
+                continue
+            total += 1
+            q = data_quality.entity_quality(e)
+            if q["has_source"]:
+                has_source += 1
+            if e.get("images"):
+                has_images += 1
+            if q["has_place"]:
+                has_place += 1
+            if e.get("summary"):
+                has_summary += 1
+        pct = lambda n: round(n / total * 100, 1) if total else 0
+        return {
+            "total_entities": total,
+            "source": {"count": has_source, "pct": pct(has_source)},
+            "images": {"count": has_images, "pct": pct(has_images)},
+            "place_id": {"count": has_place, "pct": pct(has_place)},
+            "summary": {"count": has_summary, "pct": pct(has_summary)},
+            "overall_pct": pct(has_source + has_images + has_place + has_summary) / 4 * total if total else 0,
+        }
+    return await asyncio.to_thread(_query)
+
+
+@router.get("/completeness/details")
+async def completeness_details(
+    missing: Optional[str] = Query(None, pattern="^(source|images|place|summary)$"),
+    entity_type: Optional[str] = Query(None, max_length=50),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0, le=10000),
+):
+    """Per-entity completeness scores with filter."""
+    def _query():
+        entities = knowledge._entities if hasattr(knowledge, "_entities") else {}
+        results = []
+        for eid, e in entities.items():
+            if e.get("type") == "place":
+                continue
+            if entity_type and e.get("type") != entity_type:
+                continue
+            q = data_quality.entity_quality(e)
+            has_imgs = bool(e.get("images"))
+            has_summ = bool(e.get("summary"))
+            if missing == "source" and q["has_source"]:
+                continue
+            elif missing == "images" and has_imgs:
+                continue
+            elif missing == "place" and q["has_place"]:
+                continue
+            elif missing == "summary" and has_summ:
+                continue
+            results.append({
+                "id": eid,
+                "name": e.get("name"),
+                "type": e.get("type"),
+                "score": q["score"],
+                "has_source": q["has_source"],
+                "has_images": has_imgs,
+                "has_place": q["has_place"],
+                "has_summary": has_summ,
+                "missing": q["missing"] + ([] if has_imgs else ["images"]) + ([] if has_summ else ["summary"]),
+            })
+        results.sort(key=lambda x: x["score"])
+        total = len(results)
+        return {"items": results[offset:offset + limit], "total": total}
+    return await asyncio.to_thread(_query)
+
+
 # ── Q&A quality queue (U-24) ──
 
 
