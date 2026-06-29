@@ -525,8 +525,8 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
 .chat-panel-msgs .cmsg.user { align-self: flex-end; background: var(--primary); color: var(--text-on-dark, #fff); border-bottom-right-radius: 4px; }
 .chat-panel-msgs .cmsg.assistant { align-self: flex-start; background: var(--card); border: .5px solid var(--line); border-bottom-left-radius: 4px; }
 .chat-panel-msgs .cmsg.assistant strong { color: var(--primary-fg); }
-.chat-panel-msgs .cmsg.assistant ul,.chat-panel-msgs .cmsg.assistant ol { margin: 4px 0; padding-inline-start: 18px; }
-.chat-panel-msgs .cmsg.assistant p { margin: 4px 0; }
+.chat-panel-msgs .cmsg.assistant ul,.chat-panel-msgs .cmsg.assistant ol { margin: var(--space-1) 0; padding-inline-start: 18px; }
+.chat-panel-msgs .cmsg.assistant p { margin: var(--space-1) 0; }
 .chat-panel-msgs .cmsg.assistant p:first-child { margin-top: 0; }
 .chat-panel-msgs .cmsg.assistant p:last-child { margin-bottom: 0; }
 .chat-panel-msgs .c-typing { display: flex; gap: var(--space-1); padding: var(--space-3) var(--space-4); align-self: flex-start; }
@@ -578,7 +578,7 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
 .thread-author { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); text-decoration: none; transition: color .2s; min-height: 44px; display: inline-flex; align-items: center; }
 a.thread-author:hover { color: var(--primary-fg); }
 .thread-time { font-size: var(--text-xs); color: var(--muted); margin-inline-start: auto; flex-shrink: 0; }
-.thread-more { background: none; border: none; padding: 4px; cursor: pointer; color: var(--muted); border-radius: var(--radius-full); min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; transition: background .2s, color .2s; }
+.thread-more { background: none; border: none; padding: var(--space-1); cursor: pointer; color: var(--muted); border-radius: var(--radius-full); min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; transition: background .2s, color .2s; }
 .thread-more:hover { background: var(--bg-alt); color: var(--ink); }
 .thread-more:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .thread-menu { position: absolute; right: 0; top: 48px; z-index: 10; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sm); box-shadow: var(--shadow-md); padding: var(--space-1); min-width: 120px; animation: threadMenuIn .15s var(--ease-out); }

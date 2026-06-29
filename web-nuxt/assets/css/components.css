@@ -120,7 +120,7 @@
   flex-shrink: 0;
 }
 .modal-head h2 { margin: 0; font-size: 1.2rem; }
-.modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--muted); padding: 4px; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background .3s var(--ease-out), transform .3s; }
+.modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--muted); padding: var(--space-1); min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background .3s var(--ease-out), transform .3s; }
 .modal-close:hover { background: var(--bg-warm); }
 .modal-close:active { transform: scale(.9); transition-duration: .08s; }
 .modal-close:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
@@ -331,7 +331,7 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 .dropdown-item:active { transform: scale(.97); transition-duration: .08s; }
 .dropdown-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .dropdown-item.danger { color: var(--error); }
-.dropdown-divider { height: .5px; background: var(--line); margin: 4px 0; }
+.dropdown-divider { height: .5px; background: var(--line); margin: var(--space-1) 0; }
 
 /* ── Notification Bell ── */
 .notif-bell { position: relative; }
@@ -595,7 +595,7 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 @media (min-width: 769px) and (max-width: 1024px) {
   /* Auth area: tighter spacing to fit topbar */
   .auth-area { gap: var(--space-2); }
-  .auth-btn { padding: 8px 14px; font-size: .85rem; }
+  .auth-btn { padding: var(--space-2) 14px; font-size: .85rem; }
 
   /* Notification dropdown: prevent right-edge clipping */
   .notif-dropdown { right: -40px; }
