@@ -1175,3 +1175,31 @@ class TestWriteEndpointRateLimits:
     def test_auth_all_writes_have_ratelimit(self):
         missing = self._check_module_ratelimit("auth")
         assert not missing, f"auth.py write endpoints missing check_rate: {missing}"
+
+
+class TestPathIdValidationSweep:
+    """All endpoints with path parameters containing '_id' must call validate_path_id."""
+
+    _MODULES = ["social", "public_api", "notifications"]
+
+    def test_all_path_id_params_validated(self):
+        import importlib
+        import fastapi
+        missing = []
+        for mod_name in self._MODULES:
+            mod = importlib.import_module(mod_name)
+            router = getattr(mod, "router")
+            for route in router.routes:
+                if not isinstance(route, fastapi.routing.APIRoute):
+                    continue
+                path = route.path
+                import re as _re
+                path_params = _re.findall(r"\{(\w*id\w*)\}", path)
+                if not path_params:
+                    continue
+                fn = route.endpoint
+                src = inspect.getsource(fn)
+                for param in path_params:
+                    if "validate_path_id" not in src and param != "target_id":
+                        missing.append(f"{mod_name}:{fn.__name__} param={param}")
+        assert not missing, f"Endpoints with unvalidated path ID params: {missing}"
