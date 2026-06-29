@@ -918,6 +918,106 @@ async def qa_set_best_answer(post_id: str, body: SetBestAnswerBody):
     return await asyncio.to_thread(_query)
 
 
+# ── Contact funnel dashboard (U-22) ──
+
+CONTACT_VIEWS_FILE = Path(__file__).resolve().parent / "data" / "contact_views.jsonl"
+
+
+@router.get("/contact-funnel")
+async def contact_funnel(
+    days: int = Query(30, ge=1, le=365),
+    entity_id: Optional[str] = Query(None, max_length=100),
+):
+    """Thống kê click vào thông tin liên hệ — zalo/phone/website/map."""
+    def _query():
+        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+        counts: dict[str, dict[str, int]] = {}
+        total = 0
+        if not CONTACT_VIEWS_FILE.exists():
+            return {"entities": [], "period_days": days, "total_contacts": 0}
+        with open(CONTACT_VIEWS_FILE, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rec = json.loads(line)
+                except (json.JSONDecodeError, ValueError):
+                    continue
+                ts_str = rec.get("ts", "")
+                try:
+                    ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+                except (ValueError, TypeError):
+                    continue
+                if ts < cutoff:
+                    continue
+                eid = rec.get("entity_id", "")
+                if entity_id and eid != entity_id:
+                    continue
+                action = rec.get("action", "other")
+                if eid not in counts:
+                    counts[eid] = {"zalo": 0, "phone": 0, "website": 0, "map": 0, "total": 0}
+                counts[eid][action] = counts[eid].get(action, 0) + 1
+                counts[eid]["total"] += 1
+                total += 1
+        entities_list = []
+        ent_dict = knowledge._entities if hasattr(knowledge, "_entities") else {}
+        for eid, c in sorted(counts.items(), key=lambda x: -x[1]["total"]):
+            e = ent_dict.get(eid, {})
+            entities_list.append({
+                "id": eid,
+                "name": e.get("name", eid),
+                "zalo": c["zalo"],
+                "phone": c["phone"],
+                "website": c["website"],
+                "map": c["map"],
+                "total": c["total"],
+            })
+        return {"entities": entities_list, "period_days": days, "total_contacts": total}
+    return await asyncio.to_thread(_query)
+
+
+@router.get("/contact-funnel/export")
+async def contact_funnel_export(days: int = Query(30, ge=1, le=365)):
+    """Export contact funnel dạng CSV."""
+    import io
+
+    def _generate():
+        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+        counts: dict[str, dict[str, int]] = {}
+        if CONTACT_VIEWS_FILE.exists():
+            with open(CONTACT_VIEWS_FILE, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        rec = json.loads(line)
+                    except (json.JSONDecodeError, ValueError):
+                        continue
+                    ts_str = rec.get("ts", "")
+                    try:
+                        ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+                    except (ValueError, TypeError):
+                        continue
+                    if ts < cutoff:
+                        continue
+                    eid = rec.get("entity_id", "")
+                    action = rec.get("action", "other")
+                    if eid not in counts:
+                        counts[eid] = {"zalo": 0, "phone": 0, "website": 0, "map": 0, "total": 0}
+                    counts[eid][action] = counts[eid].get(action, 0) + 1
+                    counts[eid]["total"] += 1
+        ent_dict = knowledge._entities if hasattr(knowledge, "_entities") else {}
+        yield "entity_id,name,zalo,phone,website,map,total\n"
+        for eid, c in sorted(counts.items(), key=lambda x: -x[1]["total"]):
+            name = (ent_dict.get(eid, {}).get("name") or eid).replace(",", " ")
+            yield f"{eid},{name},{c['zalo']},{c['phone']},{c['website']},{c['map']},{c['total']}\n"
+
+    return StreamingResponse(_generate(), media_type="text/csv",
+                             headers={"Content-Disposition": "attachment; filename=contact_funnel.csv"})
+
+
 class BulkDeleteRequest(BaseModel):
     entity_ids: list[str] = Field(..., min_length=1, max_length=200)
 

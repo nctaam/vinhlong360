@@ -128,3 +128,60 @@ class TestQAQueue:
     def test_set_best_answer_validates_path_id(self):
         src = inspect.getsource(__import__("admin").qa_set_best_answer)
         assert "validate_path_id" in src
+
+
+# ── U-22: Contact funnel dashboard ──────────────────────────────────
+
+class TestContactFunnel:
+
+    def test_contact_funnel_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/contact-funnel" in paths
+
+    def test_contact_funnel_export_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/contact-funnel/export" in paths
+
+    def test_contact_funnel_has_days_param(self):
+        src = inspect.getsource(__import__("admin").contact_funnel)
+        assert "days" in src
+        assert "ge=1" in src
+        assert "le=365" in src
+
+    def test_contact_funnel_has_entity_filter(self):
+        src = inspect.getsource(__import__("admin").contact_funnel)
+        assert "entity_id" in src
+
+    def test_contact_funnel_reads_jsonl(self):
+        src = inspect.getsource(__import__("admin").contact_funnel)
+        assert "contact_views.jsonl" in src or "CONTACT_VIEWS_FILE" in src
+        assert "json.loads" in src
+
+    def test_contact_funnel_response_shape(self):
+        src = inspect.getsource(__import__("admin").contact_funnel)
+        assert '"entities"' in src
+        assert '"period_days"' in src
+        assert '"total_contacts"' in src
+
+    def test_contact_funnel_aggregates_actions(self):
+        src = inspect.getsource(__import__("admin").contact_funnel)
+        assert '"zalo"' in src
+        assert '"phone"' in src
+        assert '"website"' in src
+        assert '"map"' in src
+
+    def test_contact_funnel_export_csv(self):
+        src = inspect.getsource(__import__("admin").contact_funnel_export)
+        assert "text/csv" in src
+        assert "entity_id,name,zalo,phone,website,map,total" in src
+
+    def test_contact_funnel_sorts_by_total(self):
+        src = inspect.getsource(__import__("admin").contact_funnel)
+        assert 'key=lambda x: -x[1]["total"]' in src
+
+    def test_contact_funnel_filters_by_cutoff(self):
+        src = inspect.getsource(__import__("admin").contact_funnel)
+        assert "cutoff" in src
+        assert "ts < cutoff" in src
