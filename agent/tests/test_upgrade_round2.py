@@ -3330,3 +3330,247 @@ class TestReactionsEndpoints:
     def test_toggle_only_approved_posts(self):
         src = inspect.getsource(__import__("social").toggle_reaction)
         assert "moderation_status = 'approved'" in src
+
+
+# ── Post Edit History ──
+
+
+class TestPostEditHistoryMigration:
+    """Test migration 046 creates post_edit_history table."""
+
+    def test_migration_file_exists(self):
+        import pathlib
+        p = pathlib.Path(__file__).resolve().parent.parent / "migrations" / "046_post_edit_history.sql"
+        assert p.exists()
+
+    def test_migration_creates_table(self):
+        import pathlib
+        sql = (pathlib.Path(__file__).resolve().parent.parent / "migrations" / "046_post_edit_history.sql").read_text()
+        assert "CREATE TABLE IF NOT EXISTS post_edit_history" in sql
+
+    def test_migration_references_posts(self):
+        import pathlib
+        sql = (pathlib.Path(__file__).resolve().parent.parent / "migrations" / "046_post_edit_history.sql").read_text()
+        assert "REFERENCES posts(id)" in sql
+
+    def test_migration_has_index(self):
+        import pathlib
+        sql = (pathlib.Path(__file__).resolve().parent.parent / "migrations" / "046_post_edit_history.sql").read_text()
+        assert "idx_post_edit_history_post" in sql
+
+    def test_migration_stores_old_content(self):
+        import pathlib
+        sql = (pathlib.Path(__file__).resolve().parent.parent / "migrations" / "046_post_edit_history.sql").read_text()
+        assert "old_content TEXT" in sql
+        assert "old_rating" in sql
+
+
+class TestPostEditHistoryEndpoints:
+    """Test edit history tracking and retrieval."""
+
+    def test_update_post_saves_history(self):
+        src = inspect.getsource(__import__("social").update_post)
+        assert "INSERT INTO post_edit_history" in src
+
+    def test_update_post_saves_old_content(self):
+        src = inspect.getsource(__import__("social").update_post)
+        assert "old_content" in src
+
+    def test_update_post_sets_updated_at(self):
+        src = inspect.getsource(__import__("social").update_post)
+        assert "updated_at=NOW()" in src
+
+    def test_edit_history_endpoint_exists(self):
+        from social import router
+        routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
+                  for r in router.routes if hasattr(r, "path")}
+        assert "GET" in routes.get("/api/posts/{post_id}/edit-history", set())
+
+    def test_edit_history_validates_path_id(self):
+        src = inspect.getsource(__import__("social").get_post_edit_history)
+        assert "validate_path_id" in src
+
+    def test_edit_history_checks_post_exists(self):
+        src = inspect.getsource(__import__("social").get_post_edit_history)
+        assert "404" in src
+
+    def test_edit_history_orders_desc(self):
+        src = inspect.getsource(__import__("social").get_post_edit_history)
+        assert "created_at DESC" in src
+
+    def test_edit_history_has_limit(self):
+        src = inspect.getsource(__import__("social").get_post_edit_history)
+        assert "LIMIT" in src
+
+    def test_format_post_has_is_edited(self):
+        src = inspect.getsource(__import__("social")._format_post)
+        assert '"is_edited"' in src
+
+    def test_post_cols_has_updated_at(self):
+        from social import _POST_COLS
+        assert "updated_at" in _POST_COLS
+
+
+# ── Featured Posts (admin entity pinning) ──
+
+
+class TestFeaturedPostsMigration:
+    """Test migration 047 adds featured columns to posts."""
+
+    def test_migration_file_exists(self):
+        import pathlib
+        p = pathlib.Path(__file__).resolve().parent.parent / "migrations" / "047_featured_posts.sql"
+        assert p.exists()
+
+    def test_migration_adds_is_featured(self):
+        import pathlib
+        sql = (pathlib.Path(__file__).resolve().parent.parent / "migrations" / "047_featured_posts.sql").read_text()
+        assert "is_featured" in sql
+
+    def test_migration_adds_featured_by(self):
+        import pathlib
+        sql = (pathlib.Path(__file__).resolve().parent.parent / "migrations" / "047_featured_posts.sql").read_text()
+        assert "featured_by" in sql
+
+    def test_migration_has_index(self):
+        import pathlib
+        sql = (pathlib.Path(__file__).resolve().parent.parent / "migrations" / "047_featured_posts.sql").read_text()
+        assert "idx_posts_featured" in sql
+
+
+class TestFeaturedPostsEndpoints:
+    """Test admin feature/unfeature post endpoint."""
+
+    def test_feature_endpoint_exists(self):
+        import admin
+        routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
+                  for r in admin.router.routes if hasattr(r, "path")}
+        assert "POST" in routes.get("/admin/posts/{post_id}/feature", set())
+
+    def test_feature_validates_path_id(self):
+        import admin
+        src = inspect.getsource(admin.feature_post)
+        assert "validate_path_id" in src
+
+    def test_feature_checks_post_exists(self):
+        import admin
+        src = inspect.getsource(admin.feature_post)
+        assert "404" in src
+
+    def test_feature_requires_entity(self):
+        import admin
+        src = inspect.getsource(admin.feature_post)
+        assert "entity_id" in src
+
+    def test_feature_toggle_logic(self):
+        import admin
+        src = inspect.getsource(admin.feature_post)
+        assert "is_featured = TRUE" in src
+        assert "is_featured = FALSE" in src
+
+    def test_feature_logs_action(self):
+        import admin
+        src = inspect.getsource(admin.feature_post)
+        assert "_log_mod_action" in src
+
+    def test_entity_feed_featured_first(self):
+        src = inspect.getsource(__import__("social").get_entity_feed)
+        assert "is_featured" in src
+
+    def test_format_post_has_is_featured(self):
+        src = inspect.getsource(__import__("social")._format_post)
+        assert '"is_featured"' in src
+
+
+# ── User Muting (soft block) ──
+
+
+class TestUserMutesMigration:
+    """Test migration 048 creates user_mutes table."""
+
+    def test_migration_file_exists(self):
+        import pathlib
+        p = pathlib.Path(__file__).resolve().parent.parent / "migrations" / "048_user_mutes.sql"
+        assert p.exists()
+
+    def test_migration_creates_table(self):
+        import pathlib
+        sql = (pathlib.Path(__file__).resolve().parent.parent / "migrations" / "048_user_mutes.sql").read_text()
+        assert "CREATE TABLE IF NOT EXISTS user_mutes" in sql
+
+    def test_migration_unique_constraint(self):
+        import pathlib
+        sql = (pathlib.Path(__file__).resolve().parent.parent / "migrations" / "048_user_mutes.sql").read_text()
+        assert "UNIQUE(user_id, muted_id)" in sql
+
+    def test_migration_has_index(self):
+        import pathlib
+        sql = (pathlib.Path(__file__).resolve().parent.parent / "migrations" / "048_user_mutes.sql").read_text()
+        assert "idx_user_mutes_user" in sql
+
+
+class TestUserMuteEndpoints:
+    """Test mute toggle and muted users list endpoints."""
+
+    def test_mute_endpoint_exists(self):
+        import notifications
+        routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
+                  for r in notifications.router.routes if hasattr(r, "path")}
+        assert "POST" in routes.get("/api/mute/{muted_id}", set())
+
+    def test_muted_users_endpoint_exists(self):
+        import notifications
+        routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
+                  for r in notifications.router.routes if hasattr(r, "path")}
+        assert "GET" in routes.get("/api/muted-users", set())
+
+    def test_mute_requires_auth(self):
+        import notifications
+        src = inspect.getsource(notifications.toggle_mute)
+        assert "require_user" in src
+
+    def test_mute_requires_csrf(self):
+        import notifications
+        src = inspect.getsource(notifications.toggle_mute)
+        assert "require_csrf" in src
+
+    def test_mute_has_rate_limit(self):
+        import notifications
+        src = inspect.getsource(notifications.toggle_mute)
+        assert "check_rate" in src
+
+    def test_mute_validates_path_id(self):
+        import notifications
+        src = inspect.getsource(notifications.toggle_mute)
+        assert "validate_path_id" in src
+
+    def test_mute_prevents_self_mute(self):
+        import notifications
+        src = inspect.getsource(notifications.toggle_mute)
+        assert "chính mình" in src
+
+    def test_mute_toggle_logic(self):
+        import notifications
+        src = inspect.getsource(notifications.toggle_mute)
+        assert "DELETE FROM user_mutes" in src
+        assert "INSERT INTO user_mutes" in src
+
+    def test_mute_sql_helper_exists(self):
+        from social import _mute_sql
+        clause, params = _mute_sql(None)
+        assert clause == ""
+        assert params == []
+
+    def test_mute_sql_with_user(self):
+        from social import _mute_sql
+        clause, params = _mute_sql({"id": "test-uid"})
+        assert "user_mutes" in clause
+        assert len(params) == 1
+
+    def test_feed_uses_mute_filter(self):
+        src = inspect.getsource(__import__("social").get_feed)
+        assert "_mute_sql" in src
+
+    def test_following_feed_uses_mute_filter(self):
+        src = inspect.getsource(__import__("social").get_following_feed)
+        assert "_mute_sql" in src

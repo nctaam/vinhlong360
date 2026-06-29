@@ -45,8 +45,8 @@ from auth_middleware import require_pg as _require_pg
 _POST_COLS = ("p.id, p.user_id, p.content, p.mentions, p.hashtags, p.best_answer_id, "
               "p.pinned_comment_id, "
               "p.repost_of, p.repost_snapshot, p.post_type, p.rating, p.images, "
-              "p.like_count, p.comment_count, p.share_count, p.created_at, p.entity_id, p.entity_name, "
-              "p.entity_type, p.moderation_status")
+              "p.like_count, p.comment_count, p.share_count, p.created_at, p.updated_at, "
+              "p.entity_id, p.entity_name, p.entity_type, p.moderation_status")
 _COMMENT_COLS = "c.id, c.user_id, c.content, c.mentions, c.parent_id, c.created_at"
 
 router = APIRouter(prefix="/api", tags=["social"], dependencies=[Depends(_require_pg)])
@@ -63,6 +63,18 @@ def _block_sql(user: dict | None, column: str = "u.id") -> tuple[str, list]:
         f"AND {column} NOT IN (SELECT blocker_id FROM blocks WHERE blocked_id = {ph}::uuid)",
         [uid, uid],
     )
+
+def _mute_sql(user: dict | None, column: str = "p.user_id") -> tuple[str, list]:
+    """Return (AND … NOT IN …, [user_id]) to exclude muted users (one-directional)."""
+    if not user:
+        return "", []
+    ph = db._ph
+    uid = str(user["id"])
+    return (
+        f"AND {column} NOT IN (SELECT muted_id FROM user_mutes WHERE user_id = {ph}::uuid)",
+        [uid],
+    )
+
 
 # ── Models ──
 
@@ -735,18 +747,25 @@ async def update_post(post_id: str, body: UpdatePost, user=Depends(require_user)
         status = mod_result["status"]
         hashtags = _extract_hashtags(new_content)
 
+    uid = str(user["id"])
+    _HIST_SQL = f"INSERT INTO post_edit_history(post_id,editor_id,old_content,old_rating) VALUES({ph}::uuid,{ph}::uuid,{ph},{ph})"
+
     def _update():
         with db._conn() as conn:
+            old = db._fetchone(conn, f"SELECT content, rating FROM posts WHERE id::text = {ph}", (post_id,))
+            if old:
+                od = db._row_to_dict(old)
+                db._execute(conn, _HIST_SQL, (post_id, uid, od["content"], od.get("rating")))
             if new_content is not None and set_rating:
                 db._execute(conn, f"""UPDATE posts SET content={ph}, hashtags={ph}::jsonb,
-                              rating={ph}, moderation_status={ph} WHERE id::text={ph}""",
+                              rating={ph}, moderation_status={ph}, updated_at=NOW() WHERE id::text={ph}""",
                             (new_content, json.dumps(hashtags, ensure_ascii=False), body.rating, status, post_id))
             elif new_content is not None:
                 db._execute(conn, f"""UPDATE posts SET content={ph}, hashtags={ph}::jsonb,
-                              moderation_status={ph} WHERE id::text={ph}""",
+                              moderation_status={ph}, updated_at=NOW() WHERE id::text={ph}""",
                             (new_content, json.dumps(hashtags, ensure_ascii=False), status, post_id))
             elif set_rating:
-                db._execute(conn, f"""UPDATE posts SET rating={ph} WHERE id::text={ph}""",
+                db._execute(conn, f"""UPDATE posts SET rating={ph}, updated_at=NOW() WHERE id::text={ph}""",
                             (body.rating, post_id))
             return db._fetchone(conn, f"""
                 SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
@@ -757,6 +776,34 @@ async def update_post(post_id: str, body: UpdatePost, user=Depends(require_user)
     post = await asyncio.to_thread(_update)
     _invalidate_social_caches()
     return {"post": _format_post(db._row_to_dict(post)), "moderation_status": status}
+
+
+@router.get("/posts/{post_id}/edit-history")
+async def get_post_edit_history(post_id: str, limit: int = Query(20, ge=1, le=100)):
+    """View edit history for a post (public — transparency)."""
+    post_id = validate_path_id(post_id, "post_id")
+    ph = db._ph
+
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"SELECT id FROM posts WHERE id::text = {ph} AND moderation_status = 'approved'", (post_id,))
+            if not post:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            rows = db._fetchall(conn, f"""
+                SELECT h.id, h.old_content, h.old_rating, h.created_at,
+                       u.display_name, u.username
+                FROM post_edit_history h
+                JOIN users u ON u.id = h.editor_id
+                WHERE h.post_id = {ph}::uuid
+                ORDER BY h.created_at DESC LIMIT {ph}
+            """, (post_id, limit))
+            return [db._row_to_dict(r) for r in rows]
+
+    edits = await asyncio.to_thread(_query)
+    for e in edits:
+        e["id"] = str(e["id"])
+        e["created_at"] = str(e["created_at"])
+    return {"edits": edits, "total": len(edits)}
 
 
 # ── Feed ──
@@ -807,6 +854,11 @@ async def get_feed(
     if bc:
         conditions.append(bc.removeprefix("AND "))
         params.extend(bc_p)
+
+    mc, mc_p = _mute_sql(user, "p.user_id")
+    if mc:
+        conditions.append(mc.removeprefix("AND "))
+        params.extend(mc_p)
 
     uid = str(user["id"]) if user else None
     if uid:
@@ -876,6 +928,7 @@ async def get_following_feed(
     uid = str(user["id"])
     # điều kiện: tác giả là người mình follow HOẶC bài gắn địa-điểm mình follow
     bc, bc_p = _block_sql(user, "p.user_id")
+    mc, mc_p = _mute_sql(user, "p.user_id")
     hidden_cond = f"AND p.id NOT IN (SELECT post_id FROM user_hidden_posts WHERE user_id = {ph}::uuid)"
     follow_cond = f"""
         (p.user_id IN (SELECT target_id::uuid FROM follows
@@ -890,7 +943,7 @@ async def get_following_feed(
         JOIN users u ON u.id = p.user_id
         LEFT JOIN entities e ON e.id = p.entity_id
         WHERE p.moderation_status = 'approved' AND {follow_cond}
-        {bc}
+        {bc}{mc}
         {hidden_cond}
         ORDER BY p.created_at DESC
         LIMIT {ph} OFFSET {ph}
@@ -898,14 +951,14 @@ async def get_following_feed(
     count_sql = f"""
         SELECT COUNT(*) as c FROM posts p
         WHERE p.moderation_status = 'approved' AND {follow_cond}
-        {bc}
+        {bc}{mc}
         {hidden_cond}
     """
 
     def _following_query():
         with db._conn() as conn:
-            rows = db._fetchall(conn, feed_sql, (uid, uid, *bc_p, uid, limit, offset))
-            total = db._fetchone(conn, count_sql, (uid, uid, *bc_p, uid))
+            rows = db._fetchall(conn, feed_sql, (uid, uid, *bc_p, *mc_p, uid, limit, offset))
+            total = db._fetchone(conn, count_sql, (uid, uid, *bc_p, *mc_p, uid))
         return rows, total
 
     rows, total = await asyncio.to_thread(_following_query)
@@ -1567,7 +1620,7 @@ async def get_entity_feed(
         JOIN users u ON u.id = p.user_id
         WHERE p.entity_id = {ph} AND p.moderation_status = 'approved'
         {bc}{extra_where}
-        ORDER BY {order_clause}
+        ORDER BY COALESCE(p.is_featured, FALSE) DESC, {order_clause}
         LIMIT {ph} OFFSET {ph}
     """
     feed_params = tuple(params)
@@ -2949,6 +3002,8 @@ def _format_post(row: dict) -> dict:
             "type": row.get("entity_type"),
         } if row.get("entity_id") else None,
         "reading_time_min": _reading_time_min(row.get("content", "")),
+        "is_edited": bool(row.get("updated_at") and row.get("created_at") and str(row["updated_at"]) != str(row["created_at"])),
+        "is_featured": bool(row.get("is_featured")),
         "review_response": {
             "content": row.get("response_content"),
             "responder_name": row.get("responder_name"),

@@ -550,6 +550,56 @@ async def list_blocked_users(user=Depends(require_user)):
     return {"blocked": result}
 
 
+# ── Mute (soft block — hides posts from feed only) ──
+
+@router.post("/mute/{muted_id}")
+async def toggle_mute(muted_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    muted_id = validate_path_id(muted_id, "muted_id")
+    check_rate(f"mute:{user['id']}", 20, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    if muted_id == str(user["id"]):
+        raise HTTPException(400, "Không thể tắt tiếng chính mình")
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            deleted = db._fetchone(conn, f"""
+                DELETE FROM user_mutes
+                WHERE user_id = {ph}::uuid AND muted_id = {ph}::uuid RETURNING 1
+            """, (uid, muted_id))
+            if deleted:
+                return False
+            db._execute(conn, f"""
+                INSERT INTO user_mutes (user_id, muted_id) VALUES ({ph}::uuid, {ph}::uuid)
+                ON CONFLICT DO NOTHING
+            """, (uid, muted_id))
+            return True
+
+    muted = await asyncio.to_thread(_query)
+    return {"muted": muted}
+
+
+@router.get("/muted-users")
+async def list_muted_users(user=Depends(require_user)):
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            return db._fetchall(conn, f"""
+                SELECT u.id, u.display_name, u.avatar_url, u.username, m.created_at
+                FROM user_mutes m JOIN users u ON u.id = m.muted_id
+                WHERE m.user_id = {ph}::uuid ORDER BY m.created_at DESC LIMIT 200
+            """, (str(user["id"]),))
+
+    rows = await asyncio.to_thread(_query)
+    result = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        result.append({"id": str(d["id"]), "display_name": d.get("display_name"),
+                        "avatar_url": d.get("avatar_url"), "username": d.get("username"),
+                        "muted_at": str(d.get("created_at", ""))})
+    return {"muted": result}
+
+
 # ── Helpers ──
 
 def _group_notifications(notifs: list[dict]) -> list[dict]:

@@ -1199,7 +1199,7 @@ class TestMediumFixesBatch2:
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
         idx = src.find("async def update_post(")
         assert idx > 0
-        block = src[idx:idx+2500]
+        block = src[idx:idx+3500]
         assert "new_content is None" in block, \
             "update_post must handle None content for rating-only updates"
         assert "elif set_rating" in block, \

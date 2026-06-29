@@ -2359,12 +2359,44 @@ async def batch_moderation(body: BatchModerationBody):
     return {"success": True, "updated": updated, "requested": len(body.post_ids)}
 
 
-class ReviewResponseBody(BaseModel):
+@router.post("/posts/{post_id}/feature")
+async def feature_post(post_id: str, request: Request):
+    """Admin: toggle feature a post at the top of its entity page."""
+    post_id = validate_path_id(post_id, "post_id")
+    admin_id = str(request.state.user["id"]) if hasattr(request, "state") and hasattr(request.state, "user") else None
+
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT id, entity_id, is_featured FROM posts WHERE id::text = {ph}", (post_id,))
+            if not row:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            rd = db._row_to_dict(row)
+            if not rd.get("entity_id"):
+                raise HTTPException(400, "Bài viết không thuộc entity nào")
+            if rd.get("is_featured"):
+                db._execute(conn, f"""
+                    UPDATE posts SET is_featured = FALSE, featured_by = NULL, featured_at = NULL
+                    WHERE id::text = {ph}
+                """, (post_id,))
+                return False
+            db._execute(conn, f"""
+                UPDATE posts SET is_featured = TRUE, featured_by = {ph}::uuid, featured_at = NOW()
+                WHERE id::text = {ph}
+            """, (admin_id, post_id))
+            return True
+
+    featured = await asyncio.to_thread(_query)
+    _log_mod_action("post", post_id, "featured" if featured else "unfeatured", None)
+    return {"featured": featured}
+
+
+class _ReviewResponseBody2(BaseModel):
     content: str = Field(..., min_length=1, max_length=2000)
 
 
 @router.post("/posts/{post_id}/response")
-async def add_review_response(post_id: str, body: ReviewResponseBody, request: Request):
+async def add_review_response(post_id: str, body: _ReviewResponseBody2, request: Request):
     post_id = validate_path_id(post_id, "post_id")
     admin_id = request.state.user["id"] if hasattr(request, "state") and hasattr(request.state, "user") else None
     def _query():
