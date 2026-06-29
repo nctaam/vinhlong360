@@ -2323,11 +2323,14 @@ async def toggle_reaction(post_id: str, reaction_type: str = Query(..., max_leng
     ph = db._ph
     uid = str(user["id"])
 
+    _REACTION_LABELS = {"heart": "❤️", "useful": "👍", "beautiful": "😍", "funny": "😄", "surprised": "😮"}
+
     def _query():
         with db._conn() as conn:
             post = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph} AND moderation_status = 'approved'", (post_id,))
             if not post:
                 raise HTTPException(404, "Bài viết không tồn tại")
+            post_owner = str(db._row_to_dict(post)["user_id"])
             existing = db._fetchone(conn, f"""
                 SELECT id FROM post_reactions
                 WHERE post_id = {ph}::uuid AND user_id = {ph}::uuid AND reaction_type = {ph}
@@ -2351,9 +2354,18 @@ async def toggle_reaction(post_id: str, reaction_type: str = Query(..., max_leng
                 GROUP BY reaction_type
             """, (post_id,))
             reaction_counts = {db._row_to_dict(r)["reaction_type"]: int(db._row_to_dict(r)["c"]) for r in counts}
-            return reacted, reaction_counts
+            return reacted, reaction_counts, post_owner
 
-    reacted, counts = await asyncio.to_thread(_query)
+    reacted, counts, post_owner = await asyncio.to_thread(_query)
+    if reacted and post_owner != uid:
+        emoji = _REACTION_LABELS.get(reaction_type, reaction_type)
+        def _notify():
+            create_notification(
+                post_owner, "reaction",
+                f"{user.get('display_name', 'Ai đó')} đã {emoji} bài viết của bạn",
+                ref_type="post", ref_id=post_id, actor_id=uid,
+            )
+        await asyncio.to_thread(_notify)
     return {"reacted": reacted, "reaction_type": reaction_type, "reactions": counts}
 
 
@@ -2448,6 +2460,13 @@ class CreateCollection(BaseModel):
 @router.post("/me/collections")
 async def create_collection(body: CreateCollection, user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"coll:{user['id']}", 10, 300, "Tạo danh sách quá nhanh. Vui lòng đợi chút.")
+    mod = await moderate_content(body.name.strip())
+    if mod["status"] == "flagged":
+        raise HTTPException(400, "Tên danh sách chứa nội dung không phù hợp")
+    if body.description.strip():
+        mod_desc = await moderate_content(body.description.strip())
+        if mod_desc["status"] == "flagged":
+            raise HTTPException(400, "Mô tả danh sách chứa nội dung không phù hợp")
     ph = db._ph
     uid = str(user["id"])
 

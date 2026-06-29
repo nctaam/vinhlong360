@@ -3827,3 +3827,148 @@ class TestAdminUserNotesEndpoints:
         import admin
         src = inspect.getsource(admin.AdminUserNote)
         assert "2000" in src
+
+
+# ── Profile content moderation ──────────────────────────────────────
+
+class TestProfileModeration:
+    """Profile bio/display_name must be moderated for offensive content."""
+
+    def test_update_profile_calls_moderate_content(self):
+        import auth
+        src = inspect.getsource(auth.update_profile)
+        assert "moderate_content" in src
+
+    def test_display_name_moderation_rejects_flagged(self):
+        import auth
+        src = inspect.getsource(auth.update_profile)
+        assert "Tên hiển thị chứa nội dung không phù hợp" in src
+
+    def test_bio_moderation_rejects_flagged(self):
+        import auth
+        src = inspect.getsource(auth.update_profile)
+        assert "Tiểu sử chứa nội dung không phù hợp" in src
+
+    def test_bio_moderation_skips_empty(self):
+        import auth
+        src = inspect.getsource(auth.update_profile)
+        assert "if bio_text:" in src
+
+
+# ── Collection name moderation ──────────────────────────────────────
+
+class TestCollectionModeration:
+    """Collection name and description must be moderated."""
+
+    def test_create_collection_calls_moderate_content(self):
+        import social
+        src = inspect.getsource(social.create_collection)
+        assert "moderate_content" in src
+
+    def test_collection_name_rejects_flagged(self):
+        import social
+        src = inspect.getsource(social.create_collection)
+        assert "Tên danh sách chứa nội dung không phù hợp" in src
+
+    def test_collection_description_rejects_flagged(self):
+        import social
+        src = inspect.getsource(social.create_collection)
+        assert "Mô tả danh sách chứa nội dung không phù hợp" in src
+
+    def test_collection_description_skips_empty(self):
+        import social
+        src = inspect.getsource(social.create_collection)
+        assert "body.description.strip()" in src
+
+
+# ── Reaction notification ───────────────────────────────────────────
+
+class TestReactionNotification:
+    """Reactions should send notification to post owner."""
+
+    def test_toggle_reaction_sends_notification(self):
+        import social
+        src = inspect.getsource(social.toggle_reaction)
+        assert "create_notification" in src
+
+    def test_reaction_notification_skips_self(self):
+        import social
+        src = inspect.getsource(social.toggle_reaction)
+        assert "post_owner != uid" in src
+
+    def test_reaction_notification_only_on_add(self):
+        import social
+        src = inspect.getsource(social.toggle_reaction)
+        assert "if reacted and" in src
+
+    def test_reaction_notification_type(self):
+        import social
+        src = inspect.getsource(social.toggle_reaction)
+        assert '"reaction"' in src
+
+    def test_reaction_labels_defined(self):
+        import social
+        src = inspect.getsource(social.toggle_reaction)
+        assert "_REACTION_LABELS" in src
+        assert "heart" in src
+        assert "useful" in src
+
+    def test_reaction_returns_post_owner(self):
+        import social
+        src = inspect.getsource(social.toggle_reaction)
+        assert "post_owner" in src
+
+    def test_reaction_pref_mapped(self):
+        import notifications
+        assert notifications._NOTIF_TYPE_TO_PREF["reaction"] == "pref_like"
+
+
+# ── Claim status notifications ──────────────────────────────────────
+
+class TestClaimNotifications:
+    """Claim approve/reject should notify claimant."""
+
+    def test_approve_claim_sends_notification(self):
+        import admin
+        src = inspect.getsource(admin.approve_claim)
+        assert "create_notification" in src
+
+    def test_approve_claim_notif_type(self):
+        import admin
+        src = inspect.getsource(admin.approve_claim)
+        assert "claim_approved" in src
+
+    def test_reject_claim_sends_notification(self):
+        import admin
+        src = inspect.getsource(admin.reject_claim)
+        assert "create_notification" in src
+
+    def test_reject_claim_notif_type(self):
+        import admin
+        src = inspect.getsource(admin.reject_claim)
+        assert "claim_rejected" in src
+
+    def test_claim_approve_fetches_claimant_id(self):
+        import admin
+        src = inspect.getsource(admin.approve_claim)
+        assert "claimant_id" in src
+
+    def test_claim_reject_fetches_claimant_id(self):
+        import admin
+        src = inspect.getsource(admin.reject_claim)
+        assert "claimant_id" in src
+
+    def test_claim_notif_prefs_mapped(self):
+        import notifications
+        assert notifications._NOTIF_TYPE_TO_PREF["claim_approved"] == "pref_system"
+        assert notifications._NOTIF_TYPE_TO_PREF["claim_rejected"] == "pref_system"
+
+    def test_claim_approve_returns_clean(self):
+        import admin
+        src = inspect.getsource(admin.approve_claim)
+        assert 'return {"ok": True}' in src
+
+    def test_claim_reject_returns_clean(self):
+        import admin
+        src = inspect.getsource(admin.reject_claim)
+        assert 'return {"ok": True}' in src

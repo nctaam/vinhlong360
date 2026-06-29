@@ -3733,7 +3733,7 @@ async def approve_claim(claim_id: str, request: Request):
 
     def _approve():
         with db._conn() as conn:
-            row = db._fetchone(conn, f"SELECT id, status FROM entity_claims WHERE id = {ph}::uuid", (claim_id,))
+            row = db._fetchone(conn, f"SELECT id, status, claimant_id, entity_id FROM entity_claims WHERE id = {ph}::uuid", (claim_id,))
             if not row:
                 return {"error": "not_found"}
             claim = db._row_to_dict(row)
@@ -3743,13 +3743,21 @@ async def approve_claim(claim_id: str, request: Request):
                 UPDATE entity_claims SET status = 'approved', reviewer_id = {ph}::uuid, reviewed_at = NOW()
                 WHERE id = {ph}::uuid
             """, (str(admin_user["id"]), claim_id))
-        return {"ok": True}
+        return {"ok": True, "claimant_id": str(claim["claimant_id"]), "entity_id": claim.get("entity_id")}
 
     result = await asyncio.to_thread(_approve)
     if "error" in result:
         code = 404 if result["error"] == "not_found" else 409
         return JSONResponse(status_code=code, content=result)
-    return result
+    if result.get("claimant_id"):
+        def _notify():
+            create_notification(
+                result["claimant_id"], "claim_approved",
+                "Yêu cầu xác nhận doanh nghiệp của bạn đã được duyệt!",
+                ref_type="entity", ref_id=result.get("entity_id", ""),
+            )
+        await asyncio.to_thread(_notify)
+    return {"ok": True}
 
 
 @router.post("/claims/{claim_id}/reject")
@@ -3761,7 +3769,7 @@ async def reject_claim(claim_id: str, body: ClaimDecisionBody, request: Request)
 
     def _reject():
         with db._conn() as conn:
-            row = db._fetchone(conn, f"SELECT id, status FROM entity_claims WHERE id = {ph}::uuid", (claim_id,))
+            row = db._fetchone(conn, f"SELECT id, status, claimant_id, entity_id FROM entity_claims WHERE id = {ph}::uuid", (claim_id,))
             if not row:
                 return {"error": "not_found"}
             claim = db._row_to_dict(row)
@@ -3772,13 +3780,21 @@ async def reject_claim(claim_id: str, body: ClaimDecisionBody, request: Request)
                     reviewed_at = NOW(), rejection_reason = {ph}
                 WHERE id = {ph}::uuid
             """, (str(admin_user["id"]), body.reason, claim_id))
-        return {"ok": True}
+        return {"ok": True, "claimant_id": str(claim["claimant_id"]), "entity_id": claim.get("entity_id")}
 
     result = await asyncio.to_thread(_reject)
     if "error" in result:
         code = 404 if result["error"] == "not_found" else 409
         return JSONResponse(status_code=code, content=result)
-    return result
+    if result.get("claimant_id"):
+        def _notify():
+            create_notification(
+                result["claimant_id"], "claim_rejected",
+                "Yêu cầu xác nhận doanh nghiệp của bạn chưa được duyệt.",
+                ref_type="entity", ref_id=result.get("entity_id", ""),
+            )
+        await asyncio.to_thread(_notify)
+    return {"ok": True}
 
 
 # ── Announcements (system notices for users) ────────────────────────────

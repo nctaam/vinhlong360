@@ -791,14 +791,23 @@ async def update_profile(body: ProfileUpdate, request: Request, _csrf=Depends(_r
     from ratelimit import check_rate
     check_rate(f"profile:{user['id']}", 20, 600, "Cập nhật hồ sơ quá nhanh. Vui lòng thử lại sau.")
 
+    from moderation import moderate_content
     fields = {}
     if body.display_name is not None:
         name = body.display_name.strip()[:50]
         if len(name) < 2:
             raise HTTPException(400, "Tên hiển thị phải từ 2 ký tự trở lên")
+        mod = await moderate_content(name)
+        if mod["status"] == "flagged":
+            raise HTTPException(400, "Tên hiển thị chứa nội dung không phù hợp")
         fields["display_name"] = _html.escape(name)
     if body.bio is not None:
-        fields["bio"] = _html.escape(body.bio.strip()[:300])
+        bio_text = body.bio.strip()[:300]
+        if bio_text:
+            mod = await moderate_content(bio_text)
+            if mod["status"] == "flagged":
+                raise HTTPException(400, "Tiểu sử chứa nội dung không phù hợp")
+        fields["bio"] = _html.escape(bio_text)
     if body.username is not None:
         uname = body.username.strip().lower()
         if uname == "":
