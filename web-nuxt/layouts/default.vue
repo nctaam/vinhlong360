@@ -24,7 +24,7 @@
             </div>
           </template>
         </nav>
-        <SearchAutocomplete class="topbar-search" />
+        <LazySearchAutocomplete class="topbar-search" />
         <div class="auth-area">
           <ClientOnly>
             <button type="button" class="theme-toggle" :aria-label="colorMode.value === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'" :title="colorMode.value === 'dark' ? 'Giao diện sáng' : 'Giao diện tối'" @click="toggleColorMode">
@@ -36,8 +36,8 @@
             </template>
           </ClientOnly>
           <template v-if="isLoggedIn">
-            <NotificationBell />
-            <UserMenu />
+            <LazyNotificationBell />
+            <LazyUserMenu />
           </template>
           <button type="button" v-else class="auth-btn" @click="showAuth = true">Đăng nhập</button>
         </div>
@@ -63,7 +63,7 @@
     </main>
 
     <LazyAuthModal :visible="showAuth" @close="showAuth = false" />
-    <ConfirmDialog />
+    <LazyConfirmDialog />
     <ClientOnly>
       <ScrollToTop />
     </ClientOnly>
@@ -72,7 +72,7 @@
       <LazyOnboardingSheet />
       <LazyJourneyBar />
       <LazyReportModal />
-      <ToastContainer />
+      <LazyToastContainer />
     </ClientOnly>
 
     <footer class="site-footer" role="contentinfo">

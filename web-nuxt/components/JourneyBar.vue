@@ -37,7 +37,7 @@ onUnmounted(() => { if (popTimer) clearTimeout(popTimer) })
 .journey-bar {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: var(--z-modal-high);
   display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
-  padding: var(--space-3) var(--space-5);
+  padding: var(--space-3) var(--space-5) calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
   background: var(--card); border-top: .5px solid var(--line);
   box-shadow: 0 -4px 20px rgba(0,0,0,.08);
 }

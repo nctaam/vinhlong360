@@ -145,6 +145,7 @@
   --red-rgb: 255, 69, 58;
   --success-rgb: 95, 207, 138;
   --focus-ring: 0 0 0 4px rgba(var(--primary-rgb), .12);
+  --focus-outline: var(--primary);
   --shadow: 0 1px 3px rgba(0, 0, 0, .04), 0 6px 20px rgba(0, 0, 0, .06);
 
   /* ── Overlay / scrim tokens ── */
@@ -485,6 +486,7 @@
   --red-rgb: 255, 100, 90;
   --success-rgb: 130, 225, 170;
   --focus-ring: 0 0 0 3px rgba(196, 105, 78, .25);
+  --focus-outline: var(--primary-fg);
   --overlay-dark: rgba(0,0,0,.68);
   --overlay-dark-heavy: rgba(0,0,0,.80);
   --overlay-light: rgba(255,255,255,.10);
