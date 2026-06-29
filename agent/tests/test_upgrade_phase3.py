@@ -1,5 +1,6 @@
 """Tests for Phase 3 upgrade cards: U-17, U-24, U-22, BE-10, BE-5."""
 import inspect
+import re
 import pytest
 
 
@@ -232,3 +233,49 @@ class TestCompletenessEndpoint:
     def test_completeness_details_sorts_by_score(self):
         src = inspect.getsource(__import__("admin").completeness_details)
         assert 'key=lambda x: x["score"]' in src
+
+
+# ── BE-5: Block enforcement audit ───────────────────────────────────
+
+class TestBlockEnforcementAudit:
+    """Verify _block_sql() is applied in all user-facing query functions."""
+
+    def _get_social_source(self):
+        import social
+        return inspect.getsource(social)
+
+    def test_block_in_search_users(self):
+        src = inspect.getsource(__import__("social").search_users)
+        assert "_block_sql" in src
+
+    def test_block_in_entity_feed(self):
+        src = inspect.getsource(__import__("social").get_entity_feed)
+        assert "_block_sql" in src
+
+    def test_block_in_suggested_follows(self):
+        src = inspect.getsource(__import__("social").suggested_follows)
+        assert "_block_sql" in src
+
+    def test_block_in_comments(self):
+        src = inspect.getsource(__import__("social").get_comments)
+        assert "_block_sql" in src
+
+    def test_block_in_following_feed(self):
+        src = inspect.getsource(__import__("social").get_following_feed)
+        assert "_block_sql" in src
+
+    def test_block_sql_is_bidirectional(self):
+        src = inspect.getsource(__import__("social")._block_sql)
+        assert "blocker_id" in src
+        assert "blocked_id" in src
+
+    def test_all_read_post_queries_have_block(self):
+        """Every GET function that queries posts table should use _block_sql."""
+        import social
+        read_funcs = ["get_entity_feed", "get_following_feed", "search_users",
+                      "suggested_follows", "get_comments"]
+        for func_name in read_funcs:
+            fn = getattr(social, func_name, None)
+            assert fn is not None, f"{func_name} not found in social module"
+            fn_src = inspect.getsource(fn)
+            assert "_block_sql" in fn_src, f"{func_name} queries posts but has no _block_sql"
