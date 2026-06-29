@@ -253,6 +253,9 @@ class Database:
                         "CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON user_sessions(user_id, expires_at DESC)",
                         "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(lower(username)) WHERE username IS NOT NULL",
                         "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_phone ON users(phone_number) WHERE phone_number IS NOT NULL",
+                        "CREATE INDEX IF NOT EXISTS idx_entity_changes_entity ON entity_changes(entity_id)",
+                        "CREATE INDEX IF NOT EXISTS idx_entities_type_area ON entities(type, area)",
+                        "CREATE INDEX IF NOT EXISTS idx_relationships_type ON relationships(type)",
                     ]:
                         try:
                             cur.execute(idx_sql)

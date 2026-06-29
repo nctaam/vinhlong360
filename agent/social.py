@@ -128,6 +128,13 @@ def _enrich_reactions(posts: list[dict]) -> list[dict]:
     return posts
 
 
+def _enrich_all(posts: list[dict], user) -> list[dict]:
+    """Combine user-status + reaction enrichment in a single thread call."""
+    _enrich_user_status(posts, user)
+    _enrich_reactions(posts)
+    return posts
+
+
 _HTML_TAG_RE = re.compile(r"<[^>]+>")
 
 def _strip_html_tags(s: str) -> str:
@@ -933,8 +940,7 @@ async def get_feed(
 
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
 
-    await asyncio.to_thread(_enrich_user_status, posts, user)
-    await asyncio.to_thread(_enrich_reactions, posts)
+    await asyncio.to_thread(_enrich_all, posts, user)
 
     total_c = db._row_to_dict(total)["c"] if total else 0
     return {
@@ -993,8 +999,7 @@ async def get_following_feed(
     rows, total = await asyncio.to_thread(_following_query)
 
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
-    await asyncio.to_thread(_enrich_user_status, posts, user)
-    await asyncio.to_thread(_enrich_reactions, posts)
+    await asyncio.to_thread(_enrich_all, posts, user)
 
     total_c = total["c"] if total else 0
     return {"posts": posts, "page": page, "total": total_c,
@@ -1040,8 +1045,7 @@ async def trending_posts(
             return total, rows
     total, rows = await asyncio.to_thread(_query)
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
-    await asyncio.to_thread(_enrich_user_status, posts, user)
-    await asyncio.to_thread(_enrich_reactions, posts)
+    await asyncio.to_thread(_enrich_all, posts, user)
     return {"posts": posts, "total": total, "has_more": total > len(posts), "window": window, "days": days}
 
 
@@ -1093,9 +1097,7 @@ async def explore_feed(
             return rows, total
     rows, total = await asyncio.to_thread(_query)
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
-    if user:
-        await asyncio.to_thread(_enrich_user_status, posts, user)
-    await asyncio.to_thread(_enrich_reactions, posts)
+    await asyncio.to_thread(_enrich_all, posts, user)
     return {"posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
 
 
@@ -1143,8 +1145,7 @@ async def search_posts(
     rows, total = await asyncio.to_thread(_query)
 
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
-    await asyncio.to_thread(_enrich_user_status, posts, user)
-    await asyncio.to_thread(_enrich_reactions, posts)
+    await asyncio.to_thread(_enrich_all, posts, user)
 
     total_c = db._row_to_dict(total)["c"] if total else 0
     return {"posts": posts, "q": _strip_html_tags(q), "page": page, "total": total_c,
@@ -1510,8 +1511,7 @@ async def hashtag_posts(
         return rows, total
     rows, total = await asyncio.to_thread(_query)
     posts = [db._row_to_dict(r) for r in rows]
-    await asyncio.to_thread(_enrich_user_status, posts, user)
-    await asyncio.to_thread(_enrich_reactions, posts)
+    await asyncio.to_thread(_enrich_all, posts, user)
     posts = [_format_post(p) for p in posts]
     return {"tag": tag, "posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
 
@@ -1802,8 +1802,7 @@ async def get_entity_feed(
     rows, total, rating_row = await asyncio.to_thread(_entity_feed_query)
 
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
-    await asyncio.to_thread(_enrich_user_status, posts, user)
-    await asyncio.to_thread(_enrich_reactions, posts)
+    await asyncio.to_thread(_enrich_all, posts, user)
 
     total_d = db._row_to_dict(total) if total else {}
     rating_d = db._row_to_dict(rating_row) if rating_row else {}
@@ -1875,8 +1874,7 @@ async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10), user=D
             return candidates
     candidates = await asyncio.to_thread(_query)
     posts = [db._row_to_dict(r) for r in candidates[:limit]]
-    await asyncio.to_thread(_enrich_user_status, posts, user)
-    await asyncio.to_thread(_enrich_reactions, posts)
+    await asyncio.to_thread(_enrich_all, posts, user)
     return {"posts": [_format_post(p) for p in posts]}
 
 
@@ -1921,6 +1919,7 @@ async def get_comments(
                   AND c.moderation_status = 'approved'
                 {bc} {mc}
                 ORDER BY c.created_at ASC
+                LIMIT 500
             """, tuple([post_id] + list(top_ids) + bc_p + mc_p))
             return top_rows, reply_rows
 
@@ -2820,8 +2819,7 @@ async def get_collection_items(collection_id: str, page: int = Query(1, ge=1, le
 
     rows, total = await asyncio.to_thread(_query)
     posts = [db._row_to_dict(r) for r in rows]
-    await asyncio.to_thread(_enrich_user_status, posts, user)
-    await asyncio.to_thread(_enrich_reactions, posts)
+    await asyncio.to_thread(_enrich_all, posts, user)
     posts = [_format_post(p) for p in posts]
     return {"posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
 
@@ -2917,8 +2915,7 @@ async def list_hidden_posts(
             return rows, total
     rows, total = await asyncio.to_thread(_query)
     posts = [db._row_to_dict(r) for r in rows]
-    await asyncio.to_thread(_enrich_user_status, posts, user)
-    await asyncio.to_thread(_enrich_reactions, posts)
+    await asyncio.to_thread(_enrich_all, posts, user)
     posts = [_format_post(p) for p in posts]
     return {"posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
 

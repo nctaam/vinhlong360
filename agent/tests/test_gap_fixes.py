@@ -37,19 +37,19 @@ class TestReactionEnrichment:
 
     def test_feed_calls_enrich_reactions(self):
         src = inspect.getsource(__import__("social").get_feed)
-        assert "_enrich_reactions" in src
+        assert "_enrich_all" in src or "_enrich_reactions" in src
 
     def test_following_feed_calls_enrich_reactions(self):
         src = inspect.getsource(__import__("social").get_following_feed)
-        assert "_enrich_reactions" in src
+        assert "_enrich_all" in src or "_enrich_reactions" in src
 
     def test_entity_feed_calls_enrich_reactions(self):
         src = inspect.getsource(__import__("social").get_entity_feed)
-        assert "_enrich_reactions" in src
+        assert "_enrich_all" in src or "_enrich_reactions" in src
 
     def test_search_posts_calls_enrich_reactions(self):
         src = inspect.getsource(__import__("social").search_posts)
-        assert "_enrich_reactions" in src
+        assert "_enrich_all" in src or "_enrich_reactions" in src
 
     def test_enrich_reactions_batch_query(self):
         src = inspect.getsource(__import__("social")._enrich_reactions)
@@ -516,31 +516,31 @@ class TestReactionEnrichmentComprehensive:
 
     def test_get_post_enriches_reactions(self):
         src = inspect.getsource(__import__("social").get_post)
-        assert "_enrich_reactions" in src
+        assert "_enrich_all" in src or "_enrich_reactions" in src
 
     def test_hashtag_posts_enriches_reactions(self):
         src = inspect.getsource(__import__("social").hashtag_posts)
-        assert "_enrich_reactions" in src
+        assert "_enrich_all" in src or "_enrich_reactions" in src
 
     def test_related_posts_enriches_reactions(self):
         src = inspect.getsource(__import__("social").related_posts)
-        assert "_enrich_reactions" in src
+        assert "_enrich_all" in src or "_enrich_reactions" in src
 
     def test_user_posts_enriches_reactions(self):
         src = inspect.getsource(__import__("social").get_user_posts)
-        assert "_enrich_reactions" in src
+        assert "_enrich_all" in src or "_enrich_reactions" in src
 
     def test_user_reviews_enriches_reactions(self):
         src = inspect.getsource(__import__("social").get_user_reviews)
-        assert "_enrich_reactions" in src
+        assert "_enrich_all" in src or "_enrich_reactions" in src
 
     def test_collection_items_enriches_reactions(self):
         src = inspect.getsource(__import__("social").get_collection_items)
-        assert "_enrich_reactions" in src
+        assert "_enrich_all" in src or "_enrich_reactions" in src
 
     def test_hashtag_posts_enriches_user_status(self):
         src = inspect.getsource(__import__("social").hashtag_posts)
-        assert "_enrich_user_status" in src
+        assert "_enrich_all" in src or "_enrich_user_status" in src
 
 
 class TestAdminErrorMessagesVietnamese:
@@ -639,7 +639,7 @@ class TestBookmarksTotalCount:
 
     def test_bookmarks_enriches_reactions(self):
         src = inspect.getsource(__import__("social").get_my_bookmarks)
-        assert "_enrich_reactions" in src
+        assert "_enrich_all" in src or "_enrich_reactions" in src
 
     def test_bookmarks_accurate_has_more(self):
         src = inspect.getsource(__import__("social").get_my_bookmarks)
@@ -884,19 +884,19 @@ class TestUserStatusEnrichment:
 
     def test_related_posts_enriches_user_status(self):
         src = inspect.getsource(__import__("social").related_posts)
-        assert "_enrich_user_status" in src
+        assert "_enrich_all" in src or "_enrich_user_status" in src
 
     def test_collection_items_enriches_user_status(self):
         src = inspect.getsource(__import__("social").get_collection_items)
-        assert "_enrich_user_status" in src
+        assert "_enrich_all" in src or "_enrich_user_status" in src
 
     def test_hidden_posts_enriches_user_status(self):
         src = inspect.getsource(__import__("social").list_hidden_posts)
-        assert "_enrich_user_status" in src
+        assert "_enrich_all" in src or "_enrich_user_status" in src
 
     def test_hidden_posts_enriches_reactions(self):
         src = inspect.getsource(__import__("social").list_hidden_posts)
-        assert "_enrich_reactions" in src
+        assert "_enrich_all" in src or "_enrich_reactions" in src
 
 
 # ── Notification type mapping completeness ──
@@ -2420,3 +2420,40 @@ class TestCommentCountSync:
         fn = src[idx:idx+1500]
         assert "comment_count" in fn
         assert "GREATEST" in fn
+
+
+class TestPerformanceOptimizations:
+    """Performance fixes: combined enrichment, missing indexes, bounded replies."""
+
+    def test_enrich_all_combines_both(self):
+        from social import _enrich_all
+        src = inspect.getsource(_enrich_all)
+        assert "_enrich_user_status" in src
+        assert "_enrich_reactions" in src
+
+    def test_enrich_all_callable(self):
+        from social import _enrich_all
+        result = _enrich_all([], None)
+        assert result == []
+
+    def test_comment_replies_have_limit(self):
+        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        idx = src.index("async def get_comments(")
+        fn_src = src[idx:idx + 2000]
+        reply_idx = fn_src.index("parent_id::text IN")
+        reply_block = fn_src[reply_idx:reply_idx + 300]
+        assert "LIMIT" in reply_block
+
+    def test_missing_indexes_added(self):
+        src = (AGENT_DIR / "database.py").read_text(encoding="utf-8")
+        assert "idx_entity_changes_entity" in src
+        assert "idx_entities_type_area" in src
+        assert "idx_relationships_type" in src
+
+    def test_feed_uses_enrich_all(self):
+        src = inspect.getsource(__import__("social").get_feed)
+        assert "_enrich_all" in src
+
+    def test_following_feed_uses_enrich_all(self):
+        src = inspect.getsource(__import__("social").get_following_feed)
+        assert "_enrich_all" in src
