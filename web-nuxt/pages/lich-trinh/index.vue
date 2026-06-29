@@ -25,7 +25,7 @@
 
     <!-- Đã lưu (client-only, từ localStorage) -->
     <ClientOnly>
-      <section v-if="count > 0" class="block saved-section">
+      <section v-if="count > 0" class="block saved-section reveal">
         <div class="section-head">
           <h2>❤️ Đã lưu <span class="saved-count">({{ count }})</span></h2>
           <button type="button" class="btn btn-sm btn-ghost danger" @click="clearAll">Xóa tất cả</button>
@@ -137,7 +137,7 @@
     </section>
 
     <!-- Cross-links -->
-    <section class="block reveal catalog-cross">
+    <section class="block band reveal catalog-cross">
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/du-lich" class="cross-card">

@@ -85,7 +85,7 @@
     </section>
 
     <!-- Cross-links -->
-    <section class="block catalog-cross reveal">
+    <section class="block band catalog-cross reveal">
       <h2>Khám phá thêm</h2>
       <!-- SIGNATURE 4: identity ribbon — clarifies this is a navigation hub -->
       <p class="int-cross-sub">Khám phá theo hình thức khác</p>

@@ -141,7 +141,7 @@
     </section>
 
     <!-- Cross-links -->
-    <section class="block catalog-cross" aria-label="Khám phá thêm">
+    <section class="block band catalog-cross reveal" aria-label="Khám phá thêm">
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/ocop" class="cross-card">

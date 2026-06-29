@@ -181,7 +181,7 @@
     </template>
 
     <!-- Cross-links -->
-    <section class="block catalog-cross reveal">
+    <section class="block band catalog-cross reveal">
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>

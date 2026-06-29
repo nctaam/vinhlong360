@@ -124,7 +124,7 @@
     </EmptyState>
 
     <!-- Cross-links -->
-    <section v-if="areaMeta" class="block catalog-cross">
+    <section v-if="areaMeta" class="block band catalog-cross reveal">
       <h2>Khám phá thêm {{ areaMeta.name }}</h2>
       <div class="cross-links">
         <NuxtLink :to="`/du-lich?type=experience&mua=all`" class="cross-card">
