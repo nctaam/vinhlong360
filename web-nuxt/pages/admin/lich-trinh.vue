@@ -72,7 +72,7 @@
           <input v-model="form.name" class="input" placeholder="Tên lịch trình" aria-label="Tên lịch trình" />
           <input v-model="form.area" class="input" placeholder="Khu vực (vinh-long / ben-tre / tra-vinh)" aria-label="Khu vực" />
           <input v-model="form.duration" class="input" placeholder="Thời gian (VD: 1 ngày)" aria-label="Thời gian" />
-          <textarea v-model="form.description" class="input admin-textarea" placeholder="Mô tả" rows="3"></textarea>
+          <textarea v-model="form.description" class="input admin-textarea" placeholder="Mô tả" aria-label="Mô tả lịch trình" rows="3"></textarea>
 
           <div class="lt-stops-head">
             <label class="admin-label lt-stops-label">Điểm dừng <span class="lt-stops-count">{{ stops.length }}</span></label>

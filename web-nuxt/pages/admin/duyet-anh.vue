@@ -110,7 +110,7 @@
           <div v-if="rejectingId === s.id" class="img-reject">
             <input
               v-model="rejectReason" type="text" class="img-reason-input"
-              placeholder="Lý do từ chối (tuỳ chọn)…"
+              placeholder="Lý do từ chối (tuỳ chọn)…" aria-label="Lý do từ chối ảnh"
               @keyup.enter="confirmReject(s.id)" @keyup.esc="cancelReject"
             />
             <div class="img-reject-btns">

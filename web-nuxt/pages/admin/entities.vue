@@ -74,14 +74,14 @@
                 </div>
                 <div class="ent-thumb ent-thumb-empty" v-else>&#128247;</div>
                 <template v-if="inlineEdit.id === e.id && inlineEdit.field === 'name'">
-                  <input v-model="inlineEdit.value" class="input ent-inline-input" @keyup.enter="saveInline(e)" @keyup.escape="inlineEdit.id = ''" @vue:mounted="(vn: any) => vn.el?.focus()" />
+                  <input v-model="inlineEdit.value" class="input ent-inline-input" :aria-label="`Sửa tên ${e.name}`" @keyup.enter="saveInline(e)" @keyup.escape="inlineEdit.id = ''" @vue:mounted="(vn: any) => vn.el?.focus()" />
                 </template>
                 <strong v-else class="ent-inline-label" @dblclick="startInline(e, 'name', e.name)">{{ e.name }}</strong>
               </div>
             </td>
             <td>
               <template v-if="inlineEdit.id === e.id && inlineEdit.field === 'type'">
-                <select v-model="inlineEdit.value" class="input ent-inline-select" @change="saveInline(e)" @keyup.escape="inlineEdit.id = ''" @vue:mounted="(vn: any) => vn.el?.focus()">
+                <select v-model="inlineEdit.value" class="input ent-inline-select" :aria-label="`Chọn loại cho ${e.name}`" @change="saveInline(e)" @keyup.escape="inlineEdit.id = ''" @vue:mounted="(vn: any) => vn.el?.focus()">
                   <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
                 </select>
               </template>
