@@ -334,15 +334,12 @@
 .dark .cross-card { background: var(--card); border-color: var(--line); }
 .dark .cross-card:hover { box-shadow: var(--shadow-md); border-color: rgba(255,255,255,.08); }
 .dark .quick-pick { background: var(--card); }
-.dark .quick-pick:hover { box-shadow: var(--shadow-md); border-color: rgba(255,255,255,.1); }
 .dark .catalog-hero.cat-season, .dark .catalog-hero.cat-directory, .dark .catalog-hero.cat-itinerary, .dark .catalog-hero.cat-community { background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%); }
 .dark .seasonal-banner { background: linear-gradient(90deg, rgba(255,193,7,.06), transparent); border-color: rgba(255,193,7,.15); }
 .dark .search-row { background: var(--bg-alt); border-color: var(--line); }
 .dark .search-row:focus-within { box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .18); }
 .dark .chip { background: var(--bg-alt); border-color: var(--line); }
 .dark .chip:hover { background: rgba(255,255,255,.06); }
-.dark .step-card { border-color: var(--line); }
-.dark .step-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.25); }
 .dark .step-note { color: var(--accent); }
 .dark .route-leg-info { background: rgba(255,255,255,.06); }
 .dark .transport-mode { background: var(--card); border-color: var(--line); }
