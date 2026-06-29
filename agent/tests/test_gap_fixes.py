@@ -389,3 +389,52 @@ class TestAdminBulkRateLimits:
     def test_batch_moderation_rate_limited(self):
         src = inspect.getsource(__import__("admin").batch_moderation)
         assert "check_rate" in src
+
+
+class TestFollowCountLimit:
+    """Follow toggle enforces maximum follow count per type."""
+
+    def test_follow_has_count_check(self):
+        src = inspect.getsource(__import__("notifications").toggle_follow)
+        assert "COUNT(*)" in src
+        assert "cap" in src or "_MAX_FOLLOW" in src
+
+    def test_follow_user_cap_500(self):
+        src = inspect.getsource(__import__("notifications").toggle_follow)
+        assert "_MAX_FOLLOW_USER" in src
+        assert "500" in src
+
+    def test_follow_entity_cap_1000(self):
+        src = inspect.getsource(__import__("notifications").toggle_follow)
+        assert "_MAX_FOLLOW_ENTITY" in src
+        assert "1000" in src
+
+    def test_follow_cap_raises_400(self):
+        src = inspect.getsource(__import__("notifications").toggle_follow)
+        assert "giới hạn follow" in src
+
+
+class TestClearAllNotifications:
+    """DELETE /api/notifications clears all user notifications."""
+
+    def test_endpoint_exists(self):
+        src = inspect.getsource(__import__("notifications"))
+        assert "clear_all_notifications" in src
+
+    def test_deletes_all_user_notifications(self):
+        src = inspect.getsource(__import__("notifications").clear_all_notifications)
+        assert "DELETE FROM notifications" in src
+        assert "user_id" in src
+
+    def test_returns_deleted_count(self):
+        src = inspect.getsource(__import__("notifications").clear_all_notifications)
+        assert '"deleted"' in src
+
+    def test_has_rate_limit(self):
+        src = inspect.getsource(__import__("notifications").clear_all_notifications)
+        assert "check_rate" in src
+
+    def test_requires_auth_and_csrf(self):
+        src = inspect.getsource(__import__("notifications").clear_all_notifications)
+        assert "require_user" in src
+        assert "require_csrf" in src

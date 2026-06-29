@@ -149,6 +149,25 @@ async def delete_notification(notif_id: str, user=Depends(require_user), _csrf=D
     return {"success": True}
 
 
+@router.delete("/notifications")
+async def clear_all_notifications(user=Depends(require_user), _csrf=Depends(require_csrf)):
+    check_rate(f"notif-clear:{user['id']}", 3, 60, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            result = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM notifications
+                WHERE user_id = {ph}::uuid
+            """, (str(user["id"]),))
+            db._execute(conn, f"""
+                DELETE FROM notifications
+                WHERE user_id = {ph}::uuid
+            """, (str(user["id"]),))
+            return db._row_to_dict(result)["c"] if result else 0
+    deleted = await asyncio.to_thread(_query)
+    return {"success": True, "deleted": deleted}
+
+
 # ── Notification Preferences ──
 
 class NotifPrefsUpdate(BaseModel):
@@ -401,6 +420,8 @@ async def toggle_follow(target_type: str, target_id: str, user=Depends(require_u
 
     ph = db._ph
     uid = str(user["id"])
+    _MAX_FOLLOW_USER = 500
+    _MAX_FOLLOW_ENTITY = 1000
     def _toggle():
         with db._conn() as conn:
             deleted = db._fetchone(conn, f"""
@@ -410,6 +431,13 @@ async def toggle_follow(target_type: str, target_id: str, user=Depends(require_u
             """, (uid, target_type, target_id))
             if deleted:
                 return False
+            cap = _MAX_FOLLOW_USER if target_type == "user" else _MAX_FOLLOW_ENTITY
+            cnt = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM follows
+                WHERE follower_id = {ph}::uuid AND target_type = {ph}
+            """, (uid, target_type))
+            if cnt and db._row_to_dict(cnt)["c"] >= cap:
+                raise HTTPException(400, f"Đã đạt giới hạn follow ({cap})")
             db._execute(conn, f"""
                 INSERT INTO follows (follower_id, target_type, target_id)
                 VALUES ({ph}::uuid, {ph}, {ph})
