@@ -2072,3 +2072,28 @@ class TestReliabilityFixes:
         """CORS must include allow_credentials for cookie-based auth."""
         src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
         assert "allow_credentials=True" in src
+
+    def test_session_binding_blocks_password_change(self):
+        """Session binding failure must raise 403 on set-password."""
+        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        idx = src.index("async def set_password(")
+        fn_src = src[idx:idx+600]
+        bind_idx = fn_src.index("_check_session_binding_safe")
+        after_bind = fn_src[bind_idx:bind_idx+200]
+        assert "raise HTTPException(403" in after_bind
+
+    def test_session_binding_blocks_deactivate(self):
+        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        idx = src.index("async def deactivate_account(")
+        fn_src = src[idx:idx+600]
+        bind_idx = fn_src.index("_check_session_binding_safe")
+        after_bind = fn_src[bind_idx:bind_idx+300]
+        assert "raise HTTPException(403" in after_bind
+
+    def test_session_binding_blocks_delete_account(self):
+        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        idx = src.index("async def delete_account(")
+        fn_src = src[idx:idx+600]
+        bind_idx = fn_src.index("_check_session_binding_safe")
+        after_bind = fn_src[bind_idx:bind_idx+300]
+        assert "raise HTTPException(403" in after_bind

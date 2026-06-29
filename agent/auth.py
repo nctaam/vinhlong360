@@ -611,6 +611,7 @@ async def set_password(body: SetPassword, request: Request, _csrf=Depends(_requi
     check_rate(f"set-password:{user['id']}", 5, 600, "Đổi mật khẩu quá nhanh. Vui lòng thử lại sau.")
     if not await _check_session_binding_safe(request, user):
         logger.warning("Session binding mismatch on set-password for user %s", user.get("id"))
+        raise HTTPException(403, "Phiên không hợp lệ. Vui lòng đăng nhập lại.")
 
     if user.get("password_hash"):
         if not body.current_password:
@@ -822,6 +823,7 @@ async def deactivate_account(request: Request, _csrf=Depends(_require_csrf_lazy)
     check_rate(f"deactivate:{user['id']}", 3, 3600, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     if not await _check_session_binding_safe(request, user):
         logger.warning("Session binding mismatch on deactivate for user %s", user.get("id"))
+        raise HTTPException(403, "Phiên không hợp lệ. Vui lòng đăng nhập lại.")
     uid = str(user["id"])
     await asyncio.to_thread(db.update_user, uid, is_active=False)
     def _query():
@@ -840,6 +842,7 @@ async def delete_account(request: Request, _csrf=Depends(_require_csrf_lazy)):
     check_rate(f"delete-account:{user['id']}", 3, 3600, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     if not await _check_session_binding_safe(request, user):
         logger.warning("Session binding mismatch on delete-account for user %s", user.get("id"))
+        raise HTTPException(403, "Phiên không hợp lệ. Vui lòng đăng nhập lại.")
     uid = str(user["id"])
     def _query():
         with db._conn() as conn:
