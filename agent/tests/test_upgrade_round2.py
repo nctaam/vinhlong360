@@ -595,3 +595,40 @@ class TestPostColsPinnedComment:
     def test_post_cols_has_pinned(self):
         from social import _POST_COLS
         assert "pinned_comment_id" in _POST_COLS
+
+
+class TestRound2IndexesMigration:
+    """Migration 033 for round 2 performance indexes."""
+
+    def test_migration_exists(self):
+        path = AGENT_DIR / "migrations" / "033_round2_indexes.sql"
+        assert path.exists()
+
+    def test_has_review_stats_index(self):
+        sql = (AGENT_DIR / "migrations" / "033_round2_indexes.sql").read_text()
+        assert "idx_posts_entity_review_stats" in sql
+
+    def test_has_trending_index(self):
+        sql = (AGENT_DIR / "migrations" / "033_round2_indexes.sql").read_text()
+        assert "idx_posts_trending" in sql
+        assert "like_count" in sql
+        assert "comment_count" in sql
+
+    def test_has_user_activity_indexes(self):
+        sql = (AGENT_DIR / "migrations" / "033_round2_indexes.sql").read_text()
+        assert "idx_comments_user_recent" in sql
+        assert "idx_likes_user_recent" in sql
+
+    def test_has_notification_unread_index(self):
+        sql = (AGENT_DIR / "migrations" / "033_round2_indexes.sql").read_text()
+        assert "idx_notifications_unread" in sql
+        assert "is_read = FALSE" in sql
+
+    def test_has_entity_stats_indexes(self):
+        sql = (AGENT_DIR / "migrations" / "033_round2_indexes.sql").read_text()
+        assert "idx_saved_entities_entity" in sql
+        assert "idx_follows_entity_target" in sql
+
+    def test_all_use_if_not_exists(self):
+        sql = (AGENT_DIR / "migrations" / "033_round2_indexes.sql").read_text()
+        assert sql.count("IF NOT EXISTS") >= 7
