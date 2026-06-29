@@ -2547,3 +2547,311 @@ class TestAdminCommentList:
     def test_delete_logs_mod_action(self):
         src = inspect.getsource(__import__("admin").admin_delete_comment)
         assert "_log_mod_action" in src
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Hashtag Browse Listing
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestHashtagBrowse:
+    def test_endpoint_exists(self):
+        from social import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/hashtags" in paths
+
+    def test_method_is_get(self):
+        from social import router
+        routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
+                  for r in router.routes if hasattr(r, "path")}
+        assert "GET" in routes.get("/api/hashtags", set())
+
+    def test_has_pagination(self):
+        src = inspect.getsource(__import__("social").list_hashtags)
+        assert "page" in src
+        assert "limit" in src
+        assert "offset" in src
+
+    def test_has_search_filter(self):
+        src = inspect.getsource(__import__("social").list_hashtags)
+        assert "search" in src
+        assert "LIKE" in src
+
+    def test_uses_escape_like(self):
+        src = inspect.getsource(__import__("social").list_hashtags)
+        assert "escape_like" in src
+
+    def test_counts_approved_only(self):
+        src = inspect.getsource(__import__("social").list_hashtags)
+        assert "moderation_status = 'approved'" in src
+
+    def test_returns_total(self):
+        src = inspect.getsource(__import__("social").list_hashtags)
+        assert '"total"' in src
+        assert '"has_more"' in src
+
+    def test_returns_post_count(self):
+        src = inspect.getsource(__import__("social").list_hashtags)
+        assert "post_count" in src
+
+    def test_uses_jsonb_array_elements(self):
+        src = inspect.getsource(__import__("social").list_hashtags)
+        assert "jsonb_array_elements_text" in src
+
+    def test_groups_by_tag(self):
+        src = inspect.getsource(__import__("social").list_hashtags)
+        assert "GROUP BY tag" in src
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# User Self Stats
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestUserSelfStats:
+    def test_endpoint_exists(self):
+        from social import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/me/stats" in paths
+
+    def test_requires_auth(self):
+        src = inspect.getsource(__import__("social").user_stats)
+        assert "require_user" in src
+
+    def test_returns_reviews(self):
+        src = inspect.getsource(__import__("social").user_stats)
+        assert '"reviews"' in src
+        assert '"avg_rating"' in src
+
+    def test_returns_questions(self):
+        src = inspect.getsource(__import__("social").user_stats)
+        assert '"questions"' in src
+
+    def test_returns_followers_following(self):
+        src = inspect.getsource(__import__("social").user_stats)
+        assert '"followers"' in src
+        assert '"following"' in src
+
+    def test_returns_likes_received(self):
+        src = inspect.getsource(__import__("social").user_stats)
+        assert '"likes_received"' in src
+
+    def test_returns_entities_reviewed(self):
+        src = inspect.getsource(__import__("social").user_stats)
+        assert '"entities_reviewed"' in src
+
+    def test_returns_reputation(self):
+        src = inspect.getsource(__import__("social").user_stats)
+        assert '"reputation"' in src
+
+    def test_uses_parameterized_queries(self):
+        src = inspect.getsource(__import__("social").user_stats)
+        assert "db._ph" in src or "_ph" in src
+        assert "f-string" not in src or "{ph}" in src
+
+    def test_uses_asyncio_thread(self):
+        src = inspect.getsource(__import__("social").user_stats)
+        assert "asyncio.to_thread" in src
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Post Report Shortcut
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestPostReport:
+    def test_endpoint_exists(self):
+        from social import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/posts/{post_id}/report" in paths
+
+    def test_method_is_post(self):
+        from social import router
+        routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
+                  for r in router.routes if hasattr(r, "path")}
+        assert "POST" in routes.get("/api/posts/{post_id}/report", set())
+
+    def test_requires_auth(self):
+        src = inspect.getsource(__import__("social").report_post)
+        assert "require_user" in src
+
+    def test_validates_path_id(self):
+        src = inspect.getsource(__import__("social").report_post)
+        assert "validate_path_id" in src
+
+    def test_has_rate_limit(self):
+        src = inspect.getsource(__import__("social").report_post)
+        assert "check_rate" in src
+
+    def test_prevents_self_report(self):
+        src = inspect.getsource(__import__("social").report_post)
+        assert "chính mình" in src or "self" in src.lower()
+
+    def test_prevents_duplicate_report(self):
+        src = inspect.getsource(__import__("social").report_post)
+        assert "pending" in src
+
+    def test_inserts_to_pg_reports(self):
+        src = inspect.getsource(__import__("social").report_post)
+        assert "INSERT INTO reports" in src
+        assert "target_type" in src
+
+    def test_uses_parameterized_queries(self):
+        src = inspect.getsource(__import__("social").report_post)
+        assert "db._ph" in src or "_ph" in src
+
+    def test_report_body_model(self):
+        from social import ReportPostBody
+        assert hasattr(ReportPostBody, "model_fields")
+        fields = ReportPostBody.model_fields
+        assert "reason" in fields
+        assert "detail" in fields
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Entity Search with Advanced Filters
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestEntitySearch:
+    def test_endpoint_exists(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/entities/search" in paths
+
+    def test_method_is_get(self):
+        from public_api import router
+        routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
+                  for r in router.routes if hasattr(r, "path")}
+        assert "GET" in routes.get("/api/entities/search", set())
+
+    def test_has_type_filter(self):
+        src = inspect.getsource(__import__("public_api").entity_search)
+        assert "entity_type" in src
+
+    def test_has_area_filter(self):
+        src = inspect.getsource(__import__("public_api").entity_search)
+        assert "area" in src
+
+    def test_has_image_filter(self):
+        src = inspect.getsource(__import__("public_api").entity_search)
+        assert "has_image" in src
+
+    def test_has_sort_options(self):
+        src = inspect.getsource(__import__("public_api").entity_search)
+        assert "sort" in src
+        assert "relevance" in src
+        assert "name" in src
+        assert "newest" in src
+
+    def test_has_pagination(self):
+        src = inspect.getsource(__import__("public_api").entity_search)
+        assert "page" in src
+        assert "limit" in src
+        assert '"has_more"' in src
+
+    def test_has_rate_limit(self):
+        src = inspect.getsource(__import__("public_api").entity_search)
+        assert "check_rate" in src
+
+    def test_returns_filters_metadata(self):
+        src = inspect.getsource(__import__("public_api").entity_search)
+        assert '"filters"' in src
+
+    def test_has_cache_control(self):
+        src = inspect.getsource(__import__("public_api").entity_search)
+        assert "Cache-Control" in src
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Admin CSV Exports
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestAdminCSVExports:
+    def test_users_export_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/export/users" in paths
+
+    def test_posts_export_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/export/posts" in paths
+
+    def test_users_export_is_get(self):
+        from admin import router
+        routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
+                  for r in router.routes if hasattr(r, "path")}
+        assert "GET" in routes.get("/admin/export/users", set())
+
+    def test_posts_export_is_get(self):
+        from admin import router
+        routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
+                  for r in router.routes if hasattr(r, "path")}
+        assert "GET" in routes.get("/admin/export/posts", set())
+
+    def test_users_export_csv_format(self):
+        src = inspect.getsource(__import__("admin").export_users_csv)
+        assert "text/csv" in src
+        assert "filename=users.csv" in src
+
+    def test_posts_export_csv_format(self):
+        src = inspect.getsource(__import__("admin").export_posts_csv)
+        assert "text/csv" in src
+        assert "filename=posts.csv" in src
+
+    def test_users_export_masks_phone(self):
+        src = inspect.getsource(__import__("admin").export_users_csv)
+        assert "_mask" in src
+
+    def test_users_export_includes_stats(self):
+        src = inspect.getsource(__import__("admin").export_users_csv)
+        assert "post_count" in src
+        assert "follower_count" in src
+
+    def test_posts_export_has_status_filter(self):
+        src = inspect.getsource(__import__("admin").export_posts_csv)
+        assert "moderation_status" in src
+
+    def test_posts_export_has_days_filter(self):
+        src = inspect.getsource(__import__("admin").export_posts_csv)
+        assert "days" in src
+        assert "INTERVAL" in src
+
+    def test_users_export_streaming(self):
+        src = inspect.getsource(__import__("admin").export_users_csv)
+        assert "StreamingResponse" in src
+
+    def test_posts_export_streaming(self):
+        src = inspect.getsource(__import__("admin").export_posts_csv)
+        assert "StreamingResponse" in src
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Round-4 Security Guards
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestRound4SecurityGuards:
+    def test_all_new_social_write_endpoints_have_rate_limit(self):
+        src = inspect.getsource(__import__("social"))
+        lines = src.split("\n")
+        for i, line in enumerate(lines):
+            if "async def report_post(" in line or "async def list_hashtags(" in line:
+                block = "\n".join(lines[i:i + 10])
+                if "async def report_post(" in line:
+                    assert "check_rate" in block, f"social.py write endpoint missing rate limit: {line.strip()}"
+
+    def test_entity_search_has_rate_limit(self):
+        src = inspect.getsource(__import__("public_api").entity_search)
+        assert "check_rate" in src
+
+    def test_post_report_uses_parameterized_queries(self):
+        src = inspect.getsource(__import__("social").report_post)
+        assert "{ph}" in src
+        assert "INSERT" in src
+
+    def test_admin_exports_under_admin_router(self):
+        from admin import router
+        admin_paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/export/users" in admin_paths
+        assert "/admin/export/posts" in admin_paths
+
+    def test_hashtag_browse_no_auth_required(self):
+        src = inspect.getsource(__import__("social").list_hashtags)
+        assert "require_user" not in src

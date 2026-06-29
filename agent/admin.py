@@ -2076,6 +2076,84 @@ async def export_data():
                              headers={"Content-Disposition": "attachment; filename=vinhlong360-export.json"})
 
 
+@router.get("/export/users")
+async def export_users_csv():
+    """CSV export of all users with stats."""
+    ph = db._ph
+
+    def _generate():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, """
+                SELECT u.id, u.phone, u.display_name, u.role, u.is_active,
+                       u.reputation, u.created_at,
+                       COALESCE(pc.post_count, 0) AS post_count,
+                       COALESCE(fc.follower_count, 0) AS follower_count
+                FROM users u
+                LEFT JOIN (
+                    SELECT user_id, COUNT(*) AS post_count FROM posts
+                    WHERE moderation_status != 'rejected'
+                    GROUP BY user_id
+                ) pc ON pc.user_id = u.id
+                LEFT JOIN (
+                    SELECT target_id, COUNT(*) AS follower_count FROM follows
+                    WHERE target_type = 'user'
+                    GROUP BY target_id
+                ) fc ON fc.target_id = u.id::text
+                ORDER BY u.created_at DESC
+            """, ())
+        yield "id,phone,display_name,role,is_active,reputation,created_at,post_count,follower_count\n"
+        for r in rows:
+            d = db._row_to_dict(r)
+            phone = _mask(d.get("phone") or "")
+            name = (d.get("display_name") or "").replace(",", " ").replace('"', "'")
+            yield (f'{d["id"]},{phone},"{name}",{d.get("role","user")},'
+                   f'{d.get("is_active",True)},{d.get("reputation",0)},'
+                   f'{d.get("created_at","")},{d["post_count"]},{d["follower_count"]}\n')
+
+    return StreamingResponse(_generate(), media_type="text/csv",
+                             headers={"Content-Disposition": "attachment; filename=users.csv"})
+
+
+@router.get("/export/posts")
+async def export_posts_csv(
+    status: str = Query("all", max_length=20),
+    days: int = Query(90, ge=1, le=365),
+):
+    """CSV export of posts with author/entity info."""
+    ph = db._ph
+
+    def _generate():
+        where_parts = []
+        params = []
+        if status != "all":
+            where_parts.append(f"p.moderation_status = {ph}")
+            params.append(status)
+        where_parts.append(f"p.created_at > NOW() - INTERVAL '{days} days'")
+        where_clause = " AND ".join(where_parts) if where_parts else "TRUE"
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT p.id, p.user_id, p.post_type, p.rating,
+                       p.like_count, p.comment_count, p.share_count,
+                       p.moderation_status, p.entity_id, p.created_at,
+                       u.display_name AS author_name
+                FROM posts p
+                LEFT JOIN users u ON u.id = p.user_id
+                WHERE {where_clause}
+                ORDER BY p.created_at DESC
+            """, tuple(params))
+        yield "id,user_id,author_name,post_type,rating,like_count,comment_count,share_count,status,entity_id,created_at\n"
+        for r in rows:
+            d = db._row_to_dict(r)
+            name = (d.get("author_name") or "").replace(",", " ").replace('"', "'")
+            yield (f'{d["id"]},{d.get("user_id","")},"{name}",'
+                   f'{d.get("post_type","")},{d.get("rating","")},{d.get("like_count",0)},'
+                   f'{d.get("comment_count",0)},{d.get("share_count",0)},'
+                   f'{d.get("moderation_status","")},{d.get("entity_id","")},{d.get("created_at","")}\n')
+
+    return StreamingResponse(_generate(), media_type="text/csv",
+                             headers={"Content-Disposition": "attachment; filename=posts.csv"})
+
+
 @router.get("/sources")
 async def list_sources():
     """Liệt kê tất cả nguồn dữ liệu."""

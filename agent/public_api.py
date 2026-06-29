@@ -2103,6 +2103,51 @@ async def user_engagement_stats(user_id: str):
     return await asyncio.to_thread(_query)
 
 
+# ── Dedicated entity search with advanced filters ─────────────────────
+
+@router.get("/entities/search")
+async def entity_search(
+    request: Request,
+    response: Response,
+    q: str = Query("", max_length=200),
+    entity_type: Optional[str] = Query(None, max_length=50),
+    area: Optional[str] = Query(None, max_length=100),
+    has_image: Optional[bool] = Query(None),
+    sort: str = Query("relevance", max_length=20),
+    page: int = Query(1, ge=1, le=200),
+    limit: int = Query(20, ge=1, le=50),
+):
+    """Entity search with type, area, image, and sort filters."""
+    from ratelimit import check_rate
+    check_rate(f"esearch:{get_client_ip(request)}", 30, 60,
+               "Tìm kiếm quá nhanh. Vui lòng thử lại sau.")
+    offset = (page - 1) * limit
+    all_entities = await asyncio.to_thread(
+        db.search_entities, q=q or None, entity_type=entity_type, area=area,
+        limit=500
+    )
+    if has_image is True:
+        all_entities = [e for e in all_entities if e.get("images")]
+    elif has_image is False:
+        all_entities = [e for e in all_entities if not e.get("images")]
+    if sort == "name":
+        all_entities.sort(key=lambda e: e.get("name", "").lower())
+    elif sort == "newest":
+        all_entities.sort(key=lambda e: str(e.get("updatedAt", "")), reverse=True)
+    total = len(all_entities)
+    page_items = all_entities[offset:offset + limit]
+    _enrich_place(page_items)
+    response.headers["Cache-Control"] = "public, max-age=30, stale-while-revalidate=60"
+    return {
+        "entities": page_items, "total": total,
+        "page": page, "has_more": offset + limit < total,
+        "filters": {
+            "entity_type": entity_type, "area": area,
+            "has_image": has_image, "sort": sort,
+        },
+    }
+
+
 # ── ND 147/2024 Compliance & Transparency ──────────────────────────────
 
 @router.get("/transparency")

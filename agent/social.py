@@ -882,6 +882,56 @@ async def user_counts(user=Depends(require_user)):
     return await asyncio.to_thread(_query)
 
 
+@router.get("/me/stats")
+async def user_stats(user=Depends(require_user)):
+    """Extended stats for the authenticated user's profile dashboard."""
+    ph = db._ph
+    uid = str(user["id"])
+    def _query():
+        with db._conn() as conn:
+            reviews = db._fetchone(conn, f"""
+                SELECT COUNT(*) AS c, COALESCE(AVG(rating), 0) AS avg
+                FROM posts WHERE user_id = {ph}::uuid AND post_type = 'review'
+                  AND moderation_status != 'rejected' AND rating IS NOT NULL
+            """, (uid,))
+            questions = db._fetchone(conn, f"""
+                SELECT COUNT(*) AS c FROM posts
+                WHERE user_id = {ph}::uuid AND post_type = 'question'
+                  AND moderation_status != 'rejected'
+            """, (uid,))
+            followers = db._fetchone(conn, f"""
+                SELECT COUNT(*) AS c FROM follows
+                WHERE target_type = 'user' AND target_id = {ph}
+            """, (uid,))
+            following = db._fetchone(conn, f"""
+                SELECT COUNT(*) AS c FROM follows
+                WHERE follower_id = {ph}::uuid AND target_type = 'user'
+            """, (uid,))
+            likes_received = db._fetchone(conn, f"""
+                SELECT COALESCE(SUM(like_count), 0) AS c FROM posts
+                WHERE user_id = {ph}::uuid AND moderation_status = 'approved'
+            """, (uid,))
+            entities_reviewed = db._fetchone(conn, f"""
+                SELECT COUNT(DISTINCT entity_id) AS c FROM posts
+                WHERE user_id = {ph}::uuid AND post_type = 'review'
+                  AND moderation_status = 'approved' AND entity_id IS NOT NULL
+            """, (uid,))
+        def _c(r, col="c"):
+            return db._row_to_dict(r)[col] if r else 0
+        rd = db._row_to_dict(reviews) if reviews else {"c": 0, "avg": 0}
+        return {
+            "reviews": int(rd["c"]),
+            "avg_rating": round(float(rd["avg"]), 2),
+            "questions": _c(questions),
+            "followers": _c(followers),
+            "following": _c(following),
+            "likes_received": int(_c(likes_received)),
+            "entities_reviewed": _c(entities_reviewed),
+            "reputation": user.get("reputation", 0),
+        }
+    return await asyncio.to_thread(_query)
+
+
 _trending_cache: dict = {"ts": 0.0, "data": {}}
 _TRENDING_TTL = _cfg.TRENDING_CACHE_TTL
 _trending_lock = asyncio.Lock()
@@ -930,6 +980,52 @@ async def trending_tags(
         _trending_cache["ts"] = now
         _trending_cache.setdefault("data", {})[cache_key] = result
         return result
+
+
+@router.get("/hashtags")
+async def list_hashtags(
+    limit: int = Query(50, ge=1, le=100),
+    page: int = Query(1, ge=1, le=100),
+    search: str = Query("", max_length=50),
+):
+    """All hashtags with post counts (approved posts only)."""
+    ph = db._ph
+    offset = (page - 1) * limit
+    def _query():
+        with db._conn() as conn:
+            if search.strip():
+                from database import escape_like as _esc
+                pattern = f"%{_esc(search.lower().lstrip('#'))}%"
+                rows = db._fetchall(conn, f"""
+                    SELECT tag, COUNT(*) AS post_count
+                    FROM posts p, jsonb_array_elements_text(p.hashtags) AS tag
+                    WHERE p.moderation_status = 'approved' AND LOWER(tag) LIKE {ph}
+                    GROUP BY tag ORDER BY post_count DESC, tag
+                    LIMIT {ph} OFFSET {ph}
+                """, (pattern, limit, offset))
+                total_row = db._fetchone(conn, f"""
+                    SELECT COUNT(DISTINCT tag) AS c
+                    FROM posts p, jsonb_array_elements_text(p.hashtags) AS tag
+                    WHERE p.moderation_status = 'approved' AND LOWER(tag) LIKE {ph}
+                """, (pattern,))
+            else:
+                rows = db._fetchall(conn, f"""
+                    SELECT tag, COUNT(*) AS post_count
+                    FROM posts p, jsonb_array_elements_text(p.hashtags) AS tag
+                    WHERE p.moderation_status = 'approved'
+                    GROUP BY tag ORDER BY post_count DESC, tag
+                    LIMIT {ph} OFFSET {ph}
+                """, (limit, offset))
+                total_row = db._fetchone(conn, f"""
+                    SELECT COUNT(DISTINCT tag) AS c
+                    FROM posts p, jsonb_array_elements_text(p.hashtags) AS tag
+                    WHERE p.moderation_status = 'approved'
+                """, ())
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            return rows, total
+    rows, total = await asyncio.to_thread(_query)
+    tags = [{"tag": (d := db._row_to_dict(r))["tag"], "post_count": int(d["post_count"])} for r in rows]
+    return {"hashtags": tags, "total": total, "page": page, "has_more": page * limit < total}
 
 
 @router.get("/hashtags/{tag}/posts")
@@ -1584,6 +1680,47 @@ async def report_comment(comment_id: str, body: ReportCommentBody, request: Requ
     except OSError:
         logger.exception("Failed to write comment report")
         raise HTTPException(500, "Lỗi lưu báo cáo")
+    return {"success": True, "message": "Đã ghi nhận báo cáo. Cảm ơn bạn!"}
+
+
+# ── Report post (FE-friendly shortcut → PG reports table) ──
+
+_POST_REPORT_REASONS = {"spam", "harassment", "misinformation", "inappropriate", "scam", "other"}
+
+
+class ReportPostBody(BaseModel):
+    reason: str = Field(..., min_length=1, max_length=30)
+    detail: str = Field("", max_length=1000)
+
+
+@router.post("/posts/{post_id}/report")
+async def report_post(post_id: str, body: ReportPostBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    post_id = validate_path_id(post_id, "post_id")
+    check_rate(f"report-post:{user['id']}", 10, 600, "Bạn báo cáo quá nhanh. Vui lòng thử lại sau.")
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
+            if not post:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            if str(db._row_to_dict(post)["user_id"]) == uid:
+                raise HTTPException(400, "Không thể báo cáo bài viết của chính mình")
+            existing = db._fetchone(conn, f"""
+                SELECT 1 FROM reports
+                WHERE reporter_id = {ph}::uuid AND target_type = 'post' AND target_id = {ph}
+                  AND status = 'pending'
+            """, (uid, post_id))
+            if existing:
+                raise HTTPException(400, "Bạn đã báo cáo bài viết này rồi")
+            reason = body.reason.strip() if body.reason.strip() in _POST_REPORT_REASONS else "other"
+            db._execute(conn, f"""
+                INSERT INTO reports (reporter_id, target_type, target_id, reason)
+                VALUES ({ph}::uuid, 'post', {ph}, {ph})
+            """, (uid, post_id, reason))
+
+    await asyncio.to_thread(_query)
     return {"success": True, "message": "Đã ghi nhận báo cáo. Cảm ơn bạn!"}
 
 
