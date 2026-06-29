@@ -1826,3 +1826,115 @@ class TestRateLimitThreadSafety:
         idx = src.index("def check_rate_token_bucket(")
         fn_src = src[idx:idx+600]
         assert "_rl_lock" in fn_src
+
+
+class TestCacheControlHeaders:
+    """All GET endpoints have Cache-Control headers via middleware default or explicit."""
+
+    def test_middleware_sets_default_cache_control(self):
+        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
+        idx = src.index("async def security_headers(")
+        fn_src = src[idx:idx+600]
+        assert 'Cache-Control' in fn_src
+        assert 'private, max-age=30' in fn_src
+
+    def test_community_stats_public_cache(self):
+        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        idx = src.index("async def community_stats(")
+        fn_src = src[idx:idx+400]
+        assert "public, max-age=60" in fn_src
+
+    def test_trending_tags_public_cache(self):
+        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        idx = src.index("async def trending_tags(")
+        fn_src = src[idx:idx+400]
+        assert "public, max-age=60" in fn_src
+
+    def test_me_counts_no_cache(self):
+        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        idx = src.index("async def user_counts(")
+        fn_src = src[idx:idx+400]
+        assert "private, no-cache" in fn_src
+
+    def test_hashtags_public_cache(self):
+        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        idx = src.index("async def list_hashtags(")
+        fn_src = src[idx:idx+400]
+        assert "public, max-age=120" in fn_src
+
+
+class TestAsyncBlockingFixes:
+    """Sync blocking calls wrapped in asyncio.to_thread."""
+
+    def test_health_async(self):
+        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
+        idx = src.index("async def health():")
+        fn_src = src[idx:idx+300]
+        assert "asyncio.to_thread" in fn_src
+
+    def test_readiness_probe_async(self):
+        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
+        idx = src.index("async def readiness_probe():")
+        fn_src = src[idx:idx+500]
+        assert "asyncio.to_thread" in fn_src
+
+    def test_vector_search_async(self):
+        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
+        idx = src.index("async def vector_search_endpoint(")
+        fn_src = src[idx:idx+800]
+        assert "asyncio.to_thread" in fn_src
+
+    def test_enhanced_search_async(self):
+        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
+        idx = src.index("async def enhanced_search(")
+        fn_src = src[idx:idx+1600]
+        assert "asyncio.to_thread" in fn_src
+
+    def test_recommend_async(self):
+        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
+        idx = src.index("async def recommend_endpoint(")
+        fn_src = src[idx:idx+1000]
+        assert "asyncio.to_thread" in fn_src
+
+    def test_events_async(self):
+        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
+        idx = src.index("async def events_endpoint(")
+        fn_src = src[idx:idx+300]
+        assert "asyncio.to_thread" in fn_src
+
+    def test_graph_async(self):
+        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
+        idx = src.index("async def graph_endpoint(")
+        fn_src = src[idx:idx+300]
+        assert "asyncio.to_thread" in fn_src
+
+    def test_map_search_async(self):
+        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        idx = src.index("async def entities_map_search(")
+        fn_src = src[idx:idx+1800]
+        assert "asyncio.to_thread" in fn_src
+
+    def test_public_stats_async(self):
+        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        idx = src.index("async def public_stats(")
+        fn_src = src[idx:idx+300]
+        assert "asyncio.to_thread" in fn_src
+
+    def test_enrich_place_async(self):
+        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        assert "await asyncio.to_thread(_enrich_place" in src
+
+    def test_log_search_query_async(self):
+        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        assert "await asyncio.to_thread(_log_search_query" in src
+
+
+class TestSchedulerLoginHistoryCleanup:
+    """Scheduler cleans up old login_history entries."""
+
+    def test_session_cleanup_includes_login_history(self):
+        src = (AGENT_DIR / "scheduler.py").read_text(encoding="utf-8")
+        idx = src.index("def task_session_cleanup():")
+        fn_src = src[idx:idx+1500]
+        assert "login_history" in fn_src
+        assert "90 days" in fn_src

@@ -721,6 +721,13 @@ def task_session_cleanup():
             hard_deleted = getattr(result, 'rowcount', 0)
             if hard_deleted and hard_deleted > 0:
                 _sched_logger.info("Session cleanup: hard-deleted %d accounts past grace period", hard_deleted)
+            try:
+                r = db._execute(conn, "DELETE FROM login_history WHERE created_at < NOW() - INTERVAL '90 days'", ())
+                old_logins = getattr(r, 'rowcount', 0) if r else 0
+                if old_logins:
+                    _sched_logger.info("Session cleanup: purged %d old login_history entries", old_logins)
+            except Exception:
+                pass
         _sched_logger.info("Session cleanup: purged expired sessions and OTPs")
     except Exception as e:
         _sched_logger.error("Session cleanup error: %s", e)

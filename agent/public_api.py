@@ -262,7 +262,7 @@ async def list_entities(
     else:
         results = await asyncio.to_thread(db.list_entities, entity_type=single_type, area=area, limit=limit, offset=offset, entity_types=entity_types, public_only=True, sort=db_sort, month=db_month)
         total = await asyncio.to_thread(db.count_entities_filtered, entity_type=single_type, area=area, entity_types=entity_types, public_only=True, month=db_month)
-    _enrich_place(results)
+    await asyncio.to_thread(_enrich_place, results)
     if fields == "minimal":
         results = [_to_minimal(e) for e in results]
     return {"total": total, "entities": results}
@@ -797,10 +797,10 @@ async def search(
     from ratelimit import check_rate
     check_rate(f"search:{get_client_ip(request)}", 30, 60, "Tìm kiếm quá nhanh. Vui lòng thử lại sau.")
     results = await asyncio.to_thread(db.search_entities, q=q, entity_type=type, area=area, limit=limit)
-    _enrich_place(results)
+    await asyncio.to_thread(_enrich_place, results)
     total = await asyncio.to_thread(db.count_entities_filtered, entity_type=type, area=area, q=q)
     safe_q = re.sub(r"<[^>]+>", "", q)
-    _log_search_query(safe_q, type, area, total)
+    await asyncio.to_thread(_log_search_query, safe_q, type, area, total)
     response.headers["Cache-Control"] = "public, max-age=30, stale-while-revalidate=10"
     return {"q": safe_q, "total": total, "results": results}
 
@@ -883,7 +883,7 @@ async def user_activity(
 @router.get("/stats")
 async def public_stats(response: Response):
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
-    return db.stats()
+    return await asyncio.to_thread(db.stats)
 
 
 # ── Homepage curated feed ──────────────────────────────────────────
@@ -2026,34 +2026,37 @@ async def entities_map_search(
     response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
     if north <= south:
         raise HTTPException(400, "Giá trị north phải lớn hơn south")
-    entities = db.list_entities()
-    results = []
-    for e in entities:
-        coords = e.get("coordinates")
-        if not coords or not isinstance(coords, list) or len(coords) < 2:
-            continue
-        lat, lng = coords[0], coords[1]
-        if not (south <= lat <= north):
-            continue
-        if west <= east:
-            if not (west <= lng <= east):
+    def _query():
+        entities = db.list_entities()
+        results = []
+        for e in entities:
+            coords = e.get("coordinates")
+            if not coords or not isinstance(coords, list) or len(coords) < 2:
                 continue
-        else:
-            if not (lng >= west or lng <= east):
+            lat, lng = coords[0], coords[1]
+            if not (south <= lat <= north):
                 continue
-        if entity_type and e.get("type") != entity_type:
-            continue
-        results.append({
-            "id": e.get("id"),
-            "name": e.get("name"),
-            "type": e.get("type"),
-            "coordinates": coords,
-            "place": e.get("place"),
-            "summary": (e.get("summary") or "")[:150],
-            "images": (e.get("images") or [])[:1],
-        })
-        if len(results) >= limit:
-            break
+            if west <= east:
+                if not (west <= lng <= east):
+                    continue
+            else:
+                if not (lng >= west or lng <= east):
+                    continue
+            if entity_type and e.get("type") != entity_type:
+                continue
+            results.append({
+                "id": e.get("id"),
+                "name": e.get("name"),
+                "type": e.get("type"),
+                "coordinates": coords,
+                "place": e.get("place"),
+                "summary": (e.get("summary") or "")[:150],
+                "images": (e.get("images") or [])[:1],
+            })
+            if len(results) >= limit:
+                break
+        return results
+    results = await asyncio.to_thread(_query)
     return {"entities": results, "total": len(results), "bbox": {"north": north, "south": south, "east": east, "west": west}}
 
 

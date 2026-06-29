@@ -19,7 +19,7 @@ import re
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, UploadFile, File
 from pydantic import BaseModel, Field, field_validator
 
 from auth_middleware import get_current_user, require_user, validate_path_id, require_csrf, require_idempotency
@@ -1210,8 +1210,9 @@ async def search_users(
 
 
 @router.get("/community/stats")
-async def community_stats():
+async def community_stats(response: Response):
     """Số liệu THẬT của cộng đồng (không phải đếm 20 bài đã tải) cho sidebar /cong-dong."""
+    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
     def _c(row):
         return int(db._row_to_dict(row)["c"]) if row else 0
     def _query():
@@ -1224,7 +1225,8 @@ async def community_stats():
 
 
 @router.get("/me/counts")
-async def user_counts(user=Depends(require_user)):
+async def user_counts(response: Response, user=Depends(require_user)):
+    response.headers["Cache-Control"] = "private, no-cache"
     ph = db._ph
     uid = str(user["id"])
     def _query():
@@ -1382,10 +1384,12 @@ _TRENDING_PERIOD_DAYS = {"7d": 7, "14d": 14, "30d": 30, "90d": 90}
 
 @router.get("/community/trending-tags")
 async def trending_tags(
+    response: Response,
     limit: int = Query(10, ge=1, le=20),
     period: str = Query("30d", max_length=5),
 ):
     """Hashtag thịnh hành: đếm hashtag trên bài ĐÃ DUYỆT trong N ngày gần nhất."""
+    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
     days = _TRENDING_PERIOD_DAYS.get(period, 30)
     import time as _t
     now = _t.time()
@@ -1420,11 +1424,13 @@ async def trending_tags(
 
 @router.get("/hashtags")
 async def list_hashtags(
+    response: Response,
     limit: int = Query(50, ge=1, le=100),
     page: int = Query(1, ge=1, le=100),
     search: str = Query("", max_length=50),
 ):
     """All hashtags with post counts (approved posts only)."""
+    response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
     ph = db._ph
     offset = (page - 1) * limit
     def _query():

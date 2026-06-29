@@ -913,6 +913,8 @@ async def security_headers(request, call_next):
         response.headers[k] = v
     response.headers["Content-Security-Policy"] = build_csp(nonce)
     response.headers["X-API-Version"] = "1.0"
+    if request.method == "GET" and "cache-control" not in response.headers:
+        response.headers["Cache-Control"] = "private, max-age=30"
     return response
 
 
@@ -2536,7 +2538,7 @@ def _health_core() -> tuple:
 
 @app.get("/health")
 async def health():
-    overall, db_ok, _ = _health_core()
+    overall, db_ok, _ = await asyncio.to_thread(_health_core)
     return {
         "status": overall,
         "time": datetime.now(timezone.utc).isoformat(),
@@ -2630,14 +2632,17 @@ async def health_details(request: Request):
 @app.get("/health/ready")
 async def readiness_probe():
     """Lightweight readiness probe for load balancers / orchestrators."""
-    from database import db as _db
-    checks = {"knowledge": len(knowledge._entities) > 0}
-    try:
-        with _db._conn() as conn:
-            _db._fetchone(conn, "SELECT 1", ())
-        checks["database"] = True
-    except Exception:
-        checks["database"] = False
+    def _probe():
+        from database import db as _db
+        checks = {"knowledge": len(knowledge._entities) > 0}
+        try:
+            with _db._conn() as conn:
+                _db._fetchone(conn, "SELECT 1", ())
+            checks["database"] = True
+        except Exception:
+            checks["database"] = False
+        return checks
+    checks = await asyncio.to_thread(_probe)
     ready = all(checks.values())
     return JSONResponse(
         status_code=200 if ready else 503,
@@ -3000,31 +3005,32 @@ async def enhanced_search(q: str = Query(..., max_length=200), limit: int = Quer
     """Enhanced hybrid search with BM25 + contextual embeddings."""
     if not HAS_CONTEXTUAL:
         raise HTTPException(503, detail="Contextual retrieval not available")
-    knowledge._ensure()
-    # Get initial keyword results
-    keyword_results = knowledge.search_entities(q=q, limit=limit * 3)
-    relationships = knowledge._relationships if hasattr(knowledge, '_relationships') else []
-    results = enhanced_hybrid_search(
-        query=q,
-        keyword_results=keyword_results,
-        entities=knowledge._entities,
-        relationships=relationships,
-        rerank=rerank,
-        top_k=limit,
-    )
-    enriched = []
-    for r in results:
-        eid = r.get("entity_id", r.get("id", ""))
-        e = knowledge.get_entity(eid)
-        if e:
-            enriched.append({
-                "entity_id": eid,
-                "name": e["name"],
-                "type": e["type"],
-                "summary": e.get("summary", "")[:150],
-                "score": r.get("score", r.get("combined_score", 0)),
-            })
-    return {"results": enriched}
+    def _search():
+        knowledge._ensure()
+        keyword_results = knowledge.search_entities(q=q, limit=limit * 3)
+        relationships = knowledge._relationships if hasattr(knowledge, '_relationships') else []
+        results = enhanced_hybrid_search(
+            query=q,
+            keyword_results=keyword_results,
+            entities=knowledge._entities,
+            relationships=relationships,
+            rerank=rerank,
+            top_k=limit,
+        )
+        enriched = []
+        for r in results:
+            eid = r.get("entity_id", r.get("id", ""))
+            e = knowledge.get_entity(eid)
+            if e:
+                enriched.append({
+                    "entity_id": eid,
+                    "name": e["name"],
+                    "type": e["type"],
+                    "summary": e.get("summary", "")[:150],
+                    "score": r.get("score", r.get("combined_score", 0)),
+                })
+        return enriched
+    return {"results": await asyncio.to_thread(_search)}
 
 
 @app.get("/system/quality")
@@ -3136,9 +3142,10 @@ async def build_vectors(request: Request):
         return JSONResponse(status_code=403, content={"error": "forbidden"})
     if not HAS_VECTOR:
         return JSONResponse(status_code=501, content={"error": "Vector search module not available"})
-    knowledge._ensure()
-    result = embedding_store.build_index(knowledge._entities)
-    return result
+    def _build():
+        knowledge._ensure()
+        return embedding_store.build_index(knowledge._entities)
+    return await asyncio.to_thread(_build)
 
 @app.get("/vectors/stats")
 async def vector_stats(request: Request):
@@ -3152,19 +3159,20 @@ async def vector_stats(request: Request):
 async def vector_search_endpoint(q: str = Query(..., max_length=200), limit: int = Query(10, ge=1, le=100)):
     if not HAS_VECTOR:
         raise HTTPException(503, detail="Vector search not available")
-    results = embedding_store.search(q, top_k=limit)
-    # Enrich with entity names
-    enriched = []
-    for r in results:
-        e = knowledge.get_entity(r["entity_id"])
-        if e:
-            enriched.append({
-                **r,
-                "name": e["name"],
-                "type": e["type"],
-                "summary": e.get("summary", "")[:100],
-            })
-    return {"results": enriched}
+    def _search():
+        results = embedding_store.search(q, top_k=limit)
+        enriched = []
+        for r in results:
+            e = knowledge.get_entity(r["entity_id"])
+            if e:
+                enriched.append({
+                    **r,
+                    "name": e["name"],
+                    "type": e["type"],
+                    "summary": e.get("summary", "")[:100],
+                })
+        return enriched
+    return {"results": await asyncio.to_thread(_search)}
 
 
 # ── Realtime endpoints ──
@@ -3185,7 +3193,7 @@ async def weather_all():
 async def events_endpoint(days: int = Query(30, ge=1, le=365), area: str = Query(None, max_length=50)):
     if not HAS_REALTIME:
         raise HTTPException(503, detail="Realtime module not available")
-    return {"events": get_upcoming_events(days, area)}
+    return {"events": await asyncio.to_thread(get_upcoming_events, days, area)}
 
 
 # ── Recommendation endpoints ──
@@ -3198,23 +3206,24 @@ async def recommend_endpoint(
 ):
     if not HAS_RECOMMENDER:
         raise HTTPException(503, detail="Recommender not available")
-    knowledge._ensure()
-    ctx = {}
-    if entity_id:
-        ctx["entity_id"] = entity_id
-    if month:
-        ctx["month"] = month
-    else:
-        ctx["month"] = datetime.now(timezone.utc).month
-    if weather:
-        ctx["weather"] = weather
-    if time_of_day:
-        ctx["time_of_day"] = time_of_day
-    ctx["entities"] = knowledge._entities
-    ctx["relationships"] = knowledge._relationships if hasattr(knowledge, '_relationships') else []
-    ctx["limit"] = limit
-    result = recommend(ctx)
-    return result
+    def _rec():
+        knowledge._ensure()
+        ctx = {}
+        if entity_id:
+            ctx["entity_id"] = entity_id
+        if month:
+            ctx["month"] = month
+        else:
+            ctx["month"] = datetime.now(timezone.utc).month
+        if weather:
+            ctx["weather"] = weather
+        if time_of_day:
+            ctx["time_of_day"] = time_of_day
+        ctx["entities"] = knowledge._entities
+        ctx["relationships"] = knowledge._relationships if hasattr(knowledge, '_relationships') else []
+        ctx["limit"] = limit
+        return recommend(ctx)
+    return await asyncio.to_thread(_rec)
 
 
 # ── Freshness endpoints ──
@@ -3225,8 +3234,10 @@ async def freshness_check_endpoint(request: Request):
     await require_admin(request)
     if not HAS_FRESHNESS:
         raise HTTPException(503, detail="Freshness module not available")
-    knowledge._ensure()
-    return check_freshness(knowledge._entities)
+    def _check():
+        knowledge._ensure()
+        return check_freshness(knowledge._entities)
+    return await asyncio.to_thread(_check)
 
 @app.get("/freshness/report")
 async def freshness_report_endpoint(request: Request):
@@ -3234,8 +3245,10 @@ async def freshness_report_endpoint(request: Request):
     await require_admin(request)
     if not HAS_FRESHNESS:
         raise HTTPException(503, detail="Freshness module not available")
-    knowledge._ensure()
-    return {"report": freshness_report(knowledge._entities)}
+    def _report():
+        knowledge._ensure()
+        return freshness_report(knowledge._entities)
+    return {"report": await asyncio.to_thread(_report)}
 
 @app.get("/freshness/candidates")
 async def freshness_candidates_endpoint(request: Request, limit: int = Query(20, ge=1, le=200)):
@@ -3243,8 +3256,10 @@ async def freshness_candidates_endpoint(request: Request, limit: int = Query(20,
     await require_admin(request)
     if not HAS_FRESHNESS:
         raise HTTPException(503, detail="Freshness module not available")
-    knowledge._ensure()
-    return {"candidates": auto_refresh_candidates(knowledge._entities, limit)}
+    def _candidates():
+        knowledge._ensure()
+        return auto_refresh_candidates(knowledge._entities, limit)
+    return {"candidates": await asyncio.to_thread(_candidates)}
 
 
 # ── Image recognition endpoint ──
@@ -3290,7 +3305,7 @@ async def image_recognize_endpoint(request: Request):
 async def autocorrect_endpoint(q: str):
     if not HAS_AUTOCORRECT:
         return {"original": q, "corrected": q, "was_corrected": False}
-    return autocorrect(q)
+    return await asyncio.to_thread(autocorrect, q)
 
 
 # ── Circuit breaker stats ──
@@ -3310,8 +3325,7 @@ async def circuit_breaker_stats(request: Request):
 async def graph_endpoint(entity_id: str, hops: int = 2, max_nodes: int = 30):
     """Return subgraph data for knowledge graph visualization."""
     from agentic_rag import graph_expand
-    result = graph_expand(entity_id, max_hops=min(hops, 4), max_nodes=min(max_nodes, 50))
-    return result
+    return await asyncio.to_thread(lambda: graph_expand(entity_id, max_hops=min(hops, 4), max_nodes=min(max_nodes, 50)))
 
 
 # ════════════════════════════════════════════════════════════════
