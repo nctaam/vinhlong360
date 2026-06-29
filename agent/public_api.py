@@ -896,12 +896,16 @@ async def list_events(
     return {"total": len(events), "events": events[:limit]}
 
 
+_REPORT_FIELD_OPTIONS = {"phone", "hours", "address", "source", "name", "price", "images", "other"}
+
+
 class ReportIn(BaseModel):
     target_id: str = Field(..., min_length=1, max_length=200)
     target_type: str = Field("entity", max_length=20)
     reason: str = Field(..., min_length=1, max_length=60)
     detail: str = Field("", max_length=2000)
     contact: str = Field("", max_length=120)
+    field: Optional[str] = Field(None, max_length=20)
 
 
 @router.post("/report")
@@ -919,6 +923,7 @@ async def submit_report(payload: ReportIn, request: Request):
                      "message": "Bạn gửi quá nhiều báo cáo. Vui lòng thử lại sau."},
         )
     target_type = payload.target_type if payload.target_type in _VALID_TARGET_TYPES else "other"
+    report_field = payload.field if payload.field and payload.field in _REPORT_FIELD_OPTIONS else None
     record = {
         "ts": datetime.now(timezone.utc).isoformat(),
         "target_id": payload.target_id.strip(),
@@ -926,6 +931,7 @@ async def submit_report(payload: ReportIn, request: Request):
         "reason": payload.reason.strip(),
         "detail": payload.detail.strip(),
         "contact": payload.contact.strip(),
+        "field": report_field,
         "ip_hash": hashlib.sha256(ip.encode()).hexdigest()[:16],
         "status": "open",
     }
