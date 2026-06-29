@@ -659,8 +659,6 @@ a.thread-author:hover { color: var(--primary-fg); }
 .create-post-footer { display: flex; gap: var(--space-3); justify-content: space-between; align-items: center; }
 .post-type-selector { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 
-.avatar-link { text-decoration: none; }
-
 /* ── Itinerary Planner ── */
 .planner-layout { display: grid; grid-template-columns: 360px 1fr; gap: var(--space-6); align-items: start; }
 .planner-picker { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg, 16px); padding: var(--space-4); box-shadow: var(--shadow-sm); position: sticky; top: 78px; max-height: calc(100vh - 100px); max-height: calc(100dvh - 100px); display: flex; flex-direction: column; }
