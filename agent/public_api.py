@@ -1421,6 +1421,65 @@ async def track_contact_view(
     return {"ok": True}
 
 
+# ── What's-new feed (U-15) ────────────────────────────────────────────
+
+
+@router.get("/feed/new-since")
+async def feed_new_since(
+    since: str = Query(..., min_length=10, max_length=30),
+    limit: int = Query(50, ge=1, le=100),
+):
+    """Mới cập nhật/tạo từ `since` — entities + posts (public only)."""
+    from database import db as _db
+    ph = _db._ph
+    try:
+        since_dt = datetime.fromisoformat(since.replace("Z", "+00:00"))
+    except (ValueError, TypeError):
+        return JSONResponse(status_code=400, content={"error": "invalid_date", "detail": "since phải là ISO datetime"})
+
+    def _query():
+        import knowledge
+        new_entities = []
+        entities = knowledge._entities if hasattr(knowledge, "_entities") else {}
+        for eid, e in entities.items():
+            if e.get("type") == "place":
+                continue
+            updated = e.get("updatedAt") or e.get("created_at")
+            if not updated:
+                continue
+            try:
+                dt = datetime.fromisoformat(str(updated).replace("Z", "+00:00"))
+            except (ValueError, TypeError):
+                continue
+            if dt >= since_dt:
+                new_entities.append({
+                    "id": eid, "name": e.get("name"), "type": e.get("type"),
+                    "area": e.get("area"), "updated_at": str(updated),
+                })
+        new_entities.sort(key=lambda x: x["updated_at"], reverse=True)
+        new_entities = new_entities[:limit]
+        new_posts = []
+        if _db._use_pg:
+            with _db._conn() as conn:
+                rows = _db._fetchall(conn, f"""
+                    SELECT p.id, p.title, p.post_type, p.entity_id, p.created_at,
+                           u.display_name
+                    FROM posts p JOIN users u ON u.id = p.user_id
+                    WHERE p.moderation_status = 'approved'
+                    AND p.created_at >= {ph}
+                    ORDER BY p.created_at DESC
+                    LIMIT {ph}
+                """, (since_dt.isoformat(), limit))
+                new_posts = [_db._row_to_dict(r) for r in rows]
+        return {
+            "entities": new_entities,
+            "posts": new_posts,
+            "counts": {"entities": len(new_entities), "posts": len(new_posts)},
+            "since": since,
+        }
+    return await asyncio.to_thread(_query)
+
+
 # ── Collections (U-28, public read-only) ──────────────────────────────
 
 

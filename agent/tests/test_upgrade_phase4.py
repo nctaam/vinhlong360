@@ -1,5 +1,6 @@
 """Tests for Phase 4 upgrade cards: U-28, U-26, U-15, U-20."""
 import inspect
+import re
 from pathlib import Path
 import pytest
 
@@ -117,3 +118,42 @@ class TestEventReminders:
     def test_task_requires_pg(self):
         src = inspect.getsource(__import__("scheduler").task_event_reminders)
         assert "_use_pg" in src
+
+
+# ── U-15: What's-new feed ────────────────────────────────────────────
+
+class TestWhatsNewFeed:
+
+    def test_endpoint_exists(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/feed/new-since" in paths
+
+    def test_requires_since_param(self):
+        src = inspect.getsource(__import__("public_api").feed_new_since)
+        assert "since" in src
+        assert "min_length=10" in src
+
+    def test_validates_since_date(self):
+        src = inspect.getsource(__import__("public_api").feed_new_since)
+        assert "fromisoformat" in src
+        assert "invalid_date" in src
+
+    def test_returns_entities_and_posts(self):
+        src = inspect.getsource(__import__("public_api").feed_new_since)
+        assert '"entities"' in src
+        assert '"posts"' in src
+        assert '"counts"' in src
+
+    def test_filters_public_posts_only(self):
+        src = inspect.getsource(__import__("public_api").feed_new_since)
+        assert "moderation_status = 'approved'" in src
+
+    def test_limits_results(self):
+        src = inspect.getsource(__import__("public_api").feed_new_since)
+        assert "LIMIT" in src
+        assert "[:limit]" in src
+
+    def test_skips_place_entities(self):
+        src = inspect.getsource(__import__("public_api").feed_new_since)
+        assert '"place"' in src
