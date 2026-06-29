@@ -23,6 +23,7 @@
       </div>
     </section>
 
+    <div class="block">
     <div class="controls">
       <p class="control-label">Khu vực</p>
       <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
@@ -35,6 +36,7 @@
           @click="areaFilter = key as string"
         >{{ meta.emoji }} {{ meta.name }}</button>
       </div>
+    </div>
     </div>
 
     <!-- Editorial -->
@@ -55,7 +57,6 @@
 
     <p class="result-meta" aria-live="polite">{{ filtered.length }} tuyến đường</p>
 
-    <section class="reveal">
     <div v-if="filtered.length" class="route-grid">
       <article v-for="r in filtered" :key="r.id" class="route-card" :aria-label="r.name + ' — ' + r.duration">
         <div :class="['route-header', `area-${r.area}`]">
@@ -97,7 +98,6 @@
         </template>
       </EmptyState>
     </div>
-    </section>
 
     <!-- Cross-links -->
     <section class="block band catalog-cross reveal">

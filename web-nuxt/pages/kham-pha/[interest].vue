@@ -41,6 +41,7 @@
       >{{ meta.emoji }} {{ meta.label }}</NuxtLink>
     </div>
 
+    <section class="block reveal" aria-label="Duyệt tất cả">
     <div class="controls">
       <p class="control-label">Khu vực</p>
       <div class="chip-row wrap-mobile" role="group" aria-label="Lọc theo khu vực">
@@ -81,6 +82,7 @@
       <EntityCard v-for="e in filtered" :key="e.id" :entity="e" />
     </div>
     <EmptyState v-else message="Không tìm thấy kết quả phù hợp." />
+    </section>
 
     <!-- Cross-links -->
     <section class="block catalog-cross reveal">
